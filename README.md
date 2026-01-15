@@ -23,11 +23,13 @@
 
 ### Вариант A: Готовый Docker образ
 
+**⚠️ Требуется первый релиз!** Образы будут доступны после первого push в main или создания тега.
+
 ```bash
-# Из GitHub Container Registry
 docker pull ghcr.io/bedolaga-dev/bedolaga-cabinet:latest
 
-# Или из Docker Hub
+или
+
 docker pull bedolaga/bedolaga-cabinet:latest
 ```
 
