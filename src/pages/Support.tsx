@@ -272,20 +272,56 @@ export default function Support() {
     const getSupportMessage = () => {
       if (supportConfig.support_type === 'profile') {
         const supportUsername = supportConfig.support_username || '@support'
+        console.log('[Support] Opening profile:', supportUsername)
         return {
           title: t('support.ticketsDisabled'),
           message: t('support.contactSupport', { username: supportUsername }),
           buttonText: t('support.contactUs'),
           buttonAction: () => {
+            console.log('[Support] Button clicked, opening:', supportUsername)
             const webApp = window.Telegram?.WebApp
-            const url = supportUsername.startsWith('@')
-              ? `https://t.me/${supportUsername.slice(1)}`
-              : `https://t.me/${supportUsername}`
+
+            // Extract username without @
+            const username = supportUsername.startsWith('@')
+              ? supportUsername.slice(1)
+              : supportUsername
+
+            // Try different URL formats
+            const telegramUrl = `tg://resolve?domain=${username}`
+            const webUrl = `https://t.me/${username}`
+
+            console.log('[Support] Telegram URL:', telegramUrl)
+            console.log('[Support] Web URL:', webUrl)
+            console.log('[Support] WebApp methods:', {
+              openTelegramLink: !!webApp?.openTelegramLink,
+              openLink: !!webApp?.openLink,
+            })
+
+            // Try openTelegramLink first (for tg:// links)
             if (webApp?.openTelegramLink) {
-              webApp.openTelegramLink(url)
-            } else {
-              window.open(url, '_blank')
+              console.log('[Support] Using openTelegramLink with web URL')
+              try {
+                webApp.openTelegramLink(webUrl)
+                return
+              } catch (e) {
+                console.error('[Support] openTelegramLink failed:', e)
+              }
             }
+
+            // Fallback to openLink
+            if (webApp?.openLink) {
+              console.log('[Support] Using openLink')
+              try {
+                webApp.openLink(webUrl)
+                return
+              } catch (e) {
+                console.error('[Support] openLink failed:', e)
+              }
+            }
+
+            // Last resort - window.open
+            console.log('[Support] Using window.open')
+            window.open(webUrl, '_blank')
           },
         }
       }
