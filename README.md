@@ -23,8 +23,6 @@
 
 ### Вариант A: Готовый Docker образ
 
-**⚠️ Требуется первый релиз!** Образы будут доступны после первого push в main или создания тега.
-
 ```bash
 docker pull ghcr.io/bedolaga-dev/bedolaga-cabinet:latest
 
