@@ -371,10 +371,6 @@ bedolaga-cabinet/
 - [Remnawave Bedolaga Telegram Bot](https://github.com/BEDOLAGA-DEV/remnawave-bedolaga-telegram-bot) - Backend бота
 - [Bedolaga Chat](https://t.me/+wTdMtSWq8YdmZmVi) - Чат поддержки
 
-## Лицензия
-
-Apache-2.0 License - см. [LICENSE](LICENSE)
-
 ## Контакты
 
 - Telegram: [@fringg](https://t.me/fringg)
