@@ -262,6 +262,8 @@
     },
     "minAmountError": "Минимальная сумма: {{amount}} ₽",
     "maxAmountError": "Максимальная сумма: {{amount}} ₽",
+    "paymentOption": "Способ оплаты",
+    "selectPaymentOption": "Выберите способ оплаты",
     "paymentMethods": {
       "yookassa": {
         "name": "ЮKassa (Банковская карта)",

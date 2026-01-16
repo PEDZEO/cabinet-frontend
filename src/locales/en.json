@@ -262,6 +262,8 @@
     },
     "minAmountError": "Minimum amount: {{amount}} ₽",
     "maxAmountError": "Maximum amount: {{amount}} ₽",
+    "paymentOption": "Payment option",
+    "selectPaymentOption": "Select payment option",
     "paymentMethods": {
       "yookassa": {
         "name": "YooKassa (Bank Card)",
