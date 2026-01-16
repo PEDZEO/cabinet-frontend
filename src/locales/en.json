@@ -266,8 +266,8 @@
     "selectPaymentOption": "Select payment option",
     "paymentMethods": {
       "yookassa": {
-        "name": "YooKassa (Bank Card)",
-        "description": "Pay with bank card via YooKassa"
+        "name": "YooKassa",
+        "description": "Pay via YooKassa"
       },
       "cryptobot": {
         "name": "CryptoBot",

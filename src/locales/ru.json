@@ -266,8 +266,8 @@
     "selectPaymentOption": "Выберите способ оплаты",
     "paymentMethods": {
       "yookassa": {
-        "name": "ЮKassa (Банковская карта)",
-        "description": "Оплата банковской картой через ЮKassa"
+        "name": "ЮKassa",
+        "description": "Оплата через ЮKassa"
       },
       "cryptobot": {
         "name": "CryptoBot",

@@ -167,8 +167,8 @@
     "topUpBalance": "充值余额",
     "paymentMethods": {
       "yookassa": {
-        "name": "银行卡",
-        "description": "通过银行卡支付"
+        "name": "YooKassa",
+        "description": "通过YooKassa支付"
       },
       "cryptobot": {
         "name": "CryptoBot",

@@ -167,8 +167,8 @@
     "topUpBalance": "شارژ موجودی",
     "paymentMethods": {
       "yookassa": {
-        "name": "کارت بانکی",
-        "description": "پرداخت با کارت بانکی"
+        "name": "YooKassa",
+        "description": "پرداخت از طریق YooKassa"
       },
       "cryptobot": {
         "name": "CryptoBot",
