@@ -197,12 +197,28 @@ export interface ServerStats {
   total_revenue_rubles: number
 }
 
+export interface TariffStatItem {
+  tariff_id: number
+  tariff_name: string
+  active_subscriptions: number
+  trial_subscriptions: number
+  purchased_today: number
+  purchased_week: number
+  purchased_month: number
+}
+
+export interface TariffStats {
+  tariffs: TariffStatItem[]
+  total_tariff_subscriptions: number
+}
+
 export interface DashboardStats {
   nodes: NodesOverview
   subscriptions: SubscriptionStats
   financial: FinancialStats
   servers: ServerStats
   revenue_chart: RevenueData[]
+  tariff_stats?: TariffStats
 }
 
 // ============ Dashboard Stats API ============
