@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   banSystemApi,
@@ -148,6 +148,28 @@ export default function AdminBanSystem() {
   const [reportHours, setReportHours] = useState(24)
   const [settingLoading, setSettingLoading] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+
+  // Format snake_case to readable label
+  const formatSettingKey = useCallback((key: string): string => {
+    // Try translation first
+    const translated = t(`banSystem.settings.${key}`, { defaultValue: '' })
+    if (translated && translated !== `banSystem.settings.${key}`) {
+      return translated
+    }
+    // Fallback: convert snake_case to Title Case
+    return key
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ')
+  }, [t])
+
+  const formatCategory = useCallback((category: string): string => {
+    const translated = t(`banSystem.settings.categories.${category}`, { defaultValue: '' })
+    if (translated && translated !== `banSystem.settings.categories.${category}`) {
+      return translated
+    }
+    return category.charAt(0).toUpperCase() + category.slice(1).replace(/_/g, ' ')
+  }, [t])
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -925,13 +947,13 @@ export default function AdminBanSystem() {
                 return Object.entries(grouped).map(([category, items]) => (
                   <div key={category} className="bg-dark-800/50 rounded-xl border border-dark-700 overflow-hidden">
                     <div className="p-4 border-b border-dark-700">
-                      <h3 className="text-sm font-medium text-dark-200 capitalize">{category}</h3>
+                      <h3 className="text-sm font-medium text-dark-200">{formatCategory(category)}</h3>
                     </div>
                     <div className="divide-y divide-dark-700">
                       {items.map((setting) => (
                         <div key={setting.key} className="p-4 flex items-center justify-between">
                           <div className="flex-1 min-w-0">
-                            <div className="text-dark-100 font-medium">{setting.key}</div>
+                            <div className="text-dark-100 font-medium">{formatSettingKey(setting.key)}</div>
                             {setting.description && (
                               <div className="text-xs text-dark-500 mt-0.5">{setting.description}</div>
                             )}
