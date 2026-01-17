@@ -6,7 +6,6 @@ import {
   Broadcast,
   BroadcastFilter,
   TariffFilter,
-  BroadcastButton,
   BroadcastCreateRequest,
 } from '../api/adminBroadcasts'
 
@@ -235,13 +234,6 @@ function CreateBroadcastModal({ onClose, onSuccess }: CreateModalProps) {
     setSelectedButtons(prev =>
       prev.includes(key) ? prev.filter(b => b !== key) : [...prev, key]
     )
-  }
-
-  // Preview recipients count
-  const handlePreview = () => {
-    if (target) {
-      previewMutation.mutate(target)
-    }
   }
 
   // Submit
