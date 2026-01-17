@@ -27,6 +27,7 @@ import AdminPanel from './pages/AdminPanel'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminBroadcasts from './pages/AdminBroadcasts'
 import AdminPromocodes from './pages/AdminPromocodes'
+import AdminCampaigns from './pages/AdminCampaigns'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuthStore()
@@ -232,6 +233,14 @@ function App() {
         element={
           <AdminRoute>
             <AdminPromocodes />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/campaigns"
+        element={
+          <AdminRoute>
+            <AdminCampaigns />
           </AdminRoute>
         }
       />
