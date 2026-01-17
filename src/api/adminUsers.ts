@@ -108,6 +108,7 @@ export interface UserDetailResponse {
   promo_offer_discount_source: string | null
   promo_offer_discount_expires_at: string | null
   recent_transactions: UserTransactionItem[]
+  remnawave_uuid: string | null
 }
 
 export interface UsersStatsResponse {
