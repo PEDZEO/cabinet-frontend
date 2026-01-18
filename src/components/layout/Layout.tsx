@@ -259,7 +259,7 @@ export default function Layout({ children }: LayoutProps) {
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-50 glass border-b border-dark-800/50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="w-full mx-auto px-4 sm:px-6">
           <div className="flex justify-between items-center h-16 lg:h-20">
             {/* Logo */}
             <Link to="/" className={`flex items-center gap-2.5 flex-shrink-0 ${!appName ? 'lg:mr-4' : ''}`}>
