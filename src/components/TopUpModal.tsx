@@ -35,12 +35,28 @@ const openPaymentLink = (url: string, reservedWindow?: Window | null) => {
   window.location.href = url
 }
 
-interface TopUpModalProps { method: PaymentMethod; onClose: () => void }
+interface TopUpModalProps {
+  method: PaymentMethod
+  onClose: () => void
+  /** Pre-filled amount in rubles (will be converted to user's currency) */
+  initialAmountRubles?: number
+}
 
-export default function TopUpModal({ method, onClose }: TopUpModalProps) {
+export default function TopUpModal({ method, onClose, initialAmountRubles }: TopUpModalProps) {
   const { t } = useTranslation()
   const { formatAmount, currencySymbol, convertAmount, convertToRub, targetCurrency } = useCurrency()
-  const [amount, setAmount] = useState('')
+
+  // Calculate initial amount in user's currency
+  const getInitialAmount = (): string => {
+    if (!initialAmountRubles || initialAmountRubles <= 0) return ''
+    const converted = convertAmount(initialAmountRubles)
+    if (targetCurrency === 'IRR' || targetCurrency === 'RUB') {
+      return Math.ceil(converted).toString()
+    }
+    return converted.toFixed(2)
+  }
+
+  const [amount, setAmount] = useState(getInitialAmount)
   const [error, setError] = useState<string | null>(null)
   const [selectedOption, setSelectedOption] = useState<string | null>(
     method.options && method.options.length > 0 ? method.options[0].id : null

@@ -1,0 +1,200 @@
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useQuery } from '@tanstack/react-query'
+import { balanceApi } from '../api/balance'
+import { useCurrency } from '../hooks/useCurrency'
+import TopUpModal from './TopUpModal'
+import type { PaymentMethod } from '../types'
+
+interface InsufficientBalancePromptProps {
+  /** Amount missing in kopeks */
+  missingAmountKopeks: number
+  /** Optional custom message */
+  message?: string
+  /** Compact mode for inline use */
+  compact?: boolean
+  /** Additional className */
+  className?: string
+}
+
+export default function InsufficientBalancePrompt({
+  missingAmountKopeks,
+  message,
+  compact = false,
+  className = '',
+}: InsufficientBalancePromptProps) {
+  const { t } = useTranslation()
+  const { formatAmount, currencySymbol } = useCurrency()
+  const [showMethodSelect, setShowMethodSelect] = useState(false)
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null)
+
+  const { data: paymentMethods } = useQuery({
+    queryKey: ['payment-methods'],
+    queryFn: balanceApi.getPaymentMethods,
+    enabled: showMethodSelect,
+  })
+
+  const missingRubles = missingAmountKopeks / 100
+  const displayAmount = formatAmount(missingRubles)
+
+  const handleMethodSelect = (method: PaymentMethod) => {
+    setSelectedMethod(method)
+    setShowMethodSelect(false)
+  }
+
+  if (compact) {
+    return (
+      <>
+        <div className={`flex items-center justify-between gap-3 p-3 bg-error-500/10 border border-error-500/30 rounded-xl ${className}`}>
+          <div className="flex items-center gap-2 text-sm text-error-400">
+            <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
+            <span>
+              {message || t('balance.insufficientFunds')}: <span className="font-semibold">{displayAmount} {currencySymbol}</span>
+            </span>
+          </div>
+          <button
+            onClick={() => setShowMethodSelect(true)}
+            className="btn-primary text-xs py-1.5 px-3 whitespace-nowrap"
+          >
+            {t('balance.topUp')}
+          </button>
+        </div>
+
+        {showMethodSelect && (
+          <PaymentMethodModal
+            paymentMethods={paymentMethods}
+            onSelect={handleMethodSelect}
+            onClose={() => setShowMethodSelect(false)}
+          />
+        )}
+
+        {selectedMethod && (
+          <TopUpModal
+            method={selectedMethod}
+            initialAmountRubles={Math.ceil(missingRubles)}
+            onClose={() => setSelectedMethod(null)}
+          />
+        )}
+      </>
+    )
+  }
+
+  return (
+    <>
+      <div className={`p-4 bg-gradient-to-br from-error-500/10 to-warning-500/5 border border-error-500/30 rounded-xl ${className}`}>
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-error-500/20 flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5 text-error-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
+            </svg>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-error-400 font-medium mb-1">
+              {t('balance.insufficientFunds')}
+            </div>
+            <div className="text-dark-300 text-sm">
+              {message || t('balance.topUpToComplete')}
+            </div>
+            <div className="mt-3 flex items-center gap-3">
+              <div className="text-lg font-bold text-dark-100">
+                {t('balance.missing')}: <span className="text-error-400">{displayAmount} {currencySymbol}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button
+          onClick={() => setShowMethodSelect(true)}
+          className="btn-primary w-full mt-4 py-2.5 flex items-center justify-center gap-2"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          {t('balance.topUpBalance')}
+        </button>
+      </div>
+
+      {showMethodSelect && (
+        <PaymentMethodModal
+          paymentMethods={paymentMethods}
+          onSelect={handleMethodSelect}
+          onClose={() => setShowMethodSelect(false)}
+        />
+      )}
+
+      {selectedMethod && (
+        <TopUpModal
+          method={selectedMethod}
+          initialAmountRubles={Math.ceil(missingRubles)}
+          onClose={() => setSelectedMethod(null)}
+        />
+      )}
+    </>
+  )
+}
+
+interface PaymentMethodModalProps {
+  paymentMethods: PaymentMethod[] | undefined
+  onSelect: (method: PaymentMethod) => void
+  onClose: () => void
+}
+
+function PaymentMethodModal({ paymentMethods, onSelect, onClose }: PaymentMethodModalProps) {
+  const { t } = useTranslation()
+  const { formatAmount, currencySymbol } = useCurrency()
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="card max-w-lg w-full animate-slide-up max-h-[80vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-lg font-semibold text-dark-100">{t('balance.selectPaymentMethod')}</h2>
+          <button onClick={onClose} className="btn-icon">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {!paymentMethods ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="w-8 h-8 border-2 border-accent-500 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : paymentMethods.length === 0 ? (
+          <div className="text-center py-8 text-dark-400">
+            {t('balance.noPaymentMethods')}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {paymentMethods.map((method) => {
+              const methodKey = method.id.toLowerCase().replace(/-/g, '_')
+              const translatedName = t(`balance.paymentMethods.${methodKey}.name`, { defaultValue: '' })
+              const translatedDesc = t(`balance.paymentMethods.${methodKey}.description`, { defaultValue: '' })
+
+              return (
+                <button
+                  key={method.id}
+                  disabled={!method.is_available}
+                  onClick={() => method.is_available && onSelect(method)}
+                  className={`p-4 rounded-xl border text-left transition-all ${
+                    method.is_available
+                      ? 'border-dark-700/50 hover:border-accent-500/50 bg-dark-800/30 cursor-pointer hover:bg-dark-800/50'
+                      : 'border-dark-800/30 bg-dark-900/30 opacity-50 cursor-not-allowed'
+                  }`}
+                >
+                  <div className="font-semibold text-dark-100">{translatedName || method.name}</div>
+                  {(translatedDesc || method.description) && (
+                    <div className="text-sm text-dark-500 mt-1">{translatedDesc || method.description}</div>
+                  )}
+                  <div className="text-xs text-dark-600 mt-2">
+                    {formatAmount(method.min_amount_kopeks / 100, 0)} – {formatAmount(method.max_amount_kopeks / 100, 0)} {currencySymbol}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
