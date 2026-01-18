@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react'
+import { createContext, useContext, useState, useCallback, useRef, useEffect, ReactNode } from 'react'
 
 interface ToastOptions {
   type?: 'success' | 'error' | 'info' | 'warning'
@@ -29,20 +29,39 @@ export function useToast() {
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([])
+  const timersRef = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map())
 
   const showToast = useCallback((options: ToastOptions) => {
-    const id = Date.now()
+    const id = Date.now() + Math.random() // Avoid ID collision
     const toast: Toast = { id, duration: 5000, type: 'info', ...options }
 
     setToasts(prev => [...prev, toast])
 
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== id))
+      timersRef.current.delete(id)
     }, toast.duration)
+
+    timersRef.current.set(id, timer)
   }, [])
 
   const removeToast = useCallback((id: number) => {
+    // Clear timer when manually removing
+    const timer = timersRef.current.get(id)
+    if (timer) {
+      clearTimeout(timer)
+      timersRef.current.delete(id)
+    }
     setToasts(prev => prev.filter(t => t.id !== id))
+  }, [])
+
+  // Cleanup all timers on unmount
+  useEffect(() => {
+    const timers = timersRef.current
+    return () => {
+      timers.forEach(timer => clearTimeout(timer))
+      timers.clear()
+    }
   }, [])
 
   return (

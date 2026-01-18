@@ -1,6 +1,8 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { useAuthStore } from '../store/auth'
 
+const isDev = import.meta.env.DEV
+
 export interface WSMessage {
   type: string
   ticket_id?: number
@@ -80,7 +82,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       wsRef.current = ws
 
       ws.onopen = () => {
-        console.log('[WS] Connected')
+        if (isDev) console.log('[WS] Connected')
         setIsConnected(true)
         reconnectAttemptsRef.current = 0
         optionsRef.current.onConnect?.()
@@ -104,12 +106,12 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 
           optionsRef.current.onMessage?.(message)
         } catch (e) {
-          console.error('[WS] Failed to parse message:', e)
+          if (isDev) console.error('[WS] Failed to parse message:', e)
         }
       }
 
       ws.onclose = (event) => {
-        console.log('[WS] Disconnected:', event.code, event.reason)
+        if (isDev) console.log('[WS] Disconnected:', event.code, event.reason)
         setIsConnected(false)
         optionsRef.current.onDisconnect?.()
 
@@ -121,7 +123,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         // Attempt to reconnect if not closed intentionally
         if (event.code !== 1000 && reconnectAttemptsRef.current < maxReconnectAttempts) {
           const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000)
-          console.log(`[WS] Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current + 1})`)
+          if (isDev) console.log(`[WS] Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current + 1})`)
 
           reconnectTimeoutRef.current = setTimeout(() => {
             reconnectAttemptsRef.current++
@@ -131,10 +133,10 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       }
 
       ws.onerror = (error) => {
-        console.error('[WS] Error:', error)
+        if (isDev) console.error('[WS] Error:', error)
       }
     } catch (e) {
-      console.error('[WS] Failed to connect:', e)
+      if (isDev) console.error('[WS] Failed to connect:', e)
     }
   }, [accessToken, isAuthenticated, cleanup])
 
