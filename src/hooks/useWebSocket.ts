@@ -60,9 +60,19 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 
     // Build WebSocket URL
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const host = import.meta.env.VITE_API_URL
-      ? new URL(import.meta.env.VITE_API_URL).host
-      : window.location.host
+    let host = window.location.host
+
+    // Handle VITE_API_URL - can be absolute URL or relative path
+    const apiUrl = import.meta.env.VITE_API_URL
+    if (apiUrl && (apiUrl.startsWith('http://') || apiUrl.startsWith('https://'))) {
+      try {
+        host = new URL(apiUrl).host
+      } catch {
+        // If URL parsing fails, use window.location.host
+      }
+    }
+    // If apiUrl is relative (like /api), use window.location.host
+
     const wsUrl = `${protocol}//${host}/cabinet/ws?token=${accessToken}`
 
     try {
