@@ -283,6 +283,11 @@
     "maxAmountError": "Maximum amount: {{amount}} ₽",
     "paymentOption": "Payment option",
     "selectPaymentOption": "Select payment option",
+    "selectPaymentMethod": "Select payment method",
+    "insufficientFunds": "Insufficient funds",
+    "topUpToComplete": "Top up your balance to complete the purchase",
+    "missing": "Missing",
+    "noPaymentMethods": "No payment methods available",
     "paymentMethods": {
       "yookassa": {
         "name": "YooKassa",

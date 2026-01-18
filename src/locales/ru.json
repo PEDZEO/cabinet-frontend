@@ -283,6 +283,11 @@
     "maxAmountError": "Максимальная сумма: {{amount}} ₽",
     "paymentOption": "Способ оплаты",
     "selectPaymentOption": "Выберите способ оплаты",
+    "selectPaymentMethod": "Выберите способ оплаты",
+    "insufficientFunds": "Недостаточно средств",
+    "topUpToComplete": "Пополните баланс для завершения покупки",
+    "missing": "Не хватает",
+    "noPaymentMethods": "Способы оплаты недоступны",
     "paymentMethods": {
       "yookassa": {
         "name": "ЮKassa",

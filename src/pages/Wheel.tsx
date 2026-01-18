@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { wheelApi, type SpinResult, type SpinHistoryItem } from '../api/wheel'
 import FortuneWheel from '../components/wheel/FortuneWheel'
+import InsufficientBalancePrompt from '../components/InsufficientBalancePrompt'
 import { useCurrency } from '../hooks/useCurrency'
 
 // Icons
@@ -574,20 +575,21 @@ export default function Wheel() {
 
               {/* Cannot spin hint */}
               {!config.can_spin && !isSpinning && (
-                <div className="text-center p-4 rounded-xl bg-dark-800/50 border border-dark-700">
+                <>
                   {config.can_spin_reason === 'daily_limit_reached' ? (
-                    <p className="text-dark-400">{t('wheel.errors.dailyLimitReached')}</p>
-                  ) : config.can_spin_reason === 'insufficient_balance' ? (
-                    <div className="space-y-1">
-                      <p className="text-warning-400 font-medium">{t('wheel.errors.insufficientBalance')}</p>
-                      <p className="text-dark-500 text-sm">
-                        {t('wheel.errors.topUpRequired')} ({formatAmount((config.required_balance_kopeks - config.user_balance_kopeks) / 100)} {currencySymbol})
-                      </p>
+                    <div className="text-center p-4 rounded-xl bg-dark-800/50 border border-dark-700">
+                      <p className="text-dark-400">{t('wheel.errors.dailyLimitReached')}</p>
                     </div>
+                  ) : config.can_spin_reason === 'insufficient_balance' ? (
+                    <InsufficientBalancePrompt
+                      missingAmountKopeks={config.required_balance_kopeks - config.user_balance_kopeks}
+                    />
                   ) : (
-                    <p className="text-dark-400">{t('wheel.errors.cannotSpin')}</p>
+                    <div className="text-center p-4 rounded-xl bg-dark-800/50 border border-dark-700">
+                      <p className="text-dark-400">{t('wheel.errors.cannotSpin')}</p>
+                    </div>
                   )}
-                </div>
+                </>
               )}
             </div>
           </div>

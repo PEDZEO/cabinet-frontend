@@ -7,6 +7,7 @@ import { subscriptionApi } from '../api/subscription'
 import { promoApi } from '../api/promo'
 import type { PurchaseSelection, PeriodOption, Tariff, TariffPeriod, ClassicPurchaseOptions } from '../types'
 import ConnectionModal from '../components/ConnectionModal'
+import InsufficientBalancePrompt from '../components/InsufficientBalancePrompt'
 import { useCurrency } from '../hooks/useCurrency'
 
 // Helper to extract error message from axios/api errors
@@ -772,9 +773,16 @@ export default function Subscription() {
                     </div>
                   )}
 
+                  {devicePriceData && purchaseOptions && devicePriceData.total_price_kopeks && devicePriceData.total_price_kopeks > purchaseOptions.balance_kopeks && (
+                    <InsufficientBalancePrompt
+                      missingAmountKopeks={devicePriceData.total_price_kopeks - purchaseOptions.balance_kopeks}
+                      compact
+                    />
+                  )}
+
                   <button
                     onClick={() => devicePurchaseMutation.mutate()}
-                    disabled={devicePurchaseMutation.isPending}
+                    disabled={devicePurchaseMutation.isPending || !!(devicePriceData?.total_price_kopeks && purchaseOptions && devicePriceData.total_price_kopeks > purchaseOptions.balance_kopeks)}
                     className="btn-primary w-full py-3"
                   >
                     {devicePurchaseMutation.isPending ? (
@@ -862,21 +870,36 @@ export default function Subscription() {
                         ))}
                       </div>
 
-                      {selectedTrafficPackage && (
-                        <button
-                          onClick={() => trafficPurchaseMutation.mutate(selectedTrafficPackage)}
-                          disabled={trafficPurchaseMutation.isPending}
-                          className="btn-primary w-full py-3"
-                        >
-                          {trafficPurchaseMutation.isPending ? (
-                            <span className="flex items-center justify-center gap-2">
-                              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            </span>
-                          ) : (
-                            `Купить ${selectedTrafficPackage} ГБ`
-                          )}
-                        </button>
-                      )}
+                      {selectedTrafficPackage && (() => {
+                        const selectedPkg = trafficPackages.find(p => p.gb === selectedTrafficPackage)
+                        const hasEnoughBalance = !selectedPkg || !purchaseOptions || selectedPkg.price_kopeks <= purchaseOptions.balance_kopeks
+                        const missingAmount = selectedPkg && purchaseOptions ? selectedPkg.price_kopeks - purchaseOptions.balance_kopeks : 0
+
+                        return (
+                          <>
+                            {!hasEnoughBalance && missingAmount > 0 && (
+                              <InsufficientBalancePrompt
+                                missingAmountKopeks={missingAmount}
+                                compact
+                                className="mb-3"
+                              />
+                            )}
+                            <button
+                              onClick={() => trafficPurchaseMutation.mutate(selectedTrafficPackage)}
+                              disabled={trafficPurchaseMutation.isPending || !hasEnoughBalance}
+                              className="btn-primary w-full py-3"
+                            >
+                              {trafficPurchaseMutation.isPending ? (
+                                <span className="flex items-center justify-center gap-2">
+                                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                </span>
+                              ) : (
+                                `Купить ${selectedTrafficPackage} ГБ`
+                              )}
+                            </button>
+                          </>
+                        )
+                      })()}
 
                       {trafficPurchaseMutation.isError && (
                         <div className="text-sm text-error-400 text-center">
@@ -1050,9 +1073,10 @@ export default function Subscription() {
                     </div>
 
                     {!switchPreview.has_enough_balance && switchPreview.upgrade_cost_kopeks > 0 && (
-                      <div className="text-sm text-error-400 bg-error-500/10 px-3 py-2 rounded-lg text-center">
-                        {t('subscription.switchTariff.notEnoughBalance')}: {switchPreview.missing_amount_label}
-                      </div>
+                      <InsufficientBalancePrompt
+                        missingAmountKopeks={switchPreview.missing_amount_kopeks}
+                        compact
+                      />
                     )}
 
                     <button
@@ -1341,11 +1365,11 @@ export default function Subscription() {
                     return (
                       <div className="mt-6">
                         {purchaseOptions && !hasEnoughBalance && (
-                          <div className="text-sm text-error-400 bg-error-500/10 px-4 py-3 rounded-lg text-center mb-4">
-                            {t('subscription.insufficientBalance', {
-                              missing: ((dailyPrice - purchaseOptions.balance_kopeks) / 100).toFixed(2)
-                            })}
-                          </div>
+                          <InsufficientBalancePrompt
+                            missingAmountKopeks={dailyPrice - purchaseOptions.balance_kopeks}
+                            compact
+                            className="mb-4"
+                          />
                         )}
 
                         <button
@@ -1624,11 +1648,11 @@ export default function Subscription() {
                         </div>
 
                         {purchaseOptions && !hasEnoughBalance && (
-                          <div className="text-sm text-error-400 bg-error-500/10 px-4 py-3 rounded-lg text-center mb-4">
-                            {t('subscription.insufficientBalance', {
-                              missing: ((totalPrice - purchaseOptions.balance_kopeks) / 100).toFixed(2)
-                            })}
-                          </div>
+                          <InsufficientBalancePrompt
+                            missingAmountKopeks={totalPrice - purchaseOptions.balance_kopeks}
+                            compact
+                            className="mb-4"
+                          />
                         )}
 
                         <button
