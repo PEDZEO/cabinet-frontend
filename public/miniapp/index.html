@@ -12417,6 +12417,7 @@
             cachedHappCryptolinkRedirectTemplate = undefined;
             userData.subscriptionUrl = userData.subscription_url || null;
             userData.subscriptionCryptoLink = userData.subscription_crypto_link || null;
+            userData.hideSubscriptionLink = Boolean(userData.hide_subscription_link);
             userData.referral = userData.referral || null;
 
             const happData = payload?.happ;
@@ -25097,8 +25098,11 @@
             updateInstructionConnectButtons(showConnectButton && anyConnectLink);
 
             const subscriptionUrl = getCurrentSubscriptionUrl();
+            const hideLink = Boolean(userData?.hideSubscriptionLink || userData?.hide_subscription_link);
             if (copyBtn) {
                 const hasUrl = Boolean(subscriptionUrl);
+                // Скрываем кнопку копирования если hide_subscription_link=true
+                copyBtn.classList.toggle('hidden', hideLink);
                 copyBtn.disabled = !hasUrl || !navigator.clipboard;
             }
         }
