@@ -17117,9 +17117,14 @@
 
             const label = document.createElement('div');
             label.className = 'payment-method-label';
-            const labelKey = `topup.method.${method.id}.title`;
-            const labelValue = t(labelKey);
-            label.textContent = labelValue === labelKey ? method.id : labelValue;
+            // Используем name из API если есть, иначе локализацию
+            if (method.name) {
+                label.textContent = method.name;
+            } else {
+                const labelKey = `topup.method.${method.id}.title`;
+                const labelValue = t(labelKey);
+                label.textContent = labelValue === labelKey ? method.id : labelValue;
+            }
 
             const description = document.createElement('div');
             description.className = 'payment-method-description';
