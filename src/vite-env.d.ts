@@ -25,12 +25,35 @@ interface TelegramWebApp {
     auth_date: number
     hash: string
   }
+  version: string
+  platform: string
+  isExpanded: boolean
+  isClosingConfirmationEnabled: boolean
+  isVerticalSwipesEnabled: boolean
+  isFullscreen: boolean
+  isOrientationLocked: boolean
+  safeAreaInset: { top: number; bottom: number; left: number; right: number }
+  contentSafeAreaInset: { top: number; bottom: number; left: number; right: number }
   ready: () => void
   expand: () => void
   close: () => void
   openLink: (url: string, options?: { try_instant_view?: boolean; try_browser?: boolean }) => void
   openTelegramLink: (url: string) => void
   openInvoice: (url: string, callback?: (status: 'paid' | 'cancelled' | 'failed' | 'pending') => void) => void
+  // Fullscreen API (Bot API 8.0+)
+  requestFullscreen: () => void
+  exitFullscreen: () => void
+  lockOrientation: () => void
+  unlockOrientation: () => void
+  // Vertical swipes control
+  disableVerticalSwipes: () => void
+  enableVerticalSwipes: () => void
+  // Closing confirmation
+  enableClosingConfirmation: () => void
+  disableClosingConfirmation: () => void
+  // Event handlers
+  onEvent: (eventType: string, callback: () => void) => void
+  offEvent: (eventType: string, callback: () => void) => void
   MainButton: {
     text: string
     color: string

@@ -1003,6 +1003,11 @@
 }
 
 /* Fortune Wheel animations */
+@keyframes wheel-shimmer {
+  0% { background-position: 200% 50%; }
+  100% { background-position: -200% 50%; }
+}
+
 @keyframes wheel-glow {
   0%, 100% { filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3)); }
   50% { filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.6)); }

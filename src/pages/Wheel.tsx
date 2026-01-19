@@ -6,6 +6,15 @@ import FortuneWheel from '../components/wheel/FortuneWheel'
 import InsufficientBalancePrompt from '../components/InsufficientBalancePrompt'
 import { useCurrency } from '../hooks/useCurrency'
 
+// Pre-calculated confetti positions (stable across re-renders)
+const CONFETTI_POSITIONS = Array.from({ length: 20 }, (_, i) => ({
+  color: ['#fbbf24', '#a855f7', '#3b82f6', '#10b981', '#f43f5e'][i % 5],
+  left: `${(i * 17 + 5) % 95}%`,
+  top: `${(i * 23 + 3) % 90}%`,
+  delay: `${(i * 0.1) % 2}s`,
+  duration: `${1 + (i % 3) * 0.3}s`,
+}))
+
 // Icons
 const StarIcon = () => (
   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -98,9 +107,11 @@ export default function Wheel() {
   }, [config, isTelegramMiniApp])
 
   // Function to poll for new spin result after Stars payment
-  const pollForSpinResult = useCallback(async (maxAttempts = 15, delayMs = 800) => {
+  const pollForSpinResult = useCallback(async (signal: AbortSignal, maxAttempts = 15, delayMs = 800) => {
     // Wait a bit before first poll to give the bot time to process the payment
     await new Promise(resolve => setTimeout(resolve, 1500))
+
+    if (signal.aborted) return null
 
     // Get current history to find the latest spin ID
     let historyBefore
@@ -112,7 +123,11 @@ export default function Wheel() {
     const lastSpinIdBefore = historyBefore.items.length > 0 ? historyBefore.items[0].id : 0
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      if (signal.aborted) return null
+
       await new Promise(resolve => setTimeout(resolve, delayMs))
+
+      if (signal.aborted) return null
 
       try {
         const historyAfter = await wheelApi.getHistory(1, 1)
@@ -152,6 +167,16 @@ export default function Wheel() {
   // Ref to store pending Stars payment result
   const pendingStarsResultRef = useRef<SpinResult | null>(null)
   const isStarsSpinRef = useRef(false)
+  const pollingAbortRef = useRef<AbortController | null>(null)
+
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingAbortRef.current) {
+        pollingAbortRef.current.abort()
+      }
+    }
+  }, [])
 
   const starsInvoiceMutation = useMutation({
     mutationFn: wheelApi.createStarsInvoice,
@@ -163,6 +188,12 @@ export default function Wheel() {
             isStarsSpinRef.current = true
             pendingStarsResultRef.current = null
 
+            // Cancel any existing polling
+            if (pollingAbortRef.current) {
+              pollingAbortRef.current.abort()
+            }
+            pollingAbortRef.current = new AbortController()
+
             // Payment done - reset paying state immediately
             setIsPayingStars(false)
 
@@ -172,7 +203,10 @@ export default function Wheel() {
 
             // Poll for the result in the background - don't await here!
             // The result will be stored and shown when animation completes
-            pollForSpinResult().then((result) => {
+            const abortSignal = pollingAbortRef.current.signal
+            pollForSpinResult(abortSignal).then((result) => {
+              if (abortSignal.aborted) return
+
               queryClient.invalidateQueries({ queryKey: ['wheel-config'] })
               queryClient.invalidateQueries({ queryKey: ['wheel-history'] })
 
@@ -195,6 +229,8 @@ export default function Wheel() {
                 }
               }
             }).catch(() => {
+              if (abortSignal.aborted) return
+
               // Error polling, show generic success
               pendingStarsResultRef.current = {
                 success: true,
@@ -551,7 +587,7 @@ export default function Wheel() {
                   }`}
                   style={{
                     backgroundSize: '200% 100%',
-                    animation: !isSpinning && config.can_spin ? 'shimmer 3s linear infinite' : 'none',
+                    animation: !isSpinning && config.can_spin ? 'wheel-shimmer 3s linear infinite' : 'none',
                   }}
                 >
                   {/* Button glow effect */}
@@ -669,18 +705,18 @@ export default function Wheel() {
               <>
                 <div className="absolute top-0 left-0 w-32 h-32 bg-purple-500/20 rounded-full blur-3xl" />
                 <div className="absolute bottom-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl" />
-                {/* Confetti effect */}
+                {/* Confetti effect - using pre-calculated positions */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                  {Array.from({ length: 20 }).map((_, i) => (
+                  {CONFETTI_POSITIONS.map((pos, i) => (
                     <div
                       key={i}
                       className="absolute w-2 h-2 rounded-full animate-bounce"
                       style={{
-                        background: ['#fbbf24', '#a855f7', '#3b82f6', '#10b981', '#f43f5e'][i % 5],
-                        left: `${Math.random() * 100}%`,
-                        top: `${Math.random() * 100}%`,
-                        animationDelay: `${Math.random() * 2}s`,
-                        animationDuration: `${1 + Math.random()}s`,
+                        background: pos.color,
+                        left: pos.left,
+                        top: pos.top,
+                        animationDelay: pos.delay,
+                        animationDuration: pos.duration,
                       }}
                     />
                   ))}
@@ -747,12 +783,6 @@ export default function Wheel() {
         </div>
       )}
 
-      <style>{`
-        @keyframes shimmer {
-          0% { background-position: 200% 50%; }
-          100% { background-position: -200% 50%; }
-        }
-      `}</style>
     </div>
   )
 }

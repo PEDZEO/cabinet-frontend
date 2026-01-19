@@ -6,8 +6,12 @@ import App from './App'
 import { ThemeColorsProvider } from './providers/ThemeColorsProvider'
 import { ToastProvider } from './components/Toast'
 import { initLogoPreload } from './api/branding'
+import { initTelegramWebApp } from './hooks/useTelegramWebApp'
 import './i18n'
 import './styles/globals.css'
+
+// Initialize Telegram WebApp (expand, disable swipes)
+initTelegramWebApp()
 
 // Preload logo from cache immediately on page load
 initLogoPreload()
