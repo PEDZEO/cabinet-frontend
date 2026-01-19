@@ -102,19 +102,34 @@
 
   html {
     overflow-x: hidden;
-    scroll-behavior: smooth;
+  }
+
+  /* Smooth scroll only on desktop - mobile uses native */
+  @media (min-width: 1024px) {
+    html {
+      scroll-behavior: smooth;
+    }
   }
 
   /* Dark theme (default) */
   body, .dark body {
     @apply bg-dark-950 text-dark-100 font-sans antialiased;
     overscroll-behavior-y: contain;
+    /* iOS smooth scrolling */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Optimize main scrollable content */
+  main {
+    /* Prevent layout shifts during scroll */
+    contain: layout style;
   }
 
   /* Light theme - Champagne */
   .light body {
     @apply bg-champagne-200 text-champagne-900 font-sans antialiased;
     overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
   }
 
   /* Light theme text color overrides - convert dark-* text colors to readable colors */
@@ -310,10 +325,19 @@
 @layer components {
   /* ========== DARK THEME COMPONENTS (default) ========== */
 
-  /* Cards - Dark */
+  /* Cards - Dark (optimized for mobile) */
   .card {
-    @apply bg-dark-900/50 backdrop-blur-sm rounded-2xl border border-dark-800/50 p-5 sm:p-6
+    @apply bg-dark-900/70 rounded-2xl border border-dark-800/50 p-5 sm:p-6
            transition-all duration-300 ease-smooth;
+    /* GPU acceleration for smooth scroll */
+    transform: translateZ(0);
+  }
+
+  /* Enable backdrop-blur only on desktop */
+  @media (min-width: 1024px) {
+    .card {
+      @apply bg-dark-900/50 backdrop-blur-sm;
+    }
   }
 
   .card-hover {
@@ -329,9 +353,19 @@
     @apply card animate-slide-up;
   }
 
-  /* Glass effect - Dark */
+  /* Glass effect - Dark (optimized for mobile) */
   .glass {
-    @apply bg-dark-900/30 backdrop-blur-xl border border-dark-700/30;
+    @apply bg-dark-900/80 border border-dark-700/30;
+    /* GPU acceleration */
+    transform: translateZ(0);
+    will-change: transform;
+  }
+
+  /* Enable backdrop-blur only on desktop where it's performant */
+  @media (min-width: 1024px) {
+    .glass {
+      @apply bg-dark-900/30 backdrop-blur-xl;
+    }
   }
 
   /* Buttons - Dark */
@@ -455,11 +489,18 @@
     @apply nav-item text-accent-400 bg-accent-500/10;
   }
 
-  /* Bottom nav - Dark */
+  /* Bottom nav - Dark (optimized for mobile) */
   .bottom-nav {
     @apply fixed bottom-0 left-0 right-0 z-50
-           bg-dark-900/80 backdrop-blur-xl border-t border-dark-800/50
+           bg-dark-900/95 border-t border-dark-800/50
            safe-area-pb;
+    transform: translateZ(0);
+  }
+
+  @media (min-width: 1024px) {
+    .bottom-nav {
+      @apply bg-dark-900/80 backdrop-blur-xl;
+    }
   }
 
   .bottom-nav-item {
@@ -476,12 +517,34 @@
     @apply border-t border-dark-800/50;
   }
 
+  /* ========== MOBILE PERFORMANCE: Disable backdrop-blur ========== */
+  @media (max-width: 1023px) {
+    /* Disable all backdrop-blur on mobile for better scroll performance */
+    .backdrop-blur,
+    .backdrop-blur-sm,
+    .backdrop-blur-md,
+    .backdrop-blur-lg,
+    .backdrop-blur-xl,
+    .backdrop-blur-2xl,
+    .backdrop-blur-3xl {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+  }
+
   /* ========== LIGHT THEME COMPONENTS (Champagne) ========== */
 
   /* Cards - Light */
   .light .card {
-    @apply bg-white/80 backdrop-blur-sm rounded-2xl border border-champagne-300/50 p-5 sm:p-6
+    @apply bg-white/90 rounded-2xl border border-champagne-300/50 p-5 sm:p-6
            shadow-sm;
+    transform: translateZ(0);
+  }
+
+  @media (min-width: 1024px) {
+    .light .card {
+      @apply bg-white/80 backdrop-blur-sm;
+    }
   }
 
   .light .card-hover {
@@ -492,9 +555,16 @@
     @apply hover:shadow-lg hover:border-accent-400/40;
   }
 
-  /* Glass effect - Light */
+  /* Glass effect - Light (optimized for mobile) */
   .light .glass {
-    @apply bg-white/60 backdrop-blur-xl border border-champagne-300/40;
+    @apply bg-white/90 border border-champagne-300/40;
+    transform: translateZ(0);
+  }
+
+  @media (min-width: 1024px) {
+    .light .glass {
+      @apply bg-white/60 backdrop-blur-xl;
+    }
   }
 
   /* Buttons - Light */
@@ -882,6 +952,37 @@
   .nav-item:active {
     transform: scale(0.98);
   }
+}
+
+/* Color picker range input styling */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  border-radius: 4px;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 /* Selection color */
