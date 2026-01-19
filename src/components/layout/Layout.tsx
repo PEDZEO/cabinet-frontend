@@ -307,7 +307,13 @@ export default function Layout({ children }: LayoutProps) {
           paddingTop: isFullscreen ? `${Math.max(safeAreaInset.top, contentSafeAreaInset.top)}px` : undefined,
         }}
       >
-        <div className="w-full mx-auto px-4 sm:px-6">
+        <div
+          className="w-full mx-auto px-4 sm:px-6"
+          style={{
+            // In fullscreen mode, add right padding for Telegram native controls (close/menu buttons)
+            paddingRight: isFullscreen ? '100px' : undefined,
+          }}
+        >
           <div className="flex justify-between items-center h-16 lg:h-20">
             {/* Logo */}
             <Link to="/" className={`flex items-center gap-2.5 flex-shrink-0 ${!appName ? 'lg:mr-4' : ''}`}>
