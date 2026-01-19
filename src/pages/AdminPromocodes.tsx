@@ -87,6 +87,7 @@ const getTypeLabel = (type: PromoCodeType): string => {
     subscription_days: 'Дни подписки',
     trial_subscription: 'Тестовая подписка',
     promo_group: 'Группа скидок',
+    discount: 'Скидка %',
   }
   return labels[type] || type
 }
@@ -97,6 +98,7 @@ const getTypeColor = (type: PromoCodeType): string => {
     subscription_days: 'bg-blue-500/20 text-blue-400',
     trial_subscription: 'bg-purple-500/20 text-purple-400',
     promo_group: 'bg-amber-500/20 text-amber-400',
+    discount: 'bg-pink-500/20 text-pink-400',
   }
   return colors[type] || 'bg-dark-600 text-dark-300'
 }
@@ -146,10 +148,14 @@ function PromocodeModal({ promocode, promoGroups, onSave, onClose, isLoading }: 
   const [promoGroupId, setPromoGroupId] = useState<number | null>(promocode?.promo_group_id || null)
 
   const handleSubmit = () => {
+    // Для discount: balance_bonus_kopeks = процент (целое число), subscription_days = часы
+    // Для balance: balance_bonus_kopeks = рубли * 100
     const data: PromoCodeCreateRequest | PromoCodeUpdateRequest = {
       code: code.trim().toUpperCase(),
       type,
-      balance_bonus_kopeks: Math.round(balanceBonusRubles * 100),
+      balance_bonus_kopeks: type === 'discount'
+        ? Math.round(balanceBonusRubles) // процент как целое число
+        : Math.round(balanceBonusRubles * 100), // рубли в копейки
       subscription_days: subscriptionDays,
       max_uses: maxUses,
       is_active: isActive,
@@ -165,6 +171,7 @@ function PromocodeModal({ promocode, promoGroups, onSave, onClose, isLoading }: 
     if (type === 'balance' && balanceBonusRubles <= 0) return false
     if ((type === 'subscription_days' || type === 'trial_subscription') && subscriptionDays <= 0) return false
     if (type === 'promo_group' && !promoGroupId) return false
+    if (type === 'discount' && (balanceBonusRubles <= 0 || balanceBonusRubles > 100 || subscriptionDays <= 0)) return false
     return true
   }
 
@@ -207,6 +214,7 @@ function PromocodeModal({ promocode, promoGroups, onSave, onClose, isLoading }: 
               <option value="subscription_days">Дни подписки</option>
               <option value="trial_subscription">Тестовая подписка</option>
               <option value="promo_group">Группа скидок</option>
+              <option value="discount">Процентная скидка</option>
             </select>
           </div>
 
@@ -260,6 +268,40 @@ function PromocodeModal({ promocode, promoGroups, onSave, onClose, isLoading }: 
                 ))}
               </select>
             </div>
+          )}
+
+          {type === 'discount' && (
+            <>
+              <div>
+                <label className="block text-sm text-dark-300 mb-1">Процент скидки</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={balanceBonusRubles}
+                    onChange={e => setBalanceBonusRubles(Math.min(100, Math.max(0, parseFloat(e.target.value) || 0)))}
+                    className="w-32 px-3 py-2 bg-dark-700 border border-dark-600 rounded-lg text-dark-100 focus:outline-none focus:border-accent-500"
+                    min={1}
+                    max={100}
+                  />
+                  <span className="text-dark-400">%</span>
+                </div>
+                <p className="text-xs text-dark-500 mt-1">Скидка применяется один раз при оплате</p>
+              </div>
+              <div>
+                <label className="block text-sm text-dark-300 mb-1">Время действия</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={subscriptionDays}
+                    onChange={e => setSubscriptionDays(Math.max(0, parseInt(e.target.value) || 0))}
+                    className="w-32 px-3 py-2 bg-dark-700 border border-dark-600 rounded-lg text-dark-100 focus:outline-none focus:border-accent-500"
+                    min={1}
+                  />
+                  <span className="text-dark-400">часов</span>
+                </div>
+                <p className="text-xs text-dark-500 mt-1">Сколько часов после активации скидка действует</p>
+              </div>
+            </>
           )}
 
           {/* Max Uses */}
@@ -577,6 +619,18 @@ function PromocodeStatsModal({ promocode, onClose, onEdit }: PromocodeStatsModal
                   <span className="text-dark-400">Дней:</span>
                   <span className="text-blue-400">+{promocode.subscription_days}</span>
                 </div>
+              )}
+              {promocode.type === 'discount' && (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-dark-400">Скидка:</span>
+                    <span className="text-pink-400">-{promocode.balance_bonus_kopeks}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-dark-400">Действует:</span>
+                    <span className="text-pink-400">{promocode.subscription_days} часов</span>
+                  </div>
+                </>
               )}
               <div className="flex justify-between">
                 <span className="text-dark-400">Лимит:</span>
@@ -935,6 +989,9 @@ export default function AdminPromocodes() {
                         )}
                         {(promo.type === 'subscription_days' || promo.type === 'trial_subscription') && (
                           <span className="text-blue-400">+{promo.subscription_days} дней</span>
+                        )}
+                        {promo.type === 'discount' && (
+                          <span className="text-pink-400">-{promo.balance_bonus_kopeks}% на {promo.subscription_days}ч</span>
                         )}
                         <span>
                           Использовано: {promo.current_uses}/{promo.max_uses === 0 ? '∞' : promo.max_uses}
