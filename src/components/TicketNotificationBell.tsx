@@ -6,6 +6,7 @@ import { ticketNotificationsApi } from '../api/ticketNotifications'
 import { useAuthStore } from '../store/auth'
 import { useToast } from './Toast'
 import { useWebSocket, WSMessage } from '../hooks/useWebSocket'
+import { useTelegramWebApp } from '../hooks/useTelegramWebApp'
 import type { TicketNotification } from '../types'
 
 const BellIcon = () => (
@@ -32,6 +33,12 @@ export default function TicketNotificationBell({ isAdmin = false }: TicketNotifi
   const { showToast } = useToast()
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const { isFullscreen, safeAreaInset, contentSafeAreaInset } = useTelegramWebApp()
+
+  // Calculate dropdown top position (account for fullscreen safe area + TG buttons)
+  const dropdownTop = isFullscreen
+    ? Math.max(safeAreaInset.top, contentSafeAreaInset.top) + 45 + 64 // safe area + TG buttons + header
+    : 64 // default header height
 
   // Show toast for WebSocket notification
   const showWSNotificationToast = useCallback((message: WSMessage) => {
@@ -204,7 +211,12 @@ export default function TicketNotificationBell({ isAdmin = false }: TicketNotifi
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="fixed sm:absolute top-16 sm:top-auto right-4 sm:right-0 left-4 sm:left-auto mt-0 sm:mt-2 w-auto sm:w-96 bg-dark-900/95 backdrop-blur-xl border border-dark-700/50 rounded-2xl shadow-2xl shadow-black/30 overflow-hidden z-50 animate-scale-in">
+        <div
+          className={`fixed sm:absolute sm:top-auto right-4 sm:right-0 left-4 sm:left-auto mt-0 sm:mt-2 w-auto sm:w-96 bg-dark-900/95 backdrop-blur-xl border border-dark-700/50 rounded-2xl shadow-2xl shadow-black/30 overflow-hidden z-50 animate-scale-in ${
+            !isFullscreen ? 'top-16' : ''
+          }`}
+          style={isFullscreen ? { top: `${dropdownTop}px` } : undefined}
+        >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-dark-700/50 bg-dark-800/30">
             <h3 className="text-sm font-semibold text-dark-100">

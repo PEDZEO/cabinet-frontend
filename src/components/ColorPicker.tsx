@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 
 interface ColorPickerProps {
   value: string
@@ -6,6 +6,28 @@ interface ColorPickerProps {
   label: string
   description?: string
   disabled?: boolean
+}
+
+// Check if running in Telegram WebApp (native color picker causes crash)
+const isTelegramWebApp = (): boolean => {
+  return !!(window as unknown as { Telegram?: { WebApp?: unknown } }).Telegram?.WebApp
+}
+
+// Convert hex to RGB
+const hexToRgb = (hex: string): { r: number; g: number; b: number } => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+  return result
+    ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
+    : { r: 0, g: 0, b: 0 }
+}
+
+// Convert RGB to hex
+const rgbToHex = (r: number, g: number, b: number): string => {
+  return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('')
 }
 
 const PRESET_COLORS = [
@@ -21,17 +43,35 @@ const PRESET_COLORS = [
   '#f97316', // Orange
   '#6366f1', // Indigo
   '#a855f7', // Purple
+  '#ffffff', // White
+  '#64748b', // Slate
+  '#1e293b', // Dark
+  '#000000', // Black
 ]
 
 export function ColorPicker({ value, onChange, label, description, disabled }: ColorPickerProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [localValue, setLocalValue] = useState(value)
+  const [rgb, setRgb] = useState(() => hexToRgb(value))
   const containerRef = useRef<HTMLDivElement>(null)
   const colorInputRef = useRef<HTMLInputElement>(null)
 
+  // Memoize Telegram check to avoid recalculating
+  const isTelegram = useMemo(() => isTelegramWebApp(), [])
+
   useEffect(() => {
     setLocalValue(value)
+    setRgb(hexToRgb(value))
   }, [value])
+
+  // Handle RGB slider change
+  const handleRgbChange = useCallback((channel: 'r' | 'g' | 'b', val: number) => {
+    const newRgb = { ...rgb, [channel]: val }
+    setRgb(newRgb)
+    const hex = rgbToHex(newRgb.r, newRgb.g, newRgb.b)
+    setLocalValue(hex)
+    onChange(hex)
+  }, [rgb, onChange])
 
   // Close on outside click
   useEffect(() => {
@@ -103,46 +143,107 @@ export function ColorPicker({ value, onChange, label, description, disabled }: C
           maxLength={7}
         />
 
-        {/* Hidden native color picker for direct access */}
-        <input
-          ref={colorInputRef}
-          type="color"
-          value={localValue || '#000000'}
-          onChange={handleColorInputChange}
-          disabled={disabled}
-          className="sr-only"
-        />
-
-        {/* Native picker button - min 44px for touch accessibility */}
-        <button
-          type="button"
-          onClick={() => colorInputRef.current?.click()}
-          disabled={disabled}
-          className="btn-secondary min-w-[44px] min-h-[44px] p-2.5 disabled:opacity-50"
-          title="Open color picker"
-          aria-label="Open color picker"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402M6.75 21A3.75 3.75 0 013 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 003.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008z"
+        {/* Native color picker - hidden in Telegram WebApp (causes crash) */}
+        {!isTelegram && (
+          <>
+            <input
+              ref={colorInputRef}
+              type="color"
+              value={localValue || '#000000'}
+              onChange={handleColorInputChange}
+              disabled={disabled}
+              className="sr-only"
             />
-          </svg>
-        </button>
+
+            {/* Native picker button - min 44px for touch accessibility */}
+            <button
+              type="button"
+              onClick={() => colorInputRef.current?.click()}
+              disabled={disabled}
+              className="btn-secondary min-w-[44px] min-h-[44px] p-2.5 disabled:opacity-50"
+              title="Open color picker"
+              aria-label="Open color picker"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402M6.75 21A3.75 3.75 0 013 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 003.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008z"
+                />
+              </svg>
+            </button>
+          </>
+        )}
       </div>
 
-      {/* Dropdown with presets */}
+      {/* Dropdown with presets and RGB sliders */}
       {isOpen && (
-        <div className="absolute z-50 mt-2 p-3 bg-dark-800 rounded-xl border border-dark-700 shadow-xl animate-fade-in">
+        <div className="absolute z-50 mt-2 p-3 bg-dark-800 rounded-xl border border-dark-700 shadow-xl animate-fade-in w-72">
+          {/* RGB Sliders - shown in Telegram instead of native picker */}
+          {isTelegram && (
+            <div className="mb-3 pb-3 border-b border-dark-700">
+              <div className="text-xs text-dark-400 mb-2">RGB</div>
+              <div className="space-y-2">
+                {/* Red */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-red-400 w-4">R</span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="255"
+                    value={rgb.r}
+                    onChange={(e) => handleRgbChange('r', parseInt(e.target.value))}
+                    className="flex-1 h-2 rounded-full appearance-none cursor-pointer"
+                    style={{
+                      background: `linear-gradient(to right, rgb(0,${rgb.g},${rgb.b}), rgb(255,${rgb.g},${rgb.b}))`,
+                    }}
+                  />
+                  <span className="text-xs text-dark-400 w-8 text-right">{rgb.r}</span>
+                </div>
+                {/* Green */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-green-400 w-4">G</span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="255"
+                    value={rgb.g}
+                    onChange={(e) => handleRgbChange('g', parseInt(e.target.value))}
+                    className="flex-1 h-2 rounded-full appearance-none cursor-pointer"
+                    style={{
+                      background: `linear-gradient(to right, rgb(${rgb.r},0,${rgb.b}), rgb(${rgb.r},255,${rgb.b}))`,
+                    }}
+                  />
+                  <span className="text-xs text-dark-400 w-8 text-right">{rgb.g}</span>
+                </div>
+                {/* Blue */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-blue-400 w-4">B</span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="255"
+                    value={rgb.b}
+                    onChange={(e) => handleRgbChange('b', parseInt(e.target.value))}
+                    className="flex-1 h-2 rounded-full appearance-none cursor-pointer"
+                    style={{
+                      background: `linear-gradient(to right, rgb(${rgb.r},${rgb.g},0), rgb(${rgb.r},${rgb.g},255))`,
+                    }}
+                  />
+                  <span className="text-xs text-dark-400 w-8 text-right">{rgb.b}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="text-xs text-dark-400 mb-2">Preset colors</div>
-          <div className="grid grid-cols-4 sm:grid-cols-6 gap-1">
+          <div className="grid grid-cols-4 gap-1">
             {PRESET_COLORS.map((preset) => (
               <button
                 key={preset}
                 onClick={() => handlePresetClick(preset)}
-                className={`min-w-[44px] min-h-[44px] w-11 h-11 rounded-lg border-2 transition-all hover:scale-105 ${
-                  localValue === preset ? 'border-white ring-2 ring-white/30' : 'border-dark-600 hover:border-dark-500'
+                className={`min-w-[44px] min-h-[44px] w-full aspect-square rounded-lg border-2 transition-all hover:scale-105 ${
+                  localValue.toLowerCase() === preset.toLowerCase() ? 'border-white ring-2 ring-white/30' : 'border-dark-600 hover:border-dark-500'
                 }`}
                 style={{ backgroundColor: preset }}
                 title={preset}
