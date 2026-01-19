@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useMemo, memo } from 'react'
 import type { WheelPrize } from '../../api/wheel'
 
 interface FortuneWheelProps {
@@ -8,7 +8,14 @@ interface FortuneWheelProps {
   onSpinComplete: () => void
 }
 
-export default function FortuneWheel({
+// Pre-generate sparkle positions to avoid recalculating on each render
+const SPARKLE_POSITIONS = Array.from({ length: 8 }, (_, i) => ({
+  top: `${20 + (i * 10) % 60}%`,
+  left: `${15 + (i * 13) % 70}%`,
+  delay: `${i * 0.15}s`,
+}))
+
+const FortuneWheel = memo(function FortuneWheel({
   prizes,
   isSpinning,
   targetRotation,
@@ -16,17 +23,17 @@ export default function FortuneWheel({
 }: FortuneWheelProps) {
   const wheelRef = useRef<SVGGElement>(null)
   const [currentRotation, setCurrentRotation] = useState(0)
-  const [lightPattern, setLightPattern] = useState<boolean[]>([])
+  const [lightPhase, setLightPhase] = useState(0)
 
-  // Animated lights effect
+  // Animated lights effect - use phase instead of random array (less re-renders)
   useEffect(() => {
     if (isSpinning) {
       const interval = setInterval(() => {
-        setLightPattern(Array.from({ length: 20 }, () => Math.random() > 0.4))
-      }, 100)
+        setLightPhase(p => (p + 1) % 3) // Just toggle phase 0-1-2
+      }, 250) // Slower interval = better performance
       return () => clearInterval(interval)
     } else {
-      setLightPattern(Array.from({ length: 20 }, (_, i) => i % 2 === 0))
+      setLightPhase(0)
     }
   }, [isSpinning])
 
@@ -41,6 +48,14 @@ export default function FortuneWheel({
       return () => clearTimeout(timeout)
     }
   }, [isSpinning, targetRotation, onSpinComplete])
+
+  // Memoize light pattern calculation
+  const lightPattern = useMemo(() => {
+    return Array.from({ length: 20 }, (_, i) => {
+      if (!isSpinning) return i % 2 === 0
+      return (i + lightPhase) % 3 !== 0
+    })
+  }, [isSpinning, lightPhase])
 
   if (prizes.length === 0) {
     return (
@@ -416,19 +431,19 @@ export default function FortuneWheel({
         )}
       </div>
 
-      {/* Sparkle effects when spinning */}
+      {/* Sparkle effects when spinning - optimized with pre-calculated positions */}
       {isSpinning && (
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {Array.from({ length: 12 }).map((_, i) => (
+          {SPARKLE_POSITIONS.map((pos, i) => (
             <div
               key={`sparkle-${i}`}
-              className="absolute w-2 h-2 bg-yellow-300 rounded-full"
+              className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-ping"
               style={{
-                top: `${15 + Math.random() * 70}%`,
-                left: `${15 + Math.random() * 70}%`,
-                animation: `ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite`,
-                animationDelay: `${i * 0.12}s`,
-                opacity: 0.8,
+                top: pos.top,
+                left: pos.left,
+                animationDelay: pos.delay,
+                animationDuration: '1.5s',
+                opacity: 0.7,
               }}
             />
           ))}
@@ -436,4 +451,6 @@ export default function FortuneWheel({
       )}
     </div>
   )
-}
+})
+
+export default FortuneWheel

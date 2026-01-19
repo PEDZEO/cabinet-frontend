@@ -100,117 +100,90 @@ function generatePalette(baseHex: string): ColorPalette {
   return palette as ColorPalette
 }
 
-// Generate neutral palette from dark background color (for dark theme)
-function generateDarkPalette(darkBgHex: string): ColorPalette {
-  const { h, s } = hexToHsl(darkBgHex)
-
-  // Use very low saturation for neutral colors
-  const neutralS = Math.min(s, 15)
-
-  // Lightness values - from very light (50) to very dark (950)
-  const lightnessMap: Record<number, number> = {
-    50: 97,
-    100: 96,
-    200: 89,
-    300: 80,
-    400: 58,
-    500: 40,
-    600: 28,
-    700: 20,
-    800: 12,
-    850: 10,
-    900: 7,
-    950: 4,
-  }
-
-  const palette: Partial<ColorPalette> = {}
-
-  for (const shade of [...SHADE_LEVELS, 850] as const) {
-    const lightness = lightnessMap[shade as keyof typeof lightnessMap] || 50
-    const { r, g, b } = hslToRgb(h, neutralS, lightness)
-    palette[shade as keyof ColorPalette] = rgbToString(r, g, b)
-  }
-
-  return palette as ColorPalette
-}
-
-// Generate light theme palette (champagne-like)
-function generateLightPalette(lightBgHex: string): ColorPalette {
-  const { h, s } = hexToHsl(lightBgHex)
-
-  // Lightness values for light theme - inverse of dark
-  const lightnessMap: Record<number, number> = {
-    50: 100,
-    100: 98,
-    200: 91,
-    300: 83,
-    400: 74,
-    500: 64,
-    600: 55,
-    700: 42,
-    800: 31,
-    900: 21,
-    950: 10,
-  }
-
-  const palette: Partial<ColorPalette> = {}
-
-  for (const shade of SHADE_LEVELS) {
-    const lightness = lightnessMap[shade]
-    const { r, g, b } = hslToRgb(h, s, lightness)
-    palette[shade] = rgbToString(r, g, b)
-  }
-
-  return palette as ColorPalette
+// Interpolate between two RGB colors
+function interpolateRgb(
+  rgb1: { r: number; g: number; b: number },
+  rgb2: { r: number; g: number; b: number },
+  factor: number
+): string {
+  return rgbToString(
+    Math.round(rgb1.r + (rgb2.r - rgb1.r) * factor),
+    Math.round(rgb1.g + (rgb2.g - rgb1.g) * factor),
+    Math.round(rgb1.b + (rgb2.b - rgb1.b) * factor)
+  )
 }
 
 // Apply theme colors as CSS variables (RGB format for Tailwind opacity support)
 export function applyThemeColors(colors: ThemeColors): void {
   const root = document.documentElement
 
-  // Generate palettes from base colors
+  // Generate palettes from status colors
   const accentPalette = generatePalette(colors.accent)
   const successPalette = generatePalette(colors.success)
   const warningPalette = generatePalette(colors.warning)
   const errorPalette = generatePalette(colors.error)
 
-  // Generate dark/light palettes from background colors
-  const darkPalette = generateDarkPalette(colors.darkBackground)
-  const champagnePalette = generateLightPalette(colors.lightBackground)
+  // === DARK THEME PALETTE ===
+  // Convert hex colors to RGB
+  const darkBgRgb = hexToRgb(colors.darkBackground)
+  const darkSurfaceRgb = hexToRgb(colors.darkSurface)
+  const darkTextRgb = hexToRgb(colors.darkText)
+  const darkTextSecRgb = hexToRgb(colors.darkTextSecondary)
 
-  // Apply dark palette
-  for (const shade of [...SHADE_LEVELS, 850] as const) {
-    if (darkPalette[shade as keyof ColorPalette]) {
-      root.style.setProperty(`--color-dark-${shade}`, darkPalette[shade as keyof ColorPalette])
-    }
-  }
+  // Apply dark palette with actual user colors:
+  // Text colors (light shades): 50-100 = primary text, 200-300 = mixed, 400 = secondary text
+  root.style.setProperty('--color-dark-50', rgbToString(darkTextRgb.r, darkTextRgb.g, darkTextRgb.b))
+  root.style.setProperty('--color-dark-100', rgbToString(darkTextRgb.r, darkTextRgb.g, darkTextRgb.b))
+  root.style.setProperty('--color-dark-200', interpolateRgb(darkTextRgb, darkTextSecRgb, 0.33))
+  root.style.setProperty('--color-dark-300', interpolateRgb(darkTextRgb, darkTextSecRgb, 0.66))
+  root.style.setProperty('--color-dark-400', rgbToString(darkTextSecRgb.r, darkTextSecRgb.g, darkTextSecRgb.b))
 
-  // Apply champagne/light palette
-  for (const shade of SHADE_LEVELS) {
-    root.style.setProperty(`--color-champagne-${shade}`, champagnePalette[shade])
-  }
+  // Transition colors (500-700): interpolate between secondary text and surface
+  root.style.setProperty('--color-dark-500', interpolateRgb(darkTextSecRgb, darkSurfaceRgb, 0.4))
+  root.style.setProperty('--color-dark-600', interpolateRgb(darkTextSecRgb, darkSurfaceRgb, 0.6))
+  root.style.setProperty('--color-dark-700', interpolateRgb(darkTextSecRgb, darkSurfaceRgb, 0.8))
 
-  // Apply accent palette
+  // Surface/card colors (800-850): surface color
+  root.style.setProperty('--color-dark-800', rgbToString(darkSurfaceRgb.r, darkSurfaceRgb.g, darkSurfaceRgb.b))
+  root.style.setProperty('--color-dark-850', interpolateRgb(darkSurfaceRgb, darkBgRgb, 0.5))
+
+  // Background colors (900-950): background color
+  root.style.setProperty('--color-dark-900', interpolateRgb(darkSurfaceRgb, darkBgRgb, 0.7))
+  root.style.setProperty('--color-dark-950', rgbToString(darkBgRgb.r, darkBgRgb.g, darkBgRgb.b))
+
+  // === LIGHT THEME PALETTE ===
+  const lightBgRgb = hexToRgb(colors.lightBackground)
+  const lightSurfaceRgb = hexToRgb(colors.lightSurface)
+  const lightTextRgb = hexToRgb(colors.lightText)
+  const lightTextSecRgb = hexToRgb(colors.lightTextSecondary)
+
+  // Apply champagne palette with actual user colors:
+  // Background colors (light shades): 50-100 = surface, 200-400 = background tones
+  root.style.setProperty('--color-champagne-50', rgbToString(lightSurfaceRgb.r, lightSurfaceRgb.g, lightSurfaceRgb.b))
+  root.style.setProperty('--color-champagne-100', interpolateRgb(lightSurfaceRgb, lightBgRgb, 0.3))
+  root.style.setProperty('--color-champagne-200', rgbToString(lightBgRgb.r, lightBgRgb.g, lightBgRgb.b))
+  root.style.setProperty('--color-champagne-300', interpolateRgb(lightBgRgb, lightTextSecRgb, 0.2))
+  root.style.setProperty('--color-champagne-400', interpolateRgb(lightBgRgb, lightTextSecRgb, 0.4))
+
+  // Transition colors (500-600): between bg and text
+  root.style.setProperty('--color-champagne-500', interpolateRgb(lightBgRgb, lightTextSecRgb, 0.6))
+  root.style.setProperty('--color-champagne-600', rgbToString(lightTextSecRgb.r, lightTextSecRgb.g, lightTextSecRgb.b))
+
+  // Text colors (700-950): secondary to primary text
+  root.style.setProperty('--color-champagne-700', interpolateRgb(lightTextSecRgb, lightTextRgb, 0.33))
+  root.style.setProperty('--color-champagne-800', interpolateRgb(lightTextSecRgb, lightTextRgb, 0.66))
+  root.style.setProperty('--color-champagne-900', rgbToString(lightTextRgb.r, lightTextRgb.g, lightTextRgb.b))
+  root.style.setProperty('--color-champagne-950', rgbToString(lightTextRgb.r, lightTextRgb.g, lightTextRgb.b))
+
+  // === STATUS COLOR PALETTES ===
   for (const shade of SHADE_LEVELS) {
     root.style.setProperty(`--color-accent-${shade}`, accentPalette[shade])
-  }
-
-  // Apply success palette
-  for (const shade of SHADE_LEVELS) {
     root.style.setProperty(`--color-success-${shade}`, successPalette[shade])
-  }
-
-  // Apply warning palette
-  for (const shade of SHADE_LEVELS) {
     root.style.setProperty(`--color-warning-${shade}`, warningPalette[shade])
-  }
-
-  // Apply error palette
-  for (const shade of SHADE_LEVELS) {
     root.style.setProperty(`--color-error-${shade}`, errorPalette[shade])
   }
 
-  // Apply semantic colors (hex for direct use in some places)
+  // Apply semantic colors (hex for direct use)
   root.style.setProperty('--color-dark-bg', colors.darkBackground)
   root.style.setProperty('--color-dark-surface', colors.darkSurface)
   root.style.setProperty('--color-dark-text', colors.darkText)

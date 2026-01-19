@@ -1003,6 +1003,11 @@
 }
 
 /* Fortune Wheel animations */
+@keyframes wheel-shimmer {
+  0% { background-position: 200% 50%; }
+  100% { background-position: -200% 50%; }
+}
+
 @keyframes wheel-glow {
   0%, 100% { filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3)); }
   50% { filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.6)); }
@@ -1049,4 +1054,100 @@
 @keyframes shrink {
   from { width: 100%; }
   to { width: 0%; }
+}
+
+/* ========== ANIMATED BACKGROUND (GPU Optimized) ========== */
+.wave-bg-container {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict; /* Performance: isolate repaints */
+}
+
+.wave-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px); /* Reduced from 80px for better performance */
+  opacity: 0.5;
+  /* GPU acceleration */
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Smaller sizes for better performance */
+.wave-blob-1 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(var(--color-accent-500), 0.6) 0%, transparent 70%);
+  top: -15%;
+  left: -10%;
+  animation: wave1 20s ease-in-out infinite; /* Slower = less CPU */
+}
+
+.wave-blob-2 {
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.6) 0%, transparent 70%);
+  bottom: -10%;
+  right: -10%;
+  animation: wave2 25s ease-in-out infinite;
+}
+
+.wave-blob-3 {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, transparent 70%);
+  top: 40%;
+  left: 40%;
+  animation: wave3 30s ease-in-out infinite;
+}
+
+.wave-blob-4 {
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.35) 0%, transparent 70%);
+  bottom: 25%;
+  left: 15%;
+  animation: wave4 22s ease-in-out infinite;
+}
+
+/* Simplified keyframes - fewer steps = better performance */
+@keyframes wave1 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(8%, 12%, 0) scale(1.05); }
+}
+
+@keyframes wave2 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-10%, -8%, 0) scale(1.08); }
+}
+
+@keyframes wave3 {
+  0%, 100% { transform: translate3d(-50%, -50%, 0) scale(1); }
+  50% { transform: translate3d(-45%, -55%, 0) scale(1.1); }
+}
+
+@keyframes wave4 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(12%, -8%, 0) scale(1.12); }
+}
+
+/* Light theme adjustments */
+.light .wave-blob {
+  opacity: 0.6;
+  filter: blur(70px);
+}
+
+.light .wave-blob-1 {
+  background: radial-gradient(circle, rgba(var(--color-accent-500), 0.7) 0%, transparent 70%);
+}
+
+/* Disable animations for reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .wave-blob {
+    animation: none !important;
+  }
 }

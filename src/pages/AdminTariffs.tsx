@@ -9,8 +9,7 @@ import {
   TariffCreateRequest,
   TariffUpdateRequest,
   PeriodPrice,
-  ServerInfo,
-  ServerTrafficLimit
+  ServerInfo
 } from '../api/tariffs'
 
 // Icons
@@ -146,9 +145,6 @@ function PeriodTariffModal({ tariff, servers, onSave, onClose, isLoading }: Peri
     tariff?.period_prices?.length ? tariff.period_prices : []
   )
   const [selectedSquads, setSelectedSquads] = useState<string[]>(tariff?.allowed_squads || [])
-  const [serverTrafficLimits, setServerTrafficLimits] = useState<Record<string, ServerTrafficLimit>>(
-    tariff?.server_traffic_limits || {}
-  )
   // Докупка трафика
   const [trafficTopupEnabled, setTrafficTopupEnabled] = useState(tariff?.traffic_topup_enabled || false)
   const [maxTopupTrafficGb, setMaxTopupTrafficGb] = useState(tariff?.max_topup_traffic_gb || 0)
@@ -159,6 +155,18 @@ function PeriodTariffModal({ tariff, servers, onSave, onClose, isLoading }: Peri
   // Режим сброса трафика
   const [trafficResetMode, setTrafficResetMode] = useState<string | null>(tariff?.traffic_reset_mode || null)
 
+  // Плавающий тариф - произвольное количество дней
+  const [customDaysEnabled, setCustomDaysEnabled] = useState(tariff?.custom_days_enabled || false)
+  const [pricePerDayKopeks, setPricePerDayKopeks] = useState(tariff?.price_per_day_kopeks || 0)
+  const [minDays, setMinDays] = useState(tariff?.min_days || 1)
+  const [maxDays, setMaxDays] = useState(tariff?.max_days || 365)
+
+  // Плавающий тариф - произвольный трафик
+  const [customTrafficEnabled, setCustomTrafficEnabled] = useState(tariff?.custom_traffic_enabled || false)
+  const [trafficPricePerGbKopeks, setTrafficPricePerGbKopeks] = useState(tariff?.traffic_price_per_gb_kopeks || 0)
+  const [minTrafficGb, setMinTrafficGb] = useState(tariff?.min_traffic_gb || 1)
+  const [maxTrafficGb, setMaxTrafficGb] = useState(tariff?.max_traffic_gb || 1000)
+
   // Новый период для добавления
   const [newPeriodDays, setNewPeriodDays] = useState(30)
   const [newPeriodPrice, setNewPeriodPrice] = useState(300)
@@ -166,13 +174,6 @@ function PeriodTariffModal({ tariff, servers, onSave, onClose, isLoading }: Peri
   const [activeTab, setActiveTab] = useState<'basic' | 'periods' | 'servers' | 'extra'>('basic')
 
   const handleSubmit = () => {
-    const filteredLimits: Record<string, ServerTrafficLimit> = {}
-    for (const uuid of selectedSquads) {
-      if (serverTrafficLimits[uuid] && serverTrafficLimits[uuid].traffic_limit_gb > 0) {
-        filteredLimits[uuid] = serverTrafficLimits[uuid]
-      }
-    }
-
     const data: TariffCreateRequest | TariffUpdateRequest = {
       name,
       description: description || undefined,
@@ -183,22 +184,23 @@ function PeriodTariffModal({ tariff, servers, onSave, onClose, isLoading }: Peri
       tier_level: tierLevel,
       period_prices: periodPrices.filter(p => p.price_kopeks > 0),
       allowed_squads: selectedSquads,
-      server_traffic_limits: Object.keys(filteredLimits).length > 0 ? filteredLimits : {},
       traffic_topup_enabled: trafficTopupEnabled,
       traffic_topup_packages: trafficTopupPackages,
       max_topup_traffic_gb: maxTopupTrafficGb,
       is_daily: false,
       daily_price_kopeks: 0,
       traffic_reset_mode: trafficResetMode,
+      // Плавающий тариф
+      custom_days_enabled: customDaysEnabled,
+      price_per_day_kopeks: pricePerDayKopeks,
+      min_days: minDays,
+      max_days: maxDays,
+      custom_traffic_enabled: customTrafficEnabled,
+      traffic_price_per_gb_kopeks: trafficPricePerGbKopeks,
+      min_traffic_gb: minTrafficGb,
+      max_traffic_gb: maxTrafficGb,
     }
     onSave(data)
-  }
-
-  const updateServerTrafficLimit = (uuid: string, limitGb: number) => {
-    setServerTrafficLimits(prev => ({
-      ...prev,
-      [uuid]: { traffic_limit_gb: limitGb }
-    }))
   }
 
   const toggleServer = (uuid: string) => {
@@ -430,27 +432,24 @@ function PeriodTariffModal({ tariff, servers, onSave, onClose, isLoading }: Peri
           {activeTab === 'servers' && (
             <div className="space-y-2">
               <p className="text-sm text-dark-400 mb-4">
-                Выберите серверы, доступные на этом тарифе. Можно задать индивидуальный лимит трафика для каждого.
+                Выберите серверы, доступные на этом тарифе.
               </p>
               {servers.length === 0 ? (
                 <p className="text-dark-500 text-center py-4">Нет доступных серверов</p>
               ) : (
                 servers.map(server => {
                   const isSelected = selectedSquads.includes(server.squad_uuid)
-                  const serverLimit = serverTrafficLimits[server.squad_uuid]?.traffic_limit_gb || 0
                   return (
                     <div
                       key={server.id}
-                      className={`p-3 rounded-lg transition-colors ${
+                      onClick={() => toggleServer(server.squad_uuid)}
+                      className={`p-3 rounded-lg transition-colors cursor-pointer ${
                         isSelected
                           ? 'bg-accent-500/20 border border-accent-500/50'
                           : 'bg-dark-700 hover:bg-dark-600 border border-transparent'
                       }`}
                     >
-                      <div
-                        onClick={() => toggleServer(server.squad_uuid)}
-                        className="flex items-center gap-3 cursor-pointer"
-                      >
+                      <div className="flex items-center gap-3">
                         <div className={`w-5 h-5 rounded flex items-center justify-center ${
                           isSelected
                             ? 'bg-accent-500 text-white'
@@ -463,27 +462,6 @@ function PeriodTariffModal({ tariff, servers, onSave, onClose, isLoading }: Peri
                           <span className="text-xs text-dark-500">{server.country_code}</span>
                         )}
                       </div>
-                      {isSelected && (
-                        <div className="mt-2 ml-8 flex items-center gap-2">
-                          <span className="text-xs text-dark-400">Лимит трафика:</span>
-                          <input
-                            type="number"
-                            value={serverLimit}
-                            onClick={e => e.stopPropagation()}
-                            onChange={e => {
-                              e.stopPropagation()
-                              updateServerTrafficLimit(server.squad_uuid, Math.max(0, parseInt(e.target.value) || 0))
-                            }}
-                            className="w-20 px-2 py-1 bg-dark-600 border border-dark-500 rounded text-sm text-dark-100 focus:outline-none focus:border-accent-500"
-                            min={0}
-                            placeholder="0"
-                          />
-                          <span className="text-xs text-dark-400">ГБ</span>
-                          {serverLimit === 0 && (
-                            <span className="text-xs text-dark-500">(использовать общий)</span>
-                          )}
-                        </div>
-                      )}
                     </div>
                   )
                 })
@@ -585,6 +563,124 @@ function PeriodTariffModal({ tariff, servers, onSave, onClose, isLoading }: Peri
                 )}
               </div>
 
+              {/* Плавающий тариф - произвольное количество дней */}
+              <div className="p-4 bg-dark-700/50 rounded-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h4 className="text-sm font-medium text-dark-200">Произвольное количество дней</h4>
+                    <p className="text-xs text-dark-500 mt-1">Пользователь сам выбирает срок подписки</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCustomDaysEnabled(!customDaysEnabled)}
+                    className={`w-10 h-6 rounded-full transition-colors relative ${
+                      customDaysEnabled ? 'bg-accent-500' : 'bg-dark-600'
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                        customDaysEnabled ? 'left-5' : 'left-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+                {customDaysEnabled && (
+                  <div className="space-y-3 pt-2 border-t border-dark-600">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-dark-400 w-32">Цена за день:</span>
+                      <input
+                        type="number"
+                        value={pricePerDayKopeks / 100}
+                        onChange={e => setPricePerDayKopeks(Math.max(0, parseFloat(e.target.value) || 0) * 100)}
+                        className="w-24 px-3 py-2 bg-dark-600 border border-dark-500 rounded-lg text-dark-100 focus:outline-none focus:border-accent-500"
+                        min={0}
+                        step={0.1}
+                      />
+                      <span className="text-dark-400">₽</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-dark-400 w-32">Мин. дней:</span>
+                      <input
+                        type="number"
+                        value={minDays}
+                        onChange={e => setMinDays(Math.max(1, parseInt(e.target.value) || 1))}
+                        className="w-24 px-3 py-2 bg-dark-600 border border-dark-500 rounded-lg text-dark-100 focus:outline-none focus:border-accent-500"
+                        min={1}
+                      />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-dark-400 w-32">Макс. дней:</span>
+                      <input
+                        type="number"
+                        value={maxDays}
+                        onChange={e => setMaxDays(Math.max(1, parseInt(e.target.value) || 1))}
+                        className="w-24 px-3 py-2 bg-dark-600 border border-dark-500 rounded-lg text-dark-100 focus:outline-none focus:border-accent-500"
+                        min={1}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Плавающий тариф - произвольный трафик */}
+              <div className="p-4 bg-dark-700/50 rounded-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h4 className="text-sm font-medium text-dark-200">Произвольный объём трафика</h4>
+                    <p className="text-xs text-dark-500 mt-1">Пользователь сам выбирает объём трафика при покупке</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCustomTrafficEnabled(!customTrafficEnabled)}
+                    className={`w-10 h-6 rounded-full transition-colors relative ${
+                      customTrafficEnabled ? 'bg-accent-500' : 'bg-dark-600'
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                        customTrafficEnabled ? 'left-5' : 'left-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+                {customTrafficEnabled && (
+                  <div className="space-y-3 pt-2 border-t border-dark-600">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-dark-400 w-32">Цена за 1 ГБ:</span>
+                      <input
+                        type="number"
+                        value={trafficPricePerGbKopeks / 100}
+                        onChange={e => setTrafficPricePerGbKopeks(Math.max(0, parseFloat(e.target.value) || 0) * 100)}
+                        className="w-24 px-3 py-2 bg-dark-600 border border-dark-500 rounded-lg text-dark-100 focus:outline-none focus:border-accent-500"
+                        min={0}
+                        step={0.1}
+                      />
+                      <span className="text-dark-400">₽</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-dark-400 w-32">Мин. ГБ:</span>
+                      <input
+                        type="number"
+                        value={minTrafficGb}
+                        onChange={e => setMinTrafficGb(Math.max(1, parseInt(e.target.value) || 1))}
+                        className="w-24 px-3 py-2 bg-dark-600 border border-dark-500 rounded-lg text-dark-100 focus:outline-none focus:border-accent-500"
+                        min={1}
+                      />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-dark-400 w-32">Макс. ГБ:</span>
+                      <input
+                        type="number"
+                        value={maxTrafficGb}
+                        onChange={e => setMaxTrafficGb(Math.max(1, parseInt(e.target.value) || 1))}
+                        className="w-24 px-3 py-2 bg-dark-600 border border-dark-500 rounded-lg text-dark-100 focus:outline-none focus:border-accent-500"
+                        min={1}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Режим сброса трафика */}
               <div className="p-4 bg-dark-700/50 rounded-lg">
                 <h4 className="text-sm font-medium text-dark-200 mb-3">Режим сброса трафика</h4>
@@ -636,7 +732,7 @@ function PeriodTariffModal({ tariff, servers, onSave, onClose, isLoading }: Peri
           </button>
           <button
             onClick={handleSubmit}
-            disabled={!name || periodPrices.length === 0 || isLoading}
+            disabled={!name || (periodPrices.length === 0 && !customDaysEnabled) || isLoading}
             className="px-4 py-2 bg-accent-500 text-white rounded-lg hover:bg-accent-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Сохранение...' : 'Сохранить'}
@@ -668,9 +764,6 @@ function DailyTariffModal({ tariff, servers, onSave, onClose, isLoading }: Daily
   const [tierLevel, setTierLevel] = useState(tariff?.tier_level || 1)
   const [dailyPriceKopeks, setDailyPriceKopeks] = useState(tariff?.daily_price_kopeks || 0)
   const [selectedSquads, setSelectedSquads] = useState<string[]>(tariff?.allowed_squads || [])
-  const [serverTrafficLimits, setServerTrafficLimits] = useState<Record<string, ServerTrafficLimit>>(
-    tariff?.server_traffic_limits || {}
-  )
   // Докупка трафика
   const [trafficTopupEnabled, setTrafficTopupEnabled] = useState(tariff?.traffic_topup_enabled || false)
   const [maxTopupTrafficGb, setMaxTopupTrafficGb] = useState(tariff?.max_topup_traffic_gb || 0)
@@ -684,13 +777,6 @@ function DailyTariffModal({ tariff, servers, onSave, onClose, isLoading }: Daily
   const [activeTab, setActiveTab] = useState<'basic' | 'servers' | 'extra'>('basic')
 
   const handleSubmit = () => {
-    const filteredLimits: Record<string, ServerTrafficLimit> = {}
-    for (const uuid of selectedSquads) {
-      if (serverTrafficLimits[uuid] && serverTrafficLimits[uuid].traffic_limit_gb > 0) {
-        filteredLimits[uuid] = serverTrafficLimits[uuid]
-      }
-    }
-
     const data: TariffCreateRequest | TariffUpdateRequest = {
       name,
       description: description || undefined,
@@ -701,7 +787,6 @@ function DailyTariffModal({ tariff, servers, onSave, onClose, isLoading }: Daily
       tier_level: tierLevel,
       period_prices: [],
       allowed_squads: selectedSquads,
-      server_traffic_limits: Object.keys(filteredLimits).length > 0 ? filteredLimits : {},
       traffic_topup_enabled: trafficTopupEnabled,
       traffic_topup_packages: trafficTopupPackages,
       max_topup_traffic_gb: maxTopupTrafficGb,
@@ -710,13 +795,6 @@ function DailyTariffModal({ tariff, servers, onSave, onClose, isLoading }: Daily
       traffic_reset_mode: trafficResetMode,
     }
     onSave(data)
-  }
-
-  const updateServerTrafficLimit = (uuid: string, limitGb: number) => {
-    setServerTrafficLimits(prev => ({
-      ...prev,
-      [uuid]: { traffic_limit_gb: limitGb }
-    }))
   }
 
   const toggleServer = (uuid: string) => {
@@ -870,20 +948,17 @@ function DailyTariffModal({ tariff, servers, onSave, onClose, isLoading }: Daily
               ) : (
                 servers.map(server => {
                   const isSelected = selectedSquads.includes(server.squad_uuid)
-                  const serverLimit = serverTrafficLimits[server.squad_uuid]?.traffic_limit_gb || 0
                   return (
                     <div
                       key={server.id}
-                      className={`p-3 rounded-lg transition-colors ${
+                      onClick={() => toggleServer(server.squad_uuid)}
+                      className={`p-3 rounded-lg transition-colors cursor-pointer ${
                         isSelected
                           ? 'bg-amber-500/20 border border-amber-500/50'
                           : 'bg-dark-700 hover:bg-dark-600 border border-transparent'
                       }`}
                     >
-                      <div
-                        onClick={() => toggleServer(server.squad_uuid)}
-                        className="flex items-center gap-3 cursor-pointer"
-                      >
+                      <div className="flex items-center gap-3">
                         <div className={`w-5 h-5 rounded flex items-center justify-center ${
                           isSelected
                             ? 'bg-amber-500 text-white'
@@ -896,26 +971,6 @@ function DailyTariffModal({ tariff, servers, onSave, onClose, isLoading }: Daily
                           <span className="text-xs text-dark-500">{server.country_code}</span>
                         )}
                       </div>
-                      {isSelected && (
-                        <div className="mt-2 ml-8 flex items-center gap-2">
-                          <span className="text-xs text-dark-400">Лимит трафика:</span>
-                          <input
-                            type="number"
-                            value={serverLimit}
-                            onClick={e => e.stopPropagation()}
-                            onChange={e => {
-                              e.stopPropagation()
-                              updateServerTrafficLimit(server.squad_uuid, Math.max(0, parseInt(e.target.value) || 0))
-                            }}
-                            className="w-20 px-2 py-1 bg-dark-600 border border-dark-500 rounded text-sm text-dark-100 focus:outline-none focus:border-amber-500"
-                            min={0}
-                          />
-                          <span className="text-xs text-dark-400">ГБ</span>
-                          {serverLimit === 0 && (
-                            <span className="text-xs text-dark-500">(использовать общий)</span>
-                          )}
-                        </div>
-                      )}
                     </div>
                   )
                 })
