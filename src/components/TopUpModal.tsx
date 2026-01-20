@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from '@tanstack/react-query'
 import { balanceApi } from '../api/balance'
@@ -54,6 +54,35 @@ export default function TopUpModal({ method, onClose, initialAmountRubles }: Top
     method.options && method.options.length > 0 ? method.options[0].id : null
   )
   const popupRef = useRef<Window | null>(null)
+
+  // Scroll lock when modal is open
+  useEffect(() => {
+    const scrollY = window.scrollY
+
+    // Prevent all touch/wheel scroll on backdrop
+    const preventScroll = (e: TouchEvent) => {
+      const target = e.target as HTMLElement
+      if (target.closest('[data-modal-content]')) return
+      e.preventDefault()
+    }
+
+    const preventWheel = (e: WheelEvent) => {
+      const target = e.target as HTMLElement
+      if (target.closest('[data-modal-content]')) return
+      e.preventDefault()
+    }
+
+    document.addEventListener('touchmove', preventScroll, { passive: false })
+    document.addEventListener('wheel', preventWheel, { passive: false })
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.removeEventListener('touchmove', preventScroll)
+      document.removeEventListener('wheel', preventWheel)
+      document.body.style.overflow = ''
+      window.scrollTo(0, scrollY)
+    }
+  }, [])
 
   const hasOptions = method.options && method.options.length > 0
   const minRubles = method.min_amount_kopeks / 100
@@ -132,11 +161,28 @@ export default function TopUpModal({ method, onClose, initialAmountRubles }: Top
     : convertAmount(rub).toFixed(currencyDecimals)
   const isPending = topUpMutation.isPending || starsPaymentMutation.isPending
 
-  return (
-    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4 pt-14 pb-28 sm:pt-0 sm:pb-0">
-      <div className="absolute inset-0" onClick={onClose} />
+  // Auto-focus input on mount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      inputRef.current?.focus()
+    }, 100)
+    return () => clearTimeout(timer)
+  }, [])
 
-      <div className="relative w-full max-w-sm bg-dark-900 rounded-2xl border border-dark-700/50 shadow-2xl overflow-hidden">
+  return (
+    <div
+      className="fixed inset-0 bg-black/70 z-[60] flex items-start justify-center p-4 pt-8 overflow-hidden"
+      style={{
+        paddingTop: `max(2rem, calc(1rem + env(safe-area-inset-top, 0px)))`,
+        paddingBottom: `max(1rem, env(safe-area-inset-bottom, 0px))`,
+      }}
+      onClick={onClose}
+    >
+      <div
+        data-modal-content
+        className="w-full max-w-sm bg-dark-900 rounded-2xl border border-dark-700/50 shadow-2xl overflow-hidden animate-scale-in"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 bg-dark-800/50">
           <span className="font-semibold text-dark-100">{methodName}</span>

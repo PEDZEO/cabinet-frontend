@@ -68,6 +68,12 @@ export default function Referral() {
 		queryFn: referralApi.getReferralInfo,
 	})
 
+	// Build referral link using frontend env variable for correct bot username
+	const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME
+	const referralLink = info?.referral_code && botUsername
+		? `https://t.me/${botUsername}?start=${info.referral_code}`
+		: info?.referral_link || ''
+
 	const { data: terms } = useQuery({
 		queryKey: ['referral-terms'],
 		queryFn: referralApi.getReferralTerms,
@@ -90,15 +96,15 @@ export default function Referral() {
 	})
 
 	const copyLink = () => {
-		if (info?.referral_link) {
-			navigator.clipboard.writeText(info.referral_link)
+		if (referralLink) {
+			navigator.clipboard.writeText(referralLink)
 			setCopied(true)
 			setTimeout(() => setCopied(false), 2000)
 		}
 	}
 
 	const shareLink = () => {
-		if (!info?.referral_link) return
+		if (!referralLink) return
 		const shareText = t('referral.shareMessage', {
 			percent: info?.commission_percent || 0,
 			botName: branding?.name || import.meta.env.VITE_APP_NAME || 'Cabinet',
@@ -109,7 +115,7 @@ export default function Referral() {
 				.share({
 					title: t('referral.title'),
 					text: shareText,
-					url: info.referral_link,
+					url: referralLink,
 				})
 				.catch(() => {
 					// ignore cancellation errors
@@ -118,7 +124,7 @@ export default function Referral() {
 		}
 
 		const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(
-			info.referral_link
+			referralLink
 		)}&text=${encodeURIComponent(shareText)}`
 		window.open(telegramUrl, '_blank', 'noopener,noreferrer')
 	}
@@ -176,16 +182,16 @@ export default function Referral() {
 					<input
 						type='text'
 						readOnly
-						value={info?.referral_link || ''}
+						value={referralLink}
 						className='input flex-1'
 					/>
 					<div className='flex gap-2'>
 						<button
 							onClick={copyLink}
-							disabled={!info?.referral_link}
+							disabled={!referralLink}
 							className={`btn-primary px-5 ${
 								copied ? 'bg-success-500 hover:bg-success-500' : ''
-							} ${!info?.referral_link ? 'opacity-50 cursor-not-allowed' : ''}`}
+							} ${!referralLink ? 'opacity-50 cursor-not-allowed' : ''}`}
 						>
 							{copied ? <CheckIcon /> : <CopyIcon />}
 							<span className='ml-2'>
@@ -194,9 +200,9 @@ export default function Referral() {
 						</button>
 						<button
 							onClick={shareLink}
-							disabled={!info?.referral_link}
+							disabled={!referralLink}
 							className={`btn-secondary px-5 flex items-center ${
-								!info?.referral_link ? 'opacity-50 cursor-not-allowed' : ''
+								!referralLink ? 'opacity-50 cursor-not-allowed' : ''
 							}`}
 						>
 							<ShareIcon />
