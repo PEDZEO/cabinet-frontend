@@ -87,6 +87,7 @@ export function ColorPicker({ value, onChange, label, description, disabled }: C
   const handleColorInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newColor = e.target.value
     setLocalValue(newColor)
+    setRgb(hexToRgb(newColor))
     onChange(newColor)
   }
 
@@ -102,8 +103,9 @@ export function ColorPicker({ value, onChange, label, description, disabled }: C
     if (newValue === '' || newValue.match(/^#[0-9A-Fa-f]{0,6}$/)) {
       setLocalValue(newValue)
 
-      // Only trigger onChange for valid complete hex
+      // Only trigger onChange and update RGB for valid complete hex
       if (newValue.match(/^#[0-9A-Fa-f]{6}$/)) {
+        setRgb(hexToRgb(newValue))
         onChange(newValue)
       }
     }
@@ -111,6 +113,7 @@ export function ColorPicker({ value, onChange, label, description, disabled }: C
 
   const handlePresetClick = (color: string) => {
     setLocalValue(color)
+    setRgb(hexToRgb(color))
     onChange(color)
     setIsOpen(false)
   }
@@ -178,71 +181,90 @@ export function ColorPicker({ value, onChange, label, description, disabled }: C
 
       {/* Dropdown with presets and RGB sliders */}
       {isOpen && (
-        <div className="absolute z-50 mt-2 p-3 bg-dark-800 rounded-xl border border-dark-700 shadow-xl animate-fade-in w-72">
-          {/* RGB Sliders - shown in Telegram instead of native picker */}
-          {isTelegram && (
-            <div className="mb-3 pb-3 border-b border-dark-700">
-              <div className="text-xs text-dark-400 mb-2">RGB</div>
-              <div className="space-y-2">
-                {/* Red */}
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-red-400 w-4">R</span>
-                  <input
-                    type="range"
-                    min="0"
-                    max="255"
-                    value={rgb.r}
-                    onChange={(e) => handleRgbChange('r', parseInt(e.target.value))}
-                    className="flex-1 h-2 rounded-full appearance-none cursor-pointer"
-                    style={{
-                      background: `linear-gradient(to right, rgb(0,${rgb.g},${rgb.b}), rgb(255,${rgb.g},${rgb.b}))`,
-                    }}
-                  />
-                  <span className="text-xs text-dark-400 w-8 text-right">{rgb.r}</span>
-                </div>
-                {/* Green */}
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-green-400 w-4">G</span>
-                  <input
-                    type="range"
-                    min="0"
-                    max="255"
-                    value={rgb.g}
-                    onChange={(e) => handleRgbChange('g', parseInt(e.target.value))}
-                    className="flex-1 h-2 rounded-full appearance-none cursor-pointer"
-                    style={{
-                      background: `linear-gradient(to right, rgb(${rgb.r},0,${rgb.b}), rgb(${rgb.r},255,${rgb.b}))`,
-                    }}
-                  />
-                  <span className="text-xs text-dark-400 w-8 text-right">{rgb.g}</span>
-                </div>
-                {/* Blue */}
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-blue-400 w-4">B</span>
-                  <input
-                    type="range"
-                    min="0"
-                    max="255"
-                    value={rgb.b}
-                    onChange={(e) => handleRgbChange('b', parseInt(e.target.value))}
-                    className="flex-1 h-2 rounded-full appearance-none cursor-pointer"
-                    style={{
-                      background: `linear-gradient(to right, rgb(${rgb.r},${rgb.g},0), rgb(${rgb.r},${rgb.g},255))`,
-                    }}
-                  />
-                  <span className="text-xs text-dark-400 w-8 text-right">{rgb.b}</span>
-                </div>
+        <div className="absolute z-50 mt-2 p-3 sm:p-4 bg-dark-800 rounded-xl border border-dark-700 shadow-xl animate-fade-in w-[calc(100vw-2rem)] sm:w-80 max-w-sm left-0 sm:left-auto">
+          {/* RGB Sliders - always visible on all devices */}
+          <div className="mb-3 pb-3 border-b border-dark-700">
+            <div className="text-xs text-dark-400 mb-3">RGB</div>
+            <div className="space-y-3 sm:space-y-2">
+              {/* Red */}
+              <div className="flex items-center gap-2 sm:gap-3">
+                <span className="text-xs font-medium text-red-400 w-4 flex-shrink-0">R</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="255"
+                  value={rgb.r}
+                  onChange={(e) => handleRgbChange('r', parseInt(e.target.value))}
+                  className="flex-1 h-3 sm:h-2 rounded-full appearance-none cursor-pointer touch-pan-x"
+                  style={{
+                    background: `linear-gradient(to right, rgb(0,${rgb.g},${rgb.b}), rgb(255,${rgb.g},${rgb.b}))`,
+                  }}
+                />
+                <input
+                  type="number"
+                  min="0"
+                  max="255"
+                  value={rgb.r}
+                  onChange={(e) => handleRgbChange('r', Math.min(255, Math.max(0, parseInt(e.target.value) || 0)))}
+                  className="w-14 sm:w-12 text-xs text-center bg-dark-700 border border-dark-600 rounded px-1 py-1 text-dark-200"
+                />
+              </div>
+              {/* Green */}
+              <div className="flex items-center gap-2 sm:gap-3">
+                <span className="text-xs font-medium text-green-400 w-4 flex-shrink-0">G</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="255"
+                  value={rgb.g}
+                  onChange={(e) => handleRgbChange('g', parseInt(e.target.value))}
+                  className="flex-1 h-3 sm:h-2 rounded-full appearance-none cursor-pointer touch-pan-x"
+                  style={{
+                    background: `linear-gradient(to right, rgb(${rgb.r},0,${rgb.b}), rgb(${rgb.r},255,${rgb.b}))`,
+                  }}
+                />
+                <input
+                  type="number"
+                  min="0"
+                  max="255"
+                  value={rgb.g}
+                  onChange={(e) => handleRgbChange('g', Math.min(255, Math.max(0, parseInt(e.target.value) || 0)))}
+                  className="w-14 sm:w-12 text-xs text-center bg-dark-700 border border-dark-600 rounded px-1 py-1 text-dark-200"
+                />
+              </div>
+              {/* Blue */}
+              <div className="flex items-center gap-2 sm:gap-3">
+                <span className="text-xs font-medium text-blue-400 w-4 flex-shrink-0">B</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="255"
+                  value={rgb.b}
+                  onChange={(e) => handleRgbChange('b', parseInt(e.target.value))}
+                  className="flex-1 h-3 sm:h-2 rounded-full appearance-none cursor-pointer touch-pan-x"
+                  style={{
+                    background: `linear-gradient(to right, rgb(${rgb.r},${rgb.g},0), rgb(${rgb.r},${rgb.g},255))`,
+                  }}
+                />
+                <input
+                  type="number"
+                  min="0"
+                  max="255"
+                  value={rgb.b}
+                  onChange={(e) => handleRgbChange('b', Math.min(255, Math.max(0, parseInt(e.target.value) || 0)))}
+                  className="w-14 sm:w-12 text-xs text-center bg-dark-700 border border-dark-600 rounded px-1 py-1 text-dark-200"
+                />
               </div>
             </div>
-          )}
+          </div>
 
           <div className="text-xs text-dark-400 mb-2">Preset colors</div>
-          <div className="grid grid-cols-4 gap-1">
+          <div className="grid grid-cols-4 gap-2 sm:gap-1">
             {PRESET_COLORS.map((preset) => (
               <button
                 key={preset}
                 onClick={() => handlePresetClick(preset)}
-                className={`min-w-[44px] min-h-[44px] w-full aspect-square rounded-lg border-2 transition-all hover:scale-105 ${
+                className={`min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] w-full aspect-square rounded-lg border-2 transition-all hover:scale-105 active:scale-95 ${
                   localValue.toLowerCase() === preset.toLowerCase() ? 'border-white ring-2 ring-white/30' : 'border-dark-600 hover:border-dark-500'
                 }`}
                 style={{ backgroundColor: preset }}
