@@ -44,8 +44,9 @@ export default function ChannelSubscriptionScreen() {
     try {
       // Make any authenticated request - if channel check passes, it will succeed
       await apiClient.get('/cabinet/auth/me')
-      // If we get here, subscription is valid
+      // If we get here, subscription is valid - reload page
       clearBlocking()
+      window.location.reload()
     } catch (err: unknown) {
       // Check if it's still a channel subscription error
       const error = err as { response?: { status?: number; data?: { detail?: { code?: string } } } }
