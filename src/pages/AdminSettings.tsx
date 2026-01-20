@@ -2,75 +2,39 @@ import { useState, useMemo, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { adminSettingsApi, SettingDefinition, SettingCategorySummary } from '../api/adminSettings'
+import { adminSettingsApi, SettingDefinition } from '../api/adminSettings'
 import { brandingApi, setCachedBranding } from '../api/branding'
 import { setCachedAnimationEnabled } from '../components/AnimatedBackground'
 import { setCachedFullscreenEnabled } from '../hooks/useTelegramWebApp'
 import { themeColorsApi } from '../api/themeColors'
-import { ThemeColors, DEFAULT_THEME_COLORS, DEFAULT_ENABLED_THEMES } from '../types/theme'
+import { ThemeColors, DEFAULT_THEME_COLORS } from '../types/theme'
 import { ColorPicker } from '../components/ColorPicker'
 import { applyThemeColors } from '../hooks/useThemeColors'
 import { updateEnabledThemesCache } from '../hooks/useTheme'
+import { useFavoriteSettings } from '../hooks/useFavoriteSettings'
 
-// Icons
+// ============ ICONS ============
 const BackIcon = () => (
-  <svg className="w-5 h-5 text-dark-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-  </svg>
-)
-
-const CogIcon = () => (
-  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-  </svg>
-)
-
-const CheckIcon = () => (
-  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-  </svg>
-)
-
-const RefreshIcon = () => (
-  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-  </svg>
-)
-
-const LockIcon = () => (
-  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-  </svg>
-)
-
-const CloseIcon = () => (
-  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-  </svg>
-)
-
-const ChevronRightIcon = () => (
-  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-  </svg>
-)
-
-const ChevronDownIcon = () => (
-  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-  </svg>
-)
-
-const WarningIcon = () => (
-  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
   </svg>
 )
 
 const SearchIcon = () => (
   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+  </svg>
+)
+
+const StarIcon = ({ filled }: { filled?: boolean }) => (
+  <svg className="w-5 h-5" fill={filled ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+  </svg>
+)
+
+const ChevronDownIcon = () => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
   </svg>
 )
 
@@ -92,880 +56,30 @@ const PencilIcon = () => (
   </svg>
 )
 
-// Meta-categories for grouping
-const META_CATEGORIES: Record<string, { label: string; emoji: string; categories: string[] }> = {
-  payments: {
-    label: 'Платежные системы',
-    emoji: '💳',
-    categories: ['PAYMENT', 'PAYMENT_VERIFICATION', 'YOOKASSA', 'CRYPTOBOT', 'HELEKET', 'PLATEGA', 'TRIBUTE', 'MULENPAY', 'PAL24', 'WATA', 'TELEGRAM'],
-  },
-  subscriptions: {
-    label: 'Подписки и тарифы',
-    emoji: '📅',
-    categories: ['SUBSCRIPTIONS_CORE', 'SIMPLE_SUBSCRIPTION', 'PERIODS', 'SUBSCRIPTION_PRICES', 'TRAFFIC', 'TRAFFIC_PACKAGES', 'TRIAL', 'AUTOPAY'],
-  },
-  interface: {
-    label: 'Интерфейс',
-    emoji: '🎨',
-    categories: ['INTERFACE', 'INTERFACE_BRANDING', 'INTERFACE_SUBSCRIPTION', 'CONNECT_BUTTON', 'MINIAPP', 'HAPP', 'SKIP', 'ADDITIONAL'],
-  },
-  notifications: {
-    label: 'Уведомления',
-    emoji: '🔔',
-    categories: ['NOTIFICATIONS', 'ADMIN_NOTIFICATIONS', 'ADMIN_REPORTS'],
-  },
-  database: {
-    label: 'База данных',
-    emoji: '💾',
-    categories: ['DATABASE', 'POSTGRES', 'SQLITE', 'REDIS'],
-  },
-  system: {
-    label: 'Система',
-    emoji: '⚙️',
-    categories: ['CORE', 'REMNAWAVE', 'SERVER_STATUS', 'MONITORING', 'MAINTENANCE', 'BACKUP', 'VERSION', 'WEB_API', 'WEBHOOK', 'LOG', 'DEBUG', 'EXTERNAL_ADMIN'],
-  },
-  users: {
-    label: 'Пользователи',
-    emoji: '👥',
-    categories: ['SUPPORT', 'LOCALIZATION', 'CHANNEL', 'TIMEZONE', 'REFERRAL', 'MODERATION'],
-  },
-}
+const RefreshIcon = () => (
+  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+  </svg>
+)
 
-// Theme presets - predefined color schemes
-const THEME_PRESETS: { name: string; colors: ThemeColors }[] = [
-  {
-    name: 'Стандарт',
-    colors: DEFAULT_THEME_COLORS,
-  },
-  {
-    name: 'Океан',
-    colors: {
-      accent: '#0ea5e9',
-      darkBackground: '#0c1222',
-      darkSurface: '#1e293b',
-      darkText: '#f1f5f9',
-      darkTextSecondary: '#94a3b8',
-      lightBackground: '#e0f2fe',
-      lightSurface: '#f0f9ff',
-      lightText: '#0c4a6e',
-      lightTextSecondary: '#0369a1',
-      success: '#22c55e',
-      warning: '#f59e0b',
-      error: '#ef4444',
-    },
-  },
-  {
-    name: 'Лес',
-    colors: {
-      accent: '#22c55e',
-      darkBackground: '#0a1a0f',
-      darkSurface: '#14532d',
-      darkText: '#f0fdf4',
-      darkTextSecondary: '#86efac',
-      lightBackground: '#dcfce7',
-      lightSurface: '#f0fdf4',
-      lightText: '#14532d',
-      lightTextSecondary: '#166534',
-      success: '#22c55e',
-      warning: '#f59e0b',
-      error: '#ef4444',
-    },
-  },
-  {
-    name: 'Закат',
-    colors: {
-      accent: '#f97316',
-      darkBackground: '#1c1009',
-      darkSurface: '#2d1a0e',
-      darkText: '#fff7ed',
-      darkTextSecondary: '#fdba74',
-      lightBackground: '#ffedd5',
-      lightSurface: '#fff7ed',
-      lightText: '#7c2d12',
-      lightTextSecondary: '#c2410c',
-      success: '#22c55e',
-      warning: '#f59e0b',
-      error: '#ef4444',
-    },
-  },
-  {
-    name: 'Фиолет',
-    colors: {
-      accent: '#a855f7',
-      darkBackground: '#0f0a1a',
-      darkSurface: '#1e1b2e',
-      darkText: '#faf5ff',
-      darkTextSecondary: '#c4b5fd',
-      lightBackground: '#f3e8ff',
-      lightSurface: '#faf5ff',
-      lightText: '#581c87',
-      lightTextSecondary: '#7e22ce',
-      success: '#22c55e',
-      warning: '#f59e0b',
-      error: '#ef4444',
-    },
-  },
-  {
-    name: 'Роза',
-    colors: {
-      accent: '#f43f5e',
-      darkBackground: '#1a0a10',
-      darkSurface: '#2d1520',
-      darkText: '#fff1f2',
-      darkTextSecondary: '#fda4af',
-      lightBackground: '#ffe4e6',
-      lightSurface: '#fff1f2',
-      lightText: '#881337',
-      lightTextSecondary: '#be123c',
-      success: '#22c55e',
-      warning: '#f59e0b',
-      error: '#ef4444',
-    },
-  },
-  {
-    name: 'Полночь',
-    colors: {
-      accent: '#6366f1',
-      darkBackground: '#030712',
-      darkSurface: '#111827',
-      darkText: '#f9fafb',
-      darkTextSecondary: '#9ca3af',
-      lightBackground: '#e5e7eb',
-      lightSurface: '#f3f4f6',
-      lightText: '#111827',
-      lightTextSecondary: '#4b5563',
-      success: '#22c55e',
-      warning: '#f59e0b',
-      error: '#ef4444',
-    },
-  },
-  {
-    name: 'Бирюза',
-    colors: {
-      accent: '#14b8a6',
-      darkBackground: '#0a1614',
-      darkSurface: '#134e4a',
-      darkText: '#f0fdfa',
-      darkTextSecondary: '#5eead4',
-      lightBackground: '#ccfbf1',
-      lightSurface: '#f0fdfa',
-      lightText: '#134e4a',
-      lightTextSecondary: '#0f766e',
-      success: '#22c55e',
-      warning: '#f59e0b',
-      error: '#ef4444',
-    },
-  },
-]
+const LockIcon = () => (
+  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+  </svg>
+)
 
-// Setting translations (name + description) - comprehensive list
-const SETTING_TRANSLATIONS: Record<string, { name: string; description: string }> = {
-  // CORE
-  BOT_USERNAME: { name: 'Username бота', description: 'Имя бота в Telegram' },
-  // SUPPORT
-  SUPPORT_USERNAME: { name: 'Username поддержки', description: 'Telegram @username поддержки' },
-  SUPPORT_MENU_ENABLED: { name: 'Меню поддержки', description: 'Показывать раздел поддержки' },
-  SUPPORT_SYSTEM_MODE: { name: 'Режим поддержки', description: 'tickets/contact/both' },
-  MINIAPP_TICKETS_ENABLED: { name: 'Тикеты в MiniApp', description: 'Включить раздел тикетов в MiniApp' },
-  MINIAPP_SUPPORT_TYPE: { name: 'Тип поддержки MiniApp', description: 'tickets - показать тикеты, profile - перейти в профиль бота, url - открыть внешнюю ссылку' },
-  MINIAPP_SUPPORT_URL: { name: 'URL поддержки MiniApp', description: 'Внешняя ссылка для поддержки (только для type=url)' },
-  SUPPORT_TICKET_SLA_ENABLED: { name: 'SLA', description: 'Контроль времени ответа' },
-  SUPPORT_TICKET_SLA_MINUTES: { name: 'SLA (мин)', description: 'Время на ответ' },
-  SUPPORT_TICKET_SLA_CHECK_INTERVAL_SECONDS: { name: 'Интервал SLA', description: 'Проверка просроченных (сек)' },
-  SUPPORT_TICKET_SLA_REMINDER_COOLDOWN_MINUTES: { name: 'Кулдаун SLA', description: 'Мин. между напоминаниями' },
-  SUPPORT_TOPUP_ENABLED: { name: 'Пополнение', description: 'Кнопка пополнения в поддержке' },
-  // ADMIN NOTIFICATIONS
-  ADMIN_NOTIFICATIONS_ENABLED: { name: 'Уведомления', description: 'Отправлять админам' },
-  ADMIN_NOTIFICATIONS_CHAT_ID: { name: 'Chat ID', description: 'ID чата для уведомлений' },
-  ADMIN_NOTIFICATIONS_TOPIC_ID: { name: 'Topic ID', description: 'ID топика' },
-  ADMIN_NOTIFICATIONS_TICKET_TOPIC_ID: { name: 'Topic тикетов', description: 'ID топика тикетов' },
-  // ADMIN REPORTS
-  ADMIN_REPORTS_ENABLED: { name: 'Отчёты', description: 'Автоматические отчёты' },
-  ADMIN_REPORTS_CHAT_ID: { name: 'Chat ID', description: 'ID чата отчётов' },
-  ADMIN_REPORTS_TOPIC_ID: { name: 'Topic ID', description: 'ID топика отчётов' },
-  ADMIN_REPORTS_SEND_TIME: { name: 'Время', description: 'Время отправки (HH:MM)' },
-  // CHANNEL
-  CHANNEL_SUB_ID: { name: 'ID канала', description: 'Telegram ID канала' },
-  CHANNEL_LINK: { name: 'Ссылка', description: 'Ссылка на канал' },
-  CHANNEL_IS_REQUIRED_SUB: { name: 'Обязательно', description: 'Требовать подписку' },
-  // LOCALIZATION
-  DEFAULT_LANGUAGE: { name: 'Язык', description: 'Язык по умолчанию' },
-  AVAILABLE_LANGUAGES: { name: 'Языки', description: 'Доступные языки' },
-  LANGUAGE_SELECTION_ENABLED: { name: 'Выбор языка', description: 'Разрешить выбор' },
-  LOCALES_PATH: { name: 'Путь', description: 'Путь к локалям' },
-  // TIMEZONE
-  TIMEZONE: { name: 'Часовой пояс', description: 'Временная зона' },
-  // SUBSCRIPTIONS
-  DEFAULT_DEVICE_LIMIT: { name: 'Устройств', description: 'По умолчанию' },
-  DEFAULT_TRAFFIC_LIMIT_GB: { name: 'Трафик (ГБ)', description: '0 = безлимит' },
-  MAX_DEVICES_LIMIT: { name: 'Макс. устройств', description: 'Максимум' },
-  PRICE_PER_DEVICE: { name: 'Цена/устройство', description: 'Доплата (коп.)' },
-  DEVICES_SELECTION_ENABLED: { name: 'Выбор устройств', description: 'Разрешить выбор' },
-  DEVICES_SELECTION_DISABLED_AMOUNT: { name: 'При откл. выборе', description: 'Кол-во устройств' },
-  BASE_SUBSCRIPTION_PRICE: { name: 'Базовая цена', description: 'Стоимость (коп.)' },
-  BASE_PROMO_GROUP_PERIOD_DISCOUNTS_ENABLED: { name: 'Скидки', description: 'На длинные периоды' },
-  BASE_PROMO_GROUP_PERIOD_DISCOUNTS: { name: 'Настройка скидок', description: 'дни:процент' },
-  SUBSCRIPTION_RENEWAL_BALANCE_THRESHOLD_KOPEKS: { name: 'Порог баланса', description: 'Для автопродления' },
-  // SIMPLE SUBSCRIPTION
-  SIMPLE_SUBSCRIPTION_ENABLED: { name: 'Быстрая покупка', description: 'Показывать кнопку' },
-  SIMPLE_SUBSCRIPTION_PERIOD_DAYS: { name: 'Период (дней)', description: 'Длительность' },
-  SIMPLE_SUBSCRIPTION_DEVICE_LIMIT: { name: 'Устройств', description: 'В быстрой покупке' },
-  SIMPLE_SUBSCRIPTION_TRAFFIC_GB: { name: 'Трафик (ГБ)', description: '0 = безлимит' },
-  SIMPLE_SUBSCRIPTION_SQUAD_UUID: { name: 'UUID сквада', description: 'Пусто = любой' },
-  // PERIODS
-  AVAILABLE_SUBSCRIPTION_PERIODS: { name: 'Периоды покупки', description: 'Дни через запятую' },
-  AVAILABLE_RENEWAL_PERIODS: { name: 'Периоды продления', description: 'Дни через запятую' },
-  // PRICES
-  PRICE_14_DAYS: { name: 'Цена 14 дн', description: 'Копейки' },
-  PRICE_30_DAYS: { name: 'Цена 30 дн', description: 'Копейки' },
-  PRICE_60_DAYS: { name: 'Цена 60 дн', description: 'Копейки' },
-  PRICE_90_DAYS: { name: 'Цена 90 дн', description: 'Копейки' },
-  PRICE_180_DAYS: { name: 'Цена 180 дн', description: 'Копейки' },
-  PRICE_360_DAYS: { name: 'Цена 360 дн', description: 'Копейки' },
-  PAID_SUBSCRIPTION_USER_TAG: { name: 'Тег платного', description: 'Тег в RemnaWave' },
-  // TRAFFIC
-  DEFAULT_TRAFFIC_RESET_STRATEGY: { name: 'Сброс трафика', description: 'Стратегия обнуления' },
-  RESET_TRAFFIC_ON_PAYMENT: { name: 'Сброс при оплате', description: 'Обнулять трафик' },
-  TRAFFIC_SELECTION_MODE: { name: 'Режим выбора', description: 'Как выбирать трафик' },
-  FIXED_TRAFFIC_LIMIT_GB: { name: 'Фикс. лимит', description: 'ГБ' },
-  TRAFFIC_PACKAGES_CONFIG: { name: 'Пакеты', description: 'JSON конфиг' },
-  PRICE_TRAFFIC_5GB: { name: '5 ГБ', description: 'Копейки' },
-  PRICE_TRAFFIC_10GB: { name: '10 ГБ', description: 'Копейки' },
-  PRICE_TRAFFIC_25GB: { name: '25 ГБ', description: 'Копейки' },
-  PRICE_TRAFFIC_50GB: { name: '50 ГБ', description: 'Копейки' },
-  PRICE_TRAFFIC_100GB: { name: '100 ГБ', description: 'Копейки' },
-  PRICE_TRAFFIC_250GB: { name: '250 ГБ', description: 'Копейки' },
-  PRICE_TRAFFIC_500GB: { name: '500 ГБ', description: 'Копейки' },
-  PRICE_TRAFFIC_1000GB: { name: '1000 ГБ', description: 'Копейки' },
-  PRICE_TRAFFIC_UNLIMITED: { name: 'Безлимит', description: 'Копейки' },
-  // TRIAL
-  TRIAL_DURATION_DAYS: { name: 'Дней триала', description: 'Длительность' },
-  TRIAL_TRAFFIC_LIMIT_GB: { name: 'Трафик (ГБ)', description: 'В триале' },
-  TRIAL_DEVICE_LIMIT: { name: 'Устройств', description: 'В триале' },
-  TRIAL_ADD_REMAINING_DAYS_TO_PAID: { name: 'Перенос дней', description: 'К платной подписке' },
-  TRIAL_PAYMENT_ENABLED: { name: 'Платный триал', description: 'Взимать плату' },
-  TRIAL_ACTIVATION_PRICE: { name: 'Цена', description: 'Активация (коп.)' },
-  TRIAL_USER_TAG: { name: 'Тег триала', description: 'Тег в RemnaWave' },
-  TRIAL_WARNING_HOURS: { name: 'Предупреждение', description: 'За X часов' },
-  // AUTOPAY
-  AUTOPAY_WARNING_DAYS: { name: 'Дни уведомлений', description: 'Через запятую' },
-  DEFAULT_AUTOPAY_ENABLED: { name: 'Автопродление', description: 'По умолчанию' },
-  DEFAULT_AUTOPAY_DAYS_BEFORE: { name: 'Дней до', description: 'Когда продлять' },
-  MIN_BALANCE_FOR_AUTOPAY_KOPEKS: { name: 'Мин. баланс', description: 'Для продления (коп.)' },
-  // REFERRAL
-  REFERRAL_PROGRAM_ENABLED: { name: 'Программа', description: 'Включить рефералку' },
-  REFERRAL_MINIMUM_TOPUP_KOPEKS: { name: 'Мин. пополнение', description: 'Для бонуса (коп.)' },
-  REFERRAL_FIRST_TOPUP_BONUS_KOPEKS: { name: 'Бонус новичку', description: 'Копейки' },
-  REFERRAL_INVITER_BONUS_KOPEKS: { name: 'Бонус инвайтеру', description: 'Копейки' },
-  REFERRAL_COMMISSION_PERCENT: { name: 'Комиссия %', description: 'От платежей' },
-  REFERRAL_NOTIFICATIONS_ENABLED: { name: 'Уведомления', description: 'О бонусах' },
-  // NOTIFICATIONS
-  ENABLE_NOTIFICATIONS: { name: 'Уведомления', description: 'Пользователям' },
-  NOTIFICATION_RETRY_ATTEMPTS: { name: 'Попыток', description: 'Отправки' },
-  NOTIFICATION_CACHE_HOURS: { name: 'Кэш (ч)', description: 'Часов' },
-  MONITORING_LOGS_RETENTION_DAYS: { name: 'Хранить логи', description: 'Дней' },
-  // PAYMENT
-  PAYMENT_SERVICE_NAME: { name: 'Название', description: 'В документах' },
-  PAYMENT_BALANCE_DESCRIPTION: { name: 'Описание пополнения', description: 'В чеке' },
-  PAYMENT_SUBSCRIPTION_DESCRIPTION: { name: 'Описание подписки', description: 'В чеке' },
-  PAYMENT_BALANCE_TEMPLATE: { name: 'Шаблон', description: 'Пополнения' },
-  PAYMENT_SUBSCRIPTION_TEMPLATE: { name: 'Шаблон', description: 'Подписки' },
-  AUTO_PURCHASE_AFTER_TOPUP_ENABLED: { name: 'Автопокупка', description: 'После пополнения' },
-  DISABLE_TOPUP_BUTTONS: { name: 'Скрыть', description: 'Кнопки пополнения' },
-  DISABLE_WEB_PAGE_PREVIEW: { name: 'Без превью', description: 'Ссылок' },
-  PAYMENT_VERIFICATION_AUTO_CHECK_ENABLED: { name: 'Автопроверка', description: 'Платежей' },
-  PAYMENT_VERIFICATION_AUTO_CHECK_INTERVAL_MINUTES: { name: 'Интервал', description: 'Минут' },
-  // TELEGRAM STARS
-  TELEGRAM_STARS_ENABLED: { name: 'Stars', description: 'Принимать оплату' },
-  TELEGRAM_STARS_RATE_RUB: { name: 'Курс', description: 'Рублей за Star' },
-  // YOOKASSA
-  YOOKASSA_ENABLED: { name: 'YooKassa', description: 'Включить' },
-  YOOKASSA_SHOP_ID: { name: 'Shop ID', description: 'Идентификатор' },
-  YOOKASSA_SECRET_KEY: { name: 'Секрет', description: 'Ключ API' },
-  YOOKASSA_RETURN_URL: { name: 'URL возврата', description: 'После оплаты' },
-  YOOKASSA_DEFAULT_RECEIPT_EMAIL: { name: 'Email чеков', description: 'По умолчанию' },
-  YOOKASSA_VAT_CODE: { name: 'НДС', description: 'Код (1-6)' },
-  YOOKASSA_SBP_ENABLED: { name: 'СБП', description: 'Оплата СБП' },
-  YOOKASSA_PAYMENT_MODE: { name: 'Режим', description: 'Тип платежа' },
-  YOOKASSA_PAYMENT_SUBJECT: { name: 'Предмет', description: 'Тип товара' },
-  YOOKASSA_WEBHOOK_PATH: { name: 'Путь', description: 'Вебхука' },
-  YOOKASSA_WEBHOOK_HOST: { name: 'Хост', description: 'Вебхука' },
-  YOOKASSA_WEBHOOK_PORT: { name: 'Порт', description: 'Вебхука' },
-  YOOKASSA_MIN_AMOUNT_KOPEKS: { name: 'Мин.', description: 'Копейки' },
-  YOOKASSA_MAX_AMOUNT_KOPEKS: { name: 'Макс.', description: 'Копейки' },
-  YOOKASSA_QUICK_AMOUNT_SELECTION_ENABLED: { name: 'Быстрый выбор', description: 'Суммы' },
-  // CRYPTOBOT
-  CRYPTOBOT_ENABLED: { name: 'CryptoBot', description: 'Включить' },
-  CRYPTOBOT_API_TOKEN: { name: 'Токен', description: 'API' },
-  CRYPTOBOT_WEBHOOK_SECRET: { name: 'Секрет', description: 'Вебхука' },
-  CRYPTOBOT_BASE_URL: { name: 'URL', description: 'API' },
-  CRYPTOBOT_TESTNET: { name: 'Тестнет', description: 'Тестовая сеть' },
-  CRYPTOBOT_WEBHOOK_PATH: { name: 'Путь', description: 'Вебхука' },
-  CRYPTOBOT_WEBHOOK_PORT: { name: 'Порт', description: 'Вебхука' },
-  CRYPTOBOT_DEFAULT_ASSET: { name: 'Валюта', description: 'По умолчанию' },
-  CRYPTOBOT_ASSETS: { name: 'Валюты', description: 'Через запятую' },
-  CRYPTOBOT_INVOICE_EXPIRES_HOURS: { name: 'Срок (ч)', description: 'Инвойса' },
-  // HELEKET
-  HELEKET_ENABLED: { name: 'Heleket', description: 'Включить' },
-  HELEKET_MERCHANT_ID: { name: 'Merchant ID', description: 'ID мерчанта' },
-  HELEKET_API_KEY: { name: 'API Key', description: 'Ключ' },
-  HELEKET_BASE_URL: { name: 'URL', description: 'API' },
-  HELEKET_DEFAULT_CURRENCY: { name: 'Валюта', description: 'По умолчанию' },
-  HELEKET_DEFAULT_NETWORK: { name: 'Сеть', description: 'По умолчанию' },
-  HELEKET_INVOICE_LIFETIME: { name: 'Срок (сек)', description: 'Инвойса' },
-  HELEKET_MARKUP_PERCENT: { name: 'Наценка %', description: 'Процент' },
-  // PLATEGA
-  PLATEGA_ENABLED: { name: 'Platega', description: 'Включить' },
-  PLATEGA_MERCHANT_ID: { name: 'Merchant ID', description: 'ID' },
-  PLATEGA_SECRET: { name: 'Секрет', description: 'Ключ' },
-  PLATEGA_BASE_URL: { name: 'URL', description: 'API' },
-  PLATEGA_RETURN_URL: { name: 'URL возврата', description: 'После оплаты' },
-  PLATEGA_FAILED_URL: { name: 'URL ошибки', description: 'При ошибке' },
-  PLATEGA_CURRENCY: { name: 'Валюта', description: 'Платежей' },
-  PLATEGA_ACTIVE_METHODS: { name: 'Методы', description: 'ID через запятую' },
-  PLATEGA_MIN_AMOUNT_KOPEKS: { name: 'Мин.', description: 'Копейки' },
-  PLATEGA_MAX_AMOUNT_KOPEKS: { name: 'Макс.', description: 'Копейки' },
-  // TRIBUTE
-  TRIBUTE_ENABLED: { name: 'Tribute', description: 'Включить' },
-  TRIBUTE_API_KEY: { name: 'API Key', description: 'Ключ' },
-  TRIBUTE_DONATE_LINK: { name: 'Ссылка', description: 'На донат' },
-  // MULENPAY
-  MULENPAY_ENABLED: { name: 'MulenPay', description: 'Включить' },
-  MULENPAY_API_KEY: { name: 'API Key', description: 'Ключ' },
-  MULENPAY_SECRET_KEY: { name: 'Секрет', description: 'Ключ' },
-  MULENPAY_SHOP_ID: { name: 'Shop ID', description: 'ID магазина' },
-  MULENPAY_DISPLAY_NAME: { name: 'Название', description: 'Отображаемое' },
-  MULENPAY_LANGUAGE: { name: 'Язык', description: 'Интерфейса' },
-  MULENPAY_MIN_AMOUNT_KOPEKS: { name: 'Мин.', description: 'Копейки' },
-  MULENPAY_MAX_AMOUNT_KOPEKS: { name: 'Макс.', description: 'Копейки' },
-  // PAL24
-  PAL24_ENABLED: { name: 'PAL24', description: 'Включить' },
-  PAL24_API_TOKEN: { name: 'Токен', description: 'API' },
-  PAL24_SHOP_ID: { name: 'Shop ID', description: 'ID' },
-  PAL24_SIGNATURE_TOKEN: { name: 'Подпись', description: 'Токен' },
-  PAL24_MIN_AMOUNT_KOPEKS: { name: 'Мин.', description: 'Копейки' },
-  PAL24_MAX_AMOUNT_KOPEKS: { name: 'Макс.', description: 'Копейки' },
-  PAL24_SBP_BUTTON_VISIBLE: { name: 'СБП', description: 'Показывать' },
-  PAL24_CARD_BUTTON_VISIBLE: { name: 'Карта', description: 'Показывать' },
-  // WATA
-  WATA_ENABLED: { name: 'Wata', description: 'Включить' },
-  WATA_ACCESS_TOKEN: { name: 'Токен', description: 'Доступа' },
-  WATA_TERMINAL_PUBLIC_ID: { name: 'Terminal ID', description: 'Публичный ID' },
-  WATA_PAYMENT_TYPE: { name: 'Тип', description: 'Платежа' },
-  WATA_MIN_AMOUNT_KOPEKS: { name: 'Мин.', description: 'Копейки' },
-  WATA_MAX_AMOUNT_KOPEKS: { name: 'Макс.', description: 'Копейки' },
-  // EXTERNAL ADMIN
-  EXTERNAL_ADMIN_TOKEN: { name: 'Токен', description: 'Только чтение' },
-  EXTERNAL_ADMIN_TOKEN_BOT_ID: { name: 'ID бота', description: 'Связанного' },
-  // INTERFACE
-  MAIN_MENU_MODE: { name: 'Режим меню', description: 'default/text' },
-  ENABLE_LOGO_MODE: { name: 'Логотип', description: 'В сообщениях' },
-  LOGO_FILE: { name: 'Файл', description: 'Логотипа' },
-  HIDE_SUBSCRIPTION_LINK: { name: 'Скрыть ссылку', description: 'На подписку' },
-  CONNECT_BUTTON_MODE: { name: 'Подключение', description: 'Режим кнопки' },
-  CONNECT_BUTTON_HAPP_DOWNLOAD_ENABLED: { name: 'Happ', description: 'Кнопка скачивания' },
-  // MINIAPP
-  MINIAPP_CUSTOM_URL: { name: 'URL', description: 'Mini App' },
-  MINIAPP_STATIC_PATH: { name: 'Статика', description: 'Путь' },
-  MINIAPP_PURCHASE_URL: { name: 'URL покупки', description: 'Страница' },
-  MINIAPP_SERVICE_NAME_EN: { name: 'Название EN', description: 'Английское' },
-  MINIAPP_SERVICE_NAME_RU: { name: 'Название RU', description: 'Русское' },
-  // HAPP
-  HAPP_DOWNLOAD_LINK_IOS: { name: 'iOS', description: 'Ссылка' },
-  HAPP_DOWNLOAD_LINK_ANDROID: { name: 'Android', description: 'Ссылка' },
-  HAPP_DOWNLOAD_LINK_MACOS: { name: 'macOS', description: 'Ссылка' },
-  HAPP_DOWNLOAD_LINK_WINDOWS: { name: 'Windows', description: 'Ссылка' },
-  // SKIP
-  SKIP_RULES_ACCEPT: { name: 'Пропуск правил', description: 'Не показывать' },
-  SKIP_REFERRAL_CODE: { name: 'Пропуск кода', description: 'Реферального' },
-  // ADDITIONAL
-  APP_CONFIG_PATH: { name: 'app-config', description: 'Путь' },
-  ENABLE_DEEP_LINKS: { name: 'Deep Links', description: 'Включить' },
-  APP_CONFIG_CACHE_TTL: { name: 'TTL кэша', description: 'Секунд' },
-  // DATABASE
-  DATABASE_MODE: { name: 'Режим БД', description: 'auto/postgresql/sqlite' },
-  DATABASE_URL: { name: 'URL', description: 'Подключения' },
-  POSTGRES_HOST: { name: 'Хост', description: 'PostgreSQL' },
-  POSTGRES_PORT: { name: 'Порт', description: 'PostgreSQL' },
-  POSTGRES_DB: { name: 'База', description: 'Имя' },
-  POSTGRES_USER: { name: 'Пользователь', description: 'Логин' },
-  POSTGRES_PASSWORD: { name: 'Пароль', description: 'PostgreSQL' },
-  SQLITE_PATH: { name: 'Путь', description: 'SQLite' },
-  REDIS_URL: { name: 'URL', description: 'Redis' },
-  // REMNAWAVE
-  REMNAWAVE_API_URL: { name: 'URL панели', description: 'Адрес' },
-  REMNAWAVE_API_KEY: { name: 'API Key', description: 'Ключ' },
-  REMNAWAVE_SECRET_KEY: { name: 'Секрет', description: 'Ключ' },
-  REMNAWAVE_USERNAME: { name: 'Логин', description: 'Basic auth' },
-  REMNAWAVE_PASSWORD: { name: 'Пароль', description: 'Basic auth' },
-  REMNAWAVE_AUTH_TYPE: { name: 'Тип авторизации', description: 'api_key/basic_auth' },
-  REMNAWAVE_USER_DESCRIPTION_TEMPLATE: { name: 'Шаблон описания', description: 'Пользователя' },
-  REMNAWAVE_USER_USERNAME_TEMPLATE: { name: 'Шаблон username', description: 'Пользователя' },
-  REMNAWAVE_USER_DELETE_MODE: { name: 'Режим удаления', description: 'delete/disable' },
-  REMNAWAVE_AUTO_SYNC_ENABLED: { name: 'Автосинхр.', description: 'Включить' },
-  REMNAWAVE_AUTO_SYNC_TIMES: { name: 'Время', description: 'Синхронизации (HH:MM)' },
-  // SERVER STATUS
-  SERVER_STATUS_MODE: { name: 'Режим', description: 'Статуса серверов' },
-  SERVER_STATUS_EXTERNAL_URL: { name: 'URL', description: 'Внешний' },
-  SERVER_STATUS_METRICS_URL: { name: 'Метрики', description: 'URL' },
-  // MONITORING
-  MONITORING_INTERVAL: { name: 'Интервал', description: 'Секунд' },
-  TRAFFIC_MONITORING_ENABLED: { name: 'Мониторинг', description: 'Трафика' },
-  TRAFFIC_THRESHOLD_GB_PER_DAY: { name: 'Порог', description: 'ГБ/день' },
-  // MAINTENANCE
-  MAINTENANCE_MODE: { name: 'Обслуживание', description: 'Включить' },
-  MAINTENANCE_MESSAGE: { name: 'Сообщение', description: 'Текст' },
-  MAINTENANCE_CHECK_INTERVAL: { name: 'Интервал', description: 'Секунд' },
-  MAINTENANCE_AUTO_ENABLE: { name: 'Авто', description: 'Включение' },
-  MAINTENANCE_MONITORING_ENABLED: { name: 'Мониторинг', description: 'Панели' },
-  MAINTENANCE_RETRY_ATTEMPTS: { name: 'Попыток', description: 'Перед включением' },
-  INACTIVE_USER_DELETE_MONTHS: { name: 'Удаление', description: 'Через X месяцев' },
-  // BACKUP
-  BACKUP_AUTO_ENABLED: { name: 'Автобэкап', description: 'Включить' },
-  BACKUP_INTERVAL_HOURS: { name: 'Интервал', description: 'Часов' },
-  BACKUP_TIME: { name: 'Время', description: 'Создания' },
-  BACKUP_MAX_KEEP: { name: 'Хранить', description: 'Копий' },
-  BACKUP_COMPRESSION: { name: 'Сжатие', description: 'Включить' },
-  BACKUP_INCLUDE_LOGS: { name: 'Логи', description: 'Включать' },
-  BACKUP_LOCATION: { name: 'Путь', description: 'Сохранения' },
-  BACKUP_SEND_ENABLED: { name: 'Отправка', description: 'В Telegram' },
-  BACKUP_SEND_CHAT_ID: { name: 'Chat ID', description: 'Для отправки' },
-  // VERSION
-  VERSION_CHECK_ENABLED: { name: 'Проверка', description: 'Обновлений' },
-  VERSION_CHECK_REPO: { name: 'Репозиторий', description: 'GitHub' },
-  VERSION_CHECK_INTERVAL_HOURS: { name: 'Интервал', description: 'Часов' },
-  // WEB API
-  WEB_API_ENABLED: { name: 'Web API', description: 'Включить' },
-  WEB_API_HOST: { name: 'Хост', description: 'IP' },
-  WEB_API_PORT: { name: 'Порт', description: 'API' },
-  WEB_API_WORKERS: { name: 'Воркеров', description: 'Количество' },
-  WEB_API_ALLOWED_ORIGINS: { name: 'CORS', description: 'Origins' },
-  WEB_API_DOCS_ENABLED: { name: 'Документация', description: 'Swagger' },
-  WEB_API_DEFAULT_TOKEN: { name: 'Токен', description: 'По умолчанию' },
-  WEB_API_REQUEST_LOGGING: { name: 'Логирование', description: 'Запросов' },
-  // WEBHOOK
-  WEBHOOK_URL: { name: 'URL', description: 'Вебхука' },
-  WEBHOOK_PATH: { name: 'Путь', description: 'Вебхука' },
-  WEBHOOK_SECRET_TOKEN: { name: 'Секрет', description: 'Токен' },
-  BOT_RUN_MODE: { name: 'Режим', description: 'polling/webhook' },
-  // LOG
-  LOG_LEVEL: { name: 'Уровень', description: 'Логирования' },
-  LOG_FILE: { name: 'Файл', description: 'Логов' },
-  // DEBUG
-  DEBUG: { name: 'Отладка', description: 'Включить' },
-  // MODERATION
-  DISPLAY_NAME_BANNED_KEYWORDS: { name: 'Запрещённые', description: 'Слова в именах' },
-  // CONTESTS
-  CONTESTS_ENABLED: { name: 'Конкурсы', description: 'Включить' },
-  CONTESTS_BUTTON_VISIBLE: { name: 'Кнопка', description: 'Конкурсов' },
-  // CABINET
-  CABINET_ENABLED: { name: 'Кабинет', description: 'Веб-кабинет' },
-  CABINET_JWT_SECRET: { name: 'JWT секрет', description: 'Ключ' },
-}
+const CheckIcon = () => (
+  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+  </svg>
+)
 
-// Extract emoji from label
-const extractEmoji = (label: string): { emoji: string; text: string } => {
-  const emojiMatch = label.match(/^(\p{Emoji})/u)
-  if (emojiMatch) {
-    return { emoji: emojiMatch[1], text: label.slice(emojiMatch[1].length).trim() }
-  }
-  return { emoji: '⚙️', text: label }
-}
+const CloseIcon = () => (
+  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+  </svg>
+)
 
-// Get translated setting name and description
-const getSettingTranslation = (key: string, originalName: string) => {
-  const translation = SETTING_TRANSLATIONS[key]
-  return {
-    name: translation?.name || originalName,
-    description: translation?.description || '',
-  }
-}
-
-interface SettingRowProps {
-  setting: SettingDefinition
-  onUpdate: (key: string, value: unknown) => void
-  onReset: (key: string) => void
-  isUpdating: boolean
-}
-
-function SettingRow({ setting, onUpdate, onReset, isUpdating }: SettingRowProps) {
-  const { t } = useTranslation()
-  const [editValue, setEditValue] = useState<string>(
-    setting.current !== null && setting.current !== undefined ? String(setting.current) : ''
-  )
-  const [isEditing, setIsEditing] = useState(false)
-
-  const translation = getSettingTranslation(setting.key, setting.name)
-
-  const handleSave = () => {
-    let valueToSave: unknown = editValue
-
-    if (setting.type === 'bool') {
-      valueToSave = editValue === 'true'
-    } else if (setting.type === 'int') {
-      valueToSave = parseInt(editValue, 10)
-    } else if (setting.type === 'float') {
-      valueToSave = parseFloat(editValue)
-    }
-
-    onUpdate(setting.key, valueToSave)
-    setIsEditing(false)
-  }
-
-  const handleReset = () => {
-    onReset(setting.key)
-    setEditValue(setting.original !== null && setting.original !== undefined ? String(setting.original) : '')
-  }
-
-  const formatValue = (value: unknown): string => {
-    if (value === null || value === undefined) return '-'
-    if (typeof value === 'boolean') return value ? t('common.yes') : t('common.no')
-    return String(value)
-  }
-
-  const renderInput = () => {
-    if (setting.read_only) {
-      return (
-        <div className="flex items-center gap-2 text-dark-400 text-sm">
-          <LockIcon />
-          <span className="font-mono text-xs break-all">{formatValue(setting.current)}</span>
-        </div>
-      )
-    }
-
-    if (setting.choices && setting.choices.length > 0) {
-      return (
-        <select
-          value={editValue}
-          onChange={(e) => {
-            setEditValue(e.target.value)
-            let valueToSave: unknown = e.target.value
-            if (setting.type === 'bool') {
-              valueToSave = e.target.value === 'true'
-            } else if (setting.type === 'int') {
-              valueToSave = parseInt(e.target.value, 10)
-            }
-            onUpdate(setting.key, valueToSave)
-          }}
-          className="input py-1.5 text-sm w-full"
-          disabled={isUpdating}
-        >
-          {setting.choices.map((choice) => (
-            <option key={String(choice.value)} value={String(choice.value)}>
-              {choice.label}
-            </option>
-          ))}
-        </select>
-      )
-    }
-
-    if (setting.type === 'bool') {
-      return (
-        <button
-          onClick={() => onUpdate(setting.key, setting.current !== true)}
-          disabled={isUpdating}
-          className={`relative w-12 h-6 rounded-full transition-colors ${
-            setting.current === true ? 'bg-accent-500' : 'bg-dark-600'
-          }`}
-        >
-          <span
-            className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${
-              setting.current === true ? 'left-7' : 'left-1'
-            }`}
-          />
-        </button>
-      )
-    }
-
-    if (isEditing) {
-      return (
-        <div className="flex items-center gap-2">
-          <input
-            type={setting.type === 'int' || setting.type === 'float' ? 'number' : 'text'}
-            value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
-            className="input py-1.5 text-sm flex-1"
-            autoFocus
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleSave()
-              if (e.key === 'Escape') {
-                setIsEditing(false)
-                setEditValue(String(setting.current ?? ''))
-              }
-            }}
-          />
-          <button
-            onClick={handleSave}
-            disabled={isUpdating}
-            className="p-1.5 bg-accent-500 hover:bg-accent-600 rounded text-white shrink-0"
-          >
-            <CheckIcon />
-          </button>
-        </div>
-      )
-    }
-
-    return (
-      <button
-        onClick={() => setIsEditing(true)}
-        className="text-left px-3 py-1.5 bg-dark-700 hover:bg-dark-600 rounded text-sm font-mono w-full transition-colors truncate"
-        title={formatValue(setting.current)}
-      >
-        {formatValue(setting.current)}
-      </button>
-    )
-  }
-
-  return (
-    <div className="py-3 border-b border-dark-700/30 last:border-b-0">
-      <div className="flex items-start justify-between gap-3 mb-2">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-medium text-dark-100">{translation.name}</span>
-            {setting.has_override && (
-              <span className="text-[10px] bg-accent-500/20 text-accent-400 px-1.5 py-0.5 rounded">
-                {t('admin.settings.modified')}
-              </span>
-            )}
-            {setting.read_only && (
-              <span className="text-[10px] bg-dark-600 text-dark-400 px-1.5 py-0.5 rounded">
-                {t('admin.settings.readOnly')}
-              </span>
-            )}
-          </div>
-          {translation.description && (
-            <p className="text-xs text-dark-400 mt-0.5">{translation.description}</p>
-          )}
-        </div>
-
-        {setting.has_override && !setting.read_only && (
-          <button
-            onClick={handleReset}
-            disabled={isUpdating}
-            className="p-1.5 text-dark-500 hover:text-dark-200 hover:bg-dark-700 rounded transition-colors shrink-0"
-            title={t('admin.settings.reset')}
-          >
-            <RefreshIcon />
-          </button>
-        )}
-      </div>
-
-      <div>{renderInput()}</div>
-
-      {/* Warning from hint */}
-      {setting.hint?.warning && (
-        <div className="flex items-start gap-2 mt-2 text-xs text-warning-400">
-          <WarningIcon />
-          <p>{setting.hint.warning}</p>
-        </div>
-      )}
-    </div>
-  )
-}
-
-interface MetaCategoryCardProps {
-  metaKey: string
-  meta: { label: string; emoji: string; categories: string[] }
-  categoriesData: SettingCategorySummary[]
-  settingsCount: number
-  onClick: () => void
-}
-
-function MetaCategoryCard({ meta, categoriesData, settingsCount, onClick }: MetaCategoryCardProps) {
-  return (
-    <button
-      onClick={onClick}
-      className="card p-4 text-left hover:bg-dark-800/50 transition-all hover:scale-[1.02] group"
-    >
-      <div className="flex items-start gap-3">
-        <span className="text-3xl">{meta.emoji}</span>
-        <div className="flex-1 min-w-0">
-          <h3 className="text-base font-semibold text-dark-100 group-hover:text-accent-400 transition-colors">
-            {meta.label}
-          </h3>
-          <p className="text-xs text-dark-500 mt-1">
-            {categoriesData.length} разделов / {settingsCount} настроек
-          </p>
-        </div>
-        <ChevronRightIcon />
-      </div>
-    </button>
-  )
-}
-
-interface SettingsModalProps {
-  metaKey: string
-  meta: { label: string; emoji: string; categories: string[] }
-  categories: SettingCategorySummary[]
-  allSettings: SettingDefinition[]
-  onClose: () => void
-  onUpdate: (key: string, value: unknown) => void
-  onReset: (key: string) => void
-  isUpdating: boolean
-}
-
-function SettingsModal({ meta, categories, allSettings, onClose, onUpdate, onReset, isUpdating }: SettingsModalProps) {
-  const { t } = useTranslation()
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set([categories[0]?.key]))
-  const [searchQuery, setSearchQuery] = useState('')
-
-  const toggleCategory = (key: string) => {
-    setExpandedCategories((prev) => {
-      const next = new Set(prev)
-      if (next.has(key)) {
-        next.delete(key)
-      } else {
-        next.add(key)
-      }
-      return next
-    })
-  }
-
-  // Group settings by category
-  const settingsByCategory = useMemo(() => {
-    const result: Record<string, SettingDefinition[]> = {}
-    for (const category of categories) {
-      const categorySettings = allSettings.filter((s) => s.category.key === category.key)
-
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase()
-        const filtered = categorySettings.filter((s) => {
-          const translation = getSettingTranslation(s.key, s.name)
-          return (
-            translation.name.toLowerCase().includes(query) ||
-            translation.description.toLowerCase().includes(query) ||
-            s.key.toLowerCase().includes(query) ||
-            String(s.current).toLowerCase().includes(query)
-          )
-        })
-        if (filtered.length > 0) {
-          result[category.key] = filtered
-        }
-      } else {
-        if (categorySettings.length > 0) {
-          result[category.key] = categorySettings
-        }
-      }
-    }
-    return result
-  }, [categories, allSettings, searchQuery])
-
-  // Auto-expand when searching
-  useMemo(() => {
-    if (searchQuery) {
-      setExpandedCategories(new Set(Object.keys(settingsByCategory)))
-    }
-  }, [searchQuery, settingsByCategory])
-
-  const totalFiltered = Object.values(settingsByCategory).reduce((acc, arr) => acc + arr.length, 0)
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-dark-950/80 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      <div className="relative w-full max-w-2xl max-h-[90vh] bg-dark-900 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-fade-in">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-dark-700/50 shrink-0">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">{meta.emoji}</span>
-            <div>
-              <h2 className="text-lg font-semibold text-dark-100">{meta.label}</h2>
-              <p className="text-xs text-dark-400">{totalFiltered} настроек</p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 text-dark-400 hover:text-dark-100 hover:bg-dark-800 rounded-lg transition-colors"
-          >
-            <CloseIcon />
-          </button>
-        </div>
-
-        {/* Search */}
-        <div className="p-4 border-b border-dark-700/50 shrink-0">
-          <div className="relative">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t('admin.settings.searchPlaceholder')}
-              className="input w-full pl-10 py-2"
-            />
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-500 pointer-events-none">
-              <SearchIcon />
-            </div>
-          </div>
-        </div>
-
-        {/* Categories with settings */}
-        <div className="flex-1 overflow-y-auto">
-          {Object.keys(settingsByCategory).length > 0 ? (
-            categories
-              .filter((cat) => settingsByCategory[cat.key])
-              .map((category) => {
-                const { emoji, text } = extractEmoji(category.label)
-                const isExpanded = expandedCategories.has(category.key)
-                const categorySettings = settingsByCategory[category.key] || []
-
-                return (
-                  <div key={category.key} className="border-b border-dark-700/30">
-                    <button
-                      onClick={() => toggleCategory(category.key)}
-                      className="w-full flex items-center justify-between p-4 hover:bg-dark-800/30 transition-colors"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">{emoji}</span>
-                        <span className="text-sm font-medium text-dark-200">{text}</span>
-                        <span className="text-xs text-dark-500 bg-dark-700 px-1.5 py-0.5 rounded">
-                          {categorySettings.length}
-                        </span>
-                      </div>
-                      <div className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
-                        <ChevronDownIcon />
-                      </div>
-                    </button>
-
-                    {isExpanded && (
-                      <div className="px-4 pb-4">
-                        {categorySettings.map((setting) => (
-                          <SettingRow
-                            key={setting.key}
-                            setting={setting}
-                            onUpdate={onUpdate}
-                            onReset={onReset}
-                            isUpdating={isUpdating}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )
-              })
-          ) : (
-            <div className="text-center py-12 text-dark-400">
-              {t('admin.settings.noSearchResults')}
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-dark-700/50 shrink-0">
-          <button
-            onClick={onClose}
-            className="w-full px-4 py-2 bg-dark-800 hover:bg-dark-700 rounded-lg transition-colors text-dark-200"
-          >
-            {t('common.close')}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// Icons for theme toggle
 const SunIcon = () => (
   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
@@ -978,18 +92,222 @@ const MoonIcon = () => (
   </svg>
 )
 
+// ============ TAB DEFINITIONS ============
+const TABS = [
+  { id: 'favorites', label: 'Избранное', icon: StarIcon },
+  { id: 'branding', label: 'Брендинг', icon: null },
+  { id: 'theme', label: 'Тема', icon: null },
+  { id: 'payments', label: 'Платежи', icon: null },
+  { id: 'subscriptions', label: 'Подписки', icon: null },
+  { id: 'interface', label: 'Интерфейс', icon: null },
+  { id: 'more', label: 'Ещё', icon: ChevronDownIcon, isDropdown: true },
+] as const
+
+const MORE_TABS = [
+  { id: 'notifications', label: 'Уведомления' },
+  { id: 'database', label: 'База данных' },
+  { id: 'system', label: 'Система' },
+  { id: 'users', label: 'Пользователи' },
+] as const
+
+// ============ META CATEGORIES ============
+const META_CATEGORIES: Record<string, { label: string; categories: string[] }> = {
+  payments: {
+    label: 'Платежные системы',
+    categories: ['PAYMENT', 'PAYMENT_VERIFICATION', 'YOOKASSA', 'CRYPTOBOT', 'HELEKET', 'PLATEGA', 'TRIBUTE', 'MULENPAY', 'PAL24', 'WATA', 'TELEGRAM'],
+  },
+  subscriptions: {
+    label: 'Подписки и тарифы',
+    categories: ['SUBSCRIPTIONS_CORE', 'SIMPLE_SUBSCRIPTION', 'PERIODS', 'SUBSCRIPTION_PRICES', 'TRAFFIC', 'TRAFFIC_PACKAGES', 'TRIAL', 'AUTOPAY'],
+  },
+  interface: {
+    label: 'Интерфейс',
+    categories: ['INTERFACE', 'INTERFACE_BRANDING', 'INTERFACE_SUBSCRIPTION', 'CONNECT_BUTTON', 'MINIAPP', 'HAPP', 'SKIP', 'ADDITIONAL'],
+  },
+  notifications: {
+    label: 'Уведомления',
+    categories: ['NOTIFICATIONS', 'ADMIN_NOTIFICATIONS', 'ADMIN_REPORTS'],
+  },
+  database: {
+    label: 'База данных',
+    categories: ['DATABASE', 'POSTGRES', 'SQLITE', 'REDIS'],
+  },
+  system: {
+    label: 'Система',
+    categories: ['CORE', 'REMNAWAVE', 'SERVER_STATUS', 'MONITORING', 'MAINTENANCE', 'BACKUP', 'VERSION', 'WEB_API', 'WEBHOOK', 'LOG', 'DEBUG', 'EXTERNAL_ADMIN'],
+  },
+  users: {
+    label: 'Пользователи',
+    categories: ['SUPPORT', 'LOCALIZATION', 'CHANNEL', 'TIMEZONE', 'REFERRAL', 'MODERATION'],
+  },
+}
+
+// ============ THEME PRESETS ============
+const THEME_PRESETS: { name: string; colors: ThemeColors }[] = [
+  { name: 'Стандарт', colors: DEFAULT_THEME_COLORS },
+  { name: 'Океан', colors: { accent: '#0ea5e9', darkBackground: '#0c1222', darkSurface: '#1e293b', darkText: '#f1f5f9', darkTextSecondary: '#94a3b8', lightBackground: '#e0f2fe', lightSurface: '#f0f9ff', lightText: '#0c4a6e', lightTextSecondary: '#0369a1', success: '#22c55e', warning: '#f59e0b', error: '#ef4444' } },
+  { name: 'Лес', colors: { accent: '#22c55e', darkBackground: '#0a1a0f', darkSurface: '#14532d', darkText: '#f0fdf4', darkTextSecondary: '#86efac', lightBackground: '#dcfce7', lightSurface: '#f0fdf4', lightText: '#14532d', lightTextSecondary: '#166534', success: '#22c55e', warning: '#f59e0b', error: '#ef4444' } },
+  { name: 'Закат', colors: { accent: '#f97316', darkBackground: '#1c1009', darkSurface: '#2d1a0e', darkText: '#fff7ed', darkTextSecondary: '#fdba74', lightBackground: '#ffedd5', lightSurface: '#fff7ed', lightText: '#7c2d12', lightTextSecondary: '#c2410c', success: '#22c55e', warning: '#f59e0b', error: '#ef4444' } },
+  { name: 'Фиолет', colors: { accent: '#a855f7', darkBackground: '#0f0a1a', darkSurface: '#1e1b2e', darkText: '#faf5ff', darkTextSecondary: '#c4b5fd', lightBackground: '#f3e8ff', lightSurface: '#faf5ff', lightText: '#581c87', lightTextSecondary: '#7e22ce', success: '#22c55e', warning: '#f59e0b', error: '#ef4444' } },
+  { name: 'Роза', colors: { accent: '#f43f5e', darkBackground: '#1a0a10', darkSurface: '#2d1520', darkText: '#fff1f2', darkTextSecondary: '#fda4af', lightBackground: '#ffe4e6', lightSurface: '#fff1f2', lightText: '#881337', lightTextSecondary: '#be123c', success: '#22c55e', warning: '#f59e0b', error: '#ef4444' } },
+  { name: 'Полночь', colors: { accent: '#6366f1', darkBackground: '#030712', darkSurface: '#111827', darkText: '#f9fafb', darkTextSecondary: '#9ca3af', lightBackground: '#e5e7eb', lightSurface: '#f3f4f6', lightText: '#111827', lightTextSecondary: '#4b5563', success: '#22c55e', warning: '#f59e0b', error: '#ef4444' } },
+  { name: 'Бирюза', colors: { accent: '#14b8a6', darkBackground: '#0a1614', darkSurface: '#134e4a', darkText: '#f0fdfa', darkTextSecondary: '#5eead4', lightBackground: '#ccfbf1', lightSurface: '#f0fdfa', lightText: '#134e4a', lightTextSecondary: '#0f766e', success: '#22c55e', warning: '#f59e0b', error: '#ef4444' } },
+]
+
+// ============ SETTING TRANSLATIONS ============
+const SETTING_TRANSLATIONS: Record<string, { name: string; description: string }> = {
+  BOT_USERNAME: { name: 'Username бота', description: 'Имя бота в Telegram' },
+  SUPPORT_USERNAME: { name: 'Username поддержки', description: 'Telegram @username поддержки' },
+  SUPPORT_MENU_ENABLED: { name: 'Меню поддержки', description: 'Показывать раздел поддержки' },
+  DEFAULT_LANGUAGE: { name: 'Язык по умолчанию', description: 'Язык интерфейса' },
+  TIMEZONE: { name: 'Часовой пояс', description: 'Временная зона системы' },
+  REFERRAL_PROGRAM_ENABLED: { name: 'Реферальная программа', description: 'Включить рефералку' },
+  YOOKASSA_ENABLED: { name: 'YooKassa', description: 'Приём платежей через YooKassa' },
+  CRYPTOBOT_ENABLED: { name: 'CryptoBot', description: 'Приём криптовалюты' },
+  TELEGRAM_STARS_ENABLED: { name: 'Telegram Stars', description: 'Оплата звёздами' },
+  TRIAL_DURATION_DAYS: { name: 'Триал (дней)', description: 'Длительность пробного периода' },
+  DEFAULT_DEVICE_LIMIT: { name: 'Устройств по умолчанию', description: 'Лимит устройств' },
+  // Add more as needed...
+}
+
+// ============ MAIN COMPONENT ============
 export default function AdminSettings() {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
-  const [selectedMeta, setSelectedMeta] = useState<string | null>(null)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [editingName, setEditingName] = useState(false)
-  const [newName, setNewName] = useState('')
-  const [expandedThemeSections, setExpandedThemeSections] = useState<Set<string>>(new Set())
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const toggleThemeSection = (section: string) => {
-    setExpandedThemeSections(prev => {
+  // State
+  const [activeTab, setActiveTab] = useState('branding')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showMoreDropdown, setShowMoreDropdown] = useState(false)
+  const [editingName, setEditingName] = useState(false)
+  const [newName, setNewName] = useState('')
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['presets']))
+
+  // Favorites hook
+  const { favorites, toggleFavorite, isFavorite } = useFavoriteSettings()
+
+  // ============ QUERIES ============
+  const { data: branding } = useQuery({
+    queryKey: ['branding'],
+    queryFn: brandingApi.getBranding,
+  })
+
+  const { data: animationSettings } = useQuery({
+    queryKey: ['animation-enabled'],
+    queryFn: brandingApi.getAnimationEnabled,
+  })
+
+  const { data: fullscreenSettings } = useQuery({
+    queryKey: ['fullscreen-enabled'],
+    queryFn: brandingApi.getFullscreenEnabled,
+  })
+
+  const { data: themeColors } = useQuery({
+    queryKey: ['theme-colors'],
+    queryFn: themeColorsApi.getColors,
+  })
+
+  const { data: enabledThemes } = useQuery({
+    queryKey: ['enabled-themes'],
+    queryFn: themeColorsApi.getEnabledThemes,
+  })
+
+  const { data: allSettings } = useQuery({
+    queryKey: ['admin-settings'],
+    queryFn: () => adminSettingsApi.getSettings(),
+  })
+
+  // ============ MUTATIONS ============
+  const updateBrandingMutation = useMutation({
+    mutationFn: brandingApi.updateName,
+    onSuccess: (data) => {
+      setCachedBranding(data)
+      queryClient.invalidateQueries({ queryKey: ['branding'] })
+      setEditingName(false)
+    },
+  })
+
+  const uploadLogoMutation = useMutation({
+    mutationFn: brandingApi.uploadLogo,
+    onSuccess: (data) => {
+      setCachedBranding(data)
+      queryClient.invalidateQueries({ queryKey: ['branding'] })
+    },
+  })
+
+  const deleteLogoMutation = useMutation({
+    mutationFn: brandingApi.deleteLogo,
+    onSuccess: (data) => {
+      setCachedBranding(data)
+      queryClient.invalidateQueries({ queryKey: ['branding'] })
+    },
+  })
+
+  const updateAnimationMutation = useMutation({
+    mutationFn: (enabled: boolean) => brandingApi.updateAnimationEnabled(enabled),
+    onSuccess: (data) => {
+      setCachedAnimationEnabled(data.enabled)
+      queryClient.invalidateQueries({ queryKey: ['animation-enabled'] })
+    },
+  })
+
+  const updateFullscreenMutation = useMutation({
+    mutationFn: (enabled: boolean) => brandingApi.updateFullscreenEnabled(enabled),
+    onSuccess: (data) => {
+      setCachedFullscreenEnabled(data.enabled)
+      queryClient.invalidateQueries({ queryKey: ['fullscreen-enabled'] })
+    },
+  })
+
+  const updateColorsMutation = useMutation({
+    mutationFn: themeColorsApi.updateColors,
+    onSuccess: (data) => {
+      applyThemeColors(data)
+      queryClient.invalidateQueries({ queryKey: ['theme-colors'] })
+    },
+  })
+
+  const resetColorsMutation = useMutation({
+    mutationFn: themeColorsApi.resetColors,
+    onSuccess: (data) => {
+      applyThemeColors(data)
+      queryClient.invalidateQueries({ queryKey: ['theme-colors'] })
+    },
+  })
+
+  const updateEnabledThemesMutation = useMutation({
+    mutationFn: themeColorsApi.updateEnabledThemes,
+    onSuccess: (data) => {
+      updateEnabledThemesCache(data)
+      queryClient.invalidateQueries({ queryKey: ['enabled-themes'] })
+    },
+  })
+
+  const updateSettingMutation = useMutation({
+    mutationFn: ({ key, value }: { key: string; value: string }) => adminSettingsApi.updateSetting(key, value),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-settings'] })
+    },
+  })
+
+  const resetSettingMutation = useMutation({
+    mutationFn: (key: string) => adminSettingsApi.resetSetting(key),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-settings'] })
+    },
+  })
+
+  // ============ HANDLERS ============
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      uploadLogoMutation.mutate(file)
+    }
+  }
+
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => {
       const next = new Set(prev)
       if (next.has(section)) {
         next.delete(section)
@@ -1000,786 +318,672 @@ export default function AdminSettings() {
     })
   }
 
-  // Branding query and mutations
-  const { data: branding } = useQuery({
-    queryKey: ['branding'],
-    queryFn: brandingApi.getBranding,
-  })
+  // Filter settings by tab
+  const filteredSettings = useMemo(() => {
+    if (!allSettings || !Array.isArray(allSettings)) return []
 
-  // Animation toggle query and mutation
-  const { data: animationSettings } = useQuery({
-    queryKey: ['animation-enabled'],
-    queryFn: brandingApi.getAnimationEnabled,
-  })
+    const metaCategories = META_CATEGORIES[activeTab]?.categories || []
+    let filtered = allSettings.filter((s: SettingDefinition) => metaCategories.includes(s.category.key))
 
-  const updateAnimationMutation = useMutation({
-    mutationFn: (enabled: boolean) => brandingApi.updateAnimationEnabled(enabled),
-    onSuccess: (data) => {
-      // Update local cache immediately for instant effect
-      setCachedAnimationEnabled(data.enabled)
-      queryClient.invalidateQueries({ queryKey: ['animation-enabled'] })
-    },
-  })
-
-  // Fullscreen toggle query and mutation
-  const { data: fullscreenSettings } = useQuery({
-    queryKey: ['fullscreen-enabled'],
-    queryFn: brandingApi.getFullscreenEnabled,
-  })
-
-  const updateFullscreenMutation = useMutation({
-    mutationFn: (enabled: boolean) => brandingApi.updateFullscreenEnabled(enabled),
-    onSuccess: (data) => {
-      // Update local cache immediately for instant effect
-      setCachedFullscreenEnabled(data.enabled)
-      queryClient.invalidateQueries({ queryKey: ['fullscreen-enabled'] })
-    },
-  })
-
-  const updateNameMutation = useMutation({
-    mutationFn: (name: string) => brandingApi.updateName(name),
-    onSuccess: (data) => {
-      setCachedBranding(data) // Update cache immediately
-      queryClient.invalidateQueries({ queryKey: ['branding'] })
-      setEditingName(false)
-    },
-  })
-
-  const uploadLogoMutation = useMutation({
-    mutationFn: (file: File) => brandingApi.uploadLogo(file),
-    onSuccess: (data) => {
-      setCachedBranding(data) // Update cache immediately
-      queryClient.invalidateQueries({ queryKey: ['branding'] })
-    },
-  })
-
-  const deleteLogoMutation = useMutation({
-    mutationFn: () => brandingApi.deleteLogo(),
-    onSuccess: (data) => {
-      setCachedBranding(data) // Update cache immediately
-      queryClient.invalidateQueries({ queryKey: ['branding'] })
-    },
-  })
-
-  // Theme colors query and mutations
-  const { data: themeColors } = useQuery({
-    queryKey: ['theme-colors'],
-    queryFn: themeColorsApi.getColors,
-  })
-
-  const updateColorsMutation = useMutation({
-    mutationFn: themeColorsApi.updateColors,
-    onSuccess: (data) => {
-      // Apply colors immediately after successful update
-      applyThemeColors(data)
-      queryClient.invalidateQueries({ queryKey: ['theme-colors'] })
-    },
-  })
-
-  const resetColorsMutation = useMutation({
-    mutationFn: themeColorsApi.resetColors,
-    onSuccess: (data) => {
-      // Apply default colors immediately
-      applyThemeColors(data)
-      queryClient.invalidateQueries({ queryKey: ['theme-colors'] })
-    },
-  })
-
-  // Enabled themes query and mutation
-  const { data: enabledThemes } = useQuery({
-    queryKey: ['enabled-themes'],
-    queryFn: themeColorsApi.getEnabledThemes,
-  })
-
-  const updateEnabledThemesMutation = useMutation({
-    mutationFn: themeColorsApi.updateEnabledThemes,
-    onSuccess: (data) => {
-      // Update localStorage cache so useTheme hook picks up changes immediately
-      updateEnabledThemesCache(data)
-      queryClient.invalidateQueries({ queryKey: ['enabled-themes'] })
-    },
-  })
-
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      uploadLogoMutation.mutate(file)
-    }
-    // Reset input so same file can be uploaded again
-    e.target.value = ''
-  }
-
-  const handleNameSave = () => {
-    // Allow empty name (logo-only mode)
-    updateNameMutation.mutate(newName.trim())
-  }
-
-  const startEditingName = () => {
-    setNewName(branding?.name || '')
-    setEditingName(true)
-  }
-
-  const { data: categories, isLoading: categoriesLoading } = useQuery({
-    queryKey: ['admin-settings-categories'],
-    queryFn: adminSettingsApi.getCategories,
-  })
-
-  const { data: allSettings, isLoading: settingsLoading } = useQuery({
-    queryKey: ['admin-settings'],
-    queryFn: () => adminSettingsApi.getSettings(),
-  })
-
-  const updateMutation = useMutation({
-    mutationFn: ({ key, value }: { key: string; value: unknown }) =>
-      adminSettingsApi.updateSetting(key, value),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-settings'] })
-    },
-  })
-
-  const resetMutation = useMutation({
-    mutationFn: (key: string) => adminSettingsApi.resetSetting(key),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-settings'] })
-    },
-  })
-
-  const handleUpdate = (key: string, value: unknown) => {
-    updateMutation.mutate({ key, value })
-  }
-
-  const handleReset = (key: string) => {
-    resetMutation.mutate(key)
-  }
-
-  // Group categories by meta-category
-  const metaCategoriesData = useMemo(() => {
-    if (!categories || !allSettings) return null
-
-    const result: Record<string, { categories: SettingCategorySummary[]; settingsCount: number }> = {}
-
-    for (const [metaKey, meta] of Object.entries(META_CATEGORIES)) {
-      const metaCategories = categories.filter((c) => meta.categories.includes(c.key))
-      const settingsCount = allSettings.filter((s) => meta.categories.includes(s.category.key)).length
-
-      if (metaCategories.length > 0) {
-        result[metaKey] = { categories: metaCategories, settingsCount }
-      }
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase()
+      filtered = filtered.filter((s: SettingDefinition) =>
+        s.key.toLowerCase().includes(q) ||
+        s.name?.toLowerCase().includes(q) ||
+        SETTING_TRANSLATIONS[s.key]?.name.toLowerCase().includes(q)
+      )
     }
 
-    // Add "Other" for uncategorized
-    const allMetaCategories = Object.values(META_CATEGORIES).flatMap((m) => m.categories)
-    const otherCategories = categories.filter((c) => !allMetaCategories.includes(c.key))
-    if (otherCategories.length > 0) {
-      const settingsCount = allSettings.filter(
-        (s) => !allMetaCategories.includes(s.category.key)
-      ).length
-      result['other'] = { categories: otherCategories, settingsCount }
-    }
+    return filtered
+  }, [allSettings, activeTab, searchQuery])
 
-    return result
-  }, [categories, allSettings])
+  // Favorite settings
+  const favoriteSettings = useMemo(() => {
+    if (!allSettings || !Array.isArray(allSettings)) return []
+    return allSettings.filter((s: SettingDefinition) => favorites.includes(s.key))
+  }, [allSettings, favorites])
 
-  // Filter meta-categories by search
-  const filteredMetaCategories = useMemo(() => {
-    if (!metaCategoriesData) return null
-    if (!searchQuery.trim()) return metaCategoriesData
+  // ============ RENDER HELPERS ============
+  const renderToggle = (checked: boolean, onChange: () => void, disabled?: boolean) => (
+    <button
+      onClick={onChange}
+      disabled={disabled}
+      className={`relative w-12 h-6 rounded-full transition-colors ${
+        checked ? 'bg-accent-500' : 'bg-dark-600'
+      } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+    >
+      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
+        checked ? 'left-7' : 'left-1'
+      }`} />
+    </button>
+  )
 
-    const query = searchQuery.toLowerCase()
-    const result: Record<string, { categories: SettingCategorySummary[]; settingsCount: number }> = {}
+  const renderSettingRow = (setting: SettingDefinition) => {
+    const trans = SETTING_TRANSLATIONS[setting.key]
+    const name = trans?.name || setting.name || setting.key
+    const desc = trans?.description || setting.hint?.description
+    const isFav = isFavorite(setting.key)
 
-    for (const [metaKey, data] of Object.entries(metaCategoriesData)) {
-      const meta = META_CATEGORIES[metaKey] || { label: 'Другое', emoji: '📁', categories: [] }
-      if (
-        meta.label.toLowerCase().includes(query) ||
-        data.categories.some((c) => c.label.toLowerCase().includes(query))
-      ) {
-        result[metaKey] = data
-      }
-    }
-
-    return result
-  }, [metaCategoriesData, searchQuery])
-
-  if (categoriesLoading || settingsLoading) {
     return (
-      <div className="flex items-center justify-center min-h-64">
-        <div className="w-10 h-10 border-2 border-accent-500 border-t-transparent rounded-full animate-spin" />
+      <div
+        key={setting.key}
+        className="group flex items-center justify-between p-4 rounded-xl bg-dark-800/30 border border-dark-700/30 hover:border-dark-600/50 transition-all"
+      >
+        <div className="flex-1 min-w-0 mr-4">
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-dark-100 truncate">{name}</span>
+            {setting.has_override && (
+              <span className="px-1.5 py-0.5 text-xs rounded bg-warning-500/20 text-warning-400">
+                Изменено
+              </span>
+            )}
+          </div>
+          {desc && <p className="text-sm text-dark-400 truncate mt-0.5">{desc}</p>}
+        </div>
+
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Favorite button */}
+          <button
+            onClick={() => toggleFavorite(setting.key)}
+            className={`p-1.5 rounded-lg transition-all ${
+              isFav
+                ? 'text-warning-400 bg-warning-500/10'
+                : 'text-dark-500 hover:text-dark-300 opacity-0 group-hover:opacity-100'
+            }`}
+          >
+            <StarIcon filled={isFav} />
+          </button>
+
+          {/* Setting control */}
+          {setting.read_only ? (
+            <div className="flex items-center gap-2 text-dark-400">
+              <LockIcon />
+              <span className="font-mono text-sm">{String(setting.current ?? '-')}</span>
+            </div>
+          ) : setting.type === 'bool' ? (
+            renderToggle(
+              setting.current === true || setting.current === 'true',
+              () => updateSettingMutation.mutate({
+                key: setting.key,
+                value: setting.current === true || setting.current === 'true' ? 'false' : 'true'
+              }),
+              updateSettingMutation.isPending
+            )
+          ) : (
+            <SettingInput
+              setting={setting}
+              onUpdate={(value) => updateSettingMutation.mutate({ key: setting.key, value })}
+              disabled={updateSettingMutation.isPending}
+            />
+          )}
+
+          {/* Reset button */}
+          {setting.has_override && !setting.read_only && (
+            <button
+              onClick={() => resetSettingMutation.mutate(setting.key)}
+              disabled={resetSettingMutation.isPending}
+              className="p-1.5 rounded-lg text-dark-400 hover:text-dark-200 hover:bg-dark-700 transition-colors"
+              title="Сбросить"
+            >
+              <RefreshIcon />
+            </button>
+          )}
+        </div>
       </div>
     )
   }
 
-  const totalSettings = allSettings?.length || 0
-
-  return (
+  // ============ TAB CONTENT ============
+  const renderBrandingTab = () => (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link
-          to="/admin"
-          className="w-10 h-10 flex items-center justify-center rounded-xl bg-dark-800 border border-dark-700 hover:border-dark-600 transition-colors"
-        >
-          <BackIcon />
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold text-dark-50">{t('admin.settings.title')}</h1>
-          <p className="text-sm text-dark-400">
-            {Object.keys(filteredMetaCategories || {}).length} групп / {totalSettings} настроек
-          </p>
-        </div>
-      </div>
+      {/* Logo & Name */}
+      <div className="p-6 rounded-2xl bg-dark-800/50 border border-dark-700/50">
+        <h3 className="text-lg font-semibold text-dark-100 mb-4">Логотип и название</h3>
 
-      {/* Branding Card */}
-      <div className="card">
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-xl">🎨</span>
-          <h2 className="text-lg font-semibold text-dark-100">Брендинг</h2>
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-6">
-          {/* Logo Section */}
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-accent-400 to-accent-600 flex items-center justify-center overflow-hidden shadow-xl shadow-accent-500/20">
-              {branding?.has_custom_logo && branding.logo_url ? (
-                <img
-                  src={brandingApi.getLogoUrl(branding) || ''}
-                  alt="Логотип"
-                  className="w-full h-full object-cover"
-                />
+        <div className="flex items-start gap-6">
+          {/* Logo */}
+          <div className="flex-shrink-0">
+            <div
+              className="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-bold text-white overflow-hidden"
+              style={{
+                background: `linear-gradient(135deg, ${themeColors?.accent || '#3b82f6'}, ${themeColors?.accent || '#3b82f6'}dd)`
+              }}
+            >
+              {branding?.has_custom_logo ? (
+                <img src={brandingApi.getLogoUrl(branding) ?? undefined} alt="Logo" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-white font-bold text-3xl">
-                  {branding?.logo_letter || 'C'}
-                </span>
+                branding?.logo_letter || 'V'
               )}
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 mt-3">
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                accept="image/*"
                 onChange={handleLogoUpload}
                 className="hidden"
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadLogoMutation.isPending}
-                className="btn-secondary text-xs px-3 py-1.5"
-                title="Загрузить логотип"
+                className="flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-xl bg-dark-700 hover:bg-dark-600 text-dark-200 text-sm transition-colors disabled:opacity-50"
               >
-                {uploadLogoMutation.isPending ? (
-                  <div className="w-4 h-4 border-2 border-dark-400 border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <UploadIcon />
-                )}
+                <UploadIcon />
               </button>
               {branding?.has_custom_logo && (
                 <button
                   onClick={() => deleteLogoMutation.mutate()}
                   disabled={deleteLogoMutation.isPending}
-                  className="btn-danger text-xs px-3 py-1.5"
-                  title="Удалить логотип"
+                  className="px-3 py-2 rounded-xl bg-dark-700 hover:bg-error-500/20 text-dark-400 hover:text-error-400 transition-colors disabled:opacity-50"
                 >
-                  {deleteLogoMutation.isPending ? (
-                    <div className="w-4 h-4 border-2 border-error-400 border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <TrashIcon />
-                  )}
+                  <TrashIcon />
                 </button>
               )}
             </div>
-            <p className="text-xs text-dark-500">PNG, JPG, WebP, SVG до 2МБ</p>
           </div>
 
-          {/* Name Section */}
+          {/* Name */}
           <div className="flex-1">
-            <label className="label">Название проекта</label>
+            <label className="block text-sm font-medium text-dark-300 mb-2">Название проекта</label>
             {editingName ? (
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  className="input flex-1"
-                  placeholder="Оставьте пустым для режима только логотип"
+                  className="flex-1 px-4 py-2 rounded-xl bg-dark-700 border border-dark-600 text-dark-100 focus:outline-none focus:border-accent-500"
+                  placeholder="Название"
                   maxLength={50}
-                  autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleNameSave()
-                    if (e.key === 'Escape') setEditingName(false)
-                  }}
                 />
                 <button
-                  onClick={handleNameSave}
-                  disabled={updateNameMutation.isPending}
-                  className="btn-primary"
+                  onClick={() => updateBrandingMutation.mutate(newName)}
+                  disabled={updateBrandingMutation.isPending}
+                  className="px-4 py-2 rounded-xl bg-accent-500 text-white hover:bg-accent-600 transition-colors disabled:opacity-50"
                 >
-                  {updateNameMutation.isPending ? (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <CheckIcon />
-                  )}
+                  <CheckIcon />
                 </button>
                 <button
                   onClick={() => setEditingName(false)}
-                  className="btn-secondary"
+                  className="px-4 py-2 rounded-xl bg-dark-700 text-dark-300 hover:bg-dark-600 transition-colors"
                 >
                   <CloseIcon />
                 </button>
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                {branding?.name ? (
-                  <span className="text-lg font-medium text-dark-100">
-                    {branding.name}
-                  </span>
-                ) : (
-                  <span className="text-lg font-medium text-dark-500 italic">
-                    Только логотип
-                  </span>
-                )}
+                <span className="text-lg text-dark-100">{branding?.name || 'Не указано'}</span>
                 <button
-                  onClick={startEditingName}
-                  className="p-1.5 text-dark-500 hover:text-dark-200 hover:bg-dark-700 rounded transition-colors"
-                  title="Редактировать"
+                  onClick={() => {
+                    setNewName(branding?.name ?? '')
+                    setEditingName(true)
+                  }}
+                  className="p-1.5 rounded-lg text-dark-400 hover:text-dark-200 hover:bg-dark-700 transition-colors"
                 >
                   <PencilIcon />
                 </button>
-                {branding?.name && (
-                  <button
-                    onClick={() => updateNameMutation.mutate('')}
-                    disabled={updateNameMutation.isPending}
-                    className="p-1.5 text-dark-500 hover:text-error-400 hover:bg-dark-700 rounded transition-colors"
-                    title="Убрать название"
-                  >
-                    <TrashIcon />
-                  </button>
-                )}
               </div>
             )}
-            <p className="text-xs text-dark-500 mt-2">
-              Оставьте пустым, чтобы показывать только логотип
-            </p>
-          </div>
-        </div>
-
-        {/* Animation Toggle */}
-        <div className="mt-6 pt-6 border-t border-dark-700/50">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-medium text-dark-200">Анимированный фон</h3>
-              <p className="text-xs text-dark-500 mt-0.5">
-                Волновая анимация на фоне для всех пользователей
-              </p>
-            </div>
-            <button
-              onClick={() => updateAnimationMutation.mutate(!(animationSettings?.enabled ?? true))}
-              disabled={updateAnimationMutation.isPending}
-              className={`relative w-12 h-6 rounded-full transition-colors ${
-                (animationSettings?.enabled ?? true) ? 'bg-accent-500' : 'bg-dark-600'
-              } ${updateAnimationMutation.isPending ? 'opacity-50' : ''}`}
-            >
-              <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                (animationSettings?.enabled ?? true) ? 'left-7' : 'left-1'
-              }`} />
-            </button>
-          </div>
-        </div>
-
-        {/* Fullscreen Toggle */}
-        <div className="mt-4 pt-4 border-t border-dark-700/50">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-medium text-dark-200">Авто-Fullscreen</h3>
-              <p className="text-xs text-dark-500 mt-0.5">
-                Автоматически открывать на полный экран в Telegram
-              </p>
-            </div>
-            <button
-              onClick={() => updateFullscreenMutation.mutate(!(fullscreenSettings?.enabled ?? false))}
-              disabled={updateFullscreenMutation.isPending}
-              className={`relative w-12 h-6 rounded-full transition-colors ${
-                (fullscreenSettings?.enabled ?? false) ? 'bg-accent-500' : 'bg-dark-600'
-              } ${updateFullscreenMutation.isPending ? 'opacity-50' : ''}`}
-            >
-              <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                (fullscreenSettings?.enabled ?? false) ? 'left-7' : 'left-1'
-              }`} />
-            </button>
           </div>
         </div>
       </div>
 
-      {/* Theme Colors Card */}
-      <div className="card">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">🎨</span>
-            <h2 className="text-lg font-semibold text-dark-100">{t('theme.colors')}</h2>
-          </div>
-          <button
-            onClick={() => resetColorsMutation.mutate()}
-            disabled={resetColorsMutation.isPending}
-            className="btn-secondary text-xs px-3 py-1.5"
-          >
-            {resetColorsMutation.isPending ? (
-              <div className="w-4 h-4 border-2 border-dark-400 border-t-transparent rounded-full animate-spin" />
-            ) : (
-              t('theme.reset')
-            )}
-          </button>
-        </div>
+      {/* Animation & Fullscreen toggles */}
+      <div className="p-6 rounded-2xl bg-dark-800/50 border border-dark-700/50">
+        <h3 className="text-lg font-semibold text-dark-100 mb-4">Опции интерфейса</h3>
 
-        <div className="space-y-6">
-          {/* Theme Availability Toggles */}
-          <div className="pb-6 border-b border-dark-700/50">
-            <label className="label mb-3">Доступные темы</label>
-            <div className="space-y-3">
-              {/* Dark Theme Toggle */}
-              <div className="flex items-center justify-between p-3 bg-dark-800/50 rounded-xl border border-dark-700">
-                <div className="flex items-center gap-3">
-                  <MoonIcon />
-                  <div>
-                    <span className="font-medium text-dark-200">Тёмная тема</span>
-                    <p className="text-xs text-dark-500">Тёмное оформление интерфейса</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    const currentDark = enabledThemes?.dark ?? DEFAULT_ENABLED_THEMES.dark
-                    const currentLight = enabledThemes?.light ?? DEFAULT_ENABLED_THEMES.light
-                    // Prevent disabling if it's the only enabled theme
-                    if (currentDark && !currentLight) return
-                    updateEnabledThemesMutation.mutate({ dark: !currentDark })
-                  }}
-                  disabled={updateEnabledThemesMutation.isPending}
-                  className={`relative w-12 h-6 rounded-full transition-colors ${
-                    (enabledThemes?.dark ?? DEFAULT_ENABLED_THEMES.dark) ? 'bg-accent-500' : 'bg-dark-600'
-                  } ${updateEnabledThemesMutation.isPending ? 'opacity-50' : ''}`}
-                >
-                  <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                    (enabledThemes?.dark ?? DEFAULT_ENABLED_THEMES.dark) ? 'left-7' : 'left-1'
-                  }`} />
-                </button>
-              </div>
-
-              {/* Light Theme Toggle */}
-              <div className="flex items-center justify-between p-3 bg-dark-800/50 rounded-xl border border-dark-700">
-                <div className="flex items-center gap-3">
-                  <SunIcon />
-                  <div>
-                    <span className="font-medium text-dark-200">Светлая тема</span>
-                    <p className="text-xs text-dark-500">Светлое оформление интерфейса</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    const currentDark = enabledThemes?.dark ?? DEFAULT_ENABLED_THEMES.dark
-                    const currentLight = enabledThemes?.light ?? DEFAULT_ENABLED_THEMES.light
-                    // Prevent disabling if it's the only enabled theme
-                    if (currentLight && !currentDark) return
-                    updateEnabledThemesMutation.mutate({ light: !currentLight })
-                  }}
-                  disabled={updateEnabledThemesMutation.isPending}
-                  className={`relative w-12 h-6 rounded-full transition-colors ${
-                    (enabledThemes?.light ?? DEFAULT_ENABLED_THEMES.light) ? 'bg-accent-500' : 'bg-dark-600'
-                  } ${updateEnabledThemesMutation.isPending ? 'opacity-50' : ''}`}
-                >
-                  <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                    (enabledThemes?.light ?? DEFAULT_ENABLED_THEMES.light) ? 'left-7' : 'left-1'
-                  }`} />
-                </button>
-              </div>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 rounded-xl bg-dark-700/30">
+            <div>
+              <span className="font-medium text-dark-100">Анимированный фон</span>
+              <p className="text-sm text-dark-400">Волны на фоне приложения</p>
             </div>
-            <p className="text-xs text-dark-500 mt-2">
-              Включите нужные темы для пользователей. Минимум одна тема должна быть активна.
-            </p>
-          </div>
-
-          {/* Quick Presets - Collapsible */}
-          <div className="border-b border-dark-700/50">
-            <button
-              onClick={() => toggleThemeSection('presets')}
-              className="w-full flex items-center justify-between py-3 text-left"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex gap-0.5">
-                  {THEME_PRESETS.slice(0, 4).map((preset) => (
-                    <div
-                      key={preset.name}
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: preset.colors.accent }}
-                    />
-                  ))}
-                </div>
-                <div>
-                  <span className="text-sm font-medium text-dark-200">{t('theme.quickPresets')}</span>
-                  <p className="text-xs text-dark-500">{t('theme.quickPresetsDescription')}</p>
-                </div>
-              </div>
-              <div className={`transition-transform ${expandedThemeSections.has('presets') ? 'rotate-180' : ''}`}>
-                <ChevronDownIcon />
-              </div>
-            </button>
-            {expandedThemeSections.has('presets') && (
-              <div className="pb-4">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {THEME_PRESETS.map((preset) => (
-                    <button
-                      key={preset.name}
-                      onClick={() => updateColorsMutation.mutate(preset.colors)}
-                      disabled={updateColorsMutation.isPending}
-                      className="group relative p-3 rounded-xl border border-dark-700 hover:border-dark-500 transition-all hover:scale-[1.02]"
-                      style={{ backgroundColor: preset.colors.darkBackground }}
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <div
-                          className="w-4 h-4 rounded-full ring-2 ring-white/20"
-                          style={{ backgroundColor: preset.colors.accent }}
-                        />
-                        <span
-                          className="text-xs font-medium truncate"
-                          style={{ color: preset.colors.darkText }}
-                        >
-                          {preset.name}
-                        </span>
-                      </div>
-                      <div className="flex gap-1">
-                        <div
-                          className="w-3 h-3 rounded"
-                          style={{ backgroundColor: preset.colors.darkSurface }}
-                        />
-                        <div
-                          className="w-3 h-3 rounded"
-                          style={{ backgroundColor: preset.colors.success }}
-                        />
-                        <div
-                          className="w-3 h-3 rounded"
-                          style={{ backgroundColor: preset.colors.warning }}
-                        />
-                        <div
-                          className="w-3 h-3 rounded"
-                          style={{ backgroundColor: preset.colors.error }}
-                        />
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
+            {renderToggle(
+              animationSettings?.enabled ?? true,
+              () => updateAnimationMutation.mutate(!(animationSettings?.enabled ?? true)),
+              updateAnimationMutation.isPending
             )}
           </div>
 
-          {/* Custom Colors - Collapsible */}
-          <div className="border-b border-dark-700/50">
-            <button
-              onClick={() => toggleThemeSection('custom')}
-              className="w-full flex items-center justify-between py-3 text-left"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex gap-0.5">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: themeColors?.accent || DEFAULT_THEME_COLORS.accent }} />
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: themeColors?.darkBackground || DEFAULT_THEME_COLORS.darkBackground }} />
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: themeColors?.success || DEFAULT_THEME_COLORS.success }} />
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: themeColors?.error || DEFAULT_THEME_COLORS.error }} />
-                </div>
-                <div>
-                  <span className="text-sm font-medium text-dark-200">{t('theme.customColors')}</span>
-                  <p className="text-xs text-dark-500">{t('theme.customColorsDescription')}</p>
-                </div>
-              </div>
-              <div className={`transition-transform ${expandedThemeSections.has('custom') ? 'rotate-180' : ''}`}>
-                <ChevronDownIcon />
-              </div>
-            </button>
-            {expandedThemeSections.has('custom') && (
-              <div className="pb-4 space-y-6">
-                {/* Accent Color */}
-                <div>
-                  <h4 className="text-sm font-medium text-dark-300 mb-3">{t('theme.accent')}</h4>
-                  <ColorPicker
-                    label={t('theme.accent')}
-                    description={t('theme.accentDescription')}
-                    value={themeColors?.accent || DEFAULT_THEME_COLORS.accent}
-                    onChange={(color) => updateColorsMutation.mutate({ accent: color })}
-                    disabled={updateColorsMutation.isPending}
+          <div className="flex items-center justify-between p-4 rounded-xl bg-dark-700/30">
+            <div>
+              <span className="font-medium text-dark-100">Авто-Fullscreen</span>
+              <p className="text-sm text-dark-400">В Telegram WebApp</p>
+            </div>
+            {renderToggle(
+              fullscreenSettings?.enabled ?? false,
+              () => updateFullscreenMutation.mutate(!(fullscreenSettings?.enabled ?? false)),
+              updateFullscreenMutation.isPending
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  const renderThemeTab = () => (
+    <div className="space-y-6">
+      {/* Theme toggles */}
+      <div className="p-6 rounded-2xl bg-dark-800/50 border border-dark-700/50">
+        <h3 className="text-lg font-semibold text-dark-100 mb-4">Доступные темы</h3>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-center justify-between p-4 rounded-xl bg-dark-700/30">
+            <div className="flex items-center gap-3">
+              <MoonIcon />
+              <span className="font-medium text-dark-200">Тёмная</span>
+            </div>
+            {renderToggle(
+              enabledThemes?.dark ?? true,
+              () => {
+                if ((enabledThemes?.dark ?? true) && !(enabledThemes?.light ?? true)) return
+                updateEnabledThemesMutation.mutate({ dark: !(enabledThemes?.dark ?? true) })
+              },
+              updateEnabledThemesMutation.isPending
+            )}
+          </div>
+
+          <div className="flex items-center justify-between p-4 rounded-xl bg-dark-700/30">
+            <div className="flex items-center gap-3">
+              <SunIcon />
+              <span className="font-medium text-dark-200">Светлая</span>
+            </div>
+            {renderToggle(
+              enabledThemes?.light ?? true,
+              () => {
+                if ((enabledThemes?.light ?? true) && !(enabledThemes?.dark ?? true)) return
+                updateEnabledThemesMutation.mutate({ light: !(enabledThemes?.light ?? true) })
+              },
+              updateEnabledThemesMutation.isPending
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Presets */}
+      <div className="p-6 rounded-2xl bg-dark-800/50 border border-dark-700/50">
+        <button
+          onClick={() => toggleSection('presets')}
+          className="w-full flex items-center justify-between"
+        >
+          <h3 className="text-lg font-semibold text-dark-100">Быстрые пресеты</h3>
+          <div className={`transition-transform ${expandedSections.has('presets') ? 'rotate-180' : ''}`}>
+            <ChevronDownIcon />
+          </div>
+        </button>
+
+        {expandedSections.has('presets') && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+            {THEME_PRESETS.map((preset) => (
+              <button
+                key={preset.name}
+                onClick={() => updateColorsMutation.mutate(preset.colors)}
+                disabled={updateColorsMutation.isPending}
+                className="p-3 rounded-xl border border-dark-600 hover:border-dark-500 transition-all hover:scale-[1.02]"
+                style={{ backgroundColor: preset.colors.darkBackground }}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <div
+                    className="w-4 h-4 rounded-full ring-2 ring-white/20"
+                    style={{ backgroundColor: preset.colors.accent }}
                   />
+                  <span className="text-xs font-medium" style={{ color: preset.colors.darkText }}>
+                    {preset.name}
+                  </span>
                 </div>
-
-                {/* Dark Theme */}
-                <div>
-                  <h4 className="text-sm font-medium text-dark-300 mb-3 flex items-center gap-2">
-                    <MoonIcon />
-                    {t('theme.darkTheme')}
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <ColorPicker
-                      label={t('theme.background')}
-                      value={themeColors?.darkBackground || DEFAULT_THEME_COLORS.darkBackground}
-                      onChange={(color) => updateColorsMutation.mutate({ darkBackground: color })}
-                      disabled={updateColorsMutation.isPending}
-                    />
-                    <ColorPicker
-                      label={t('theme.surface')}
-                      value={themeColors?.darkSurface || DEFAULT_THEME_COLORS.darkSurface}
-                      onChange={(color) => updateColorsMutation.mutate({ darkSurface: color })}
-                      disabled={updateColorsMutation.isPending}
-                    />
-                    <ColorPicker
-                      label={t('theme.text')}
-                      value={themeColors?.darkText || DEFAULT_THEME_COLORS.darkText}
-                      onChange={(color) => updateColorsMutation.mutate({ darkText: color })}
-                      disabled={updateColorsMutation.isPending}
-                    />
-                    <ColorPicker
-                      label={t('theme.textSecondary')}
-                      value={themeColors?.darkTextSecondary || DEFAULT_THEME_COLORS.darkTextSecondary}
-                      onChange={(color) => updateColorsMutation.mutate({ darkTextSecondary: color })}
-                      disabled={updateColorsMutation.isPending}
-                    />
-                  </div>
+                <div className="flex gap-1">
+                  <div className="w-3 h-3 rounded" style={{ backgroundColor: preset.colors.success }} />
+                  <div className="w-3 h-3 rounded" style={{ backgroundColor: preset.colors.warning }} />
+                  <div className="w-3 h-3 rounded" style={{ backgroundColor: preset.colors.error }} />
                 </div>
-
-                {/* Light Theme */}
-                <div>
-                  <h4 className="text-sm font-medium text-dark-300 mb-3 flex items-center gap-2">
-                    <SunIcon />
-                    {t('theme.lightTheme')}
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <ColorPicker
-                      label={t('theme.background')}
-                      value={themeColors?.lightBackground || DEFAULT_THEME_COLORS.lightBackground}
-                      onChange={(color) => updateColorsMutation.mutate({ lightBackground: color })}
-                      disabled={updateColorsMutation.isPending}
-                    />
-                    <ColorPicker
-                      label={t('theme.surface')}
-                      value={themeColors?.lightSurface || DEFAULT_THEME_COLORS.lightSurface}
-                      onChange={(color) => updateColorsMutation.mutate({ lightSurface: color })}
-                      disabled={updateColorsMutation.isPending}
-                    />
-                    <ColorPicker
-                      label={t('theme.text')}
-                      value={themeColors?.lightText || DEFAULT_THEME_COLORS.lightText}
-                      onChange={(color) => updateColorsMutation.mutate({ lightText: color })}
-                      disabled={updateColorsMutation.isPending}
-                    />
-                    <ColorPicker
-                      label={t('theme.textSecondary')}
-                      value={themeColors?.lightTextSecondary || DEFAULT_THEME_COLORS.lightTextSecondary}
-                      onChange={(color) => updateColorsMutation.mutate({ lightTextSecondary: color })}
-                      disabled={updateColorsMutation.isPending}
-                    />
-                  </div>
-                </div>
-
-                {/* Status Colors */}
-                <div>
-                  <h4 className="text-sm font-medium text-dark-300 mb-3">{t('theme.statusColors')}</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <ColorPicker
-                      label={t('theme.success')}
-                      value={themeColors?.success || DEFAULT_THEME_COLORS.success}
-                      onChange={(color) => updateColorsMutation.mutate({ success: color })}
-                      disabled={updateColorsMutation.isPending}
-                    />
-                    <ColorPicker
-                      label={t('theme.warning')}
-                      value={themeColors?.warning || DEFAULT_THEME_COLORS.warning}
-                      onChange={(color) => updateColorsMutation.mutate({ warning: color })}
-                      disabled={updateColorsMutation.isPending}
-                    />
-                    <ColorPicker
-                      label={t('theme.error')}
-                      value={themeColors?.error || DEFAULT_THEME_COLORS.error}
-                      onChange={(color) => updateColorsMutation.mutate({ error: color })}
-                      disabled={updateColorsMutation.isPending}
-                    />
-                  </div>
-                </div>
-
-                {/* Preview */}
-                <div className="p-4 bg-dark-800/50 rounded-xl">
-                  <h4 className="text-sm font-medium text-dark-300 mb-3">{t('theme.preview')}</h4>
-                  <div className="flex flex-wrap gap-2">
-                    <button className="btn-primary text-sm">{t('theme.previewButton')}</button>
-                    <button className="btn-secondary text-sm">{t('theme.previewSecondary')}</button>
-                    <span className="badge-success">{t('theme.success')}</span>
-                    <span className="badge-warning">{t('theme.warning')}</span>
-                    <span className="badge-error">{t('theme.error')}</span>
-                  </div>
-                </div>
-              </div>
-            )}
+              </button>
+            ))}
           </div>
-        </div>
-      </div>
-
-      {/* Search */}
-      <div className="relative">
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder={t('admin.settings.searchCategoriesPlaceholder')}
-          className="input w-full pl-10"
-        />
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-500 pointer-events-none">
-          <SearchIcon />
-        </div>
-        {searchQuery && (
-          <button
-            onClick={() => setSearchQuery('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-500 hover:text-dark-300"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
         )}
       </div>
 
-      {/* Meta-category Cards Grid */}
-      {filteredMetaCategories && Object.keys(filteredMetaCategories).length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {Object.entries(filteredMetaCategories).map(([metaKey, data]) => {
-            const meta = META_CATEGORIES[metaKey] || { label: 'Другое', emoji: '📁', categories: [] }
-            return (
-              <MetaCategoryCard
-                key={metaKey}
-                metaKey={metaKey}
-                meta={meta}
-                categoriesData={data.categories}
-                settingsCount={data.settingsCount}
-                onClick={() => setSelectedMeta(metaKey)}
-              />
-            )
-          })}
-        </div>
-      ) : (
-        <div className="card text-center py-12">
-          <div className="flex justify-center mb-4 text-dark-500">
-            <CogIcon />
+      {/* Custom Colors */}
+      <div className="p-6 rounded-2xl bg-dark-800/50 border border-dark-700/50">
+        <button
+          onClick={() => toggleSection('colors')}
+          className="w-full flex items-center justify-between"
+        >
+          <h3 className="text-lg font-semibold text-dark-100">Ручная настройка</h3>
+          <div className={`transition-transform ${expandedSections.has('colors') ? 'rotate-180' : ''}`}>
+            <ChevronDownIcon />
           </div>
-          <p className="text-dark-400">
-            {searchQuery ? t('admin.settings.noSearchResults') : t('admin.settings.noSettings')}
+        </button>
+
+        {expandedSections.has('colors') && (
+          <div className="mt-4 space-y-6">
+            {/* Accent */}
+            <div>
+              <h4 className="text-sm font-medium text-dark-300 mb-3">Акцентный цвет</h4>
+              <ColorPicker
+                label={t('theme.accent')}
+                value={themeColors?.accent || DEFAULT_THEME_COLORS.accent}
+                onChange={(color) => updateColorsMutation.mutate({ accent: color })}
+                disabled={updateColorsMutation.isPending}
+              />
+            </div>
+
+            {/* Dark theme */}
+            <div>
+              <h4 className="text-sm font-medium text-dark-300 mb-3 flex items-center gap-2">
+                <MoonIcon /> Тёмная тема
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <ColorPicker
+                  label="Фон"
+                  value={themeColors?.darkBackground || DEFAULT_THEME_COLORS.darkBackground}
+                  onChange={(color) => updateColorsMutation.mutate({ darkBackground: color })}
+                  disabled={updateColorsMutation.isPending}
+                />
+                <ColorPicker
+                  label="Поверхность"
+                  value={themeColors?.darkSurface || DEFAULT_THEME_COLORS.darkSurface}
+                  onChange={(color) => updateColorsMutation.mutate({ darkSurface: color })}
+                  disabled={updateColorsMutation.isPending}
+                />
+                <ColorPicker
+                  label="Текст"
+                  value={themeColors?.darkText || DEFAULT_THEME_COLORS.darkText}
+                  onChange={(color) => updateColorsMutation.mutate({ darkText: color })}
+                  disabled={updateColorsMutation.isPending}
+                />
+                <ColorPicker
+                  label="Вторичный текст"
+                  value={themeColors?.darkTextSecondary || DEFAULT_THEME_COLORS.darkTextSecondary}
+                  onChange={(color) => updateColorsMutation.mutate({ darkTextSecondary: color })}
+                  disabled={updateColorsMutation.isPending}
+                />
+              </div>
+            </div>
+
+            {/* Light theme */}
+            <div>
+              <h4 className="text-sm font-medium text-dark-300 mb-3 flex items-center gap-2">
+                <SunIcon /> Светлая тема
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <ColorPicker
+                  label="Фон"
+                  value={themeColors?.lightBackground || DEFAULT_THEME_COLORS.lightBackground}
+                  onChange={(color) => updateColorsMutation.mutate({ lightBackground: color })}
+                  disabled={updateColorsMutation.isPending}
+                />
+                <ColorPicker
+                  label="Поверхность"
+                  value={themeColors?.lightSurface || DEFAULT_THEME_COLORS.lightSurface}
+                  onChange={(color) => updateColorsMutation.mutate({ lightSurface: color })}
+                  disabled={updateColorsMutation.isPending}
+                />
+                <ColorPicker
+                  label="Текст"
+                  value={themeColors?.lightText || DEFAULT_THEME_COLORS.lightText}
+                  onChange={(color) => updateColorsMutation.mutate({ lightText: color })}
+                  disabled={updateColorsMutation.isPending}
+                />
+                <ColorPicker
+                  label="Вторичный текст"
+                  value={themeColors?.lightTextSecondary || DEFAULT_THEME_COLORS.lightTextSecondary}
+                  onChange={(color) => updateColorsMutation.mutate({ lightTextSecondary: color })}
+                  disabled={updateColorsMutation.isPending}
+                />
+              </div>
+            </div>
+
+            {/* Status colors */}
+            <div>
+              <h4 className="text-sm font-medium text-dark-300 mb-3">Статусные цвета</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <ColorPicker
+                  label="Успех"
+                  value={themeColors?.success || DEFAULT_THEME_COLORS.success}
+                  onChange={(color) => updateColorsMutation.mutate({ success: color })}
+                  disabled={updateColorsMutation.isPending}
+                />
+                <ColorPicker
+                  label="Предупреждение"
+                  value={themeColors?.warning || DEFAULT_THEME_COLORS.warning}
+                  onChange={(color) => updateColorsMutation.mutate({ warning: color })}
+                  disabled={updateColorsMutation.isPending}
+                />
+                <ColorPicker
+                  label="Ошибка"
+                  value={themeColors?.error || DEFAULT_THEME_COLORS.error}
+                  onChange={(color) => updateColorsMutation.mutate({ error: color })}
+                  disabled={updateColorsMutation.isPending}
+                />
+              </div>
+            </div>
+
+            {/* Reset button */}
+            <button
+              onClick={() => resetColorsMutation.mutate()}
+              disabled={resetColorsMutation.isPending}
+              className="px-4 py-2 rounded-xl bg-dark-700 text-dark-300 hover:bg-dark-600 transition-colors disabled:opacity-50"
+            >
+              Сбросить все цвета
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+
+  const renderFavoritesTab = () => (
+    <div className="space-y-4">
+      {favoriteSettings.length === 0 ? (
+        <div className="p-12 rounded-2xl bg-dark-800/30 border border-dark-700/30 text-center">
+          <StarIcon filled={false} />
+          <p className="text-dark-400 mt-4">Нет избранных настроек</p>
+          <p className="text-dark-500 text-sm mt-1">
+            Нажмите ⭐ рядом с настройкой, чтобы добавить её сюда
           </p>
         </div>
-      )}
-
-      {/* Settings Modal */}
-      {selectedMeta && metaCategoriesData && metaCategoriesData[selectedMeta] && (
-        <SettingsModal
-          metaKey={selectedMeta}
-          meta={META_CATEGORIES[selectedMeta] || { label: 'Другое', emoji: '📁', categories: [] }}
-          categories={metaCategoriesData[selectedMeta].categories}
-          allSettings={allSettings || []}
-          onClose={() => setSelectedMeta(null)}
-          onUpdate={handleUpdate}
-          onReset={handleReset}
-          isUpdating={updateMutation.isPending || resetMutation.isPending}
-        />
+      ) : (
+        favoriteSettings.map(renderSettingRow)
       )}
     </div>
+  )
+
+  const renderSettingsTab = () => (
+    <div className="space-y-4">
+      {filteredSettings.length === 0 ? (
+        <div className="p-12 rounded-2xl bg-dark-800/30 border border-dark-700/30 text-center">
+          <p className="text-dark-400">Нет настроек в этой категории</p>
+        </div>
+      ) : (
+        filteredSettings.map(renderSettingRow)
+      )}
+    </div>
+  )
+
+  // ============ RENDER ============
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Link to="/admin" className="p-2 rounded-xl bg-dark-800 hover:bg-dark-700 transition-colors">
+            <BackIcon />
+          </Link>
+          <h1 className="text-2xl font-bold text-dark-100">Настройки</h1>
+        </div>
+
+        {/* Search */}
+        <div className="relative">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Поиск..."
+            className="w-64 pl-10 pr-4 py-2 rounded-xl bg-dark-800 border border-dark-700 text-dark-100 placeholder-dark-500 focus:outline-none focus:border-accent-500"
+          />
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-500">
+            <SearchIcon />
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex items-center gap-1 p-1 rounded-2xl bg-dark-800/50 border border-dark-700/50 overflow-x-auto">
+        {TABS.map((tab) => {
+          if (tab.id === 'more') {
+            return (
+              <div key={tab.id} className="relative">
+                <button
+                  onClick={() => setShowMoreDropdown(!showMoreDropdown)}
+                  className={`flex items-center gap-1 px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
+                    MORE_TABS.some(t => t.id === activeTab)
+                      ? 'bg-accent-500 text-white'
+                      : 'text-dark-400 hover:text-dark-200 hover:bg-dark-700/50'
+                  }`}
+                >
+                  {tab.label}
+                  <ChevronDownIcon />
+                </button>
+
+                {showMoreDropdown && (
+                  <div className="absolute top-full right-0 mt-2 py-2 min-w-[160px] rounded-xl bg-dark-800 border border-dark-700 shadow-xl z-50">
+                    {MORE_TABS.map((moreTab) => (
+                      <button
+                        key={moreTab.id}
+                        onClick={() => {
+                          setActiveTab(moreTab.id)
+                          setShowMoreDropdown(false)
+                        }}
+                        className={`w-full px-4 py-2 text-left text-sm transition-colors ${
+                          activeTab === moreTab.id
+                            ? 'text-accent-400 bg-accent-500/10'
+                            : 'text-dark-300 hover:text-dark-100 hover:bg-dark-700/50'
+                        }`}
+                      >
+                        {moreTab.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          }
+
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
+                activeTab === tab.id
+                  ? 'bg-accent-500 text-white'
+                  : 'text-dark-400 hover:text-dark-200 hover:bg-dark-700/50'
+              }`}
+            >
+              {tab.id === 'favorites' && <StarIcon filled={activeTab === 'favorites'} />}
+              {tab.label}
+              {tab.id === 'favorites' && favorites.length > 0 && (
+                <span className="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-white/20">
+                  {favorites.length}
+                </span>
+              )}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Tab Content */}
+      <div className="min-h-[400px]">
+        {activeTab === 'favorites' && renderFavoritesTab()}
+        {activeTab === 'branding' && renderBrandingTab()}
+        {activeTab === 'theme' && renderThemeTab()}
+        {['payments', 'subscriptions', 'interface', 'notifications', 'database', 'system', 'users'].includes(activeTab) && renderSettingsTab()}
+      </div>
+    </div>
+  )
+}
+
+// ============ SETTING INPUT COMPONENT ============
+function SettingInput({
+  setting,
+  onUpdate,
+  disabled
+}: {
+  setting: SettingDefinition
+  onUpdate: (value: string) => void
+  disabled?: boolean
+}) {
+  const [isEditing, setIsEditing] = useState(false)
+  const [value, setValue] = useState('')
+
+  const handleStart = () => {
+    setValue(String(setting.current ?? ''))
+    setIsEditing(true)
+  }
+
+  const handleSave = () => {
+    onUpdate(value)
+    setIsEditing(false)
+  }
+
+  const handleCancel = () => {
+    setIsEditing(false)
+    setValue('')
+  }
+
+  if (setting.choices && setting.choices.length > 0) {
+    return (
+      <select
+        value={String(setting.current ?? '')}
+        onChange={(e) => onUpdate(e.target.value)}
+        disabled={disabled}
+        className="bg-dark-700 border border-dark-600 rounded-lg px-3 py-1.5 text-sm text-dark-100 focus:outline-none focus:border-accent-500 disabled:opacity-50"
+      >
+        {setting.choices.map((choice, idx) => (
+          <option key={idx} value={String(choice.value)}>
+            {choice.label}
+          </option>
+        ))}
+      </select>
+    )
+  }
+
+  if (isEditing) {
+    return (
+      <div className="flex items-center gap-2">
+        <input
+          type={setting.type === 'int' || setting.type === 'float' ? 'number' : 'text'}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleSave()
+            if (e.key === 'Escape') handleCancel()
+          }}
+          autoFocus
+          className="bg-dark-700 border border-accent-500 rounded-lg px-3 py-1.5 text-sm text-dark-100 focus:outline-none w-32"
+        />
+        <button
+          onClick={handleSave}
+          className="p-1.5 rounded-lg bg-accent-500 text-white hover:bg-accent-600 transition-colors"
+        >
+          <CheckIcon />
+        </button>
+        <button
+          onClick={handleCancel}
+          className="p-1.5 rounded-lg bg-dark-600 text-dark-300 hover:bg-dark-500 transition-colors"
+        >
+          <CloseIcon />
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <button
+      onClick={handleStart}
+      disabled={disabled}
+      className="bg-dark-700 border border-dark-600 rounded-lg px-3 py-1.5 text-sm text-dark-200 hover:border-dark-500 transition-colors disabled:opacity-50 min-w-[80px] text-left font-mono truncate max-w-[150px]"
+    >
+      {String(setting.current ?? '-')}
+    </button>
   )
 }
