@@ -172,7 +172,7 @@ export default function TopUpModal({ method, onClose, initialAmountRubles }: Top
 
   const modalContent = (
     <div
-      className="fixed inset-0 bg-black/70 z-[60] flex items-start justify-center p-4 pt-4 overflow-hidden"
+      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center p-4 overflow-hidden"
       style={{
         paddingBottom: `max(1rem, env(safe-area-inset-bottom, 0px))`,
       }}
@@ -180,7 +180,7 @@ export default function TopUpModal({ method, onClose, initialAmountRubles }: Top
     >
       <div
         data-modal-content
-        className="w-full max-w-sm bg-dark-900 rounded-2xl border border-dark-700/50 shadow-2xl overflow-hidden animate-scale-in"
+        className="w-full max-w-sm bg-dark-900/95 backdrop-blur-xl rounded-3xl border border-dark-700/50 shadow-2xl overflow-hidden animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

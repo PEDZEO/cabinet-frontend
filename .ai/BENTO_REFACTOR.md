@@ -169,11 +169,15 @@ interface BentoCardProps {
 ### Этап 6: Модалки
 > Обновить модальные окна в bento-стиле
 
-| # | Компонент | Заметки |
-|---|-----------|---------|
-| 6.1 | ConnectionModal | QR-код, кнопки подключения |
-| 6.2 | TopUpModal | Форма пополнения |
-| 6.3 | InsufficientBalancePrompt | Промпт о недостатке средств |
+| # | Компонент | Статус | Заметки |
+|---|-----------|--------|---------|
+| 6.1 | ConnectionModal | `[x]` | ✅ z-[60], rounded-3xl, backdrop-blur-xl (desktop + mobile) |
+| 6.2 | TopUpModal | `[x]` | ✅ z-[60], rounded-3xl, backdrop-blur-xl |
+| 6.3 | InsufficientBalancePrompt | `[x]` | ✅ z-[60], rounded-3xl, backdrop-blur-xl (PaymentMethodModal тоже) |
+| 6.4 | Wheel Result Modal | `[x]` | ✅ z-[60] |
+| 6.5 | Contests Modal | `[x]` | ✅ z-[60], bento-card, backdrop-blur-sm |
+
+**Выборка модалок (select/close overlap):** Не найдено — все селекты в Subscription.tsx используют кнопки вместо `<select>` элемента.
 
 ### Этап 7: Header
 > Обновить шапку (опционально)
@@ -224,3 +228,18 @@ interface BentoCardProps {
 - ✅ **Support.tsx**: 3 карточки → `bento-card`, tickets list items → `rounded-bento`
 - ✅ **Profile.tsx**: 3 карточки → `bento-card`
 - ✅ **Info.tsx**: FAQ items, rules, privacy, offer → `bento-card`
+
+### 2026-01-20 — Phase 6 Complete (Модальные окна)
+- ✅ **ConnectionModal.tsx**: z-[60], rounded-3xl, backdrop-blur-xl (desktop + mobile wrapper)
+- ✅ **TopUpModal.tsx**: z-[60], rounded-3xl, backdrop-blur-xl
+- ✅ **InsufficientBalancePrompt.tsx**: z-[60], rounded-3xl, backdrop-blur-xl (PaymentMethodModal тоже)
+- ✅ **Wheel.tsx**: Result modal z-[60]
+- ✅ **Contests.tsx**: Game modal z-[60], bento-card, backdrop-blur-sm
+
+**Z-Index Hierarchy (фиксировано):**
+- z-[9999]: ConnectionModal mobile view
+- z-[9998]: ConnectionModal mobile backdrop
+- z-[100]: Toast, MaintenanceScreen, ChannelSubscriptionScreen
+- z-[60]: Все модальные окна (TopUpModal, InsufficientBalancePrompt, ConnectionModal desktop, Wheel, Contests)
+- z-50: Header, dropdowns
+- z-40: TabBar (bottom nav)

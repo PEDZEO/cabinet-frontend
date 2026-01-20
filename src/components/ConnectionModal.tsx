@@ -215,11 +215,11 @@ export default function ConnectionModal({ onClose }: ConnectionModalProps) {
   // Desktop modal wrapper - compact centered modal with max height
   const DesktopWrapper = ({ children }: { children: React.ReactNode }) => (
     <div
-      className="fixed inset-0 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-fade-in"
+      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-md max-h-[85vh] bg-dark-900 rounded-2xl border border-dark-700/50 shadow-2xl flex flex-col overflow-hidden animate-scale-in"
+        className="relative w-full max-w-md max-h-[85vh] bg-dark-900/95 backdrop-blur-xl rounded-3xl border border-dark-700/50 shadow-2xl flex flex-col overflow-hidden animate-scale-in"
         onClick={e => e.stopPropagation()}
       >
         {/* Desktop close button */}
@@ -243,7 +243,7 @@ export default function ConnectionModal({ onClose }: ConnectionModalProps) {
         <div className="fixed inset-0 z-[9998] bg-black/50 animate-fade-in" onClick={onClose} />
         {/* Modal - fullscreen overlay */}
         <div
-          className="fixed inset-0 z-[9999] bg-dark-900 flex flex-col animate-slide-up"
+          className="fixed inset-0 z-[9999] bg-dark-900/95 backdrop-blur-xl flex flex-col animate-slide-up"
           style={{
             paddingTop: safeTop ? `${safeTop}px` : 'env(safe-area-inset-top, 0px)',
             paddingBottom: safeBottom ? `${safeBottom}px` : 'env(safe-area-inset-bottom, 0px)'
