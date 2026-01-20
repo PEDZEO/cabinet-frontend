@@ -87,6 +87,31 @@ apiClient.interceptors.request.use(async (config: InternalAxiosRequestConfig) =>
   return config
 })
 
+// Custom error types for special handling
+export interface MaintenanceError {
+  code: 'maintenance'
+  message: string
+  reason?: string
+}
+
+export interface ChannelSubscriptionError {
+  code: 'channel_subscription_required'
+  message: string
+  channel_link?: string
+}
+
+export function isMaintenanceError(error: unknown): error is { response: { status: 503, data: { detail: MaintenanceError } } } {
+  if (!error || typeof error !== 'object') return false
+  const err = error as AxiosError<{ detail: MaintenanceError }>
+  return err.response?.status === 503 && err.response?.data?.detail?.code === 'maintenance'
+}
+
+export function isChannelSubscriptionError(error: unknown): error is { response: { status: 403, data: { detail: ChannelSubscriptionError } } } {
+  if (!error || typeof error !== 'object') return false
+  const err = error as AxiosError<{ detail: ChannelSubscriptionError }>
+  return err.response?.status === 403 && err.response?.data?.detail?.code === 'channel_subscription_required'
+}
+
 // Response interceptor - handle 401 as fallback
 apiClient.interceptors.response.use(
   (response) => response,
