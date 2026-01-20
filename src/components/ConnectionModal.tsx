@@ -201,10 +201,10 @@ function detectPlatform(): string | null {
 
 export default function ConnectionModal({ onClose }: ConnectionModalProps) {
   const { t, i18n } = useTranslation()
-  const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null)
   const [selectedApp, setSelectedApp] = useState<AppInfo | null>(null)
   const [copied, setCopied] = useState(false)
   const [detectedPlatform, setDetectedPlatform] = useState<string | null>(null)
+  const [showAppSelector, setShowAppSelector] = useState(false)
 
   const { data: appConfig, isLoading, error } = useQuery<AppConfig>({
     queryKey: ['appConfig'],
@@ -214,6 +214,22 @@ export default function ConnectionModal({ onClose }: ConnectionModalProps) {
   useEffect(() => {
     setDetectedPlatform(detectPlatform())
   }, [])
+
+  // Auto-select platform and app when data is loaded
+  useEffect(() => {
+    if (!appConfig?.platforms || selectedApp) return
+
+    const platform = detectedPlatform || platformOrder.find(p => appConfig.platforms[p]?.length > 0)
+    if (!platform || !appConfig.platforms[platform]?.length) return
+
+    const apps = appConfig.platforms[platform]
+    // Prefer featured app, otherwise first app
+    const app = apps.find(a => a.isFeatured) || apps[0]
+
+    if (app) {
+      setSelectedApp(app)
+    }
+  }, [appConfig, detectedPlatform, selectedApp])
 
   // Lock body scroll when modal is open (works on iOS too)
   useEffect(() => {
@@ -272,11 +288,6 @@ export default function ConnectionModal({ onClose }: ConnectionModalProps) {
     }
     return available
   }, [appConfig, detectedPlatform])
-
-  const platformApps = useMemo(() => {
-    if (!selectedPlatform || !appConfig?.platforms?.[selectedPlatform]) return []
-    return appConfig.platforms[selectedPlatform]
-  }, [selectedPlatform, appConfig])
 
   const copySubscriptionLink = async () => {
     if (!appConfig?.subscriptionUrl) return
@@ -384,18 +395,33 @@ export default function ConnectionModal({ onClose }: ConnectionModalProps) {
     )
   }
 
-  // Step 1: Select platform
-  if (!selectedPlatform) {
+  // Get all apps for selector
+  const allAppsForSelector = useMemo(() => {
+    if (!appConfig?.platforms) return []
+    const result: { platform: string; apps: AppInfo[] }[] = []
+    for (const platform of availablePlatforms) {
+      const apps = appConfig.platforms[platform]
+      if (apps?.length) {
+        result.push({ platform, apps })
+      }
+    }
+    return result
+  }, [appConfig, availablePlatforms])
+
+  // App selector view
+  if (showAppSelector || !selectedApp) {
     return (
       <ModalWrapper>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-dark-800">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-accent-500/10 flex items-center justify-center">
-              <span className="text-lg">📱</span>
-            </div>
+          <div className="flex items-center gap-2">
+            {selectedApp && (
+              <button onClick={() => setShowAppSelector(false)} className="p-2 -ml-2 rounded-xl hover:bg-dark-800 text-dark-400">
+                <BackIcon />
+              </button>
+            )}
             <div>
-              <h2 className="font-semibold text-dark-100 text-sm">{t('subscription.connection.title')}</h2>
+              <h2 className="font-semibold text-dark-100 text-sm">{t('subscription.connection.selectApp')}</h2>
               <p className="text-xs text-dark-500">{t('subscription.connection.selectDevice')}</p>
             </div>
           </div>
@@ -404,41 +430,58 @@ export default function ConnectionModal({ onClose }: ConnectionModalProps) {
           </button>
         </div>
 
-        {/* Platforms grid */}
-        <div className="p-4">
-          <div className="grid grid-cols-3 gap-2">
-            {availablePlatforms.map((platform) => {
-              const IconComponent = platformIconComponents[platform]
-              const isDetected = platform === detectedPlatform
-              return (
-                <button
-                  key={platform}
-                  onClick={() => setSelectedPlatform(platform)}
-                  className={`relative p-3 rounded-xl border transition-all flex flex-col items-center gap-2 ${
-                    isDetected
-                      ? 'bg-accent-500/10 border-accent-500/50'
-                      : 'bg-dark-800/50 border-dark-700/50 hover:border-dark-600'
-                  }`}
-                >
-                  {isDetected && (
-                    <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded text-[8px] font-medium bg-accent-500 text-white whitespace-nowrap">
-                      {t('subscription.connection.yourDevice')}
-                    </div>
-                  )}
-                  <div className={isDetected ? 'text-accent-400' : 'text-dark-400'}>
+        {/* Apps by platform */}
+        <div className="p-4 space-y-4 max-h-[60vh] overflow-y-auto">
+          {allAppsForSelector.map(({ platform, apps }) => {
+            const IconComponent = platformIconComponents[platform]
+            const isCurrentPlatform = platform === detectedPlatform
+            return (
+              <div key={platform}>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className={`${isCurrentPlatform ? 'text-accent-400' : 'text-dark-500'}`}>
                     {IconComponent && <IconComponent />}
                   </div>
-                  <span className={`text-xs font-medium ${isDetected ? 'text-accent-300' : 'text-dark-300'}`}>
+                  <span className={`text-xs font-medium ${isCurrentPlatform ? 'text-accent-400' : 'text-dark-400'}`}>
                     {getPlatformName(platform)}
+                    {isCurrentPlatform && <span className="ml-1 text-[10px]">({t('subscription.connection.yourDevice')})</span>}
                   </span>
-                </button>
-              )
-            })}
-          </div>
+                </div>
+                <div className="space-y-1.5">
+                  {apps.map((app) => (
+                    <button
+                      key={app.id}
+                      onClick={() => {
+                        setSelectedApp(app)
+                        setShowAppSelector(false)
+                      }}
+                      className={`w-full p-2.5 rounded-xl border transition-all flex items-center gap-3 ${
+                        selectedApp?.id === app.id
+                          ? 'bg-accent-500/10 border-accent-500/50'
+                          : 'bg-dark-800/50 border-dark-700/50 hover:border-dark-600'
+                      }`}
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-dark-700 flex items-center justify-center text-sm">
+                        {getAppIcon(app.name, app.isFeatured)}
+                      </div>
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <span className="font-medium text-dark-100 text-sm truncate">{app.name}</span>
+                        {app.isFeatured && (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-accent-500/20 text-accent-400 shrink-0">
+                            {t('subscription.connection.featured')}
+                          </span>
+                        )}
+                      </div>
+                      <ChevronIcon />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
         </div>
 
         {/* Copy link */}
-        <div className="px-4 pb-4">
+        <div className="p-4 border-t border-dark-800">
           <button
             onClick={copySubscriptionLink}
             className={`w-full p-2.5 rounded-xl border-2 border-dashed transition-all flex items-center justify-center gap-2 text-sm ${
@@ -455,84 +498,23 @@ export default function ConnectionModal({ onClose }: ConnectionModalProps) {
     )
   }
 
-  // Step 2: Select app
-  if (!selectedApp) {
-    return (
-      <ModalWrapper>
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-dark-800">
-          <div className="flex items-center gap-2">
-            <button onClick={() => setSelectedPlatform(null)} className="p-2 -ml-2 rounded-xl hover:bg-dark-800 text-dark-400">
-              <BackIcon />
-            </button>
-            <div>
-              <h2 className="font-semibold text-dark-100 text-sm">{getPlatformName(selectedPlatform)}</h2>
-              <p className="text-xs text-dark-500">{t('subscription.connection.selectApp')}</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-dark-800 text-dark-400">
-            <CloseIcon />
-          </button>
-        </div>
-
-        {/* Apps list */}
-        <div className="p-4 max-h-[50vh] overflow-y-auto">
-          {platformApps.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-dark-800 flex items-center justify-center">
-                <span className="text-xl">📭</span>
-              </div>
-              <p className="text-dark-500 text-sm">{t('subscription.connection.noApps')}</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {platformApps.map((app) => (
-                <button
-                  key={app.id}
-                  onClick={() => setSelectedApp(app)}
-                  className="w-full p-3 rounded-xl bg-dark-800/50 border border-dark-700/50 hover:border-dark-600 transition-all flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-dark-700 flex items-center justify-center text-base">
-                      {getAppIcon(app.name, app.isFeatured)}
-                    </div>
-                    <div className="text-left">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-dark-100 text-sm">{app.name}</span>
-                        {app.isFeatured && (
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-accent-500/20 text-accent-400">
-                            {t('subscription.connection.featured')}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-dark-500">
-                    <ChevronIcon />
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </ModalWrapper>
-    )
-  }
-
-  // Step 3: App instructions
+  // App instructions (main view)
   return (
     <ModalWrapper>
-      {/* Header */}
+      {/* Header with app info and change button */}
       <div className="flex items-center justify-between p-4 border-b border-dark-800">
-        <div className="flex items-center gap-2">
-          <button onClick={() => setSelectedApp(null)} className="p-2 -ml-2 rounded-xl hover:bg-dark-800 text-dark-400">
-            <BackIcon />
-          </button>
-          <div>
-            <h2 className="font-semibold text-dark-100 text-sm">{selectedApp.name}</h2>
-            <p className="text-xs text-dark-500">{t('subscription.connection.instructions')}</p>
+        <button
+          onClick={() => setShowAppSelector(true)}
+          className="flex items-center gap-3 p-2 -m-2 rounded-xl hover:bg-dark-800/50 transition-colors"
+        >
+          <div className="w-10 h-10 rounded-xl bg-dark-700 flex items-center justify-center">
+            {getAppIcon(selectedApp.name, selectedApp.isFeatured)}
           </div>
-        </div>
+          <div className="text-left">
+            <h2 className="font-semibold text-dark-100 text-sm">{selectedApp.name}</h2>
+            <p className="text-xs text-accent-400">{t('subscription.connection.changeApp') || 'Сменить'} →</p>
+          </div>
+        </button>
         <button onClick={onClose} className="p-2 rounded-xl hover:bg-dark-800 text-dark-400">
           <CloseIcon />
         </button>

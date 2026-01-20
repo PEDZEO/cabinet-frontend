@@ -185,7 +185,8 @@
       "copyLink": "Copy subscription link",
       "copied": "Link copied!",
       "openLink": "Open link",
-      "instructions": "Instructions"
+      "instructions": "Instructions",
+      "changeApp": "Change app"
     },
     "myDevices": "My Devices",
     "noDevices": "No connected devices",
