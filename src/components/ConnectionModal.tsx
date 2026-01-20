@@ -174,16 +174,6 @@ export default function ConnectionModal({ onClose }: ConnectionModalProps) {
     return available
   }, [appConfig, detectedPlatform])
 
-  const allApps = useMemo(() => {
-    if (!appConfig?.platforms) return []
-    const result: AppInfo[] = []
-    for (const platform of availablePlatforms) {
-      const apps = appConfig.platforms[platform]
-      if (apps?.length) result.push(...apps)
-    }
-    return result
-  }, [appConfig, availablePlatforms])
-
   const copySubscriptionLink = async () => {
     if (!appConfig?.subscriptionUrl) return
     try {
