@@ -126,6 +126,7 @@ interface BentoCardProps {
 Этап 2: ██████████ 100%
 Этап 3: ██████████ 100%
 Этап 4: ██████████ 100%
+Этап 5: ██████████ 100%
 ─────────────────────
 Общий:  ██████████ 100%
 ```
@@ -156,14 +157,14 @@ interface BentoCardProps {
 ### Этап 5: Остальные страницы пользователя
 > Применить bento-стили к основным страницам
 
-| # | Страница | Приоритет | Объём |
-|---|----------|-----------|-------|
-| 5.1 | Subscription.tsx | High | Большая — формы, тарифы, карточки |
-| 5.2 | Balance.tsx | High | Средняя — баланс, транзакции, методы оплаты |
-| 5.3 | Referral.tsx | Medium | Средняя — статистика, ссылка, условия |
-| 5.4 | Support.tsx | Medium | Малая — тикеты |
-| 5.5 | Profile.tsx | Low | Малая — настройки |
-| 5.6 | Info.tsx | Low | Малая — статичный контент |
+| # | Страница | Приоритет | Объём | Статус |
+|---|----------|-----------|-------|--------|
+| 5.1 | Subscription.tsx | High | Большая — формы, тарифы, карточки | `[x]` |
+| 5.2 | Balance.tsx | High | Средняя — баланс, транзакции, методы оплаты | `[x]` |
+| 5.3 | Referral.tsx | Medium | Средняя — статистика, ссылка, условия | `[x]` |
+| 5.4 | Support.tsx | Medium | Малая — тикеты | `[x]` |
+| 5.5 | Profile.tsx | Low | Малая — настройки | `[x]` |
+| 5.6 | Info.tsx | Low | Малая — статичный контент | `[x]` |
 
 ### Этап 6: Модалки
 > Обновить модальные окна в bento-стиле
@@ -203,3 +204,23 @@ interface BentoCardProps {
 - ✅ Floating TabBar
 - ✅ Dashboard в bento-стиле
 - ✅ Commit: `bf0bcfb`
+
+### 2026-01-20 — Subscription.tsx Refactor
+- ✅ Все секции `card` → `bento-card` (6 шт):
+  - Current Subscription (line 429)
+  - Daily Pause (line 634)
+  - Additional Options (line 733)
+  - My Devices (line 1153)
+  - Tariffs section (line 1223)
+  - Classic mode purchase (line 1925)
+- ✅ Tariff cards: `bento-card-hover` + `bento-card-glow` для выбранного
+- ✅ Period selection cards: `bento-card-hover` + `bento-card-glow`
+- ✅ Traffic selection cards: `bento-card-hover` + `bento-card-glow`
+- ✅ Исправлен `.bento-grid` — добавлен breakpoint для xs (<375px)
+
+### 2026-01-20 — Phase 2 Complete (Все страницы пользователя)
+- ✅ **Balance.tsx**: 4 карточки → `bento-card`, методы оплаты → `bento-card-hover`
+- ✅ **Referral.tsx**: stats grid → `bento-grid` + `bento-card-hover`, 5 секций → `bento-card`
+- ✅ **Support.tsx**: 3 карточки → `bento-card`, tickets list items → `rounded-bento`
+- ✅ **Profile.tsx**: 3 карточки → `bento-card`
+- ✅ **Info.tsx**: FAQ items, rules, privacy, offer → `bento-card`

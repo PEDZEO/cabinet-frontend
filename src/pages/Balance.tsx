@@ -122,7 +122,7 @@ export default function Balance() {
       <h1 className="text-2xl sm:text-3xl font-bold text-dark-50">{t('balance.title')}</h1>
 
       {/* Balance Card */}
-      <div className="card bg-gradient-to-br from-accent-500/10 to-transparent border-accent-500/20">
+      <div className="bento-card bento-card-glow bg-gradient-to-br from-accent-500/10 to-transparent">
         <div className="text-sm text-dark-400 mb-2">{t('balance.currentBalance')}</div>
         <div className="text-4xl sm:text-5xl font-bold text-dark-50">
           {formatAmount(balanceData?.balance_rubles || 0)}
@@ -131,7 +131,7 @@ export default function Balance() {
       </div>
 
       {/* Promo Code Section */}
-      <div className="card">
+      <div className="bento-card">
         <h2 className="text-lg font-semibold text-dark-100 mb-4">{t('balance.promocode.title')}</h2>
         <div className="flex gap-3">
           <input
@@ -168,7 +168,7 @@ export default function Balance() {
 
       {/* Payment Methods */}
       {paymentMethods && paymentMethods.length > 0 && (
-        <div className="card">
+        <div className="bento-card">
           <h2 className="text-lg font-semibold text-dark-100 mb-4">{t('balance.topUpBalance')}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {paymentMethods.map((method) => {
@@ -181,10 +181,10 @@ export default function Balance() {
                 key={method.id}
                 disabled={!method.is_available}
                 onClick={() => method.is_available && setSelectedMethod(method)}
-                className={`p-4 rounded-xl border text-left transition-all ${
+                className={`bento-card-hover p-4 text-left transition-all ${
                   method.is_available
-                    ? 'border-dark-700/50 hover:border-accent-500/50 bg-dark-800/30 cursor-pointer'
-                    : 'border-dark-800/30 bg-dark-900/30 opacity-50 cursor-not-allowed'
+                    ? 'cursor-pointer'
+                    : 'opacity-50 cursor-not-allowed'
                 }`}
               >
                 <div className="font-semibold text-dark-100">{translatedName || method.name}</div>
@@ -202,7 +202,7 @@ export default function Balance() {
       )}
 
       {/* Transaction History */}
-      <div className="card">
+      <div className="bento-card">
         <h2 className="text-lg font-semibold text-dark-100 mb-4">{t('balance.transactionHistory')}</h2>
 
         {isLoading ? (

@@ -363,8 +363,14 @@
 
   .bento-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
     gap: var(--bento-gap);
+  }
+
+  @media (min-width: 375px) {
+    .bento-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
   }
 
   @media (min-width: 768px) {
