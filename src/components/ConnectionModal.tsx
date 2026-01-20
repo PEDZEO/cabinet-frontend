@@ -231,14 +231,35 @@ export default function ConnectionModal({ onClose }: ConnectionModalProps) {
     }
   }, [appConfig, detectedPlatform, selectedApp])
 
-  // Prevent body scroll when modal is open
+  // Scroll lock when modal is open (cross-platform)
   useEffect(() => {
-    // Simple overflow hidden - let the modal handle its own scrolling
-    const originalOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    const scrollY = window.scrollY
+    const body = document.body
+    const html = document.documentElement
+
+    // Save original styles
+    const originalStyles = {
+      bodyOverflow: body.style.overflow,
+      bodyPosition: body.style.position,
+      bodyTop: body.style.top,
+      bodyWidth: body.style.width,
+      htmlOverflow: html.style.overflow,
+    }
+
+    // Lock scroll
+    body.style.overflow = 'hidden'
+    body.style.position = 'fixed'
+    body.style.top = `-${scrollY}px`
+    body.style.width = '100%'
+    html.style.overflow = 'hidden'
 
     return () => {
-      document.body.style.overflow = originalOverflow
+      body.style.overflow = originalStyles.bodyOverflow
+      body.style.position = originalStyles.bodyPosition
+      body.style.top = originalStyles.bodyTop
+      body.style.width = originalStyles.bodyWidth
+      html.style.overflow = originalStyles.htmlOverflow
+      window.scrollTo(0, scrollY)
     }
   }, [])
 
