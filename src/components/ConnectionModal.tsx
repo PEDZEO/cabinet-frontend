@@ -345,19 +345,21 @@ export default function ConnectionModal({ onClose }: ConnectionModalProps) {
   // Modal wrapper - top aligned with auto-focus
   const ModalWrapper = ({ children }: { children: React.ReactNode }) => (
     <div
-      className="fixed inset-0 bg-black/70 z-[60] flex items-start justify-center"
-      style={{ paddingTop: `calc(2rem + env(safe-area-inset-top, 0px))` }}
+      className="fixed inset-0 bg-black/70 z-[60] flex items-start justify-center p-4 pt-8 overflow-hidden"
+      style={{
+        paddingTop: `max(2rem, calc(1rem + env(safe-area-inset-top, 0px)))`,
+        paddingBottom: `max(1rem, env(safe-area-inset-bottom, 0px))`,
+      }}
       onClick={onClose}
     >
       <div
         ref={modalContentRef}
         data-modal-content
         tabIndex={-1}
-        className="w-[calc(100%-2rem)] max-w-sm bg-dark-900 rounded-2xl border border-dark-700/50 overflow-y-auto overscroll-contain animate-scale-in shadow-2xl flex flex-col outline-none"
+        className="w-full max-w-sm bg-dark-900 rounded-2xl border border-dark-700/50 overflow-y-auto overscroll-contain animate-scale-in shadow-2xl flex flex-col outline-none"
         style={{
-          maxHeight: 'calc(100dvh - 6rem)',
+          maxHeight: `calc(100vh - 4rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))`,
           WebkitOverflowScrolling: 'touch',
-          touchAction: 'pan-y',
         }}
         onClick={(e) => e.stopPropagation()}
       >
