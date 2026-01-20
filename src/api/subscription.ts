@@ -156,14 +156,19 @@ export const subscriptionApi = {
       uuid: string
       name: string
       country_code: string | null
+      base_price_kopeks: number
       price_kopeks: number
+      price_per_month_kopeks: number
       price_rubles: number
       is_available: boolean
       is_connected: boolean
-      is_trial_eligible: boolean
+      has_discount: boolean
+      discount_percent: number
     }>
     connected_count: number
     has_subscription: boolean
+    days_left: number
+    discount_percent: number
   }> => {
     const response = await apiClient.get('/cabinet/subscription/countries')
     return response.data
