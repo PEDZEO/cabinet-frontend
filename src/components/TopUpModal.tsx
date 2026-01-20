@@ -247,13 +247,20 @@ export default function TopUpModal({ method, onClose, initialAmountRubles }: Top
     : convertAmount(rub).toFixed(currencyDecimals)
   const isPending = topUpMutation.isPending || starsPaymentMutation.isPending
 
-  // Auto-focus input (only on desktop)
+  // Auto-focus input - works on mobile in Telegram WebApp
   useEffect(() => {
+    // Small delay to ensure DOM is ready
     const timer = setTimeout(() => {
-      if (!isMobileScreen) inputRef.current?.focus()
-    }, 150)
+      if (inputRef.current) {
+        inputRef.current.focus()
+        // For iOS Safari - scroll input into view to trigger keyboard
+        if (isMobileScreen) {
+          inputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+      }
+    }, 100)
     return () => clearTimeout(timer)
-  }, [isMobileScreen])
+  }, [])
 
   // Calculate display amount for preview
   const displayAmount = amount && parseFloat(amount) > 0 ? parseFloat(amount) : 0
@@ -330,6 +337,7 @@ export default function TopUpModal({ method, onClose, initialAmountRubles }: Top
             className="w-full h-16 px-5 pr-16 text-2xl font-bold bg-transparent text-dark-100 placeholder:text-dark-600 focus:outline-none"
             style={{ fontSize: '24px' }}
             autoComplete="off"
+            autoFocus
           />
           <span className="absolute right-5 top-1/2 -translate-y-1/2 text-lg font-semibold text-dark-500">
             {currencySymbol}
