@@ -293,6 +293,16 @@ export default function ConnectionModal({ onClose }: ConnectionModalProps) {
 
   // App selector
   if (showAppSelector) {
+    const platformNames: Record<string, string> = {
+      ios: 'iOS',
+      android: 'Android',
+      windows: 'Windows',
+      macos: 'macOS',
+      linux: 'Linux',
+      androidTV: 'Android TV',
+      appleTV: 'Apple TV'
+    }
+
     return (
       <Wrapper>
         {/* Header */}
@@ -303,29 +313,54 @@ export default function ConnectionModal({ onClose }: ConnectionModalProps) {
           <h2 className="font-bold text-dark-100 text-lg">{t('subscription.connection.selectApp')}</h2>
         </div>
 
-        {/* Apps list */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-2">
-          {allApps.map(app => (
-            <button
-              key={app.id}
-              onClick={() => { setSelectedApp(app); setShowAppSelector(false) }}
-              className={`w-full p-4 rounded-2xl flex items-center gap-4 transition-all ${
-                selectedApp?.id === app.id
-                  ? 'bg-accent-500/15 ring-2 ring-accent-500/50'
-                  : 'bg-dark-800/50 hover:bg-dark-800'
-              }`}
-            >
-              <div className="w-12 h-12 rounded-xl bg-dark-700 flex items-center justify-center text-dark-200">
-                {getAppIcon(app.name)}
+        {/* Apps grouped by platform */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-5">
+          {availablePlatforms.map(platform => {
+            const apps = appConfig.platforms[platform]
+            if (!apps?.length) return null
+            const isCurrentPlatform = platform === detectedPlatform
+
+            return (
+              <div key={platform}>
+                {/* Platform header */}
+                <div className="flex items-center gap-2 mb-2 px-1">
+                  <span className={`text-sm font-semibold ${isCurrentPlatform ? 'text-accent-400' : 'text-dark-400'}`}>
+                    {platformNames[platform] || platform}
+                  </span>
+                  {isCurrentPlatform && (
+                    <span className="text-xs text-accent-500 bg-accent-500/10 px-2 py-0.5 rounded-full">
+                      {t('subscription.connection.yourDevice')}
+                    </span>
+                  )}
+                </div>
+
+                {/* Apps for this platform */}
+                <div className="space-y-2">
+                  {apps.map(app => (
+                    <button
+                      key={app.id}
+                      onClick={() => { setSelectedApp(app); setShowAppSelector(false) }}
+                      className={`w-full p-3 rounded-xl flex items-center gap-3 transition-all ${
+                        selectedApp?.id === app.id
+                          ? 'bg-accent-500/15 ring-2 ring-accent-500/50'
+                          : 'bg-dark-800/40 hover:bg-dark-800/70 active:bg-dark-800'
+                      }`}
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-dark-700 flex items-center justify-center text-dark-200">
+                        {getAppIcon(app.name)}
+                      </div>
+                      <span className="font-medium text-dark-100 flex-1 text-left">{app.name}</span>
+                      {app.isFeatured && (
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-accent-500/20 text-accent-400">
+                          {t('subscription.connection.featured')}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <span className="font-semibold text-dark-100 text-lg flex-1 text-left">{app.name}</span>
-              {app.isFeatured && (
-                <span className="px-3 py-1 rounded-lg text-xs font-bold bg-accent-500/20 text-accent-400">
-                  {t('subscription.connection.featured')}
-                </span>
-              )}
-            </button>
-          ))}
+            )
+          })}
         </div>
       </Wrapper>
     )
