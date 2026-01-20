@@ -166,15 +166,15 @@ export default function TopUpModal({ method, onClose, initialAmountRubles }: Top
 
   return (
     <div
-      className="fixed inset-0 bg-black/70 z-[60] flex items-start sm:items-center justify-center p-4 overflow-y-auto"
-      style={{
-        paddingTop: 'calc(2rem + env(safe-area-inset-top, 0px))',
-        paddingBottom: 'calc(6rem + env(safe-area-inset-bottom, 0px))',
-      }}
+      className="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-sm bg-dark-900 rounded-2xl border border-dark-700/50 shadow-2xl overflow-hidden animate-scale-in"
+        className="w-[calc(100%-2rem)] max-w-sm bg-dark-900 rounded-2xl border border-dark-700/50 shadow-2xl overflow-hidden animate-scale-in"
+        style={{
+          marginTop: 'env(safe-area-inset-top, 0px)',
+          marginBottom: 'env(safe-area-inset-bottom, 0px)',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
