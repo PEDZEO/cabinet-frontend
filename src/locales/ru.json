@@ -1015,7 +1015,19 @@
         "Menu Position": "Позиция меню",
         "Keyboard Layout": "Раскладка клавиатуры",
         "Button Style": "Стиль кнопок",
-        "Card Style": "Стиль карточек"
+        "Card Style": "Стиль карточек",
+        "Admin Notifications Chat Id": "ID чата уведомлений",
+        "Admin Notifications Enabled": "Уведомления админов",
+        "Admin Notifications Nalog Topic Id": "ID топика налогов",
+        "Admin Notifications Ticket Topic Id": "ID топика тикетов",
+        "Admin Notifications Topic Id": "ID топика",
+        "Enable Notifications": "Уведомления",
+        "Notification Cache Hours": "Кэш уведомлений (час)",
+        "Notification Retry Attempts": "Попытки повтора",
+        "Admin Reports Chat Id": "ID чата отчётов",
+        "Admin Reports Enabled": "Отчёты админов",
+        "Admin Reports Send Time": "Время отправки",
+        "Admin Reports Topic Id": "ID топика отчётов"
       },
       "categories": {
         "PAYMENT": "Платежи",
