@@ -38,12 +38,6 @@ const ChevronDownIcon = () => (
   </svg>
 )
 
-const ChevronRightIcon = () => (
-  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-  </svg>
-)
-
 const UploadIcon = () => (
   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
@@ -196,7 +190,6 @@ export default function AdminSettings() {
 
   // State
   const [activeSection, setActiveSection] = useState('branding')
-  const [activeSubCategory, setActiveSubCategory] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [editingName, setEditingName] = useState(false)
   const [newName, setNewName] = useState('')
@@ -368,30 +361,20 @@ export default function AdminSettings() {
     }))
   }, [currentMenuItem, allSettings, t])
 
-  // Filter settings for current view
+  // Filter settings for search
   const filteredSettings = useMemo(() => {
-    if (!allSettings || !Array.isArray(allSettings)) return []
+    if (!allSettings || !Array.isArray(allSettings) || !searchQuery) return []
 
-    let settings: SettingDefinition[] = []
+    const q = searchQuery.toLowerCase()
+    let settings = allSettings.filter((s: SettingDefinition) =>
+      currentMenuItem?.categories?.includes(s.category.key)
+    )
 
-    if (activeSubCategory) {
-      settings = allSettings.filter((s: SettingDefinition) => s.category.key === activeSubCategory)
-    } else if (currentMenuItem?.categories) {
-      settings = allSettings.filter((s: SettingDefinition) =>
-        currentMenuItem.categories!.includes(s.category.key)
-      )
-    }
-
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase()
-      settings = settings.filter((s: SettingDefinition) =>
-        s.key.toLowerCase().includes(q) ||
-        s.name?.toLowerCase().includes(q)
-      )
-    }
-
-    return settings
-  }, [allSettings, activeSection, activeSubCategory, currentMenuItem, searchQuery])
+    return settings.filter((s: SettingDefinition) =>
+      s.key.toLowerCase().includes(q) ||
+      s.name?.toLowerCase().includes(q)
+    )
+  }, [allSettings, currentMenuItem, searchQuery])
 
   // Favorite settings
   const favoriteSettings = useMemo(() => {
@@ -856,50 +839,70 @@ export default function AdminSettings() {
     </div>
   )
 
-  const renderSettingsContent = () => (
-    <div className="space-y-4">
-      {/* Sub-categories navigation */}
-      {currentCategories.length > 1 && !activeSubCategory && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
-          {currentCategories.map((cat) => (
-            <button
+  const renderSettingsContent = () => {
+    // If searching, show flat list
+    if (searchQuery) {
+      return (
+        <div className="space-y-4">
+          {filteredSettings.length === 0 ? (
+            <div className="p-12 rounded-2xl bg-dark-800/30 border border-dark-700/30 text-center">
+              <p className="text-dark-400">{t('admin.settings.noSettings')}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+              {filteredSettings.map(renderSettingRow)}
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    // Show accordion for subcategories
+    return (
+      <div className="space-y-3">
+        {currentCategories.map((cat) => {
+          const isExpanded = expandedSections.has(cat.key)
+          return (
+            <div
               key={cat.key}
-              onClick={() => setActiveSubCategory(cat.key)}
-              className="p-4 rounded-xl bg-dark-800/50 border border-dark-700/50 hover:border-dark-600 hover:bg-dark-800/70 transition-all text-left"
+              className="rounded-2xl bg-dark-800/30 border border-dark-700/30 overflow-hidden"
             >
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-dark-200 truncate">{cat.label}</span>
-                <ChevronRightIcon />
-              </div>
-              <span className="text-sm text-dark-500">{cat.settings.length} {t('admin.settings.settingsCount')}</span>
-            </button>
-          ))}
-        </div>
-      )}
+              {/* Accordion header */}
+              <button
+                onClick={() => toggleSection(cat.key)}
+                className="w-full flex items-center justify-between p-4 hover:bg-dark-800/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="font-medium text-dark-100">{cat.label}</span>
+                  <span className="px-2 py-0.5 text-xs rounded-full bg-dark-700 text-dark-400">
+                    {cat.settings.length}
+                  </span>
+                </div>
+                <div className={`transition-transform duration-200 text-dark-400 ${isExpanded ? 'rotate-180' : ''}`}>
+                  <ChevronDownIcon />
+                </div>
+              </button>
 
-      {/* Back button if in sub-category */}
-      {activeSubCategory && (
-        <button
-          onClick={() => setActiveSubCategory(null)}
-          className="flex items-center gap-2 text-dark-400 hover:text-dark-200 transition-colors mb-4"
-        >
-          <BackIcon />
-          <span>{t('common.back')}</span>
-        </button>
-      )}
+              {/* Accordion content */}
+              {isExpanded && (
+                <div className="p-4 pt-0 border-t border-dark-700/30">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 pt-4">
+                    {cat.settings.map(renderSettingRow)}
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+        })}
 
-      {/* Settings grid/list */}
-      {filteredSettings.length === 0 ? (
-        <div className="p-12 rounded-2xl bg-dark-800/30 border border-dark-700/30 text-center">
-          <p className="text-dark-400">{t('admin.settings.noSettings')}</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filteredSettings.map(renderSettingRow)}
-        </div>
-      )}
-    </div>
-  )
+        {currentCategories.length === 0 && (
+          <div className="p-12 rounded-2xl bg-dark-800/30 border border-dark-700/30 text-center">
+            <p className="text-dark-400">{t('admin.settings.noSettings')}</p>
+          </div>
+        )}
+      </div>
+    )
+  }
 
   // ============ RENDER ============
   return (
@@ -949,7 +952,6 @@ export default function AdminSettings() {
                     key={item.id}
                     onClick={() => {
                       setActiveSection(item.id)
-                      setActiveSubCategory(null)
                       setMobileMenuOpen(false)
                     }}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
@@ -988,9 +990,6 @@ export default function AdminSettings() {
 
             <h2 className="text-lg sm:text-xl font-semibold text-dark-100 truncate">
               {t(`admin.settings.${activeSection}`)}
-              {activeSubCategory && (
-                <span className="text-dark-400 font-normal text-sm sm:text-base"> / {t(`admin.settings.categories.${activeSubCategory}`, activeSubCategory)}</span>
-              )}
             </h2>
 
             <div className="flex-1" />
