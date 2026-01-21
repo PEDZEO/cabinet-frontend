@@ -163,11 +163,15 @@
     "insufficientBalance": "Недостаточно средств. Не хватает {{missing}} ₽",
     "trial": {
       "title": "Бесплатный пробный период",
-      "description": "Попробуйте наш VPN сервис бесплатно!",
+      "titlePaid": "Пробная подписка",
+      "description": "Попробуйте наш VPN сервис!",
       "days": "дней",
       "devices": "устройств",
-      "price": "Стоимость активации",
-      "activate": "Активировать пробный период",
+      "price": "Стоимость",
+      "activate": "Активировать бесплатно",
+      "payAndActivate": "Оплатить с баланса",
+      "topUpToActivate": "Пополнить баланс",
+      "insufficientBalance": "Пополните баланс для активации",
       "unavailable": "Пробный период недоступен"
     },
     "connection": {

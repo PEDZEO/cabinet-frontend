@@ -163,11 +163,15 @@
     "insufficientBalance": "Insufficient balance. Missing {{missing}} ₽",
     "trial": {
       "title": "Free Trial",
-      "description": "Try our VPN service for free!",
+      "titlePaid": "Trial Subscription",
+      "description": "Try our VPN service!",
       "days": "days",
       "devices": "devices",
-      "price": "Activation price",
-      "activate": "Activate Free Trial",
+      "price": "Price",
+      "activate": "Activate Free",
+      "payAndActivate": "Pay & Activate",
+      "topUpToActivate": "Top Up Balance",
+      "insufficientBalance": "Top up your balance to activate",
       "unavailable": "Trial is not available"
     },
     "connection": {
