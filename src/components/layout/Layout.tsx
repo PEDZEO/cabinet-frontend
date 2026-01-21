@@ -13,6 +13,7 @@ import { brandingApi, getCachedBranding, setCachedBranding, preloadLogo } from '
 import { wheelApi } from '../../api/wheel'
 import { themeColorsApi } from '../../api/themeColors'
 import { promoApi } from '../../api/promo'
+import { referralApi } from '../../api/referral'
 import { useTheme } from '../../hooks/useTheme'
 import { useTelegramWebApp } from '../../hooks/useTelegramWebApp'
 import { usePullToRefresh } from '../../hooks/usePullToRefresh'
@@ -295,6 +296,15 @@ export default function Layout({ children }: LayoutProps) {
     retry: false,
   })
 
+  // Fetch referral terms to check if enabled
+  const { data: referralTerms } = useQuery({
+    queryKey: ['referral-terms'],
+    queryFn: referralApi.getReferralTerms,
+    enabled: isAuthenticated,
+    staleTime: 60000, // 1 minute
+    retry: false,
+  })
+
   // Fetch active discount to determine mobile layout
   const { data: activeDiscount } = useQuery({
     queryKey: ['active-discount'],
@@ -311,9 +321,14 @@ export default function Layout({ children }: LayoutProps) {
       { path: '/', label: t('nav.dashboard'), icon: HomeIcon },
       { path: '/subscription', label: t('nav.subscription'), icon: SubscriptionIcon },
       { path: '/balance', label: t('nav.balance'), icon: WalletIcon },
-      { path: '/referral', label: t('nav.referral'), icon: UsersIcon },
-      { path: '/support', label: t('nav.support'), icon: ChatIcon },
     ]
+
+    // Only show referral if program is enabled
+    if (referralTerms?.is_enabled) {
+      items.push({ path: '/referral', label: t('nav.referral'), icon: UsersIcon })
+    }
+
+    items.push({ path: '/support', label: t('nav.support'), icon: ChatIcon })
 
     // Only show contests if there are available contests
     if (contestsCount && contestsCount.count > 0) {
@@ -328,7 +343,7 @@ export default function Layout({ children }: LayoutProps) {
     items.push({ path: '/info', label: t('nav.info'), icon: InfoIcon })
 
     return items
-  }, [t, contestsCount, pollsCount])
+  }, [t, contestsCount, pollsCount, referralTerms])
 
   // Separate navItems for desktop that includes wheel (if enabled)
   const desktopNavItems = useMemo(() => {
