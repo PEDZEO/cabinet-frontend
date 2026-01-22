@@ -175,7 +175,11 @@
       "yourDevice": "دستگاه شما",
       "copyLink": "کپی لینک اشتراک",
       "copied": "لینک کپی شد!",
-      "openLink": "باز کردن لینک"
+      "openLink": "باز کردن لینک",
+      "changeApp": "تغییر برنامه",
+      "selectPlatform": "انتخاب پلتفرم",
+      "app": "برنامه",
+      "apps": "برنامه"
     }
   },
   "balance": {

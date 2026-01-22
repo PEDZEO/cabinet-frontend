@@ -191,7 +191,10 @@
       "copied": "Link copied!",
       "openLink": "Open link",
       "instructions": "Instructions",
-      "changeApp": "Change app"
+      "changeApp": "Change app",
+      "selectPlatform": "Select platform",
+      "app": "app",
+      "apps": "apps"
     },
     "myDevices": "My Devices",
     "noDevices": "No connected devices",
