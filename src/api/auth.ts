@@ -42,6 +42,17 @@ export const authApi = {
     return response.data
   },
 
+  // Register standalone email account (no Telegram required)
+  registerEmailStandalone: async (data: {
+    email: string
+    password: string
+    first_name?: string
+    language?: string
+  }): Promise<AuthResponse> => {
+    const response = await apiClient.post<AuthResponse>('/cabinet/auth/email/register/standalone', data)
+    return response.data
+  },
+
   // Verify email
   verifyEmail: async (token: string): Promise<{ message: string }> => {
     const response = await apiClient.post('/cabinet/auth/email/verify', { token })
