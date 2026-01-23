@@ -74,8 +74,10 @@ export default function Profile() {
     setError(null)
     setSuccess(null)
 
-    if (!email.trim()) {
-      setError(t('profile.emailRequired'))
+    // Валидация email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!email.trim() || !emailRegex.test(email.trim())) {
+      setError(t('profile.invalidEmail', 'Please enter a valid email address'))
       return
     }
 
