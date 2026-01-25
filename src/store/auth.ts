@@ -33,7 +33,7 @@ interface AuthState {
   loginWithTelegram: (initData: string) => Promise<void>
   loginWithTelegramWidget: (data: TelegramWidgetData) => Promise<void>
   loginWithEmail: (email: string, password: string) => Promise<void>
-  registerWithEmail: (email: string, password: string, firstName?: string) => Promise<void>
+  registerWithEmail: (email: string, password: string, firstName?: string, referralCode?: string) => Promise<void>
 }
 
 // Блокировка для предотвращения race condition при инициализации
@@ -262,12 +262,13 @@ export const useAuthStore = create<AuthState>()(
         get().checkAdminStatus()
       },
 
-      registerWithEmail: async (email, password, firstName) => {
+      registerWithEmail: async (email, password, firstName, referralCode) => {
         const response = await authApi.registerEmailStandalone({
           email,
           password,
           first_name: firstName,
           language: navigator.language.split('-')[0] || 'ru',
+          referral_code: referralCode,
         })
         tokenStorage.setTokens(response.access_token, response.refresh_token)
         set({
