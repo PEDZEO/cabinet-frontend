@@ -3,7 +3,7 @@ import { useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { useAuthStore } from '../store/auth'
-import { brandingApi, getCachedBranding, setCachedBranding, preloadLogo, isLogoPreloaded, type BrandingInfo } from '../api/branding'
+import { brandingApi, getCachedBranding, setCachedBranding, preloadLogo, isLogoPreloaded, type BrandingInfo, type EmailAuthEnabled } from '../api/branding'
 import { getAndClearReturnUrl } from '../utils/token'
 import LanguageSwitcher from '../components/LanguageSwitcher'
 import TelegramLoginButton from '../components/TelegramLoginButton'
@@ -65,7 +65,29 @@ export default function Login() {
     initialData: cachedBranding ?? undefined,
   })
 
+  // Check if email auth is enabled
+  const { data: emailAuthConfig } = useQuery<EmailAuthEnabled>({
+    queryKey: ['email-auth-enabled'],
+    queryFn: brandingApi.getEmailAuthEnabled,
+    staleTime: 60000,
+  })
+  const isEmailAuthEnabled = emailAuthConfig?.enabled ?? true
+
   const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || ''
+
+  // If email auth is disabled but user came with ref param, redirect to bot
+  useEffect(() => {
+    if (referralCode && emailAuthConfig?.enabled === false && botUsername) {
+      window.location.href = `https://t.me/${botUsername}?start=ref_${referralCode}`
+    }
+  }, [referralCode, emailAuthConfig, botUsername])
+
+  // If email auth is disabled but we initially set to email tab, switch back to telegram
+  useEffect(() => {
+    if (!isEmailAuthEnabled && activeTab === 'email') {
+      setActiveTab('telegram')
+    }
+  }, [isEmailAuthEnabled, activeTab])
   const appName = branding ? branding.name : (import.meta.env.VITE_APP_NAME || 'VPN')
   const appLogo = branding?.logo_letter || import.meta.env.VITE_APP_LOGO || 'V'
   const logoUrl = branding ? brandingApi.getLogoUrl(branding) : null
@@ -202,8 +224,8 @@ export default function Login() {
             {t('auth.loginSubtitle')}
           </p>
 
-          {/* Referral Banner */}
-          {referralCode && (
+          {/* Referral Banner - only show when email auth is enabled */}
+          {referralCode && isEmailAuthEnabled && (
             <div className="mt-4 p-3 rounded-xl bg-accent-500/10 border border-accent-500/30">
               <div className="flex items-center gap-2 text-accent-400">
                 <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -247,28 +269,34 @@ export default function Login() {
         /* Card */
         <div className="card">
           {/* Tabs */}
-          <div className="flex mb-6">
-            <button
-              className={`flex-1 py-3 text-sm font-medium transition-all border-b-2 ${
-                activeTab === 'telegram'
-                  ? 'border-accent-500 text-accent-400'
-                  : 'border-transparent text-dark-500 hover:text-dark-300'
-              }`}
-              onClick={() => setActiveTab('telegram')}
-            >
-              Telegram
-            </button>
-            <button
-              className={`flex-1 py-3 text-sm font-medium transition-all border-b-2 ${
-                activeTab === 'email'
-                  ? 'border-accent-500 text-accent-400'
-                  : 'border-transparent text-dark-500 hover:text-dark-300'
-              }`}
-              onClick={() => setActiveTab('email')}
-            >
-              Email
-            </button>
-          </div>
+          {isEmailAuthEnabled ? (
+            <div className="flex mb-6">
+              <button
+                className={`flex-1 py-3 text-sm font-medium transition-all border-b-2 ${
+                  activeTab === 'telegram'
+                    ? 'border-accent-500 text-accent-400'
+                    : 'border-transparent text-dark-500 hover:text-dark-300'
+                }`}
+                onClick={() => setActiveTab('telegram')}
+              >
+                Telegram
+              </button>
+              <button
+                className={`flex-1 py-3 text-sm font-medium transition-all border-b-2 ${
+                  activeTab === 'email'
+                    ? 'border-accent-500 text-accent-400'
+                    : 'border-transparent text-dark-500 hover:text-dark-300'
+                }`}
+                onClick={() => setActiveTab('email')}
+              >
+                Email
+              </button>
+            </div>
+          ) : (
+            <div className="mb-6 pb-3 border-b border-dark-700">
+              <h2 className="text-lg font-medium text-dark-200 text-center">Telegram</h2>
+            </div>
+          )}
 
           {error && (
             <div className="bg-error-500/10 border border-error-500/30 text-error-400 px-4 py-3 rounded-xl text-sm mb-6">
@@ -276,7 +304,7 @@ export default function Login() {
             </div>
           )}
 
-          {activeTab === 'telegram' ? (
+          {activeTab === 'telegram' || !isEmailAuthEnabled ? (
             <div className="space-y-6">
               <p className="text-center text-sm text-dark-400">
                 {t('auth.registerHint')}

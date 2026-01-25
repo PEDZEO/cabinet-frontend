@@ -6,7 +6,7 @@ import { useAuthStore } from '../store/auth'
 import { authApi } from '../api/auth'
 import { notificationsApi, NotificationSettings, NotificationSettingsUpdate } from '../api/notifications'
 import { referralApi } from '../api/referral'
-import { brandingApi } from '../api/branding'
+import { brandingApi, type EmailAuthEnabled } from '../api/branding'
 
 // Icons
 const CopyIcon = () => (
@@ -62,6 +62,14 @@ export default function Profile() {
     queryFn: brandingApi.getBranding,
     staleTime: 60000,
   })
+
+  // Check if email auth is enabled
+  const { data: emailAuthConfig } = useQuery<EmailAuthEnabled>({
+    queryKey: ['email-auth-enabled'],
+    queryFn: brandingApi.getEmailAuthEnabled,
+    staleTime: 60000,
+  })
+  const isEmailAuthEnabled = emailAuthConfig?.enabled ?? true
 
   // Build referral link for cabinet
   const referralLink = referralInfo?.referral_code
@@ -258,7 +266,8 @@ export default function Profile() {
         </div>
       )}
 
-      {/* Email Section */}
+      {/* Email Section - only show when email auth is enabled */}
+      {isEmailAuthEnabled && (
       <div className="bento-card">
         <h2 className="text-lg font-semibold text-dark-100 mb-6">{t('profile.emailAuth')}</h2>
 
@@ -381,6 +390,7 @@ export default function Profile() {
           </div>
         )}
       </div>
+      )}
 
       {/* Notification Settings */}
       <div className="bento-card">
