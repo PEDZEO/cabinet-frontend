@@ -206,6 +206,9 @@
       },
       "telegram_stars": {
         "description": "通过Telegram Stars支付"
+      },
+      "tribute": {
+        "description": "通过Tribute银行卡支付"
       }
     },
     "transactionHistory": "交易记录",

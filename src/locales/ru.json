@@ -364,6 +364,9 @@
       },
       "freekassa": {
         "description": "Оплата через FreeKassa"
+      },
+      "tribute": {
+        "description": "Оплата банковской картой через Tribute"
       }
     },
     "pendingPayments": {

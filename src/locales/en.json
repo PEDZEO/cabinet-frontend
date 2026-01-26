@@ -351,6 +351,9 @@
       },
       "freekassa": {
         "description": "Pay via FreeKassa"
+      },
+      "tribute": {
+        "description": "Pay with bank card via Tribute"
       }
     },
     "pendingPayments": {

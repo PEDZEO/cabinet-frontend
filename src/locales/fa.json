@@ -205,6 +205,9 @@
       },
       "telegram_stars": {
         "description": "پرداخت با Telegram Stars"
+      },
+      "tribute": {
+        "description": "پرداخت با کارت بانکی از طریق Tribute"
       }
     },
     "transactionHistory": "تاریخچه تراکنش‌ها",
