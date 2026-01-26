@@ -610,6 +610,9 @@ export default function AdminPaymentMethods() {
       queryClient.invalidateQueries({ queryKey: ['admin-payment-methods'] })
       setToastMessage(t('admin.paymentMethods.orderSaved', 'Порядок сохранён'))
     },
+    onError: () => {
+      setToastMessage(t('common.error', 'Ошибка'))
+    },
   })
 
   // Update method mutation
@@ -620,6 +623,9 @@ export default function AdminPaymentMethods() {
       queryClient.invalidateQueries({ queryKey: ['admin-payment-methods'] })
       setSelectedMethod(null)
       setToastMessage(t('admin.paymentMethods.saved', 'Настройки сохранены'))
+    },
+    onError: () => {
+      setToastMessage(t('common.error', 'Ошибка'))
     },
   })
 
@@ -636,6 +642,7 @@ export default function AdminPaymentMethods() {
       setMethods(prev => {
         const oldIndex = prev.findIndex(m => m.method_id === active.id)
         const newIndex = prev.findIndex(m => m.method_id === over.id)
+        if (oldIndex === -1 || newIndex === -1) return prev
         return arrayMove(prev, oldIndex, newIndex)
       })
       setOrderChanged(true)
