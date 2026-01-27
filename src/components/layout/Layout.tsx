@@ -344,14 +344,16 @@ export default function Layout({ children }: LayoutProps) {
 
   // Update favicon
   useEffect(() => {
-    if (!logoUrl) return
+    if (!logoUrl) return;
 
-    const link = document.querySelector<HTMLLinkElement>("link[rel*='icon']") || document.createElement('link')
-    link.type = 'image/x-icon'
-    link.rel = 'shortcut icon'
-    link.href = logoUrl
-    document.getElementsByTagName('head')[0].appendChild(link)
-  }, [logoUrl])
+    const link =
+      document.querySelector<HTMLLinkElement>("link[rel*='icon']") ||
+      document.createElement('link');
+    link.type = 'image/x-icon';
+    link.rel = 'shortcut icon';
+    link.href = logoUrl;
+    document.getElementsByTagName('head')[0].appendChild(link);
+  }, [logoUrl]);
 
   // Fetch contests and polls counts to determine if they should be shown
   const { data: contestsCount } = useQuery({
