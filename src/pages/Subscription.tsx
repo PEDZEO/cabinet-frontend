@@ -1015,8 +1015,7 @@ export default function Subscription() {
               </div>
 
               {/* Check if completely unavailable (no subscription, price not set, etc.) */}
-              {devicePriceData?.available === false &&
-              !devicePriceData?.max_device_limit ? (
+              {devicePriceData?.available === false && !devicePriceData?.max_device_limit ? (
                 <div className="py-4 text-center text-sm text-dark-400">
                   {devicePriceData.reason || t('subscription.additionalOptions.devicesUnavailable')}
                 </div>
@@ -1057,7 +1056,8 @@ export default function Subscription() {
                       {t('subscription.additionalOptions.currentDeviceLimit', {
                         count: devicePriceData.current_device_limit || subscription.device_limit,
                       })}{' '}
-                      / {t('subscription.additionalOptions.maxDevices', {
+                      /{' '}
+                      {t('subscription.additionalOptions.maxDevices', {
                         count: devicePriceData.max_device_limit,
                       })}
                     </div>
