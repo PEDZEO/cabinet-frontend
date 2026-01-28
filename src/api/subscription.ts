@@ -86,6 +86,8 @@ export const subscriptionApi = {
     total_price_kopeks?: number;
     total_price_label?: string;
     current_device_limit?: number;
+    max_device_limit?: number;
+    can_add?: number;
     days_left?: number;
     base_device_price_kopeks?: number;
   }> => {

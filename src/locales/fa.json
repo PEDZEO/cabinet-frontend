@@ -229,6 +229,7 @@
       "title": "گزینه‌های اضافی",
       "buyDevices": "خرید دستگاه بیشتر",
       "currentDeviceLimit": "محدودیت فعلی: {{count}} دستگاه",
+      "maxDevices": "حداکثر {{count}}",
       "devicesUnavailable": "خرید دستگاه در دسترس نیست",
       "devicesUnit": "دستگاه",
       "buy": "خرید",
@@ -410,7 +411,7 @@
     "copyLink": "کپی لینک",
     "copied": "کپی شد!",
     "shareButton": "اشتراک‌گذاری",
-    "shareMessage": "از طریق لینک من به Cabinet بپیوند و تا {{percent}}٪ پاداش بگیر!",
+    "shareMessage": "از طریق لینک من به {{botName}} بپیوند و تا {{percent}}٪ پاداش بگیر!",
     "shareHint": "این لینک را با دوستان به اشتراک بگذارید. وقتی ثبت نام کنند و خرید کنند، {{percent}}% کمیسیون دریافت می‌کنید!",
     "stats": {
       "totalReferrals": "کل معرفی‌ها",

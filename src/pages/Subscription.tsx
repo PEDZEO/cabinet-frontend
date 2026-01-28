@@ -1014,12 +1014,14 @@ export default function Subscription() {
                 </button>
               </div>
 
-              {devicePriceData?.available === false ? (
+              {/* Check if completely unavailable (no subscription, price not set, etc.) */}
+              {devicePriceData?.available === false && !devicePriceData?.max_device_limit ? (
                 <div className="py-4 text-center text-sm text-dark-400">
                   {devicePriceData.reason || t('subscription.additionalOptions.devicesUnavailable')}
                 </div>
               ) : (
                 <div className="space-y-4">
+                  {/* Device selector - show even at max limit */}
                   <div className="flex items-center justify-center gap-6">
                     <button
                       onClick={() => setDevicesToAdd(Math.max(1, devicesToAdd - 1))}
@@ -1036,13 +1038,40 @@ export default function Subscription() {
                     </div>
                     <button
                       onClick={() => setDevicesToAdd(devicesToAdd + 1)}
+                      disabled={
+                        devicePriceData?.max_device_limit
+                          ? (devicePriceData.current_device_limit || 0) + devicesToAdd >=
+                            devicePriceData.max_device_limit
+                          : false
+                      }
                       className="btn-secondary flex h-12 w-12 items-center justify-center !p-0 text-2xl"
                     >
                       +
                     </button>
                   </div>
 
-                  {devicePriceData && (
+                  {/* Show limit info when at or near max */}
+                  {devicePriceData?.max_device_limit && (
+                    <div className="text-center text-sm text-dark-400">
+                      {t('subscription.additionalOptions.currentDeviceLimit', {
+                        count: devicePriceData.current_device_limit || subscription.device_limit,
+                      })}{' '}
+                      /{' '}
+                      {t('subscription.additionalOptions.maxDevices', {
+                        count: devicePriceData.max_device_limit,
+                      })}
+                    </div>
+                  )}
+
+                  {/* Show reason if can't add requested amount */}
+                  {devicePriceData?.available === false && devicePriceData?.reason && (
+                    <div className="rounded-lg bg-warning-500/10 p-3 text-center text-sm text-warning-400">
+                      {devicePriceData.reason}
+                    </div>
+                  )}
+
+                  {/* Price info - only when available */}
+                  {devicePriceData?.available && devicePriceData.price_per_device_label && (
                     <div className="text-center">
                       <div className="mb-2 text-sm text-dark-400">
                         {devicePriceData.price_per_device_label}/
@@ -1055,7 +1084,7 @@ export default function Subscription() {
                     </div>
                   )}
 
-                  {devicePriceData &&
+                  {devicePriceData?.available &&
                     purchaseOptions &&
                     devicePriceData.total_price_kopeks &&
                     devicePriceData.total_price_kopeks > purchaseOptions.balance_kopeks && (
@@ -1071,6 +1100,7 @@ export default function Subscription() {
                     onClick={() => devicePurchaseMutation.mutate()}
                     disabled={
                       devicePurchaseMutation.isPending ||
+                      !devicePriceData?.available ||
                       !!(
                         devicePriceData?.total_price_kopeks &&
                         purchaseOptions &&

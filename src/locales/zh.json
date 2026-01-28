@@ -229,6 +229,7 @@
       "title": "附加选项",
       "buyDevices": "购买更多设备",
       "currentDeviceLimit": "当前限制：{{count}} 台设备",
+      "maxDevices": "最多 {{count}} 台",
       "devicesUnavailable": "设备购买不可用",
       "devicesUnit": "台设备",
       "buy": "购买",
@@ -410,7 +411,7 @@
     "copyLink": "复制链接",
     "copied": "已复制！",
     "shareButton": "分享",
-    "shareMessage": "通过我的链接加入 Cabinet，获取高达 {{percent}}% 返现！",
+    "shareMessage": "通过我的链接加入 {{botName}}，获取高达 {{percent}}% 返现！",
     "shareHint": "分享链接给朋友。当他们注册并付款后，您将获得 {{percent}}% 佣金！",
     "stats": {
       "totalReferrals": "总推荐数",

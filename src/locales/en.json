@@ -320,6 +320,7 @@
       "title": "Additional options",
       "buyDevices": "Buy more devices",
       "currentDeviceLimit": "Current limit: {{count}} devices",
+      "maxDevices": "max {{count}}",
       "devicesUnavailable": "Device purchase is not available",
       "devicesUnit": "devices",
       "buy": "Buy",
@@ -484,7 +485,7 @@
     "copyLink": "Copy Link",
     "copied": "Copied!",
     "shareButton": "Share",
-    "shareMessage": "Join me on  and earn up to {{percent}}% cashback!",
+    "shareMessage": "Join me on {{botName}} and earn up to {{percent}}% cashback!",
     "shareHint": "Share this link with friends. When they sign up and make a purchase, you'll earn {{percent}}% commission!",
     "stats": {
       "totalReferrals": "Total Referrals",
