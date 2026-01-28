@@ -79,17 +79,16 @@ export default function Dashboard() {
     refetchOnMount: 'always',
   });
 
-  const {
-    data: subscription,
-    isLoading: subLoading,
-    error: subError,
-  } = useQuery({
+  const { data: subscriptionResponse, isLoading: subLoading } = useQuery({
     queryKey: ['subscription'],
     queryFn: subscriptionApi.getSubscription,
     retry: false,
     staleTime: 0,
     refetchOnMount: 'always',
   });
+
+  // Extract subscription from response (null if no subscription)
+  const subscription = subscriptionResponse?.subscription ?? null;
 
   const { data: trialInfo, isLoading: trialLoading } = useQuery({
     queryKey: ['trial-info'],
@@ -194,7 +193,8 @@ export default function Dashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subscription]);
 
-  const hasNoSubscription = !subscription && !subLoading && subError;
+  // User has no subscription if API returns has_subscription: false
+  const hasNoSubscription = subscriptionResponse?.has_subscription === false && !subLoading;
 
   // Show onboarding for new users after data loads
   useEffect(() => {

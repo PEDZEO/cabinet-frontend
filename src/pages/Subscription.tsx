@@ -138,13 +138,16 @@ export default function Subscription() {
     is_unlimited: boolean;
   } | null>(null);
 
-  const { data: subscription, isLoading } = useQuery({
+  const { data: subscriptionResponse, isLoading } = useQuery({
     queryKey: ['subscription'],
     queryFn: subscriptionApi.getSubscription,
     retry: false,
     staleTime: 0, // Always refetch to get latest data
     refetchOnMount: 'always',
   });
+
+  // Extract subscription from response (null if no subscription)
+  const subscription = subscriptionResponse?.subscription ?? null;
 
   const { data: purchaseOptions, isLoading: optionsLoading } = useQuery({
     queryKey: ['purchase-options'],
