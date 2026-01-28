@@ -89,6 +89,7 @@ const METHOD_ICONS: Record<string, string> = {
   wata: '\uD83D\uDCA7',
   freekassa: '\uD83D\uDCB5',
   cloudpayments: '\u2601\uFE0F',
+  kassa_ai: '\uD83C\uDFE6',
 };
 
 const METHOD_LABELS: Record<string, string> = {
@@ -103,6 +104,7 @@ const METHOD_LABELS: Record<string, string> = {
   wata: 'WATA',
   freekassa: 'Freekassa',
   cloudpayments: 'CloudPayments',
+  kassa_ai: 'Kassa AI',
 };
 
 // ============ Sortable Card ============
