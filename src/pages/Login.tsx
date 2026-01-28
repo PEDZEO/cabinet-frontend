@@ -89,7 +89,7 @@ export default function Login() {
   // If email auth is disabled but user came with ref param, redirect to bot
   useEffect(() => {
     if (referralCode && emailAuthConfig?.enabled === false && botUsername) {
-      window.location.href = `https://t.me/${botUsername}?start=ref_${referralCode}`;
+      window.location.href = `https://t.me/${botUsername}?start=${referralCode}`;
     }
   }, [referralCode, emailAuthConfig, botUsername]);
 
