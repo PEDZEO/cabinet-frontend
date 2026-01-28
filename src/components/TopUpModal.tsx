@@ -210,21 +210,23 @@ export default function TopUpModal({ method, onClose, initialAmountRubles }: Top
       // openInvoice requires WebApp version 6.1+
       const supportsInvoice =
         webApp?.openInvoice && webApp?.isVersionAtLeast && webApp.isVersionAtLeast('6.1');
-      if (!supportsInvoice) {
-        setError(t('balance.errors.starsOnlyInTelegram'));
-        return;
-      }
-      try {
-        webApp.openInvoice(data.invoice_url, (status) => {
-          if (status === 'paid') {
-            setError(null);
-            onClose();
-          } else if (status === 'failed') {
-            setError(t('wheel.starsPaymentFailed'));
-          }
-        });
-      } catch (e) {
-        setError(t('balance.errors.generic', { details: String(e) }));
+      if (supportsInvoice) {
+        try {
+          webApp.openInvoice(data.invoice_url, (status) => {
+            if (status === 'paid') {
+              setError(null);
+              onClose();
+            } else if (status === 'failed') {
+              setError(t('wheel.starsPaymentFailed'));
+            }
+          });
+        } catch (e) {
+          setError(t('balance.errors.generic', { details: String(e) }));
+        }
+      } else {
+        // Fallback: open invoice URL in Telegram (browser or unsupported WebApp version)
+        window.open(data.invoice_url, '_blank', 'noopener,noreferrer');
+        onClose();
       }
     },
     onError: (err: unknown) => {
