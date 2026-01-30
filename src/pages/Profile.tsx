@@ -11,6 +11,7 @@ import {
 } from '../api/notifications';
 import { referralApi } from '../api/referral';
 import { brandingApi, type EmailAuthEnabled } from '../api/branding';
+import ChangeEmailModal from '../components/ChangeEmailModal';
 
 // Icons
 const CopyIcon = () => (
@@ -42,6 +43,16 @@ const ArrowRightIcon = () => (
   </svg>
 );
 
+const PencilIcon = () => (
+  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"
+    />
+  </svg>
+);
+
 export default function Profile() {
   const { t } = useTranslation();
   const { user, setUser } = useAuthStore();
@@ -53,6 +64,7 @@ export default function Profile() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [showChangeEmailModal, setShowChangeEmailModal] = useState(false);
 
   // Referral data
   const { data: referralInfo } = useQuery({
@@ -311,7 +323,16 @@ export default function Profile() {
               )}
 
               {user.email_verified && (
-                <p className="text-sm text-dark-400">{t('profile.canLoginWithEmail')}</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-dark-400">{t('profile.canLoginWithEmail')}</p>
+                  <button
+                    onClick={() => setShowChangeEmailModal(true)}
+                    className="flex items-center gap-2 text-sm text-accent-400 transition-colors hover:text-accent-300"
+                  >
+                    <PencilIcon />
+                    <span>{t('profile.changeEmail.button')}</span>
+                  </button>
+                </div>
               )}
             </div>
           ) : (
@@ -618,6 +639,14 @@ export default function Profile() {
           <p className="text-dark-400">{t('profile.notifications.unavailable')}</p>
         )}
       </div>
+
+      {/* Change Email Modal */}
+      {showChangeEmailModal && user?.email && (
+        <ChangeEmailModal
+          onClose={() => setShowChangeEmailModal(false)}
+          currentEmail={user.email}
+        />
+      )}
     </div>
   );
 }
