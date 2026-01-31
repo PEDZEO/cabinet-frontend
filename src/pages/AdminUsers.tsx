@@ -978,6 +978,7 @@ export default function AdminUsers() {
   const [stats, setStats] = useState<UsersStatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [emailSearch, setEmailSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('created_at');
   const [offset, setOffset] = useState(0);
@@ -991,6 +992,7 @@ export default function AdminUsers() {
       setLoading(true);
       const params: Record<string, unknown> = { offset, limit, sort_by: sortBy };
       if (search) params.search = search;
+      if (emailSearch) params.email = emailSearch;
       if (statusFilter) params.status = statusFilter;
 
       const data = await adminUsersApi.getUsers(
@@ -1003,7 +1005,7 @@ export default function AdminUsers() {
     } finally {
       setLoading(false);
     }
-  }, [offset, search, statusFilter, sortBy]);
+  }, [offset, search, emailSearch, statusFilter, sortBy]);
 
   const loadStats = useCallback(async () => {
     try {
@@ -1086,47 +1088,67 @@ export default function AdminUsers() {
       )}
 
       {/* Filters */}
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row">
-        <form onSubmit={handleSearch} className="flex-1">
-          <div className="relative">
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={t('admin.users.search')}
-              className="w-full rounded-xl border border-dark-700 bg-dark-800 py-2 pl-10 pr-4 text-dark-100 placeholder-dark-500 focus:border-dark-600 focus:outline-none"
-            />
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-500">
-              <SearchIcon />
+      <div className="mb-4 flex flex-col gap-3">
+        {/* Search fields row */}
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <form onSubmit={handleSearch} className="flex-1">
+            <div className="relative">
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={t('admin.users.search')}
+                className="w-full rounded-xl border border-dark-700 bg-dark-800 py-2 pl-10 pr-4 text-dark-100 placeholder-dark-500 focus:border-dark-600 focus:outline-none"
+              />
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-500">
+                <SearchIcon />
+              </div>
             </div>
-          </div>
-        </form>
-        <select
-          value={statusFilter}
-          onChange={(e) => {
-            setStatusFilter(e.target.value);
-            setOffset(0);
-          }}
-          className="rounded-xl border border-dark-700 bg-dark-800 px-3 py-2 text-dark-100"
-        >
-          <option value="">{t('admin.users.filters.allStatuses')}</option>
-          <option value="active">{t('admin.users.status.active')}</option>
-          <option value="blocked">{t('admin.users.status.blocked')}</option>
-          <option value="deleted">{t('admin.users.status.deleted')}</option>
-        </select>
-        <select
-          value={sortBy}
-          onChange={(e) => {
-            setSortBy(e.target.value);
-            setOffset(0);
-          }}
-          className="rounded-xl border border-dark-700 bg-dark-800 px-3 py-2 text-dark-100"
-        >
-          <option value="created_at">{t('admin.users.filters.byDate')}</option>
-          <option value="balance">{t('admin.users.filters.byBalance')}</option>
-          <option value="last_activity">{t('admin.users.filters.byActivity')}</option>
-          <option value="total_spent">{t('admin.users.filters.bySpent')}</option>
-        </select>
+          </form>
+          <form onSubmit={handleSearch} className="flex-1">
+            <div className="relative">
+              <input
+                type="email"
+                value={emailSearch}
+                onChange={(e) => setEmailSearch(e.target.value)}
+                placeholder={t('admin.users.searchEmail')}
+                className="w-full rounded-xl border border-dark-700 bg-dark-800 py-2 pl-10 pr-4 text-dark-100 placeholder-dark-500 focus:border-dark-600 focus:outline-none"
+              />
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-500">
+                <SearchIcon />
+              </div>
+            </div>
+          </form>
+        </div>
+        {/* Filters row */}
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <select
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setOffset(0);
+            }}
+            className="rounded-xl border border-dark-700 bg-dark-800 px-3 py-2 text-dark-100"
+          >
+            <option value="">{t('admin.users.filters.allStatuses')}</option>
+            <option value="active">{t('admin.users.status.active')}</option>
+            <option value="blocked">{t('admin.users.status.blocked')}</option>
+            <option value="deleted">{t('admin.users.status.deleted')}</option>
+          </select>
+          <select
+            value={sortBy}
+            onChange={(e) => {
+              setSortBy(e.target.value);
+              setOffset(0);
+            }}
+            className="rounded-xl border border-dark-700 bg-dark-800 px-3 py-2 text-dark-100"
+          >
+            <option value="created_at">{t('admin.users.filters.byDate')}</option>
+            <option value="balance">{t('admin.users.filters.byBalance')}</option>
+            <option value="last_activity">{t('admin.users.filters.byActivity')}</option>
+            <option value="total_spent">{t('admin.users.filters.bySpent')}</option>
+          </select>
+        </div>
       </div>
 
       {/* Users list */}
