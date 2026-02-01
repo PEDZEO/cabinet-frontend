@@ -67,13 +67,16 @@ export default function AdminTariffs() {
   });
 
   const handleDelete = async (tariff: TariffListItem) => {
-    if (tariff.subscriptions_count > 0) {
-      notify.warning(t('admin.tariffs.cannotDeleteHasSubscriptions'));
-      return;
-    }
+    // If tariff has active subscriptions, show warning but still allow deletion
+    const confirmText =
+      tariff.subscriptions_count > 0
+        ? t('admin.tariffs.confirmDeleteWithSubscriptions', {
+            count: tariff.subscriptions_count,
+          })
+        : t('admin.tariffs.confirmDeleteText');
 
     const confirmed = await confirmDelete(
-      t('admin.tariffs.confirmDeleteText'),
+      confirmText,
       t('common.delete'),
       t('admin.tariffs.confirmDelete'),
     );
