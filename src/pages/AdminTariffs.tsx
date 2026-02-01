@@ -205,8 +205,16 @@ export default function AdminTariffs() {
                   {/* Delete */}
                   <button
                     onClick={() => setDeleteConfirm(tariff.id)}
-                    className="rounded-lg bg-dark-700 p-2 text-dark-300 transition-colors hover:bg-error-500/20 hover:text-error-400"
-                    title={t('admin.tariffs.delete')}
+                    className={`rounded-lg p-2 transition-colors ${
+                      tariff.subscriptions_count > 0
+                        ? 'cursor-not-allowed bg-dark-700/50 text-dark-500'
+                        : 'bg-dark-700 text-dark-300 hover:bg-error-500/20 hover:text-error-400'
+                    }`}
+                    title={
+                      tariff.subscriptions_count > 0
+                        ? t('admin.tariffs.cannotDeleteHasSubscriptions')
+                        : t('admin.tariffs.delete')
+                    }
                     disabled={tariff.subscriptions_count > 0}
                   >
                     <TrashIcon />

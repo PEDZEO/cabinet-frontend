@@ -989,6 +989,7 @@
       "deactivate": "غیرفعال‌سازی",
       "toggleTrial": "تغییر آزمایشی",
       "delete": "حذف",
+      "cannotDeleteHasSubscriptions": "حذف ممکن نیست: اشتراک‌های فعال وجود دارد",
       "confirmDelete": "تعرفه حذف شود؟",
       "confirmDeleteText": "این عمل قابل بازگشت نیست. تعرفه برای همیشه حذف می‌شود.",
       "days": "روز",

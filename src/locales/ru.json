@@ -1725,6 +1725,7 @@
       "deactivate": "Деактивировать",
       "toggleTrial": "Переключить триал",
       "delete": "Удалить",
+      "cannotDeleteHasSubscriptions": "Нельзя удалить: есть активные подписки",
       "confirmDelete": "Удалить тариф?",
       "confirmDeleteText": "Это действие нельзя отменить. Тариф будет удален навсегда.",
       "days": "дней",

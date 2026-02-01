@@ -1215,6 +1215,7 @@
       "deactivate": "Deactivate",
       "toggleTrial": "Toggle Trial",
       "delete": "Delete",
+      "cannotDeleteHasSubscriptions": "Cannot delete: has active subscriptions",
       "confirmDelete": "Delete tariff?",
       "confirmDeleteText": "This action cannot be undone. The tariff will be permanently deleted.",
       "days": "days",

@@ -1027,6 +1027,7 @@
       "deactivate": "停用",
       "toggleTrial": "切换试用",
       "delete": "删除",
+      "cannotDeleteHasSubscriptions": "无法删除：有活跃订阅",
       "confirmDelete": "删除套餐？",
       "confirmDeleteText": "此操作不可撤销。套餐将被永久删除。",
       "days": "天",
