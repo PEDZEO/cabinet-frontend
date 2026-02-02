@@ -1066,6 +1066,7 @@
       "deviceLimitLabel": "套餐中的设备数",
       "tierLevelLabel": "套餐等级",
       "tierLevelHint": "影响套餐之间的升级可用性",
+      "fieldRequired": "必填字段",
       "periodsTabHint": "为套餐添加周期和价格。用户将能够从添加的周期中选择。",
       "addPeriodTitle": "添加周期",
       "daysLabel": "天",
@@ -1114,7 +1115,8 @@
       "periodType": "周期套餐",
       "dailyPriceLabel": "每天价格",
       "currencyPerDay": "₽/天",
-      "dailyDeductionDesc": "每天从用户余额中扣除"
+      "dailyDeductionDesc": "每天从用户余额中扣除",
+      "dailyPriceRequired": "请输入大于0的每日价格"
     },
     "servers": {
       "title": "服务器管理",

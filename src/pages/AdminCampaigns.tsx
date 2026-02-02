@@ -15,6 +15,7 @@ import {
   CampaignRegistrationItem,
 } from '../api/campaigns';
 import { AdminBackButton } from '../components/admin';
+import { createNumberInputHandler, toNumber } from '../utils/inputHelpers';
 
 // Icons
 
@@ -174,18 +175,18 @@ function CampaignModal({
   const [isActive, setIsActive] = useState(campaign.is_active ?? true);
 
   // Balance bonus
-  const [balanceBonusRubles, setBalanceBonusRubles] = useState(
+  const [balanceBonusRubles, setBalanceBonusRubles] = useState<number | ''>(
     (campaign.balance_bonus_kopeks || 0) / 100,
   );
 
   // Subscription bonus
-  const [subscriptionDays, setSubscriptionDays] = useState(
+  const [subscriptionDays, setSubscriptionDays] = useState<number | ''>(
     campaign.subscription_duration_days || 7,
   );
-  const [subscriptionTraffic, setSubscriptionTraffic] = useState(
+  const [subscriptionTraffic, setSubscriptionTraffic] = useState<number | ''>(
     campaign.subscription_traffic_gb || 10,
   );
-  const [subscriptionDevices, setSubscriptionDevices] = useState(
+  const [subscriptionDevices, setSubscriptionDevices] = useState<number | ''>(
     campaign.subscription_device_limit || 1,
   );
   const [selectedSquads, setSelectedSquads] = useState<string[]>(
@@ -194,7 +195,7 @@ function CampaignModal({
 
   // Tariff bonus
   const [tariffId, setTariffId] = useState<number | null>(campaign.tariff_id || null);
-  const [tariffDays, setTariffDays] = useState(campaign.tariff_duration_days || 30);
+  const [tariffDays, setTariffDays] = useState<number | ''>(campaign.tariff_duration_days || 30);
 
   const handleSubmit = () => {
     const data: CampaignUpdateRequest = {
@@ -205,15 +206,15 @@ function CampaignModal({
     };
 
     if (bonusType === 'balance') {
-      data.balance_bonus_kopeks = Math.round(balanceBonusRubles * 100);
+      data.balance_bonus_kopeks = Math.round(toNumber(balanceBonusRubles) * 100);
     } else if (bonusType === 'subscription') {
-      data.subscription_duration_days = subscriptionDays;
-      data.subscription_traffic_gb = subscriptionTraffic;
-      data.subscription_device_limit = subscriptionDevices;
+      data.subscription_duration_days = toNumber(subscriptionDays, 7);
+      data.subscription_traffic_gb = toNumber(subscriptionTraffic, 10);
+      data.subscription_device_limit = toNumber(subscriptionDevices, 1);
       data.subscription_squads = selectedSquads;
     } else if (bonusType === 'tariff') {
       data.tariff_id = tariffId || undefined;
-      data.tariff_duration_days = tariffDays;
+      data.tariff_duration_days = toNumber(tariffDays, 30);
     }
 
     onSave(data);
@@ -306,9 +307,7 @@ function CampaignModal({
                 <input
                   type="number"
                   value={balanceBonusRubles}
-                  onChange={(e) =>
-                    setBalanceBonusRubles(Math.max(0, parseFloat(e.target.value) || 0))
-                  }
+                  onChange={createNumberInputHandler(setBalanceBonusRubles, 0)}
                   className="w-32 rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-dark-100 focus:border-success-500 focus:outline-none"
                   min={0}
                   step={1}
@@ -331,9 +330,7 @@ function CampaignModal({
                   <input
                     type="number"
                     value={subscriptionDays}
-                    onChange={(e) =>
-                      setSubscriptionDays(Math.max(1, parseInt(e.target.value) || 1))
-                    }
+                    onChange={createNumberInputHandler(setSubscriptionDays, 1)}
                     className="w-full rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-dark-100 focus:border-accent-500 focus:outline-none"
                     min={1}
                   />
@@ -345,9 +342,7 @@ function CampaignModal({
                   <input
                     type="number"
                     value={subscriptionTraffic}
-                    onChange={(e) =>
-                      setSubscriptionTraffic(Math.max(0, parseInt(e.target.value) || 0))
-                    }
+                    onChange={createNumberInputHandler(setSubscriptionTraffic, 0)}
                     className="w-full rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-dark-100 focus:border-accent-500 focus:outline-none"
                     min={0}
                   />
@@ -359,9 +354,7 @@ function CampaignModal({
                   <input
                     type="number"
                     value={subscriptionDevices}
-                    onChange={(e) =>
-                      setSubscriptionDevices(Math.max(1, parseInt(e.target.value) || 1))
-                    }
+                    onChange={createNumberInputHandler(setSubscriptionDevices, 1)}
                     className="w-full rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-dark-100 focus:border-accent-500 focus:outline-none"
                     min={1}
                   />
@@ -436,7 +429,7 @@ function CampaignModal({
                 <input
                   type="number"
                   value={tariffDays}
-                  onChange={(e) => setTariffDays(Math.max(1, parseInt(e.target.value) || 1))}
+                  onChange={createNumberInputHandler(setTariffDays, 1)}
                   className="w-full rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-dark-100 focus:border-accent-500 focus:outline-none"
                   min={1}
                 />

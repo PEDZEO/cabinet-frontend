@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { serversApi, ServerListItem, ServerDetail, ServerUpdateRequest } from '../api/servers';
 import { AdminBackButton } from '../components/admin';
+import { createNumberInputHandler, toNumber } from '../utils/inputHelpers';
 
 // Icons
 
@@ -94,18 +95,18 @@ function ServerModal({ server, onSave, onClose, isLoading }: ServerModalProps) {
   const [displayName, setDisplayName] = useState(server.display_name);
   const [description, setDescription] = useState(server.description || '');
   const [countryCode, setCountryCode] = useState(server.country_code || '');
-  const [priceKopeks, setPriceKopeks] = useState(server.price_kopeks);
+  const [priceKopeks, setPriceKopeks] = useState<number | ''>(server.price_kopeks);
   const [maxUsers, setMaxUsers] = useState<number | null>(server.max_users);
-  const [sortOrder, setSortOrder] = useState(server.sort_order);
+  const [sortOrder, setSortOrder] = useState<number | ''>(server.sort_order);
 
   const handleSubmit = () => {
     const data: ServerUpdateRequest = {
       display_name: displayName,
       description: description || undefined,
       country_code: countryCode || undefined,
-      price_kopeks: priceKopeks,
+      price_kopeks: toNumber(priceKopeks),
       max_users: maxUsers || undefined,
-      sort_order: sortOrder,
+      sort_order: toNumber(sortOrder),
     };
     onSave(data);
   };
@@ -186,8 +187,15 @@ function ServerModal({ server, onSave, onClose, isLoading }: ServerModalProps) {
             <div className="flex items-center gap-2">
               <input
                 type="number"
-                value={priceKopeks / 100}
-                onChange={(e) => setPriceKopeks(Math.max(0, parseFloat(e.target.value) || 0) * 100)}
+                value={priceKopeks === '' ? '' : priceKopeks / 100}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === '') {
+                    setPriceKopeks('');
+                  } else {
+                    setPriceKopeks(Math.max(0, parseFloat(val) || 0) * 100);
+                  }
+                }}
                 className="w-32 rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-dark-100 focus:border-accent-500 focus:outline-none"
                 min={0}
                 step={1}
@@ -227,7 +235,7 @@ function ServerModal({ server, onSave, onClose, isLoading }: ServerModalProps) {
             <input
               type="number"
               value={sortOrder}
-              onChange={(e) => setSortOrder(parseInt(e.target.value) || 0)}
+              onChange={createNumberInputHandler(setSortOrder)}
               className="w-32 rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-dark-100 focus:border-accent-500 focus:outline-none"
             />
           </div>

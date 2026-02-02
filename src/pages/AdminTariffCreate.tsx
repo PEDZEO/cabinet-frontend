@@ -11,6 +11,7 @@ import {
   ServerInfo,
 } from '../api/tariffs';
 import { AdminBackButton } from '../components/admin';
+import { createNumberInputHandler, toNumber } from '../utils/inputHelpers';
 
 // Icons
 const PlusIcon = () => (
@@ -96,18 +97,18 @@ export default function AdminTariffCreate() {
   // Form state
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [trafficLimitGb, setTrafficLimitGb] = useState(100);
-  const [deviceLimit, setDeviceLimit] = useState(1);
-  const [devicePriceKopeks, setDevicePriceKopeks] = useState(0);
-  const [maxDeviceLimit, setMaxDeviceLimit] = useState(0);
-  const [tierLevel, setTierLevel] = useState(1);
+  const [trafficLimitGb, setTrafficLimitGb] = useState<number | ''>('');
+  const [deviceLimit, setDeviceLimit] = useState<number | ''>(1);
+  const [devicePriceKopeks, setDevicePriceKopeks] = useState<number | ''>(0);
+  const [maxDeviceLimit, setMaxDeviceLimit] = useState<number | ''>(0);
+  const [tierLevel, setTierLevel] = useState<number | ''>(1);
   const [periodPrices, setPeriodPrices] = useState<PeriodPrice[]>([]);
   const [selectedSquads, setSelectedSquads] = useState<string[]>([]);
-  const [dailyPriceKopeks, setDailyPriceKopeks] = useState(0);
+  const [dailyPriceKopeks, setDailyPriceKopeks] = useState<number | ''>(0);
 
   // Traffic topup
   const [trafficTopupEnabled, setTrafficTopupEnabled] = useState(false);
-  const [maxTopupTrafficGb, setMaxTopupTrafficGb] = useState(0);
+  const [maxTopupTrafficGb, setMaxTopupTrafficGb] = useState<number | ''>(0);
   const [trafficTopupPackages, setTrafficTopupPackages] = useState<Record<string, number>>({});
 
   // Traffic reset mode
@@ -115,19 +116,19 @@ export default function AdminTariffCreate() {
 
   // Custom days (period tariff)
   const [customDaysEnabled, setCustomDaysEnabled] = useState(false);
-  const [pricePerDayKopeks, setPricePerDayKopeks] = useState(0);
-  const [minDays, setMinDays] = useState(1);
-  const [maxDays, setMaxDays] = useState(365);
+  const [pricePerDayKopeks, setPricePerDayKopeks] = useState<number | ''>(0);
+  const [minDays, setMinDays] = useState<number | ''>(1);
+  const [maxDays, setMaxDays] = useState<number | ''>(365);
 
   // Custom traffic (period tariff)
   const [customTrafficEnabled, setCustomTrafficEnabled] = useState(false);
-  const [trafficPricePerGbKopeks, setTrafficPricePerGbKopeks] = useState(0);
-  const [minTrafficGb, setMinTrafficGb] = useState(1);
-  const [maxTrafficGb, setMaxTrafficGb] = useState(1000);
+  const [trafficPricePerGbKopeks, setTrafficPricePerGbKopeks] = useState<number | ''>(0);
+  const [minTrafficGb, setMinTrafficGb] = useState<number | ''>(1);
+  const [maxTrafficGb, setMaxTrafficGb] = useState<number | ''>(1000);
 
   // New period for adding
-  const [newPeriodDays, setNewPeriodDays] = useState(30);
-  const [newPeriodPrice, setNewPeriodPrice] = useState(300);
+  const [newPeriodDays, setNewPeriodDays] = useState<number | ''>(30);
+  const [newPeriodPrice, setNewPeriodPrice] = useState<number | ''>(300);
 
   const [activeTab, setActiveTab] = useState<'basic' | 'periods' | 'servers' | 'extra'>('basic');
 
@@ -199,30 +200,31 @@ export default function AdminTariffCreate() {
     const data: TariffCreateRequest | TariffUpdateRequest = {
       name,
       description: description || undefined,
-      traffic_limit_gb: trafficLimitGb,
-      device_limit: deviceLimit,
-      device_price_kopeks: devicePriceKopeks > 0 ? devicePriceKopeks : undefined,
-      max_device_limit: maxDeviceLimit > 0 ? maxDeviceLimit : undefined,
-      tier_level: tierLevel,
+      traffic_limit_gb: toNumber(trafficLimitGb, 0),
+      device_limit: toNumber(deviceLimit, 1),
+      device_price_kopeks:
+        toNumber(devicePriceKopeks) > 0 ? toNumber(devicePriceKopeks) : undefined,
+      max_device_limit: toNumber(maxDeviceLimit) > 0 ? toNumber(maxDeviceLimit) : undefined,
+      tier_level: toNumber(tierLevel, 1),
       period_prices: isDaily ? [] : periodPrices.filter((p) => p.price_kopeks >= 0),
       allowed_squads: selectedSquads,
       traffic_topup_enabled: trafficTopupEnabled,
       traffic_topup_packages: trafficTopupPackages,
-      max_topup_traffic_gb: maxTopupTrafficGb,
+      max_topup_traffic_gb: toNumber(maxTopupTrafficGb),
       is_daily: isDaily,
-      daily_price_kopeks: isDaily ? dailyPriceKopeks : 0,
+      daily_price_kopeks: isDaily ? toNumber(dailyPriceKopeks) : 0,
       traffic_reset_mode: trafficResetMode,
     };
 
     if (!isDaily) {
       data.custom_days_enabled = customDaysEnabled;
-      data.price_per_day_kopeks = pricePerDayKopeks;
-      data.min_days = minDays;
-      data.max_days = maxDays;
+      data.price_per_day_kopeks = toNumber(pricePerDayKopeks);
+      data.min_days = toNumber(minDays, 1);
+      data.max_days = toNumber(maxDays, 365);
       data.custom_traffic_enabled = customTrafficEnabled;
-      data.traffic_price_per_gb_kopeks = trafficPricePerGbKopeks;
-      data.min_traffic_gb = minTrafficGb;
-      data.max_traffic_gb = maxTrafficGb;
+      data.traffic_price_per_gb_kopeks = toNumber(trafficPricePerGbKopeks);
+      data.min_traffic_gb = toNumber(minTrafficGb, 1);
+      data.max_traffic_gb = toNumber(maxTrafficGb, 1000);
     }
 
     if (isEdit) {
@@ -239,13 +241,13 @@ export default function AdminTariffCreate() {
   };
 
   const addPeriod = () => {
-    if (newPeriodDays > 0 && newPeriodPrice > 0) {
-      const exists = periodPrices.some((p) => p.days === newPeriodDays);
+    const days = toNumber(newPeriodDays, 0);
+    const price = toNumber(newPeriodPrice, 0);
+    if (days > 0 && price > 0) {
+      const exists = periodPrices.some((p) => p.days === days);
       if (!exists) {
         setPeriodPrices((prev) =>
-          [...prev, { days: newPeriodDays, price_kopeks: newPeriodPrice * 100 }].sort(
-            (a, b) => a.days - b.days,
-          ),
+          [...prev, { days, price_kopeks: price * 100 }].sort((a, b) => a.days - b.days),
         );
         setNewPeriodDays(30);
         setNewPeriodPrice(300);
@@ -265,8 +267,10 @@ export default function AdminTariffCreate() {
 
   const isLoading = createMutation.isPending || updateMutation.isPending;
 
-  const isValidPeriod = name && (periodPrices.length > 0 || customDaysEnabled);
-  const isValidDaily = name && dailyPriceKopeks > 0;
+  // Validate required numeric fields are not empty
+  const hasRequiredFields = deviceLimit !== '' && tierLevel !== '';
+  const isValidPeriod = name && hasRequiredFields && (periodPrices.length > 0 || customDaysEnabled);
+  const isValidDaily = name && hasRequiredFields && toNumber(dailyPriceKopeks) > 0;
   const isValid =
     tariffType === 'period' ? isValidPeriod : tariffType === 'daily' ? isValidDaily : false;
 
@@ -420,21 +424,34 @@ export default function AdminTariffCreate() {
             <div className="rounded-lg border border-warning-500/30 bg-warning-500/10 p-4">
               <label className="mb-2 block text-sm font-medium text-warning-400">
                 {t('admin.tariffs.dailyPriceLabel')}
+                <span className="text-error-400">*</span>
               </label>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
-                  value={dailyPriceKopeks / 100}
-                  onChange={(e) =>
-                    setDailyPriceKopeks(Math.max(0, parseFloat(e.target.value) || 0) * 100)
-                  }
-                  className="input w-32"
+                  value={dailyPriceKopeks === '' ? '' : dailyPriceKopeks / 100}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '') {
+                      setDailyPriceKopeks('');
+                    } else {
+                      const num = Math.max(0, parseFloat(val) || 0) * 100;
+                      setDailyPriceKopeks(num);
+                    }
+                  }}
+                  className={`input w-32 ${dailyPriceKopeks === '' || dailyPriceKopeks === 0 ? 'border-error-500/50' : ''}`}
                   min={0}
                   step={0.1}
+                  placeholder="0.00"
                 />
                 <span className="text-dark-400">{t('admin.tariffs.currencyPerDay')}</span>
               </div>
               <p className="mt-2 text-xs text-dark-500">{t('admin.tariffs.dailyDeductionDesc')}</p>
+              {(dailyPriceKopeks === '' || dailyPriceKopeks === 0) && (
+                <p className="mt-1 text-xs text-error-400">
+                  {t('admin.tariffs.dailyPriceRequired')}
+                </p>
+              )}
             </div>
           )}
 
@@ -447,12 +464,13 @@ export default function AdminTariffCreate() {
               <input
                 type="number"
                 value={trafficLimitGb}
-                onChange={(e) => setTrafficLimitGb(Math.max(0, parseInt(e.target.value) || 0))}
+                onChange={createNumberInputHandler(setTrafficLimitGb, 0)}
                 className="input w-32"
                 min={0}
+                placeholder="0"
               />
               <span className="text-dark-400">{t('admin.tariffs.gbUnit')}</span>
-              {trafficLimitGb === 0 && (
+              {(trafficLimitGb === 0 || trafficLimitGb === '') && (
                 <span className="flex items-center gap-1 text-sm text-success-500">
                   <InfinityIcon />
                   {t('admin.tariffs.unlimited')}
@@ -466,32 +484,40 @@ export default function AdminTariffCreate() {
           <div>
             <label className="mb-2 block text-sm font-medium text-dark-300">
               {t('admin.tariffs.deviceLimitLabel')}
+              <span className="text-error-400">*</span>
             </label>
             <input
               type="number"
               value={deviceLimit}
-              onChange={(e) => setDeviceLimit(Math.max(1, parseInt(e.target.value) || 1))}
-              className="input w-32"
+              onChange={createNumberInputHandler(setDeviceLimit, 1)}
+              className={`input w-32 ${deviceLimit === '' ? 'border-error-500/50' : ''}`}
               min={1}
+              placeholder="1"
             />
+            {deviceLimit === '' && (
+              <p className="mt-1 text-xs text-error-400">{t('admin.tariffs.fieldRequired')}</p>
+            )}
           </div>
 
           {/* Tier Level */}
           <div>
             <label className="mb-2 block text-sm font-medium text-dark-300">
               {t('admin.tariffs.tierLevelLabel')}
+              <span className="text-error-400">*</span>
             </label>
             <input
               type="number"
               value={tierLevel}
-              onChange={(e) =>
-                setTierLevel(Math.min(10, Math.max(1, parseInt(e.target.value) || 1)))
-              }
-              className="input w-32"
+              onChange={createNumberInputHandler(setTierLevel, 1, 10)}
+              className={`input w-32 ${tierLevel === '' ? 'border-error-500/50' : ''}`}
               min={1}
               max={10}
+              placeholder="1"
             />
             <p className="mt-1 text-xs text-dark-500">{t('admin.tariffs.tierLevelHint')}</p>
+            {tierLevel === '' && (
+              <p className="mt-1 text-xs text-error-400">{t('admin.tariffs.fieldRequired')}</p>
+            )}
           </div>
         </div>
       )}
@@ -513,7 +539,7 @@ export default function AdminTariffCreate() {
                 <input
                   type="number"
                   value={newPeriodDays}
-                  onChange={(e) => setNewPeriodDays(Math.max(1, parseInt(e.target.value) || 1))}
+                  onChange={createNumberInputHandler(setNewPeriodDays, 1)}
                   className="input w-24"
                   min={1}
                 />
@@ -525,14 +551,14 @@ export default function AdminTariffCreate() {
                 <input
                   type="number"
                   value={newPeriodPrice}
-                  onChange={(e) => setNewPeriodPrice(Math.max(1, parseInt(e.target.value) || 1))}
+                  onChange={createNumberInputHandler(setNewPeriodPrice, 1)}
                   className="input w-28"
                   min={1}
                 />
               </div>
               <button
                 onClick={addPeriod}
-                disabled={periodPrices.some((p) => p.days === newPeriodDays)}
+                disabled={periodPrices.some((p) => p.days === toNumber(newPeriodDays, 0))}
                 className="btn-primary flex items-center gap-2"
               >
                 <PlusIcon />
@@ -639,10 +665,15 @@ export default function AdminTariffCreate() {
               </span>
               <input
                 type="number"
-                value={devicePriceKopeks / 100}
-                onChange={(e) =>
-                  setDevicePriceKopeks(Math.max(0, parseFloat(e.target.value) || 0) * 100)
-                }
+                value={devicePriceKopeks === '' ? '' : devicePriceKopeks / 100}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === '') {
+                    setDevicePriceKopeks('');
+                  } else {
+                    setDevicePriceKopeks(Math.max(0, parseFloat(val) || 0) * 100);
+                  }
+                }}
                 className="input w-24"
                 min={0}
                 step={1}
@@ -657,7 +688,7 @@ export default function AdminTariffCreate() {
               <input
                 type="number"
                 value={maxDeviceLimit}
-                onChange={(e) => setMaxDeviceLimit(Math.max(0, parseInt(e.target.value) || 0))}
+                onChange={createNumberInputHandler(setMaxDeviceLimit, 0)}
                 className="input w-24"
                 min={0}
               />
@@ -694,9 +725,7 @@ export default function AdminTariffCreate() {
                   <input
                     type="number"
                     value={maxTopupTrafficGb}
-                    onChange={(e) =>
-                      setMaxTopupTrafficGb(Math.max(0, parseInt(e.target.value) || 0))
-                    }
+                    onChange={createNumberInputHandler(setMaxTopupTrafficGb, 0)}
                     className="input w-24"
                     min={0}
                   />
@@ -767,10 +796,15 @@ export default function AdminTariffCreate() {
                     </span>
                     <input
                       type="number"
-                      value={pricePerDayKopeks / 100}
-                      onChange={(e) =>
-                        setPricePerDayKopeks(Math.max(0, parseFloat(e.target.value) || 0) * 100)
-                      }
+                      value={pricePerDayKopeks === '' ? '' : pricePerDayKopeks / 100}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === '') {
+                          setPricePerDayKopeks('');
+                        } else {
+                          setPricePerDayKopeks(Math.max(0, parseFloat(val) || 0) * 100);
+                        }
+                      }}
                       className="input w-24"
                       min={0}
                       step={0.1}
@@ -784,7 +818,7 @@ export default function AdminTariffCreate() {
                     <input
                       type="number"
                       value={minDays}
-                      onChange={(e) => setMinDays(Math.max(1, parseInt(e.target.value) || 1))}
+                      onChange={createNumberInputHandler(setMinDays, 1)}
                       className="input w-24"
                       min={1}
                     />
@@ -796,7 +830,7 @@ export default function AdminTariffCreate() {
                     <input
                       type="number"
                       value={maxDays}
-                      onChange={(e) => setMaxDays(Math.max(1, parseInt(e.target.value) || 1))}
+                      onChange={createNumberInputHandler(setMaxDays, 1)}
                       className="input w-24"
                       min={1}
                     />
@@ -840,12 +874,15 @@ export default function AdminTariffCreate() {
                     </span>
                     <input
                       type="number"
-                      value={trafficPricePerGbKopeks / 100}
-                      onChange={(e) =>
-                        setTrafficPricePerGbKopeks(
-                          Math.max(0, parseFloat(e.target.value) || 0) * 100,
-                        )
-                      }
+                      value={trafficPricePerGbKopeks === '' ? '' : trafficPricePerGbKopeks / 100}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === '') {
+                          setTrafficPricePerGbKopeks('');
+                        } else {
+                          setTrafficPricePerGbKopeks(Math.max(0, parseFloat(val) || 0) * 100);
+                        }
+                      }}
                       className="input w-24"
                       min={0}
                       step={0.1}
@@ -859,7 +896,7 @@ export default function AdminTariffCreate() {
                     <input
                       type="number"
                       value={minTrafficGb}
-                      onChange={(e) => setMinTrafficGb(Math.max(1, parseInt(e.target.value) || 1))}
+                      onChange={createNumberInputHandler(setMinTrafficGb, 1)}
                       className="input w-24"
                       min={1}
                     />
@@ -871,7 +908,7 @@ export default function AdminTariffCreate() {
                     <input
                       type="number"
                       value={maxTrafficGb}
-                      onChange={(e) => setMaxTrafficGb(Math.max(1, parseInt(e.target.value) || 1))}
+                      onChange={createNumberInputHandler(setMaxTrafficGb, 1)}
                       className="input w-24"
                       min={1}
                     />

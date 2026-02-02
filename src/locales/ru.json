@@ -1770,6 +1770,7 @@
       "deviceLimitLabel": "Устройств в тарифе",
       "tierLevelLabel": "Уровень тарифа",
       "tierLevelHint": "Влияет на доступность перехода между тарифами",
+      "fieldRequired": "Обязательное поле",
       "periodsTabHint": "Добавьте периоды и цены для тарифа. Пользователи смогут выбирать из добавленных периодов.",
       "addPeriodTitle": "Добавить период",
       "daysLabel": "Дней",
@@ -1818,7 +1819,8 @@
       "periodType": "Периодный",
       "dailyPriceLabel": "Цена за день",
       "currencyPerDay": "₽/день",
-      "dailyDeductionDesc": "Списывается ежедневно с баланса пользователя"
+      "dailyDeductionDesc": "Списывается ежедневно с баланса пользователя",
+      "dailyPriceRequired": "Укажите цену за день больше 0"
     },
     "servers": {
       "title": "Управление серверами",

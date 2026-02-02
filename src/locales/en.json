@@ -1259,6 +1259,7 @@
       "deviceLimitLabel": "Devices in tariff",
       "tierLevelLabel": "Tariff tier level",
       "tierLevelHint": "Affects upgrade availability between tariffs",
+      "fieldRequired": "Required field",
       "periodsTabHint": "Add periods and prices for the tariff. Users will be able to choose from the added periods.",
       "addPeriodTitle": "Add period",
       "daysLabel": "Days",
@@ -1307,7 +1308,8 @@
       "periodType": "Period-based",
       "dailyPriceLabel": "Price per day",
       "currencyPerDay": "\u20bd/day",
-      "dailyDeductionDesc": "Charged daily from user's balance"
+      "dailyDeductionDesc": "Charged daily from user's balance",
+      "dailyPriceRequired": "Enter a price per day greater than 0"
     },
     "servers": {
       "title": "Server Management",

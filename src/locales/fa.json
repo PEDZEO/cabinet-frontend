@@ -1029,6 +1029,7 @@
       "deviceLimitLabel": "دستگاه‌ها در تعرفه",
       "tierLevelLabel": "سطح تعرفه",
       "tierLevelHint": "بر دسترسی ارتقا بین تعرفه‌ها تأثیر می‌گذارد",
+      "fieldRequired": "فیلد اجباری",
       "periodsTabHint": "دوره‌ها و قیمت‌ها را برای تعرفه اضافه کنید. کاربران می‌توانند از دوره‌های اضافه شده انتخاب کنند.",
       "addPeriodTitle": "افزودن دوره",
       "daysLabel": "روز",
@@ -1077,7 +1078,8 @@
       "periodType": "دوره‌ای",
       "dailyPriceLabel": "قیمت روزانه",
       "currencyPerDay": "₽/روز",
-      "dailyDeductionDesc": "هر روز از موجودی کاربر کسر می‌شود"
+      "dailyDeductionDesc": "هر روز از موجودی کاربر کسر می‌شود",
+      "dailyPriceRequired": "قیمت روزانه بزرگتر از 0 را وارد کنید"
     },
     "servers": {
       "title": "مدیریت سرورها",

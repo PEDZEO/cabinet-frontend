@@ -14,6 +14,7 @@ import {
   OfferType,
 } from '../api/promoOffers';
 import { AdminBackButton } from '../components/admin';
+import { createNumberInputHandler, toNumber } from '../utils/inputHelpers';
 
 // Icons
 
@@ -135,12 +136,14 @@ function TemplateEditModal({ template, onSave, onClose, isLoading }: TemplateEdi
   const [name, setName] = useState(template.name);
   const [messageText, setMessageText] = useState(template.message_text);
   const [buttonText, setButtonText] = useState(template.button_text);
-  const [validHours, setValidHours] = useState(template.valid_hours);
-  const [discountPercent, setDiscountPercent] = useState(template.discount_percent);
-  const [activeDiscountHours, setActiveDiscountHours] = useState(
+  const [validHours, setValidHours] = useState<number | ''>(template.valid_hours);
+  const [discountPercent, setDiscountPercent] = useState<number | ''>(template.discount_percent);
+  const [activeDiscountHours, setActiveDiscountHours] = useState<number | ''>(
     template.active_discount_hours || 0,
   );
-  const [testDurationHours, setTestDurationHours] = useState(template.test_duration_hours || 0);
+  const [testDurationHours, setTestDurationHours] = useState<number | ''>(
+    template.test_duration_hours || 0,
+  );
   const [isActive, setIsActive] = useState(template.is_active);
 
   const isTestAccess = template.offer_type === 'test_access';
@@ -150,14 +153,16 @@ function TemplateEditModal({ template, onSave, onClose, isLoading }: TemplateEdi
       name,
       message_text: messageText,
       button_text: buttonText,
-      valid_hours: validHours,
-      discount_percent: discountPercent,
+      valid_hours: toNumber(validHours, 1),
+      discount_percent: toNumber(discountPercent),
       is_active: isActive,
     };
+    const testHours = toNumber(testDurationHours);
+    const discountHours = toNumber(activeDiscountHours);
     if (isTestAccess) {
-      data.test_duration_hours = testDurationHours > 0 ? testDurationHours : undefined;
+      data.test_duration_hours = testHours > 0 ? testHours : undefined;
     } else {
-      data.active_discount_hours = activeDiscountHours > 0 ? activeDiscountHours : undefined;
+      data.active_discount_hours = discountHours > 0 ? discountHours : undefined;
     }
     onSave(data);
   };
@@ -224,7 +229,7 @@ function TemplateEditModal({ template, onSave, onClose, isLoading }: TemplateEdi
               <input
                 type="number"
                 value={validHours}
-                onChange={(e) => setValidHours(Math.max(1, parseInt(e.target.value) || 1))}
+                onChange={createNumberInputHandler(setValidHours, 1)}
                 className="w-full rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-dark-100 focus:border-accent-500 focus:outline-none"
                 min={1}
               />
@@ -241,9 +246,7 @@ function TemplateEditModal({ template, onSave, onClose, isLoading }: TemplateEdi
                 <input
                   type="number"
                   value={discountPercent}
-                  onChange={(e) =>
-                    setDiscountPercent(Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))
-                  }
+                  onChange={createNumberInputHandler(setDiscountPercent, 0, 100)}
                   className="w-full rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-dark-100 focus:border-accent-500 focus:outline-none"
                   min={0}
                   max={100}
@@ -260,7 +263,7 @@ function TemplateEditModal({ template, onSave, onClose, isLoading }: TemplateEdi
               <input
                 type="number"
                 value={testDurationHours}
-                onChange={(e) => setTestDurationHours(Math.max(0, parseInt(e.target.value) || 0))}
+                onChange={createNumberInputHandler(setTestDurationHours, 0)}
                 className="w-full rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-dark-100 focus:border-accent-500 focus:outline-none"
                 min={0}
               />
@@ -276,7 +279,7 @@ function TemplateEditModal({ template, onSave, onClose, isLoading }: TemplateEdi
               <input
                 type="number"
                 value={activeDiscountHours}
-                onChange={(e) => setActiveDiscountHours(Math.max(0, parseInt(e.target.value) || 0))}
+                onChange={createNumberInputHandler(setActiveDiscountHours, 0)}
                 className="w-full rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-dark-100 focus:border-accent-500 focus:outline-none"
                 min={0}
               />

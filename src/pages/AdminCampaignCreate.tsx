@@ -10,6 +10,7 @@ import {
   TariffListItem,
 } from '../api/campaigns';
 import { AdminBackButton } from '../components/admin';
+import { createNumberInputHandler, toNumber } from '../utils/inputHelpers';
 
 // Icons
 const CampaignIcon = () => (
@@ -161,17 +162,17 @@ export default function AdminCampaignCreate() {
   const [isActive, setIsActive] = useState(true);
 
   // Balance bonus
-  const [balanceBonusRubles, setBalanceBonusRubles] = useState(0);
+  const [balanceBonusRubles, setBalanceBonusRubles] = useState<number | ''>(0);
 
   // Subscription bonus
-  const [subscriptionDays, setSubscriptionDays] = useState(7);
-  const [subscriptionTraffic, setSubscriptionTraffic] = useState(10);
-  const [subscriptionDevices, setSubscriptionDevices] = useState(1);
+  const [subscriptionDays, setSubscriptionDays] = useState<number | ''>(7);
+  const [subscriptionTraffic, setSubscriptionTraffic] = useState<number | ''>(10);
+  const [subscriptionDevices, setSubscriptionDevices] = useState<number | ''>(1);
   const [selectedSquads, setSelectedSquads] = useState<string[]>([]);
 
   // Tariff bonus
   const [tariffId, setTariffId] = useState<number | null>(null);
-  const [tariffDays, setTariffDays] = useState(30);
+  const [tariffDays, setTariffDays] = useState<number | ''>(30);
 
   // Fetch servers
   const { data: servers = [] } = useQuery({
@@ -210,15 +211,15 @@ export default function AdminCampaignCreate() {
     };
 
     if (bonusType === 'balance') {
-      data.balance_bonus_kopeks = Math.round(balanceBonusRubles * 100);
+      data.balance_bonus_kopeks = Math.round(toNumber(balanceBonusRubles) * 100);
     } else if (bonusType === 'subscription') {
-      data.subscription_duration_days = subscriptionDays;
-      data.subscription_traffic_gb = subscriptionTraffic;
-      data.subscription_device_limit = subscriptionDevices;
+      data.subscription_duration_days = toNumber(subscriptionDays, 7);
+      data.subscription_traffic_gb = toNumber(subscriptionTraffic, 10);
+      data.subscription_device_limit = toNumber(subscriptionDevices, 1);
       data.subscription_squads = selectedSquads;
     } else if (bonusType === 'tariff') {
       data.tariff_id = tariffId || undefined;
-      data.tariff_duration_days = tariffDays;
+      data.tariff_duration_days = toNumber(tariffDays, 30);
     }
 
     createMutation.mutate(data);
@@ -334,7 +335,7 @@ export default function AdminCampaignCreate() {
             <input
               type="number"
               value={balanceBonusRubles}
-              onChange={(e) => setBalanceBonusRubles(Math.max(0, parseFloat(e.target.value) || 0))}
+              onChange={createNumberInputHandler(setBalanceBonusRubles, 0)}
               className="input w-32"
               min={0}
               step={1}
@@ -360,7 +361,7 @@ export default function AdminCampaignCreate() {
               <input
                 type="number"
                 value={subscriptionDays}
-                onChange={(e) => setSubscriptionDays(Math.max(1, parseInt(e.target.value) || 1))}
+                onChange={createNumberInputHandler(setSubscriptionDays, 1)}
                 className="input"
                 min={1}
               />
@@ -372,7 +373,7 @@ export default function AdminCampaignCreate() {
               <input
                 type="number"
                 value={subscriptionTraffic}
-                onChange={(e) => setSubscriptionTraffic(Math.max(0, parseInt(e.target.value) || 0))}
+                onChange={createNumberInputHandler(setSubscriptionTraffic, 0)}
                 className="input"
                 min={0}
               />
@@ -384,7 +385,7 @@ export default function AdminCampaignCreate() {
               <input
                 type="number"
                 value={subscriptionDevices}
-                onChange={(e) => setSubscriptionDevices(Math.max(1, parseInt(e.target.value) || 1))}
+                onChange={createNumberInputHandler(setSubscriptionDevices, 1)}
                 className="input"
                 min={1}
               />
@@ -412,7 +413,7 @@ export default function AdminCampaignCreate() {
             <input
               type="number"
               value={tariffDays}
-              onChange={(e) => setTariffDays(Math.max(1, parseInt(e.target.value) || 1))}
+              onChange={createNumberInputHandler(setTariffDays, 1)}
               className="input w-32"
               min={1}
             />
