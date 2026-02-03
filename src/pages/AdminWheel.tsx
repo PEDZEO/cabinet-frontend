@@ -427,17 +427,24 @@ export default function AdminWheel() {
       onTelegramDragEnd();
       const { active, over } = event;
       if (over && active.id !== over.id && config) {
-        const oldIndex = config.prizes.findIndex((p) => p.id === active.id);
-        const newIndex = config.prizes.findIndex((p) => p.id === over.id);
+        // Use current displayed order (either local or from config)
+        const currentPrizes = localPrizeOrder
+          ? localPrizeOrder
+              .map((id) => config.prizes.find((p) => p.id === id))
+              .filter((p): p is WheelPrizeAdmin => p !== undefined)
+          : config.prizes;
+
+        const oldIndex = currentPrizes.findIndex((p) => p.id === active.id);
+        const newIndex = currentPrizes.findIndex((p) => p.id === over.id);
         if (oldIndex !== -1 && newIndex !== -1) {
-          const newOrder = arrayMove(config.prizes, oldIndex, newIndex);
+          const newOrder = arrayMove(currentPrizes, oldIndex, newIndex);
           // Save order locally, don't trigger mutation immediately
           setLocalPrizeOrder(newOrder.map((p) => p.id));
           setHasUnsavedOrder(true);
         }
       }
     },
-    [config, onTelegramDragEnd],
+    [config, localPrizeOrder, onTelegramDragEnd],
   );
 
   // Save prize order

@@ -62,13 +62,10 @@ const FortuneWheel = memo(function FortuneWheel({
     const numLights = isSpinning ? 3 : 4; // 3 lights when spinning, 4 when idle
 
     return Array.from({ length: 20 }, (_, i) => {
-      // Check if this light index is within the active range
-      for (let j = 0; j < numLights; j++) {
-        if (i === (lightPhase + j) % 20) {
-          return true;
-        }
-      }
-      return false;
+      // Calculate distance from current lightPhase
+      const distance = (i - lightPhase + 20) % 20;
+      // Light is on if within range [0, numLights)
+      return distance < numLights;
     });
   }, [isSpinning, lightPhase]);
 
