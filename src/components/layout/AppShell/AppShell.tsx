@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/store/auth';
 import { useBackButton, useHaptic } from '@/platform';
 import { useTelegramSDK } from '@/hooks/useTelegramSDK';
+import { useTheme } from '@/hooks/useTheme';
+import { themeColorsApi } from '@/api/themeColors';
 import { referralApi } from '@/api/referral';
 import { wheelApi } from '@/api/wheel';
 import { contestsApi } from '@/api/contests';
@@ -142,6 +144,38 @@ const LogoutIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const SunIcon = ({ className }: { className?: string }) => (
+  <svg
+    className={className}
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={1.5}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
+    />
+  </svg>
+);
+
+const MoonIcon = ({ className }: { className?: string }) => (
+  <svg
+    className={className}
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={1.5}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"
+    />
+  </svg>
+);
+
 const FALLBACK_NAME = import.meta.env.VITE_APP_NAME || 'Cabinet';
 const FALLBACK_LOGO = import.meta.env.VITE_APP_LOGO || 'V';
 
@@ -164,6 +198,15 @@ export function AppShell({ children }: AppShellProps) {
     isMobile,
   } = useTelegramSDK();
   const haptic = useHaptic();
+  const { toggleTheme, isDark } = useTheme();
+
+  // Theme toggle visibility
+  const { data: enabledThemes } = useQuery({
+    queryKey: ['enabled-themes'],
+    queryFn: themeColorsApi.getEnabledThemes,
+    staleTime: 1000 * 60 * 5,
+  });
+  const canToggleTheme = enabledThemes?.dark && enabledThemes?.light;
 
   // Only apply fullscreen UI adjustments on mobile Telegram (iOS/Android)
   const isMobileFullscreen = isFullscreen && isMobile;
@@ -460,6 +503,18 @@ export function AppShell({ children }: AppShellProps) {
 
           {/* Right side actions */}
           <div className="flex items-center gap-2">
+            {canToggleTheme && (
+              <button
+                onClick={() => {
+                  haptic.impact('light');
+                  toggleTheme();
+                }}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-dark-400 transition-colors hover:bg-dark-800/50 hover:text-dark-200"
+                title={isDark ? t('theme.light') || 'Light mode' : t('theme.dark') || 'Dark mode'}
+              >
+                {isDark ? <MoonIcon className="h-4 w-4" /> : <SunIcon className="h-4 w-4" />}
+              </button>
+            )}
             <TicketNotificationBell isAdmin={location.pathname.startsWith('/admin')} />
             <LanguageSwitcher />
             <button
