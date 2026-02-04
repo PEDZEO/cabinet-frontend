@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Renderer, Program, Mesh, Color, Triangle } from 'ogl';
 import { brandingApi } from '@/api/branding';
+import { useTheme } from '@/hooks/useTheme';
 import { ThemeSettings, DEFAULT_THEME_COLORS } from '@/types/theme';
 
 const VERT = /* glsl */ `#version 300 es
@@ -148,6 +149,10 @@ export function Aurora() {
   const themeColors =
     queryClient.getQueryData<ThemeSettings>(['theme-colors']) || DEFAULT_THEME_COLORS;
 
+  // Pick background based on current theme
+  const { isDark } = useTheme();
+  const background = isDark ? themeColors.darkBackground : themeColors.lightBackground;
+
   useEffect(() => {
     if (!isEnabled || !containerRef.current) return;
 
@@ -168,7 +173,7 @@ export function Aurora() {
 
     const geometry = new Triangle(gl);
 
-    const colorStops = generateColorStops(themeColors.accent, themeColors.darkBackground);
+    const colorStops = generateColorStops(themeColors.accent, background);
     const colorStopsArray = colorStops
       .map((hex) => {
         const c = new Color(hex);
@@ -231,7 +236,7 @@ export function Aurora() {
       rendererRef.current = null;
       programRef.current = null;
     };
-  }, [isEnabled, themeColors.accent, themeColors.darkBackground]);
+  }, [isEnabled, themeColors.accent, background]);
 
   if (!isEnabled) {
     return null;
