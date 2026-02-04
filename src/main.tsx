@@ -26,54 +26,71 @@ import { getCachedFullscreenEnabled, isTelegramMobile } from './hooks/useTelegra
 import './i18n';
 import './styles/globals.css';
 
-// Safe mount helper — ignores "already mounted/mounting" errors (HMR, StrictMode)
-function safeMountSync(fn: () => void) {
+// HMR guard — prevent double init when Vite hot-reloads the module
+const HMR_KEY = '__tg_sdk_initialized';
+const alreadyInitialized = (window as unknown as Record<string, unknown>)[HMR_KEY] === true;
+
+if (!alreadyInitialized) {
+  (window as unknown as Record<string, unknown>)[HMR_KEY] = true;
+
   try {
-    fn();
-  } catch {
-    // Already mounted or not available
-  }
-}
+    init();
+    restoreInitData();
 
-// Initialize Telegram SDK v3
-try {
-  init();
-  restoreInitData();
+    // Mount components — each in its own try/catch so one failure doesn't block others
+    try {
+      mountMiniApp();
+    } catch {
+      /* already mounted */
+    }
+    try {
+      mountThemeParams();
+      bindThemeParamsCssVars();
+    } catch {
+      /* already mounted */
+    }
+    try {
+      mountSwipeBehavior();
+      disableVerticalSwipes();
+    } catch {
+      /* already mounted */
+    }
+    try {
+      mountClosingBehavior();
+      disableClosingConfirmation();
+    } catch {
+      /* already mounted */
+    }
+    try {
+      mountBackButton();
+    } catch {
+      /* already mounted */
+    }
+    try {
+      mountMainButton();
+    } catch {
+      /* already mounted */
+    }
 
-  safeMountSync(() => mountMiniApp());
-  safeMountSync(() => {
-    mountThemeParams();
-    bindThemeParamsCssVars();
-  });
-  safeMountSync(() => {
-    mountSwipeBehavior();
-    disableVerticalSwipes();
-  });
-  safeMountSync(() => {
-    mountClosingBehavior();
-    disableClosingConfirmation();
-  });
-  safeMountSync(() => mountBackButton());
-  safeMountSync(() => mountMainButton());
+    // Viewport — async, fullscreen зависит от смонтированного viewport
+    mountViewport()
+      .then(() => {
+        bindViewportCssVars();
+        expandViewport();
 
-  // Viewport — async, fullscreen зависит от смонтированного viewport
-  mountViewport()
-    .then(() => {
-      bindViewportCssVars();
-      expandViewport();
-
-      // Auto-enter fullscreen if enabled in settings (mobile only)
-      if (getCachedFullscreenEnabled() && isTelegramMobile()) {
-        if (!isFullscreen()) {
-          requestFullscreen();
+        // Auto-enter fullscreen if enabled in settings (mobile only)
+        if (getCachedFullscreenEnabled() && isTelegramMobile()) {
+          if (!isFullscreen()) {
+            requestFullscreen();
+          }
         }
-      }
-    })
-    .catch(() => {});
+      })
+      .catch(() => {});
 
-  miniAppReady();
-} catch {
-  // Not in Telegram — ok
+    miniAppReady();
+  } catch {
+    // Not in Telegram — ok
+  }
 }
 
 // Preload logo from cache immediately on page load
