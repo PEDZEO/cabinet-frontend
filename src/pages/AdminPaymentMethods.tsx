@@ -1,7 +1,9 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { useBackButton } from '../platform/hooks/useBackButton';
+import { usePlatform } from '../platform/hooks/usePlatform';
 import {
   DndContext,
   KeyboardSensor,
@@ -235,6 +237,10 @@ export default function AdminPaymentMethods() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { capabilities } = usePlatform();
+
+  // Use native Telegram back button in Mini App
+  useBackButton(() => navigate('/admin'));
 
   const [methods, setMethods] = useState<PaymentMethodConfig[]>([]);
   const [orderChanged, setOrderChanged] = useState(false);
@@ -318,12 +324,15 @@ export default function AdminPaymentMethods() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Link
-            to="/admin"
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-dark-700 bg-dark-800 transition-colors hover:border-dark-600"
-          >
-            <BackIcon />
-          </Link>
+          {/* Show back button only on web, not in Telegram Mini App */}
+          {!capabilities.hasBackButton && (
+            <button
+              onClick={() => navigate('/admin')}
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-dark-700 bg-dark-800 transition-colors hover:border-dark-600"
+            >
+              <BackIcon />
+            </button>
+          )}
           <div>
             <h1 className="text-2xl font-bold text-dark-50">{t('admin.paymentMethods.title')}</h1>
             <p className="text-sm text-dark-400">{t('admin.paymentMethods.description')}</p>
