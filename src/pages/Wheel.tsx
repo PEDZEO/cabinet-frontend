@@ -7,7 +7,6 @@ import WheelLegend from '../components/wheel/WheelLegend';
 import InsufficientBalancePrompt from '../components/InsufficientBalancePrompt';
 import { usePlatform, useHaptic } from '@/platform';
 import { useNotify } from '@/platform/hooks/useNotify';
-import { useNativeDialog } from '@/platform/hooks/useNativeDialog';
 import { Card } from '@/components/data-display/Card/Card';
 import { Button } from '@/components/primitives/Button/Button';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -64,7 +63,6 @@ export default function Wheel() {
   const { openInvoice, capabilities } = usePlatform();
   const haptic = useHaptic();
   const notify = useNotify();
-  const dialog = useNativeDialog();
 
   const [isSpinning, setIsSpinning] = useState(false);
   const [targetRotation, setTargetRotation] = useState<number | null>(null);
@@ -74,6 +72,7 @@ export default function Wheel() {
   );
   const [isPayingStars, setIsPayingStars] = useState(false);
   const [historyExpanded, setHistoryExpanded] = useState(false);
+  const [showStarsConfirm, setShowStarsConfirm] = useState(false);
   const paymentTypeInitialized = useRef(false);
 
   const {
@@ -171,6 +170,7 @@ export default function Wheel() {
   const pendingStarsResultRef = useRef<SpinResult | null>(null);
   const isStarsSpinRef = useRef(false);
   const pollingAbortRef = useRef<AbortController | null>(null);
+  const preOpenedWindowRef = useRef<Window | null>(null);
 
   // Cleanup polling on unmount
   useEffect(() => {
@@ -272,9 +272,12 @@ export default function Wheel() {
           setIsPayingStars(false);
         }
       } else {
-        // Fallback: open invoice URL in browser (unsupported platform)
+        // Fallback: redirect pre-opened window to invoice URL
         setIsPayingStars(false);
-        window.open(data.invoice_url, '_blank', 'noopener,noreferrer');
+        if (preOpenedWindowRef.current) {
+          preOpenedWindowRef.current.location.href = data.invoice_url;
+          preOpenedWindowRef.current = null;
+        }
         setSpinResult({
           success: true,
           prize_id: null,
@@ -292,6 +295,10 @@ export default function Wheel() {
     },
     onError: () => {
       setIsPayingStars(false);
+      if (preOpenedWindowRef.current) {
+        preOpenedWindowRef.current.close();
+        preOpenedWindowRef.current = null;
+      }
       setSpinResult({
         success: false,
         prize_id: null,
@@ -308,13 +315,13 @@ export default function Wheel() {
     },
   });
 
-  const handleDirectStarsPay = async () => {
-    const confirmed = await dialog.confirm(
-      t('wheel.confirmStarsPayment'),
-      t('wheel.confirmStarsTitle'),
-    );
-    if (!confirmed) return;
+  const handleDirectStarsPay = () => {
+    setShowStarsConfirm(false);
     setIsPayingStars(true);
+    // In browser: pre-open window synchronously (direct user gesture) to avoid popup blocker
+    if (!capabilities.hasInvoice) {
+      preOpenedWindowRef.current = window.open('about:blank', '_blank') || null;
+    }
     starsInvoiceMutation.mutate();
   };
 
@@ -359,7 +366,7 @@ export default function Wheel() {
         notify.warning(t('wheel.starsNotAvailable'));
         return;
       }
-      handleDirectStarsPay();
+      setShowStarsConfirm(true);
     } else {
       handleSpin();
     }
@@ -460,20 +467,6 @@ export default function Wheel() {
     isPayingStars ||
     (config.daily_limit > 0 && config.user_spins_today >= config.daily_limit);
 
-  // Build cost subtitle for the spin button
-  const getCostSubtitle = () => {
-    if (bothMethodsAvailable) return null; // toggle handles it
-    if (paymentType === 'telegram_stars' && starsEnabled) {
-      return `${config.spin_cost_stars} ⭐`;
-    }
-    if (paymentType === 'subscription_days' && daysEnabled) {
-      return t('wheel.days', { count: config.spin_cost_days ?? 0 });
-    }
-    return null;
-  };
-
-  const costSubtitle = getCostSubtitle();
-
   return (
     <div className="animate-fade-in space-y-6 pb-8">
       {/* Simple Header */}
@@ -504,53 +497,77 @@ export default function Wheel() {
 
             {/* Spin Controls */}
             <div className="mt-8 space-y-4">
-              {/* Payment type toggle - only if both methods available */}
-              {bothMethodsAvailable && (
+              {/* Payment type selector */}
+              {(starsEnabled || daysEnabled) && (
                 <div className="rounded-xl border border-dark-700/30 bg-dark-800/30 p-1">
-                  <div className="grid grid-cols-2 gap-1">
-                    <button
-                      onClick={() => setPaymentType('telegram_stars')}
-                      disabled={isSpinning}
-                      className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
-                        paymentType === 'telegram_stars'
-                          ? 'bg-accent-500/15 text-accent-400'
-                          : 'text-dark-400 hover:text-dark-200'
-                      }`}
-                    >
-                      <StarIcon />
-                      {`${config.spin_cost_stars} ⭐`}
-                    </button>
-                    <button
-                      onClick={() => setPaymentType('subscription_days')}
-                      disabled={isSpinning}
-                      className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
-                        paymentType === 'subscription_days'
-                          ? 'bg-accent-500/15 text-accent-400'
-                          : 'text-dark-400 hover:text-dark-200'
-                      }`}
-                    >
-                      <CalendarIcon />
-                      {t('wheel.days', { count: config.spin_cost_days ?? 0 })}
-                    </button>
+                  <div
+                    className={`grid gap-1 ${bothMethodsAvailable ? 'grid-cols-2' : 'grid-cols-1'}`}
+                  >
+                    {starsEnabled && (
+                      <button
+                        onClick={() => setPaymentType('telegram_stars')}
+                        disabled={isSpinning}
+                        className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+                          paymentType === 'telegram_stars'
+                            ? 'bg-accent-500/15 text-accent-400'
+                            : 'text-dark-400 hover:text-dark-200'
+                        }`}
+                      >
+                        <StarIcon />
+                        {`${config.spin_cost_stars} ⭐`}
+                      </button>
+                    )}
+                    {daysEnabled && (
+                      <button
+                        onClick={() => setPaymentType('subscription_days')}
+                        disabled={isSpinning}
+                        className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+                          paymentType === 'subscription_days'
+                            ? 'bg-accent-500/15 text-accent-400'
+                            : 'text-dark-400 hover:text-dark-200'
+                        }`}
+                      >
+                        <CalendarIcon />
+                        {t('wheel.days', { count: config.spin_cost_days ?? 0 })}
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
 
-              {/* Single Spin Button */}
-              <Button
-                variant="primary"
-                size="lg"
-                fullWidth
-                onClick={handleUnifiedSpin}
-                disabled={spinDisabled}
-                loading={isSpinning || isPayingStars}
-              >
-                {isSpinning ? t('wheel.spinning') : t('wheel.spin')}
-              </Button>
-
-              {/* Cost subtitle when no toggle */}
-              {costSubtitle && !bothMethodsAvailable && (
-                <p className="text-center text-sm text-dark-400">{costSubtitle}</p>
+              {/* Stars confirmation panel */}
+              {showStarsConfirm && !isSpinning && !isPayingStars ? (
+                <div className="space-y-3 rounded-xl border border-accent-500/30 bg-accent-500/5 p-4">
+                  <p className="text-center text-sm text-dark-300">
+                    {t('wheel.confirmStarsPayment')}
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => setShowStarsConfirm(false)}
+                      className="rounded-lg border border-dark-700 bg-dark-800 px-4 py-2.5 text-sm font-medium text-dark-300 transition-colors hover:bg-dark-700"
+                    >
+                      {t('common.cancel')}
+                    </button>
+                    <button
+                      onClick={handleDirectStarsPay}
+                      className="rounded-lg bg-accent-500 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-600"
+                    >
+                      {t('wheel.payStars', { count: config.spin_cost_stars ?? 0 })}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* Single Spin Button */
+                <Button
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  onClick={handleUnifiedSpin}
+                  disabled={spinDisabled}
+                  loading={isSpinning || isPayingStars}
+                >
+                  {isSpinning ? t('wheel.spinning') : t('wheel.spin')}
+                </Button>
               )}
 
               {/* Cannot spin hint */}
