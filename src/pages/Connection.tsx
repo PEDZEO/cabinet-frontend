@@ -370,6 +370,25 @@ export default function Connection() {
     });
   };
 
+  // DEBUG: log app data to check svgIconKey presence
+  if (isRemnawave && appConfig?.platforms) {
+    const firstPlatformKey = Object.keys(appConfig.platforms)[0];
+    if (firstPlatformKey) {
+      const pd = appConfig.platforms[firstPlatformKey];
+      if (pd && !Array.isArray(pd) && 'apps' in pd) {
+        console.log(
+          '[DEBUG] RemnaWave apps:',
+          pd.apps.map((a: RemnawaveAppClient) => ({
+            name: a.name,
+            svgIconKey: a.svgIconKey,
+            keys: Object.keys(a),
+          })),
+        );
+        console.log('[DEBUG] svgLibrary keys:', Object.keys(appConfig.svgLibrary || {}));
+      }
+    }
+  }
+
   // Loading
   if (isLoading) {
     return (
@@ -477,9 +496,9 @@ export default function Connection() {
           )}
         </div>
 
-        {/* App chips row */}
+        {/* App cards row */}
         {currentPlatformApps.length > 0 && (
-          <div className="-mx-1 flex flex-wrap gap-2 px-1">
+          <div className="flex flex-wrap gap-2">
             {currentPlatformApps.map((app, idx) => {
               const isSelected = currentApp?.name === app.name;
               const appIconSvg = getSvgHtml(app.svgIconKey);
@@ -487,24 +506,20 @@ export default function Connection() {
                 <button
                   key={app.name + idx}
                   onClick={() => setSelectedRemnawaveApp(app)}
-                  className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition-all active:scale-95 ${
+                  className={`relative flex items-center gap-2 overflow-hidden rounded-xl px-3 py-2.5 text-sm font-medium transition-all active:scale-[0.97] ${
                     isSelected
                       ? 'bg-accent-500/15 text-accent-400 ring-1 ring-accent-500/40'
                       : 'bg-dark-800/60 text-dark-300 hover:bg-dark-800'
                   }`}
                 >
-                  {app.featured && <span className="h-2 w-2 rounded-full bg-amber-400" />}
-                  {appIconSvg ? (
+                  {app.featured && <span className="h-2 w-2 shrink-0 rounded-full bg-amber-400" />}
+                  <span className="relative z-10">{app.name}</span>
+                  {appIconSvg && (
                     <div
-                      className="h-4 w-4 [&>svg]:h-full [&>svg]:w-full"
+                      className="h-8 w-8 shrink-0 opacity-40 [&>svg]:h-full [&>svg]:w-full"
                       dangerouslySetInnerHTML={{ __html: appIconSvg }}
                     />
-                  ) : (
-                    <span className="h-4 w-4 [&>svg]:h-full [&>svg]:w-full">
-                      {getAppIcon(app.name)}
-                    </span>
                   )}
-                  {app.name}
                 </button>
               );
             })}
