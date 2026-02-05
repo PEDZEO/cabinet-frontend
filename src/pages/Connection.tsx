@@ -482,6 +482,7 @@ export default function Connection() {
           <div className="-mx-1 flex flex-wrap gap-2 px-1">
             {currentPlatformApps.map((app, idx) => {
               const isSelected = currentApp?.name === app.name;
+              const appIconSvg = getSvgHtml(app.svgIconKey);
               return (
                 <button
                   key={app.name + idx}
@@ -492,10 +493,16 @@ export default function Connection() {
                       : 'bg-dark-800/60 text-dark-300 hover:bg-dark-800'
                   }`}
                 >
-                  {app.featured && (
-                    <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
+                  {app.featured && <span className="h-2 w-2 rounded-full bg-amber-400" />}
+                  {appIconSvg ? (
+                    <div
+                      className="h-4 w-4 [&>svg]:h-full [&>svg]:w-full"
+                      dangerouslySetInnerHTML={{ __html: appIconSvg }}
+                    />
+                  ) : (
+                    <span className="h-4 w-4 [&>svg]:h-full [&>svg]:w-full">
+                      {getAppIcon(app.name)}
+                    </span>
                   )}
                   {app.name}
                 </button>
@@ -553,7 +560,10 @@ export default function Connection() {
                   : '');
 
               return (
-                <div key={blockIdx} className="rounded-xl border border-dark-700 p-4">
+                <div
+                  key={blockIdx}
+                  className="rounded-xl border border-dark-700/50 bg-dark-800/50 p-4"
+                >
                   <div className="flex items-start gap-4">
                     {/* SVG icon */}
                     {svgHtml && (

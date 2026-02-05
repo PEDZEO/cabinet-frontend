@@ -113,6 +113,7 @@ export interface RemnawaveApp {
   featured?: boolean;
   urlScheme?: string;
   isNeedBase64Encoding?: boolean;
+  svgIconKey?: string;
   blocks: RemnawaveBlock[];
 }
 

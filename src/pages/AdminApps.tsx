@@ -221,7 +221,6 @@ function AppCard({
   lang: string;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const firstBlock = app.blocks?.[0];
 
   return (
     <div className="card overflow-hidden">
@@ -229,21 +228,9 @@ function AppCard({
         onClick={() => setExpanded(!expanded)}
         className="flex w-full items-center gap-4 p-4 text-left"
       >
-        {/* Icon from first block */}
-        <div
-          className="flex h-10 w-10 items-center justify-center rounded-full"
-          style={
-            firstBlock?.svgIconColor
-              ? {
-                  backgroundColor: firstBlock.svgIconColor + '20',
-                  color: firstBlock.svgIconColor,
-                }
-              : undefined
-          }
-        >
-          {renderSvgIcon(svgLibrary, firstBlock?.svgIconKey, firstBlock?.svgIconColor) || (
-            <AppsIcon />
-          )}
+        {/* App icon from svgLibrary */}
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-700/50">
+          {renderSvgIcon(svgLibrary, app.svgIconKey) || <AppsIcon />}
         </div>
 
         {/* Name + badges */}

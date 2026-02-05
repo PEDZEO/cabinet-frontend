@@ -524,6 +524,7 @@ export interface RemnawaveAppClient {
   name: string;
   featured?: boolean;
   deepLink?: string | null;
+  svgIconKey?: string;
   blocks: RemnawaveBlockClient[];
 }
 
