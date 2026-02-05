@@ -268,7 +268,7 @@ export function AppShell({ children }: AppShellProps) {
 
       {/* Desktop Header */}
       <header className="fixed left-0 right-0 top-0 z-50 hidden border-b border-dark-800/50 bg-dark-950/80 backdrop-blur-xl lg:block">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
+        <div className="mx-auto grid h-14 max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-4 px-6">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5" onClick={handleNavClick}>
             <div className="relative flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-dark-800">
@@ -295,7 +295,7 @@ export function AppShell({ children }: AppShellProps) {
           </Link>
 
           {/* Center Navigation */}
-          <nav className="flex items-center gap-1">
+          <nav className="flex items-center justify-center gap-1">
             {desktopNavItems.map((item) => (
               <Link
                 key={item.path}
@@ -349,14 +349,14 @@ export function AppShell({ children }: AppShellProps) {
           </nav>
 
           {/* Right side actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-end gap-2">
             {canToggleTheme && (
               <button
                 onClick={() => {
                   haptic.impact('light');
                   toggleTheme();
                 }}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-dark-400 transition-colors hover:bg-dark-800/50 hover:text-dark-200"
+                className="rounded-xl border border-dark-700/50 bg-dark-800/50 p-2 text-dark-400 transition-all duration-200 hover:bg-dark-700 hover:text-accent-400"
                 title={isDark ? t('theme.light') || 'Light mode' : t('theme.dark') || 'Dark mode'}
               >
                 {isDark ? <MoonIcon className="h-4 w-4" /> : <SunIcon className="h-4 w-4" />}
@@ -369,7 +369,7 @@ export function AppShell({ children }: AppShellProps) {
                 haptic.impact('light');
                 logout();
               }}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-dark-400 transition-colors hover:bg-dark-800/50 hover:text-dark-200"
+              className="rounded-xl border border-dark-700/50 bg-dark-800/50 p-2 text-dark-400 transition-all duration-200 hover:bg-dark-700 hover:text-accent-400"
               title={t('nav.logout')}
             >
               <LogoutIcon className="h-4 w-4" />
