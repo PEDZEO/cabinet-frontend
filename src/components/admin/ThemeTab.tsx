@@ -395,33 +395,31 @@ export function ThemeTab() {
                 />
               </div>
             </div>
-
-            {/* Save / Cancel / Reset buttons */}
-            <div className="flex flex-wrap items-center gap-3">
-              {hasUnsavedChanges && (
-                <>
-                  <button
-                    onClick={() => updateColorsMutation.mutate(draftColors)}
-                    disabled={updateColorsMutation.isPending}
-                    className="rounded-xl bg-accent-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-600 disabled:opacity-50"
-                  >
-                    {updateColorsMutation.isPending
-                      ? t('common.saving', t('common.save'))
-                      : t('common.save')}
-                  </button>
-                  <button
-                    onClick={handleCancel}
-                    disabled={updateColorsMutation.isPending}
-                    className="rounded-xl bg-dark-700 px-4 py-2 text-sm font-medium text-dark-300 transition-colors hover:bg-dark-600 disabled:opacity-50"
-                  >
-                    {t('common.cancel')}
-                  </button>
-                </>
-              )}
-            </div>
           </div>
         )}
       </div>
+
+      {/* Save / Cancel — always visible when there are unsaved changes */}
+      {hasUnsavedChanges && (
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={() => updateColorsMutation.mutate(draftColors)}
+            disabled={updateColorsMutation.isPending}
+            className="rounded-xl bg-accent-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-600 disabled:opacity-50"
+          >
+            {updateColorsMutation.isPending
+              ? t('common.saving', t('common.save'))
+              : t('common.save')}
+          </button>
+          <button
+            onClick={handleCancel}
+            disabled={updateColorsMutation.isPending}
+            className="rounded-xl bg-dark-700 px-4 py-2 text-sm font-medium text-dark-300 transition-colors hover:bg-dark-600 disabled:opacity-50"
+          >
+            {t('common.cancel')}
+          </button>
+        </div>
+      )}
 
       {/* Reset all colors */}
       <div className="flex justify-end">
