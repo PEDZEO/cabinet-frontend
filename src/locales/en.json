@@ -187,7 +187,13 @@
     "forgotPasswordHint": "Enter your email to receive a reset link",
     "loginSuccess": "Login successful",
     "passwordResetSent": "Password reset link sent to your email",
-    "sendResetLink": "Send reset link"
+    "sendResetLink": "Send reset link",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithYandex": "Continue with Yandex",
+    "continueWithDiscord": "Continue with Discord",
+    "continueWithVk": "Continue with VK",
+    "oauthError": "Authorization was denied or failed",
+    "oauthExpired": "OAuth session expired. Please try again."
   },
   "emailVerification": {
     "title": "Email Verification",

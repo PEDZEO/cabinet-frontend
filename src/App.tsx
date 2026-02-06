@@ -18,6 +18,7 @@ import TelegramRedirect from './pages/TelegramRedirect';
 import DeepLinkRedirect from './pages/DeepLinkRedirect';
 import VerifyEmail from './pages/VerifyEmail';
 import ResetPassword from './pages/ResetPassword';
+import OAuthCallback from './pages/OAuthCallback';
 
 // User pages - lazy load
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -147,6 +148,7 @@ function App() {
         <Route path="/tg" element={<TelegramRedirect />} />
         <Route path="/connect" element={<DeepLinkRedirect />} />
         <Route path="/add" element={<DeepLinkRedirect />} />
+        <Route path="/auth/oauth/callback" element={<OAuthCallback />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 

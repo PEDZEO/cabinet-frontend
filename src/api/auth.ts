@@ -1,5 +1,5 @@
 import apiClient from './client';
-import type { AuthResponse, RegisterResponse, TokenResponse, User } from '../types';
+import type { AuthResponse, OAuthProvider, RegisterResponse, TokenResponse, User } from '../types';
 
 export const authApi = {
   // Telegram WebApp authentication
@@ -122,6 +122,33 @@ export const authApi = {
     const response = await apiClient.post('/cabinet/auth/email/change/verify', {
       code,
     });
+    return response.data;
+  },
+
+  // OAuth: get enabled providers
+  getOAuthProviders: async (): Promise<{ providers: OAuthProvider[] }> => {
+    const response = await apiClient.get<{ providers: OAuthProvider[] }>(
+      '/cabinet/auth/oauth/providers',
+    );
+    return response.data;
+  },
+
+  // OAuth: get authorization URL
+  getOAuthAuthorizeUrl: async (
+    provider: string,
+  ): Promise<{ authorize_url: string; state: string }> => {
+    const response = await apiClient.get<{ authorize_url: string; state: string }>(
+      `/cabinet/auth/oauth/${provider}/authorize`,
+    );
+    return response.data;
+  },
+
+  // OAuth: callback (exchange code for tokens)
+  oauthCallback: async (provider: string, code: string, state: string): Promise<AuthResponse> => {
+    const response = await apiClient.post<AuthResponse>(
+      `/cabinet/auth/oauth/${provider}/callback`,
+      { code, state },
+    );
     return response.data;
   },
 };

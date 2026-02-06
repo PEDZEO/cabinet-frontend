@@ -181,7 +181,13 @@
     "passwordTooShort": "密码至少需要8个字符",
     "sendResetLink": "发送重置链接",
     "tooManyAttempts": "尝试次数过多，请稍后再试",
-    "verificationEmailNotice": "注册后，验证邮件将发送到您的邮箱"
+    "verificationEmailNotice": "注册后，验证邮件将发送到您的邮箱",
+    "continueWithGoogle": "通过 Google 继续",
+    "continueWithYandex": "通过 Yandex 继续",
+    "continueWithDiscord": "通过 Discord 继续",
+    "continueWithVk": "通过 VK 继续",
+    "oauthError": "授权被拒绝或失败",
+    "oauthExpired": "OAuth 会话已过期。请重试。"
   },
   "emailVerification": {
     "title": "邮箱验证",

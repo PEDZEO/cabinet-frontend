@@ -190,7 +190,13 @@
     "clickLinkToVerify": "Перейдите по ссылке в письме, чтобы подтвердить аккаунт и войти.",
     "backToLogin": "Вернуться ко входу",
     "emailNotVerified": "Сначала подтвердите email",
-    "loginSuccess": "Авторизация успешна"
+    "loginSuccess": "Авторизация успешна",
+    "continueWithGoogle": "Продолжить через Google",
+    "continueWithYandex": "Продолжить через Яндекс",
+    "continueWithDiscord": "Продолжить через Discord",
+    "continueWithVk": "Продолжить через VK",
+    "oauthError": "Авторизация отклонена или не удалась",
+    "oauthExpired": "Сессия OAuth истекла. Попробуйте снова."
   },
   "emailVerification": {
     "title": "Подтверждение email",

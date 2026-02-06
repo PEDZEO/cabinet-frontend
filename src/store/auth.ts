@@ -33,6 +33,7 @@ interface AuthState {
   loginWithTelegram: (initData: string) => Promise<void>;
   loginWithTelegramWidget: (data: TelegramWidgetData) => Promise<void>;
   loginWithEmail: (email: string, password: string) => Promise<void>;
+  loginWithOAuth: (provider: string, code: string, state: string) => Promise<void>;
   registerWithEmail: (
     email: string,
     password: string,
@@ -257,6 +258,18 @@ export const useAuthStore = create<AuthState>()(
 
       loginWithEmail: async (email, password) => {
         const response = await authApi.loginEmail(email, password);
+        tokenStorage.setTokens(response.access_token, response.refresh_token);
+        set({
+          accessToken: response.access_token,
+          refreshToken: response.refresh_token,
+          user: response.user,
+          isAuthenticated: true,
+        });
+        await get().checkAdminStatus();
+      },
+
+      loginWithOAuth: async (provider, code, state) => {
+        const response = await authApi.oauthCallback(provider, code, state);
         tokenStorage.setTokens(response.access_token, response.refresh_token);
         set({
           accessToken: response.access_token,

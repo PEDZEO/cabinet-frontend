@@ -181,7 +181,13 @@
     "passwordTooShort": "رمز عبور باید حداقل ۸ کاراکتر باشد",
     "sendResetLink": "ارسال لینک بازنشانی",
     "tooManyAttempts": "تلاش‌های زیاد. لطفاً بعداً امتحان کنید",
-    "verificationEmailNotice": "پس از ثبت نام، ایمیل تأیید به آدرس شما ارسال خواهد شد"
+    "verificationEmailNotice": "پس از ثبت نام، ایمیل تأیید به آدرس شما ارسال خواهد شد",
+    "continueWithGoogle": "ادامه با Google",
+    "continueWithYandex": "ادامه با Yandex",
+    "continueWithDiscord": "ادامه با Discord",
+    "continueWithVk": "ادامه با VK",
+    "oauthError": "مجوز رد شد یا ناموفق بود",
+    "oauthExpired": "نشست OAuth منقضی شده است. لطفاً دوباره امتحان کنید."
   },
   "emailVerification": {
     "title": "تایید ایمیل",

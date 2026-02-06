@@ -18,6 +18,8 @@ import { getAndClearReturnUrl } from '../utils/token';
 import { isInTelegramWebApp, getTelegramInitData } from '../hooks/useTelegramSDK';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import TelegramLoginButton from '../components/TelegramLoginButton';
+import OAuthProviderIcon from '../components/OAuthProviderIcon';
+import { saveOAuthState } from './OAuthCallback';
 
 export default function Login() {
   const { t } = useTranslation();
@@ -91,6 +93,29 @@ export default function Login() {
     staleTime: 60000,
   });
   const isEmailAuthEnabled = emailAuthConfig?.enabled ?? true;
+
+  // Fetch enabled OAuth providers
+  const { data: oauthData } = useQuery({
+    queryKey: ['oauth-providers'],
+    queryFn: authApi.getOAuthProviders,
+    staleTime: 60000,
+  });
+  const oauthProviders = oauthData?.providers ?? [];
+
+  const [oauthLoading, setOauthLoading] = useState<string | null>(null);
+
+  const handleOAuthLogin = async (provider: string) => {
+    setError('');
+    setOauthLoading(provider);
+    try {
+      const { authorize_url, state } = await authApi.getOAuthAuthorizeUrl(provider);
+      saveOAuthState(state, provider);
+      window.location.href = authorize_url;
+    } catch {
+      setError(t('auth.oauthError', 'Authorization was denied or failed'));
+      setOauthLoading(null);
+    }
+  };
 
   const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || '';
 
@@ -423,6 +448,38 @@ export default function Login() {
                 <TelegramLoginButton botUsername={botUsername} />
               )}
             </div>
+
+            {/* OAuth providers section */}
+            {oauthProviders.length > 0 && (
+              <>
+                <div className="my-6 flex items-center gap-3">
+                  <div className="h-px flex-1 bg-dark-700" />
+                  <span className="text-xs text-dark-500">{t('auth.or', 'or')}</span>
+                  <div className="h-px flex-1 bg-dark-700" />
+                </div>
+                <div className="space-y-3">
+                  {oauthProviders.map((provider) => (
+                    <button
+                      key={provider.name}
+                      type="button"
+                      onClick={() => handleOAuthLogin(provider.name)}
+                      disabled={oauthLoading !== null}
+                      className="hover:bg-dark-750 flex w-full items-center justify-center gap-3 rounded-xl border border-dark-700 bg-dark-800 px-4 py-3 text-sm font-medium text-dark-100 transition-colors hover:border-dark-600 disabled:opacity-50"
+                    >
+                      {oauthLoading === provider.name ? (
+                        <span className="h-5 w-5 animate-spin rounded-full border-2 border-dark-400 border-t-white" />
+                      ) : (
+                        <OAuthProviderIcon provider={provider.name} className="h-5 w-5" />
+                      )}
+                      {t(
+                        `auth.continueWith${provider.name.charAt(0).toUpperCase() + provider.name.slice(1)}`,
+                        `Continue with ${provider.display_name}`,
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
 
             {/* Email auth section - only when enabled */}
             {isEmailAuthEnabled && (
