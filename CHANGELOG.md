@@ -1,5 +1,48 @@
 # Changelog
 
+## [1.8.0](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/compare/v1.7.0...v1.8.0) (2026-02-06)
+
+
+### Features
+
+* add blacklisted user blocking screen ([c5cad20](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/c5cad20a6f2069cf044d2a8fd55d1272d2631a40))
+* add blacklisted user blocking screen ([5a8c1e7](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/5a8c1e7e33f4b5f3556076008842181098b65981))
+* add drag-and-drop tariff sorting in admin panel ([ef365db](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/ef365db16b435862a56d7b9de46a668f5ccba11d))
+* connect RemnaWave baseTranslations and fix SVG icons ([a50dea9](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/a50dea9a3d23c021948d720c06e6d54e22cbf92f))
+* convert ConnectionModal to /connection page with crypto deep links ([445dd06](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/445dd0601a0a262d12a3329829516b9beb43693a))
+* drag-and-drop tariff sorting ([6f3abf8](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/6f3abf82602765236ad98275d939a6f7e0474895))
+* render original RemnaWave blocks on connection page ([79afe3a](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/79afe3a733167c6a64627aff70290a5f1815c6c2))
+* **subscription:** auto-skip server selection step when only one available ([998f9db](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/998f9dbaf0ea9c3ae28ece77b4906e0f6e8f704f))
+* **subscription:** auto-skip server selection when only one available ([e5a1c04](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/e5a1c04980e50f2e13494f6e45319872a8e65dfa))
+* use app-level svgIconKey for app logos and improve tile contrast ([65a6714](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/65a671470d1be2157ac2670e9eb1933cda90581f))
+* use platform displayName from RemnaWave config in connection page ([53940a0](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/53940a0169074ca5f1c40082bdfb13b2437406a6))
+
+
+### Bug Fixes
+
+* add bottom padding to last block in minimal layout ([5a69496](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/5a69496dde580341040efbeb625e072a192296d5))
+* add light theme support to connection page ([88d9377](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/88d9377adbcb74336a25748ae13d7baf7c7da4f1))
+* add retry logic for Telegram Mini App auth failures ([a1c0ceb](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/a1c0ceba19d5069c81e12c4c388d29f9790adde8))
+* full-screen page loader and remove bg flash on transitions ([30d984c](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/30d984c5d464d3ca553b572d8dea8e5b66091288))
+* increase bottom spacing for installation guide blocks ([c669d2e](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/c669d2e9b5fa09f552c583a43661475fc859160a))
+* match header icon sizes for theme toggle and logout buttons ([48eee9f](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/48eee9fac4b4d871f94c185723ad27aa0327e60c))
+* prevent header layout shift and unify action button styles ([d900c6f](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/d900c6f1527c7982442dae86531d7d0119f7c831))
+* prevent header nav shift with invisible theme button placeholder ([50e675b](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/50e675b6e93a9279f95dc8a9ea415c481df54148))
+* remove local toast from AdminPaymentMethods, use useNotify ([692e45a](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/692e45ad1833d670420ee5ca3f628106db7c6eab))
+* remove nested scroll constraint from tariff servers and promo groups ([c944e9e](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/c944e9ef0ba76f94917b69f4bc3c24829220c246))
+* remove space-y-0 that overrides block margins in minimal layout ([c4f1070](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/c4f1070f23c414cd4278e95dcc401140ee10e57d))
+* resolve RemnaWave SVG icons and icon colors on connection page ([91afbbf](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/91afbbf3c629defcdac0d3fd6d42d31e4d1610b4))
+* resolve Telegram Mini App auth failures on all platforms ([7df751e](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/7df751ea3570d4855ce921f79e096b1679f4b42e))
+* restore platform dropdown with SVG icon and widen app chips to match original ([966343a](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/966343a4d8ce4ae37a2da1c5270754a70f43467a))
+* restyle app cards to match original RemnaWave UI and debug icons ([42e70f7](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/42e70f72ffbd378bca1e6efed870c4212f8e48c1))
+* standardize admin form inputs, validation, and sync with backend constraints ([6e7eb36](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/6e7eb36f761532202e89b690d0e6b6876e5cef5e))
+* **subscription:** display promo discounts for devices, traffic and tariff switch ([6c22a52](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/6c22a522cccb2c371ac110a12efd5c823cee5848))
+* **subscription:** display promo group discounts in device/traffic purchase and tariff switch ([46b93ef](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/46b93ef098798e626ea8504ceac32f4736f3ea65))
+* theme preset persistence, page transition flash, and wheel LED jank ([f54ad4e](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/f54ad4eb1f88d053a9e21ca3846771133729c2e4))
+* unify connection page design with global styles and add platform SVG icons ([4866003](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/4866003c23be3a7c02bee5ac4b5c4246c928f192))
+* unify toast notifications and improve visual/behavior ([66a6697](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/66a6697ea1475d680ca58e68083f67af5174a0fc))
+* use redirect page for all platforms and fallback to regular subscription URL ([5111b63](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/5111b63f2e5d4533a6a25994bd1051f8c0d48972))
+
 ## [1.7.0](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/compare/v1.6.2...v1.7.0) (2026-02-04)
 
 ### Features
