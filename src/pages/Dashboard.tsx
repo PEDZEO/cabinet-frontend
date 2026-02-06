@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/auth';
+import { useBlockingStore } from '../store/blocking';
 import { subscriptionApi } from '../api/subscription';
 import { referralApi } from '../api/referral';
 import { balanceApi } from '../api/balance';
@@ -54,6 +55,7 @@ export default function Dashboard() {
   const [trialError, setTrialError] = useState<string | null>(null);
   const { isCompleted: isOnboardingCompleted, complete: completeOnboarding } = useOnboarding();
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const { blockingType } = useBlockingStore();
 
   // Refresh user data on mount
   useEffect(() => {
@@ -185,13 +187,14 @@ export default function Dashboard() {
   const hasNoSubscription = subscriptionResponse?.has_subscription === false && !subLoading;
 
   // Show onboarding for new users after data loads
+  // Skip if a blocking screen is active (channel subscription, maintenance, etc.)
   useEffect(() => {
-    if (!isOnboardingCompleted && !subLoading && !refLoading) {
+    if (!isOnboardingCompleted && !subLoading && !refLoading && !blockingType) {
       // Small delay to ensure DOM is ready
       const timer = setTimeout(() => setShowOnboarding(true), 500);
       return () => clearTimeout(timer);
     }
-  }, [isOnboardingCompleted, subLoading, refLoading]);
+  }, [isOnboardingCompleted, subLoading, refLoading, blockingType]);
 
   // Define onboarding steps based on available data
   const onboardingSteps = useMemo(() => {
