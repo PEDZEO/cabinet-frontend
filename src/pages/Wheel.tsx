@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { wheelApi, type SpinResult, type SpinHistoryItem } from '../api/wheel';
 import FortuneWheel from '../components/wheel/FortuneWheel';
 import WheelLegend from '../components/wheel/WheelLegend';
-import InsufficientBalancePrompt from '../components/InsufficientBalancePrompt';
 import { usePlatform, useHaptic } from '@/platform';
 import { useNotify } from '@/platform/hooks/useNotify';
 import { Card } from '@/components/data-display/Card/Card';
@@ -461,11 +460,13 @@ export default function Wheel() {
   const daysEnabled = config.spin_cost_days_enabled && config.spin_cost_days;
   const bothMethodsAvailable = !!(starsEnabled && daysEnabled);
 
+  // Stars via Telegram invoice don't require ruble balance, so only check daily limit
+  const dailyLimitReached = config.daily_limit > 0 && config.user_spins_today >= config.daily_limit;
   const spinDisabled =
-    !config.can_spin ||
     isSpinning ||
     isPayingStars ||
-    (config.daily_limit > 0 && config.user_spins_today >= config.daily_limit);
+    dailyLimitReached ||
+    (paymentType === 'telegram_stars' ? !starsEnabled : !config.can_spin);
 
   return (
     <div className="animate-fade-in space-y-6 pb-8">
@@ -570,25 +571,21 @@ export default function Wheel() {
                 </Button>
               )}
 
-              {/* Cannot spin hint */}
-              {!config.can_spin && !isSpinning && (
-                <>
-                  {config.can_spin_reason === 'daily_limit_reached' ? (
-                    <div className="rounded-linear border border-dark-700/30 bg-dark-800/30 p-4 text-center">
-                      <p className="text-dark-400">{t('wheel.errors.dailyLimitReached')}</p>
-                    </div>
-                  ) : config.can_spin_reason === 'insufficient_balance' ? (
-                    <InsufficientBalancePrompt
-                      missingAmountKopeks={
-                        config.required_balance_kopeks - config.user_balance_kopeks
-                      }
-                    />
-                  ) : (
-                    <div className="rounded-linear border border-dark-700/30 bg-dark-800/30 p-4 text-center">
-                      <p className="text-dark-400">{t('wheel.errors.cannotSpin')}</p>
-                    </div>
-                  )}
-                </>
+              {/* Cannot spin hint — only show for days payment (Stars via invoice always works) */}
+              {!isSpinning && paymentType !== 'telegram_stars' && !config.can_spin && (
+                <div className="rounded-linear border border-dark-700/30 bg-dark-800/30 p-4 text-center">
+                  <p className="text-dark-400">
+                    {config.can_spin_reason === 'daily_limit_reached'
+                      ? t('wheel.errors.dailyLimitReached')
+                      : t('wheel.errors.cannotSpin')}
+                  </p>
+                </div>
+              )}
+              {/* Daily limit hint for Stars payment (not covered by can_spin check) */}
+              {!isSpinning && paymentType === 'telegram_stars' && dailyLimitReached && (
+                <div className="rounded-linear border border-dark-700/30 bg-dark-800/30 p-4 text-center">
+                  <p className="text-dark-400">{t('wheel.errors.dailyLimitReached')}</p>
+                </div>
               )}
 
               {/* Inline Result Card */}
