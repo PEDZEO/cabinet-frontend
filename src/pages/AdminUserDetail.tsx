@@ -11,7 +11,8 @@ import {
   type PanelSyncStatusResponse,
   type UpdateSubscriptionRequest,
 } from '../api/adminUsers';
-import { adminApi, type AdminTicket } from '../api/admin';
+import { adminApi, type AdminTicket, type AdminTicketDetail } from '../api/admin';
+import { ticketsApi } from '../api/tickets';
 import { AdminBackButton } from '../components/admin';
 import { createNumberInputHandler, toNumber } from '../utils/inputHelpers';
 
@@ -109,6 +110,12 @@ export default function AdminUserDetail() {
   const [tickets, setTickets] = useState<AdminTicket[]>([]);
   const [ticketsLoading, setTicketsLoading] = useState(false);
   const [ticketsTotal, setTicketsTotal] = useState(0);
+  const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
+  const [selectedTicket, setSelectedTicket] = useState<AdminTicketDetail | null>(null);
+  const [ticketDetailLoading, setTicketDetailLoading] = useState(false);
+  const [replyText, setReplyText] = useState('');
+  const [replySending, setReplySending] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   // Subscription form
   const [subAction, setSubAction] = useState<string>('extend');
@@ -164,6 +171,45 @@ export default function AdminUserDetail() {
       setTicketsLoading(false);
     }
   }, [userId]);
+
+  const loadTicketDetail = useCallback(async (ticketId: number) => {
+    try {
+      setTicketDetailLoading(true);
+      const data = await adminApi.getTicket(ticketId);
+      setSelectedTicket(data);
+    } catch (error) {
+      console.error('Failed to load ticket detail:', error);
+    } finally {
+      setTicketDetailLoading(false);
+    }
+  }, []);
+
+  const handleTicketReply = async () => {
+    if (!selectedTicketId || !replyText.trim()) return;
+    setReplySending(true);
+    try {
+      await adminApi.replyToTicket(selectedTicketId, replyText);
+      setReplyText('');
+      await loadTicketDetail(selectedTicketId);
+      await loadTickets();
+    } catch (error) {
+      console.error('Failed to reply:', error);
+    } finally {
+      setReplySending(false);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedTicketId) {
+      loadTicketDetail(selectedTicketId);
+    }
+  }, [selectedTicketId, loadTicketDetail]);
+
+  useEffect(() => {
+    if (selectedTicket && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [selectedTicket]);
 
   useEffect(() => {
     if (!userId || isNaN(userId)) {
@@ -1037,7 +1083,157 @@ export default function AdminUserDetail() {
         {/* Tickets Tab */}
         {activeTab === 'tickets' && (
           <div className="space-y-4">
-            {ticketsLoading ? (
+            {selectedTicketId ? (
+              /* Ticket Chat View */
+              ticketDetailLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
+                </div>
+              ) : selectedTicket ? (
+                <div className="space-y-4">
+                  {/* Chat header */}
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => {
+                        setSelectedTicketId(null);
+                        setSelectedTicket(null);
+                      }}
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-dark-800 transition-colors hover:bg-dark-700"
+                    >
+                      <svg
+                        className="h-4 w-4 text-dark-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15.75 19.5L8.25 12l7.5-7.5"
+                        />
+                      </svg>
+                    </button>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-medium text-dark-100">
+                        #{selectedTicket.id} {selectedTicket.title}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-dark-500">
+                        <span
+                          className={`rounded-full border px-1.5 py-0.5 ${
+                            {
+                              open: 'border-blue-500/30 bg-blue-500/20 text-blue-400',
+                              pending: 'border-warning-500/30 bg-warning-500/20 text-warning-400',
+                              answered: 'border-success-500/30 bg-success-500/20 text-success-400',
+                              closed: 'border-dark-500 bg-dark-600 text-dark-400',
+                            }[selectedTicket.status] || 'border-dark-500 bg-dark-600 text-dark-400'
+                          }`}
+                        >
+                          {selectedTicket.status}
+                        </span>
+                        <span>{formatDate(selectedTicket.created_at)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Messages */}
+                  <div className="scrollbar-hide max-h-[60vh] space-y-3 overflow-y-auto rounded-xl bg-dark-800/30 p-3">
+                    {selectedTicket.messages.map((msg) => (
+                      <div
+                        key={msg.id}
+                        className={`rounded-xl p-3 ${
+                          msg.is_from_admin
+                            ? 'ml-6 border border-accent-500/20 bg-accent-500/10'
+                            : 'mr-6 border border-dark-700/30 bg-dark-800/50'
+                        }`}
+                      >
+                        <div className="mb-1 flex items-center justify-between">
+                          <span
+                            className={`text-xs font-medium ${msg.is_from_admin ? 'text-accent-400' : 'text-dark-400'}`}
+                          >
+                            {msg.is_from_admin
+                              ? t('admin.tickets.adminLabel')
+                              : t('admin.tickets.userLabel')}
+                          </span>
+                          <span className="text-xs text-dark-500">
+                            {formatDate(msg.created_at)}
+                          </span>
+                        </div>
+                        <p className="whitespace-pre-wrap text-sm text-dark-200">
+                          {msg.message_text}
+                        </p>
+                        {msg.has_media && msg.media_file_id && (
+                          <div className="mt-2">
+                            {msg.media_type === 'photo' ? (
+                              <img
+                                src={ticketsApi.getMediaUrl(msg.media_file_id)}
+                                alt={msg.media_caption || ''}
+                                className="max-h-48 max-w-full rounded-lg"
+                              />
+                            ) : (
+                              <a
+                                href={ticketsApi.getMediaUrl(msg.media_file_id)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 rounded-lg bg-dark-700 px-2 py-1 text-xs text-dark-200 hover:bg-dark-600"
+                              >
+                                {msg.media_caption || msg.media_type}
+                              </a>
+                            )}
+                            {msg.media_caption && msg.media_type === 'photo' && (
+                              <p className="mt-1 text-xs text-dark-400">{msg.media_caption}</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    <div ref={messagesEndRef} />
+                  </div>
+
+                  {/* Reply form */}
+                  {selectedTicket.status !== 'closed' && (
+                    <div className="flex gap-2">
+                      <textarea
+                        value={replyText}
+                        onChange={(e) => setReplyText(e.target.value)}
+                        placeholder={t('admin.tickets.replyPlaceholder')}
+                        rows={2}
+                        className="input flex-1 resize-none"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleTicketReply();
+                          }
+                        }}
+                      />
+                      <button
+                        onClick={handleTicketReply}
+                        disabled={!replyText.trim() || replySending}
+                        className="shrink-0 self-end rounded-lg bg-accent-500 px-4 py-2 text-sm text-white transition-colors hover:bg-accent-600 disabled:opacity-50"
+                      >
+                        {replySending ? (
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                        ) : (
+                          <svg
+                            className="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
+                            />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : null
+            ) : ticketsLoading ? (
               <div className="flex items-center justify-center py-12">
                 <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
               </div>
@@ -1074,7 +1270,7 @@ export default function AdminUserDetail() {
                     return (
                       <button
                         key={ticket.id}
-                        onClick={() => navigate(`/admin/tickets?ticket=${ticket.id}`)}
+                        onClick={() => setSelectedTicketId(ticket.id)}
                         className="w-full rounded-xl bg-dark-800/50 p-4 text-left transition-colors hover:bg-dark-700/50"
                       >
                         <div className="mb-2 flex items-center justify-between">
