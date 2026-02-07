@@ -85,8 +85,8 @@ export function ThemeTab() {
         colorsEqual(savedColorsRef.current, DEFAULT_THEME_COLORS)
       ) {
         setDraftColors(colors);
+        savedColorsRef.current = colors;
       }
-      savedColorsRef.current = colors;
     }
   }, [serverColors]);
 
