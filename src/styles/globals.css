@@ -853,6 +853,19 @@ img.twemoji {
     @apply italic text-dark-300;
   }
 
+  .prose u {
+    @apply underline underline-offset-2;
+  }
+
+  .prose s,
+  .prose del {
+    @apply text-dark-400 line-through;
+  }
+
+  .prose tg-spoiler {
+    @apply cursor-pointer rounded bg-dark-600 px-1 text-transparent transition-colors hover:bg-transparent hover:text-dark-200;
+  }
+
   .prose blockquote {
     @apply my-4 rounded-r-lg border-l-4 border-accent-500/50 bg-dark-800/30 py-2 pl-4 italic text-dark-300;
   }
@@ -927,6 +940,15 @@ img.twemoji {
   .light .prose em,
   .light .prose i {
     @apply text-champagne-700;
+  }
+
+  .light .prose s,
+  .light .prose del {
+    @apply text-champagne-500;
+  }
+
+  .light .prose tg-spoiler {
+    @apply bg-champagne-300 text-transparent hover:bg-transparent hover:text-champagne-800;
   }
 
   .light .prose blockquote {

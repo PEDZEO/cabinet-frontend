@@ -93,39 +93,47 @@ const sanitizeHtml = (html: string): string => {
       'blockquote',
       'code',
       'pre',
+      's',
+      'del',
+      'ins',
       'span',
       'div',
+      'tg-spoiler',
     ],
     ALLOWED_ATTR: ['href', 'target', 'rel', 'class'],
     ALLOW_DATA_ATTR: false,
   });
 };
 
-// Convert plain text to HTML with proper formatting
+// Convert content to formatted HTML (handles Telegram HTML + plain text)
 const formatContent = (content: string): string => {
   if (!content) return '';
 
-  // Check if content already has HTML tags
-  const hasHtmlTags = /<[a-z][\s\S]*>/i.test(content);
+  // Check if content has block-level HTML (full HTML document)
+  const hasBlockHtml = /<(p|div|h[1-6]|ul|ol|blockquote)\b/i.test(content);
 
-  if (hasHtmlTags) {
+  if (hasBlockHtml) {
     return sanitizeHtml(content);
   }
 
-  // Convert plain text to formatted HTML
+  // Content may have inline Telegram HTML (<b>, <i>, <u>, <code>, <a>) but uses
+  // newlines for structure. Convert newlines to paragraphs while preserving inline tags.
   const result = content
-    .split(/\n\n+/) // Split by double newlines (paragraphs)
+    .split(/\n\n+/)
     .map((paragraph) => {
-      // Check if it's a header (starts with # or numeric like "1.")
-      if (/^#{1,4}\s/.test(paragraph)) {
-        const level = paragraph.match(/^(#{1,4})/)?.[1].length || 1;
-        const text = paragraph.replace(/^#{1,4}\s*/, '');
+      const trimmed = paragraph.trim();
+      if (!trimmed) return '';
+
+      // Check if it's a markdown header
+      if (/^#{1,4}\s/.test(trimmed)) {
+        const level = trimmed.match(/^(#{1,4})/)?.[1].length || 1;
+        const text = trimmed.replace(/^#{1,4}\s*/, '');
         return `<h${level}>${text}</h${level}>`;
       }
 
       // Check for list items
-      if (/^[-•]\s/.test(paragraph) || /^\d+[.)]\s/.test(paragraph)) {
-        const lines = paragraph.split('\n');
+      if (/^[-•]\s/.test(trimmed) || /^\d+[.)]\s/.test(trimmed)) {
+        const lines = trimmed.split('\n');
         const isOrdered = /^\d+[.)]\s/.test(lines[0]);
         const listItems = lines
           .map((line) => line.replace(/^[-•]\s*/, '').replace(/^\d+[.)]\s*/, ''))
@@ -135,11 +143,11 @@ const formatContent = (content: string): string => {
         return isOrdered ? `<ol>${listItems}</ol>` : `<ul>${listItems}</ul>`;
       }
 
-      // Regular paragraph - handle single line breaks within
-      const formattedParagraph = paragraph.split('\n').join('<br/>');
-
-      return `<p>${formattedParagraph}</p>`;
+      // Regular paragraph — single newlines become <br/>
+      const formatted = trimmed.split('\n').join('<br/>');
+      return `<p>${formatted}</p>`;
     })
+    .filter(Boolean)
     .join('');
 
   return sanitizeHtml(result);
