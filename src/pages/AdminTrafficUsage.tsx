@@ -279,6 +279,16 @@ const StatusIcon = () => (
   </svg>
 );
 
+const GlobeIcon = () => (
+  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"
+    />
+  </svg>
+);
+
 const ShieldIcon = () => (
   <svg
     className="h-3.5 w-3.5"
@@ -852,6 +862,134 @@ function NodeFilter({
   );
 }
 
+function CountryFilter({
+  available,
+  selected,
+  onChange,
+}: {
+  available: { code: string; count: number }[];
+  selected: Set<string>;
+  onChange: (next: Set<string>) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  if (available.length === 0) return null;
+
+  const allSelected = selected.size === 0;
+  const activeCount = selected.size;
+
+  const toggle = (code: string) => {
+    const next = new Set(selected);
+    if (next.has(code)) {
+      next.delete(code);
+    } else {
+      next.add(code);
+    }
+    onChange(next);
+  };
+
+  const selectAll = () => onChange(new Set());
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(!open)}
+        className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
+          activeCount > 0
+            ? 'border-accent-500/50 bg-accent-500/10 text-accent-400'
+            : 'border-dark-700 bg-dark-800 text-dark-200 hover:border-dark-600 hover:bg-dark-700'
+        }`}
+      >
+        <GlobeIcon />
+        {activeCount > 0 && (
+          <span className="rounded-full bg-accent-500 px-1.5 text-[10px] text-white">
+            {activeCount}
+          </span>
+        )}
+        <ChevronDownIcon />
+      </button>
+
+      {open && (
+        <div className="absolute left-0 top-full z-30 mt-1 w-48 rounded-xl border border-dark-700 bg-dark-800 py-1 shadow-xl">
+          <button
+            onClick={selectAll}
+            className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs transition-colors hover:bg-dark-700 ${
+              allSelected ? 'text-accent-400' : 'text-dark-300'
+            }`}
+          >
+            <span
+              className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
+                allSelected ? 'border-accent-500 bg-accent-500' : 'border-dark-600'
+              }`}
+            >
+              {allSelected && (
+                <svg
+                  className="h-3 w-3 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={3}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+              )}
+            </span>
+            All
+          </button>
+
+          <div className="mx-2 border-t border-dark-700" />
+
+          <div className="max-h-48 overflow-y-auto">
+            {available.map(({ code, count }) => {
+              const checked = selected.has(code);
+              return (
+                <button
+                  key={code}
+                  onClick={() => toggle(code)}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-dark-300 transition-colors hover:bg-dark-700"
+                >
+                  <span
+                    className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
+                      checked ? 'border-accent-500 bg-accent-500' : 'border-dark-600'
+                    }`}
+                  >
+                    {checked && (
+                      <svg
+                        className="h-3 w-3 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={3}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M4.5 12.75l6 6 9-13.5"
+                        />
+                      </svg>
+                    )}
+                  </span>
+                  {getFlagEmoji(code)} {code.toUpperCase()}
+                  <span className="ml-auto text-dark-500">{count}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ============ Risk Badge ============
 
 function RiskBadge({
@@ -908,6 +1046,7 @@ export default function AdminTrafficUsage() {
   const [selectedTariffs, setSelectedTariffs] = useState<Set<string>>(new Set());
   const [selectedStatuses, setSelectedStatuses] = useState<Set<string>>(new Set());
   const [selectedNodes, setSelectedNodes] = useState<Set<string>>(new Set());
+  const [selectedCountries, setSelectedCountries] = useState<Set<string>>(new Set());
   const [offset, setOffset] = useState(0);
   const [total, setTotal] = useState(0);
   const [exporting, setExporting] = useState(false);
@@ -925,7 +1064,25 @@ export default function AdminTrafficUsage() {
   const sortDesc = sorting[0]?.desc ?? true;
   const tariffsParam = selectedTariffs.size > 0 ? [...selectedTariffs].join(',') : undefined;
   const statusesParam = selectedStatuses.size > 0 ? [...selectedStatuses].join(',') : undefined;
-  const nodesParam = selectedNodes.size > 0 ? [...selectedNodes].join(',') : undefined;
+
+  // Merge country filter into node UUIDs so backend filters data consistently
+  const mergedNodesParam = useMemo(() => {
+    const countryUuids =
+      selectedCountries.size > 0
+        ? new Set(
+            nodes.filter((n) => selectedCountries.has(n.country_code)).map((n) => n.node_uuid),
+          )
+        : null;
+    const nodeUuids = selectedNodes.size > 0 ? new Set(selectedNodes) : null;
+
+    let merged: Set<string> | null = null;
+    if (countryUuids && nodeUuids) {
+      merged = new Set([...countryUuids].filter((id) => nodeUuids.has(id)));
+    } else {
+      merged = countryUuids || nodeUuids;
+    }
+    return merged && merged.size > 0 ? [...merged].join(',') : undefined;
+  }, [nodes, selectedCountries, selectedNodes]);
 
   const buildParams = useCallback((): TrafficParams => {
     const params: TrafficParams = {
@@ -936,7 +1093,7 @@ export default function AdminTrafficUsage() {
       sort_desc: sortDesc,
       tariffs: tariffsParam,
       statuses: statusesParam,
-      nodes: nodesParam,
+      nodes: mergedNodesParam,
     };
     if (dateMode && customStart && customEnd) {
       params.start_date = customStart;
@@ -953,7 +1110,7 @@ export default function AdminTrafficUsage() {
     sortDesc,
     tariffsParam,
     statusesParam,
-    nodesParam,
+    mergedNodesParam,
     dateMode,
     customStart,
     customEnd,
@@ -1045,6 +1202,8 @@ export default function AdminTrafficUsage() {
         tariffs?: string;
         statuses?: string;
         nodes?: string;
+        total_threshold_gb?: number;
+        node_threshold_gb?: number;
       } = { period };
       if (dateMode && customStart && customEnd) {
         exportData.start_date = customStart;
@@ -1052,7 +1211,11 @@ export default function AdminTrafficUsage() {
       }
       if (tariffsParam) exportData.tariffs = tariffsParam;
       if (statusesParam) exportData.statuses = statusesParam;
-      if (nodesParam) exportData.nodes = nodesParam;
+      if (mergedNodesParam) exportData.nodes = mergedNodesParam;
+
+      if (totalThresholdNum > 0) exportData.total_threshold_gb = totalThresholdNum;
+      if (nodeThresholdNum > 0) exportData.node_threshold_gb = nodeThresholdNum;
+
       await adminTrafficApi.exportCsv(exportData);
       setToast({ message: t('admin.trafficUsage.exportSuccess'), type: 'success' });
     } catch {
@@ -1116,15 +1279,36 @@ export default function AdminTrafficUsage() {
     setOffset(0);
   };
 
+  const handleCountryChange = (next: Set<string>) => {
+    setSelectedCountries(next);
+    setOffset(0);
+  };
+
   const handleRefresh = () => {
     loadData(true);
   };
 
-  // When node filter is active, show only selected node columns
-  const displayNodes = useMemo(
-    () => (selectedNodes.size > 0 ? nodes.filter((n) => selectedNodes.has(n.node_uuid)) : nodes),
-    [nodes, selectedNodes],
-  );
+  const availableCountries = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const n of nodes) {
+      if (n.country_code) map.set(n.country_code, (map.get(n.country_code) || 0) + 1);
+    }
+    return Array.from(map.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([code, count]) => ({ code, count }));
+  }, [nodes]);
+
+  // When country/node filter is active, show only matching node columns
+  const displayNodes = useMemo(() => {
+    let filtered = nodes;
+    if (selectedCountries.size > 0) {
+      filtered = filtered.filter((n) => selectedCountries.has(n.country_code));
+    }
+    if (selectedNodes.size > 0) {
+      filtered = filtered.filter((n) => selectedNodes.has(n.node_uuid));
+    }
+    return filtered;
+  }, [nodes, selectedCountries, selectedNodes]);
 
   const totalThresholdNum = Math.max(0, parseFloat(totalThreshold) || 0);
   const hasTotalThreshold = totalThresholdNum > 0;
@@ -1383,6 +1567,11 @@ export default function AdminTrafficUsage() {
             onChange={handleTariffChange}
           />
           <NodeFilter available={nodes} selected={selectedNodes} onChange={handleNodeChange} />
+          <CountryFilter
+            available={availableCountries}
+            selected={selectedCountries}
+            onChange={handleCountryChange}
+          />
           <StatusFilter
             available={availableStatuses}
             selected={selectedStatuses}

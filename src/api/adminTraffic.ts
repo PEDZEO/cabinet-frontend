@@ -111,6 +111,8 @@ export const adminTrafficApi = {
     tariffs?: string;
     statuses?: string;
     nodes?: string;
+    total_threshold_gb?: number;
+    node_threshold_gb?: number;
   }): Promise<ExportCsvResponse> => {
     const response = await apiClient.post('/cabinet/admin/traffic/export-csv', data);
     return response.data;
