@@ -23,6 +23,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { adminPaymentMethodsApi } from '../api/adminPaymentMethods';
 import type { PaymentMethodConfig } from '../types';
+import PaymentMethodIcon from '@/components/PaymentMethodIcon';
 
 // ============ Icons ============
 
@@ -64,23 +65,6 @@ const SaveIcon = () => (
   </svg>
 );
 
-// ============ Method icon by type ============
-
-const METHOD_ICONS: Record<string, string> = {
-  telegram_stars: '\u2B50',
-  tribute: '\uD83C\uDF81',
-  cryptobot: '\uD83E\uDE99',
-  heleket: '\u26A1',
-  yookassa: '\uD83C\uDFE6',
-  mulenpay: '\uD83D\uDCB3',
-  pal24: '\uD83D\uDCB8',
-  platega: '\uD83D\uDCB0',
-  wata: '\uD83D\uDCA7',
-  freekassa: '\uD83D\uDCB5',
-  cloudpayments: '\u2601\uFE0F',
-  kassa_ai: '\uD83C\uDFE6',
-};
-
 // ============ Sortable Card ============
 
 interface SortableCardProps {
@@ -102,7 +86,6 @@ function SortablePaymentCard({ config, onClick }: SortableCardProps) {
   };
 
   const displayName = config.display_name || config.default_display_name;
-  const icon = METHOD_ICONS[config.method_id] || '\uD83D\uDCB3';
 
   // Build condition summary chips
   const chips: string[] = [];
@@ -153,8 +136,8 @@ function SortablePaymentCard({ config, onClick }: SortableCardProps) {
       </button>
 
       {/* Method icon */}
-      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-dark-700/50 text-xl">
-        {icon}
+      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center">
+        <PaymentMethodIcon method={config.method_id} className="h-10 w-10" />
       </div>
 
       {/* Content */}
@@ -337,8 +320,8 @@ export default function AdminPaymentMethods() {
           </DndContext>
         ) : (
           <div className="py-12 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-dark-800">
-              <span className="text-3xl">{'\uD83D\uDCB3'}</span>
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center">
+              <PaymentMethodIcon method="" className="h-12 w-12" />
             </div>
             <div className="text-dark-400">{t('admin.paymentMethods.noMethods')}</div>
           </div>

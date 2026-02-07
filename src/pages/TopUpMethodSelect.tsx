@@ -7,6 +7,7 @@ import { balanceApi } from '../api/balance';
 import { useCurrency } from '../hooks/useCurrency';
 import { Card } from '@/components/data-display/Card';
 import { staggerContainer, staggerItem } from '@/components/motion/transitions';
+import PaymentMethodIcon from '@/components/PaymentMethodIcon';
 
 export default function TopUpMethodSelect() {
   const { t } = useTranslation();
@@ -70,8 +71,11 @@ export default function TopUpMethodSelect() {
                     className={!method.is_available ? 'cursor-not-allowed opacity-50' : ''}
                     onClick={() => method.is_available && handleMethodClick(method.id)}
                   >
-                    <div className="font-semibold text-dark-100">
-                      {translatedName || method.name}
+                    <div className="flex items-center gap-3">
+                      <PaymentMethodIcon method={methodKey} className="h-8 w-8 flex-shrink-0" />
+                      <div className="font-semibold text-dark-100">
+                        {translatedName || method.name}
+                      </div>
                     </div>
                     {(translatedDesc || method.description) && (
                       <div className="mt-1 text-sm text-dark-500">

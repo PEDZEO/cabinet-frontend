@@ -6,6 +6,7 @@ import { adminPaymentMethodsApi } from '../api/adminPaymentMethods';
 import type { PromoGroupSimple } from '../types';
 import { usePlatform } from '../platform/hooks/usePlatform';
 import { createNumberInputHandler, toNumber } from '../utils/inputHelpers';
+import PaymentMethodIcon from '@/components/PaymentMethodIcon';
 
 const BackIcon = () => (
   <svg
@@ -18,21 +19,6 @@ const BackIcon = () => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
   </svg>
 );
-
-const METHOD_ICONS: Record<string, string> = {
-  telegram_stars: '⭐',
-  tribute: '🎁',
-  cryptobot: '🪙',
-  heleket: '⚡',
-  yookassa: '🏦',
-  mulenpay: '💳',
-  pal24: '💸',
-  platega: '💰',
-  wata: '💧',
-  freekassa: '💵',
-  cloudpayments: '☁️',
-  kassa_ai: '🏦',
-};
 
 const METHOD_LABELS: Record<string, string> = {
   telegram_stars: 'Telegram Stars',
@@ -195,7 +181,6 @@ export default function AdminPaymentMethodEdit() {
   }
 
   const displayName = config.display_name || config.default_display_name;
-  const icon = METHOD_ICONS[config.method_id] || '💳';
 
   return (
     <div className="space-y-6">
@@ -210,8 +195,8 @@ export default function AdminPaymentMethodEdit() {
             <BackIcon />
           </button>
         )}
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-700/50 text-xl">
-          {icon}
+        <div className="flex h-10 w-10 items-center justify-center">
+          <PaymentMethodIcon method={config.method_id} className="h-10 w-10" />
         </div>
         <div>
           <h1 className="text-2xl font-bold text-dark-50">{displayName}</h1>
