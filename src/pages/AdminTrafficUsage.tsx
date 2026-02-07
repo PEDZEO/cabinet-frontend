@@ -32,7 +32,7 @@ declare module '@tanstack/react-table' {
 // ============ Utils ============
 
 const formatBytes = (bytes: number): string => {
-  if (bytes <= 0) return '0 B';
+  if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
   const k = 1024;
   const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -51,6 +51,71 @@ const getFlagEmoji = (countryCode: string): string => {
 const toBackendSortField = (columnId: string): string => {
   if (columnId === 'user') return 'full_name';
   return columnId;
+};
+
+// ============ Risk assessment helpers ============
+
+const bytesToGbPerDay = (bytes: number, days: number): number =>
+  days > 0 ? bytes / days / 1024 ** 3 : 0;
+
+const getRatio = (gbPerDay: number, threshold: number): number =>
+  threshold > 0 ? gbPerDay / threshold : 0;
+
+const getRowBgColor = (ratio: number): string | undefined => {
+  if (ratio <= 0) return undefined;
+  const clamped = Math.min(ratio, 1.5);
+  const hue = 120 - Math.min(clamped, 1) * 120;
+  const opacity = clamped <= 1 ? 0.06 + clamped * 0.07 : 0.13 + (clamped - 1) * 0.14;
+  return `hsla(${hue}, 70%, 45%, ${opacity})`;
+};
+
+const getNodeTextColor = (ratio: number): string => {
+  const clamped = Math.min(Math.max(ratio, 0), 1.5);
+  let hue: number;
+  if (clamped <= 0.7) {
+    hue = 210 - (clamped / 0.7) * 180; // 210 (blue) → 30 (amber)
+  } else {
+    hue = Math.max(0, 30 - ((clamped - 0.7) / 0.8) * 30); // 30 (amber) → 0 (red)
+  }
+  const saturation = 70 + clamped * 15;
+  const lightness = 65 - clamped * 10;
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+};
+
+type RiskLevel = 'low' | 'medium' | 'high' | 'critical';
+
+const getRiskLevel = (ratio: number): RiskLevel => {
+  if (ratio < 0.5) return 'low';
+  if (ratio < 0.8) return 'medium';
+  if (ratio < 1.2) return 'high';
+  return 'critical';
+};
+
+const getCompositeRatio = (
+  row: UserTrafficItem,
+  totalThreshold: number,
+  nodeThreshold: number,
+  days: number,
+): number => {
+  const dailyTotal = bytesToGbPerDay(row.total_bytes, days);
+  const totalR = totalThreshold > 0 ? getRatio(dailyTotal, totalThreshold) : 0;
+  const nodeR =
+    nodeThreshold > 0
+      ? Math.max(
+          0,
+          ...Object.values(row.node_traffic).map((b) =>
+            getRatio(bytesToGbPerDay(b || 0, days), nodeThreshold),
+          ),
+        )
+      : 0;
+  return Math.max(totalR, nodeR);
+};
+
+const RISK_STYLES: Record<RiskLevel, { dot: string; text: string }> = {
+  low: { dot: 'bg-success-400', text: 'text-success-400' },
+  medium: { dot: 'bg-warning-400', text: 'text-warning-400' },
+  high: { dot: 'bg-orange-400', text: 'text-orange-400' },
+  critical: { dot: 'bg-error-400 animate-pulse', text: 'text-error-400' },
 };
 
 // ============ Icons ============
@@ -167,6 +232,38 @@ const StatusIcon = () => (
       strokeLinecap="round"
       strokeLinejoin="round"
       d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+    />
+  </svg>
+);
+
+const ShieldIcon = () => (
+  <svg
+    className="h-3.5 w-3.5"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={2}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
+    />
+  </svg>
+);
+
+const ServerSmallIcon = () => (
+  <svg
+    className="h-3.5 w-3.5"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={2}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7m0 0a3 3 0 01-3 3m0 3h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008zm-3 6h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008z"
     />
   </svg>
 );
@@ -712,6 +809,23 @@ function NodeFilter({
   );
 }
 
+// ============ Risk Badge ============
+
+function RiskBadge({ level, ratio }: { level: RiskLevel; ratio: number }) {
+  const { t } = useTranslation();
+  const style = RISK_STYLES[level];
+  const labelKey = `admin.trafficUsage.risk${level.charAt(0).toUpperCase() + level.slice(1)}`;
+  const pct = Math.round(ratio * 100);
+
+  return (
+    <div className="flex items-center justify-center gap-1.5">
+      <span className={`inline-block h-2 w-2 rounded-full ${style.dot}`} />
+      <span className={`text-[11px] font-medium ${style.text}`}>{pct}%</span>
+      <span className={`text-[10px] ${style.text} opacity-70`}>{t(labelKey)}</span>
+    </div>
+  );
+}
+
 // ============ Main Page ============
 
 export default function AdminTrafficUsage() {
@@ -740,6 +854,9 @@ export default function AdminTrafficUsage() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [sorting, setSorting] = useState<SortingState>([{ id: 'total_bytes', desc: true }]);
   const [columnSizing, setColumnSizing] = useState<Record<string, number>>({});
+  const [totalThreshold, setTotalThreshold] = useState('');
+  const [nodeThreshold, setNodeThreshold] = useState('');
+  const [periodDays, setPeriodDays] = useState(30);
 
   const limit = 50;
   const hasData = items.length > 0 || nodes.length > 0;
@@ -788,6 +905,7 @@ export default function AdminTrafficUsage() {
     setTotal(data.total);
     setAvailableTariffs(data.available_tariffs);
     setAvailableStatuses(data.available_statuses);
+    setPeriodDays(data.period_days);
   }, []);
 
   const loadData = useCallback(
@@ -948,6 +1066,12 @@ export default function AdminTrafficUsage() {
     [nodes, selectedNodes],
   );
 
+  const totalThresholdNum = Math.max(0, parseFloat(totalThreshold) || 0);
+  const hasTotalThreshold = totalThresholdNum > 0;
+  const nodeThresholdNum = Math.max(0, parseFloat(nodeThreshold) || 0);
+  const hasNodeThreshold = nodeThresholdNum > 0;
+  const hasAnyThreshold = hasTotalThreshold || hasNodeThreshold;
+
   const columns = useMemo<ColumnDef<UserTrafficItem>[]>(() => {
     const cols: ColumnDef<UserTrafficItem>[] = [
       {
@@ -955,19 +1079,22 @@ export default function AdminTrafficUsage() {
         accessorFn: (row) => row.full_name,
         header: t('admin.trafficUsage.user'),
         enableSorting: true,
-        size: 200,
-        minSize: 140,
+        size: 120,
+        minSize: 80,
+        maxSize: 200,
         cell: ({ row }) => {
           const item = row.original;
           return (
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent-500 to-accent-700 text-xs font-medium text-white">
+            <div className="flex items-center gap-1.5">
+              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent-500 to-accent-700 text-[10px] font-medium text-white">
                 {item.full_name?.[0] || '?'}
               </div>
               <div className="min-w-0">
-                <div className="truncate text-sm font-medium text-dark-100">{item.full_name}</div>
+                <div className="truncate text-xs font-medium text-dark-100">{item.full_name}</div>
                 {item.username && (
-                  <div className="truncate text-xs text-dark-500">@{item.username}</div>
+                  <div className="truncate text-[10px] leading-tight text-dark-500">
+                    @{item.username}
+                  </div>
                 )}
               </div>
             </div>
@@ -1021,33 +1148,75 @@ export default function AdminTrafficUsage() {
           meta: { align: 'center' as const },
           cell: ({ getValue }) => {
             const bytes = getValue() as number;
+            if (bytes <= 0) {
+              return <span className="text-xs text-dark-300">{'\u2014'}</span>;
+            }
+            const dailyNode = bytesToGbPerDay(bytes, periodDays);
+            const nodeRatio = hasNodeThreshold ? getRatio(dailyNode, nodeThresholdNum) : 0;
+            const textColor = hasNodeThreshold ? getNodeTextColor(nodeRatio) : undefined;
             return (
-              <span className="text-xs text-dark-300">
-                {bytes > 0 ? formatBytes(bytes) : '\u2014'}
+              <span
+                className="text-xs text-dark-300"
+                style={{
+                  color: textColor,
+                  fontWeight: nodeRatio > 0.8 ? 600 : undefined,
+                }}
+              >
+                {formatBytes(bytes)}
               </span>
             );
           },
         }),
       ),
-      {
-        accessorKey: 'total_bytes',
-        header: t('admin.trafficUsage.total'),
-        enableSorting: true,
-        size: 110,
-        minSize: 80,
-        meta: { align: 'center' as const, bold: true },
-        cell: ({ getValue }) => {
-          const bytes = getValue() as number;
-          return (
-            <span className="text-xs font-semibold text-dark-100">
-              {bytes > 0 ? formatBytes(bytes) : '\u2014'}
-            </span>
-          );
-        },
-      },
     ];
+
+    // Risk column — insert before total when any threshold is set
+    if (hasAnyThreshold) {
+      cols.push({
+        id: 'risk',
+        header: t('admin.trafficUsage.risk'),
+        size: 100,
+        minSize: 80,
+        meta: { align: 'center' as const },
+        accessorFn: (row) =>
+          getCompositeRatio(row, totalThresholdNum, nodeThresholdNum, periodDays),
+        enableSorting: false,
+        cell: ({ getValue }) => {
+          const maxRatio = getValue() as number;
+          const level = getRiskLevel(maxRatio);
+          return <RiskBadge level={level} ratio={maxRatio} />;
+        },
+      });
+    }
+
+    cols.push({
+      accessorKey: 'total_bytes',
+      header: t('admin.trafficUsage.total'),
+      enableSorting: true,
+      size: 110,
+      minSize: 80,
+      meta: { align: 'center' as const, bold: true },
+      cell: ({ getValue }) => {
+        const bytes = getValue() as number;
+        return (
+          <span className="text-xs font-semibold text-dark-100">
+            {bytes > 0 ? formatBytes(bytes) : '\u2014'}
+          </span>
+        );
+      },
+    });
+
     return cols;
-  }, [displayNodes, t]);
+  }, [
+    displayNodes,
+    t,
+    hasAnyThreshold,
+    hasTotalThreshold,
+    hasNodeThreshold,
+    totalThresholdNum,
+    nodeThresholdNum,
+    periodDays,
+  ]);
 
   const table = useReactTable({
     data: items,
@@ -1133,6 +1302,51 @@ export default function AdminTrafficUsage() {
             selected={selectedStatuses}
             onChange={handleStatusChange}
           />
+
+          {/* Threshold inputs */}
+          <div className="flex items-center gap-1.5 rounded-lg border border-dark-700 bg-dark-800 px-2 py-1">
+            <ShieldIcon />
+            <input
+              type="number"
+              value={totalThreshold}
+              onChange={(e) => setTotalThreshold(e.target.value)}
+              placeholder={t('admin.trafficUsage.totalThreshold')}
+              step="0.1"
+              min="0"
+              max="9999"
+              className="w-20 bg-transparent text-xs text-dark-200 placeholder-dark-500 [appearance:textfield] focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            />
+            {totalThreshold && (
+              <button
+                onClick={() => setTotalThreshold('')}
+                className="text-dark-500 hover:text-dark-300"
+              >
+                <XIcon />
+              </button>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 rounded-lg border border-dark-700 bg-dark-800 px-2 py-1">
+            <ServerSmallIcon />
+            <input
+              type="number"
+              value={nodeThreshold}
+              onChange={(e) => setNodeThreshold(e.target.value)}
+              placeholder={t('admin.trafficUsage.nodeThreshold')}
+              step="0.1"
+              min="0"
+              max="9999"
+              className="w-20 bg-transparent text-xs text-dark-200 placeholder-dark-500 [appearance:textfield] focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            />
+            {nodeThreshold && (
+              <button
+                onClick={() => setNodeThreshold('')}
+                className="text-dark-500 hover:text-dark-300"
+              >
+                <XIcon />
+              </button>
+            )}
+          </div>
+
           <button
             onClick={handleExport}
             disabled={exporting}
@@ -1213,31 +1427,44 @@ export default function AdminTrafficUsage() {
                 ))}
               </thead>
               <tbody>
-                {table.getRowModel().rows.map((row) => (
-                  <tr
-                    key={row.id}
-                    className="cursor-pointer border-b border-dark-700/50 transition-colors hover:bg-dark-800/50"
-                    onClick={() => navigate(`/admin/users/${row.original.user_id}`)}
-                  >
-                    {row.getVisibleCells().map((cell) => {
-                      const meta = cell.column.columnDef.meta;
-                      const isSticky = meta?.sticky;
-                      const align = meta?.align === 'center' ? 'text-center' : 'text-left';
+                {table.getRowModel().rows.map((row) => {
+                  const compositeRatio = hasAnyThreshold
+                    ? getCompositeRatio(
+                        row.original,
+                        totalThresholdNum,
+                        nodeThresholdNum,
+                        periodDays,
+                      )
+                    : 0;
+                  const rowBg = hasAnyThreshold ? getRowBgColor(compositeRatio) : undefined;
 
-                      return (
-                        <td
-                          key={cell.id}
-                          className={`px-3 py-2 ${align} ${
-                            isSticky ? 'sticky left-0 z-10 bg-dark-900' : ''
-                          }`}
-                          style={{ width: cell.column.getSize() }}
-                        >
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
+                  return (
+                    <tr
+                      key={row.id}
+                      className="cursor-pointer border-b border-dark-700/50 transition-colors hover:bg-dark-800/50"
+                      style={{ backgroundColor: rowBg }}
+                      onClick={() => navigate(`/admin/users/${row.original.user_id}`)}
+                    >
+                      {row.getVisibleCells().map((cell) => {
+                        const meta = cell.column.columnDef.meta;
+                        const isSticky = meta?.sticky;
+                        const align = meta?.align === 'center' ? 'text-center' : 'text-left';
+
+                        return (
+                          <td
+                            key={cell.id}
+                            className={`px-3 py-2 ${align} ${
+                              isSticky ? 'sticky left-0 z-10 bg-dark-900' : ''
+                            }`}
+                            style={{ width: cell.column.getSize() }}
+                          >
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

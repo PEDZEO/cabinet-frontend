@@ -815,7 +815,14 @@
       "statusDisabled": "Disabled",
       "customDates": "Custom dates",
       "dateFrom": "From",
-      "dateTo": "To"
+      "dateTo": "To",
+      "totalThreshold": "Total GB/d",
+      "nodeThreshold": "Node GB/d",
+      "risk": "Risk",
+      "riskLow": "Low",
+      "riskMedium": "Medium",
+      "riskHigh": "High",
+      "riskCritical": "Critical"
     },
     "emailTemplates": {
       "title": "Email Templates",

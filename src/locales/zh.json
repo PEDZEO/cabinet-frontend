@@ -696,7 +696,14 @@
       "statusDisabled": "已禁用",
       "customDates": "自定义日期",
       "dateFrom": "从",
-      "dateTo": "到"
+      "dateTo": "到",
+      "totalThreshold": "总流量GB/天",
+      "nodeThreshold": "节点GB/天",
+      "risk": "风险",
+      "riskLow": "低",
+      "riskMedium": "中",
+      "riskHigh": "高",
+      "riskCritical": "严重"
     },
     "paymentMethods": {
       "title": "支付方法",

@@ -696,7 +696,14 @@
       "statusDisabled": "غیرفعال",
       "customDates": "تاریخ دلخواه",
       "dateFrom": "از",
-      "dateTo": "تا"
+      "dateTo": "تا",
+      "totalThreshold": "کل GB/روز",
+      "nodeThreshold": "نود GB/روز",
+      "risk": "ریسک",
+      "riskLow": "کم",
+      "riskMedium": "متوسط",
+      "riskHigh": "بالا",
+      "riskCritical": "بحرانی"
     },
     "emailTemplates": {
       "title": "قالب‌های ایمیل",

@@ -836,7 +836,14 @@
       "statusDisabled": "Отключена",
       "customDates": "Выбрать даты",
       "dateFrom": "От",
-      "dateTo": "До"
+      "dateTo": "До",
+      "totalThreshold": "Всего ГБ/д",
+      "nodeThreshold": "Нода ГБ/д",
+      "risk": "Риск",
+      "riskLow": "Низкий",
+      "riskMedium": "Средний",
+      "riskHigh": "Высокий",
+      "riskCritical": "Критический"
     },
     "emailTemplates": {
       "title": "Email-шаблоны",
