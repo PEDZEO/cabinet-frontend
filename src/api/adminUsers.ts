@@ -134,10 +134,12 @@ export interface UserNodeUsageItem {
   node_name: string;
   country_code: string;
   total_bytes: number;
+  daily_bytes: number[];
 }
 
 export interface UserNodeUsageResponse {
   items: UserNodeUsageItem[];
+  categories: string[];
   period_days: number;
 }
 
@@ -545,11 +547,9 @@ export const adminUsersApi = {
     return response.data;
   },
 
-  // Get node usage
-  getNodeUsage: async (userId: number, days = 7): Promise<UserNodeUsageResponse> => {
-    const response = await apiClient.get(`/cabinet/admin/users/${userId}/node-usage`, {
-      params: { days },
-    });
+  // Get node usage (always 30 days with daily breakdown)
+  getNodeUsage: async (userId: number): Promise<UserNodeUsageResponse> => {
+    const response = await apiClient.get(`/cabinet/admin/users/${userId}/node-usage`);
     return response.data;
   },
 };

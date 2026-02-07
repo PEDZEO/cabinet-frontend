@@ -268,18 +268,19 @@ export default function AdminUserDetail() {
     }
   }, [userId]);
 
-  const loadNodeUsage = useCallback(
-    async (days = 7) => {
-      if (!userId) return;
-      try {
-        const data = await adminUsersApi.getNodeUsage(userId, days);
-        setNodeUsage(data);
-      } catch {
-        // ignore
-      }
-    },
-    [userId],
-  );
+  const loadNodeUsage = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const data = await adminUsersApi.getNodeUsage(userId);
+      setNodeUsage(data);
+    } catch {
+      // ignore
+    }
+  }, [userId]);
+
+  const loadSubscriptionData = useCallback(async () => {
+    await Promise.all([loadPanelInfo(), loadNodeUsage()]);
+  }, [loadPanelInfo, loadNodeUsage]);
 
   const handleTicketReply = async () => {
     if (!selectedTicketId || !replyText.trim()) return;
@@ -335,16 +336,10 @@ export default function AdminUserDetail() {
     if (activeTab === 'sync') loadSyncStatus();
     if (activeTab === 'subscription') {
       loadTariffs();
-      loadPanelInfo();
+      loadSubscriptionData();
     }
     if (activeTab === 'tickets') loadTickets();
-  }, [activeTab, loadSyncStatus, loadTariffs, loadTickets, loadReferrals, loadPanelInfo]);
-
-  useEffect(() => {
-    if (activeTab === 'subscription') {
-      loadNodeUsage(nodeUsageDays);
-    }
-  }, [activeTab, loadNodeUsage, nodeUsageDays]);
+  }, [activeTab, loadSyncStatus, loadTariffs, loadTickets, loadReferrals, loadSubscriptionData]);
 
   const handleUpdateBalance = async (isAdd: boolean) => {
     if (balanceAmount === '' || !userId) return;
@@ -546,6 +541,19 @@ export default function AdminUserDetail() {
       minute: '2-digit',
     });
   };
+
+  // Compute node usage for selected period from cached 30-day data
+  const nodeUsageForPeriod = (() => {
+    if (!nodeUsage || nodeUsage.items.length === 0) return [];
+    return nodeUsage.items
+      .map((item) => {
+        const daily = item.daily_bytes || [];
+        const sliced = daily.slice(-nodeUsageDays);
+        const total = sliced.reduce((sum, v) => sum + v, 0);
+        return { ...item, total_bytes: total };
+      })
+      .sort((a, b) => b.total_bytes - a.total_bytes);
+  })();
 
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return '0 B';
@@ -1198,26 +1206,35 @@ export default function AdminUserDetail() {
                     <span className="text-sm font-medium text-dark-200">
                       {t('admin.users.detail.nodeUsage')}
                     </span>
-                    <div className="flex gap-1">
-                      {[7, 14, 30].map((d) => (
-                        <button
-                          key={d}
-                          onClick={() => setNodeUsageDays(d)}
-                          className={`rounded-lg px-2 py-1 text-xs transition-colors ${
-                            nodeUsageDays === d
-                              ? 'bg-accent-500/20 text-accent-400'
-                              : 'text-dark-500 hover:text-dark-300'
-                          }`}
-                        >
-                          {d}d
-                        </button>
-                      ))}
+                    <div className="flex items-center gap-2">
+                      <div className="flex gap-1">
+                        {[7, 14, 30].map((d) => (
+                          <button
+                            key={d}
+                            onClick={() => setNodeUsageDays(d)}
+                            className={`rounded-lg px-2 py-1 text-xs transition-colors ${
+                              nodeUsageDays === d
+                                ? 'bg-accent-500/20 text-accent-400'
+                                : 'text-dark-500 hover:text-dark-300'
+                            }`}
+                          >
+                            {d}d
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => loadSubscriptionData()}
+                        className="rounded-lg p-1 text-dark-500 transition-colors hover:text-dark-300"
+                        title={t('common.refresh')}
+                      >
+                        <RefreshIcon className="h-3.5 w-3.5" />
+                      </button>
                     </div>
                   </div>
-                  {nodeUsage && nodeUsage.items.length > 0 ? (
+                  {nodeUsageForPeriod.length > 0 ? (
                     <div className="space-y-2">
-                      {nodeUsage.items.map((item) => {
-                        const maxBytes = nodeUsage.items[0].total_bytes;
+                      {nodeUsageForPeriod.map((item) => {
+                        const maxBytes = nodeUsageForPeriod[0].total_bytes;
                         const pct = maxBytes > 0 ? (item.total_bytes / maxBytes) * 100 : 0;
                         return (
                           <div key={item.node_uuid}>
