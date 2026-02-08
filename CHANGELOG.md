@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.11.1](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/compare/v1.11.0...v1.11.1) (2026-02-08)
+
+
+### Bug Fixes
+
+* hide backend URL from logo by fetching as blob ([de09ea0](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/de09ea039bea2fdfe3f3a9b3bc6c368a3a27f9f7))
+* stretch low-res Aurora canvas to fill viewport ([23f56af](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/23f56afaf7182de6e8164fdc0075d4b4b02780d8))
+
+
+### Performance Improvements
+
+* reduce Aurora animated background GPU load by ~95% ([56788b1](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/56788b12e78ea2f45571b0a0f3a8c2e3b667355c))
+
 ## [1.11.0](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/compare/v1.10.0...v1.11.0) (2026-02-08)
 
 
