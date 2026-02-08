@@ -141,12 +141,14 @@ export const useAuthStore = create<AuthState>()(
             const accessToken = tokenStorage.getAccessToken();
             const refreshToken = tokenStorage.getRefreshToken();
 
-            if (!accessToken || !refreshToken) {
+            if (!refreshToken) {
               set({ isLoading: false, isAuthenticated: false });
               return;
             }
 
-            // Проверяем валидность токена перед использованием
+            // No access token or it's expired — try refresh
+            // This handles Mini App reopens where sessionStorage was cleared
+            // but refresh token persists in localStorage
             if (!isTokenValid(accessToken)) {
               // Используем централизованный менеджер для refresh
               const newToken = await tokenRefreshManager.refreshAccessToken();

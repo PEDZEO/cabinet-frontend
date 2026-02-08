@@ -7,7 +7,6 @@ import {
   retrieveRawInitData,
   mountMiniApp,
   miniAppReady,
-  mountThemeParams,
   mountViewport,
   expandViewport,
   mountSwipeBehavior,
@@ -43,16 +42,17 @@ if (!alreadyInitialized) {
     clearStaleSessionIfNeeded(retrieveRawInitData() || null);
 
     // Mount components — each in its own try/catch so one failure doesn't block others
+    // Note: mountMiniApp() internally mounts themeParams in SDK v3,
+    // so we don't call mountThemeParams() separately to avoid ConcurrentCallError
     try {
       mountMiniApp();
     } catch {
       /* already mounted */
     }
     try {
-      mountThemeParams();
       bindThemeParamsCssVars();
     } catch {
-      /* already mounted */
+      /* theme params not yet available */
     }
     try {
       mountSwipeBehavior();

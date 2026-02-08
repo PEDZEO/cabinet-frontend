@@ -60,8 +60,8 @@ export function isTokenValid(token: string | null): boolean {
 
 /**
  * Безопасное хранилище токенов
- * Использует sessionStorage вместо localStorage для защиты от XSS
- * Токены не сохраняются между сессиями браузера
+ * Access token: sessionStorage (short-lived, cleared on tab close)
+ * Refresh token: localStorage (persistent, survives Mini App reopens, server-validated)
  */
 export const tokenStorage = {
   getAccessToken(): string | null {
@@ -74,7 +74,8 @@ export const tokenStorage = {
 
   getRefreshToken(): string | null {
     try {
-      return sessionStorage.getItem(TOKEN_KEYS.REFRESH);
+      // Refresh token in localStorage for persistence across Mini App reopens
+      return localStorage.getItem(TOKEN_KEYS.REFRESH) || sessionStorage.getItem(TOKEN_KEYS.REFRESH);
     } catch {
       return null;
     }
@@ -83,9 +84,12 @@ export const tokenStorage = {
   setTokens(accessToken: string, refreshToken: string): void {
     try {
       sessionStorage.setItem(TOKEN_KEYS.ACCESS, accessToken);
-      sessionStorage.setItem(TOKEN_KEYS.REFRESH, refreshToken);
+      // Refresh token in localStorage — survives Mini App tab close/reopen
+      localStorage.setItem(TOKEN_KEYS.REFRESH, refreshToken);
+      // Clean up old sessionStorage refresh token (migration)
+      sessionStorage.removeItem(TOKEN_KEYS.REFRESH);
     } catch {
-      console.error('Failed to save tokens to sessionStorage');
+      // Storage unavailable
     }
   },
 
@@ -112,24 +116,26 @@ export const tokenStorage = {
   },
 
   /**
-   * Миграция токенов из localStorage в sessionStorage
-   * Вызывается при инициализации для обратной совместимости
+   * Миграция токенов для обратной совместимости.
+   * Access token: sessionStorage (short-lived, OK to lose on tab close)
+   * Refresh token: localStorage (persistent, survives Mini App reopens)
    */
   migrateFromLocalStorage(): void {
     try {
       const accessToken = localStorage.getItem(TOKEN_KEYS.ACCESS);
-      const refreshToken = localStorage.getItem(TOKEN_KEYS.REFRESH);
 
+      // Migrate access token to sessionStorage
       if (accessToken && !sessionStorage.getItem(TOKEN_KEYS.ACCESS)) {
         sessionStorage.setItem(TOKEN_KEYS.ACCESS, accessToken);
       }
-      if (refreshToken && !sessionStorage.getItem(TOKEN_KEYS.REFRESH)) {
-        sessionStorage.setItem(TOKEN_KEYS.REFRESH, refreshToken);
-      }
-
-      // Удаляем из localStorage после миграции
       localStorage.removeItem(TOKEN_KEYS.ACCESS);
-      localStorage.removeItem(TOKEN_KEYS.REFRESH);
+
+      // Migrate refresh token from sessionStorage to localStorage
+      const refreshInSession = sessionStorage.getItem(TOKEN_KEYS.REFRESH);
+      if (refreshInSession && !localStorage.getItem(TOKEN_KEYS.REFRESH)) {
+        localStorage.setItem(TOKEN_KEYS.REFRESH, refreshInSession);
+      }
+      sessionStorage.removeItem(TOKEN_KEYS.REFRESH);
     } catch {
       // ignore
     }
@@ -159,9 +165,11 @@ export function clearStaleSessionIfNeeded(freshInitData: string | null): void {
     const stored = sessionStorage.getItem(TOKEN_KEYS.TELEGRAM_INIT);
 
     if (stored && stored !== freshInitData) {
+      // New Telegram session (different user) — clear all auth tokens
       sessionStorage.removeItem(TOKEN_KEYS.ACCESS);
       sessionStorage.removeItem(TOKEN_KEYS.REFRESH);
       sessionStorage.removeItem(TOKEN_KEYS.USER);
+      localStorage.removeItem(TOKEN_KEYS.REFRESH);
     }
 
     sessionStorage.setItem(TOKEN_KEYS.TELEGRAM_INIT, freshInitData);
