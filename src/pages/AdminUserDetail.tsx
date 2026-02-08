@@ -186,10 +186,25 @@ export default function AdminUserDetail() {
   const [promoGroups, setPromoGroups] = useState<PromoGroup[]>([]);
   const [editingPromoGroup, setEditingPromoGroup] = useState(false);
 
+  // Referral commission
+  const [editingReferralCommission, setEditingReferralCommission] = useState(false);
+  const [referralCommissionValue, setReferralCommissionValue] = useState<number | ''>('');
+
   // Send promo offer
   const [offerDiscountPercent, setOfferDiscountPercent] = useState<number | ''>('');
   const [offerValidHours, setOfferValidHours] = useState<number | ''>(24);
   const [offerSending, setOfferSending] = useState(false);
+
+  // Traffic packages
+  const [selectedTrafficGb, setSelectedTrafficGb] = useState<string>('');
+
+  // Devices
+  const [devices, setDevices] = useState<
+    { hwid: string; platform: string; device_model: string; created_at: string | null }[]
+  >([]);
+  const [devicesTotal, setDevicesTotal] = useState(0);
+  const [deviceLimit, setDeviceLimit] = useState(0);
+  const [devicesLoading, setDevicesLoading] = useState(false);
 
   const userId = id ? parseInt(id, 10) : null;
 
@@ -289,9 +304,24 @@ export default function AdminUserDetail() {
     }
   }, [userId]);
 
+  const loadDevices = useCallback(async () => {
+    if (!userId) return;
+    try {
+      setDevicesLoading(true);
+      const data = await adminUsersApi.getUserDevices(userId);
+      setDevices(data.devices);
+      setDevicesTotal(data.total);
+      setDeviceLimit(data.device_limit);
+    } catch {
+      // ignore
+    } finally {
+      setDevicesLoading(false);
+    }
+  }, [userId]);
+
   const loadSubscriptionData = useCallback(async () => {
-    await Promise.all([loadPanelInfo(), loadNodeUsage()]);
-  }, [loadPanelInfo, loadNodeUsage]);
+    await Promise.all([loadPanelInfo(), loadNodeUsage(), loadDevices()]);
+  }, [loadPanelInfo, loadNodeUsage, loadDevices]);
 
   const loadPromoGroups = useCallback(async () => {
     try {
@@ -489,6 +519,85 @@ export default function AdminUserDetail() {
     }
   };
 
+  const handleDeleteDevice = async (hwid: string) => {
+    if (!userId) return;
+    setActionLoading(true);
+    try {
+      await adminUsersApi.deleteUserDevice(userId, hwid);
+      notify.success(t('admin.users.detail.devices.deleted'));
+      await loadDevices();
+    } catch {
+      notify.error(t('admin.users.userActions.error'), t('common.error'));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleResetDevices = async () => {
+    if (!userId) return;
+    setActionLoading(true);
+    try {
+      await adminUsersApi.resetUserDevices(userId);
+      notify.success(t('admin.users.detail.devices.allDeleted'));
+      await loadDevices();
+    } catch {
+      notify.error(t('admin.users.userActions.error'), t('common.error'));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleAddTraffic = async (gb: number) => {
+    if (!userId) return;
+    setActionLoading(true);
+    try {
+      await adminUsersApi.updateSubscription(userId, { action: 'add_traffic', traffic_gb: gb });
+      notify.success(t('admin.users.detail.subscription.trafficAdded'));
+      setSelectedTrafficGb('');
+      await loadUser();
+    } catch {
+      notify.error(t('admin.users.userActions.error'), t('common.error'));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleRemoveTraffic = async (purchaseId: number) => {
+    if (!userId) return;
+    setActionLoading(true);
+    try {
+      await adminUsersApi.updateSubscription(userId, {
+        action: 'remove_traffic',
+        traffic_purchase_id: purchaseId,
+      });
+      notify.success(t('admin.users.detail.subscription.trafficRemoved'));
+      await loadUser();
+    } catch {
+      notify.error(t('admin.users.userActions.error'), t('common.error'));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleSetDeviceLimit = async (newLimit: number) => {
+    if (!userId) return;
+    setActionLoading(true);
+    try {
+      await adminUsersApi.updateSubscription(userId, {
+        action: 'set_device_limit',
+        device_limit: newLimit,
+      });
+      notify.success(t('admin.users.detail.subscription.deviceLimitUpdated'));
+      await loadUser();
+    } catch {
+      notify.error(t('admin.users.userActions.error'), t('common.error'));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const currentTariff = tariffs.find((t) => t.id === user?.subscription?.tariff_id) || null;
+
   const handleChangePromoGroup = async (groupId: number | null) => {
     if (!userId) return;
     setActionLoading(true);
@@ -496,6 +605,25 @@ export default function AdminUserDetail() {
       await adminUsersApi.updatePromoGroup(userId, groupId);
       await loadUser();
       setEditingPromoGroup(false);
+    } catch {
+      notify.error(t('admin.users.userActions.error'), t('common.error'));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleUpdateReferralCommission = async () => {
+    if (!userId) return;
+    setActionLoading(true);
+    try {
+      const value = referralCommissionValue === '' ? null : toNumber(referralCommissionValue);
+      if (value !== null && (value < 0 || value > 100)) {
+        notify.error(t('admin.users.detail.referral.invalidPercent'), t('common.error'));
+        return;
+      }
+      await adminUsersApi.updateReferralCommission(userId, value);
+      await loadUser();
+      setEditingReferralCommission(false);
     } catch {
       notify.error(t('admin.users.userActions.error'), t('common.error'));
     } finally {
@@ -850,8 +978,21 @@ export default function AdminUserDetail() {
 
             {/* Referral */}
             <div className="rounded-xl bg-dark-800/50 p-3">
-              <div className="mb-2 text-sm font-medium text-dark-200">
-                {t('admin.users.detail.referral.title')}
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-sm font-medium text-dark-200">
+                  {t('admin.users.detail.referral.title')}
+                </span>
+                <button
+                  onClick={() => {
+                    if (!editingReferralCommission) {
+                      setReferralCommissionValue(user.referral.commission_percent ?? '');
+                    }
+                    setEditingReferralCommission(!editingReferralCommission);
+                  }}
+                  className="text-xs text-accent-400 transition-colors hover:text-accent-300"
+                >
+                  {editingReferralCommission ? t('common.cancel') : t('common.edit')}
+                </button>
               </div>
               <div className="grid grid-cols-3 gap-3 text-center">
                 <div>
@@ -871,12 +1012,38 @@ export default function AdminUserDetail() {
                   </div>
                 </div>
                 <div>
-                  <div className="text-lg font-bold text-dark-100">
-                    {user.referral.commission_percent || 0}%
-                  </div>
-                  <div className="text-xs text-dark-500">
-                    {t('admin.users.detail.referral.commission')}
-                  </div>
+                  {editingReferralCommission ? (
+                    <div className="space-y-1">
+                      <input
+                        type="number"
+                        value={referralCommissionValue}
+                        onChange={createNumberInputHandler(setReferralCommissionValue, 0)}
+                        placeholder="0-100"
+                        className="input w-full text-center text-sm"
+                        min={0}
+                        max={100}
+                        disabled={actionLoading}
+                      />
+                      <button
+                        onClick={handleUpdateReferralCommission}
+                        disabled={actionLoading}
+                        className="w-full rounded-lg bg-accent-500 px-2 py-1 text-xs text-white transition-colors hover:bg-accent-600 disabled:opacity-50"
+                      >
+                        {actionLoading ? t('common.loading') : t('common.save')}
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="text-lg font-bold text-dark-100">
+                        {user.referral.commission_percent != null
+                          ? `${user.referral.commission_percent}%`
+                          : t('admin.users.detail.referral.default')}
+                      </div>
+                      <div className="text-xs text-dark-500">
+                        {t('admin.users.detail.referral.commission')}
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -1053,10 +1220,135 @@ export default function AdminUserDetail() {
                       <div className="text-xs text-dark-500">
                         {t('admin.users.detail.subscription.devices')}
                       </div>
-                      <div className="text-dark-100">{user.subscription.device_limit}</div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleSetDeviceLimit(user.subscription!.device_limit - 1)}
+                          disabled={actionLoading || user.subscription.device_limit <= 1}
+                          className="flex h-6 w-6 items-center justify-center rounded-md bg-dark-700 text-dark-300 transition-colors hover:bg-dark-600 disabled:opacity-30"
+                        >
+                          <MinusIcon />
+                        </button>
+                        <span className="min-w-[2ch] text-center text-dark-100">
+                          {user.subscription.device_limit}
+                        </span>
+                        <button
+                          onClick={() => handleSetDeviceLimit(user.subscription!.device_limit + 1)}
+                          disabled={
+                            actionLoading ||
+                            (currentTariff?.max_device_limit != null &&
+                              user.subscription.device_limit >= currentTariff.max_device_limit)
+                          }
+                          className="flex h-6 w-6 items-center justify-center rounded-md bg-dark-700 text-dark-300 transition-colors hover:bg-dark-600 disabled:opacity-30"
+                        >
+                          <PlusIcon />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
+
+                {/* Traffic Packages */}
+                {user.subscription.traffic_purchases &&
+                  user.subscription.traffic_purchases.length > 0 && (
+                    <div className="rounded-xl bg-dark-800/50 p-4">
+                      <div className="mb-3 flex items-center justify-between">
+                        <span className="text-sm font-medium text-dark-200">
+                          {t('admin.users.detail.subscription.trafficPackages')}
+                          {user.subscription.purchased_traffic_gb > 0 && (
+                            <span className="ml-2 text-xs text-dark-400">
+                              ({user.subscription.purchased_traffic_gb} {t('common.units.gb')})
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                      <div className="space-y-2">
+                        {user.subscription.traffic_purchases.map((tp) => (
+                          <div
+                            key={tp.id}
+                            className={`flex items-center justify-between rounded-lg px-3 py-2 ${
+                              tp.is_expired ? 'bg-dark-700/30 opacity-60' : 'bg-dark-700/50'
+                            }`}
+                          >
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 text-sm text-dark-200">
+                                <span className="font-medium">
+                                  {tp.traffic_gb} {t('common.units.gb')}
+                                </span>
+                                {tp.is_expired ? (
+                                  <span className="rounded-full bg-error-500/20 px-1.5 py-0.5 text-[10px] text-error-400">
+                                    {t('admin.users.detail.subscription.expired')}
+                                  </span>
+                                ) : (
+                                  <span className="text-xs text-dark-400">
+                                    {tp.days_remaining}{' '}
+                                    {t('admin.users.detail.subscription.daysLeft')}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            {!tp.is_expired && (
+                              <button
+                                onClick={() =>
+                                  handleInlineConfirm(`removeTraffic_${tp.id}`, () =>
+                                    handleRemoveTraffic(tp.id),
+                                  )
+                                }
+                                disabled={actionLoading}
+                                className={`ml-2 shrink-0 rounded-lg px-2 py-1 text-xs transition-all disabled:opacity-50 ${
+                                  confirmingAction === `removeTraffic_${tp.id}`
+                                    ? 'bg-error-500 text-white'
+                                    : 'text-dark-500 hover:bg-error-500/15 hover:text-error-400'
+                                }`}
+                              >
+                                {confirmingAction === `removeTraffic_${tp.id}` ? '?' : '\u00D7'}
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                {/* Add Traffic */}
+                {currentTariff &&
+                  currentTariff.traffic_topup_enabled &&
+                  Object.keys(currentTariff.traffic_topup_packages).length > 0 && (
+                    <div className="rounded-xl bg-dark-800/50 p-4">
+                      <div className="mb-3 text-sm font-medium text-dark-200">
+                        {t('admin.users.detail.subscription.addTraffic')}
+                      </div>
+                      <div className="flex gap-2">
+                        <select
+                          value={selectedTrafficGb}
+                          onChange={(e) => setSelectedTrafficGb(e.target.value)}
+                          className="input flex-1"
+                        >
+                          <option value="">
+                            {t('admin.users.detail.subscription.selectPackage')}
+                          </option>
+                          {Object.entries(currentTariff.traffic_topup_packages)
+                            .sort(([a], [b]) => Number(a) - Number(b))
+                            .map(([gb]) => (
+                              <option key={gb} value={gb}>
+                                {gb} {t('common.units.gb')}
+                              </option>
+                            ))}
+                        </select>
+                        <button
+                          onClick={() =>
+                            selectedTrafficGb && handleAddTraffic(Number(selectedTrafficGb))
+                          }
+                          disabled={actionLoading || !selectedTrafficGb}
+                          className="shrink-0 rounded-lg bg-accent-500 px-4 py-2 text-sm text-white transition-colors hover:bg-accent-600 disabled:opacity-50"
+                        >
+                          {t('admin.users.detail.subscription.addButton')}
+                        </button>
+                      </div>
+                      <div className="mt-2 text-xs text-dark-500">
+                        {t('admin.users.detail.subscription.addTrafficNote')}
+                      </div>
+                    </div>
+                  )}
 
                 {/* Actions */}
                 <div className="rounded-xl bg-dark-800/50 p-4">
@@ -1391,6 +1683,87 @@ export default function AdminUserDetail() {
                 </div>
               </>
             ) : null}
+
+            {/* Devices */}
+            <div className="rounded-xl bg-dark-800/50 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-sm font-medium text-dark-200">
+                  {t('admin.users.detail.devices.title')} ({devicesTotal}/{deviceLimit})
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => loadDevices()}
+                    className="rounded-lg p-1 text-dark-500 transition-colors hover:text-dark-300"
+                    title={t('common.refresh')}
+                  >
+                    <RefreshIcon className="h-3.5 w-3.5" />
+                  </button>
+                  {devices.length > 0 && (
+                    <button
+                      onClick={() => handleInlineConfirm('resetDevices', handleResetDevices)}
+                      disabled={actionLoading}
+                      className={`rounded-lg px-2 py-1 text-xs font-medium transition-all disabled:opacity-50 ${
+                        confirmingAction === 'resetDevices'
+                          ? 'bg-error-500 text-white'
+                          : 'bg-error-500/15 text-error-400 hover:bg-error-500/25'
+                      }`}
+                    >
+                      {confirmingAction === 'resetDevices'
+                        ? t('admin.users.detail.actions.areYouSure')
+                        : t('admin.users.detail.devices.resetAll')}
+                    </button>
+                  )}
+                </div>
+              </div>
+              {devicesLoading ? (
+                <div className="flex justify-center py-4">
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
+                </div>
+              ) : devices.length > 0 ? (
+                <div className="space-y-2">
+                  {devices.map((device) => (
+                    <div
+                      key={device.hwid}
+                      className="flex items-center justify-between rounded-lg bg-dark-700/50 px-3 py-2"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-xs font-medium text-dark-200">
+                          {device.platform || device.device_model || device.hwid.slice(0, 12)}
+                        </div>
+                        <div className="flex items-center gap-2 text-[10px] text-dark-500">
+                          {device.device_model && device.platform && (
+                            <span>{device.device_model}</span>
+                          )}
+                          <span className="font-mono">{device.hwid.slice(0, 8)}...</span>
+                          {device.created_at && (
+                            <span>{new Date(device.created_at).toLocaleDateString(locale)}</span>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() =>
+                          handleInlineConfirm(`deleteDevice_${device.hwid}`, () =>
+                            handleDeleteDevice(device.hwid),
+                          )
+                        }
+                        disabled={actionLoading}
+                        className={`ml-2 shrink-0 rounded-lg px-2 py-1 text-xs transition-all disabled:opacity-50 ${
+                          confirmingAction === `deleteDevice_${device.hwid}`
+                            ? 'bg-error-500 text-white'
+                            : 'text-dark-500 hover:bg-error-500/15 hover:text-error-400'
+                        }`}
+                      >
+                        {confirmingAction === `deleteDevice_${device.hwid}` ? '?' : '\u00D7'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-2 text-center text-xs text-dark-500">
+                  {t('admin.users.detail.devices.none')}
+                </div>
+              )}
+            </div>
           </div>
         )}
 

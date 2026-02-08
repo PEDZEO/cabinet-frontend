@@ -15,6 +15,7 @@ import {
   type TrafficNodeInfo,
   type TrafficUsageResponse,
   type TrafficParams,
+  type TrafficEnrichmentData,
 } from '../api/adminTraffic';
 import { usePlatform } from '../platform/hooks/usePlatform';
 
@@ -46,6 +47,21 @@ const getFlagEmoji = (countryCode: string): string => {
     .split('')
     .map((char) => 127397 + char.charCodeAt(0));
   return String.fromCodePoint(...codePoints);
+};
+
+const formatCurrency = (kopeks: number): string => {
+  const rubles = kopeks / 100;
+  if (rubles === 0) return '0';
+  if (rubles < 10) return rubles.toFixed(2);
+  if (rubles < 1000) return Math.round(rubles).toString();
+  return `${(rubles / 1000).toFixed(1)}k`;
+};
+
+const formatShortDate = (iso: string | null): string => {
+  if (!iso) return '\u2014';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '\u2014';
+  return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getFullYear()).slice(2)}`;
 };
 
 const toBackendSortField = (columnId: string): string => {
@@ -1049,6 +1065,8 @@ export default function AdminTrafficUsage() {
   const [selectedCountries, setSelectedCountries] = useState<Set<string>>(new Set());
   const [offset, setOffset] = useState(0);
   const [total, setTotal] = useState(0);
+  const [enrichment, setEnrichment] = useState<Record<number, TrafficEnrichmentData> | null>(null);
+  const [enrichmentLoading, setEnrichmentLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [sorting, setSorting] = useState<SortingState>([{ id: 'total_bytes', desc: true }]);
@@ -1157,6 +1175,27 @@ export default function AdminTrafficUsage() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Load enrichment after main data arrives
+  useEffect(() => {
+    if (initialLoading || items.length === 0) return;
+    let cancelled = false;
+    const load = async () => {
+      setEnrichmentLoading(true);
+      try {
+        const res = await adminTrafficApi.getEnrichment();
+        if (!cancelled) setEnrichment(res.data);
+      } catch {
+        // silently fail — enrichment is optional
+      } finally {
+        if (!cancelled) setEnrichmentLoading(false);
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [initialLoading, items.length]);
 
   // Prefetch adjacent periods in background (only in period mode)
   useEffect(() => {
@@ -1286,6 +1325,13 @@ export default function AdminTrafficUsage() {
 
   const handleRefresh = () => {
     loadData(true);
+    setEnrichment(null);
+    setEnrichmentLoading(true);
+    adminTrafficApi
+      .getEnrichment({ skipCache: true })
+      .then((res) => setEnrichment(res.data))
+      .catch(() => {})
+      .finally(() => setEnrichmentLoading(false));
   };
 
   const availableCountries = useMemo(() => {
@@ -1335,11 +1381,15 @@ export default function AdminTrafficUsage() {
               </div>
               <div className="min-w-0">
                 <div className="truncate text-xs font-medium text-dark-100">{item.full_name}</div>
-                {item.username && (
+                {item.username ? (
                   <div className="truncate text-[10px] leading-tight text-dark-500">
                     @{item.username}
                   </div>
-                )}
+                ) : item.email ? (
+                  <div className="truncate text-[10px] leading-tight text-dark-500">
+                    {item.email}
+                  </div>
+                ) : null}
               </div>
             </div>
           );
@@ -1381,6 +1431,90 @@ export default function AdminTrafficUsage() {
           return <span className="text-xs text-dark-300">{gb > 0 ? `${gb} GB` : '\u221E'}</span>;
         },
       },
+      // ---- Enrichment columns ----
+      {
+        id: 'connected',
+        header: t('admin.trafficUsage.connected'),
+        size: 65,
+        minSize: 50,
+        enableSorting: true,
+        meta: { align: 'center' as const },
+        cell: ({ row }) => {
+          const e = enrichment?.[row.original.user_id];
+          if (enrichmentLoading && !enrichment)
+            return <div className="mx-auto h-4 w-8 animate-pulse rounded bg-dark-700" />;
+          return <span className="text-xs text-dark-300">{e?.devices_connected ?? '\u2014'}</span>;
+        },
+      },
+      {
+        id: 'total_spent',
+        header: t('admin.trafficUsage.totalSpent'),
+        size: 75,
+        minSize: 55,
+        enableSorting: true,
+        meta: { align: 'center' as const },
+        cell: ({ row }) => {
+          const e = enrichment?.[row.original.user_id];
+          if (enrichmentLoading && !enrichment)
+            return <div className="mx-auto h-4 w-12 animate-pulse rounded bg-dark-700" />;
+          if (!e || e.total_spent_kopeks === 0)
+            return <span className="text-xs text-dark-300">{'\u2014'}</span>;
+          return (
+            <span className="text-xs text-dark-300">{formatCurrency(e.total_spent_kopeks)}</span>
+          );
+        },
+      },
+      {
+        id: 'sub_start',
+        header: t('admin.trafficUsage.subStart'),
+        size: 80,
+        minSize: 65,
+        enableSorting: true,
+        meta: { align: 'center' as const },
+        cell: ({ row }) => {
+          const e = enrichment?.[row.original.user_id];
+          if (enrichmentLoading && !enrichment)
+            return <div className="mx-auto h-4 w-14 animate-pulse rounded bg-dark-700" />;
+          return (
+            <span className="text-xs text-dark-300">
+              {formatShortDate(e?.subscription_start_date ?? null)}
+            </span>
+          );
+        },
+      },
+      {
+        id: 'sub_end',
+        header: t('admin.trafficUsage.subEnd'),
+        size: 80,
+        minSize: 65,
+        enableSorting: true,
+        meta: { align: 'center' as const },
+        cell: ({ row }) => {
+          const e = enrichment?.[row.original.user_id];
+          if (enrichmentLoading && !enrichment)
+            return <div className="mx-auto h-4 w-14 animate-pulse rounded bg-dark-700" />;
+          return (
+            <span className="text-xs text-dark-300">
+              {formatShortDate(e?.subscription_end_date ?? null)}
+            </span>
+          );
+        },
+      },
+      {
+        id: 'last_node',
+        header: t('admin.trafficUsage.lastNode'),
+        size: 100,
+        minSize: 70,
+        enableSorting: true,
+        meta: { align: 'center' as const },
+        cell: ({ row }) => {
+          const e = enrichment?.[row.original.user_id];
+          if (enrichmentLoading && !enrichment)
+            return <div className="mx-auto h-4 w-16 animate-pulse rounded bg-dark-700" />;
+          return <span className="text-xs text-dark-300">{e?.last_node_name ?? '\u2014'}</span>;
+        },
+      },
+      // ---- Dynamic node columns ----
       ...displayNodes.map(
         (node): ColumnDef<UserTrafficItem> => ({
           id: `node_${node.node_uuid}`,
@@ -1486,6 +1620,8 @@ export default function AdminTrafficUsage() {
     totalThresholdNum,
     nodeThresholdNum,
     periodDays,
+    enrichment,
+    enrichmentLoading,
   ]);
 
   const table = useReactTable({

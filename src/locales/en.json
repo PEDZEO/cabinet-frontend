@@ -762,7 +762,8 @@
       "promoOffers": "Promo Offers",
       "promocodes": "Promo Codes",
       "promoGroups": "Discount Groups",
-      "trafficUsage": "Traffic Usage"
+      "trafficUsage": "Traffic Usage",
+      "updates": "Updates"
     },
     "panel": {
       "title": "Admin Panel",
@@ -785,7 +786,8 @@
       "promoOffersDesc": "Personal discounts",
       "promocodesDesc": "Manage promo codes",
       "promoGroupsDesc": "Discount groups for users",
-      "trafficUsageDesc": "Per-user traffic by nodes"
+      "trafficUsageDesc": "Per-user traffic by nodes",
+      "updatesDesc": "Bot & cabinet versions"
     },
     "trafficUsage": {
       "title": "Traffic Usage",
@@ -822,7 +824,12 @@
       "riskLow": "Low",
       "riskMedium": "Medium",
       "riskHigh": "High",
-      "riskCritical": "Critical"
+      "riskCritical": "Critical",
+      "connected": "Conn.",
+      "totalSpent": "Spent",
+      "subStart": "Start",
+      "subEnd": "End",
+      "lastNode": "Last Node"
     },
     "emailTemplates": {
       "title": "Email Templates",
@@ -1909,11 +1916,20 @@
         "nodeUsage": "Node usage",
         "copied": "Copied",
         "panelNotFound": "User not found in panel",
+        "devices": {
+          "title": "Devices",
+          "none": "No connected devices",
+          "resetAll": "Reset all",
+          "deleted": "Device removed",
+          "allDeleted": "All devices reset"
+        },
         "referral": {
           "title": "Referral program",
           "referrals": "Referrals",
           "earned": "Earned",
-          "commission": "Commission"
+          "commission": "Commission",
+          "default": "Default",
+          "invalidPercent": "Commission must be between 0 and 100"
         },
         "restrictions": {
           "title": "Restrictions",
@@ -1958,7 +1974,17 @@
           "unavailable": "(unavailable)",
           "noActive": "No active subscription",
           "create": "Create subscription",
-          "creating": "Creating..."
+          "creating": "Creating...",
+          "trafficPackages": "Traffic packages",
+          "addTraffic": "Add traffic",
+          "selectPackage": "Select package",
+          "addButton": "Add",
+          "addTrafficNote": "Admin: free, valid 30 days",
+          "trafficRemoved": "Traffic package removed",
+          "trafficAdded": "Traffic package added",
+          "expired": "expired",
+          "daysLeft": "d left",
+          "deviceLimitUpdated": "Device limit updated"
         },
         "balance": {
           "current": "Current balance",
@@ -2089,6 +2115,19 @@
       }
     }
   },
+  "adminUpdates": {
+    "title": "Updates",
+    "subtitle": "Bot and cabinet release history",
+    "bot": "Bot",
+    "cabinet": "Cabinet",
+    "currentVersion": "Current version",
+    "upToDate": "Up to date",
+    "updateAvailable": "Update available",
+    "published": "Published",
+    "prerelease": "Pre-release",
+    "refresh": "Check for updates",
+    "noReleases": "No release data"
+  },
   "adminDashboard": {
     "title": "Statistics Dashboard",
     "subtitle": "Real-time system overview",
@@ -2181,6 +2220,15 @@
       "purchasedWeek": "Week",
       "purchasedMonth": "Month",
       "noTariffs": "No tariffs"
+    },
+    "systemInfo": {
+      "title": "System",
+      "cabinet": "Cabinet",
+      "bot": "Bot",
+      "python": "Python",
+      "uptime": "Uptime",
+      "users": "Users",
+      "activeSubs": "Active Subs"
     }
   },
   "banSystem": {

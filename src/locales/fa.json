@@ -1,4 +1,4 @@
-﻿{
+{
   "common": {
     "loading": "در حال بارگذاری...",
     "all": "همه",
@@ -643,7 +643,8 @@
       "promoGroups": "گروه‌های تخفیف",
       "remnawave": "RemnaWave",
       "users": "کاربران",
-      "trafficUsage": "مصرف ترافیک"
+      "trafficUsage": "مصرف ترافیک",
+      "updates": "به‌روزرسانی‌ها"
     },
     "panel": {
       "title": "پنل مدیریت",
@@ -666,7 +667,8 @@
       "promoGroupsDesc": "گروه‌های تخفیف برای کاربران",
       "remnawaveDesc": "مدیریت پنل و آمار",
       "usersDesc": "مدیریت کاربران ربات",
-      "trafficUsageDesc": "ترافیک هر کاربر بر اساس نود"
+      "trafficUsageDesc": "ترافیک هر کاربر بر اساس نود",
+      "updatesDesc": "نسخه‌های ربات و کابینت"
     },
     "trafficUsage": {
       "title": "مصرف ترافیک",
@@ -703,7 +705,12 @@
       "riskLow": "کم",
       "riskMedium": "متوسط",
       "riskHigh": "بالا",
-      "riskCritical": "بحرانی"
+      "riskCritical": "بحرانی",
+      "connected": "متصل",
+      "totalSpent": "هزینه",
+      "subStart": "شروع",
+      "subEnd": "پایان",
+      "lastNode": "آخرین نود"
     },
     "emailTemplates": {
       "title": "قالب‌های ایمیل",
@@ -1612,11 +1619,20 @@
         "nodeUsage": "مصرف نودها",
         "copied": "کپی شد",
         "panelNotFound": "کاربر در پنل یافت نشد",
+        "devices": {
+          "title": "دستگاه‌ها",
+          "none": "دستگاه متصلی وجود ندارد",
+          "resetAll": "بازنشانی همه",
+          "deleted": "دستگاه حذف شد",
+          "allDeleted": "همه دستگاه‌ها بازنشانی شدند"
+        },
         "referral": {
           "title": "برنامه ارجاع",
           "referrals": "ارجاعات",
           "earned": "درآمد",
-          "commission": "کمیسیون"
+          "commission": "کمیسیون",
+          "default": "پیش‌فرض",
+          "invalidPercent": "کمیسیون باید بین ۰ تا ۱۰۰ باشد"
         },
         "restrictions": {
           "title": "محدودیت‌ها",
@@ -1657,7 +1673,17 @@
           "unavailable": "(غیرقابل دسترس)",
           "noActive": "اشتراک فعالی وجود ندارد",
           "create": "ایجاد اشتراک",
-          "creating": "در حال ایجاد..."
+          "creating": "در حال ایجاد...",
+          "trafficPackages": "بسته‌های ترافیک",
+          "addTraffic": "افزودن ترافیک",
+          "selectPackage": "انتخاب بسته",
+          "addButton": "افزودن",
+          "addTrafficNote": "مدیر: رایگان، ۳۰ روز اعتبار",
+          "trafficRemoved": "بسته ترافیک حذف شد",
+          "trafficAdded": "بسته ترافیک اضافه شد",
+          "expired": "منقضی شده",
+          "daysLeft": "روز باقیمانده",
+          "deviceLimitUpdated": "محدودیت دستگاه به‌روز شد"
         },
         "balance": {
           "current": "موجودی فعلی",
@@ -1904,6 +1930,19 @@
       "saturation": "اشباع"
     }
   },
+  "adminUpdates": {
+    "title": "به‌روزرسانی‌ها",
+    "subtitle": "تاریخچه انتشار ربات و کابینت",
+    "bot": "ربات",
+    "cabinet": "کابینت",
+    "currentVersion": "نسخه فعلی",
+    "upToDate": "به‌روز است",
+    "updateAvailable": "به‌روزرسانی موجود",
+    "published": "منتشر شده",
+    "prerelease": "پیش‌انتشار",
+    "refresh": "بررسی به‌روزرسانی",
+    "noReleases": "داده‌ای موجود نیست"
+  },
   "adminDashboard": {
     "title": "پنل آمار",
     "subtitle": "نمای کلی سیستم در لحظه",
@@ -1984,6 +2023,15 @@
       "amount": "مبلغ",
       "method": "روش",
       "date": "تاریخ"
+    },
+    "systemInfo": {
+      "title": "سیستم",
+      "cabinet": "کابینت",
+      "bot": "ربات",
+      "python": "Python",
+      "uptime": "آپتایم",
+      "users": "کاربران",
+      "activeSubs": "اشتراک‌ها"
     }
   },
   "profile": {

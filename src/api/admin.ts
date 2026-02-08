@@ -308,9 +308,23 @@ export interface RecentPaymentsResponse {
   total_week_kopeks: number;
 }
 
+export interface SystemInfo {
+  bot_version: string;
+  python_version: string;
+  uptime_seconds: number;
+  users_total: number;
+  subscriptions_active: number;
+}
+
 // ============ Dashboard Stats API ============
 
 export const statsApi = {
+  // Get system info
+  getSystemInfo: async (): Promise<SystemInfo> => {
+    const response = await apiClient.get('/cabinet/admin/stats/system-info');
+    return response.data;
+  },
+
   // Get complete dashboard stats
   getDashboardStats: async (): Promise<DashboardStats> => {
     const response = await apiClient.get('/cabinet/admin/stats/dashboard');

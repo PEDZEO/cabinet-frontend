@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { RemnawaveIcon } from '../components/icons';
+import { RemnawaveIcon, ArrowPathIcon } from '../components/icons';
 
 // Group header icons
 const AnalyticsGroupIcon = () => (
@@ -472,6 +472,12 @@ export default function AdminPanel() {
           icon: <EnvelopeIcon />,
           title: t('admin.nav.emailTemplates'),
           description: t('admin.panel.emailTemplatesDesc'),
+        },
+        {
+          to: '/admin/updates',
+          icon: <ArrowPathIcon className="h-5 w-5" />,
+          title: t('admin.nav.updates'),
+          description: t('admin.panel.updatesDesc'),
         },
       ],
     },

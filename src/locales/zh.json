@@ -1,4 +1,4 @@
-﻿{
+{
   "common": {
     "loading": "加载中...",
     "error": "错误",
@@ -643,7 +643,8 @@
       "promoGroups": "折扣组",
       "remnawave": "RemnaWave",
       "users": "用户",
-      "trafficUsage": "流量使用"
+      "trafficUsage": "流量使用",
+      "updates": "更新"
     },
     "panel": {
       "title": "管理面板",
@@ -666,7 +667,8 @@
       "promoGroupsDesc": "用户折扣组",
       "remnawaveDesc": "面板管理和统计",
       "usersDesc": "管理机器人用户",
-      "trafficUsageDesc": "按节点统计用户流量"
+      "trafficUsageDesc": "按节点统计用户流量",
+      "updatesDesc": "机器人和面板版本"
     },
     "trafficUsage": {
       "title": "流量使用",
@@ -703,7 +705,12 @@
       "riskLow": "低",
       "riskMedium": "中",
       "riskHigh": "高",
-      "riskCritical": "严重"
+      "riskCritical": "严重",
+      "connected": "连接",
+      "totalSpent": "消费",
+      "subStart": "开始",
+      "subEnd": "结束",
+      "lastNode": "最近节点"
     },
     "paymentMethods": {
       "title": "支付方法",
@@ -1611,11 +1618,20 @@
         "nodeUsage": "节点用量",
         "copied": "已复制",
         "panelNotFound": "面板中未找到用户",
+        "devices": {
+          "title": "设备",
+          "none": "没有已连接的设备",
+          "resetAll": "重置全部",
+          "deleted": "设备已删除",
+          "allDeleted": "所有设备已重置"
+        },
         "referral": {
           "title": "推荐计划",
           "referrals": "推荐人数",
           "earned": "已赚取",
-          "commission": "佣金"
+          "commission": "佣金",
+          "default": "默认",
+          "invalidPercent": "佣金必须在0到100之间"
         },
         "restrictions": {
           "title": "限制",
@@ -1656,7 +1672,17 @@
           "unavailable": "（不可用）",
           "noActive": "无活跃订阅",
           "create": "创建订阅",
-          "creating": "创建中..."
+          "creating": "创建中...",
+          "trafficPackages": "流量包",
+          "addTraffic": "添加流量",
+          "selectPackage": "选择套餐",
+          "addButton": "添加",
+          "addTrafficNote": "管理员：免费，有效期30天",
+          "trafficRemoved": "流量包已删除",
+          "trafficAdded": "流量包已添加",
+          "expired": "已过期",
+          "daysLeft": "天剩余",
+          "deviceLimitUpdated": "设备限制已更新"
         },
         "balance": {
           "current": "当前余额",
@@ -1903,6 +1929,19 @@
       }
     }
   },
+  "adminUpdates": {
+    "title": "更新",
+    "subtitle": "机器人和面板发布历史",
+    "bot": "机器人",
+    "cabinet": "面板",
+    "currentVersion": "当前版本",
+    "upToDate": "已是最新",
+    "updateAvailable": "有可用更新",
+    "published": "发布于",
+    "prerelease": "预发布",
+    "refresh": "检查更新",
+    "noReleases": "没有发布数据"
+  },
   "adminDashboard": {
     "title": "统计面板",
     "subtitle": "实时系统概览",
@@ -1983,6 +2022,15 @@
       "amount": "金额",
       "method": "方法",
       "date": "日期"
+    },
+    "systemInfo": {
+      "title": "系统",
+      "cabinet": "面板",
+      "bot": "机器人",
+      "python": "Python",
+      "uptime": "运行时间",
+      "users": "用户",
+      "activeSubs": "订阅"
     }
   },
   "profile": {

@@ -1,4 +1,4 @@
-﻿{
+{
   "common": {
     "all": "Все",
     "loading": "Загрузка...",
@@ -783,7 +783,8 @@
       "promoOffers": "Промопредложения",
       "promocodes": "Промокоды",
       "promoGroups": "Группы скидок",
-      "trafficUsage": "Расход трафика"
+      "trafficUsage": "Расход трафика",
+      "updates": "Обновления"
     },
     "panel": {
       "title": "Панель администратора",
@@ -806,7 +807,8 @@
       "promoOffersDesc": "Персональные скидки",
       "promocodesDesc": "Управление промокодами",
       "promoGroupsDesc": "Группы скидок для пользователей",
-      "trafficUsageDesc": "Трафик пользователей по нодам"
+      "trafficUsageDesc": "Трафик пользователей по нодам",
+      "updatesDesc": "Версии бота и кабинета"
     },
     "trafficUsage": {
       "title": "Расход трафика",
@@ -843,7 +845,12 @@
       "riskLow": "Низкий",
       "riskMedium": "Средний",
       "riskHigh": "Высокий",
-      "riskCritical": "Критический"
+      "riskCritical": "Критический",
+      "connected": "Подкл.",
+      "totalSpent": "Траты",
+      "subStart": "Начало",
+      "subEnd": "Конец",
+      "lastNode": "Посл. нода"
     },
     "emailTemplates": {
       "title": "Email-шаблоны",
@@ -2435,11 +2442,20 @@
         "nodeUsage": "Расход по нодам",
         "copied": "Скопировано",
         "panelNotFound": "Пользователь не найден в панели",
+        "devices": {
+          "title": "Устройства",
+          "none": "Нет подключённых устройств",
+          "resetAll": "Сбросить все",
+          "deleted": "Устройство удалено",
+          "allDeleted": "Все устройства сброшены"
+        },
         "referral": {
           "title": "Реферальная программа",
           "referrals": "Рефералов",
           "earned": "Заработано",
-          "commission": "Комиссия"
+          "commission": "Комиссия",
+          "default": "По умолч.",
+          "invalidPercent": "Процент должен быть от 0 до 100"
         },
         "restrictions": {
           "title": "Ограничения",
@@ -2484,7 +2500,17 @@
           "unavailable": "(недоступен)",
           "noActive": "Нет активной подписки",
           "create": "Создать подписку",
-          "creating": "Создание..."
+          "creating": "Создание...",
+          "trafficPackages": "Пакеты трафика",
+          "addTraffic": "Добавить трафик",
+          "selectPackage": "Выберите пакет",
+          "addButton": "Добавить",
+          "addTrafficNote": "Админ: бесплатно, действует 30 дней",
+          "trafficRemoved": "Пакет трафика удалён",
+          "trafficAdded": "Пакет трафика добавлен",
+          "expired": "истёк",
+          "daysLeft": "дн. осталось",
+          "deviceLimitUpdated": "Лимит устройств обновлён"
         },
         "balance": {
           "current": "Текущий баланс",
@@ -2635,6 +2661,19 @@
       "saturation": "Насыщенность"
     }
   },
+  "adminUpdates": {
+    "title": "Обновления",
+    "subtitle": "История релизов бота и кабинета",
+    "bot": "Бот",
+    "cabinet": "Кабинет",
+    "currentVersion": "Текущая версия",
+    "upToDate": "Актуальная версия",
+    "updateAvailable": "Доступно обновление",
+    "published": "Опубликовано",
+    "prerelease": "Предрелиз",
+    "refresh": "Проверить обновления",
+    "noReleases": "Нет данных о релизах"
+  },
   "adminDashboard": {
     "title": "Панель статистики",
     "subtitle": "Обзор системы в реальном времени",
@@ -2732,6 +2771,15 @@
       "amount": "Сумма",
       "method": "Метод",
       "date": "Дата"
+    },
+    "systemInfo": {
+      "title": "Система",
+      "cabinet": "Кабинет",
+      "bot": "Бот",
+      "python": "Python",
+      "uptime": "Аптайм",
+      "users": "Юзеров",
+      "activeSubs": "Подписок"
     }
   },
   "banSystem": {

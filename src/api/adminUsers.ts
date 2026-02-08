@@ -2,6 +2,15 @@ import apiClient from './client';
 
 // ============ Types ============
 
+export interface TrafficPurchaseInfo {
+  id: number;
+  traffic_gb: number;
+  expires_at: string;
+  created_at: string;
+  days_remaining: number;
+  is_expired: boolean;
+}
+
 export interface UserSubscriptionInfo {
   id: number;
   status: string;
@@ -16,6 +25,8 @@ export interface UserSubscriptionInfo {
   autopay_enabled: boolean;
   is_active: boolean;
   days_remaining: number;
+  purchased_traffic_gb: number;
+  traffic_purchases: TrafficPurchaseInfo[];
 }
 
 export interface UserPromoGroupInfo {
@@ -187,6 +198,11 @@ export interface UserAvailableTariff {
   price_per_day_kopeks: number;
   min_days: number;
   max_days: number;
+  device_price_kopeks: number | null;
+  max_device_limit: number | null;
+  traffic_topup_enabled: boolean;
+  traffic_topup_packages: Record<string, number>;
+  max_topup_traffic_gb: number;
   is_available: boolean;
   requires_promo_group: boolean;
 }
@@ -277,7 +293,10 @@ export interface UpdateSubscriptionRequest {
     | 'toggle_autopay'
     | 'cancel'
     | 'activate'
-    | 'create';
+    | 'create'
+    | 'add_traffic'
+    | 'remove_traffic'
+    | 'set_device_limit';
   days?: number;
   end_date?: string;
   tariff_id?: number;
@@ -286,6 +305,8 @@ export interface UpdateSubscriptionRequest {
   autopay_enabled?: boolean;
   is_trial?: boolean;
   device_limit?: number;
+  traffic_gb?: number;
+  traffic_purchase_id?: number;
 }
 
 export interface UpdateSubscriptionResponse {
@@ -447,6 +468,17 @@ export const adminUsersApi = {
     return response.data;
   },
 
+  // Update referral commission
+  updateReferralCommission: async (
+    userId: number,
+    commissionPercent: number | null,
+  ): Promise<{ success: boolean; message: string }> => {
+    const response = await apiClient.post(`/cabinet/admin/users/${userId}/referral-commission`, {
+      commission_percent: commissionPercent,
+    });
+    return response.data;
+  },
+
   // Delete user (soft delete, does NOT remove from Remnawave)
   deleteUser: async (
     userId: number,
@@ -550,6 +582,35 @@ export const adminUsersApi = {
   // Get node usage (always 30 days with daily breakdown)
   getNodeUsage: async (userId: number): Promise<UserNodeUsageResponse> => {
     const response = await apiClient.get(`/cabinet/admin/users/${userId}/node-usage`);
+    return response.data;
+  },
+
+  // Get user devices
+  getUserDevices: async (
+    userId: number,
+  ): Promise<{
+    devices: { hwid: string; platform: string; device_model: string; created_at: string | null }[];
+    total: number;
+    device_limit: number;
+  }> => {
+    const response = await apiClient.get(`/cabinet/admin/users/${userId}/devices`);
+    return response.data;
+  },
+
+  // Delete single device
+  deleteUserDevice: async (
+    userId: number,
+    hwid: string,
+  ): Promise<{ success: boolean; message: string; deleted_hwid: string | null }> => {
+    const response = await apiClient.delete(`/cabinet/admin/users/${userId}/devices/${hwid}`);
+    return response.data;
+  },
+
+  // Reset all devices
+  resetUserDevices: async (
+    userId: number,
+  ): Promise<{ success: boolean; message: string; deleted_count: number }> => {
+    const response = await apiClient.delete(`/cabinet/admin/users/${userId}/devices`);
     return response.data;
   },
 };
