@@ -28,7 +28,8 @@ export function useLiteMode() {
       setCachedLiteMode(result.enabled);
       return result;
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 30, // 30 seconds - short cache for faster sync
+    refetchOnWindowFocus: true, // refetch when user returns to tab
     initialData: () => {
       const cached = getCachedLiteMode();
       return { enabled: cached };
