@@ -2838,6 +2838,8 @@
     "total": "Total",
     "buyDevices": "Buy Devices",
     "devicesNotAvailable": "Device purchase not available",
+    "deviceLimit": "Devices: {{current}} / {{max}}",
+    "canAddDevices": "You can add up to {{count}} more devices",
     "trafficDescription": "Traffic used this period",
     "addTraffic": "Add traffic",
     "buyTraffic": "Buy Traffic",

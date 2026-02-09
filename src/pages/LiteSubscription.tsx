@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { subscriptionApi } from '@/api/subscription';
@@ -86,6 +86,13 @@ export function LiteSubscription() {
     queryKey: ['balance'],
     queryFn: balanceApi.getBalance,
   });
+
+  // Clamp device count when max limit changes
+  useEffect(() => {
+    if (devicePrice?.can_add !== undefined && deviceCount > devicePrice.can_add) {
+      setDeviceCount(Math.max(1, devicePrice.can_add));
+    }
+  }, [devicePrice?.can_add, deviceCount]);
 
   // Mutations
   // Helper to extract error message from API response
@@ -187,9 +194,16 @@ export function LiteSubscription() {
       setDeviceCount(1);
       queryClient.invalidateQueries({ queryKey: ['subscription'] });
       queryClient.invalidateQueries({ queryKey: ['balance'] });
+      queryClient.invalidateQueries({ queryKey: ['device-price'] });
     },
     onError: (err: {
-      response?: { data?: { detail?: string; message?: string; missing_amount?: number } };
+      response?: {
+        data?: {
+          detail?: string | { message?: string; missing_amount?: number };
+          message?: string;
+          missing_amount?: number;
+        };
+      };
     }) => {
       setError(getErrorMessage(err));
       setSuccess(null);
@@ -206,7 +220,13 @@ export function LiteSubscription() {
       queryClient.invalidateQueries({ queryKey: ['balance'] });
     },
     onError: (err: {
-      response?: { data?: { detail?: string; message?: string; missing_amount?: number } };
+      response?: {
+        data?: {
+          detail?: string | { message?: string; missing_amount?: number };
+          message?: string;
+          missing_amount?: number;
+        };
+      };
     }) => {
       setError(getErrorMessage(err));
       setSuccess(null);
@@ -442,12 +462,23 @@ export function LiteSubscription() {
           {/* Device count selector */}
           {devicePrice?.available && (
             <>
+              {/* Device limit info */}
+              {devicePrice.max_device_limit !== undefined && (
+                <div className="rounded-xl bg-dark-800/30 px-4 py-2 text-center text-sm text-dark-400">
+                  {t('lite.deviceLimit', {
+                    current: devicePrice.current_device_limit || 0,
+                    max: devicePrice.max_device_limit,
+                  })}
+                </div>
+              )}
+
               <div className="space-y-2">
                 <p className="text-sm text-dark-400">{t('lite.addDevices')}</p>
                 <div className="flex items-center gap-4">
                   <button
                     onClick={() => setDeviceCount(Math.max(1, deviceCount - 1))}
-                    className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-800 text-dark-300 hover:bg-dark-700"
+                    disabled={deviceCount <= 1}
+                    className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-800 text-dark-300 transition-colors hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     −
                   </button>
@@ -455,14 +486,23 @@ export function LiteSubscription() {
                     {deviceCount}
                   </span>
                   <button
-                    onClick={() =>
-                      setDeviceCount(Math.min(devicePrice.can_add || 10, deviceCount + 1))
-                    }
-                    className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-800 text-dark-300 hover:bg-dark-700"
+                    onClick={() => {
+                      const maxCanAdd = devicePrice.can_add ?? 0;
+                      if (deviceCount < maxCanAdd) {
+                        setDeviceCount(deviceCount + 1);
+                      }
+                    }}
+                    disabled={deviceCount >= (devicePrice.can_add ?? 0)}
+                    className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-800 text-dark-300 transition-colors hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     +
                   </button>
                 </div>
+                {devicePrice.can_add !== undefined && devicePrice.can_add > 0 && (
+                  <p className="text-center text-xs text-dark-500">
+                    {t('lite.canAddDevices', { count: devicePrice.can_add })}
+                  </p>
+                )}
               </div>
 
               <div className="flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
@@ -474,8 +514,8 @@ export function LiteSubscription() {
 
               <button
                 onClick={handleDevicePurchase}
-                disabled={isLoading}
-                className="w-full rounded-xl bg-accent-500 py-4 font-semibold text-white transition-all hover:bg-accent-600 active:scale-[0.98]"
+                disabled={isLoading || deviceCount < 1}
+                className="w-full rounded-xl bg-accent-500 py-4 font-semibold text-white transition-all hover:bg-accent-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isLoading ? t('common.loading') : t('lite.buyDevices')}
               </button>

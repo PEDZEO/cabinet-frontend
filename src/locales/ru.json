@@ -3393,6 +3393,8 @@
     "total": "Итого",
     "buyDevices": "Купить устройства",
     "devicesNotAvailable": "Покупка устройств недоступна",
+    "deviceLimit": "Устройств: {{current}} / {{max}}",
+    "canAddDevices": "Можно добавить ещё {{count}} устройств",
     "trafficDescription": "Трафик за период",
     "addTraffic": "Добавить трафик",
     "buyTraffic": "Купить трафик",
