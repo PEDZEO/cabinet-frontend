@@ -2467,6 +2467,7 @@
     "trafficNotAvailable": "بسته‌های ترافیک در دسترس نیست",
     "topUpBalance": "شارژ موجودی",
     "insufficientBalance": "موجودی ناکافی. کمبود {{amount}}",
+    "insufficientBalanceGeneric": "موجودی کافی نیست",
     "support": "پشتیبانی",
     "copyLink": "کپی لینک",
     "tariffSwitched": "از «{{oldTariff}}» به «{{newTariff}}» تغییر یافت",

@@ -3402,6 +3402,7 @@
     "trafficNotAvailable": "Пакеты трафика недоступны",
     "topUpBalance": "Пополнить баланс",
     "insufficientBalance": "Недостаточно средств. Не хватает {{amount}}",
+    "insufficientBalanceGeneric": "Недостаточно средств на балансе",
     "support": "Поддержка",
     "copyLink": "Скопировать ссылку",
     "tariffSwitched": "Тариф изменён с «{{oldTariff}}» на «{{newTariff}}»",

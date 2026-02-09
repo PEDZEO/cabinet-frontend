@@ -2847,6 +2847,7 @@
     "trafficNotAvailable": "Traffic packages not available",
     "topUpBalance": "Top Up Balance",
     "insufficientBalance": "Insufficient balance. Missing {{amount}}",
+    "insufficientBalanceGeneric": "Insufficient balance",
     "support": "Support",
     "copyLink": "Copy Link",
     "tariffSwitched": "Switched from \"{{oldTariff}}\" to \"{{newTariff}}\"",

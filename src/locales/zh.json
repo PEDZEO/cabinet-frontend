@@ -2466,6 +2466,7 @@
     "trafficNotAvailable": "流量包不可用",
     "topUpBalance": "充值余额",
     "insufficientBalance": "余额不足，还差 {{amount}}",
+    "insufficientBalanceGeneric": "余额不足",
     "support": "客服",
     "copyLink": "复制链接",
     "tariffSwitched": "已从「{{oldTariff}}」切换到「{{newTariff}}」",
