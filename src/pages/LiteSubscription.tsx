@@ -503,26 +503,34 @@ export function LiteSubscription() {
 
       {/* Tabs */}
       <div className="mb-6 flex gap-2">
-        {(['tariffs', 'devices', 'traffic'] as TabType[]).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => {
-              setActiveTab(tab);
-              setError(null);
-              setSuccess(null);
-            }}
-            disabled={tab !== 'tariffs' && !hasSubscription}
-            className={`flex-1 rounded-xl py-2.5 text-sm font-medium transition-all ${
-              activeTab === tab
-                ? 'bg-accent-500 text-white'
-                : tab !== 'tariffs' && !hasSubscription
-                  ? 'cursor-not-allowed bg-dark-800/30 text-dark-500'
-                  : 'bg-dark-800/50 text-dark-300 hover:bg-dark-700/50'
-            }`}
-          >
-            {t(`lite.tab.${tab}`)}
-          </button>
-        ))}
+        {(['tariffs', 'devices', 'traffic'] as TabType[])
+          .filter((tab) => {
+            // Hide traffic tab if topup is disabled in tariff settings
+            if (tab === 'traffic' && currentTariff && !currentTariff.traffic_topup_enabled) {
+              return false;
+            }
+            return true;
+          })
+          .map((tab) => (
+            <button
+              key={tab}
+              onClick={() => {
+                setActiveTab(tab);
+                setError(null);
+                setSuccess(null);
+              }}
+              disabled={tab !== 'tariffs' && !hasSubscription}
+              className={`flex-1 rounded-xl py-2.5 text-sm font-medium transition-all ${
+                activeTab === tab
+                  ? 'bg-accent-500 text-white'
+                  : tab !== 'tariffs' && !hasSubscription
+                    ? 'cursor-not-allowed bg-dark-800/30 text-dark-500'
+                    : 'bg-dark-800/50 text-dark-300 hover:bg-dark-700/50'
+              }`}
+            >
+              {t(`lite.tab.${tab}`)}
+            </button>
+          ))}
       </div>
 
       {/* Tariffs Tab */}
@@ -547,12 +555,12 @@ export function LiteSubscription() {
                 className={`relative w-full rounded-2xl border p-4 text-left transition-all ${
                   isSelected
                     ? 'border-accent-500 bg-accent-500/10'
-                    : isCurrent
+                    : isCurrent && !subscription?.is_trial
                       ? 'border-success-500/50 bg-success-500/5'
                       : 'border-dark-700 bg-dark-800/50 hover:border-dark-600'
                 }`}
               >
-                {isCurrent && (
+                {isCurrent && !subscription?.is_trial && (
                   <span className="absolute -top-2 right-3 flex items-center gap-1 rounded-full bg-success-500 px-2 py-0.5 text-xs font-medium text-white">
                     <StarIcon />
                     {t('lite.currentTariff')}
@@ -561,7 +569,7 @@ export function LiteSubscription() {
 
                 <div className="mb-2 flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-dark-100">{tariff.name}</h3>
-                  {isSelected && !isCurrent && (
+                  {isSelected && (!isCurrent || subscription?.is_trial) && (
                     <span className="text-accent-400">
                       <CheckIcon />
                     </span>
@@ -635,9 +643,9 @@ export function LiteSubscription() {
           {selectedTariff && (
             <button
               onClick={handleTariffAction}
-              disabled={isLoading || selectedTariff.is_current}
+              disabled={isLoading || (selectedTariff.is_current && !subscription?.is_trial)}
               className={`w-full rounded-xl py-4 font-semibold transition-all active:scale-[0.98] ${
-                selectedTariff.is_current
+                selectedTariff.is_current && !subscription?.is_trial
                   ? 'cursor-not-allowed bg-dark-700 text-dark-400'
                   : 'bg-accent-500 text-white hover:bg-accent-600'
               }`}
@@ -735,8 +743,8 @@ export function LiteSubscription() {
             </div>
           )}
 
-          {/* Device count selector */}
-          {devicePrice?.available && (
+          {/* Device count selector - not available for trial */}
+          {devicePrice?.available && !subscription?.is_trial && (
             <>
               {/* Device limit info */}
               {typeof devicePrice.current_device_limit === 'number' &&
@@ -806,14 +814,14 @@ export function LiteSubscription() {
             </>
           )}
 
-          {devicePrice && !devicePrice.available && (
+          {devicePrice && !devicePrice.available && !subscription?.is_trial && (
             <div className="rounded-xl bg-dark-800/50 p-4 text-center text-dark-400">
               {devicePrice.reason || t('lite.devicesNotAvailable')}
             </div>
           )}
 
-          {/* Reduce devices section */}
-          {reductionInfo?.available && reductionInfo.can_reduce > 0 && (
+          {/* Reduce devices section - not available for trial */}
+          {reductionInfo?.available && reductionInfo.can_reduce > 0 && !subscription?.is_trial && (
             <div className="mt-4 space-y-3 border-t border-dark-700 pt-4">
               <p className="text-sm text-dark-400">{t('lite.reduceDevices')}</p>
 
