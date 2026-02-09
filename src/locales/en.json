@@ -2801,6 +2801,29 @@
     "trialDays": "{{count}} days free",
     "trialTraffic": "{{count}} GB traffic",
     "trialDevices": "{{count}} devices",
-    "unlimited": "Unlimited"
+    "unlimited": "Unlimited",
+    "tab": {
+      "tariffs": "Tariffs",
+      "devices": "Devices",
+      "traffic": "Traffic"
+    },
+    "currentTariff": "Current",
+    "devices": "devices",
+    "servers": "servers",
+    "month": "mo",
+    "selectPeriod": "Select period",
+    "changeTariff": "Change Tariff",
+    "buyTariff": "Buy Tariff",
+    "devicesTotal": "devices total",
+    "devicesDescription": "Maximum connected devices",
+    "addDevices": "Add devices",
+    "total": "Total",
+    "buyDevices": "Buy Devices",
+    "devicesNotAvailable": "Device purchase not available",
+    "trafficDescription": "Traffic used this period",
+    "addTraffic": "Add traffic",
+    "buyTraffic": "Buy Traffic",
+    "trafficNotAvailable": "Traffic packages not available",
+    "topUpBalance": "Top Up Balance"
   }
 }

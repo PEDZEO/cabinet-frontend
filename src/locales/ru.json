@@ -3356,6 +3356,29 @@
     "trialDays": "{{count}} дней бесплатно",
     "trialTraffic": "{{count}} ГБ трафика",
     "trialDevices": "{{count}} устройств",
-    "unlimited": "Безлимит"
+    "unlimited": "Безлимит",
+    "tab": {
+      "tariffs": "Тарифы",
+      "devices": "Устройства",
+      "traffic": "Трафик"
+    },
+    "currentTariff": "Текущий",
+    "devices": "устройств",
+    "servers": "серверов",
+    "month": "мес",
+    "selectPeriod": "Выберите период",
+    "changeTariff": "Сменить тариф",
+    "buyTariff": "Купить тариф",
+    "devicesTotal": "устройств всего",
+    "devicesDescription": "Максимум подключённых устройств",
+    "addDevices": "Добавить устройства",
+    "total": "Итого",
+    "buyDevices": "Купить устройства",
+    "devicesNotAvailable": "Покупка устройств недоступна",
+    "trafficDescription": "Трафик за период",
+    "addTraffic": "Добавить трафик",
+    "buyTraffic": "Купить трафик",
+    "trafficNotAvailable": "Пакеты трафика недоступны",
+    "topUpBalance": "Пополнить баланс"
   }
 }

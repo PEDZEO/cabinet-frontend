@@ -78,7 +78,22 @@ const getFlagEmoji = (countryCode: string): string => {
 
 type PurchaseStep = 'period' | 'traffic' | 'servers' | 'devices' | 'confirm';
 
+// Import lite mode hook and component
+import { useLiteMode } from '../hooks/useLiteMode';
+import { LiteSubscription } from './LiteSubscription';
+
 export default function Subscription() {
+  const { isLiteMode } = useLiteMode();
+
+  // Render Lite Subscription if lite mode is enabled
+  if (isLiteMode) {
+    return <LiteSubscription />;
+  }
+
+  return <FullSubscription />;
+}
+
+function FullSubscription() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const location = useLocation();
