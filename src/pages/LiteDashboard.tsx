@@ -171,6 +171,11 @@ export function LiteDashboard() {
     queryFn: referralApi.getReferralInfo,
   });
 
+  const { data: purchaseOptions } = useQuery({
+    queryKey: ['purchase-options'],
+    queryFn: subscriptionApi.getPurchaseOptions,
+  });
+
   // Referral link and handlers
   const referralLink = referralInfo?.referral_code
     ? `${window.location.origin}/login?ref=${referralInfo.referral_code}`
@@ -227,6 +232,13 @@ export function LiteDashboard() {
   const hasNoSubscription = subscriptionResponse?.has_subscription === false && !subLoading;
   const showTrial = hasNoSubscription && trialInfo?.is_available;
   const balance = balanceData?.balance_kopeks ?? 0;
+
+  // Get device limit from tariff settings
+  const tariffs = purchaseOptions?.sales_mode === 'tariffs' ? purchaseOptions.tariffs : [];
+  const currentTariffId =
+    purchaseOptions?.sales_mode === 'tariffs' ? purchaseOptions.current_tariff_id : null;
+  const currentTariff = currentTariffId ? tariffs.find((t) => t.id === currentTariffId) : null;
+  const deviceLimitFromTariff = currentTariff?.device_limit;
 
   // Onboarding
   useEffect(() => {
@@ -291,7 +303,12 @@ export function LiteDashboard() {
         >
           {/* Subscription status or Trial card */}
           <div className="mb-6" data-onboarding="lite-subscription">
-            {subscription && <LiteSubscriptionCard subscription={subscription} />}
+            {subscription && (
+              <LiteSubscriptionCard
+                subscription={subscription}
+                deviceLimit={deviceLimitFromTariff}
+              />
+            )}
 
             {showTrial && trialInfo && (
               <LiteTrialCard

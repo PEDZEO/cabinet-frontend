@@ -411,15 +411,23 @@ export function LiteSubscription() {
   const tariffs = purchaseOptions?.sales_mode === 'tariffs' ? purchaseOptions.tariffs : [];
   const currentTariffId =
     purchaseOptions?.sales_mode === 'tariffs' ? purchaseOptions.current_tariff_id : null;
+  const currentTariff = currentTariffId ? tariffs.find((t) => t.id === currentTariffId) : null;
+  // Use device limit from tariff settings, fallback to subscription value
+  const deviceLimitFromTariff = currentTariff?.device_limit ?? subscription?.device_limit;
 
   const handleTariffAction = () => {
     if (!selectedTariff) return;
 
-    if (hasSubscription && currentTariffId !== selectedTariff.id) {
-      // Switch tariff
+    // For trial subscriptions or no tariff - purchase new tariff
+    // For active subscriptions with tariff - switch tariff
+    const isTrial = subscription?.is_trial;
+    const canSwitch = hasSubscription && currentTariffId !== null && !isTrial;
+
+    if (canSwitch && currentTariffId !== selectedTariff.id) {
+      // Switch tariff (only for non-trial with existing tariff)
       switchTariffMutation.mutate(selectedTariff.id);
-    } else if (!hasSubscription) {
-      // Purchase new subscription
+    } else if (!hasSubscription || isTrial || currentTariffId === null) {
+      // Purchase new subscription (for new users, trial users, or users without tariff)
       purchaseTariffMutation.mutate({
         tariffId: selectedTariff.id,
         periodDays: selectedPeriodDays,
@@ -636,7 +644,7 @@ export function LiteSubscription() {
             >
               {isLoading
                 ? t('common.loading')
-                : hasSubscription
+                : hasSubscription && !subscription?.is_trial && currentTariffId !== null
                   ? t('lite.changeTariff')
                   : t('lite.buyTariff')}
             </button>
@@ -655,7 +663,7 @@ export function LiteSubscription() {
               </div>
               <div>
                 <p className="font-medium text-dark-100">
-                  {subscription?.device_limit} {t('lite.devicesTotal')}
+                  {deviceLimitFromTariff} {t('lite.devicesTotal')}
                 </p>
                 <p className="text-sm text-dark-400">{t('lite.devicesDescription')}</p>
               </div>

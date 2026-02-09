@@ -5,6 +5,7 @@ import type { Subscription } from '@/types';
 
 interface LiteSubscriptionCardProps {
   subscription: Subscription;
+  deviceLimit?: number; // Override device limit from tariff settings
 }
 
 const CopyIcon = () => (
@@ -23,7 +24,7 @@ const CopyCheckIcon = () => (
   </svg>
 );
 
-export function LiteSubscriptionCard({ subscription }: LiteSubscriptionCardProps) {
+export function LiteSubscriptionCard({ subscription, deviceLimit }: LiteSubscriptionCardProps) {
   const { t } = useTranslation();
   const haptic = useHapticFeedback();
   const [copied, setCopied] = useState(false);
@@ -127,8 +128,10 @@ export function LiteSubscriptionCard({ subscription }: LiteSubscriptionCardProps
         <div className="mb-1 flex items-center justify-between text-xs text-dark-400">
           <span>{trafficDisplay}</span>
           <span>
-            {subscription.device_limit}{' '}
-            {t('lite.trialDevices', { count: subscription.device_limit }).split(' ').pop()}
+            {deviceLimit ?? subscription.device_limit}{' '}
+            {t('lite.trialDevices', { count: deviceLimit ?? subscription.device_limit })
+              .split(' ')
+              .pop()}
           </span>
         </div>
         {subscription.traffic_limit_gb !== -1 && (
