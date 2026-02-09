@@ -2687,6 +2687,24 @@
         "title": "Quick Actions",
         "description": "Use these buttons for quick access to main features: top up balance, extend subscription, and invite friends."
       }
+    },
+    "lite": {
+      "subscription": {
+        "title": "Subscription",
+        "description": "Your current subscription status is shown here. You can see remaining days and tariff."
+      },
+      "connect": {
+        "title": "Connect",
+        "description": "Tap to get connection instructions for your devices."
+      },
+      "topup": {
+        "title": "Top Up",
+        "description": "Need to top up your balance? Tap here."
+      },
+      "tariffs": {
+        "title": "Tariffs",
+        "description": "View available tariffs and change your subscription plan."
+      }
     }
   },
   "promo": {
@@ -2827,6 +2845,9 @@
     "topUpBalance": "Top Up Balance",
     "insufficientBalance": "Insufficient balance. Missing {{amount}}",
     "support": "Support",
+    "tariffSwitched": "Switched from \"{{oldTariff}}\" to \"{{newTariff}}\"",
+    "tariffSwitchedWithDeviceReset": "Switched from \"{{oldTariff}}\" to \"{{newTariff}}\". Devices have been reset",
+    "alreadyOnTariff": "Already on this tariff",
     "referral": {
       "title": "Invite Friends",
       "description": "Earn {{percent}}% from every payment",

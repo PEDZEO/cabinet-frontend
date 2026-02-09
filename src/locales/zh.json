@@ -2438,6 +2438,9 @@
     "trialDays": "{{count}}天免费",
     "trialTraffic": "{{count}} GB流量",
     "trialDevices": "{{count}}台设备",
-    "unlimited": "无限"
+    "unlimited": "无限",
+    "tariffSwitched": "已从「{{oldTariff}}」切换到「{{newTariff}}」",
+    "tariffSwitchedWithDeviceReset": "已从「{{oldTariff}}」切换到「{{newTariff}}」。设备已重置",
+    "alreadyOnTariff": "您已在此套餐"
   }
 }

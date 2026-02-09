@@ -15,6 +15,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { useAuthStore } from '@/store/auth';
 import { cn } from '@/lib/utils';
 import { LiteModeMenu } from './LiteModeMenu';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 import type { TelegramPlatform } from '@/hooks/useTelegramSDK';
 
@@ -171,6 +172,12 @@ export function LiteModeHeader({
   const isAdminPage = location.pathname.startsWith('/admin');
   const isMainPage = location.pathname === '/';
 
+  // Calculate full header height for menu positioning
+  const telegramHeaderHeight = telegramPlatform === 'android' ? 48 : 45;
+  const calculatedHeaderHeight = isFullscreen
+    ? 64 + Math.max(safeAreaInset.top, contentSafeAreaInset.top) + telegramHeaderHeight
+    : 64;
+
   return (
     <>
       <header
@@ -227,17 +234,21 @@ export function LiteModeHeader({
             )}
 
             {/* Center: Balance & Status */}
-            <div className="flex items-center gap-3">
+            <Link
+              to="/"
+              className="flex items-center gap-3 rounded-xl px-2 py-1 transition-colors hover:bg-dark-800/50 active:scale-[0.98]"
+            >
               <div className="text-right">
                 <div className="text-sm font-semibold text-dark-100">
                   {formatWithCurrency(balance / 100)}
                 </div>
               </div>
               {getSubscriptionStatus()}
-            </div>
+            </Link>
 
-            {/* Right: Admin link + Menu */}
+            {/* Right: Language + Admin link + Menu */}
             <div className="flex items-center gap-2">
+              <LanguageSwitcher />
               {isAdmin && (
                 <Link
                   to="/admin"
@@ -270,7 +281,11 @@ export function LiteModeHeader({
         </div>
       </header>
 
-      <LiteModeMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+      <LiteModeMenu
+        isOpen={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        headerHeight={calculatedHeaderHeight}
+      />
     </>
   );
 }

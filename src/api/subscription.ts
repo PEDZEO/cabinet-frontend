@@ -385,6 +385,7 @@ export const subscriptionApi = {
     charged_kopeks: number;
     balance_kopeks: number;
     balance_label: string;
+    devices_reset?: boolean;
   }> => {
     const response = await apiClient.post('/cabinet/subscription/tariff/switch', {
       tariff_id: tariffId,

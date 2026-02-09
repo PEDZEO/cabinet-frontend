@@ -2439,6 +2439,9 @@
     "trialDays": "{{count}} روز رایگان",
     "trialTraffic": "{{count}} گیگابایت ترافیک",
     "trialDevices": "{{count}} دستگاه",
-    "unlimited": "نامحدود"
+    "unlimited": "نامحدود",
+    "tariffSwitched": "از «{{oldTariff}}» به «{{newTariff}}» تغییر یافت",
+    "tariffSwitchedWithDeviceReset": "از «{{oldTariff}}» به «{{newTariff}}» تغییر یافت. دستگاه‌ها بازنشانی شدند",
+    "alreadyOnTariff": "شما در حال حاضر در این تعرفه هستید"
   }
 }

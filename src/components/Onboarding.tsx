@@ -106,7 +106,10 @@ export default function Onboarding({ steps, onComplete, onSkip }: OnboardingProp
     if (!targetRect) return { opacity: 0 };
 
     const padding = 16;
-    const tooltipWidth = 320;
+    // Use actual tooltip width if available, fallback to responsive values
+    // CSS: max-w-xs (256px) on mobile, sm:max-w-sm (320px) on desktop
+    const actualTooltipWidth = tooltipRef.current?.offsetWidth;
+    const tooltipWidth = actualTooltipWidth || (window.innerWidth < 640 ? 256 : 320);
     const tooltipHeight = tooltipRef.current?.offsetHeight || 150;
 
     let top = 0;
@@ -147,7 +150,7 @@ export default function Onboarding({ steps, onComplete, onSkip }: OnboardingProp
     return {
       top,
       left,
-      width: tooltipWidth,
+      // Don't set width inline - CSS handles responsive sizing via max-w-xs/sm:max-w-sm
       opacity: isVisible ? 1 : 0,
       transform: isVisible ? 'scale(1)' : 'scale(0.95)',
     };

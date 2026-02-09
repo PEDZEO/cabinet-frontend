@@ -7,6 +7,7 @@ import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 interface LiteModeMenuProps {
   isOpen: boolean;
   onClose: () => void;
+  headerHeight?: number;
 }
 
 // Icons
@@ -76,7 +77,7 @@ const LogoutIcon = () => (
   </svg>
 );
 
-export function LiteModeMenu({ isOpen, onClose }: LiteModeMenuProps) {
+export function LiteModeMenu({ isOpen, onClose, headerHeight = 64 }: LiteModeMenuProps) {
   const { t } = useTranslation();
   const { logout } = useAuthStore();
   const { referralEnabled } = useFeatureFlags();
@@ -113,7 +114,8 @@ export function LiteModeMenu({ isOpen, onClose }: LiteModeMenuProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.15 }}
-            className="fixed right-4 top-16 z-50 w-56 overflow-hidden rounded-2xl border border-dark-600 bg-dark-800 shadow-xl"
+            className="fixed right-4 z-50 w-56 overflow-hidden rounded-2xl border border-dark-600 bg-dark-800 shadow-xl"
+            style={{ top: headerHeight + 8 }}
           >
             <div className="py-2">
               {menuItems.map((item) => (
