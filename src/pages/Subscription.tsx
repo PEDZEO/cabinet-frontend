@@ -83,7 +83,12 @@ import { useLiteMode } from '../hooks/useLiteMode';
 import { LiteSubscription } from './LiteSubscription';
 
 export default function Subscription() {
-  const { isLiteMode } = useLiteMode();
+  const { isLiteMode, isLiteModeReady } = useLiteMode();
+
+  // Wait for lite mode to be determined (for new users)
+  if (!isLiteModeReady) {
+    return null;
+  }
 
   // Render Lite Subscription if lite mode is enabled
   if (isLiteMode) {

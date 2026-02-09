@@ -3,12 +3,13 @@ import { brandingApi } from '@/api/branding';
 
 const LITE_MODE_CACHE_KEY = 'cabinet_lite_mode';
 
-export const getCachedLiteMode = (): boolean => {
+export const getCachedLiteMode = (): boolean | null => {
   try {
     const cached = localStorage.getItem(LITE_MODE_CACHE_KEY);
+    if (cached === null) return null; // no cache - new user
     return cached === 'true';
   } catch {
-    return false;
+    return null;
   }
 };
 
@@ -21,6 +22,9 @@ export const setCachedLiteMode = (enabled: boolean) => {
 };
 
 export function useLiteMode() {
+  const cachedValue = getCachedLiteMode();
+  const hasCache = cachedValue !== null;
+
   const { data: liteModeSettings, isLoading } = useQuery({
     queryKey: ['lite-mode-enabled'],
     queryFn: async () => {
@@ -34,20 +38,22 @@ export function useLiteMode() {
     refetchOnReconnect: true, // refetch when network reconnects
     retry: 2, // retry on failure
     retryDelay: 1000, // 1 second between retries
-    // Use initialData from cache - prevents flicker to main version
-    initialData: () => {
-      const cached = getCachedLiteMode();
-      return { enabled: cached };
-    },
-    initialDataUpdatedAt: () => {
-      // Treat cached data as somewhat fresh to avoid immediate refetch blocking render
-      return Date.now() - 1000 * 60; // 1 minute ago
-    },
+    // Only use initialData if we have cache - new users should wait for API
+    initialData: hasCache ? () => ({ enabled: cachedValue }) : undefined,
+    initialDataUpdatedAt: hasCache
+      ? () => {
+          // Treat cached data as somewhat fresh to avoid immediate refetch blocking render
+          return Date.now() - 1000 * 60; // 1 minute ago
+        }
+      : undefined,
   });
 
-  // Always use cached value as fallback if query data is undefined
-  const cachedValue = getCachedLiteMode();
-  const isLiteMode = liteModeSettings?.enabled ?? cachedValue;
+  // For new users (no cache), show lite mode if API returned enabled
+  // For returning users, use cached value as fallback
+  const isLiteMode = liteModeSettings?.enabled ?? cachedValue ?? false;
 
-  return { isLiteMode, isLoading };
+  // isLiteModeReady: true when we have a reliable value (either from cache or API)
+  const isLiteModeReady = hasCache || !isLoading;
+
+  return { isLiteMode, isLoading, isLiteModeReady };
 }

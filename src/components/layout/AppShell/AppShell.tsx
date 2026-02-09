@@ -203,7 +203,7 @@ export function AppShell({ children }: AppShellProps) {
   // Extracted hooks
   const { appName, logoLetter, hasCustomLogo, logoUrl } = useBranding();
   const { referralEnabled, wheelEnabled, hasContests, hasPolls } = useFeatureFlags();
-  const { isLiteMode } = useLiteMode();
+  const { isLiteMode, isLiteModeReady } = useLiteMode();
   useScrollRestoration();
 
   // Theme toggle visibility
@@ -286,8 +286,8 @@ export function AppShell({ children }: AppShellProps) {
       <WebSocketNotifications />
       <SuccessNotificationModal />
 
-      {/* Lite Mode Header */}
-      {isLiteMode && (
+      {/* Lite Mode Header - wait for mode to be determined for new users */}
+      {isLiteModeReady && isLiteMode && (
         <LiteModeHeader
           headerHeight={headerHeight}
           isFullscreen={isMobileFullscreen}
@@ -301,7 +301,7 @@ export function AppShell({ children }: AppShellProps) {
       <header
         className={cn(
           'fixed left-0 right-0 top-0 z-50 border-b border-dark-800/50 bg-dark-950/80 backdrop-blur-xl',
-          isLiteMode ? 'hidden' : 'hidden lg:block',
+          isLiteModeReady && isLiteMode ? 'hidden' : 'hidden lg:block',
         )}
       >
         <div className="mx-auto grid h-14 max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-4 px-6">
@@ -415,8 +415,8 @@ export function AppShell({ children }: AppShellProps) {
         </div>
       </header>
 
-      {/* Mobile Header (hidden in Lite Mode) */}
-      {!isLiteMode && (
+      {/* Mobile Header (hidden in Lite Mode, wait for mode to be determined) */}
+      {isLiteModeReady && !isLiteMode && (
         <AppHeader
           mobileMenuOpen={mobileMenuOpen}
           setMobileMenuOpen={setMobileMenuOpen}
@@ -443,7 +443,7 @@ export function AppShell({ children }: AppShellProps) {
       <main className="mx-auto max-w-6xl px-4 py-6 pb-28 lg:px-6 lg:pb-8">{children}</main>
 
       {/* Mobile Bottom Navigation (hidden in Lite Mode) */}
-      {!isLiteMode && (
+      {isLiteModeReady && !isLiteMode && (
         <MobileBottomNav
           isKeyboardOpen={isKeyboardOpen}
           referralEnabled={referralEnabled}

@@ -49,7 +49,12 @@ const RefreshIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
 );
 
 export default function Dashboard() {
-  const { isLiteMode } = useLiteMode();
+  const { isLiteMode, isLiteModeReady } = useLiteMode();
+
+  // Wait for lite mode to be determined (for new users)
+  if (!isLiteModeReady) {
+    return null;
+  }
 
   // Render Lite Dashboard if lite mode is enabled
   if (isLiteMode) {
