@@ -297,11 +297,11 @@ export function AppShell({ children }: AppShellProps) {
         />
       )}
 
-      {/* Desktop Header (hidden in Lite Mode) */}
+      {/* Desktop Header (hidden in Lite Mode, hidden until mode is determined) */}
       <header
         className={cn(
           'fixed left-0 right-0 top-0 z-50 border-b border-dark-800/50 bg-dark-950/80 backdrop-blur-xl',
-          isLiteModeReady && isLiteMode ? 'hidden' : 'hidden lg:block',
+          !isLiteModeReady || isLiteMode ? 'hidden' : 'hidden lg:block',
         )}
       >
         <div className="mx-auto grid h-14 max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-4 px-6">

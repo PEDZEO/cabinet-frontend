@@ -582,10 +582,10 @@ export function LiteSubscription() {
                 </div>
 
                 {/* Price display - different for daily vs period tariffs */}
-                {tariff.is_daily && tariff.price_per_day_kopeks ? (
+                {tariff.is_daily || tariff.daily_price_kopeks ? (
                   <div className="flex items-baseline justify-between">
                     <span className="text-xl font-bold text-accent-400">
-                      {formatPrice(tariff.price_per_day_kopeks)}
+                      {formatPrice(tariff.daily_price_kopeks ?? tariff.price_per_day_kopeks ?? 0)}
                     </span>
                     <span className="text-sm text-dark-500">/{t('lite.day')}</span>
                   </div>
