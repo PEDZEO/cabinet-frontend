@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../store/auth';
 import { balanceApi } from '../api/balance';
 import { useCurrency } from '../hooks/useCurrency';
+import { useLiteMode } from '../hooks/useLiteMode';
 import { API } from '../config/constants';
 import { useToast } from '../components/Toast';
 import type { PaginatedResponse, Transaction } from '../types';
@@ -43,6 +44,7 @@ export default function Balance() {
   const { refreshUser } = useAuthStore();
   const queryClient = useQueryClient();
   const { formatAmount, currencySymbol } = useCurrency();
+  const { isLiteMode } = useLiteMode();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -194,16 +196,18 @@ export default function Balance() {
         <h1 className="text-2xl font-bold text-dark-50 sm:text-3xl">{t('balance.title')}</h1>
       </motion.div>
 
-      {/* Balance Card */}
-      <motion.div variants={staggerItem}>
-        <Card className="bg-gradient-to-br from-accent-500/10 to-transparent" glow>
-          <div className="mb-2 text-sm text-dark-400">{t('balance.currentBalance')}</div>
-          <div className="text-4xl font-bold text-dark-50 sm:text-5xl">
-            {formatAmount(balanceData?.balance_rubles || 0)}
-            <span className="ml-2 text-2xl text-dark-400">{currencySymbol}</span>
-          </div>
-        </Card>
-      </motion.div>
+      {/* Balance Card - hidden in lite mode (balance shown in header) */}
+      {!isLiteMode && (
+        <motion.div variants={staggerItem}>
+          <Card className="bg-gradient-to-br from-accent-500/10 to-transparent" glow>
+            <div className="mb-2 text-sm text-dark-400">{t('balance.currentBalance')}</div>
+            <div className="text-4xl font-bold text-dark-50 sm:text-5xl">
+              {formatAmount(balanceData?.balance_rubles || 0)}
+              <span className="ml-2 text-2xl text-dark-400">{currencySymbol}</span>
+            </div>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Promo Code Section */}
       <motion.div variants={staggerItem}>

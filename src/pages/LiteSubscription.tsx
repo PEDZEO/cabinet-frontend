@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { subscriptionApi } from '@/api/subscription';
 import { balanceApi } from '@/api/balance';
+import { promoApi } from '@/api/promo';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useHapticFeedback } from '@/platform/hooks/useHaptic';
 import { useNavigate } from 'react-router';
@@ -111,6 +112,27 @@ export function LiteSubscription() {
   // Format price helper
   const formatPrice = (kopeks: number) => `${formatAmount(kopeks / 100)} ${currencySymbol}`;
 
+  // Helper to apply promo discount to a price
+  const applyPromoDiscount = (
+    priceKopeks: number,
+    hasExistingDiscount: boolean = false,
+  ): {
+    price: number;
+    original: number | null;
+    percent: number | null;
+  } => {
+    // Only apply promo discount if no existing discount and we have an active promo discount
+    if (!activeDiscount?.is_active || !activeDiscount.discount_percent || hasExistingDiscount) {
+      return { price: priceKopeks, original: null, percent: null };
+    }
+    const discountedPrice = Math.round(priceKopeks * (1 - activeDiscount.discount_percent / 100));
+    return {
+      price: discountedPrice,
+      original: priceKopeks,
+      percent: activeDiscount.discount_percent,
+    };
+  };
+
   // Queries
   const { data: subscriptionData, isLoading: isSubscriptionLoading } = useQuery({
     queryKey: ['subscription'],
@@ -120,6 +142,13 @@ export function LiteSubscription() {
   const { data: purchaseOptions, isLoading: isPurchaseOptionsLoading } = useQuery({
     queryKey: ['purchase-options'],
     queryFn: subscriptionApi.getPurchaseOptions,
+  });
+
+  // Fetch active promo discount
+  const { data: activeDiscount } = useQuery({
+    queryKey: ['active-discount'],
+    queryFn: promoApi.getActiveDiscount,
+    staleTime: 30000,
   });
 
   const { data: trafficPackages } = useQuery({
@@ -758,23 +787,66 @@ export function LiteSubscription() {
                   </div>
 
                   {/* Price display - different for daily vs period tariffs */}
-                  {tariff.is_daily || tariff.daily_price_kopeks ? (
-                    <div className="flex items-baseline justify-between">
-                      <span className="text-xl font-bold text-accent-400">
-                        {formatPrice(tariff.daily_price_kopeks ?? tariff.price_per_day_kopeks ?? 0)}
-                      </span>
-                      <span className="text-sm text-dark-500">/{t('lite.day')}</span>
-                    </div>
-                  ) : period ? (
-                    <div className="flex items-baseline justify-between">
-                      <span className="text-xl font-bold text-accent-400">
-                        {period.price_label}
-                      </span>
-                      <span className="text-sm text-dark-500">
-                        {period.price_per_month_label}/{t('lite.month')}
-                      </span>
-                    </div>
-                  ) : null}
+                  {tariff.is_daily || tariff.daily_price_kopeks
+                    ? (() => {
+                        const dailyPrice =
+                          tariff.daily_price_kopeks ?? tariff.price_per_day_kopeks ?? 0;
+                        const hasExistingDiscount = !!(
+                          tariff.daily_discount_percent && tariff.daily_discount_percent > 0
+                        );
+                        const promo = applyPromoDiscount(dailyPrice, hasExistingDiscount);
+                        return (
+                          <div className="flex items-baseline justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xl font-bold text-accent-400">
+                                {formatPrice(promo.price)}
+                              </span>
+                              {promo.original && (
+                                <span className="text-sm text-dark-500 line-through">
+                                  {formatPrice(promo.original)}
+                                </span>
+                              )}
+                              {promo.percent && (
+                                <span className="rounded bg-success-500/20 px-1.5 py-0.5 text-xs font-semibold text-success-400">
+                                  -{promo.percent}%
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-sm text-dark-500">/{t('lite.day')}</span>
+                          </div>
+                        );
+                      })()
+                    : period
+                      ? (() => {
+                          const hasExistingDiscount = !!(
+                            period.discount_percent && period.discount_percent > 0
+                          );
+                          const promo = applyPromoDiscount(
+                            period.price_kopeks,
+                            hasExistingDiscount,
+                          );
+                          return (
+                            <div className="flex items-baseline justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xl font-bold text-accent-400">
+                                  {formatPrice(promo.price)}
+                                </span>
+                                {promo.original && (
+                                  <span className="text-sm text-dark-500 line-through">
+                                    {formatPrice(promo.original)}
+                                  </span>
+                                )}
+                                {promo.percent && (
+                                  <span className="rounded bg-success-500/20 px-1.5 py-0.5 text-xs font-semibold text-success-400">
+                                    -{promo.percent}%
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-sm text-dark-500">/{t('lite.month')}</span>
+                            </div>
+                          );
+                        })()
+                      : null}
                 </button>
               );
             })}
@@ -963,12 +1035,35 @@ export function LiteSubscription() {
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
-                      <span className="text-dark-400">{t('lite.total')}</span>
-                      <span className="text-lg font-bold text-accent-400">
-                        {formatPrice(devicePrice.total_price_kopeks || 0)}
-                      </span>
-                    </div>
+                    {(() => {
+                      const hasExistingDiscount = !!(
+                        devicePrice.discount_percent && devicePrice.discount_percent > 0
+                      );
+                      const promo = applyPromoDiscount(
+                        devicePrice.total_price_kopeks || 0,
+                        hasExistingDiscount,
+                      );
+                      return (
+                        <div className="flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
+                          <span className="text-dark-400">{t('lite.total')}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg font-bold text-accent-400">
+                              {formatPrice(promo.price)}
+                            </span>
+                            {promo.original && (
+                              <span className="text-sm text-dark-500 line-through">
+                                {formatPrice(promo.original)}
+                              </span>
+                            )}
+                            {promo.percent && (
+                              <span className="rounded bg-success-500/20 px-1.5 py-0.5 text-xs font-semibold text-success-400">
+                                -{promo.percent}%
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
 
                     <button
                       onClick={() => {
@@ -1139,25 +1234,43 @@ export function LiteSubscription() {
               <div className="space-y-2">
                 <p className="text-sm text-dark-400">{t('lite.addTraffic')}</p>
                 <div className="grid grid-cols-2 gap-2">
-                  {trafficPackages.map((pkg) => (
-                    <button
-                      key={pkg.gb}
-                      onClick={() => {
-                        haptic.selectionChanged();
-                        setSelectedTraffic(pkg);
-                      }}
-                      className={`rounded-xl p-3 text-center transition-all ${
-                        selectedTraffic?.gb === pkg.gb
-                          ? 'bg-accent-500 text-white'
-                          : 'bg-dark-800 text-dark-300 hover:bg-dark-700'
-                      }`}
-                    >
-                      <div className="text-lg font-bold">
-                        {pkg.is_unlimited ? '∞' : `${pkg.gb} GB`}
-                      </div>
-                      <div className="text-sm opacity-80">{formatPrice(pkg.price_kopeks)}</div>
-                    </button>
-                  ))}
+                  {trafficPackages.map((pkg) => {
+                    const hasExistingDiscount = !!(
+                      pkg.discount_percent && pkg.discount_percent > 0
+                    );
+                    const promo = applyPromoDiscount(pkg.price_kopeks, hasExistingDiscount);
+                    return (
+                      <button
+                        key={pkg.gb}
+                        onClick={() => {
+                          haptic.selectionChanged();
+                          setSelectedTraffic(pkg);
+                        }}
+                        className={`rounded-xl p-3 text-center transition-all ${
+                          selectedTraffic?.gb === pkg.gb
+                            ? 'bg-accent-500 text-white'
+                            : 'bg-dark-800 text-dark-300 hover:bg-dark-700'
+                        }`}
+                      >
+                        <div className="text-lg font-bold">
+                          {pkg.is_unlimited ? '∞' : `${pkg.gb} GB`}
+                        </div>
+                        <div className="flex items-center justify-center gap-1 text-sm opacity-80">
+                          <span>{formatPrice(promo.price)}</span>
+                          {promo.original && (
+                            <span className="line-through opacity-60">
+                              {formatPrice(promo.original)}
+                            </span>
+                          )}
+                        </div>
+                        {promo.percent && (
+                          <div className="mt-1 text-xs font-semibold text-success-400">
+                            -{promo.percent}%
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
