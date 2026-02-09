@@ -17,6 +17,19 @@ import { TooltipProvider } from './components/primitives/Tooltip';
 import { isInTelegramWebApp } from './hooks/useTelegramSDK';
 
 /**
+ * Resets scroll position to top on every route change.
+ */
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
+
+/**
  * Manages Telegram BackButton visibility based on navigation location.
  * Shows back button on non-root routes, hides on root.
  */
@@ -70,6 +83,7 @@ export function AppWithNavigator() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       {isTelegram && <TelegramBackButton />}
       <ErrorBoundary level="page">
         <PlatformProvider>

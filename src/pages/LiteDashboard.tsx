@@ -329,7 +329,7 @@ export function LiteDashboard() {
           </div>
 
           {/* Promo Offers */}
-          <PromoOffersSection className="mb-6" useNowPath="/lite/subscription" />
+          <PromoOffersSection className="mb-6" useNowPath="/subscription" />
 
           {/* Referral card */}
           {referralLink && (
