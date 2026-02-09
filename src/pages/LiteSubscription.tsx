@@ -9,7 +9,6 @@ import { useNavigate } from 'react-router';
 import type { Tariff, TrafficPackage } from '@/types';
 import { PullToRefresh } from '@/components/lite/PullToRefresh';
 import { LiteSubscriptionSkeleton } from '@/components/lite/LiteSubscriptionSkeleton';
-import PromoOffersSection from '@/components/PromoOffersSection';
 
 // Icons
 const CheckIcon = () => (
@@ -659,9 +658,6 @@ export function LiteSubscription() {
             </button>
           </div>
         )}
-
-        {/* Promo Offers */}
-        <PromoOffersSection className="mb-4" useNowPath="/lite/subscription" />
 
         {/* Tabs */}
         <div className="mb-6 flex gap-2">
