@@ -287,6 +287,16 @@
       "activate": "فعال‌سازی دوره آزمایشی",
       "unavailable": "دوره آزمایشی در دسترس نیست"
     },
+    "pause": {
+      "paused": "اشتراک متوقف شده",
+      "active": "اشتراک فعال",
+      "pausedDescription": "بدون کسر هزینه",
+      "activeDescription": "صورتحساب روزانه",
+      "resume": "ادامه",
+      "pause": "توقف",
+      "pausedMessage": "اشتراک متوقف شد",
+      "resumedMessage": "اشتراک ادامه یافت"
+    },
     "connection": {
       "title": "اتصال VPN",
       "selectDevice": "دستگاه خود را انتخاب کنید",
@@ -2463,6 +2473,11 @@
     "canAddDevices": "می‌توانید {{count}} دستگاه دیگر اضافه کنید",
     "maxDevicesReached": "به حداکثر دستگاه‌ها رسیده‌اید",
     "trafficDescription": "ترافیک استفاده شده در این دوره",
+    "trafficUsage": "مصرف ترافیک",
+    "trafficUsed": "استفاده شده",
+    "trafficRemaining": "باقی‌مانده",
+    "trafficTotal": "کل (GB)",
+    "trafficPercent": "{{percent}}% استفاده شده",
     "addTraffic": "افزودن ترافیک",
     "buyTraffic": "خرید ترافیک",
     "trafficNotAvailable": "بسته‌های ترافیک در دسترس نیست",
@@ -2487,6 +2502,12 @@
     "newDeviceLimit": "محدودیت جدید",
     "reduceDevicesButton": "کاهش دستگاه‌ها",
     "devicesReduced": "محدودیت دستگاه کاهش یافت",
+    "promoPlaceholder": "کد تخفیف",
+    "promoApply": "اعمال",
+    "promoActivated": "کد تخفیف فعال شد",
+    "promoError": "فعال‌سازی کد تخفیف ناموفق بود",
+    "expiryWarningTitle": "اشتراک در حال انقضاست",
+    "expiryWarningDescription": "{{count}} روز باقی‌مانده. تمدید کنید تا دسترسی خود را حفظ کنید.",
     "referral": {
       "title": "دعوت از دوستان",
       "description": "{{percent}}% از هر پرداخت کسب کنید",

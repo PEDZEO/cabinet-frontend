@@ -4,8 +4,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { subscriptionApi } from '@/api/subscription';
 import { balanceApi } from '@/api/balance';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useHapticFeedback } from '@/platform/hooks/useHaptic';
 import { useNavigate } from 'react-router';
 import type { Tariff, TrafficPackage } from '@/types';
+import { PullToRefresh } from '@/components/lite/PullToRefresh';
+import { LiteSubscriptionSkeleton } from '@/components/lite/LiteSubscriptionSkeleton';
 
 // Icons
 const CheckIcon = () => (
@@ -70,6 +73,22 @@ const DesktopIcon = () => (
   </svg>
 );
 
+const PauseIcon = () => (
+  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
+  </svg>
+);
+
+const PlayIcon = () => (
+  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z"
+    />
+  </svg>
+);
+
 type TabType = 'tariffs' | 'devices' | 'traffic';
 
 export function LiteSubscription() {
@@ -77,6 +96,7 @@ export function LiteSubscription() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { formatAmount, currencySymbol } = useCurrency();
+  const haptic = useHapticFeedback();
 
   const [activeTab, setActiveTab] = useState<TabType>('tariffs');
   const [selectedTariff, setSelectedTariff] = useState<Tariff | null>(null);
@@ -84,6 +104,7 @@ export function LiteSubscription() {
   const [deviceCount, setDeviceCount] = useState(1);
   const [selectedTraffic, setSelectedTraffic] = useState<TrafficPackage | null>(null);
   const [reduceCount, setReduceCount] = useState(1);
+  const [promoCode, setPromoCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -91,12 +112,12 @@ export function LiteSubscription() {
   const formatPrice = (kopeks: number) => `${formatAmount(kopeks / 100)} ${currencySymbol}`;
 
   // Queries
-  const { data: subscriptionData } = useQuery({
+  const { data: subscriptionData, isLoading: isSubscriptionLoading } = useQuery({
     queryKey: ['subscription'],
     queryFn: subscriptionApi.getSubscription,
   });
 
-  const { data: purchaseOptions } = useQuery({
+  const { data: purchaseOptions, isLoading: isPurchaseOptionsLoading } = useQuery({
     queryKey: ['purchase-options'],
     queryFn: subscriptionApi.getPurchaseOptions,
   });
@@ -405,6 +426,57 @@ export function LiteSubscription() {
     },
   });
 
+  const togglePauseMutation = useMutation({
+    mutationFn: () => subscriptionApi.togglePause(),
+    onSuccess: (data) => {
+      const messageKey = data.is_paused
+        ? 'subscription.pause.pausedMessage'
+        : 'subscription.pause.resumedMessage';
+      setSuccess(t(messageKey));
+      setError(null);
+      haptic.success();
+      queryClient.invalidateQueries({ queryKey: ['subscription'] });
+    },
+    onError: (err: {
+      response?: {
+        data?: {
+          detail?: string | { message?: string };
+          message?: string;
+        };
+      };
+    }) => {
+      const detail = err.response?.data?.detail;
+      setError(typeof detail === 'string' ? detail : t('common.error'));
+      setSuccess(null);
+      haptic.error();
+    },
+  });
+
+  const activatePromoMutation = useMutation({
+    mutationFn: (code: string) => balanceApi.activatePromocode(code),
+    onSuccess: (data) => {
+      setSuccess(data.message || t('lite.promoActivated'));
+      setError(null);
+      setPromoCode('');
+      haptic.success();
+      queryClient.invalidateQueries({ queryKey: ['balance'] });
+      queryClient.invalidateQueries({ queryKey: ['subscription'] });
+    },
+    onError: (err: {
+      response?: {
+        data?: {
+          detail?: string | { message?: string };
+          message?: string;
+        };
+      };
+    }) => {
+      const detail = err.response?.data?.detail;
+      setError(typeof detail === 'string' ? detail : t('lite.promoError'));
+      setSuccess(null);
+      haptic.error();
+    },
+  });
+
   const subscription = subscriptionData?.subscription;
   const hasSubscription = subscriptionData?.has_subscription;
   const balance = balanceData?.balance_kopeks ?? 0;
@@ -454,7 +526,9 @@ export function LiteSubscription() {
     purchaseTrafficMutation.isPending ||
     deleteDeviceMutation.isPending ||
     deleteAllDevicesMutation.isPending ||
-    reduceDevicesMutation.isPending;
+    reduceDevicesMutation.isPending ||
+    togglePauseMutation.isPending ||
+    activatePromoMutation.isPending;
 
   // Helper to get device icon based on platform
   const getDeviceIcon = (platform: string) => {
@@ -478,473 +552,680 @@ export function LiteSubscription() {
     return device.platform || t('lite.unknownDevice');
   };
 
+  // Pull-to-refresh handler
+  const handleRefresh = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['subscription'] }),
+      queryClient.invalidateQueries({ queryKey: ['purchase-options'] }),
+      queryClient.invalidateQueries({ queryKey: ['balance'] }),
+      queryClient.invalidateQueries({ queryKey: ['traffic-packages'] }),
+      queryClient.invalidateQueries({ queryKey: ['devices'] }),
+    ]);
+  };
+
+  // Show skeleton while initial data is loading
+  const isInitialLoading = isSubscriptionLoading || isPurchaseOptionsLoading;
+
+  if (isInitialLoading) {
+    return <LiteSubscriptionSkeleton />;
+  }
+
   return (
-    <div
-      className="mx-auto max-w-md px-4 py-6"
-      style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom, 24px))' }}
-    >
-      {/* Balance display */}
-      <div className="mb-6 flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
-        <span className="text-sm text-dark-400">{t('lite.balance')}</span>
-        <span className="font-semibold text-dark-100">{formatPrice(balance)}</span>
-      </div>
-
-      {/* Success/Error messages */}
-      {success && (
-        <div className="mb-4 rounded-xl bg-success-500/20 px-4 py-3 text-center text-sm text-success-400">
-          {success}
+    <PullToRefresh onRefresh={handleRefresh} className="min-h-screen">
+      <div
+        className="mx-auto max-w-md px-4 py-6"
+        style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom, 24px))' }}
+      >
+        {/* Balance display */}
+        <div className="mb-6 flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
+          <span className="text-sm text-dark-400">{t('lite.balance')}</span>
+          <span className="font-semibold text-dark-100">{formatPrice(balance)}</span>
         </div>
-      )}
-      {error && (
-        <div className="mb-4 rounded-xl bg-error-500/20 px-4 py-3 text-center text-sm text-error-400">
-          {error}
-        </div>
-      )}
 
-      {/* Tabs */}
-      <div className="mb-6 flex gap-2">
-        {(['tariffs', 'devices', 'traffic'] as TabType[])
-          .filter((tab) => {
-            // Hide traffic tab if topup is disabled in tariff settings
-            if (tab === 'traffic' && currentTariff && !currentTariff.traffic_topup_enabled) {
-              return false;
-            }
-            return true;
-          })
-          .map((tab) => (
-            <button
-              key={tab}
-              onClick={() => {
-                setActiveTab(tab);
-                setError(null);
-                setSuccess(null);
-              }}
-              disabled={tab !== 'tariffs' && !hasSubscription}
-              className={`flex-1 rounded-xl py-2.5 text-sm font-medium transition-all ${
-                activeTab === tab
-                  ? 'bg-accent-500 text-white'
-                  : tab !== 'tariffs' && !hasSubscription
-                    ? 'cursor-not-allowed bg-dark-800/30 text-dark-500'
-                    : 'bg-dark-800/50 text-dark-300 hover:bg-dark-700/50'
-              }`}
-            >
-              {t(`lite.tab.${tab}`)}
-            </button>
-          ))}
-      </div>
-
-      {/* Tariffs Tab */}
-      {activeTab === 'tariffs' && (
-        <div className="space-y-4">
-          {tariffs.map((tariff) => {
-            const isSelected = selectedTariff?.id === tariff.id;
-            const isCurrent = tariff.is_current;
-            const period = selectedPeriodDays
-              ? tariff.periods.find((p) => p.days === selectedPeriodDays) || tariff.periods[0]
-              : tariff.periods[0];
-
-            return (
-              <button
-                key={tariff.id}
-                onClick={() => {
-                  setSelectedTariff(tariff);
-                  if (tariff.periods.length > 0 && !selectedPeriodDays) {
-                    setSelectedPeriodDays(tariff.periods[0].days);
-                  }
-                }}
-                className={`relative w-full rounded-2xl border p-4 text-left transition-all ${
-                  isSelected
-                    ? 'border-accent-500 bg-accent-500/10'
-                    : isCurrent && !subscription?.is_trial
-                      ? 'border-success-500/50 bg-success-500/5'
-                      : 'border-dark-700 bg-dark-800/50 hover:border-dark-600'
-                }`}
-              >
-                {isCurrent && !subscription?.is_trial && (
-                  <span className="absolute -top-2 right-3 flex items-center gap-1 rounded-full bg-success-500 px-2 py-0.5 text-xs font-medium text-white">
-                    <StarIcon />
-                    {t('lite.currentTariff')}
-                  </span>
-                )}
-
-                <div className="mb-2 flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-dark-100">{tariff.name}</h3>
-                  {isSelected && (!isCurrent || subscription?.is_trial) && (
-                    <span className="text-accent-400">
-                      <CheckIcon />
-                    </span>
-                  )}
-                </div>
-
-                {/* Tariff description */}
-                {tariff.description && (
-                  <p className="mb-3 text-sm text-dark-400">{tariff.description}</p>
-                )}
-
-                <div className="mb-3 flex flex-wrap gap-2 text-sm text-dark-400">
-                  <span>
-                    {tariff.is_unlimited_traffic
-                      ? t('lite.unlimited')
-                      : `${tariff.traffic_limit_gb} GB`}
-                  </span>
-                  <span>•</span>
-                  <span>
-                    {tariff.device_limit} {t('lite.devices')}
-                  </span>
-                  <span>•</span>
-                  <span>
-                    {tariff.servers_count} {t('lite.servers')}
-                  </span>
-                </div>
-
-                {/* Price display - different for daily vs period tariffs */}
-                {tariff.is_daily || tariff.daily_price_kopeks ? (
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-xl font-bold text-accent-400">
-                      {formatPrice(tariff.daily_price_kopeks ?? tariff.price_per_day_kopeks ?? 0)}
-                    </span>
-                    <span className="text-sm text-dark-500">/{t('lite.day')}</span>
-                  </div>
-                ) : period ? (
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-xl font-bold text-accent-400">{period.price_label}</span>
-                    <span className="text-sm text-dark-500">
-                      {period.price_per_month_label}/{t('lite.month')}
-                    </span>
-                  </div>
-                ) : null}
-              </button>
-            );
-          })}
-
-          {/* Period selector for selected tariff */}
-          {selectedTariff && !hasSubscription && selectedTariff.periods.length > 1 && (
-            <div className="space-y-2">
-              <p className="text-sm text-dark-400">{t('lite.selectPeriod')}</p>
-              <div className="grid grid-cols-2 gap-2">
-                {selectedTariff.periods.map((period) => (
-                  <button
-                    key={period.days}
-                    onClick={() => setSelectedPeriodDays(period.days)}
-                    className={`rounded-xl px-3 py-2 text-sm transition-all ${
-                      selectedPeriodDays === period.days
-                        ? 'bg-accent-500 text-white'
-                        : 'bg-dark-800 text-dark-300 hover:bg-dark-700'
-                    }`}
-                  >
-                    {period.label}
-                  </button>
-                ))}
+        {/* Expiry warning - show when 3 days or less */}
+        {subscription &&
+          !subscription.is_expired &&
+          !subscription.is_trial &&
+          subscription.days_left > 0 &&
+          subscription.days_left <= 3 && (
+            <div className="mb-4 flex items-center gap-3 rounded-xl bg-warning-500/10 px-4 py-3">
+              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-warning-500/20 text-warning-400">
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+                  />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-warning-400">
+                  {t('lite.expiryWarningTitle')}
+                </p>
+                <p className="text-xs text-warning-400/80">
+                  {t('lite.expiryWarningDescription', { count: subscription.days_left })}
+                </p>
               </div>
             </div>
           )}
 
-          {/* Action button */}
-          {selectedTariff && (
+        {/* Success/Error messages */}
+        {success && (
+          <div className="mb-4 rounded-xl bg-success-500/20 px-4 py-3 text-center text-sm text-success-400">
+            {success}
+          </div>
+        )}
+        {error && (
+          <div className="mb-4 rounded-xl bg-error-500/20 px-4 py-3 text-center text-sm text-error-400">
+            {error}
+          </div>
+        )}
+
+        {/* Pause/Resume for daily subscriptions */}
+        {subscription?.is_daily && !subscription?.is_trial && (
+          <div className="mb-4 flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
+            <div className="flex items-center gap-3">
+              <div
+                className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+                  subscription.is_daily_paused
+                    ? 'bg-warning-500/20 text-warning-400'
+                    : 'bg-success-500/20 text-success-400'
+                }`}
+              >
+                {subscription.is_daily_paused ? <PauseIcon /> : <PlayIcon />}
+              </div>
+              <div>
+                <p className="text-sm font-medium text-dark-100">
+                  {subscription.is_daily_paused
+                    ? t('subscription.pause.paused')
+                    : t('subscription.pause.active')}
+                </p>
+                <p className="text-xs text-dark-400">
+                  {subscription.is_daily_paused
+                    ? t('subscription.pause.pausedDescription')
+                    : t('subscription.pause.activeDescription')}
+                </p>
+              </div>
+            </div>
             <button
-              onClick={handleTariffAction}
-              disabled={isLoading || (selectedTariff.is_current && !subscription?.is_trial)}
-              className={`w-full rounded-xl py-4 font-semibold transition-all active:scale-[0.98] ${
-                selectedTariff.is_current && !subscription?.is_trial
-                  ? 'cursor-not-allowed bg-dark-700 text-dark-400'
-                  : 'bg-accent-500 text-white hover:bg-accent-600'
-              }`}
+              onClick={() => togglePauseMutation.mutate()}
+              disabled={isLoading}
+              className={`rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+                subscription.is_daily_paused
+                  ? 'bg-success-500 text-white hover:bg-success-600'
+                  : 'bg-warning-500 text-white hover:bg-warning-600'
+              } disabled:opacity-50`}
             >
               {isLoading
                 ? t('common.loading')
-                : hasSubscription && !subscription?.is_trial && currentTariffId !== null
-                  ? t('lite.changeTariff')
-                  : t('lite.buyTariff')}
+                : subscription.is_daily_paused
+                  ? t('subscription.pause.resume')
+                  : t('subscription.pause.pause')}
             </button>
-          )}
-        </div>
-      )}
-
-      {/* Devices Tab */}
-      {activeTab === 'devices' && hasSubscription && (
-        <div className="space-y-4">
-          {/* Current devices info */}
-          <div className="rounded-xl bg-dark-800/50 p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-500/20 text-accent-400">
-                <DeviceIcon />
-              </div>
-              <div>
-                <p className="font-medium text-dark-100">
-                  {deviceLimitFromTariff} {t('lite.devicesTotal')}
-                </p>
-                <p className="text-sm text-dark-400">{t('lite.devicesDescription')}</p>
-              </div>
-            </div>
           </div>
+        )}
 
-          {/* Connected devices list */}
-          {isDevicesLoading && (
-            <div className="flex justify-center py-4">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
-            </div>
-          )}
+        {/* Tabs */}
+        <div className="mb-6 flex gap-2">
+          {(['tariffs', 'devices', 'traffic'] as TabType[])
+            .filter((tab) => {
+              // Hide traffic tab if topup is disabled in tariff settings
+              if (tab === 'traffic' && currentTariff && !currentTariff.traffic_topup_enabled) {
+                return false;
+              }
+              return true;
+            })
+            .map((tab) => (
+              <button
+                key={tab}
+                onClick={() => {
+                  haptic.selectionChanged();
+                  setActiveTab(tab);
+                  setError(null);
+                  setSuccess(null);
+                }}
+                disabled={tab !== 'tariffs' && !hasSubscription}
+                className={`flex-1 rounded-xl py-2.5 text-sm font-medium transition-all ${
+                  activeTab === tab
+                    ? 'bg-accent-500 text-white'
+                    : tab !== 'tariffs' && !hasSubscription
+                      ? 'cursor-not-allowed bg-dark-800/30 text-dark-500'
+                      : 'bg-dark-800/50 text-dark-300 hover:bg-dark-700/50'
+                }`}
+              >
+                {t(`lite.tab.${tab}`)}
+              </button>
+            ))}
+        </div>
 
-          {devicesData && devicesData.devices.length > 0 && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-dark-400">{t('lite.connectedDevices')}</p>
-                {devicesData.devices.length > 1 && (
-                  <button
-                    onClick={() => deleteAllDevicesMutation.mutate()}
-                    disabled={isLoading}
-                    className="text-xs text-error-400 hover:text-error-300 disabled:opacity-50"
-                  >
-                    {t('lite.deleteAll')}
-                  </button>
-                )}
-              </div>
-              <div className="space-y-2">
-                {devicesData.devices.map((device) => (
-                  <div
-                    key={device.hwid}
-                    className="flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-dark-700 text-dark-400">
-                        {getDeviceIcon(device.platform)}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-dark-100">
-                          {formatDeviceName(device)}
-                        </p>
-                        <p className="text-xs text-dark-500">{device.platform}</p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => deleteDeviceMutation.mutate(device.hwid)}
-                      disabled={isLoading}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg text-dark-400 transition-colors hover:bg-error-500/20 hover:text-error-400 disabled:opacity-50"
-                      title={t('lite.deleteDevice')}
-                    >
-                      <TrashIcon />
-                    </button>
+        {/* Tariffs Tab */}
+        {activeTab === 'tariffs' && (
+          <div className="space-y-4">
+            {tariffs.map((tariff) => {
+              const isSelected = selectedTariff?.id === tariff.id;
+              const isCurrent = tariff.is_current;
+              const period = selectedPeriodDays
+                ? tariff.periods.find((p) => p.days === selectedPeriodDays) || tariff.periods[0]
+                : tariff.periods[0];
+
+              return (
+                <button
+                  key={tariff.id}
+                  onClick={() => {
+                    haptic.selectionChanged();
+                    setSelectedTariff(tariff);
+                    if (tariff.periods.length > 0 && !selectedPeriodDays) {
+                      setSelectedPeriodDays(tariff.periods[0].days);
+                    }
+                  }}
+                  className={`relative w-full rounded-2xl border p-4 text-left transition-all ${
+                    isSelected
+                      ? 'border-accent-500 bg-accent-500/10'
+                      : isCurrent && !subscription?.is_trial
+                        ? 'border-success-500/50 bg-success-500/5'
+                        : 'border-dark-700 bg-dark-800/50 hover:border-dark-600'
+                  }`}
+                >
+                  {isCurrent && !subscription?.is_trial && (
+                    <span className="absolute -top-2 right-3 flex items-center gap-1 rounded-full bg-success-500 px-2 py-0.5 text-xs font-medium text-white">
+                      <StarIcon />
+                      {t('lite.currentTariff')}
+                    </span>
+                  )}
+
+                  <div className="mb-2 flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-dark-100">{tariff.name}</h3>
+                    {isSelected && (!isCurrent || subscription?.is_trial) && (
+                      <span className="text-accent-400">
+                        <CheckIcon />
+                      </span>
+                    )}
                   </div>
-                ))}
+
+                  {/* Tariff description */}
+                  {tariff.description && (
+                    <p className="mb-3 text-sm text-dark-400">{tariff.description}</p>
+                  )}
+
+                  <div className="mb-3 flex flex-wrap gap-2 text-sm text-dark-400">
+                    <span>
+                      {tariff.is_unlimited_traffic
+                        ? t('lite.unlimited')
+                        : `${tariff.traffic_limit_gb} GB`}
+                    </span>
+                    <span>•</span>
+                    <span>
+                      {tariff.device_limit} {t('lite.devices')}
+                    </span>
+                    <span>•</span>
+                    <span>
+                      {tariff.servers_count} {t('lite.servers')}
+                    </span>
+                  </div>
+
+                  {/* Price display - different for daily vs period tariffs */}
+                  {tariff.is_daily || tariff.daily_price_kopeks ? (
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-xl font-bold text-accent-400">
+                        {formatPrice(tariff.daily_price_kopeks ?? tariff.price_per_day_kopeks ?? 0)}
+                      </span>
+                      <span className="text-sm text-dark-500">/{t('lite.day')}</span>
+                    </div>
+                  ) : period ? (
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-xl font-bold text-accent-400">
+                        {period.price_label}
+                      </span>
+                      <span className="text-sm text-dark-500">
+                        {period.price_per_month_label}/{t('lite.month')}
+                      </span>
+                    </div>
+                  ) : null}
+                </button>
+              );
+            })}
+
+            {/* Period selector for selected tariff */}
+            {selectedTariff && !hasSubscription && selectedTariff.periods.length > 1 && (
+              <div className="space-y-2">
+                <p className="text-sm text-dark-400">{t('lite.selectPeriod')}</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {selectedTariff.periods.map((period) => (
+                    <button
+                      key={period.days}
+                      onClick={() => {
+                        haptic.selectionChanged();
+                        setSelectedPeriodDays(period.days);
+                      }}
+                      className={`rounded-xl px-3 py-2 text-sm transition-all ${
+                        selectedPeriodDays === period.days
+                          ? 'bg-accent-500 text-white'
+                          : 'bg-dark-800 text-dark-300 hover:bg-dark-700'
+                      }`}
+                    >
+                      {period.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Action button */}
+            {selectedTariff && (
+              <button
+                onClick={() => {
+                  haptic.buttonPress();
+                  handleTariffAction();
+                }}
+                disabled={isLoading || (selectedTariff.is_current && !subscription?.is_trial)}
+                className={`w-full rounded-xl py-4 font-semibold transition-all active:scale-[0.98] ${
+                  selectedTariff.is_current && !subscription?.is_trial
+                    ? 'cursor-not-allowed bg-dark-700 text-dark-400'
+                    : 'bg-accent-500 text-white hover:bg-accent-600'
+                }`}
+              >
+                {isLoading
+                  ? t('common.loading')
+                  : hasSubscription && !subscription?.is_trial && currentTariffId !== null
+                    ? t('lite.changeTariff')
+                    : t('lite.buyTariff')}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Devices Tab */}
+        {activeTab === 'devices' && hasSubscription && (
+          <div className="space-y-4">
+            {/* Current devices info */}
+            <div className="rounded-xl bg-dark-800/50 p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-500/20 text-accent-400">
+                  <DeviceIcon />
+                </div>
+                <div>
+                  <p className="font-medium text-dark-100">
+                    {deviceLimitFromTariff} {t('lite.devicesTotal')}
+                  </p>
+                  <p className="text-sm text-dark-400">{t('lite.devicesDescription')}</p>
+                </div>
               </div>
             </div>
-          )}
 
-          {devicesData && devicesData.devices.length === 0 && !isDevicesLoading && (
-            <div className="rounded-xl bg-dark-800/30 px-4 py-3 text-center text-sm text-dark-400">
-              {t('lite.noConnectedDevices')}
-            </div>
-          )}
+            {/* Connected devices list */}
+            {isDevicesLoading && (
+              <div className="flex justify-center py-4">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
+              </div>
+            )}
 
-          {/* Loading state for device price */}
-          {isDevicePriceLoading && !devicePrice && (
-            <div className="flex justify-center py-4">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
-            </div>
-          )}
+            {devicesData && devicesData.devices.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-dark-400">{t('lite.connectedDevices')}</p>
+                  {devicesData.devices.length > 1 && (
+                    <button
+                      onClick={() => deleteAllDevicesMutation.mutate()}
+                      disabled={isLoading}
+                      className="text-xs text-error-400 hover:text-error-300 disabled:opacity-50"
+                    >
+                      {t('lite.deleteAll')}
+                    </button>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  {devicesData.devices.map((device) => (
+                    <div
+                      key={device.hwid}
+                      className="flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-dark-700 text-dark-400">
+                          {getDeviceIcon(device.platform)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-dark-100">
+                            {formatDeviceName(device)}
+                          </p>
+                          <p className="text-xs text-dark-500">{device.platform}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => deleteDeviceMutation.mutate(device.hwid)}
+                        disabled={isLoading}
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-dark-400 transition-colors hover:bg-error-500/20 hover:text-error-400 disabled:opacity-50"
+                        title={t('lite.deleteDevice')}
+                      >
+                        <TrashIcon />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
-          {/* Device count selector - not available for trial */}
-          {devicePrice?.available && !subscription?.is_trial && (
-            <>
-              {/* Device limit info */}
-              {typeof devicePrice.current_device_limit === 'number' &&
-                typeof devicePrice.max_device_limit === 'number' && (
+            {devicesData && devicesData.devices.length === 0 && !isDevicesLoading && (
+              <div className="rounded-xl bg-dark-800/30 px-4 py-3 text-center text-sm text-dark-400">
+                {t('lite.noConnectedDevices')}
+              </div>
+            )}
+
+            {/* Loading state for device price */}
+            {isDevicePriceLoading && !devicePrice && (
+              <div className="flex justify-center py-4">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
+              </div>
+            )}
+
+            {/* Device count selector - not available for trial */}
+            {devicePrice?.available && !subscription?.is_trial && (
+              <>
+                {/* Device limit info */}
+                {typeof devicePrice.current_device_limit === 'number' &&
+                  typeof devicePrice.max_device_limit === 'number' && (
+                    <div className="rounded-xl bg-dark-800/30 px-4 py-2 text-center text-sm text-dark-400">
+                      {t('lite.deviceLimit', {
+                        current: devicePrice.current_device_limit,
+                        max: devicePrice.max_device_limit,
+                      })}
+                    </div>
+                  )}
+
+                {/* Can add more devices */}
+                {devicePrice.can_add && devicePrice.can_add > 0 ? (
+                  <>
+                    <div className="space-y-2">
+                      <p className="text-sm text-dark-400">{t('lite.addDevices')}</p>
+                      <div className="flex items-center gap-4">
+                        <button
+                          onClick={() => {
+                            haptic.selectionChanged();
+                            setDeviceCount(Math.max(1, deviceCount - 1));
+                          }}
+                          disabled={deviceCount <= 1}
+                          className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-800 text-dark-300 transition-colors hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          −
+                        </button>
+                        <span className="w-12 text-center text-xl font-bold text-dark-100">
+                          {deviceCount}
+                        </span>
+                        <button
+                          onClick={() => {
+                            const maxCanAdd = devicePrice.can_add ?? 0;
+                            if (deviceCount < maxCanAdd) {
+                              haptic.selectionChanged();
+                              setDeviceCount(deviceCount + 1);
+                            }
+                          }}
+                          disabled={deviceCount >= (devicePrice.can_add ?? 0)}
+                          className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-800 text-dark-300 transition-colors hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          +
+                        </button>
+                      </div>
+                      <p className="text-center text-xs text-dark-500">
+                        {t('lite.canAddDevices', { count: devicePrice.can_add })}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
+                      <span className="text-dark-400">{t('lite.total')}</span>
+                      <span className="text-lg font-bold text-accent-400">
+                        {formatPrice(devicePrice.total_price_kopeks || 0)}
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        haptic.buttonPress();
+                        handleDevicePurchase();
+                      }}
+                      disabled={isLoading || deviceCount < 1}
+                      className="w-full rounded-xl bg-accent-500 py-4 font-semibold text-white transition-all hover:bg-accent-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {isLoading ? t('common.loading') : t('lite.buyDevices')}
+                    </button>
+                  </>
+                ) : (
+                  <div className="rounded-xl bg-dark-800/50 p-4 text-center text-dark-400">
+                    {t('lite.maxDevicesReached')}
+                  </div>
+                )}
+              </>
+            )}
+
+            {devicePrice && !devicePrice.available && !subscription?.is_trial && (
+              <div className="rounded-xl bg-dark-800/50 p-4 text-center text-dark-400">
+                {devicePrice.reason || t('lite.devicesNotAvailable')}
+              </div>
+            )}
+
+            {/* Reduce devices section - not available for trial */}
+            {reductionInfo?.available &&
+              reductionInfo.can_reduce > 0 &&
+              !subscription?.is_trial && (
+                <div className="mt-4 space-y-3 border-t border-dark-700 pt-4">
+                  <p className="text-sm text-dark-400">{t('lite.reduceDevices')}</p>
+
                   <div className="rounded-xl bg-dark-800/30 px-4 py-2 text-center text-sm text-dark-400">
-                    {t('lite.deviceLimit', {
-                      current: devicePrice.current_device_limit,
-                      max: devicePrice.max_device_limit,
+                    {t('lite.connectedDevicesCount', {
+                      count: reductionInfo.connected_devices_count,
                     })}
                   </div>
-                )}
 
-              {/* Can add more devices */}
-              {devicePrice.can_add && devicePrice.can_add > 0 ? (
-                <>
-                  <div className="space-y-2">
-                    <p className="text-sm text-dark-400">{t('lite.addDevices')}</p>
-                    <div className="flex items-center gap-4">
-                      <button
-                        onClick={() => setDeviceCount(Math.max(1, deviceCount - 1))}
-                        disabled={deviceCount <= 1}
-                        className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-800 text-dark-300 transition-colors hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        −
-                      </button>
-                      <span className="w-12 text-center text-xl font-bold text-dark-100">
-                        {deviceCount}
-                      </span>
-                      <button
-                        onClick={() => {
-                          const maxCanAdd = devicePrice.can_add ?? 0;
-                          if (deviceCount < maxCanAdd) {
-                            setDeviceCount(deviceCount + 1);
-                          }
-                        }}
-                        disabled={deviceCount >= (devicePrice.can_add ?? 0)}
-                        className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-800 text-dark-300 transition-colors hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        +
-                      </button>
-                    </div>
-                    <p className="text-center text-xs text-dark-500">
-                      {t('lite.canAddDevices', { count: devicePrice.can_add })}
-                    </p>
+                  <div className="flex items-center justify-center gap-4">
+                    <button
+                      onClick={() => {
+                        haptic.selectionChanged();
+                        setReduceCount(Math.max(1, reduceCount - 1));
+                      }}
+                      disabled={reduceCount <= 1}
+                      className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-800 text-dark-300 transition-colors hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      −
+                    </button>
+                    <span className="w-12 text-center text-xl font-bold text-dark-100">
+                      {reduceCount}
+                    </span>
+                    <button
+                      onClick={() => {
+                        haptic.selectionChanged();
+                        setReduceCount(Math.min(reductionInfo.can_reduce, reduceCount + 1));
+                      }}
+                      disabled={reduceCount >= reductionInfo.can_reduce}
+                      className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-800 text-dark-300 transition-colors hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      +
+                    </button>
                   </div>
+                  <p className="text-center text-xs text-dark-500">
+                    {t('lite.canReduceDevices', { count: reductionInfo.can_reduce })}
+                  </p>
 
                   <div className="flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
-                    <span className="text-dark-400">{t('lite.total')}</span>
-                    <span className="text-lg font-bold text-accent-400">
-                      {formatPrice(devicePrice.total_price_kopeks || 0)}
+                    <span className="text-dark-400">{t('lite.newDeviceLimit')}</span>
+                    <span className="text-lg font-bold text-dark-100">
+                      {reductionInfo.current_device_limit - reduceCount}
                     </span>
                   </div>
 
                   <button
-                    onClick={handleDevicePurchase}
-                    disabled={isLoading || deviceCount < 1}
-                    className="w-full rounded-xl bg-accent-500 py-4 font-semibold text-white transition-all hover:bg-accent-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                    onClick={() => {
+                      haptic.buttonPress();
+                      reduceDevicesMutation.mutate(
+                        reductionInfo.current_device_limit - reduceCount,
+                      );
+                    }}
+                    disabled={isLoading || reduceCount < 1}
+                    className="w-full rounded-xl bg-warning-500 py-4 font-semibold text-white transition-all hover:bg-warning-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {isLoading ? t('common.loading') : t('lite.buyDevices')}
+                    {isLoading ? t('common.loading') : t('lite.reduceDevicesButton')}
                   </button>
-                </>
-              ) : (
-                <div className="rounded-xl bg-dark-800/50 p-4 text-center text-dark-400">
-                  {t('lite.maxDevicesReached')}
                 </div>
               )}
-            </>
-          )}
-
-          {devicePrice && !devicePrice.available && !subscription?.is_trial && (
-            <div className="rounded-xl bg-dark-800/50 p-4 text-center text-dark-400">
-              {devicePrice.reason || t('lite.devicesNotAvailable')}
-            </div>
-          )}
-
-          {/* Reduce devices section - not available for trial */}
-          {reductionInfo?.available && reductionInfo.can_reduce > 0 && !subscription?.is_trial && (
-            <div className="mt-4 space-y-3 border-t border-dark-700 pt-4">
-              <p className="text-sm text-dark-400">{t('lite.reduceDevices')}</p>
-
-              <div className="rounded-xl bg-dark-800/30 px-4 py-2 text-center text-sm text-dark-400">
-                {t('lite.connectedDevicesCount', { count: reductionInfo.connected_devices_count })}
-              </div>
-
-              <div className="flex items-center justify-center gap-4">
-                <button
-                  onClick={() => setReduceCount(Math.max(1, reduceCount - 1))}
-                  disabled={reduceCount <= 1}
-                  className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-800 text-dark-300 transition-colors hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  −
-                </button>
-                <span className="w-12 text-center text-xl font-bold text-dark-100">
-                  {reduceCount}
-                </span>
-                <button
-                  onClick={() =>
-                    setReduceCount(Math.min(reductionInfo.can_reduce, reduceCount + 1))
-                  }
-                  disabled={reduceCount >= reductionInfo.can_reduce}
-                  className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-800 text-dark-300 transition-colors hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  +
-                </button>
-              </div>
-              <p className="text-center text-xs text-dark-500">
-                {t('lite.canReduceDevices', { count: reductionInfo.can_reduce })}
-              </p>
-
-              <div className="flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
-                <span className="text-dark-400">{t('lite.newDeviceLimit')}</span>
-                <span className="text-lg font-bold text-dark-100">
-                  {reductionInfo.current_device_limit - reduceCount}
-                </span>
-              </div>
-
-              <button
-                onClick={() =>
-                  reduceDevicesMutation.mutate(reductionInfo.current_device_limit - reduceCount)
-                }
-                disabled={isLoading || reduceCount < 1}
-                className="w-full rounded-xl bg-warning-500 py-4 font-semibold text-white transition-all hover:bg-warning-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isLoading ? t('common.loading') : t('lite.reduceDevicesButton')}
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Traffic Tab */}
-      {activeTab === 'traffic' && hasSubscription && (
-        <div className="space-y-4">
-          {/* Current traffic info */}
-          <div className="rounded-xl bg-dark-800/50 p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-500/20 text-accent-400">
-                <TrafficIcon />
-              </div>
-              <div>
-                <p className="font-medium text-dark-100">
-                  {subscription?.traffic_limit_gb === -1
-                    ? t('lite.unlimited')
-                    : `${subscription?.traffic_used_gb?.toFixed(1)} / ${subscription?.traffic_limit_gb} GB`}
-                </p>
-                <p className="text-sm text-dark-400">{t('lite.trafficDescription')}</p>
-              </div>
-            </div>
           </div>
+        )}
 
-          {/* Traffic packages */}
-          {trafficPackages && trafficPackages.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-sm text-dark-400">{t('lite.addTraffic')}</p>
-              <div className="grid grid-cols-2 gap-2">
-                {trafficPackages.map((pkg) => (
-                  <button
-                    key={pkg.gb}
-                    onClick={() => setSelectedTraffic(pkg)}
-                    className={`rounded-xl p-3 text-center transition-all ${
-                      selectedTraffic?.gb === pkg.gb
-                        ? 'bg-accent-500 text-white'
-                        : 'bg-dark-800 text-dark-300 hover:bg-dark-700'
-                    }`}
-                  >
-                    <div className="text-lg font-bold">
-                      {pkg.is_unlimited ? '∞' : `${pkg.gb} GB`}
-                    </div>
-                    <div className="text-sm opacity-80">{formatPrice(pkg.price_kopeks)}</div>
-                  </button>
-                ))}
+        {/* Traffic Tab */}
+        {activeTab === 'traffic' && hasSubscription && (
+          <div className="space-y-4">
+            {/* Traffic usage card with progress */}
+            <div className="rounded-2xl border border-dark-700 bg-dark-800/50 p-4">
+              <div className="mb-4 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-500/20 text-accent-400">
+                  <TrafficIcon />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-dark-100">{t('lite.trafficUsage')}</p>
+                  <p className="text-sm text-dark-400">{t('lite.trafficDescription')}</p>
+                </div>
               </div>
-            </div>
-          )}
 
-          {selectedTraffic && (
-            <button
-              onClick={handleTrafficPurchase}
-              disabled={isLoading}
-              className="w-full rounded-xl bg-accent-500 py-4 font-semibold text-white transition-all hover:bg-accent-600 active:scale-[0.98]"
-            >
-              {isLoading ? t('common.loading') : t('lite.buyTraffic')}
-            </button>
-          )}
+              {subscription?.traffic_limit_gb === -1 ? (
+                <div className="flex items-center justify-center gap-2 rounded-xl bg-success-500/10 py-4">
+                  <span className="text-2xl">∞</span>
+                  <span className="text-lg font-semibold text-success-400">
+                    {t('lite.unlimited')}
+                  </span>
+                </div>
+              ) : (
+                <>
+                  {/* Usage statistics */}
+                  <div className="mb-3 grid grid-cols-3 gap-2 text-center">
+                    <div className="rounded-lg bg-dark-700/50 p-2">
+                      <p className="text-lg font-bold text-dark-100">
+                        {subscription?.traffic_used_gb?.toFixed(1) || '0'}
+                      </p>
+                      <p className="text-xs text-dark-400">{t('lite.trafficUsed')}</p>
+                    </div>
+                    <div className="rounded-lg bg-dark-700/50 p-2">
+                      <p className="text-lg font-bold text-dark-100">
+                        {(
+                          (subscription?.traffic_limit_gb || 0) -
+                          (subscription?.traffic_used_gb || 0)
+                        ).toFixed(1)}
+                      </p>
+                      <p className="text-xs text-dark-400">{t('lite.trafficRemaining')}</p>
+                    </div>
+                    <div className="rounded-lg bg-dark-700/50 p-2">
+                      <p className="text-lg font-bold text-dark-100">
+                        {subscription?.traffic_limit_gb || 0}
+                      </p>
+                      <p className="text-xs text-dark-400">{t('lite.trafficTotal')}</p>
+                    </div>
+                  </div>
 
-          {(!trafficPackages || trafficPackages.length === 0) && (
-            <div className="rounded-xl bg-dark-800/50 p-4 text-center text-dark-400">
-              {t('lite.trafficNotAvailable')}
+                  {/* Progress bar */}
+                  <div className="mb-2 h-3 w-full overflow-hidden rounded-full bg-dark-700">
+                    <div
+                      className={`h-full rounded-full transition-all ${
+                        (subscription?.traffic_used_percent || 0) >= 90
+                          ? 'bg-error-500'
+                          : (subscription?.traffic_used_percent || 0) >= 70
+                            ? 'bg-warning-500'
+                            : 'bg-accent-500'
+                      }`}
+                      style={{
+                        width: `${Math.min(subscription?.traffic_used_percent || 0, 100)}%`,
+                      }}
+                    />
+                  </div>
+                  <p className="text-center text-sm text-dark-400">
+                    {t('lite.trafficPercent', {
+                      percent: (subscription?.traffic_used_percent || 0).toFixed(0),
+                    })}
+                  </p>
+                </>
+              )}
             </div>
-          )}
+
+            {/* Traffic packages */}
+            {trafficPackages && trafficPackages.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm text-dark-400">{t('lite.addTraffic')}</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {trafficPackages.map((pkg) => (
+                    <button
+                      key={pkg.gb}
+                      onClick={() => {
+                        haptic.selectionChanged();
+                        setSelectedTraffic(pkg);
+                      }}
+                      className={`rounded-xl p-3 text-center transition-all ${
+                        selectedTraffic?.gb === pkg.gb
+                          ? 'bg-accent-500 text-white'
+                          : 'bg-dark-800 text-dark-300 hover:bg-dark-700'
+                      }`}
+                    >
+                      <div className="text-lg font-bold">
+                        {pkg.is_unlimited ? '∞' : `${pkg.gb} GB`}
+                      </div>
+                      <div className="text-sm opacity-80">{formatPrice(pkg.price_kopeks)}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {selectedTraffic && (
+              <button
+                onClick={() => {
+                  haptic.buttonPress();
+                  handleTrafficPurchase();
+                }}
+                disabled={isLoading}
+                className="w-full rounded-xl bg-accent-500 py-4 font-semibold text-white transition-all hover:bg-accent-600 active:scale-[0.98]"
+              >
+                {isLoading ? t('common.loading') : t('lite.buyTraffic')}
+              </button>
+            )}
+
+            {(!trafficPackages || trafficPackages.length === 0) && (
+              <div className="rounded-xl bg-dark-800/50 p-4 text-center text-dark-400">
+                {t('lite.trafficNotAvailable')}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Top up button */}
+        <button
+          onClick={() => navigate('/balance')}
+          className="mt-6 w-full rounded-xl border border-dark-600 bg-dark-800/50 py-3 text-sm font-medium text-dark-300 transition-all hover:border-dark-500 hover:bg-dark-700/50 active:scale-[0.98]"
+        >
+          {t('lite.topUpBalance')}
+        </button>
+
+        {/* Promo code input */}
+        <div className="mt-4 flex gap-2">
+          <input
+            type="text"
+            value={promoCode}
+            onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+            placeholder={t('lite.promoPlaceholder')}
+            className="flex-1 rounded-xl border border-dark-600 bg-dark-800/50 px-4 py-3 text-sm text-dark-100 placeholder:text-dark-500 focus:border-accent-500 focus:outline-none"
+          />
+          <button
+            onClick={() => {
+              if (promoCode.trim()) {
+                haptic.buttonPress();
+                activatePromoMutation.mutate(promoCode.trim());
+              }
+            }}
+            disabled={isLoading || !promoCode.trim()}
+            className="rounded-xl bg-accent-500 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-accent-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {activatePromoMutation.isPending ? t('common.loading') : t('lite.promoApply')}
+          </button>
         </div>
-      )}
-
-      {/* Top up button */}
-      <button
-        onClick={() => navigate('/balance')}
-        className="mt-6 w-full rounded-xl border border-dark-600 bg-dark-800/50 py-3 text-sm font-medium text-dark-300 transition-all hover:border-dark-500 hover:bg-dark-700/50 active:scale-[0.98]"
-      >
-        {t('lite.topUpBalance')}
-      </button>
-    </div>
+      </div>
+    </PullToRefresh>
   );
 }

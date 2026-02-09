@@ -315,6 +315,16 @@
       "insufficientBalance": "Top up your balance to activate",
       "unavailable": "Trial is not available"
     },
+    "pause": {
+      "paused": "Subscription paused",
+      "active": "Subscription active",
+      "pausedDescription": "No charges while paused",
+      "activeDescription": "Daily billing",
+      "resume": "Resume",
+      "pause": "Pause",
+      "pausedMessage": "Subscription paused",
+      "resumedMessage": "Subscription resumed"
+    },
     "trialBanner": {
       "title": "Trial period active",
       "description": "You have {{days}} days left in your trial. Subscribe to continue using the service.",
@@ -2843,6 +2853,11 @@
     "canAddDevices": "You can add up to {{count}} more devices",
     "maxDevicesReached": "Maximum devices reached for this tariff",
     "trafficDescription": "Traffic used this period",
+    "trafficUsage": "Traffic Usage",
+    "trafficUsed": "Used",
+    "trafficRemaining": "Remaining",
+    "trafficTotal": "Total (GB)",
+    "trafficPercent": "{{percent}}% used",
     "addTraffic": "Add traffic",
     "buyTraffic": "Buy Traffic",
     "trafficNotAvailable": "Traffic packages not available",
@@ -2867,6 +2882,14 @@
     "newDeviceLimit": "New limit",
     "reduceDevicesButton": "Reduce devices",
     "devicesReduced": "Device limit reduced",
+    "promoPlaceholder": "Promo code",
+    "promoApply": "Apply",
+    "promoActivated": "Promo code activated",
+    "promoError": "Failed to activate promo code",
+    "expiryWarningTitle": "Subscription expiring soon",
+    "expiryWarningDescription": "{{count}} days remaining. Renew to keep your access.",
+    "expiryWarningDescription_one": "{{count}} day remaining. Renew to keep your access.",
+    "expiryWarningDescription_other": "{{count}} days remaining. Renew to keep your access.",
     "referral": {
       "title": "Invite Friends",
       "description": "Earn {{percent}}% from every payment",
