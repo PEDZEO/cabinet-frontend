@@ -67,9 +67,11 @@ export function useCloseOnSuccessNotification(onClose: () => void) {
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
+  // Remember the signal value at mount time so we only react to NEW signals
+  const mountedSignalRef = useRef(closeOthersSignal);
+
   useEffect(() => {
-    // Skip the initial render (signal = 0)
-    if (closeOthersSignal > 0) {
+    if (closeOthersSignal !== mountedSignalRef.current) {
       onCloseRef.current();
     }
   }, [closeOthersSignal]);
