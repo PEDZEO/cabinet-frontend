@@ -11,6 +11,8 @@ import { wheelApi } from '../api/wheel';
 import Onboarding, { useOnboarding } from '../components/Onboarding';
 import PromoOffersSection from '../components/PromoOffersSection';
 import { useCurrency } from '../hooks/useCurrency';
+import { useLiteMode } from '../hooks/useLiteMode';
+import { LiteDashboard } from './LiteDashboard';
 import { API } from '../config/constants';
 
 // Icons
@@ -47,6 +49,17 @@ const RefreshIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
 );
 
 export default function Dashboard() {
+  const { isLiteMode } = useLiteMode();
+
+  // Render Lite Dashboard if lite mode is enabled
+  if (isLiteMode) {
+    return <LiteDashboard />;
+  }
+
+  return <FullDashboard />;
+}
+
+function FullDashboard() {
   const { t } = useTranslation();
   const { user, refreshUser } = useAuthStore();
   const queryClient = useQueryClient();

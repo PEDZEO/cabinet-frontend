@@ -19,6 +19,10 @@ export interface EmailAuthEnabled {
   enabled: boolean;
 }
 
+export interface LiteModeEnabled {
+  enabled: boolean;
+}
+
 export interface AnalyticsCounters {
   yandex_metrika_id: string;
   google_ads_id: string;
@@ -206,6 +210,25 @@ export const brandingApi = {
   // Update email auth enabled (admin only)
   updateEmailAuthEnabled: async (enabled: boolean): Promise<EmailAuthEnabled> => {
     const response = await apiClient.patch<EmailAuthEnabled>('/cabinet/branding/email-auth', {
+      enabled,
+    });
+    return response.data;
+  },
+
+  // Get lite mode enabled (public, no auth required)
+  getLiteModeEnabled: async (): Promise<LiteModeEnabled> => {
+    try {
+      const response = await apiClient.get<LiteModeEnabled>('/cabinet/branding/lite-mode');
+      return response.data;
+    } catch {
+      // If endpoint doesn't exist, default to disabled
+      return { enabled: false };
+    }
+  },
+
+  // Update lite mode enabled (admin only)
+  updateLiteModeEnabled: async (enabled: boolean): Promise<LiteModeEnabled> => {
+    const response = await apiClient.patch<LiteModeEnabled>('/cabinet/branding/lite-mode', {
       enabled,
     });
     return response.data;

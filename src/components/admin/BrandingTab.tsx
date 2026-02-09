@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { brandingApi, setCachedBranding } from '../../api/branding';
 import { setCachedAnimationEnabled } from '../AnimatedBackground';
 import { setCachedFullscreenEnabled } from '../../hooks/useTelegramSDK';
+import { setCachedLiteMode } from '../../hooks/useLiteMode';
 import { UploadIcon, TrashIcon, PencilIcon, CheckIcon, CloseIcon } from './icons';
 import { Toggle } from './Toggle';
 
@@ -38,6 +39,11 @@ export function BrandingTab({ accentColor = '#3b82f6' }: BrandingTabProps) {
   const { data: emailAuthSettings } = useQuery({
     queryKey: ['email-auth-enabled'],
     queryFn: brandingApi.getEmailAuthEnabled,
+  });
+
+  const { data: liteModeSettings } = useQuery({
+    queryKey: ['lite-mode-enabled'],
+    queryFn: brandingApi.getLiteModeEnabled,
   });
 
   // Mutations
@@ -86,6 +92,14 @@ export function BrandingTab({ accentColor = '#3b82f6' }: BrandingTabProps) {
     mutationFn: (enabled: boolean) => brandingApi.updateEmailAuthEnabled(enabled),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['email-auth-enabled'] });
+    },
+  });
+
+  const updateLiteModeMutation = useMutation({
+    mutationFn: (enabled: boolean) => brandingApi.updateLiteModeEnabled(enabled),
+    onSuccess: (data) => {
+      setCachedLiteMode(data.enabled);
+      queryClient.invalidateQueries({ queryKey: ['lite-mode-enabled'] });
     },
   });
 
@@ -245,6 +259,18 @@ export function BrandingTab({ accentColor = '#3b82f6' }: BrandingTabProps) {
               checked={emailAuthSettings?.enabled ?? true}
               onChange={() => updateEmailAuthMutation.mutate(!(emailAuthSettings?.enabled ?? true))}
               disabled={updateEmailAuthMutation.isPending}
+            />
+          </div>
+
+          <div className="flex items-center justify-between rounded-xl bg-dark-700/30 p-4">
+            <div>
+              <span className="font-medium text-dark-100">{t('admin.settings.liteMode')}</span>
+              <p className="text-sm text-dark-400">{t('admin.settings.liteModeDesc')}</p>
+            </div>
+            <Toggle
+              checked={liteModeSettings?.enabled ?? false}
+              onChange={() => updateLiteModeMutation.mutate(!(liteModeSettings?.enabled ?? false))}
+              disabled={updateLiteModeMutation.isPending}
             />
           </div>
         </div>

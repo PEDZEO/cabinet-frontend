@@ -1227,6 +1227,8 @@
       "autoFullscreenDesc": "В Telegram WebApp",
       "emailAuth": "Email авторизация",
       "emailAuthDesc": "Регистрация и вход через email",
+      "liteMode": "Lite режим",
+      "liteModeDesc": "Упрощённый интерфейс с тремя кнопками",
       "availableThemes": "Доступные темы",
       "darkTheme": "Тёмная",
       "lightTheme": "Светлая",
@@ -3334,5 +3336,26 @@
       "reason": "Причина",
       "contactSupport": "Если вы считаете, что это ошибка, обратитесь в поддержку."
     }
+  },
+  "lite": {
+    "connect": "Подключиться",
+    "topUp": "Пополнить баланс",
+    "tariffs": "Тарифы",
+    "menu": "Меню",
+    "balance": "Баланс",
+    "daysLeft": "{{count}} дн.",
+    "daysLeft_one": "{{count}} день",
+    "daysLeft_few": "{{count}} дня",
+    "daysLeft_many": "{{count}} дней",
+    "hoursLeft": "{{count}} ч.",
+    "subscriptionActive": "Подписка активна",
+    "subscriptionExpired": "Подписка истекла",
+    "subscriptionTrial": "Пробный период",
+    "noSubscription": "Нет подписки",
+    "activateTrial": "Активировать пробный период",
+    "trialDays": "{{count}} дней бесплатно",
+    "trialTraffic": "{{count}} ГБ трафика",
+    "trialDevices": "{{count}} устройств",
+    "unlimited": "Безлимит"
   }
 }

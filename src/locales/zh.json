@@ -977,6 +977,8 @@
       "favoritesHint": "点击星标将设置添加到这里",
       "interfaceOptions": "界面选项",
       "lightTheme": "亮色主题",
+      "liteMode": "精简模式",
+      "liteModeDesc": "三个按钮的简化界面",
       "logoAndName": "标志和名称",
       "notSpecified": "未指定",
       "projectName": "项目名称",
@@ -2419,5 +2421,23 @@
       "requests": "请求数",
       "ipHistory": "IP历史"
     }
+  },
+  "lite": {
+    "connect": "连接",
+    "topUp": "充值余额",
+    "tariffs": "套餐",
+    "menu": "菜单",
+    "balance": "余额",
+    "daysLeft": "{{count}}天",
+    "hoursLeft": "{{count}}小时",
+    "subscriptionActive": "订阅有效",
+    "subscriptionExpired": "订阅已过期",
+    "subscriptionTrial": "试用期",
+    "noSubscription": "无订阅",
+    "activateTrial": "激活试用",
+    "trialDays": "{{count}}天免费",
+    "trialTraffic": "{{count}} GB流量",
+    "trialDevices": "{{count}}台设备",
+    "unlimited": "无限"
   }
 }

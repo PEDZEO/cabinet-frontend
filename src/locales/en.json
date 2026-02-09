@@ -1221,6 +1221,8 @@
       "favoritesHint": "Star settings to add them here",
       "interfaceOptions": "Interface options",
       "lightTheme": "Light theme",
+      "liteMode": "Lite mode",
+      "liteModeDesc": "Simplified interface with three buttons",
       "logoAndName": "Logo & name",
       "notSpecified": "Not specified",
       "projectName": "Project name",
@@ -2780,5 +2782,25 @@
       "reason": "Reason",
       "contactSupport": "If you believe this is an error, please contact support."
     }
+  },
+  "lite": {
+    "connect": "Connect",
+    "topUp": "Top Up Balance",
+    "tariffs": "Tariffs",
+    "menu": "Menu",
+    "balance": "Balance",
+    "daysLeft": "{{count}} days",
+    "daysLeft_one": "{{count}} day",
+    "daysLeft_other": "{{count}} days",
+    "hoursLeft": "{{count}}h",
+    "subscriptionActive": "Subscription active",
+    "subscriptionExpired": "Subscription expired",
+    "subscriptionTrial": "Trial period",
+    "noSubscription": "No subscription",
+    "activateTrial": "Activate trial",
+    "trialDays": "{{count}} days free",
+    "trialTraffic": "{{count}} GB traffic",
+    "trialDevices": "{{count}} devices",
+    "unlimited": "Unlimited"
   }
 }

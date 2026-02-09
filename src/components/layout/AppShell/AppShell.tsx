@@ -10,6 +10,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useBranding } from '@/hooks/useBranding';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 import { useScrollRestoration } from '@/hooks/useScrollRestoration';
+import { useLiteMode } from '@/hooks/useLiteMode';
 import { themeColorsApi } from '@/api/themeColors';
 import { isLogoPreloaded } from '@/api/branding';
 import { cn } from '@/lib/utils';
@@ -22,6 +23,7 @@ import TicketNotificationBell from '@/components/TicketNotificationBell';
 
 import { MobileBottomNav } from './MobileBottomNav';
 import { AppHeader } from './AppHeader';
+import { LiteModeHeader } from './LiteModeHeader';
 import { Aurora } from './Aurora';
 
 // Desktop nav icons
@@ -201,6 +203,7 @@ export function AppShell({ children }: AppShellProps) {
   // Extracted hooks
   const { appName, logoLetter, hasCustomLogo, logoUrl } = useBranding();
   const { referralEnabled, wheelEnabled, hasContests, hasPolls } = useFeatureFlags();
+  const { isLiteMode } = useLiteMode();
   useScrollRestoration();
 
   // Theme toggle visibility
@@ -283,8 +286,24 @@ export function AppShell({ children }: AppShellProps) {
       <WebSocketNotifications />
       <SuccessNotificationModal />
 
-      {/* Desktop Header */}
-      <header className="fixed left-0 right-0 top-0 z-50 hidden border-b border-dark-800/50 bg-dark-950/80 backdrop-blur-xl lg:block">
+      {/* Lite Mode Header */}
+      {isLiteMode && (
+        <LiteModeHeader
+          headerHeight={headerHeight}
+          isFullscreen={isMobileFullscreen}
+          safeAreaInset={safeAreaInset}
+          contentSafeAreaInset={contentSafeAreaInset}
+          telegramPlatform={platform}
+        />
+      )}
+
+      {/* Desktop Header (hidden in Lite Mode) */}
+      <header
+        className={cn(
+          'fixed left-0 right-0 top-0 z-50 border-b border-dark-800/50 bg-dark-950/80 backdrop-blur-xl',
+          isLiteMode ? 'hidden' : 'hidden lg:block',
+        )}
+      >
         <div className="mx-auto grid h-14 max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-4 px-6">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5" onClick={handleNavClick}>
@@ -396,21 +415,23 @@ export function AppShell({ children }: AppShellProps) {
         </div>
       </header>
 
-      {/* Mobile Header */}
-      <AppHeader
-        mobileMenuOpen={mobileMenuOpen}
-        setMobileMenuOpen={setMobileMenuOpen}
-        onCommandPaletteOpen={() => {}}
-        headerHeight={headerHeight}
-        isFullscreen={isMobileFullscreen}
-        safeAreaInset={safeAreaInset}
-        contentSafeAreaInset={contentSafeAreaInset}
-        telegramPlatform={platform}
-        wheelEnabled={wheelEnabled}
-        referralEnabled={referralEnabled}
-        hasContests={hasContests}
-        hasPolls={hasPolls}
-      />
+      {/* Mobile Header (hidden in Lite Mode) */}
+      {!isLiteMode && (
+        <AppHeader
+          mobileMenuOpen={mobileMenuOpen}
+          setMobileMenuOpen={setMobileMenuOpen}
+          onCommandPaletteOpen={() => {}}
+          headerHeight={headerHeight}
+          isFullscreen={isMobileFullscreen}
+          safeAreaInset={safeAreaInset}
+          contentSafeAreaInset={contentSafeAreaInset}
+          telegramPlatform={platform}
+          wheelEnabled={wheelEnabled}
+          referralEnabled={referralEnabled}
+          hasContests={hasContests}
+          hasPolls={hasPolls}
+        />
+      )}
 
       {/* Desktop spacer */}
       <div className="hidden h-14 lg:block" />
@@ -421,12 +442,14 @@ export function AppShell({ children }: AppShellProps) {
       {/* Main content */}
       <main className="mx-auto max-w-6xl px-4 py-6 pb-28 lg:px-6 lg:pb-8">{children}</main>
 
-      {/* Mobile Bottom Navigation */}
-      <MobileBottomNav
-        isKeyboardOpen={isKeyboardOpen}
-        referralEnabled={referralEnabled}
-        wheelEnabled={wheelEnabled}
-      />
+      {/* Mobile Bottom Navigation (hidden in Lite Mode) */}
+      {!isLiteMode && (
+        <MobileBottomNav
+          isKeyboardOpen={isKeyboardOpen}
+          referralEnabled={referralEnabled}
+          wheelEnabled={wheelEnabled}
+        />
+      )}
     </div>
   );
 }
