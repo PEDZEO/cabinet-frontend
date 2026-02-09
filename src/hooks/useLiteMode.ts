@@ -30,7 +30,8 @@ export function useLiteMode() {
     },
     staleTime: 1000 * 30, // 30 seconds - short cache for faster sync
     refetchOnWindowFocus: true, // refetch when user returns to tab
-    initialData: () => {
+    // Use placeholderData instead of initialData - shows cached value while fetching fresh data
+    placeholderData: () => {
       const cached = getCachedLiteMode();
       return { enabled: cached };
     },
