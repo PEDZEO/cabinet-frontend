@@ -12,6 +12,7 @@ import { LiteTrialCard } from '@/components/lite/LiteTrialCard';
 import { LiteDashboardSkeleton } from '@/components/lite/LiteDashboardSkeleton';
 import { PullToRefresh } from '@/components/lite/PullToRefresh';
 import Onboarding from '@/components/Onboarding';
+import PromoOffersSection from '@/components/PromoOffersSection';
 
 // Icons
 const ConnectIcon = () => (
@@ -326,6 +327,9 @@ export function LiteDashboard() {
               </div>
             )}
           </div>
+
+          {/* Promo Offers */}
+          <PromoOffersSection className="mb-6" useNowPath="/lite/subscription" />
 
           {/* Referral card */}
           {referralLink && (

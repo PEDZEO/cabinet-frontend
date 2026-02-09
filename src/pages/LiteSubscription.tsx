@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router';
 import type { Tariff, TrafficPackage } from '@/types';
 import { PullToRefresh } from '@/components/lite/PullToRefresh';
 import { LiteSubscriptionSkeleton } from '@/components/lite/LiteSubscriptionSkeleton';
+import PromoOffersSection from '@/components/PromoOffersSection';
 
 // Icons
 const CheckIcon = () => (
@@ -132,11 +133,6 @@ export function LiteSubscription() {
     queryFn: () => subscriptionApi.getDevicePrice(deviceCount),
     enabled: activeTab === 'devices',
     placeholderData: (prev) => prev, // Keep previous data while loading new count
-  });
-
-  const { data: balanceData } = useQuery({
-    queryKey: ['balance'],
-    queryFn: balanceApi.getBalance,
   });
 
   const { data: devicesData, isLoading: isDevicesLoading } = useQuery({
@@ -479,7 +475,6 @@ export function LiteSubscription() {
 
   const subscription = subscriptionData?.subscription;
   const hasSubscription = subscriptionData?.has_subscription;
-  const balance = balanceData?.balance_kopeks ?? 0;
   const tariffs = purchaseOptions?.sales_mode === 'tariffs' ? purchaseOptions.tariffs : [];
   const currentTariffId =
     purchaseOptions?.sales_mode === 'tariffs' ? purchaseOptions.current_tariff_id : null;
@@ -576,12 +571,6 @@ export function LiteSubscription() {
         className="mx-auto max-w-md px-4 py-6"
         style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom, 24px))' }}
       >
-        {/* Balance display */}
-        <div className="mb-6 flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
-          <span className="text-sm text-dark-400">{t('lite.balance')}</span>
-          <span className="font-semibold text-dark-100">{formatPrice(balance)}</span>
-        </div>
-
         {/* Expiry warning - show when 3 days or less */}
         {subscription &&
           !subscription.is_expired &&
@@ -670,6 +659,9 @@ export function LiteSubscription() {
             </button>
           </div>
         )}
+
+        {/* Promo Offers */}
+        <PromoOffersSection className="mb-4" useNowPath="/lite/subscription" />
 
         {/* Tabs */}
         <div className="mb-6 flex gap-2">

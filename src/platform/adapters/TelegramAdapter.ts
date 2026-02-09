@@ -107,14 +107,47 @@ function createBackButtonController(): BackButtonController {
   };
 }
 
+// Helper to get native Telegram WebApp HapticFeedback
+function getNativeHaptic() {
+  return (window as unknown as { Telegram?: { WebApp?: { HapticFeedback?: unknown } } })?.Telegram
+    ?.WebApp?.HapticFeedback as
+    | {
+        impactOccurred?: (style: string) => void;
+        notificationOccurred?: (type: string) => void;
+        selectionChanged?: () => void;
+      }
+    | undefined;
+}
+
 function createHapticController(): HapticController {
   const inTelegram = isInTelegramWebApp();
 
   return {
     impact(style: HapticImpactStyle = 'medium') {
       if (!inTelegram) return;
+
+      // Try SDK first
       try {
         hapticFeedbackImpactOccurred(style);
+        return;
+      } catch {
+        // SDK failed, try native API
+      }
+
+      // Try native WebApp API
+      const native = getNativeHaptic();
+      if (native?.impactOccurred) {
+        try {
+          native.impactOccurred(style);
+          return;
+        } catch {
+          // Native failed
+        }
+      }
+
+      // Last fallback: notification (works better on some Android devices)
+      try {
+        hapticFeedbackNotificationOccurred('success');
       } catch {
         // Haptic not available
       }
@@ -122,17 +155,51 @@ function createHapticController(): HapticController {
 
     notification(type: HapticNotificationType) {
       if (!inTelegram) return;
+
+      // Try SDK first
       try {
         hapticFeedbackNotificationOccurred(type);
+        return;
       } catch {
-        // Haptic not available
+        // SDK failed
+      }
+
+      // Try native WebApp API
+      const native = getNativeHaptic();
+      if (native?.notificationOccurred) {
+        try {
+          native.notificationOccurred(type);
+        } catch {
+          // Haptic not available
+        }
       }
     },
 
     selection() {
       if (!inTelegram) return;
+
+      // Try SDK first
       try {
         hapticFeedbackSelectionChanged();
+        return;
+      } catch {
+        // SDK failed
+      }
+
+      // Try native WebApp API
+      const native = getNativeHaptic();
+      if (native?.selectionChanged) {
+        try {
+          native.selectionChanged();
+          return;
+        } catch {
+          // Native failed
+        }
+      }
+
+      // Last fallback: notification
+      try {
+        hapticFeedbackNotificationOccurred('success');
       } catch {
         // Haptic not available
       }
