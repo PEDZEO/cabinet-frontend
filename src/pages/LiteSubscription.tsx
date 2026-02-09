@@ -463,62 +463,70 @@ export function LiteSubscription() {
           {devicePrice?.available && (
             <>
               {/* Device limit info */}
-              {devicePrice.max_device_limit !== undefined && (
-                <div className="rounded-xl bg-dark-800/30 px-4 py-2 text-center text-sm text-dark-400">
-                  {t('lite.deviceLimit', {
-                    current: devicePrice.current_device_limit || 0,
-                    max: devicePrice.max_device_limit,
-                  })}
+              {typeof devicePrice.current_device_limit === 'number' &&
+                typeof devicePrice.max_device_limit === 'number' && (
+                  <div className="rounded-xl bg-dark-800/30 px-4 py-2 text-center text-sm text-dark-400">
+                    {t('lite.deviceLimit', {
+                      current: devicePrice.current_device_limit,
+                      max: devicePrice.max_device_limit,
+                    })}
+                  </div>
+                )}
+
+              {/* Can add more devices */}
+              {devicePrice.can_add && devicePrice.can_add > 0 ? (
+                <>
+                  <div className="space-y-2">
+                    <p className="text-sm text-dark-400">{t('lite.addDevices')}</p>
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={() => setDeviceCount(Math.max(1, deviceCount - 1))}
+                        disabled={deviceCount <= 1}
+                        className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-800 text-dark-300 transition-colors hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        −
+                      </button>
+                      <span className="w-12 text-center text-xl font-bold text-dark-100">
+                        {deviceCount}
+                      </span>
+                      <button
+                        onClick={() => {
+                          const maxCanAdd = devicePrice.can_add ?? 0;
+                          if (deviceCount < maxCanAdd) {
+                            setDeviceCount(deviceCount + 1);
+                          }
+                        }}
+                        disabled={deviceCount >= (devicePrice.can_add ?? 0)}
+                        className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-800 text-dark-300 transition-colors hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        +
+                      </button>
+                    </div>
+                    <p className="text-center text-xs text-dark-500">
+                      {t('lite.canAddDevices', { count: devicePrice.can_add })}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
+                    <span className="text-dark-400">{t('lite.total')}</span>
+                    <span className="text-lg font-bold text-accent-400">
+                      {formatPrice(devicePrice.total_price_kopeks || 0)}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={handleDevicePurchase}
+                    disabled={isLoading || deviceCount < 1}
+                    className="w-full rounded-xl bg-accent-500 py-4 font-semibold text-white transition-all hover:bg-accent-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {isLoading ? t('common.loading') : t('lite.buyDevices')}
+                  </button>
+                </>
+              ) : (
+                <div className="rounded-xl bg-dark-800/50 p-4 text-center text-dark-400">
+                  {t('lite.maxDevicesReached')}
                 </div>
               )}
-
-              <div className="space-y-2">
-                <p className="text-sm text-dark-400">{t('lite.addDevices')}</p>
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => setDeviceCount(Math.max(1, deviceCount - 1))}
-                    disabled={deviceCount <= 1}
-                    className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-800 text-dark-300 transition-colors hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    −
-                  </button>
-                  <span className="w-12 text-center text-xl font-bold text-dark-100">
-                    {deviceCount}
-                  </span>
-                  <button
-                    onClick={() => {
-                      const maxCanAdd = devicePrice.can_add ?? 0;
-                      if (deviceCount < maxCanAdd) {
-                        setDeviceCount(deviceCount + 1);
-                      }
-                    }}
-                    disabled={deviceCount >= (devicePrice.can_add ?? 0)}
-                    className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-800 text-dark-300 transition-colors hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    +
-                  </button>
-                </div>
-                {devicePrice.can_add !== undefined && devicePrice.can_add > 0 && (
-                  <p className="text-center text-xs text-dark-500">
-                    {t('lite.canAddDevices', { count: devicePrice.can_add })}
-                  </p>
-                )}
-              </div>
-
-              <div className="flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
-                <span className="text-dark-400">{t('lite.total')}</span>
-                <span className="text-lg font-bold text-accent-400">
-                  {formatPrice(devicePrice.total_price_kopeks || 0)}
-                </span>
-              </div>
-
-              <button
-                onClick={handleDevicePurchase}
-                disabled={isLoading || deviceCount < 1}
-                className="w-full rounded-xl bg-accent-500 py-4 font-semibold text-white transition-all hover:bg-accent-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isLoading ? t('common.loading') : t('lite.buyDevices')}
-              </button>
             </>
           )}
 

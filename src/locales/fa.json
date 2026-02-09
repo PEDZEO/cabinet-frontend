@@ -2440,8 +2440,45 @@
     "trialTraffic": "{{count}} گیگابایت ترافیک",
     "trialDevices": "{{count}} دستگاه",
     "unlimited": "نامحدود",
+    "tab": {
+      "tariffs": "تعرفه‌ها",
+      "devices": "دستگاه‌ها",
+      "traffic": "ترافیک"
+    },
+    "currentTariff": "فعلی",
+    "devices": "دستگاه",
+    "servers": "سرور",
+    "month": "ماه",
+    "selectPeriod": "انتخاب دوره",
+    "changeTariff": "تغییر تعرفه",
+    "buyTariff": "خرید تعرفه",
+    "devicesTotal": "دستگاه",
+    "devicesDescription": "حداکثر دستگاه‌های متصل",
+    "addDevices": "افزودن دستگاه",
+    "total": "مجموع",
+    "buyDevices": "خرید دستگاه",
+    "devicesNotAvailable": "خرید دستگاه در دسترس نیست",
+    "deviceLimit": "دستگاه‌ها: {{current}} / {{max}}",
+    "canAddDevices": "می‌توانید {{count}} دستگاه دیگر اضافه کنید",
+    "maxDevicesReached": "به حداکثر دستگاه‌ها رسیده‌اید",
+    "trafficDescription": "ترافیک استفاده شده در این دوره",
+    "addTraffic": "افزودن ترافیک",
+    "buyTraffic": "خرید ترافیک",
+    "trafficNotAvailable": "بسته‌های ترافیک در دسترس نیست",
+    "topUpBalance": "شارژ موجودی",
+    "insufficientBalance": "موجودی ناکافی. کمبود {{amount}}",
+    "support": "پشتیبانی",
+    "copyLink": "کپی لینک",
     "tariffSwitched": "از «{{oldTariff}}» به «{{newTariff}}» تغییر یافت",
     "tariffSwitchedWithDeviceReset": "از «{{oldTariff}}» به «{{newTariff}}» تغییر یافت. دستگاه‌ها بازنشانی شدند",
-    "alreadyOnTariff": "شما در حال حاضر در این تعرفه هستید"
+    "alreadyOnTariff": "شما در حال حاضر در این تعرفه هستید",
+    "referral": {
+      "title": "دعوت از دوستان",
+      "description": "{{percent}}% از هر پرداخت کسب کنید",
+      "copy": "کپی",
+      "copied": "کپی شد",
+      "share": "اشتراک‌گذاری",
+      "shareText": "همین الان بپیوندید! با ثبت‌نام پاداش بگیرید. من از آن استفاده می‌کنم و {{percent}}% کمیسیون می‌گیرم."
+    }
   }
 }

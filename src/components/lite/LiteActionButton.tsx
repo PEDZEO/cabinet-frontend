@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import { useHapticFeedback } from '@/platform/hooks/useHaptic';
 
 interface LiteActionButtonProps {
   to: string;
@@ -13,6 +14,8 @@ export function LiteActionButton({
   icon,
   variant = 'secondary',
 }: LiteActionButtonProps) {
+  const haptic = useHapticFeedback();
+
   const getVariantStyles = () => {
     switch (variant) {
       case 'primary':
@@ -24,9 +27,14 @@ export function LiteActionButton({
     }
   };
 
+  const handleClick = () => {
+    haptic.buttonPress();
+  };
+
   return (
     <Link
       to={to}
+      onClick={handleClick}
       className={`flex w-full items-center justify-center gap-3 rounded-2xl px-6 py-5 text-lg font-semibold transition-transform active:scale-[0.98] ${getVariantStyles()}`}
     >
       <span className="text-xl">{icon}</span>

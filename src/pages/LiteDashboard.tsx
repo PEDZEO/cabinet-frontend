@@ -5,9 +5,12 @@ import { subscriptionApi } from '@/api/subscription';
 import { balanceApi } from '@/api/balance';
 import { referralApi } from '@/api/referral';
 import { useAuthStore } from '@/store/auth';
+import { useHapticFeedback } from '@/platform/hooks/useHaptic';
 import { LiteActionButton } from '@/components/lite/LiteActionButton';
 import { LiteSubscriptionCard } from '@/components/lite/LiteSubscriptionCard';
 import { LiteTrialCard } from '@/components/lite/LiteTrialCard';
+import { LiteDashboardSkeleton } from '@/components/lite/LiteDashboardSkeleton';
+import { PullToRefresh } from '@/components/lite/PullToRefresh';
 import Onboarding from '@/components/Onboarding';
 
 // Icons
@@ -129,10 +132,21 @@ export function LiteDashboard() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { refreshUser } = useAuthStore();
+  const haptic = useHapticFeedback();
   const [trialError, setTrialError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const { isCompleted: isOnboardingCompleted, complete: completeOnboarding } = useLiteOnboarding();
+
+  // Pull to refresh handler
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['subscription'] }),
+      queryClient.invalidateQueries({ queryKey: ['trial-info'] }),
+      queryClient.invalidateQueries({ queryKey: ['balance'] }),
+      queryClient.invalidateQueries({ queryKey: ['referral-info'] }),
+    ]);
+  }, [queryClient]);
 
   // Queries
   const { data: subscriptionResponse, isLoading: subLoading } = useQuery({
@@ -166,6 +180,7 @@ export function LiteDashboard() {
     if (referralLink) {
       navigator.clipboard.writeText(referralLink);
       setCopied(true);
+      haptic.success();
       setTimeout(() => setCopied(false), 2000);
     }
   };
@@ -262,104 +277,117 @@ export function LiteDashboard() {
     completeOnboarding();
   };
 
+  // Show skeleton while loading initial data
+  if (subLoading && !subscriptionResponse) {
+    return <LiteDashboardSkeleton />;
+  }
+
   return (
     <>
-      <div
-        className="mx-auto flex min-h-[calc(100vh-120px)] max-w-md flex-col px-4 py-6"
-        style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom, 24px))' }}
-      >
-        {/* Subscription status or Trial card */}
-        <div className="mb-6" data-onboarding="lite-subscription">
-          {subscription && <LiteSubscriptionCard subscription={subscription} />}
+      <PullToRefresh onRefresh={handleRefresh} className="min-h-[calc(100vh-120px)]">
+        <div
+          className="mx-auto flex min-h-[calc(100vh-120px)] max-w-md flex-col px-4 py-6"
+          style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom, 24px))' }}
+        >
+          {/* Subscription status or Trial card */}
+          <div className="mb-6" data-onboarding="lite-subscription">
+            {subscription && <LiteSubscriptionCard subscription={subscription} />}
 
-          {showTrial && trialInfo && (
-            <LiteTrialCard
-              trialInfo={trialInfo}
-              balance={balance}
-              onActivate={() => activateTrialMutation.mutate()}
-              isLoading={activateTrialMutation.isPending}
-              error={trialError}
-            />
-          )}
+            {showTrial && trialInfo && (
+              <LiteTrialCard
+                trialInfo={trialInfo}
+                balance={balance}
+                onActivate={() => activateTrialMutation.mutate()}
+                isLoading={activateTrialMutation.isPending}
+                error={trialError}
+              />
+            )}
 
-          {hasNoSubscription && !showTrial && (
-            <div className="rounded-2xl border border-dark-600 bg-dark-800/80 p-4 text-center">
-              <p className="text-dark-300">{t('lite.noSubscription')}</p>
-            </div>
-          )}
-        </div>
-
-        {/* Referral card */}
-        {referralLink && (
-          <div className="mb-6 rounded-2xl border border-accent-500/20 bg-gradient-to-br from-accent-500/10 to-transparent p-4">
-            <div className="mb-3 flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-500/20 text-accent-400">
-                <GiftIcon />
+            {hasNoSubscription && !showTrial && (
+              <div className="rounded-2xl border border-dark-600 bg-dark-800/80 p-4 text-center">
+                <p className="text-dark-300">{t('lite.noSubscription')}</p>
               </div>
-              <div>
-                <h3 className="text-sm font-semibold text-dark-100">{t('lite.referral.title')}</h3>
-                <p className="text-xs text-dark-400">
-                  {t('lite.referral.description', {
-                    percent: referralInfo?.commission_percent || 0,
-                  })}
-                </p>
-              </div>
-            </div>
-
-            <div className="mb-3 overflow-hidden rounded-lg bg-dark-900/50 px-3 py-2">
-              <p className="truncate text-xs text-dark-300">{referralLink}</p>
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                onClick={copyReferralLink}
-                className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium transition-all ${
-                  copied
-                    ? 'bg-success-500/20 text-success-400'
-                    : 'bg-dark-800 text-dark-300 hover:bg-dark-700'
-                }`}
-              >
-                {copied ? <CopyCheckIcon /> : <CopyIcon />}
-                {copied ? t('lite.referral.copied') : t('lite.referral.copy')}
-              </button>
-              <button
-                onClick={shareReferralLink}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-accent-500 py-2 text-xs font-medium text-white transition-all hover:bg-accent-600"
-              >
-                <ShareIcon />
-                {t('lite.referral.share')}
-              </button>
-            </div>
+            )}
           </div>
-        )}
 
-        {/* Action buttons */}
-        <div className="flex flex-1 flex-col justify-center gap-4">
-          <div data-onboarding="lite-connect">
+          {/* Referral card */}
+          {referralLink && (
+            <div className="mb-6 rounded-2xl border border-accent-500/20 bg-gradient-to-br from-accent-500/10 to-transparent p-4">
+              <div className="mb-3 flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-500/20 text-accent-400">
+                  <GiftIcon />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-dark-100">
+                    {t('lite.referral.title')}
+                  </h3>
+                  <p className="text-xs text-dark-400">
+                    {t('lite.referral.description', {
+                      percent: referralInfo?.commission_percent || 0,
+                    })}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mb-3 overflow-hidden rounded-lg bg-dark-900/50 px-3 py-2">
+                <p className="truncate text-xs text-dark-300">{referralLink}</p>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={copyReferralLink}
+                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium transition-all ${
+                    copied
+                      ? 'bg-success-500/20 text-success-400'
+                      : 'bg-dark-800 text-dark-300 hover:bg-dark-700'
+                  }`}
+                >
+                  {copied ? <CopyCheckIcon /> : <CopyIcon />}
+                  {copied ? t('lite.referral.copied') : t('lite.referral.copy')}
+                </button>
+                <button
+                  onClick={shareReferralLink}
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-accent-500 py-2 text-xs font-medium text-white transition-all hover:bg-accent-600"
+                >
+                  <ShareIcon />
+                  {t('lite.referral.share')}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Action buttons */}
+          <div className="flex flex-1 flex-col justify-center gap-4">
+            <div data-onboarding="lite-connect">
+              <LiteActionButton
+                to="/connection"
+                label={t('lite.connect')}
+                icon={<ConnectIcon />}
+                variant="primary"
+              />
+            </div>
+
+            <div data-onboarding="lite-topup">
+              <LiteActionButton to="/balance" label={t('lite.topUp')} icon={<WalletIcon />} />
+            </div>
+
+            <div data-onboarding="lite-tariffs">
+              <LiteActionButton
+                to="/subscription"
+                label={t('lite.tariffs')}
+                icon={<TariffIcon />}
+              />
+            </div>
+
             <LiteActionButton
-              to="/connection"
-              label={t('lite.connect')}
-              icon={<ConnectIcon />}
-              variant="primary"
+              to="/support"
+              label={t('lite.support')}
+              icon={<SupportIcon />}
+              variant="ghost"
             />
           </div>
-
-          <div data-onboarding="lite-topup">
-            <LiteActionButton to="/balance" label={t('lite.topUp')} icon={<WalletIcon />} />
-          </div>
-
-          <div data-onboarding="lite-tariffs">
-            <LiteActionButton to="/subscription" label={t('lite.tariffs')} icon={<TariffIcon />} />
-          </div>
-
-          <LiteActionButton
-            to="/support"
-            label={t('lite.support')}
-            icon={<SupportIcon />}
-            variant="ghost"
-          />
         </div>
-      </div>
+      </PullToRefresh>
 
       {/* Onboarding */}
       {showOnboarding && (

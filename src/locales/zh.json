@@ -2439,8 +2439,45 @@
     "trialTraffic": "{{count}} GB流量",
     "trialDevices": "{{count}}台设备",
     "unlimited": "无限",
+    "tab": {
+      "tariffs": "套餐",
+      "devices": "设备",
+      "traffic": "流量"
+    },
+    "currentTariff": "当前",
+    "devices": "设备",
+    "servers": "服务器",
+    "month": "月",
+    "selectPeriod": "选择时长",
+    "changeTariff": "更改套餐",
+    "buyTariff": "购买套餐",
+    "devicesTotal": "台设备",
+    "devicesDescription": "最大连接设备数",
+    "addDevices": "添加设备",
+    "total": "总计",
+    "buyDevices": "购买设备",
+    "devicesNotAvailable": "无法购买设备",
+    "deviceLimit": "设备: {{current}} / {{max}}",
+    "canAddDevices": "还可添加 {{count}} 台设备",
+    "maxDevicesReached": "已达到套餐最大设备数",
+    "trafficDescription": "本期已用流量",
+    "addTraffic": "添加流量",
+    "buyTraffic": "购买流量",
+    "trafficNotAvailable": "流量包不可用",
+    "topUpBalance": "充值余额",
+    "insufficientBalance": "余额不足，还差 {{amount}}",
+    "support": "客服",
+    "copyLink": "复制链接",
     "tariffSwitched": "已从「{{oldTariff}}」切换到「{{newTariff}}」",
     "tariffSwitchedWithDeviceReset": "已从「{{oldTariff}}」切换到「{{newTariff}}」。设备已重置",
-    "alreadyOnTariff": "您已在此套餐"
+    "alreadyOnTariff": "您已在此套餐",
+    "referral": {
+      "title": "邀请好友",
+      "description": "每笔支付赚取{{percent}}%",
+      "copy": "复制",
+      "copied": "已复制",
+      "share": "分享",
+      "shareText": "快来加入！注册即可获得奖励。我已在使用并获得{{percent}}%佣金。"
+    }
   }
 }
