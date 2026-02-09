@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { subscriptionApi } from '@/api/subscription';
 import { balanceApi } from '@/api/balance';
+import { referralApi } from '@/api/referral';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useNavigate } from 'react-router';
 import type { Tariff, TrafficPackage } from '@/types';
@@ -40,6 +41,39 @@ const StarIcon = () => (
   </svg>
 );
 
+const CopyIcon = () => (
+  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"
+    />
+  </svg>
+);
+
+const CopyCheckIcon = () => (
+  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+  </svg>
+);
+
+const ShareIcon = () => (
+  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M7 8l5-5m0 0l5 5m-5-5v12" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3" />
+  </svg>
+);
+
+const GiftIcon = () => (
+  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
+    />
+  </svg>
+);
+
 type TabType = 'tariffs' | 'devices' | 'traffic';
 
 export function LiteSubscription() {
@@ -55,6 +89,7 @@ export function LiteSubscription() {
   const [selectedTraffic, setSelectedTraffic] = useState<TrafficPackage | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   // Format price helper
   const formatPrice = (kopeks: number) => `${formatAmount(kopeks / 100)} ${currencySymbol}`;
@@ -87,18 +122,81 @@ export function LiteSubscription() {
     queryFn: balanceApi.getBalance,
   });
 
+  // Referral info
+  const { data: referralInfo } = useQuery({
+    queryKey: ['referral-info'],
+    queryFn: referralApi.getReferralInfo,
+  });
+
+  const referralLink = referralInfo?.referral_code
+    ? `${window.location.origin}/login?ref=${referralInfo.referral_code}`
+    : '';
+
+  const copyReferralLink = () => {
+    if (referralLink) {
+      navigator.clipboard.writeText(referralLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const shareReferralLink = () => {
+    if (!referralLink) return;
+    const shareText = t('lite.referral.shareText', {
+      percent: referralInfo?.commission_percent || 0,
+    });
+
+    if (navigator.share) {
+      navigator
+        .share({
+          title: t('lite.referral.title'),
+          text: shareText,
+          url: referralLink,
+        })
+        .catch(() => {});
+      return;
+    }
+
+    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(
+      referralLink,
+    )}&text=${encodeURIComponent(shareText)}`;
+    window.open(telegramUrl, '_blank', 'noopener,noreferrer');
+  };
+
   // Mutations
   // Helper to extract error message from API response
+  // Backend can return: { detail: string } or { detail: { message, missing_amount, ... } }
   const getErrorMessage = (err: {
-    response?: { data?: { detail?: string; message?: string; missing_amount?: number } };
+    response?: {
+      data?: {
+        detail?: string | { message?: string; missing_amount?: number };
+        message?: string;
+        missing_amount?: number;
+      };
+    };
   }) => {
     const data = err.response?.data;
+    const detail = data?.detail;
+
+    // Handle detail as object (e.g., 402 Payment Required)
+    if (detail && typeof detail === 'object') {
+      if (detail.missing_amount !== undefined) {
+        const missingAmount = formatPrice(detail.missing_amount);
+        return t('lite.insufficientBalance', { amount: missingAmount });
+      }
+      if (detail.message) return detail.message;
+    }
+
+    // Handle detail as string
+    if (typeof detail === 'string') return detail;
+
+    // Fallback to root level fields
     if (data?.missing_amount !== undefined) {
       const missingAmount = formatPrice(data.missing_amount);
       return t('lite.insufficientBalance', { amount: missingAmount });
     }
-    if (typeof data?.detail === 'string') return data.detail;
     if (typeof data?.message === 'string') return data.message;
+
     return t('common.error');
   };
 
@@ -212,10 +310,52 @@ export function LiteSubscription() {
   return (
     <div className="mx-auto max-w-md px-4 py-6">
       {/* Balance display */}
-      <div className="mb-6 flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
+      <div className="mb-4 flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
         <span className="text-sm text-dark-400">{t('lite.balance')}</span>
         <span className="font-semibold text-dark-100">{formatPrice(balance)}</span>
       </div>
+
+      {/* Referral card */}
+      {referralLink && (
+        <div className="mb-6 rounded-2xl border border-accent-500/20 bg-gradient-to-br from-accent-500/10 to-transparent p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-500/20 text-accent-400">
+              <GiftIcon />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-dark-100">{t('lite.referral.title')}</h3>
+              <p className="text-xs text-dark-400">
+                {t('lite.referral.description', { percent: referralInfo?.commission_percent || 0 })}
+              </p>
+            </div>
+          </div>
+
+          <div className="mb-3 overflow-hidden rounded-lg bg-dark-900/50 px-3 py-2">
+            <p className="truncate text-xs text-dark-300">{referralLink}</p>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={copyReferralLink}
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium transition-all ${
+                copied
+                  ? 'bg-success-500/20 text-success-400'
+                  : 'bg-dark-800 text-dark-300 hover:bg-dark-700'
+              }`}
+            >
+              {copied ? <CopyCheckIcon /> : <CopyIcon />}
+              {copied ? t('lite.referral.copied') : t('lite.referral.copy')}
+            </button>
+            <button
+              onClick={shareReferralLink}
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-accent-500 py-2 text-xs font-medium text-white transition-all hover:bg-accent-600"
+            >
+              <ShareIcon />
+              {t('lite.referral.share')}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Success/Error messages */}
       {success && (
@@ -512,6 +652,27 @@ export function LiteSubscription() {
         className="mt-6 w-full rounded-xl border border-dark-600 bg-dark-800/50 py-3 text-sm font-medium text-dark-300 transition-all hover:border-dark-500 hover:bg-dark-700/50 active:scale-[0.98]"
       >
         {t('lite.topUpBalance')}
+      </button>
+
+      {/* Support button */}
+      <button
+        onClick={() => navigate('/support')}
+        className="mt-3 flex w-full items-center justify-center gap-2 py-3 text-sm text-dark-500 transition-colors hover:text-dark-300"
+      >
+        <svg
+          className="h-4 w-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={1.5}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"
+          />
+        </svg>
+        {t('lite.support')}
       </button>
     </div>
   );

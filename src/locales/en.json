@@ -2825,6 +2825,15 @@
     "buyTraffic": "Buy Traffic",
     "trafficNotAvailable": "Traffic packages not available",
     "topUpBalance": "Top Up Balance",
-    "insufficientBalance": "Insufficient balance. Missing {{amount}}"
+    "insufficientBalance": "Insufficient balance. Missing {{amount}}",
+    "support": "Support",
+    "referral": {
+      "title": "Invite Friends",
+      "description": "Earn {{percent}}% from every payment",
+      "copy": "Copy",
+      "copied": "Copied",
+      "share": "Share",
+      "shareText": "Join now! Get a bonus on registration. I'm already using it and earning {{percent}}% commission."
+    }
   }
 }
