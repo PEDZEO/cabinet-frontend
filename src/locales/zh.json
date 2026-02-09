@@ -2448,6 +2448,7 @@
     "devices": "设备",
     "servers": "服务器",
     "month": "月",
+    "day": "天",
     "selectPeriod": "选择时长",
     "changeTariff": "更改套餐",
     "buyTariff": "购买套餐",

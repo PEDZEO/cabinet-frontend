@@ -2829,6 +2829,7 @@
     "devices": "devices",
     "servers": "servers",
     "month": "mo",
+    "day": "day",
     "selectPeriod": "Select period",
     "changeTariff": "Change Tariff",
     "buyTariff": "Buy Tariff",

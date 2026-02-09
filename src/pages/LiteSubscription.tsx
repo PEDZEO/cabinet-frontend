@@ -581,14 +581,22 @@ export function LiteSubscription() {
                   </span>
                 </div>
 
-                {period && (
+                {/* Price display - different for daily vs period tariffs */}
+                {tariff.is_daily && tariff.price_per_day_kopeks ? (
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-xl font-bold text-accent-400">
+                      {formatPrice(tariff.price_per_day_kopeks)}
+                    </span>
+                    <span className="text-sm text-dark-500">/{t('lite.day')}</span>
+                  </div>
+                ) : period ? (
                   <div className="flex items-baseline justify-between">
                     <span className="text-xl font-bold text-accent-400">{period.price_label}</span>
                     <span className="text-sm text-dark-500">
                       {period.price_per_month_label}/{t('lite.month')}
                     </span>
                   </div>
-                )}
+                ) : null}
               </button>
             );
           })}
