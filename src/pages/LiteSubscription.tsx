@@ -40,6 +40,36 @@ const StarIcon = () => (
   </svg>
 );
 
+const TrashIcon = () => (
+  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+    />
+  </svg>
+);
+
+const PhoneIcon = () => (
+  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"
+    />
+  </svg>
+);
+
+const DesktopIcon = () => (
+  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25"
+    />
+  </svg>
+);
+
 type TabType = 'tariffs' | 'devices' | 'traffic';
 
 export function LiteSubscription() {
@@ -53,6 +83,7 @@ export function LiteSubscription() {
   const [selectedPeriodDays, setSelectedPeriodDays] = useState<number>(30);
   const [deviceCount, setDeviceCount] = useState(1);
   const [selectedTraffic, setSelectedTraffic] = useState<TrafficPackage | null>(null);
+  const [reduceCount, setReduceCount] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -85,6 +116,18 @@ export function LiteSubscription() {
   const { data: balanceData } = useQuery({
     queryKey: ['balance'],
     queryFn: balanceApi.getBalance,
+  });
+
+  const { data: devicesData, isLoading: isDevicesLoading } = useQuery({
+    queryKey: ['devices'],
+    queryFn: subscriptionApi.getDevices,
+    enabled: activeTab === 'devices' && !!subscriptionData?.has_subscription,
+  });
+
+  const { data: reductionInfo } = useQuery({
+    queryKey: ['device-reduction-info'],
+    queryFn: subscriptionApi.getDeviceReductionInfo,
+    enabled: activeTab === 'devices' && !!subscriptionData?.has_subscription,
   });
 
   // Clamp device count when max limit changes
@@ -233,6 +276,75 @@ export function LiteSubscription() {
     },
   });
 
+  const deleteDeviceMutation = useMutation({
+    mutationFn: (hwid: string) => subscriptionApi.deleteDevice(hwid),
+    onSuccess: (data) => {
+      setSuccess(data.message || t('lite.deviceDeleted'));
+      setError(null);
+      queryClient.invalidateQueries({ queryKey: ['devices'] });
+      queryClient.invalidateQueries({ queryKey: ['subscription'] });
+    },
+    onError: (err: {
+      response?: {
+        data?: {
+          detail?: string | { message?: string };
+          message?: string;
+        };
+      };
+    }) => {
+      const detail = err.response?.data?.detail;
+      setError(typeof detail === 'string' ? detail : t('common.error'));
+      setSuccess(null);
+    },
+  });
+
+  const deleteAllDevicesMutation = useMutation({
+    mutationFn: () => subscriptionApi.deleteAllDevices(),
+    onSuccess: (data) => {
+      setSuccess(data.message || t('lite.allDevicesDeleted'));
+      setError(null);
+      queryClient.invalidateQueries({ queryKey: ['devices'] });
+      queryClient.invalidateQueries({ queryKey: ['subscription'] });
+    },
+    onError: (err: {
+      response?: {
+        data?: {
+          detail?: string | { message?: string };
+          message?: string;
+        };
+      };
+    }) => {
+      const detail = err.response?.data?.detail;
+      setError(typeof detail === 'string' ? detail : t('common.error'));
+      setSuccess(null);
+    },
+  });
+
+  const reduceDevicesMutation = useMutation({
+    mutationFn: (newLimit: number) => subscriptionApi.reduceDevices(newLimit),
+    onSuccess: (data) => {
+      setSuccess(data.message || t('lite.devicesReduced'));
+      setError(null);
+      setReduceCount(1);
+      queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      queryClient.invalidateQueries({ queryKey: ['devices'] });
+      queryClient.invalidateQueries({ queryKey: ['device-price'] });
+      queryClient.invalidateQueries({ queryKey: ['device-reduction-info'] });
+    },
+    onError: (err: {
+      response?: {
+        data?: {
+          detail?: string | { message?: string };
+          message?: string;
+        };
+      };
+    }) => {
+      const detail = err.response?.data?.detail;
+      setError(typeof detail === 'string' ? detail : t('common.error'));
+      setSuccess(null);
+    },
+  });
+
   const subscription = subscriptionData?.subscription;
   const hasSubscription = subscriptionData?.has_subscription;
   const balance = balanceData?.balance_kopeks ?? 0;
@@ -271,7 +383,32 @@ export function LiteSubscription() {
     purchaseTariffMutation.isPending ||
     switchTariffMutation.isPending ||
     purchaseDevicesMutation.isPending ||
-    purchaseTrafficMutation.isPending;
+    purchaseTrafficMutation.isPending ||
+    deleteDeviceMutation.isPending ||
+    deleteAllDevicesMutation.isPending ||
+    reduceDevicesMutation.isPending;
+
+  // Helper to get device icon based on platform
+  const getDeviceIcon = (platform: string) => {
+    const lowerPlatform = platform.toLowerCase();
+    if (
+      lowerPlatform.includes('ios') ||
+      lowerPlatform.includes('android') ||
+      lowerPlatform.includes('phone') ||
+      lowerPlatform.includes('mobile')
+    ) {
+      return <PhoneIcon />;
+    }
+    return <DesktopIcon />;
+  };
+
+  // Helper to format device name
+  const formatDeviceName = (device: { platform: string; device_model: string }) => {
+    if (device.device_model && device.device_model !== 'Unknown') {
+      return device.device_model;
+    }
+    return device.platform || t('lite.unknownDevice');
+  };
 
   return (
     <div
@@ -363,6 +500,11 @@ export function LiteSubscription() {
                   )}
                 </div>
 
+                {/* Tariff description */}
+                {tariff.description && (
+                  <p className="mb-3 text-sm text-dark-400">{tariff.description}</p>
+                )}
+
                 <div className="mb-3 flex flex-wrap gap-2 text-sm text-dark-400">
                   <span>
                     {tariff.is_unlimited_traffic
@@ -452,9 +594,67 @@ export function LiteSubscription() {
             </div>
           </div>
 
-          {/* Loading state */}
+          {/* Connected devices list */}
+          {isDevicesLoading && (
+            <div className="flex justify-center py-4">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
+            </div>
+          )}
+
+          {devicesData && devicesData.devices.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-dark-400">{t('lite.connectedDevices')}</p>
+                {devicesData.devices.length > 1 && (
+                  <button
+                    onClick={() => deleteAllDevicesMutation.mutate()}
+                    disabled={isLoading}
+                    className="text-xs text-error-400 hover:text-error-300 disabled:opacity-50"
+                  >
+                    {t('lite.deleteAll')}
+                  </button>
+                )}
+              </div>
+              <div className="space-y-2">
+                {devicesData.devices.map((device) => (
+                  <div
+                    key={device.hwid}
+                    className="flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-dark-700 text-dark-400">
+                        {getDeviceIcon(device.platform)}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-dark-100">
+                          {formatDeviceName(device)}
+                        </p>
+                        <p className="text-xs text-dark-500">{device.platform}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => deleteDeviceMutation.mutate(device.hwid)}
+                      disabled={isLoading}
+                      className="flex h-8 w-8 items-center justify-center rounded-lg text-dark-400 transition-colors hover:bg-error-500/20 hover:text-error-400 disabled:opacity-50"
+                      title={t('lite.deleteDevice')}
+                    >
+                      <TrashIcon />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {devicesData && devicesData.devices.length === 0 && !isDevicesLoading && (
+            <div className="rounded-xl bg-dark-800/30 px-4 py-3 text-center text-sm text-dark-400">
+              {t('lite.noConnectedDevices')}
+            </div>
+          )}
+
+          {/* Loading state for device price */}
           {isDevicePriceLoading && !devicePrice && (
-            <div className="flex justify-center py-8">
+            <div className="flex justify-center py-4">
               <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
             </div>
           )}
@@ -533,6 +733,59 @@ export function LiteSubscription() {
           {devicePrice && !devicePrice.available && (
             <div className="rounded-xl bg-dark-800/50 p-4 text-center text-dark-400">
               {devicePrice.reason || t('lite.devicesNotAvailable')}
+            </div>
+          )}
+
+          {/* Reduce devices section */}
+          {reductionInfo?.available && reductionInfo.can_reduce > 0 && (
+            <div className="mt-4 space-y-3 border-t border-dark-700 pt-4">
+              <p className="text-sm text-dark-400">{t('lite.reduceDevices')}</p>
+
+              <div className="rounded-xl bg-dark-800/30 px-4 py-2 text-center text-sm text-dark-400">
+                {t('lite.connectedDevicesCount', { count: reductionInfo.connected_devices_count })}
+              </div>
+
+              <div className="flex items-center justify-center gap-4">
+                <button
+                  onClick={() => setReduceCount(Math.max(1, reduceCount - 1))}
+                  disabled={reduceCount <= 1}
+                  className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-800 text-dark-300 transition-colors hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  −
+                </button>
+                <span className="w-12 text-center text-xl font-bold text-dark-100">
+                  {reduceCount}
+                </span>
+                <button
+                  onClick={() =>
+                    setReduceCount(Math.min(reductionInfo.can_reduce, reduceCount + 1))
+                  }
+                  disabled={reduceCount >= reductionInfo.can_reduce}
+                  className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-800 text-dark-300 transition-colors hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  +
+                </button>
+              </div>
+              <p className="text-center text-xs text-dark-500">
+                {t('lite.canReduceDevices', { count: reductionInfo.can_reduce })}
+              </p>
+
+              <div className="flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
+                <span className="text-dark-400">{t('lite.newDeviceLimit')}</span>
+                <span className="text-lg font-bold text-dark-100">
+                  {reductionInfo.current_device_limit - reduceCount}
+                </span>
+              </div>
+
+              <button
+                onClick={() =>
+                  reduceDevicesMutation.mutate(reductionInfo.current_device_limit - reduceCount)
+                }
+                disabled={isLoading || reduceCount < 1}
+                className="w-full rounded-xl bg-warning-500 py-4 font-semibold text-white transition-all hover:bg-warning-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isLoading ? t('common.loading') : t('lite.reduceDevicesButton')}
+              </button>
             </div>
           )}
         </div>
