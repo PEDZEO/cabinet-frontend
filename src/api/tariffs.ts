@@ -208,7 +208,9 @@ export const tariffsApi = {
   },
 
   // Delete tariff
-  deleteTariff: async (tariffId: number): Promise<{ message: string }> => {
+  deleteTariff: async (
+    tariffId: number,
+  ): Promise<{ message: string; affected_subscriptions: number }> => {
     const response = await apiClient.delete(`/cabinet/admin/tariffs/${tariffId}`);
     return response.data;
   },

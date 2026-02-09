@@ -282,9 +282,15 @@ export default function AdminTariffs() {
   // Mutations
   const deleteMutation = useMutation({
     mutationFn: tariffsApi.deleteTariff,
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['admin-tariffs'] });
-      notify.success(t('admin.tariffs.deleteSuccess'));
+      if (data.affected_subscriptions > 0) {
+        notify.success(
+          t('admin.tariffs.deleteSuccessWithSubscriptions', { count: data.affected_subscriptions }),
+        );
+      } else {
+        notify.success(t('admin.tariffs.deleteSuccess'));
+      }
     },
   });
 

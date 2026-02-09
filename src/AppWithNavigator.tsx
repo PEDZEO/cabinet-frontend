@@ -20,6 +20,9 @@ import { isInTelegramWebApp } from './hooks/useTelegramSDK';
  * Manages Telegram BackButton visibility based on navigation location.
  * Shows back button on non-root routes, hides on root.
  */
+/** Pages reachable from bottom nav — treat as top-level (no back button). */
+const BOTTOM_NAV_PATHS = ['/', '/subscription', '/balance', '/referral', '/support', '/wheel'];
+
 function TelegramBackButton() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -27,9 +30,9 @@ function TelegramBackButton() {
   navigateRef.current = navigate;
 
   useEffect(() => {
-    const isRoot = location.pathname === '/' || location.pathname === '';
+    const isTopLevel = location.pathname === '' || BOTTOM_NAV_PATHS.includes(location.pathname);
     try {
-      if (isRoot) {
+      if (isTopLevel) {
         hideBackButton();
       } else {
         showBackButton();

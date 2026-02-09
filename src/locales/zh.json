@@ -317,7 +317,11 @@
       "selectPlatform": "选择平台",
       "app": "个应用",
       "apps": "个应用",
-      "tutorial": "教程"
+      "tutorial": "教程",
+      "notConfigured": "连接方式尚未配置",
+      "notConfiguredUser": "连接设置正在进行中，请稍后再来查看。",
+      "notConfiguredAdmin": "尚未配置连接应用。请在应用设置中进行配置。",
+      "goToApps": "前往应用设置"
     },
     "additionalOptions": {
       "title": "附加选项",
@@ -1122,6 +1126,7 @@
       "confirmDeleteText": "此操作不可撤销。套餐将被永久删除。",
       "confirmDeleteWithSubscriptions": "此套餐有 {{count}} 个活跃订阅。删除后，用户续订时需要选择新套餐。",
       "deleteSuccess": "套餐删除成功",
+      "deleteSuccessWithSubscriptions": "套餐已删除。{{count}} 个订阅已重置 — 用户续订时将选择新套餐。",
       "saveOrder": "保存排序",
       "orderSaved": "排序已保存",
       "dragToReorder": "拖动以重新排序",
