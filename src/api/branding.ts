@@ -119,8 +119,25 @@ export const initLogoPreload = () => {
 export const brandingApi = {
   // Get current branding (public, no auth required)
   getBranding: async (): Promise<BrandingInfo> => {
-    const response = await apiClient.get<BrandingInfo>('/cabinet/branding');
-    return response.data;
+    try {
+      const response = await apiClient.get<BrandingInfo>('/cabinet/branding');
+      // Cache the branding data for offline access
+      setCachedBranding(response.data);
+      return response.data;
+    } catch {
+      // If network fails, use cached branding
+      const cached = getCachedBranding();
+      if (cached) {
+        return cached;
+      }
+      // Return minimal fallback if no cache
+      return {
+        name: import.meta.env.VITE_APP_NAME || 'Cabinet',
+        logo_url: null,
+        logo_letter: import.meta.env.VITE_APP_LOGO || 'V',
+        has_custom_logo: false,
+      };
+    }
   },
 
   // Update project name (admin only)
@@ -158,9 +175,17 @@ export const brandingApi = {
     return response.data;
   },
 
-  // Get logo URL as blob (hides backend URL from DOM)
-  getLogoUrl: (_branding: BrandingInfo): string | null => {
-    return _logoBlobUrl;
+  // Get logo URL - prefers blob URL (hides backend), falls back to direct URL for offline
+  getLogoUrl: (branding: BrandingInfo): string | null => {
+    // Prefer blob URL if available (hides backend URL)
+    if (_logoBlobUrl) {
+      return _logoBlobUrl;
+    }
+    // Fallback to direct URL for offline/reload scenarios
+    if (branding.has_custom_logo && branding.logo_url) {
+      return `${import.meta.env.VITE_API_URL || ''}${branding.logo_url}`;
+    }
+    return null;
   },
 
   // Get animation enabled (public, no auth required)
@@ -219,9 +244,24 @@ export const brandingApi = {
   getLiteModeEnabled: async (): Promise<LiteModeEnabled> => {
     try {
       const response = await apiClient.get<LiteModeEnabled>('/cabinet/branding/lite-mode');
+      // Cache the value in localStorage for offline access
+      try {
+        localStorage.setItem('cabinet_lite_mode', String(response.data.enabled));
+      } catch {
+        // localStorage not available
+      }
       return response.data;
     } catch {
-      // If endpoint doesn't exist, default to disabled
+      // If network fails, use cached value from localStorage
+      try {
+        const cached = localStorage.getItem('cabinet_lite_mode');
+        if (cached !== null) {
+          return { enabled: cached === 'true' };
+        }
+      } catch {
+        // localStorage not available
+      }
+      // If no cache, default to disabled
       return { enabled: false };
     }
   },

@@ -28,16 +28,26 @@ export function useLiteMode() {
       setCachedLiteMode(result.enabled);
       return result;
     },
-    staleTime: 1000 * 30, // 30 seconds - short cache for faster sync
+    staleTime: 1000 * 60 * 5, // 5 minutes - balance between sync and stability
+    gcTime: 1000 * 60 * 30, // 30 minutes - keep in memory longer
     refetchOnWindowFocus: true, // refetch when user returns to tab
-    // Use placeholderData instead of initialData - shows cached value while fetching fresh data
-    placeholderData: () => {
+    refetchOnReconnect: true, // refetch when network reconnects
+    retry: 2, // retry on failure
+    retryDelay: 1000, // 1 second between retries
+    // Use initialData from cache - prevents flicker to main version
+    initialData: () => {
       const cached = getCachedLiteMode();
       return { enabled: cached };
     },
+    initialDataUpdatedAt: () => {
+      // Treat cached data as somewhat fresh to avoid immediate refetch blocking render
+      return Date.now() - 1000 * 60; // 1 minute ago
+    },
   });
 
-  const isLiteMode = liteModeSettings?.enabled ?? false;
+  // Always use cached value as fallback if query data is undefined
+  const cachedValue = getCachedLiteMode();
+  const isLiteMode = liteModeSettings?.enabled ?? cachedValue;
 
   return { isLiteMode, isLoading };
 }

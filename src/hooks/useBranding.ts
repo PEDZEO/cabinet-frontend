@@ -27,7 +27,10 @@ export function useBranding() {
       return data;
     },
     initialData: getCachedBranding() ?? undefined,
-    staleTime: 60000,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    gcTime: 1000 * 60 * 30, // 30 minutes - keep in memory longer
+    retry: 2,
+    retryDelay: 1000,
     enabled: isAuthenticated,
   });
 
