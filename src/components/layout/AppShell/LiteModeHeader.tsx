@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -39,6 +39,22 @@ const MenuIcon = () => (
   </svg>
 );
 
+const BackIcon = () => (
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M19 12H5" />
+    <path d="M12 19l-7-7 7-7" />
+  </svg>
+);
+
 const AdminIcon = () => (
   <svg
     width="20"
@@ -71,6 +87,7 @@ export function LiteModeHeader({
 }: LiteModeHeaderProps) {
   const { t } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
   const { isAdmin } = useAuthStore();
   const { formatWithCurrency } = useCurrency();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -150,6 +167,7 @@ export function LiteModeHeader({
   };
 
   const isAdminPage = location.pathname.startsWith('/admin');
+  const isMainPage = location.pathname === '/';
 
   return (
     <>
@@ -163,38 +181,48 @@ export function LiteModeHeader({
       >
         <div className="mx-auto w-full px-4">
           <div className="flex h-16 items-center justify-between">
-            {/* Logo */}
-            <Link
-              to="/"
-              className={cn('flex flex-shrink-0 items-center gap-2.5', !appName && 'mr-4')}
-            >
-              <div className="relative flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-linear-lg border border-dark-700/50 bg-dark-800/80 shadow-md">
-                <span
-                  className={cn(
-                    'absolute text-lg font-bold text-accent-400 transition-opacity duration-200',
-                    hasCustomLogo && logoLoaded ? 'opacity-0' : 'opacity-100',
-                  )}
-                >
-                  {logoLetter}
-                </span>
-                {hasCustomLogo && logoUrl && (
-                  <img
-                    src={logoUrl}
-                    alt={appName || 'Logo'}
+            {/* Back button or Logo */}
+            {!isMainPage ? (
+              <button
+                onClick={() => navigate(-1)}
+                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-dark-300 transition-colors hover:bg-dark-800 hover:text-dark-100 active:scale-[0.98]"
+                aria-label={t('common.back')}
+              >
+                <BackIcon />
+              </button>
+            ) : (
+              <Link
+                to="/"
+                className={cn('flex flex-shrink-0 items-center gap-2.5', !appName && 'mr-4')}
+              >
+                <div className="relative flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-linear-lg border border-dark-700/50 bg-dark-800/80 shadow-md">
+                  <span
                     className={cn(
-                      'absolute h-full w-full object-contain transition-opacity duration-200',
-                      logoLoaded ? 'opacity-100' : 'opacity-0',
+                      'absolute text-lg font-bold text-accent-400 transition-opacity duration-200',
+                      hasCustomLogo && logoLoaded ? 'opacity-0' : 'opacity-100',
                     )}
-                    onLoad={() => setLogoLoaded(true)}
-                  />
+                  >
+                    {logoLetter}
+                  </span>
+                  {hasCustomLogo && logoUrl && (
+                    <img
+                      src={logoUrl}
+                      alt={appName || 'Logo'}
+                      className={cn(
+                        'absolute h-full w-full object-contain transition-opacity duration-200',
+                        logoLoaded ? 'opacity-100' : 'opacity-0',
+                      )}
+                      onLoad={() => setLogoLoaded(true)}
+                    />
+                  )}
+                </div>
+                {appName && (
+                  <span className="hidden whitespace-nowrap text-base font-semibold text-dark-100 sm:block">
+                    {appName}
+                  </span>
                 )}
-              </div>
-              {appName && (
-                <span className="hidden whitespace-nowrap text-base font-semibold text-dark-100 sm:block">
-                  {appName}
-                </span>
-              )}
-            </Link>
+              </Link>
+            )}
 
             {/* Center: Balance & Status */}
             <div className="flex items-center gap-3">

@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
 import type { TrialInfo } from '@/types';
 
 interface LiteTrialCardProps {
@@ -60,18 +59,17 @@ export function LiteTrialCard({
         </div>
       )}
 
-      <motion.button
-        whileTap={{ scale: 0.98 }}
+      <button
         onClick={onActivate}
         disabled={!canActivate || isLoading}
-        className={`w-full rounded-xl py-3 font-semibold transition-all ${
+        className={`w-full rounded-xl py-3 font-semibold transition-all active:scale-[0.98] ${
           canActivate
             ? 'bg-accent-500 text-white hover:bg-accent-600'
             : 'cursor-not-allowed bg-dark-600 text-dark-400'
         }`}
       >
         {isLoading ? t('common.loading') : t('lite.activateTrial')}
-      </motion.button>
+      </button>
 
       {trialInfo.requires_payment && !canActivate && (
         <p className="mt-2 text-center text-xs text-dark-400">{t('lite.topUp')}</p>
