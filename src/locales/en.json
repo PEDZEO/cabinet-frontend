@@ -2824,6 +2824,7 @@
     "addTraffic": "Add traffic",
     "buyTraffic": "Buy Traffic",
     "trafficNotAvailable": "Traffic packages not available",
-    "topUpBalance": "Top Up Balance"
+    "topUpBalance": "Top Up Balance",
+    "insufficientBalance": "Insufficient balance. Missing {{amount}}"
   }
 }

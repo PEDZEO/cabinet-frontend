@@ -75,10 +75,11 @@ export function LiteSubscription() {
     queryFn: subscriptionApi.getTrafficPackages,
   });
 
-  const { data: devicePrice } = useQuery({
+  const { data: devicePrice, isLoading: isDevicePriceLoading } = useQuery({
     queryKey: ['device-price', deviceCount],
     queryFn: () => subscriptionApi.getDevicePrice(deviceCount),
     enabled: activeTab === 'devices',
+    placeholderData: (prev) => prev, // Keep previous data while loading new count
   });
 
   const { data: balanceData } = useQuery({
@@ -87,6 +88,20 @@ export function LiteSubscription() {
   });
 
   // Mutations
+  // Helper to extract error message from API response
+  const getErrorMessage = (err: {
+    response?: { data?: { detail?: string; message?: string; missing_amount?: number } };
+  }) => {
+    const data = err.response?.data;
+    if (data?.missing_amount !== undefined) {
+      const missingAmount = formatPrice(data.missing_amount);
+      return t('lite.insufficientBalance', { amount: missingAmount });
+    }
+    if (typeof data?.detail === 'string') return data.detail;
+    if (typeof data?.message === 'string') return data.message;
+    return t('common.error');
+  };
+
   const purchaseTariffMutation = useMutation({
     mutationFn: (params: { tariffId: number; periodDays: number }) =>
       subscriptionApi.purchaseTariff(params.tariffId, params.periodDays),
@@ -96,8 +111,10 @@ export function LiteSubscription() {
       queryClient.invalidateQueries({ queryKey: ['subscription'] });
       queryClient.invalidateQueries({ queryKey: ['balance'] });
     },
-    onError: (err: { response?: { data?: { detail?: string } } }) => {
-      setError(err.response?.data?.detail || t('common.error'));
+    onError: (err: {
+      response?: { data?: { detail?: string; message?: string; missing_amount?: number } };
+    }) => {
+      setError(getErrorMessage(err));
       setSuccess(null);
     },
   });
@@ -110,8 +127,10 @@ export function LiteSubscription() {
       queryClient.invalidateQueries({ queryKey: ['subscription'] });
       queryClient.invalidateQueries({ queryKey: ['balance'] });
     },
-    onError: (err: { response?: { data?: { detail?: string } } }) => {
-      setError(err.response?.data?.detail || t('common.error'));
+    onError: (err: {
+      response?: { data?: { detail?: string; message?: string; missing_amount?: number } };
+    }) => {
+      setError(getErrorMessage(err));
       setSuccess(null);
     },
   });
@@ -125,8 +144,10 @@ export function LiteSubscription() {
       queryClient.invalidateQueries({ queryKey: ['subscription'] });
       queryClient.invalidateQueries({ queryKey: ['balance'] });
     },
-    onError: (err: { response?: { data?: { detail?: string } } }) => {
-      setError(err.response?.data?.detail || t('common.error'));
+    onError: (err: {
+      response?: { data?: { detail?: string; message?: string; missing_amount?: number } };
+    }) => {
+      setError(getErrorMessage(err));
       setSuccess(null);
     },
   });
@@ -140,8 +161,10 @@ export function LiteSubscription() {
       queryClient.invalidateQueries({ queryKey: ['subscription'] });
       queryClient.invalidateQueries({ queryKey: ['balance'] });
     },
-    onError: (err: { response?: { data?: { detail?: string } } }) => {
-      setError(err.response?.data?.detail || t('common.error'));
+    onError: (err: {
+      response?: { data?: { detail?: string; message?: string; missing_amount?: number } };
+    }) => {
+      setError(getErrorMessage(err));
       setSuccess(null);
     },
   });
@@ -361,6 +384,13 @@ export function LiteSubscription() {
               </div>
             </div>
           </div>
+
+          {/* Loading state */}
+          {isDevicePriceLoading && !devicePrice && (
+            <div className="flex justify-center py-8">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
+            </div>
+          )}
 
           {/* Device count selector */}
           {devicePrice?.available && (

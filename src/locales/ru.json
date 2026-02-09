@@ -3379,6 +3379,7 @@
     "addTraffic": "Добавить трафик",
     "buyTraffic": "Купить трафик",
     "trafficNotAvailable": "Пакеты трафика недоступны",
-    "topUpBalance": "Пополнить баланс"
+    "topUpBalance": "Пополнить баланс",
+    "insufficientBalance": "Недостаточно средств. Не хватает {{amount}}"
   }
 }
