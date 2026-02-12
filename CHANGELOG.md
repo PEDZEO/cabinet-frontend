@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.14.1](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/compare/v1.14.0...v1.14.1) (2026-02-12)
+
+
+### Bug Fixes
+
+* allow email change for unverified emails without code verification ([a0b10e6](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/a0b10e688cd96ecbab767bed4ee1abdd5aefc4db))
+* handle unlimited traffic package selection and button text ([1d6ec70](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/1d6ec70116a2d2f776a088e5045e72cfc5d452ae))
+
 ## [1.14.0](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/compare/v1.13.0...v1.14.0) (2026-02-11)
 
 
