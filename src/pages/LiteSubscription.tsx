@@ -518,16 +518,19 @@ export function LiteSubscription() {
   const isTariffCurrent = (tariff: Tariff) =>
     tariff.is_current || tariff.id === resolvedCurrentTariffId;
   const isUnlimitedSubscriptionTraffic = isUnlimitedTrafficLimit(subscription?.traffic_limit_gb);
+  const shouldSwitchTariff = (tariff: Tariff | null) =>
+    !!(
+      tariff &&
+      hasSubscription &&
+      !subscription?.is_trial &&
+      resolvedCurrentTariffId !== null &&
+      !isTariffCurrent(tariff)
+    );
 
   const handleTariffAction = () => {
     if (!selectedTariff) return;
 
-    const isTrial = subscription?.is_trial;
-    const hasExistingTariff = hasSubscription && resolvedCurrentTariffId !== null && !isTrial;
-    const isCurrentTariffSelected =
-      hasExistingTariff && selectedTariff.id === resolvedCurrentTariffId;
-
-    if (hasExistingTariff && !isCurrentTariffSelected) {
+    if (shouldSwitchTariff(selectedTariff)) {
       // Switch tariff for active subscriptions with an existing tariff
       switchTariffMutation.mutate(selectedTariff.id);
     } else {
@@ -865,29 +868,31 @@ export function LiteSubscription() {
             })}
 
             {/* Period selector for selected tariff */}
-            {selectedTariff && !hasSubscription && selectedTariff.periods.length > 1 && (
-              <div className="space-y-2">
-                <p className="text-sm text-dark-400">{t('lite.selectPeriod')}</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {selectedTariff.periods.map((period) => (
-                    <button
-                      key={period.days}
-                      onClick={() => {
-                        haptic.selectionChanged();
-                        setSelectedPeriodDays(period.days);
-                      }}
-                      className={`rounded-xl px-3 py-2 text-sm transition-all ${
-                        selectedPeriodDays === period.days
-                          ? 'bg-accent-500 text-white'
-                          : 'bg-dark-800 text-dark-300 hover:bg-dark-700'
-                      }`}
-                    >
-                      {period.label}
-                    </button>
-                  ))}
+            {selectedTariff &&
+              selectedTariff.periods.length > 1 &&
+              !shouldSwitchTariff(selectedTariff) && (
+                <div className="space-y-2">
+                  <p className="text-sm text-dark-400">{t('lite.selectPeriod')}</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {selectedTariff.periods.map((period) => (
+                      <button
+                        key={period.days}
+                        onClick={() => {
+                          haptic.selectionChanged();
+                          setSelectedPeriodDays(period.days);
+                        }}
+                        className={`rounded-xl px-3 py-2 text-sm transition-all ${
+                          selectedPeriodDays === period.days
+                            ? 'bg-accent-500 text-white'
+                            : 'bg-dark-800 text-dark-300 hover:bg-dark-700'
+                        }`}
+                      >
+                        {period.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Action button */}
             {selectedTariff && (
@@ -905,11 +910,11 @@ export function LiteSubscription() {
               >
                 {isLoading
                   ? t('common.loading')
-                  : hasSubscription && !subscription?.is_trial && resolvedCurrentTariffId !== null
-                    ? isTariffCurrent(selectedTariff)
+                  : shouldSwitchTariff(selectedTariff)
+                    ? t('lite.changeTariff')
+                    : hasSubscription && !subscription?.is_trial && resolvedCurrentTariffId !== null
                       ? t('subscription.extend')
-                      : t('lite.changeTariff')
-                    : t('lite.buyTariff')}
+                      : t('lite.buyTariff')}
               </button>
             )}
           </div>
@@ -1188,11 +1193,13 @@ export function LiteSubscription() {
 
               {isUnlimitedSubscriptionTraffic ? (
                 <div
-                  className="flex items-center justify-center rounded-xl bg-success-500/10 py-4"
+                  className="rounded-xl bg-success-500/10 py-4 text-center"
                   aria-label={t('lite.unlimited')}
                   title={t('lite.unlimited')}
                 >
-                  <span className="text-3xl font-semibold text-success-400">∞</span>
+                  <p className="text-xl font-semibold text-success-400">
+                    {(subscription?.traffic_used_gb ?? 0).toFixed(1)} / ∞ GB
+                  </p>
                 </div>
               ) : (
                 <>

@@ -75,7 +75,7 @@ export function LiteSubscriptionCard({ subscription, deviceLimit }: LiteSubscrip
   };
 
   const trafficDisplay = isUnlimitedTraffic
-    ? '∞'
+    ? `${subscription.traffic_used_gb.toFixed(1)} / ∞ GB`
     : `${subscription.traffic_used_gb.toFixed(1)} / ${subscription.traffic_limit_gb} GB`;
 
   // VPN status indicator - active means connected/online
