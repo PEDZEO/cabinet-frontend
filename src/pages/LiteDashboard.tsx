@@ -238,8 +238,13 @@ export function LiteDashboard() {
   const tariffs = purchaseOptions?.sales_mode === 'tariffs' ? purchaseOptions.tariffs : [];
   const currentTariffId =
     purchaseOptions?.sales_mode === 'tariffs' ? purchaseOptions.current_tariff_id : null;
-  const currentTariff = currentTariffId ? tariffs.find((t) => t.id === currentTariffId) : null;
+  const resolvedCurrentTariffId = currentTariffId ?? subscription?.tariff_id ?? null;
+  const currentTariff =
+    resolvedCurrentTariffId !== null
+      ? tariffs.find((t) => t.id === resolvedCurrentTariffId) || null
+      : null;
   const deviceLimitFromTariff = currentTariff?.device_limit;
+  const promoGroupName = tariffs.find((tariff) => tariff.promo_group_name)?.promo_group_name;
 
   // Onboarding
   useEffect(() => {
@@ -324,6 +329,34 @@ export function LiteDashboard() {
             {hasNoSubscription && !showTrial && (
               <div className="rounded-2xl border border-dark-600 bg-dark-800/80 p-4 text-center">
                 <p className="text-dark-300">{t('lite.noSubscription')}</p>
+              </div>
+            )}
+
+            {promoGroupName && (
+              <div className="mt-3 flex items-center gap-3 rounded-xl border border-success-500/30 bg-success-500/10 p-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-success-500/20 text-success-400">
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-success-400">
+                    {t('subscription.promoGroup.yourGroup', { name: promoGroupName })}
+                  </div>
+                  <div className="text-xs text-dark-400">
+                    {t('subscription.promoGroup.personalDiscountsApplied')}
+                  </div>
+                </div>
               </div>
             )}
           </div>

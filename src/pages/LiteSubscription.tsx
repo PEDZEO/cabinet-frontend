@@ -518,6 +518,7 @@ export function LiteSubscription() {
   const isTariffCurrent = (tariff: Tariff) =>
     tariff.is_current || tariff.id === resolvedCurrentTariffId;
   const isUnlimitedSubscriptionTraffic = isUnlimitedTrafficLimit(subscription?.traffic_limit_gb);
+  const promoGroupName = tariffs.find((tariff) => tariff.promo_group_name)?.promo_group_name;
   const shouldSwitchTariff = (tariff: Tariff | null) =>
     !!(
       tariff &&
@@ -736,6 +737,33 @@ export function LiteSubscription() {
         {/* Tariffs Tab */}
         {activeTab === 'tariffs' && (
           <div className="space-y-4">
+            {promoGroupName && (
+              <div className="flex items-center gap-3 rounded-xl border border-success-500/30 bg-success-500/10 p-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-success-500/20 text-success-400">
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-success-400">
+                    {t('subscription.promoGroup.yourGroup', { name: promoGroupName })}
+                  </div>
+                  <div className="text-xs text-dark-400">
+                    {t('subscription.promoGroup.personalDiscountsApplied')}
+                  </div>
+                </div>
+              </div>
+            )}
             {tariffs.map((tariff) => {
               const isSelected = selectedTariff?.id === tariff.id;
               const isCurrent = isTariffCurrent(tariff);
@@ -811,6 +839,9 @@ export function LiteSubscription() {
                           tariff.daily_discount_percent && tariff.daily_discount_percent > 0
                         );
                         const promo = applyPromoDiscount(dailyPrice, hasExistingDiscount);
+                        const displayedDiscountPercent = hasExistingDiscount
+                          ? (tariff.daily_discount_percent ?? null)
+                          : promo.percent;
                         return (
                           <div className="flex items-baseline justify-between">
                             <div className="flex items-center gap-2">
@@ -822,9 +853,9 @@ export function LiteSubscription() {
                                   {formatPrice(promo.original)}
                                 </span>
                               )}
-                              {promo.percent && (
+                              {displayedDiscountPercent && displayedDiscountPercent > 0 && (
                                 <span className="rounded bg-success-500/20 px-1.5 py-0.5 text-xs font-semibold text-success-400">
-                                  -{promo.percent}%
+                                  -{displayedDiscountPercent}%
                                 </span>
                               )}
                             </div>
@@ -841,6 +872,9 @@ export function LiteSubscription() {
                             period.price_kopeks,
                             hasExistingDiscount,
                           );
+                          const displayedDiscountPercent = hasExistingDiscount
+                            ? (period.discount_percent ?? null)
+                            : promo.percent;
                           return (
                             <div className="flex items-baseline justify-between">
                               <div className="flex items-center gap-2">
@@ -852,9 +886,9 @@ export function LiteSubscription() {
                                     {formatPrice(promo.original)}
                                   </span>
                                 )}
-                                {promo.percent && (
+                                {displayedDiscountPercent && displayedDiscountPercent > 0 && (
                                   <span className="rounded bg-success-500/20 px-1.5 py-0.5 text-xs font-semibold text-success-400">
-                                    -{promo.percent}%
+                                    -{displayedDiscountPercent}%
                                   </span>
                                 )}
                               </div>
@@ -1063,6 +1097,9 @@ export function LiteSubscription() {
                         devicePrice.total_price_kopeks || 0,
                         hasExistingDiscount,
                       );
+                      const displayedDiscountPercent = hasExistingDiscount
+                        ? (devicePrice.discount_percent ?? null)
+                        : promo.percent;
                       return (
                         <div className="flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
                           <span className="text-dark-400">{t('lite.total')}</span>
@@ -1075,9 +1112,9 @@ export function LiteSubscription() {
                                 {formatPrice(promo.original)}
                               </span>
                             )}
-                            {promo.percent && (
+                            {displayedDiscountPercent && displayedDiscountPercent > 0 && (
                               <span className="rounded bg-success-500/20 px-1.5 py-0.5 text-xs font-semibold text-success-400">
-                                -{promo.percent}%
+                                -{displayedDiscountPercent}%
                               </span>
                             )}
                           </div>
@@ -1262,6 +1299,9 @@ export function LiteSubscription() {
                       pkg.discount_percent && pkg.discount_percent > 0
                     );
                     const promo = applyPromoDiscount(pkg.price_kopeks, hasExistingDiscount);
+                    const displayedDiscountPercent = hasExistingDiscount
+                      ? (pkg.discount_percent ?? null)
+                      : promo.percent;
                     return (
                       <button
                         key={pkg.gb}
@@ -1286,9 +1326,9 @@ export function LiteSubscription() {
                             </span>
                           )}
                         </div>
-                        {promo.percent && (
+                        {displayedDiscountPercent && displayedDiscountPercent > 0 && (
                           <div className="mt-1 text-xs font-semibold text-success-400">
-                            -{promo.percent}%
+                            -{displayedDiscountPercent}%
                           </div>
                         )}
                       </button>
