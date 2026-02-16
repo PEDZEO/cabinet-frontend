@@ -91,6 +91,10 @@ export default function Profile() {
   const [linkPreview, setLinkPreview] = useState<LinkCodePreviewResponse | null>(null);
   const [manualMergeComment, setManualMergeComment] = useState('');
   const [showManualMergeAction, setShowManualMergeAction] = useState(false);
+  const [unlinkProvider, setUnlinkProvider] = useState<string | null>(null);
+  const [unlinkRequestToken, setUnlinkRequestToken] = useState<string | null>(null);
+  const [unlinkOtpCode, setUnlinkOtpCode] = useState('');
+  const [unlinkError, setUnlinkError] = useState<string | null>(null);
 
   // Inline email change flow
   const [changeEmailStep, setChangeEmailStep] = useState<'email' | 'code' | 'success' | null>(null);
@@ -131,14 +135,14 @@ export default function Profile() {
     (user?.email ? user.email.split('@')[0] : null) ||
     '-';
 
-  const parseApiError = (err: unknown): { code?: string; message?: string } => {
+  const parseApiError = (err: unknown): { code?: string; message?: string; reason?: string } => {
     const error = err as { response?: { data?: { detail?: unknown } } };
     const detail = error.response?.data?.detail;
     if (!detail) return {};
     if (typeof detail === 'string') return { message: detail };
     if (typeof detail === 'object') {
-      const payload = detail as { code?: string; message?: string };
-      return { code: payload.code, message: payload.message };
+      const payload = detail as { code?: string; message?: string; reason?: string };
+      return { code: payload.code, message: payload.message, reason: payload.reason };
     }
     return {};
   };
@@ -167,6 +171,49 @@ export default function Profile() {
       default:
         return message || t('common.error');
     }
+  };
+
+  const getUnlinkReasonText = (reason?: string | null) => {
+    switch (reason) {
+      case 'last_identity':
+        return t('profile.linking.unlink.reasons.lastIdentity');
+      case 'current_auth_provider':
+        return t('profile.linking.unlink.reasons.currentProvider');
+      case 'cooldown_active':
+        return t('profile.linking.unlink.reasons.cooldownActive');
+      case 'identity_not_linked':
+        return t('profile.linking.unlink.reasons.notLinked');
+      case 'provider_not_supported':
+        return t('profile.linking.unlink.reasons.providerNotSupported');
+      case 'telegram_required':
+        return t('profile.linking.unlink.reasons.telegramRequired');
+      default:
+        return t('profile.linking.unlink.reasons.generic');
+    }
+  };
+
+  const getLocalizedUnlinkError = (err: unknown) => {
+    const parsed = parseApiError(err);
+    if (parsed.reason) return getUnlinkReasonText(parsed.reason);
+    if (parsed.code === 'unlink_request_invalid') {
+      return t('profile.linking.unlink.errors.requestInvalid');
+    }
+    if (parsed.code === 'unlink_request_mismatch') {
+      return t('profile.linking.unlink.errors.requestMismatch');
+    }
+    if (parsed.code === 'unlink_request_storage_error') {
+      return t('profile.linking.unlink.errors.storageError');
+    }
+    if (parsed.code === 'unlink_otp_invalid') {
+      return t('profile.linking.unlink.errors.otpInvalid');
+    }
+    if (parsed.code === 'unlink_otp_attempts_exceeded') {
+      return t('profile.linking.unlink.errors.otpAttemptsExceeded');
+    }
+    if (parsed.code === 'unlink_otp_delivery_failed') {
+      return t('profile.linking.unlink.errors.otpDeliveryFailed');
+    }
+    return parsed.message || t('common.error');
   };
 
   // Build referral link for cabinet
@@ -371,6 +418,12 @@ export default function Profile() {
     enabled: !!user,
   });
 
+  const { data: latestManualMerge } = useQuery({
+    queryKey: ['latest-manual-merge-request'],
+    queryFn: authApi.getLatestManualMergeRequest,
+    enabled: !!user,
+  });
+
   const createLinkCodeMutation = useMutation({
     mutationFn: authApi.createLinkCode,
     onSuccess: (data) => {
@@ -439,10 +492,45 @@ export default function Profile() {
       );
       setShowManualMergeAction(false);
       setManualMergeComment('');
+      queryClient.invalidateQueries({ queryKey: ['latest-manual-merge-request'] });
     },
     onError: (err: unknown) => {
       setLinkSuccess(null);
       setLinkError(getLocalizedLinkError(err));
+    },
+  });
+
+  const requestUnlinkMutation = useMutation({
+    mutationFn: (provider: string) => authApi.requestUnlinkIdentity(provider),
+    onSuccess: (data) => {
+      setUnlinkError(null);
+      setLinkError(null);
+      setLinkSuccess(t('profile.linking.unlink.codeSent'));
+      setUnlinkProvider(data.provider);
+      setUnlinkRequestToken(data.request_token);
+      setUnlinkOtpCode('');
+    },
+    onError: (err: unknown) => {
+      setUnlinkError(getLocalizedUnlinkError(err));
+    },
+  });
+
+  const confirmUnlinkMutation = useMutation({
+    mutationFn: ({ provider, token, otpCode }: { provider: string; token: string; otpCode: string }) =>
+      authApi.confirmUnlinkIdentity(provider, token, otpCode),
+    onSuccess: (data) => {
+      setUnlinkError(null);
+      setUnlinkProvider(null);
+      setUnlinkRequestToken(null);
+      setUnlinkOtpCode('');
+      setLinkSuccess(
+        t('profile.linking.unlink.success', { provider: data.provider }),
+      );
+      queryClient.invalidateQueries({ queryKey: ['linked-identities'] });
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+    },
+    onError: (err: unknown) => {
+      setUnlinkError(getLocalizedUnlinkError(err));
     },
   });
 
@@ -461,6 +549,17 @@ export default function Profile() {
   const handleNotificationValue = (key: keyof NotificationSettings, value: number) => {
     const update: NotificationSettingsUpdate = { [key]: value };
     updateNotificationsMutation.mutate(update);
+  };
+
+  const getManualMergeStatusLabel = () => {
+    if (!latestManualMerge) return null;
+    if (latestManualMerge.decision === 'approve') {
+      return t('profile.linking.manualStatus.approved', 'Запрос одобрен');
+    }
+    if (latestManualMerge.decision === 'reject') {
+      return t('profile.linking.manualStatus.rejected', 'Запрос отклонен');
+    }
+    return t('profile.linking.manualStatus.pending', 'Запрос на рассмотрении');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -542,12 +641,23 @@ export default function Profile() {
           <div className="mb-4 flex flex-wrap gap-2">
             {(linkedIdentitiesData?.identities || []).length > 0 ? (
               linkedIdentitiesData?.identities.map((identity) => (
-                <span
+                <div
                   key={`${identity.provider}-${identity.provider_user_id_masked}`}
-                  className="rounded-linear border border-dark-700/80 bg-dark-800/70 px-3 py-1 text-xs text-dark-200"
+                  className="flex items-center gap-2 rounded-linear border border-dark-700/80 bg-dark-800/70 px-3 py-1 text-xs text-dark-200"
                 >
-                  {identity.provider}: {identity.provider_user_id_masked}
-                </span>
+                  <span>
+                    {identity.provider}: {identity.provider_user_id_masked}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => requestUnlinkMutation.mutate(identity.provider)}
+                    disabled={!identity.can_unlink || requestUnlinkMutation.isPending}
+                    className="rounded border border-error-500/40 px-2 py-0.5 text-[10px] text-error-300 transition-colors hover:bg-error-500/10 disabled:cursor-not-allowed disabled:border-dark-600 disabled:text-dark-500"
+                    title={identity.can_unlink ? undefined : getUnlinkReasonText(identity.blocked_reason)}
+                  >
+                    {t('profile.linking.unlink.button')}
+                  </button>
+                </div>
               ))
             ) : (
               <span className="text-sm text-dark-500">
@@ -620,6 +730,52 @@ export default function Profile() {
                 {linkError}
               </div>
             )}
+            {unlinkProvider && unlinkRequestToken && (
+              <div className="rounded-linear border border-warning-500/30 bg-warning-500/10 p-3">
+                <p className="mb-2 text-sm text-warning-300">
+                  {t('profile.linking.unlink.confirmText', { provider: unlinkProvider })}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    onClick={() =>
+                      confirmUnlinkMutation.mutate({
+                        provider: unlinkProvider,
+                        token: unlinkRequestToken,
+                        otpCode: unlinkOtpCode.trim(),
+                      })
+                    }
+                    loading={confirmUnlinkMutation.isPending}
+                    disabled={unlinkOtpCode.trim().length !== 6}
+                  >
+                    {t('profile.linking.unlink.confirm')}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      setUnlinkProvider(null);
+                      setUnlinkRequestToken(null);
+                      setUnlinkOtpCode('');
+                      setUnlinkError(null);
+                    }}
+                  >
+                    {t('common.cancel')}
+                  </Button>
+                </div>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={unlinkOtpCode}
+                  onChange={(e) => setUnlinkOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  placeholder={t('profile.linking.unlink.otpPlaceholder')}
+                  className="input mt-3 w-full text-center tracking-[0.4em]"
+                />
+              </div>
+            )}
+            {unlinkError && (
+              <div className="rounded-linear border border-error-500/30 bg-error-500/10 p-3 text-sm text-error-400">
+                {unlinkError}
+              </div>
+            )}
             {showManualMergeAction && (
               <div className="rounded-linear border border-warning-500/30 bg-warning-500/10 p-3">
                 <p className="mb-2 text-sm text-warning-300">
@@ -652,6 +808,31 @@ export default function Profile() {
             {linkSuccess && (
               <div className="rounded-linear border border-success-500/30 bg-success-500/10 p-3 text-sm text-success-400">
                 {linkSuccess}
+              </div>
+            )}
+
+            {latestManualMerge && (
+              <div className="rounded-linear border border-dark-700/80 bg-dark-800/60 p-3">
+                <div className="mb-1 text-sm font-medium text-dark-100">
+                  {t('profile.linking.manualStatus.title', 'Последний спорный merge-запрос')} #
+                  {latestManualMerge.ticket_id}
+                </div>
+                <div className="text-sm text-dark-300">{getManualMergeStatusLabel()}</div>
+                {latestManualMerge.resolution_comment && (
+                  <div className="mt-2 text-xs text-dark-400">
+                    {t('profile.linking.manualStatus.comment', 'Комментарий')}: {latestManualMerge.resolution_comment}
+                  </div>
+                )}
+                <div className="mt-1 text-xs text-dark-500">
+                  {t('profile.linking.manualStatus.updatedAt', 'Обновлено')}{' '}
+                  {new Date(latestManualMerge.updated_at).toLocaleString()}
+                </div>
+                <Link
+                  to="/support"
+                  className="mt-2 inline-flex items-center gap-1 text-xs text-accent-400 transition-colors hover:text-accent-300"
+                >
+                  {t('profile.linking.manualStatus.openSupport', 'Открыть поддержку')}
+                </Link>
               </div>
             )}
           </div>

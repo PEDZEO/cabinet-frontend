@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router';
 import { subscriptionApi } from '@/api/subscription';
 import { balanceApi } from '@/api/balance';
 import { referralApi } from '@/api/referral';
@@ -244,7 +245,6 @@ export function LiteDashboard() {
       ? tariffs.find((t) => t.id === resolvedCurrentTariffId) || null
       : null;
   const deviceLimitFromTariff = currentTariff?.device_limit;
-  const promoGroupName = tariffs.find((tariff) => tariff.promo_group_name)?.promo_group_name;
 
   // Onboarding
   useEffect(() => {
@@ -332,33 +332,22 @@ export function LiteDashboard() {
               </div>
             )}
 
-            {promoGroupName && (
-              <div className="mt-3 flex items-center gap-3 rounded-xl border border-success-500/30 bg-success-500/10 p-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-success-500/20 text-success-400">
-                  <svg
-                    className="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-success-400">
-                    {t('subscription.promoGroup.yourGroup', { name: promoGroupName })}
-                  </div>
-                  <div className="text-xs text-dark-400">
-                    {t('subscription.promoGroup.personalDiscountsApplied')}
-                  </div>
-                </div>
-              </div>
-            )}
+          </div>
+
+          <div className="mb-6 rounded-2xl border border-accent-500/20 bg-gradient-to-br from-accent-500/10 to-transparent p-4">
+            <h3 className="text-sm font-semibold text-dark-100">{t('lite.accountLinking.title')}</h3>
+            <p className="mt-1 text-xs text-dark-400">{t('lite.accountLinking.description')}</p>
+            <div className="mt-3 space-y-1 text-xs text-dark-300">
+              <p>{t('lite.accountLinking.steps.generate')}</p>
+              <p>{t('lite.accountLinking.steps.confirm')}</p>
+              <p>{t('lite.accountLinking.steps.sharedSubscription')}</p>
+            </div>
+            <Link
+              to="/profile"
+              className="mt-3 inline-flex w-full items-center justify-center rounded-lg bg-accent-500 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-accent-600"
+            >
+              {t('lite.accountLinking.cta')}
+            </Link>
           </div>
 
           {/* Promo Offers */}

@@ -219,7 +219,17 @@
     "noActiveSubscription": "No active subscription",
     "devicesUsed": "Devices: {{used}} of {{total}}",
     "trafficUsed": "Traffic: {{used}} of {{total}} GB",
-    "unlimitedTraffic": "Unlimited traffic"
+    "unlimitedTraffic": "Unlimited traffic",
+    "accountLinking": {
+      "title": "Link accounts and keep one subscription",
+      "description": "Connect Telegram, Yandex and VK into one profile so access and balance stay unified.",
+      "cta": "Open linking in profile",
+      "steps": {
+        "generate": "1. Generate a link code in profile on your current account.",
+        "confirm": "2. Sign in with another provider and confirm that code.",
+        "sharedSubscription": "3. After linking, subscription and access are shared."
+      }
+    }
   },
   "subscription": {
     "title": "Subscription",
@@ -779,7 +789,8 @@
       "promoGroups": "Discount Groups",
       "trafficUsage": "Traffic Usage",
       "updates": "Updates",
-      "pinnedMessages": "Pinned Messages"
+      "pinnedMessages": "Pinned Messages",
+      "accountLinking": "Account Merges"
     },
     "panel": {
       "title": "Admin Panel",
@@ -804,7 +815,36 @@
       "promoGroupsDesc": "Discount groups for users",
       "trafficUsageDesc": "Per-user traffic by nodes",
       "updatesDesc": "Bot & cabinet versions",
-      "pinnedMessagesDesc": "Manage pinned messages for users"
+      "pinnedMessagesDesc": "Manage pinned messages for users",
+      "accountLinkingDesc": "Manual moderation for disputed account merges"
+    },
+    "accountLinking": {
+      "title": "Manual Account Merges",
+      "subtitle": "Review disputed account-linking requests",
+      "total": "Total",
+      "requester": "Requester",
+      "source": "Source",
+      "empty": "No merge requests found",
+      "primaryRequired": "Primary account ID is required",
+      "resolveTitle": "Resolve request",
+      "resolveHint": "Participants: current #{{current}}, source #{{source}}",
+      "primaryPlaceholder": "Account ID to keep as primary",
+      "commentPlaceholder": "Comment for audit and user context",
+      "filters": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "all": "All"
+      },
+      "decision": {
+        "pending": "Waiting for decision",
+        "approve": "Approved",
+        "reject": "Rejected"
+      },
+      "actions": {
+        "approve": "Approve merge",
+        "reject": "Reject request"
+      }
     },
     "trafficUsage": {
       "title": "Traffic Usage",
@@ -2670,6 +2710,40 @@
       "manualComment": "Describe which account should stay primary and why",
       "sendManual": "Send to support",
       "manualSent": "Manual merge request sent. Ticket",
+      "unlink": {
+        "button": "Unlink",
+        "confirmText": "Confirm unlink for login method: {{provider}}. Active sessions will be rotated for security.",
+        "confirm": "Confirm unlink",
+        "codeSent": "Confirmation code was sent to Telegram",
+        "otpPlaceholder": "Enter code from Telegram",
+        "success": "Login method {{provider}} was unlinked",
+        "reasons": {
+          "lastIdentity": "Cannot unlink the last login method",
+          "currentProvider": "Cannot unlink current login provider. Sign in with another method first",
+          "cooldownActive": "Temporary cooldown is active. Try again later",
+          "notLinked": "This login method is already not linked",
+          "providerNotSupported": "This login method does not support unlink",
+          "telegramRequired": "Telegram account is required for unlink confirmation",
+          "generic": "Unlink is not available"
+        },
+        "errors": {
+          "requestInvalid": "Unlink confirmation request expired. Start unlink again",
+          "requestMismatch": "Unlink request does not match current account",
+          "storageError": "Failed to create unlink request. Please try again later",
+          "otpInvalid": "Invalid confirmation code",
+          "otpAttemptsExceeded": "Too many code attempts. Request unlink again",
+          "otpDeliveryFailed": "Failed to send code to Telegram. Please try again later"
+        }
+      },
+      "manualStatus": {
+        "title": "Latest disputed merge request",
+        "pending": "Request is under review",
+        "approved": "Request approved",
+        "rejected": "Request rejected",
+        "comment": "Comment",
+        "updatedAt": "Updated",
+        "openSupport": "Open support"
+      },
       "errors": {
         "invalidCode": "Code is invalid or expired",
         "sameAccount": "Cannot link account to itself",
@@ -3001,6 +3075,16 @@
     "expiryWarningDescription": "{{count}} days remaining. Renew to keep your access.",
     "expiryWarningDescription_one": "{{count}} day remaining. Renew to keep your access.",
     "expiryWarningDescription_other": "{{count}} days remaining. Renew to keep your access.",
+    "accountLinking": {
+      "title": "One subscription for all sign-ins",
+      "description": "Link Telegram, Yandex and VK in profile.",
+      "cta": "Go to account linking",
+      "steps": {
+        "generate": "1. Generate a code in profile",
+        "confirm": "2. Enter it in another sign-in",
+        "sharedSubscription": "3. Use one shared subscription"
+      }
+    },
     "referral": {
       "title": "Invite Friends",
       "description": "Earn {{percent}}% from every payment",

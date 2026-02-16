@@ -278,6 +278,31 @@ function FullDashboard() {
         <p className="mt-1 text-dark-400">{t('dashboard.yourSubscription')}</p>
       </div>
 
+      <div className="bento-card border-accent-500/20 bg-gradient-to-br from-accent-500/10 to-transparent">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-dark-100">
+              {t('dashboard.accountLinking.title')}
+            </h2>
+            <p className="mt-1 text-sm text-dark-400">{t('dashboard.accountLinking.description')}</p>
+          </div>
+          <Link to="/profile" className="btn-secondary py-2.5 text-center text-sm sm:min-w-52">
+            {t('dashboard.accountLinking.cta')}
+          </Link>
+        </div>
+        <div className="mt-4 grid gap-2 text-sm text-dark-300 sm:grid-cols-3">
+          <div className="rounded-xl border border-dark-600 bg-dark-900/50 px-3 py-2">
+            {t('dashboard.accountLinking.steps.generate')}
+          </div>
+          <div className="rounded-xl border border-dark-600 bg-dark-900/50 px-3 py-2">
+            {t('dashboard.accountLinking.steps.confirm')}
+          </div>
+          <div className="rounded-xl border border-dark-600 bg-dark-900/50 px-3 py-2">
+            {t('dashboard.accountLinking.steps.sharedSubscription')}
+          </div>
+        </div>
+      </div>
+
       {/* Subscription Status - Main Card */}
       {subLoading ? (
         <div className="bento-card">

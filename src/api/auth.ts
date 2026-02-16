@@ -3,6 +3,9 @@ import type {
   AuthResponse,
   LinkCodeCreateResponse,
   LinkCodePreviewResponse,
+  ManualMergeTicketStatus,
+  UnlinkIdentityRequestResponse,
+  UnlinkIdentityResponse,
   LinkedIdentitiesResponse,
   ManualMergeResponse,
   OAuthProvider,
@@ -198,6 +201,32 @@ export const authApi = {
       code,
       comment,
     });
+    return response.data;
+  },
+
+  getLatestManualMergeRequest: async (): Promise<ManualMergeTicketStatus | null> => {
+    const response = await apiClient.get<ManualMergeTicketStatus | null>(
+      '/cabinet/auth/link-code/manual-request/latest',
+    );
+    return response.data;
+  },
+
+  requestUnlinkIdentity: async (provider: string): Promise<UnlinkIdentityRequestResponse> => {
+    const response = await apiClient.post<UnlinkIdentityRequestResponse>(
+      `/cabinet/auth/identities/${encodeURIComponent(provider)}/unlink/request`,
+    );
+    return response.data;
+  },
+
+  confirmUnlinkIdentity: async (
+    provider: string,
+    requestToken: string,
+    otpCode: string,
+  ): Promise<UnlinkIdentityResponse> => {
+    const response = await apiClient.post<UnlinkIdentityResponse>(
+      `/cabinet/auth/identities/${encodeURIComponent(provider)}/unlink/confirm`,
+      { request_token: requestToken, otp_code: otpCode },
+    );
     return response.data;
   },
 };

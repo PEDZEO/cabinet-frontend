@@ -95,6 +95,16 @@ const ChatBubbleIcon = () => (
   </svg>
 );
 
+const LinkIcon = () => (
+  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-1.757l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"
+    />
+  </svg>
+);
+
 const NoSymbolIcon = () => (
   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
     <path
@@ -366,6 +376,12 @@ export default function AdminPanel() {
           icon: <ChatBubbleIcon />,
           title: t('admin.nav.tickets'),
           description: t('admin.panel.ticketsDesc'),
+        },
+        {
+          to: '/admin/account-linking',
+          icon: <LinkIcon />,
+          title: t('admin.nav.accountLinking'),
+          description: t('admin.panel.accountLinkingDesc'),
         },
         {
           to: '/admin/ban-system',

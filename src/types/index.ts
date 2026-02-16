@@ -24,6 +24,8 @@ export interface OAuthProvider {
 export interface LinkedIdentity {
   provider: string;
   provider_user_id_masked: string;
+  can_unlink: boolean;
+  blocked_reason: string | null;
 }
 
 export interface LinkedIdentitiesResponse {
@@ -43,6 +45,28 @@ export interface LinkCodePreviewResponse {
 export interface ManualMergeResponse {
   message: string;
   ticket_id: number;
+}
+
+export interface UnlinkIdentityRequestResponse {
+  provider: string;
+  request_token: string;
+  expires_in_seconds: number;
+}
+
+export interface UnlinkIdentityResponse {
+  message: string;
+  provider: string;
+}
+
+export interface ManualMergeTicketStatus {
+  ticket_id: number;
+  status: string;
+  decision: 'approve' | 'reject' | null;
+  created_at: string;
+  updated_at: string;
+  source_user_id: number | null;
+  current_user_id: number | null;
+  resolution_comment: string | null;
 }
 
 // Auth types
