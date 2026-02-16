@@ -285,21 +285,11 @@ function FullDashboard() {
               {t('dashboard.accountLinking.title')}
             </h2>
             <p className="mt-1 text-sm text-dark-400">{t('dashboard.accountLinking.description')}</p>
+            <p className="mt-2 text-xs text-dark-500">{t('dashboard.accountLinking.summary')}</p>
           </div>
           <Link to="/profile" className="btn-secondary py-2.5 text-center text-sm sm:min-w-52">
             {t('dashboard.accountLinking.cta')}
           </Link>
-        </div>
-        <div className="mt-4 grid gap-2 text-sm text-dark-300 sm:grid-cols-3">
-          <div className="rounded-xl border border-dark-600 bg-dark-900/50 px-3 py-2">
-            {t('dashboard.accountLinking.steps.generate')}
-          </div>
-          <div className="rounded-xl border border-dark-600 bg-dark-900/50 px-3 py-2">
-            {t('dashboard.accountLinking.steps.confirm')}
-          </div>
-          <div className="rounded-xl border border-dark-600 bg-dark-900/50 px-3 py-2">
-            {t('dashboard.accountLinking.steps.sharedSubscription')}
-          </div>
         </div>
       </div>
 

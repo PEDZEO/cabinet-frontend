@@ -221,8 +221,9 @@
     "trafficUsed": "Traffic: {{used}} of {{total}} GB",
     "unlimitedTraffic": "Unlimited traffic",
     "accountLinking": {
-      "title": "Link accounts and keep one subscription",
-      "description": "Connect Telegram, Yandex and VK into one profile so access and balance stay unified.",
+      "title": "One account across all sign-ins",
+      "description": "If you use Telegram, Yandex, or VK, link them once and keep a single shared subscription.",
+      "summary": "Create a link code in profile, sign in with another method, and confirm it.",
       "cta": "Open linking in profile",
       "steps": {
         "generate": "1. Generate a link code in profile on your current account.",
@@ -2727,6 +2728,8 @@
           "generic": "Unlink is not available"
         },
         "errors": {
+          "otpResendCooldown": "Code already sent. Please wait about a minute before retrying",
+          "otpRateLimited": "Too many code requests. Please try again later",
           "requestInvalid": "Unlink confirmation request expired. Start unlink again",
           "requestMismatch": "Unlink request does not match current account",
           "storageError": "Failed to create unlink request. Please try again later",
@@ -3076,8 +3079,9 @@
     "expiryWarningDescription_one": "{{count}} day remaining. Renew to keep your access.",
     "expiryWarningDescription_other": "{{count}} days remaining. Renew to keep your access.",
     "accountLinking": {
-      "title": "One subscription for all sign-ins",
-      "description": "Link Telegram, Yandex and VK in profile.",
+      "title": "Link all sign-ins into one profile",
+      "description": "Connect Telegram, Yandex, and VK so your access and subscription stay in sync.",
+      "summary": "Generate a code in profile and confirm it after logging in with another method.",
       "cta": "Go to account linking",
       "steps": {
         "generate": "1. Generate a code in profile",

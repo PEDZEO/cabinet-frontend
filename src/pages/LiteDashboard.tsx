@@ -337,11 +337,7 @@ export function LiteDashboard() {
           <div className="mb-6 rounded-2xl border border-accent-500/20 bg-gradient-to-br from-accent-500/10 to-transparent p-4">
             <h3 className="text-sm font-semibold text-dark-100">{t('lite.accountLinking.title')}</h3>
             <p className="mt-1 text-xs text-dark-400">{t('lite.accountLinking.description')}</p>
-            <div className="mt-3 space-y-1 text-xs text-dark-300">
-              <p>{t('lite.accountLinking.steps.generate')}</p>
-              <p>{t('lite.accountLinking.steps.confirm')}</p>
-              <p>{t('lite.accountLinking.steps.sharedSubscription')}</p>
-            </div>
+            <p className="mt-2 text-xs text-dark-500">{t('lite.accountLinking.summary')}</p>
             <Link
               to="/profile"
               className="mt-3 inline-flex w-full items-center justify-center rounded-lg bg-accent-500 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-accent-600"

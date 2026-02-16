@@ -195,6 +195,12 @@ export default function Profile() {
   const getLocalizedUnlinkError = (err: unknown) => {
     const parsed = parseApiError(err);
     if (parsed.reason) return getUnlinkReasonText(parsed.reason);
+    if (parsed.code === 'unlink_otp_resend_cooldown') {
+      return t('profile.linking.unlink.errors.otpResendCooldown');
+    }
+    if (parsed.code === 'unlink_otp_rate_limited') {
+      return t('profile.linking.unlink.errors.otpRateLimited');
+    }
     if (parsed.code === 'unlink_request_invalid') {
       return t('profile.linking.unlink.errors.requestInvalid');
     }
