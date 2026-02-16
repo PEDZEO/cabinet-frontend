@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.16.1](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/compare/v1.16.0...v1.16.1) (2026-02-16)
+
+
+### Bug Fixes
+
+* move cabinet_branding to sessionStorage and add WebGL availabili… ([8200014](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/820001458bcc22e072d21e2faa9b4fe819b4dbad))
+* move cabinet_branding to sessionStorage and add WebGL availability check ([fc7ee6a](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/fc7ee6abfe9920e1b3a51254fde877b66bcfb39a))
+
 ## [1.16.0](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/compare/v1.15.0...v1.16.0) (2026-02-15)
 
 
