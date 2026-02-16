@@ -506,23 +506,32 @@ export function LiteSubscription() {
   const tariffs = purchaseOptions?.sales_mode === 'tariffs' ? purchaseOptions.tariffs : [];
   const currentTariffId =
     purchaseOptions?.sales_mode === 'tariffs' ? purchaseOptions.current_tariff_id : null;
-  const currentTariff = currentTariffId ? tariffs.find((t) => t.id === currentTariffId) : null;
+  const resolvedCurrentTariffId = currentTariffId ?? subscription?.tariff_id ?? null;
+  const currentTariff =
+    resolvedCurrentTariffId !== null
+      ? tariffs.find((t) => t.id === resolvedCurrentTariffId) || null
+      : null;
   // Use device limit from tariff settings, fallback to subscription value
   const deviceLimitFromTariff = currentTariff?.device_limit ?? subscription?.device_limit;
+  const isUnlimitedTrafficLimit = (limit?: number | null) =>
+    typeof limit === 'number' && limit <= 0;
+  const isTariffCurrent = (tariff: Tariff) =>
+    tariff.is_current || tariff.id === resolvedCurrentTariffId;
+  const isUnlimitedSubscriptionTraffic = isUnlimitedTrafficLimit(subscription?.traffic_limit_gb);
 
   const handleTariffAction = () => {
     if (!selectedTariff) return;
 
-    // For trial subscriptions or no tariff - purchase new tariff
-    // For active subscriptions with tariff - switch tariff
     const isTrial = subscription?.is_trial;
-    const canSwitch = hasSubscription && currentTariffId !== null && !isTrial;
+    const hasExistingTariff = hasSubscription && resolvedCurrentTariffId !== null && !isTrial;
+    const isCurrentTariffSelected =
+      hasExistingTariff && selectedTariff.id === resolvedCurrentTariffId;
 
-    if (canSwitch && currentTariffId !== selectedTariff.id) {
-      // Switch tariff (only for non-trial with existing tariff)
+    if (hasExistingTariff && !isCurrentTariffSelected) {
+      // Switch tariff for active subscriptions with an existing tariff
       switchTariffMutation.mutate(selectedTariff.id);
-    } else if (!hasSubscription || isTrial || currentTariffId === null) {
-      // Purchase new subscription (for new users, trial users, or users without tariff)
+    } else {
+      // Purchase/extend tariff for new users, trial users, legacy subscriptions, and current tariff
       purchaseTariffMutation.mutate({
         tariffId: selectedTariff.id,
         periodDays: selectedPeriodDays,
@@ -726,7 +735,7 @@ export function LiteSubscription() {
           <div className="space-y-4">
             {tariffs.map((tariff) => {
               const isSelected = selectedTariff?.id === tariff.id;
-              const isCurrent = tariff.is_current;
+              const isCurrent = isTariffCurrent(tariff);
               const period = selectedPeriodDays
                 ? tariff.periods.find((p) => p.days === selectedPeriodDays) || tariff.periods[0]
                 : tariff.periods[0];
@@ -737,7 +746,10 @@ export function LiteSubscription() {
                   onClick={() => {
                     haptic.selectionChanged();
                     setSelectedTariff(tariff);
-                    if (tariff.periods.length > 0 && !selectedPeriodDays) {
+                    if (
+                      tariff.periods.length > 0 &&
+                      !tariff.periods.some((period) => period.days === selectedPeriodDays)
+                    ) {
                       setSelectedPeriodDays(tariff.periods[0].days);
                     }
                   }}
@@ -772,8 +784,9 @@ export function LiteSubscription() {
 
                   <div className="mb-3 flex flex-wrap gap-2 text-sm text-dark-400">
                     <span>
-                      {tariff.is_unlimited_traffic
-                        ? t('lite.unlimited')
+                      {tariff.is_unlimited_traffic ||
+                      isUnlimitedTrafficLimit(tariff.traffic_limit_gb)
+                        ? '∞'
                         : `${tariff.traffic_limit_gb} GB`}
                     </span>
                     <span>•</span>
@@ -883,17 +896,19 @@ export function LiteSubscription() {
                   haptic.buttonPress();
                   handleTariffAction();
                 }}
-                disabled={isLoading || (selectedTariff.is_current && !subscription?.is_trial)}
+                disabled={isLoading}
                 className={`w-full rounded-xl py-4 font-semibold transition-all active:scale-[0.98] ${
-                  selectedTariff.is_current && !subscription?.is_trial
+                  isLoading
                     ? 'cursor-not-allowed bg-dark-700 text-dark-400'
                     : 'bg-accent-500 text-white hover:bg-accent-600'
                 }`}
               >
                 {isLoading
                   ? t('common.loading')
-                  : hasSubscription && !subscription?.is_trial && currentTariffId !== null
-                    ? t('lite.changeTariff')
+                  : hasSubscription && !subscription?.is_trial && resolvedCurrentTariffId !== null
+                    ? isTariffCurrent(selectedTariff)
+                      ? t('subscription.extend')
+                      : t('lite.changeTariff')
                     : t('lite.buyTariff')}
               </button>
             )}
@@ -1171,12 +1186,13 @@ export function LiteSubscription() {
                 </div>
               </div>
 
-              {subscription?.traffic_limit_gb === -1 ? (
-                <div className="flex items-center justify-center gap-2 rounded-xl bg-success-500/10 py-4">
-                  <span className="text-2xl">∞</span>
-                  <span className="text-lg font-semibold text-success-400">
-                    {t('lite.unlimited')}
-                  </span>
+              {isUnlimitedSubscriptionTraffic ? (
+                <div
+                  className="flex items-center justify-center rounded-xl bg-success-500/10 py-4"
+                  aria-label={t('lite.unlimited')}
+                  title={t('lite.unlimited')}
+                >
+                  <span className="text-3xl font-semibold text-success-400">∞</span>
                 </div>
               ) : (
                 <>
@@ -1184,22 +1200,22 @@ export function LiteSubscription() {
                   <div className="mb-3 grid grid-cols-3 gap-2 text-center">
                     <div className="rounded-lg bg-dark-700/50 p-2">
                       <p className="text-lg font-bold text-dark-100">
-                        {subscription?.traffic_used_gb?.toFixed(1) || '0'}
+                        {(subscription?.traffic_used_gb ?? 0).toFixed(1)}
                       </p>
                       <p className="text-xs text-dark-400">{t('lite.trafficUsed')}</p>
                     </div>
                     <div className="rounded-lg bg-dark-700/50 p-2">
                       <p className="text-lg font-bold text-dark-100">
                         {(
-                          (subscription?.traffic_limit_gb || 0) -
-                          (subscription?.traffic_used_gb || 0)
+                          (subscription?.traffic_limit_gb ?? 0) -
+                          (subscription?.traffic_used_gb ?? 0)
                         ).toFixed(1)}
                       </p>
                       <p className="text-xs text-dark-400">{t('lite.trafficRemaining')}</p>
                     </div>
                     <div className="rounded-lg bg-dark-700/50 p-2">
                       <p className="text-lg font-bold text-dark-100">
-                        {subscription?.traffic_limit_gb || 0}
+                        {subscription?.traffic_limit_gb ?? 0}
                       </p>
                       <p className="text-xs text-dark-400">{t('lite.trafficTotal')}</p>
                     </div>
@@ -1209,20 +1225,20 @@ export function LiteSubscription() {
                   <div className="mb-2 h-3 w-full overflow-hidden rounded-full bg-dark-700">
                     <div
                       className={`h-full rounded-full transition-all ${
-                        (subscription?.traffic_used_percent || 0) >= 90
+                        (subscription?.traffic_used_percent ?? 0) >= 90
                           ? 'bg-error-500'
-                          : (subscription?.traffic_used_percent || 0) >= 70
+                          : (subscription?.traffic_used_percent ?? 0) >= 70
                             ? 'bg-warning-500'
                             : 'bg-accent-500'
                       }`}
                       style={{
-                        width: `${Math.min(subscription?.traffic_used_percent || 0, 100)}%`,
+                        width: `${Math.min(subscription?.traffic_used_percent ?? 0, 100)}%`,
                       }}
                     />
                   </div>
                   <p className="text-center text-sm text-dark-400">
                     {t('lite.trafficPercent', {
-                      percent: (subscription?.traffic_used_percent || 0).toFixed(0),
+                      percent: (subscription?.traffic_used_percent ?? 0).toFixed(0),
                     })}
                   </p>
                 </>

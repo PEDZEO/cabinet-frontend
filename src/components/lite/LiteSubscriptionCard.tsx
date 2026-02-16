@@ -28,6 +28,7 @@ export function LiteSubscriptionCard({ subscription, deviceLimit }: LiteSubscrip
   const { t } = useTranslation();
   const haptic = useHapticFeedback();
   const [copied, setCopied] = useState(false);
+  const isUnlimitedTraffic = subscription.traffic_limit_gb <= 0;
 
   const copySubscriptionLink = () => {
     if (subscription.subscription_url && !subscription.hide_subscription_link) {
@@ -73,10 +74,9 @@ export function LiteSubscriptionCard({ subscription, deviceLimit }: LiteSubscrip
     return null;
   };
 
-  const trafficDisplay =
-    subscription.traffic_limit_gb === -1
-      ? t('lite.unlimited')
-      : `${subscription.traffic_used_gb.toFixed(1)} / ${subscription.traffic_limit_gb} GB`;
+  const trafficDisplay = isUnlimitedTraffic
+    ? '∞'
+    : `${subscription.traffic_used_gb.toFixed(1)} / ${subscription.traffic_limit_gb} GB`;
 
   // VPN status indicator - active means connected/online
   const isOnline = subscription.is_active && !subscription.is_expired;
@@ -134,7 +134,7 @@ export function LiteSubscriptionCard({ subscription, deviceLimit }: LiteSubscrip
               .pop()}
           </span>
         </div>
-        {subscription.traffic_limit_gb !== -1 && (
+        {!isUnlimitedTraffic && (
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-dark-600">
             <div
               className="h-full rounded-full bg-accent-500 transition-all"

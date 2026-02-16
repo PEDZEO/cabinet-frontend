@@ -20,8 +20,8 @@ export function LiteTrialCard({
 
   const canActivate = !trialInfo.requires_payment || balance >= trialInfo.price_kopeks;
   const trafficLabel =
-    trialInfo.traffic_limit_gb === -1
-      ? t('lite.unlimited')
+    trialInfo.traffic_limit_gb <= 0
+      ? '∞'
       : t('lite.trialTraffic', { count: trialInfo.traffic_limit_gb });
 
   return (
