@@ -37,6 +37,15 @@ export default function OAuthCallback() {
     const authenticate = async () => {
       const code = searchParams.get('code');
       const urlState = searchParams.get('state');
+      const deviceId = searchParams.get('device_id');
+      const responseType = searchParams.get('type');
+      const oauthError = searchParams.get('error');
+      const oauthErrorDescription = searchParams.get('error_description');
+
+      if (oauthError) {
+        setError(oauthErrorDescription || oauthError);
+        return;
+      }
 
       if (!code || !urlState) {
         setError(t('auth.oauthError', 'Authorization was denied or failed'));
@@ -57,7 +66,14 @@ export default function OAuthCallback() {
       }
 
       try {
-        await loginWithOAuth(saved.provider, code, urlState);
+        const payload =
+          saved.provider === 'vk'
+            ? {
+                device_id: deviceId || undefined,
+                type: responseType || undefined,
+              }
+            : undefined;
+        await loginWithOAuth(saved.provider, code, urlState, payload);
         navigate('/', { replace: true });
       } catch (err: unknown) {
         const error = err as { response?: { data?: { detail?: string } } };

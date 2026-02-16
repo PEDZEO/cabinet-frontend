@@ -146,10 +146,15 @@ export const authApi = {
   },
 
   // OAuth: callback (exchange code for tokens)
-  oauthCallback: async (provider: string, code: string, state: string): Promise<AuthResponse> => {
+  oauthCallback: async (
+    provider: string,
+    code: string,
+    state: string,
+    payload?: { device_id?: string; type?: string },
+  ): Promise<AuthResponse> => {
     const response = await apiClient.post<AuthResponse>(
       `/cabinet/auth/oauth/${encodeURIComponent(provider)}/callback`,
-      { code, state },
+      { code, state, ...payload },
     );
     return response.data;
   },
