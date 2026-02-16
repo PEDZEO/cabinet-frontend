@@ -16,6 +16,12 @@ const ArrowRightIcon = () => (
   </svg>
 );
 
+const ChevronDownIcon = ({ className = 'h-4 w-4' }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+  </svg>
+);
+
 export default function LiteBalance() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -29,7 +35,13 @@ export default function LiteBalance() {
   const [promocode, setPromocode] = useState('');
   const [promocodeLoading, setPromocodeLoading] = useState(false);
   const [promocodeError, setPromocodeError] = useState<string | null>(null);
-  const [promocodeSuccess, setPromocodeSuccess] = useState<string | null>(null);
+  const [promocodeSuccess, setPromocodeSuccess] = useState<{
+    message: string;
+    amount: number;
+  } | null>(null);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [transactionsPage, setTransactionsPage] = useState(1);
+  const [transactionItems, setTransactionItems] = useState<Transaction[]>([]);
 
   useEffect(() => {
     refreshUser();
@@ -76,9 +88,12 @@ export default function LiteBalance() {
     queryFn: balanceApi.getPaymentMethods,
   });
 
-  const { data: transactions } = useQuery<PaginatedResponse<Transaction>>({
-    queryKey: ['transactions', 1, 'lite'],
-    queryFn: () => balanceApi.getTransactions({ per_page: 5, page: 1 }),
+  const { data: transactions, isFetching: isTransactionsFetching } = useQuery<
+    PaginatedResponse<Transaction>
+  >({
+    queryKey: ['transactions', transactionsPage, 'lite'],
+    queryFn: () => balanceApi.getTransactions({ per_page: 5, page: transactionsPage }),
+    placeholderData: (previousData) => previousData,
   });
 
   const normalizeType = (type: string) => type?.toUpperCase?.() ?? type;
@@ -98,6 +113,40 @@ export default function LiteBalance() {
     }
   };
 
+  const getTypeBadgeClass = (type: string) => {
+    switch (normalizeType(type)) {
+      case 'DEPOSIT':
+        return 'bg-success-500/15 text-success-400 border-success-500/25';
+      case 'SUBSCRIPTION_PAYMENT':
+        return 'bg-accent-500/15 text-accent-400 border-accent-500/25';
+      case 'REFERRAL_REWARD':
+        return 'bg-warning-500/15 text-warning-400 border-warning-500/25';
+      case 'WITHDRAWAL':
+        return 'bg-error-500/15 text-error-400 border-error-500/25';
+      default:
+        return 'bg-dark-700/50 text-dark-400 border-dark-600';
+    }
+  };
+
+  useEffect(() => {
+    if (!transactions) return;
+
+    if (transactionsPage === 1) {
+      setTransactionItems(transactions.items);
+      return;
+    }
+
+    setTransactionItems((prev) => {
+      const merged = [...prev];
+      for (const item of transactions.items) {
+        if (!merged.some((tx) => tx.id === item.id)) {
+          merged.push(item);
+        }
+      }
+      return merged;
+    });
+  }, [transactions, transactionsPage]);
+
   const handlePromocodeActivate = async () => {
     if (!promocode.trim()) return;
 
@@ -108,7 +157,12 @@ export default function LiteBalance() {
     try {
       const result = await balanceApi.activatePromocode(promocode.trim());
       if (result.success) {
-        setPromocodeSuccess(result.bonus_description || t('balance.promocode.success'));
+        const bonusAmount = result.balance_after - result.balance_before;
+        setPromocodeSuccess({
+          message: result.bonus_description || t('balance.promocode.success'),
+          amount: bonusAmount,
+        });
+        setTransactionsPage(1);
         setPromocode('');
         await refetchBalance();
         await refreshUser();
@@ -199,36 +253,77 @@ export default function LiteBalance() {
           </button>
         </div>
         {promocodeError && <div className="mt-2 text-xs text-error-400">{promocodeError}</div>}
-        {promocodeSuccess && <div className="mt-2 text-xs text-success-400">{promocodeSuccess}</div>}
+        {promocodeSuccess && (
+          <div className="mt-2 rounded-xl border border-success-500/30 bg-success-500/10 px-3 py-2 text-xs text-success-400">
+            <div>{promocodeSuccess.message}</div>
+            {promocodeSuccess.amount > 0 && (
+              <div className="mt-1">
+                {t('balance.promocode.balanceAdded', {
+                  amount: promocodeSuccess.amount.toFixed(2),
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="rounded-2xl border border-dark-600 bg-dark-800/80 p-4">
-        <h2 className="mb-3 text-sm font-semibold text-dark-100">{t('balance.transactionHistory')}</h2>
-        {transactions?.items?.length ? (
-          <div className="space-y-2">
-            {transactions.items.map((tx) => {
-              const isPositive = tx.amount_rubles >= 0;
-              const sign = isPositive ? '+' : '-';
-              const amountClass = isPositive ? 'text-success-400' : 'text-error-400';
-              return (
-                <div
-                  key={tx.id}
-                  className="flex items-center justify-between rounded-xl border border-dark-700/60 bg-dark-700/40 px-3 py-2"
-                >
-                  <div className="min-w-0">
-                    <div className="truncate text-xs text-dark-300">{getTypeLabel(tx.type)}</div>
-                    <div className="text-2xs text-dark-500">
-                      {new Date(tx.created_at).toLocaleDateString()}
+        <button
+          type="button"
+          className="mb-3 flex w-full items-center justify-between rounded-xl px-1 py-1 text-left transition-colors hover:bg-dark-700/40"
+          onClick={() => setIsHistoryOpen((prev) => !prev)}
+          aria-expanded={isHistoryOpen}
+        >
+          <h2 className="text-sm font-semibold text-dark-100">{t('balance.transactionHistory')}</h2>
+          <ChevronDownIcon
+            className={`h-4 w-4 text-dark-400 transition-transform duration-200 ${isHistoryOpen ? 'rotate-180' : ''}`}
+          />
+        </button>
+        {transactionItems.length ? (
+          isHistoryOpen ? (
+            <div className="space-y-2">
+              {transactionItems.map((tx) => {
+                const isPositive = tx.amount_rubles >= 0;
+                const sign = isPositive ? '+' : '-';
+                const amountClass = isPositive ? 'text-success-400' : 'text-error-400';
+                return (
+                  <div
+                    key={tx.id}
+                    className="flex items-center justify-between rounded-xl border border-dark-700/60 bg-dark-700/40 px-3 py-2"
+                  >
+                    <div className="min-w-0">
+                      <span
+                        className={`inline-flex max-w-full items-center truncate rounded-full border px-2 py-0.5 text-2xs font-medium ${getTypeBadgeClass(tx.type)}`}
+                      >
+                        {getTypeLabel(tx.type)}
+                      </span>
+                      <div className="text-2xs text-dark-500">
+                        {new Date(tx.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div className={`text-sm font-semibold ${amountClass}`}>
+                      {sign}
+                      {formatAmount(Math.abs(tx.amount_rubles))} {currencySymbol}
                     </div>
                   </div>
-                  <div className={`text-sm font-semibold ${amountClass}`}>
-                    {sign}
-                    {formatAmount(Math.abs(tx.amount_rubles))} {currencySymbol}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+              {transactions && transactions.page < transactions.pages && (
+                <button
+                  type="button"
+                  onClick={() => setTransactionsPage((prev) => prev + 1)}
+                  disabled={isTransactionsFetching}
+                  className="mt-1 w-full rounded-xl border border-dark-600 bg-dark-700/40 px-3 py-2 text-xs font-medium text-dark-300 transition-colors hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isTransactionsFetching ? t('common.loading') : t('common.next')}
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-dark-700/60 bg-dark-700/30 px-3 py-2 text-xs text-dark-400">
+              {t('balance.transactionHistory')}: {transactionItems.length}
+            </div>
+          )
         ) : (
           <div className="text-xs text-dark-400">{t('balance.noTransactions')}</div>
         )}
