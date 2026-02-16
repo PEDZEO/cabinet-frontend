@@ -82,7 +82,6 @@ export default function Profile() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [showChangeEmailModal, setShowChangeEmailModal] = useState(false);
   const [notificationsExpanded, setNotificationsExpanded] = useState(false);
 
   // Inline email change flow
