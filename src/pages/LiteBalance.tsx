@@ -42,6 +42,7 @@ export default function LiteBalance() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [transactionsPage, setTransactionsPage] = useState(1);
   const [transactionItems, setTransactionItems] = useState<Transaction[]>([]);
+  const [visibleTransactionsCount, setVisibleTransactionsCount] = useState(5);
 
   useEffect(() => {
     refreshUser();
@@ -133,6 +134,7 @@ export default function LiteBalance() {
 
     if (transactionsPage === 1) {
       setTransactionItems(transactions.items);
+      setVisibleTransactionsCount(5);
       return;
     }
 
@@ -146,6 +148,18 @@ export default function LiteBalance() {
       return merged;
     });
   }, [transactions, transactionsPage]);
+
+  const handleShowMoreTransactions = () => {
+    if (visibleTransactionsCount < transactionItems.length) {
+      setVisibleTransactionsCount((prev) => prev + 5);
+      return;
+    }
+
+    if (transactions && transactions.page < transactions.pages && !isTransactionsFetching) {
+      setTransactionsPage((prev) => prev + 1);
+      setVisibleTransactionsCount((prev) => prev + 5);
+    }
+  };
 
   const handlePromocodeActivate = async () => {
     if (!promocode.trim()) return;
@@ -282,7 +296,7 @@ export default function LiteBalance() {
         {transactionItems.length ? (
           isHistoryOpen ? (
             <div className="space-y-2">
-              {transactionItems.map((tx) => {
+              {transactionItems.slice(0, visibleTransactionsCount).map((tx) => {
                 const isPositive = tx.amount_rubles >= 0;
                 const sign = isPositive ? '+' : '-';
                 const amountClass = isPositive ? 'text-success-400' : 'text-error-400';
@@ -308,16 +322,28 @@ export default function LiteBalance() {
                   </div>
                 );
               })}
-              {transactions && transactions.page < transactions.pages && (
-                <button
-                  type="button"
-                  onClick={() => setTransactionsPage((prev) => prev + 1)}
-                  disabled={isTransactionsFetching}
-                  className="mt-1 w-full rounded-xl border border-dark-600 bg-dark-700/40 px-3 py-2 text-xs font-medium text-dark-300 transition-colors hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isTransactionsFetching ? t('common.loading') : t('common.next')}
-                </button>
-              )}
+              <div className="mt-1 grid grid-cols-2 gap-2">
+                {(visibleTransactionsCount < transactionItems.length ||
+                  (transactions && transactions.page < transactions.pages)) && (
+                  <button
+                    type="button"
+                    onClick={handleShowMoreTransactions}
+                    disabled={isTransactionsFetching}
+                    className="rounded-xl border border-dark-600 bg-dark-700/40 px-3 py-2 text-xs font-medium text-dark-300 transition-colors hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isTransactionsFetching ? t('common.loading') : t('common.next')}
+                  </button>
+                )}
+                {visibleTransactionsCount > 5 && (
+                  <button
+                    type="button"
+                    onClick={() => setVisibleTransactionsCount(5)}
+                    className="rounded-xl border border-dark-600 bg-dark-700/40 px-3 py-2 text-xs font-medium text-dark-300 transition-colors hover:bg-dark-700"
+                  >
+                    {t('common.collapse')}
+                  </button>
+                )}
+              </div>
             </div>
           ) : (
             <div className="rounded-xl border border-dark-700/60 bg-dark-700/30 px-3 py-2 text-xs text-dark-400">
