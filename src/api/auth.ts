@@ -110,7 +110,9 @@ export const authApi = {
   },
 
   // Request email change - sends verification code to new email
-  requestEmailChange: async (newEmail: string): Promise<{ message: string }> => {
+  requestEmailChange: async (
+    newEmail: string,
+  ): Promise<{ message: string; new_email: string; expires_in_minutes: number }> => {
     const response = await apiClient.post('/cabinet/auth/email/change', {
       new_email: newEmail,
     });
@@ -138,7 +140,7 @@ export const authApi = {
     provider: string,
   ): Promise<{ authorize_url: string; state: string }> => {
     const response = await apiClient.get<{ authorize_url: string; state: string }>(
-      `/cabinet/auth/oauth/${provider}/authorize`,
+      `/cabinet/auth/oauth/${encodeURIComponent(provider)}/authorize`,
     );
     return response.data;
   },
@@ -146,7 +148,7 @@ export const authApi = {
   // OAuth: callback (exchange code for tokens)
   oauthCallback: async (provider: string, code: string, state: string): Promise<AuthResponse> => {
     const response = await apiClient.post<AuthResponse>(
-      `/cabinet/auth/oauth/${provider}/callback`,
+      `/cabinet/auth/oauth/${encodeURIComponent(provider)}/callback`,
       { code, state },
     );
     return response.data;

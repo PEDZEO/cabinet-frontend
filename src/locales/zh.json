@@ -338,6 +338,7 @@
       "trafficUnavailable": "您的套餐不支持购买流量",
       "unlimited": "无限制",
       "buyTrafficGb": "购买 {{gb}} GB",
+      "buyUnlimited": "购买无限流量",
       "manageServers": "服务器管理",
       "manageServersTitle": "服务器管理"
     },
@@ -658,7 +659,8 @@
       "remnawave": "RemnaWave",
       "users": "用户",
       "trafficUsage": "流量使用",
-      "updates": "更新"
+      "updates": "更新",
+      "pinnedMessages": "置顶消息"
     },
     "panel": {
       "title": "管理面板",
@@ -682,7 +684,8 @@
       "remnawaveDesc": "面板管理和统计",
       "usersDesc": "管理机器人用户",
       "trafficUsageDesc": "按节点统计用户流量",
-      "updatesDesc": "机器人和面板版本"
+      "updatesDesc": "机器人和面板版本",
+      "pinnedMessagesDesc": "管理用户置顶消息"
     },
     "trafficUsage": {
       "title": "流量使用",
@@ -922,6 +925,48 @@
       "bothCreated": "群发已创建",
       "atLeastOneChannel": "请至少选择一个渠道"
     },
+    "pinnedMessages": {
+      "title": "置顶消息",
+      "subtitle": "管理用户置顶消息",
+      "create": "创建",
+      "empty": "暂无置顶消息",
+      "content": "消息文本",
+      "contentPlaceholder": "输入置顶消息文本...",
+      "noContent": "无文本",
+      "media": "媒体文件",
+      "addMedia": "添加媒体",
+      "uploading": "上传中...",
+      "settings": "设置",
+      "sendBeforeMenu": "菜单前发送",
+      "sendOnEveryStart": "每次启动时发送",
+      "broadcast": "广播",
+      "broadcastOnCreate": "创建时广播",
+      "broadcastConfirm": "向所有活跃用户广播置顶消息？",
+      "broadcastToAll": "广播给所有人",
+      "activate": "激活",
+      "deactivate": "停用",
+      "unpin": "取消置顶",
+      "unpinAll": "取消所有人的置顶",
+      "unpinConfirm": "取消所有用户的置顶消息？",
+      "delete": "删除",
+      "deleteConfirm": "删除此置顶消息？",
+      "active": "活跃",
+      "inactive": "不活跃",
+      "prev": "上一页",
+      "next": "下一页",
+      "createSuccess": "置顶消息已创建",
+      "updateSuccess": "消息已更新",
+      "deleteSuccess": "消息已删除",
+      "activateSuccess": "消息已激活",
+      "deactivateSuccess": "消息已停用",
+      "broadcastSuccess": "广播完成",
+      "unpinSuccess": "消息已取消置顶",
+      "sentCount": "已发送",
+      "failedCount": "失败",
+      "unpinnedCount": "已取消置顶",
+      "editMessage": "编辑",
+      "cantDeleteActive": "无法删除活跃消息"
+    },
     "settings": {
       "title": "系统设置",
       "allCategories": "所有分类",
@@ -938,6 +983,7 @@
       "noSearchResults": "未找到结果",
       "example": "示例",
       "analytics": "分析",
+      "buttons": "按钮",
       "notConfigured": "未配置",
       "counterActive": "已启用",
       "counterInactive": "未启用",
@@ -999,6 +1045,41 @@
       "quickPresets": "快速预设",
       "resetAllColors": "重置所有颜色",
       "statusColors": "状态颜色"
+    },
+    "buttons": {
+      "color": "按钮颜色",
+      "emojiId": "自定义表情 ID",
+      "emojiPlaceholder": "自定义表情 ID（可选）",
+      "resetAll": "重置所有样式",
+      "resetConfirm": "将所有按钮样式重置为默认值？",
+      "hidden": "已隐藏",
+      "customLabels": "按钮名称",
+      "labelPlaceholder": "自定义按钮文本",
+      "labelsHint": "留空 = 默认名称",
+      "sections": {
+        "home": "主页",
+        "subscription": "订阅",
+        "balance": "余额",
+        "referral": "推荐",
+        "support": "支持",
+        "info": "信息",
+        "admin": "管理面板"
+      },
+      "descriptions": {
+        "home": "个人中心按钮",
+        "subscription": "订阅管理",
+        "balance": "充值和余额",
+        "referral": "推荐计划",
+        "support": "支持工单",
+        "info": "信息板块",
+        "admin": "网页管理面板"
+      },
+      "styles": {
+        "default": "无颜色",
+        "primary": "蓝色",
+        "success": "绿色",
+        "danger": "红色"
+      }
     },
     "apps": {
       "title": "应用管理",

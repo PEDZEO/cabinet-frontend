@@ -155,6 +155,17 @@ const MegaphoneIcon = () => (
   </svg>
 );
 
+const PinnedMessageIcon = () => (
+  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"
+    />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+  </svg>
+);
+
 const PaperAirplaneIcon = () => (
   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
     <path
@@ -425,6 +436,12 @@ export default function AdminPanel() {
           icon: <PaperAirplaneIcon />,
           title: t('admin.nav.broadcasts'),
           description: t('admin.panel.broadcastsDesc'),
+        },
+        {
+          to: '/admin/pinned-messages',
+          icon: <PinnedMessageIcon />,
+          title: t('admin.nav.pinnedMessages'),
+          description: t('admin.panel.pinnedMessagesDesc'),
         },
         {
           to: '/admin/wheel',

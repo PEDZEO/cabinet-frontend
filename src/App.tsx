@@ -73,6 +73,8 @@ const AdminTrafficUsage = lazy(() => import('./pages/AdminTrafficUsage'));
 const AdminUpdates = lazy(() => import('./pages/AdminUpdates'));
 const AdminUserDetail = lazy(() => import('./pages/AdminUserDetail'));
 const AdminBroadcastDetail = lazy(() => import('./pages/AdminBroadcastDetail'));
+const AdminPinnedMessages = lazy(() => import('./pages/AdminPinnedMessages'));
+const AdminPinnedMessageCreate = lazy(() => import('./pages/AdminPinnedMessageCreate'));
 const AdminEmailTemplatePreview = lazy(() => import('./pages/AdminEmailTemplatePreview'));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -683,6 +685,36 @@ function App() {
             <AdminRoute>
               <LazyPage>
                 <AdminBroadcastDetail />
+              </LazyPage>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/pinned-messages"
+          element={
+            <AdminRoute>
+              <LazyPage>
+                <AdminPinnedMessages />
+              </LazyPage>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/pinned-messages/create"
+          element={
+            <AdminRoute>
+              <LazyPage>
+                <AdminPinnedMessageCreate />
+              </LazyPage>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/pinned-messages/:id/edit"
+          element={
+            <AdminRoute>
+              <LazyPage>
+                <AdminPinnedMessageCreate />
               </LazyPage>
             </AdminRoute>
           }

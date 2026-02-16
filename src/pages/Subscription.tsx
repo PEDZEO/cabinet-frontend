@@ -1608,7 +1608,7 @@ function FullSubscription() {
                         ))}
                       </div>
 
-                      {selectedTrafficPackage &&
+                      {selectedTrafficPackage !== null &&
                         (() => {
                           const selectedPkg = trafficPackages.find(
                             (p) => p.gb === selectedTrafficPackage,
@@ -1645,6 +1645,8 @@ function FullSubscription() {
                                   <span className="flex items-center justify-center gap-2">
                                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                                   </span>
+                                ) : selectedPkg?.is_unlimited ? (
+                                  t('subscription.additionalOptions.buyUnlimited')
                                 ) : (
                                   t('subscription.additionalOptions.buyTrafficGb', {
                                     gb: selectedTrafficPackage,

@@ -338,6 +338,7 @@
       "trafficUnavailable": "خرید ترافیک برای اشتراک شما در دسترس نیست",
       "unlimited": "نامحدود",
       "buyTrafficGb": "خرید {{gb}} GB",
+      "buyUnlimited": "خرید نامحدود",
       "manageServers": "مدیریت سرورها",
       "manageServersTitle": "مدیریت سرورها"
     },
@@ -658,7 +659,8 @@
       "remnawave": "RemnaWave",
       "users": "کاربران",
       "trafficUsage": "مصرف ترافیک",
-      "updates": "به‌روزرسانی‌ها"
+      "updates": "به‌روزرسانی‌ها",
+      "pinnedMessages": "پیام‌های سنجاق‌شده"
     },
     "panel": {
       "title": "پنل مدیریت",
@@ -682,7 +684,8 @@
       "remnawaveDesc": "مدیریت پنل و آمار",
       "usersDesc": "مدیریت کاربران ربات",
       "trafficUsageDesc": "ترافیک هر کاربر بر اساس نود",
-      "updatesDesc": "نسخه‌های ربات و کابینت"
+      "updatesDesc": "نسخه‌های ربات و کابینت",
+      "pinnedMessagesDesc": "مدیریت پیام‌های سنجاق‌شده"
     },
     "trafficUsage": {
       "title": "مصرف ترافیک",
@@ -870,6 +873,48 @@
       "bothCreated": "پیام‌رسانی‌ها ایجاد شدند",
       "atLeastOneChannel": "حداقل یک کانال را انتخاب کنید"
     },
+    "pinnedMessages": {
+      "title": "Pinned Messages",
+      "subtitle": "Manage pinned messages for users",
+      "create": "Create",
+      "empty": "No pinned messages",
+      "content": "Message text",
+      "contentPlaceholder": "Enter pinned message text...",
+      "noContent": "No text",
+      "media": "Media file",
+      "addMedia": "Add media",
+      "uploading": "Uploading...",
+      "settings": "Settings",
+      "sendBeforeMenu": "Send before menu",
+      "sendOnEveryStart": "Send on every start",
+      "broadcast": "Broadcast",
+      "broadcastOnCreate": "Broadcast on create",
+      "broadcastConfirm": "Broadcast pinned message to all active users?",
+      "broadcastToAll": "Broadcast to all",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "unpin": "Unpin",
+      "unpinAll": "Unpin for everyone",
+      "unpinConfirm": "Unpin message for all users?",
+      "delete": "Delete",
+      "deleteConfirm": "Delete this pinned message?",
+      "active": "Active",
+      "inactive": "Inactive",
+      "prev": "Previous",
+      "next": "Next",
+      "createSuccess": "Pinned message created",
+      "updateSuccess": "Message updated",
+      "deleteSuccess": "Message deleted",
+      "activateSuccess": "Message activated",
+      "deactivateSuccess": "Message deactivated",
+      "broadcastSuccess": "Broadcast completed",
+      "unpinSuccess": "Messages unpinned",
+      "sentCount": "Sent",
+      "failedCount": "Failed",
+      "unpinnedCount": "Unpinned",
+      "editMessage": "Edit",
+      "cantDeleteActive": "Cannot delete active message"
+    },
     "payments": {
       "title": "تأیید پرداخت",
       "description": "پرداخت‌های معلق در ۲۴ ساعت گذشته",
@@ -900,6 +945,7 @@
       "noSearchResults": "چیزی یافت نشد",
       "example": "مثال",
       "analytics": "تحلیل‌ها",
+      "buttons": "دکمه‌ها",
       "notConfigured": "پیکربندی نشده",
       "counterActive": "فعال",
       "counterInactive": "غیرفعال",
@@ -961,6 +1007,41 @@
       "quickPresets": "پیش‌تنظیم‌های سریع",
       "resetAllColors": "بازنشانی همه رنگ‌ها",
       "statusColors": "رنگ‌های وضعیت"
+    },
+    "buttons": {
+      "color": "رنگ دکمه",
+      "emojiId": "شناسه ایموجی سفارشی",
+      "emojiPlaceholder": "شناسه ایموجی سفارشی (اختیاری)",
+      "resetAll": "بازنشانی همه سبک‌ها",
+      "resetConfirm": "همه سبک‌های دکمه به حالت پیش‌فرض بازنشانی شوند؟",
+      "hidden": "پنهان",
+      "customLabels": "نام‌های دکمه",
+      "labelPlaceholder": "متن سفارشی دکمه",
+      "labelsHint": "خالی = نام پیش‌فرض",
+      "sections": {
+        "home": "صفحه اصلی",
+        "subscription": "اشتراک",
+        "balance": "موجودی",
+        "referral": "معرفی",
+        "support": "پشتیبانی",
+        "info": "اطلاعات",
+        "admin": "پنل مدیریت"
+      },
+      "descriptions": {
+        "home": "دکمه کابینت شخصی",
+        "subscription": "مدیریت اشتراک",
+        "balance": "شارژ و موجودی",
+        "referral": "برنامه معرفی",
+        "support": "تیکت‌های پشتیبانی",
+        "info": "بخش اطلاعات",
+        "admin": "پنل مدیریت وب"
+      },
+      "styles": {
+        "default": "بدون رنگ",
+        "primary": "آبی",
+        "success": "سبز",
+        "danger": "قرمز"
+      }
     },
     "apps": {
       "title": "مدیریت برنامه‌ها",

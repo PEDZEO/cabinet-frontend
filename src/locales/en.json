@@ -464,6 +464,7 @@
       "trafficUnavailable": "Traffic purchase is not available for your tariff",
       "unlimited": "Unlimited",
       "buyTrafficGb": "Buy {{gb}} GB",
+      "buyUnlimited": "Buy Unlimited",
       "manageServers": "Server management",
       "manageServersTitle": "Server management"
     },
@@ -777,7 +778,8 @@
       "promocodes": "Promo Codes",
       "promoGroups": "Discount Groups",
       "trafficUsage": "Traffic Usage",
-      "updates": "Updates"
+      "updates": "Updates",
+      "pinnedMessages": "Pinned Messages"
     },
     "panel": {
       "title": "Admin Panel",
@@ -801,7 +803,8 @@
       "promocodesDesc": "Manage promo codes",
       "promoGroupsDesc": "Discount groups for users",
       "trafficUsageDesc": "Per-user traffic by nodes",
-      "updatesDesc": "Bot & cabinet versions"
+      "updatesDesc": "Bot & cabinet versions",
+      "pinnedMessagesDesc": "Manage pinned messages for users"
     },
     "trafficUsage": {
       "title": "Traffic Usage",
@@ -1166,6 +1169,48 @@
       "bothCreated": "Broadcasts created",
       "atLeastOneChannel": "Select at least one channel"
     },
+    "pinnedMessages": {
+      "title": "Pinned Messages",
+      "subtitle": "Manage pinned messages for users",
+      "create": "Create",
+      "empty": "No pinned messages",
+      "content": "Message text",
+      "contentPlaceholder": "Enter pinned message text...",
+      "noContent": "No text",
+      "media": "Media file",
+      "addMedia": "Add media",
+      "uploading": "Uploading...",
+      "settings": "Settings",
+      "sendBeforeMenu": "Send before menu",
+      "sendOnEveryStart": "Send on every start",
+      "broadcast": "Broadcast",
+      "broadcastOnCreate": "Broadcast on create",
+      "broadcastConfirm": "Broadcast pinned message to all active users?",
+      "broadcastToAll": "Broadcast to all",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "unpin": "Unpin",
+      "unpinAll": "Unpin for everyone",
+      "unpinConfirm": "Unpin message for all users?",
+      "delete": "Delete",
+      "deleteConfirm": "Delete this pinned message?",
+      "active": "Active",
+      "inactive": "Inactive",
+      "prev": "Previous",
+      "next": "Next",
+      "createSuccess": "Pinned message created",
+      "updateSuccess": "Message updated",
+      "deleteSuccess": "Message deleted",
+      "activateSuccess": "Message activated",
+      "deactivateSuccess": "Message deactivated",
+      "broadcastSuccess": "Broadcast completed",
+      "unpinSuccess": "Messages unpinned",
+      "sentCount": "Sent",
+      "failedCount": "Failed",
+      "unpinnedCount": "Unpinned",
+      "editMessage": "Edit",
+      "cantDeleteActive": "Cannot delete active message"
+    },
     "settings": {
       "title": "System Settings",
       "allCategories": "All categories",
@@ -1182,6 +1227,7 @@
       "noSearchResults": "Nothing found",
       "example": "Example",
       "analytics": "Analytics",
+      "buttons": "Buttons",
       "notConfigured": "Not configured",
       "counterActive": "Active",
       "counterInactive": "Inactive",
@@ -1252,6 +1298,41 @@
       "lightness": "Lightness",
       "quickPresets": "Quick presets",
       "saturation": "Saturation"
+    },
+    "buttons": {
+      "color": "Button color",
+      "emojiId": "Custom Emoji ID",
+      "emojiPlaceholder": "Custom emoji ID (optional)",
+      "resetAll": "Reset all styles",
+      "resetConfirm": "Reset all button styles to defaults?",
+      "hidden": "Hidden",
+      "customLabels": "Button labels",
+      "labelPlaceholder": "Custom button text",
+      "labelsHint": "Empty = default label",
+      "sections": {
+        "home": "Home",
+        "subscription": "Subscription",
+        "balance": "Balance",
+        "referral": "Referrals",
+        "support": "Support",
+        "info": "Info",
+        "admin": "Admin Panel"
+      },
+      "descriptions": {
+        "home": "Personal cabinet button",
+        "subscription": "Subscription management",
+        "balance": "Top-up and balance",
+        "referral": "Referral program",
+        "support": "Support tickets",
+        "info": "Information section",
+        "admin": "Web admin panel"
+      },
+      "styles": {
+        "default": "No color",
+        "primary": "Blue",
+        "success": "Green",
+        "danger": "Red"
+      }
     },
     "apps": {
       "title": "App Management",
