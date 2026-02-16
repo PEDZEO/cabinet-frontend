@@ -166,6 +166,13 @@ export function useTheme() {
     }
 
     localStorage.setItem(THEME_KEY, theme);
+    root.style.colorScheme = theme;
+
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) {
+      meta.setAttribute('content', theme === 'light' ? '#fef9f0' : '#0a0f1a');
+    }
+
     // Notify other useTheme() instances in the same tab
     window.dispatchEvent(new CustomEvent(THEME_CHANGED_EVENT, { detail: theme }));
   }, [theme, enabledThemes]);

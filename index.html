@@ -12,10 +12,37 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="format-detection" content="telephone=no" />
     <title>Loading...</title>
+    <script>
+      (() => {
+        try {
+          const THEME_KEY = 'cabinet-theme';
+          const storedTheme = localStorage.getItem(THEME_KEY);
+          const prefersLight =
+            window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+          const theme =
+            storedTheme === 'light' || storedTheme === 'dark'
+              ? storedTheme
+              : prefersLight
+                ? 'light'
+                : 'dark';
+          document.documentElement.classList.remove('light', 'dark');
+          document.documentElement.classList.add(theme);
+          const meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) {
+            meta.setAttribute('content', theme === 'light' ? '#fef9f0' : '#0a0f1a');
+          }
+        } catch {
+          // Ignore prepaint failures and fall back to static theme.
+        }
+      })();
+    </script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-      body {
+      html.dark body {
         background-color: #0a0f1a;
+      }
+      html.light body {
+        background-color: #f7e7ce;
       }
     </style>
   </head>
