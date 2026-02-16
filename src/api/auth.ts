@@ -4,6 +4,7 @@ import type {
   LinkCodeCreateResponse,
   LinkCodePreviewResponse,
   LinkedIdentitiesResponse,
+  ManualMergeResponse,
   OAuthProvider,
   RegisterResponse,
   TokenResponse,
@@ -188,6 +189,14 @@ export const authApi = {
   confirmLinkCode: async (code: string): Promise<AuthResponse> => {
     const response = await apiClient.post<AuthResponse>('/cabinet/auth/link-code/confirm', {
       code,
+    });
+    return response.data;
+  },
+
+  requestManualMerge: async (code: string, comment?: string): Promise<ManualMergeResponse> => {
+    const response = await apiClient.post<ManualMergeResponse>('/cabinet/auth/link-code/manual-request', {
+      code,
+      comment,
     });
     return response.data;
   },

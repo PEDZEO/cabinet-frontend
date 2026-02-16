@@ -2655,6 +2655,31 @@
       "codeExpired": "Code has expired. Please request a new one.",
       "tooManyRequests": "Too many requests. Please try again later."
     },
+    "linking": {
+      "title": "Linked login methods",
+      "description": "Link Telegram, Yandex and VK to one account so subscription stays shared.",
+      "none": "No linked login methods",
+      "generateCode": "Generate link code",
+      "enterCode": "Enter link code",
+      "preview": "Preview",
+      "confirm": "Link",
+      "previewSource": "Will be linked to account",
+      "codeGenerated": "Link code created",
+      "linked": "Accounts were linked successfully",
+      "manualHint": "Automatic merge is not possible. Send request to support for manual merge.",
+      "manualComment": "Describe which account should stay primary and why",
+      "sendManual": "Send to support",
+      "manualSent": "Manual merge request sent. Ticket",
+      "errors": {
+        "invalidCode": "Code is invalid or expired",
+        "sameAccount": "Cannot link account to itself",
+        "tooManyAttempts": "Too many attempts. Please try again later",
+        "identityConflict": "Identity conflict. Manual review is required",
+        "inactiveAccount": "One of the accounts is inactive",
+        "manualRequired": "Both accounts contain data. Manual support merge is required.",
+        "supportDisabled": "Support tickets are disabled"
+      }
+    },
     "notifications": {
       "title": "Notification Settings",
       "subscriptionExpiry": "Subscription Expiry",

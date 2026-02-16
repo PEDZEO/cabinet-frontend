@@ -40,6 +40,11 @@ export interface LinkCodePreviewResponse {
   source_identity_hints: Record<string, string>;
 }
 
+export interface ManualMergeResponse {
+  message: string;
+  ticket_id: number;
+}
+
 // Auth types
 export interface AuthResponse {
   access_token: string;

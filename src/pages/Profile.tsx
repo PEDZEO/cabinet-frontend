@@ -89,6 +89,8 @@ export default function Profile() {
   const [linkError, setLinkError] = useState<string | null>(null);
   const [linkSuccess, setLinkSuccess] = useState<string | null>(null);
   const [linkPreview, setLinkPreview] = useState<LinkCodePreviewResponse | null>(null);
+  const [manualMergeComment, setManualMergeComment] = useState('');
+  const [showManualMergeAction, setShowManualMergeAction] = useState(false);
 
   // Inline email change flow
   const [changeEmailStep, setChangeEmailStep] = useState<'email' | 'code' | 'success' | null>(null);
@@ -128,6 +130,44 @@ export default function Profile() {
     (user?.username ? `@${user.username}` : null) ||
     (user?.email ? user.email.split('@')[0] : null) ||
     '-';
+
+  const parseApiError = (err: unknown): { code?: string; message?: string } => {
+    const error = err as { response?: { data?: { detail?: unknown } } };
+    const detail = error.response?.data?.detail;
+    if (!detail) return {};
+    if (typeof detail === 'string') return { message: detail };
+    if (typeof detail === 'object') {
+      const payload = detail as { code?: string; message?: string };
+      return { code: payload.code, message: payload.message };
+    }
+    return {};
+  };
+
+  const getLocalizedLinkError = (err: unknown): string => {
+    const { code, message } = parseApiError(err);
+    switch (code) {
+      case 'link_code_invalid':
+        return t('profile.linking.errors.invalidCode', 'Код недействителен или истек');
+      case 'link_code_same_account':
+        return t('profile.linking.errors.sameAccount', 'Нельзя привязать аккаунт к самому себе');
+      case 'link_code_attempts_exceeded':
+        return t('profile.linking.errors.tooManyAttempts', 'Слишком много попыток. Попробуйте позже');
+      case 'link_code_identity_conflict':
+        return t('profile.linking.errors.identityConflict', 'Конфликт идентификаторов. Нужна ручная проверка');
+      case 'link_code_source_inactive':
+      case 'link_code_target_inactive':
+        return t('profile.linking.errors.inactiveAccount', 'Один из аккаунтов неактивен');
+      case 'manual_merge_required':
+        return t(
+          'profile.linking.errors.manualRequired',
+          'Оба аккаунта содержат данные. Нужна ручная обработка support.',
+        );
+      case 'support_disabled':
+        return t('profile.linking.errors.supportDisabled', 'Тикеты поддержки отключены');
+      default:
+        return message || t('common.error');
+    }
+  };
 
   // Build referral link for cabinet
   const referralLink = referralInfo?.referral_code
@@ -339,10 +379,12 @@ export default function Profile() {
       setActiveLinkCode(data.code);
       setLinkCode(data.code);
       setLinkPreview(null);
+      setShowManualMergeAction(false);
+      setManualMergeComment('');
     },
     onError: (err: { response?: { data?: { detail?: string } } }) => {
       setLinkSuccess(null);
-      setLinkError(err.response?.data?.detail || t('common.error'));
+      setLinkError(getLocalizedLinkError(err));
     },
   });
 
@@ -351,11 +393,14 @@ export default function Profile() {
     onSuccess: (data) => {
       setLinkError(null);
       setLinkPreview(data);
+      setShowManualMergeAction(false);
     },
-    onError: (err: { response?: { data?: { detail?: string } } }) => {
+    onError: (err: unknown) => {
       setLinkPreview(null);
       setLinkSuccess(null);
-      setLinkError(err.response?.data?.detail || t('common.error'));
+      const parsed = parseApiError(err);
+      setShowManualMergeAction(parsed.code === 'manual_merge_required');
+      setLinkError(getLocalizedLinkError(err));
     },
   });
 
@@ -370,12 +415,34 @@ export default function Profile() {
       setActiveLinkCode('');
       setLinkCode('');
       setLinkPreview(null);
+      setShowManualMergeAction(false);
+      setManualMergeComment('');
       queryClient.invalidateQueries({ queryKey: ['linked-identities'] });
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
-    onError: (err: { response?: { data?: { detail?: string } } }) => {
+    onError: (err: unknown) => {
       setLinkSuccess(null);
-      setLinkError(err.response?.data?.detail || t('common.error'));
+      const parsed = parseApiError(err);
+      setShowManualMergeAction(parsed.code === 'manual_merge_required');
+      setLinkError(getLocalizedLinkError(err));
+    },
+  });
+
+  const manualMergeMutation = useMutation({
+    mutationFn: ({ code, comment }: { code: string; comment?: string }) =>
+      authApi.requestManualMerge(code, comment),
+    onSuccess: (data) => {
+      setLinkError(null);
+      setLinkSuccess(
+        t('profile.linking.manualSent', 'Запрос на ручное объединение отправлен. Тикет') +
+          ` #${data.ticket_id}`,
+      );
+      setShowManualMergeAction(false);
+      setManualMergeComment('');
+    },
+    onError: (err: unknown) => {
+      setLinkSuccess(null);
+      setLinkError(getLocalizedLinkError(err));
     },
   });
 
@@ -551,6 +618,35 @@ export default function Profile() {
             {linkError && (
               <div className="rounded-linear border border-error-500/30 bg-error-500/10 p-3 text-sm text-error-400">
                 {linkError}
+              </div>
+            )}
+            {showManualMergeAction && (
+              <div className="rounded-linear border border-warning-500/30 bg-warning-500/10 p-3">
+                <p className="mb-2 text-sm text-warning-300">
+                  {t(
+                    'profile.linking.manualHint',
+                    'Автоматическое объединение невозможно. Отправьте запрос в поддержку для ручного merge.',
+                  )}
+                </p>
+                <textarea
+                  value={manualMergeComment}
+                  onChange={(e) => setManualMergeComment(e.target.value)}
+                  className="input mb-3 min-h-[88px] w-full"
+                  placeholder={t(
+                    'profile.linking.manualComment',
+                    'Опишите, какой аккаунт основной и почему нужно объединение',
+                  )}
+                  maxLength={1000}
+                />
+                <Button
+                  onClick={() =>
+                    manualMergeMutation.mutate({ code: linkCode, comment: manualMergeComment.trim() || undefined })
+                  }
+                  loading={manualMergeMutation.isPending}
+                  disabled={!linkCode}
+                >
+                  {t('profile.linking.sendManual', 'Отправить в поддержку')}
+                </Button>
               </div>
             )}
             {linkSuccess && (
