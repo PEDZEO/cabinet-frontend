@@ -1,5 +1,14 @@
 import apiClient from './client';
-import type { AuthResponse, OAuthProvider, RegisterResponse, TokenResponse, User } from '../types';
+import type {
+  AuthResponse,
+  LinkCodeCreateResponse,
+  LinkCodePreviewResponse,
+  LinkedIdentitiesResponse,
+  OAuthProvider,
+  RegisterResponse,
+  TokenResponse,
+  User,
+} from '../types';
 
 export const authApi = {
   // Telegram WebApp authentication
@@ -156,6 +165,30 @@ export const authApi = {
       `/cabinet/auth/oauth/${encodeURIComponent(provider)}/callback`,
       { code, state, ...payload },
     );
+    return response.data;
+  },
+
+  getLinkedIdentities: async (): Promise<LinkedIdentitiesResponse> => {
+    const response = await apiClient.get<LinkedIdentitiesResponse>('/cabinet/auth/identities');
+    return response.data;
+  },
+
+  createLinkCode: async (): Promise<LinkCodeCreateResponse> => {
+    const response = await apiClient.post<LinkCodeCreateResponse>('/cabinet/auth/link-code/create');
+    return response.data;
+  },
+
+  previewLinkCode: async (code: string): Promise<LinkCodePreviewResponse> => {
+    const response = await apiClient.post<LinkCodePreviewResponse>('/cabinet/auth/link-code/preview', {
+      code,
+    });
+    return response.data;
+  },
+
+  confirmLinkCode: async (code: string): Promise<AuthResponse> => {
+    const response = await apiClient.post<AuthResponse>('/cabinet/auth/link-code/confirm', {
+      code,
+    });
     return response.data;
   },
 };

@@ -12,13 +12,32 @@ export interface User {
   referral_code: string | null;
   language: string;
   created_at: string;
-  auth_type: 'telegram' | 'email' | 'google' | 'yandex' | 'discord' | 'vk'; // Тип аутентификации
+  auth_type: 'telegram' | 'email' | 'google' | 'yandex' | 'discord' | 'vk' | 'merged'; // Тип аутентификации
 }
 
 // OAuth types
 export interface OAuthProvider {
   name: string;
   display_name: string;
+}
+
+export interface LinkedIdentity {
+  provider: string;
+  provider_user_id_masked: string;
+}
+
+export interface LinkedIdentitiesResponse {
+  identities: LinkedIdentity[];
+}
+
+export interface LinkCodeCreateResponse {
+  code: string;
+  expires_in_seconds: number;
+}
+
+export interface LinkCodePreviewResponse {
+  source_user_id: number;
+  source_identity_hints: Record<string, string>;
 }
 
 // Auth types

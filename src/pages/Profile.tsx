@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../store/auth';
 import { authApi } from '../api/auth';
 import { isValidEmail } from '../utils/validation';
+import type { LinkCodePreviewResponse } from '../types';
 import {
   notificationsApi,
   NotificationSettings,
@@ -73,7 +74,7 @@ const PencilIcon = () => (
 
 export default function Profile() {
   const { t } = useTranslation();
-  const { user, setUser } = useAuthStore();
+  const { user, setUser, setTokens, checkAdminStatus } = useAuthStore();
   const queryClient = useQueryClient();
 
   const [email, setEmail] = useState('');
@@ -83,6 +84,11 @@ export default function Profile() {
   const [success, setSuccess] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [notificationsExpanded, setNotificationsExpanded] = useState(false);
+  const [linkCode, setLinkCode] = useState('');
+  const [activeLinkCode, setActiveLinkCode] = useState('');
+  const [linkError, setLinkError] = useState<string | null>(null);
+  const [linkSuccess, setLinkSuccess] = useState<string | null>(null);
+  const [linkPreview, setLinkPreview] = useState<LinkCodePreviewResponse | null>(null);
 
   // Inline email change flow
   const [changeEmailStep, setChangeEmailStep] = useState<'email' | 'code' | 'success' | null>(null);
@@ -117,6 +123,11 @@ export default function Profile() {
     staleTime: 60000,
   });
   const isEmailAuthEnabled = emailAuthConfig?.enabled ?? true;
+  const displayName =
+    [user?.first_name, user?.last_name].filter(Boolean).join(' ').trim() ||
+    (user?.username ? `@${user.username}` : null) ||
+    (user?.email ? user.email.split('@')[0] : null) ||
+    '-';
 
   // Build referral link for cabinet
   const referralLink = referralInfo?.referral_code
@@ -314,6 +325,60 @@ export default function Profile() {
     queryFn: notificationsApi.getSettings,
   });
 
+  const { data: linkedIdentitiesData } = useQuery({
+    queryKey: ['linked-identities'],
+    queryFn: authApi.getLinkedIdentities,
+    enabled: !!user,
+  });
+
+  const createLinkCodeMutation = useMutation({
+    mutationFn: authApi.createLinkCode,
+    onSuccess: (data) => {
+      setLinkError(null);
+      setLinkSuccess(t('profile.linking.codeGenerated', 'Код привязки создан'));
+      setActiveLinkCode(data.code);
+      setLinkCode(data.code);
+      setLinkPreview(null);
+    },
+    onError: (err: { response?: { data?: { detail?: string } } }) => {
+      setLinkSuccess(null);
+      setLinkError(err.response?.data?.detail || t('common.error'));
+    },
+  });
+
+  const previewLinkCodeMutation = useMutation({
+    mutationFn: (code: string) => authApi.previewLinkCode(code),
+    onSuccess: (data) => {
+      setLinkError(null);
+      setLinkPreview(data);
+    },
+    onError: (err: { response?: { data?: { detail?: string } } }) => {
+      setLinkPreview(null);
+      setLinkSuccess(null);
+      setLinkError(err.response?.data?.detail || t('common.error'));
+    },
+  });
+
+  const confirmLinkCodeMutation = useMutation({
+    mutationFn: (code: string) => authApi.confirmLinkCode(code),
+    onSuccess: async (data) => {
+      setTokens(data.access_token, data.refresh_token);
+      setUser(data.user);
+      await checkAdminStatus();
+      setLinkSuccess(t('profile.linking.linked', 'Аккаунты успешно объединены'));
+      setLinkError(null);
+      setActiveLinkCode('');
+      setLinkCode('');
+      setLinkPreview(null);
+      queryClient.invalidateQueries({ queryKey: ['linked-identities'] });
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+    },
+    onError: (err: { response?: { data?: { detail?: string } } }) => {
+      setLinkSuccess(null);
+      setLinkError(err.response?.data?.detail || t('common.error'));
+    },
+  });
+
   const updateNotificationsMutation = useMutation({
     mutationFn: notificationsApi.updateSettings,
     onSuccess: () => {
@@ -372,7 +437,7 @@ export default function Profile() {
           <div className="space-y-4">
             <div className="flex items-center justify-between border-b border-dark-800/50 py-3">
               <span className="text-dark-400">{t('profile.telegramId')}</span>
-              <span className="font-medium text-dark-100">{user?.telegram_id}</span>
+              <span className="font-medium text-dark-100">{user?.telegram_id ?? '-'}</span>
             </div>
             {user?.username && (
               <div className="flex items-center justify-between border-b border-dark-800/50 py-3">
@@ -382,9 +447,7 @@ export default function Profile() {
             )}
             <div className="flex items-center justify-between border-b border-dark-800/50 py-3">
               <span className="text-dark-400">{t('profile.name')}</span>
-              <span className="font-medium text-dark-100">
-                {user?.first_name} {user?.last_name}
-              </span>
+              <span className="font-medium text-dark-100">{displayName}</span>
             </div>
             <div className="flex items-center justify-between py-3">
               <span className="text-dark-400">{t('profile.registeredAt')}</span>
@@ -392,6 +455,109 @@ export default function Profile() {
                 {user?.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}
               </span>
             </div>
+          </div>
+        </Card>
+      </motion.div>
+
+      {/* Account Linking */}
+      <motion.div variants={staggerItem}>
+        <Card>
+          <h2 className="mb-4 text-lg font-semibold text-dark-100">
+            {t('profile.linking.title', 'Связанные способы входа')}
+          </h2>
+          <p className="mb-4 text-sm text-dark-400">
+            {t(
+              'profile.linking.description',
+              'Привяжите Telegram, Yandex и VK к одному аккаунту, чтобы подписка была общей.',
+            )}
+          </p>
+
+          <div className="mb-4 flex flex-wrap gap-2">
+            {(linkedIdentitiesData?.identities || []).length > 0 ? (
+              linkedIdentitiesData?.identities.map((identity) => (
+                <span
+                  key={`${identity.provider}-${identity.provider_user_id_masked}`}
+                  className="rounded-linear border border-dark-700/80 bg-dark-800/70 px-3 py-1 text-xs text-dark-200"
+                >
+                  {identity.provider}: {identity.provider_user_id_masked}
+                </span>
+              ))
+            ) : (
+              <span className="text-sm text-dark-500">
+                {t('profile.linking.none', 'Нет привязанных способов входа')}
+              </span>
+            )}
+          </div>
+
+          <div className="space-y-3 border-t border-dark-800/50 pt-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                onClick={() => createLinkCodeMutation.mutate()}
+                loading={createLinkCodeMutation.isPending}
+              >
+                {t('profile.linking.generateCode', 'Сгенерировать код привязки')}
+              </Button>
+              {activeLinkCode && (
+                <span className="rounded-linear border border-accent-500/40 bg-accent-500/10 px-3 py-2 font-mono text-sm text-accent-300">
+                  {activeLinkCode}
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <input
+                type="text"
+                value={linkCode}
+                onChange={(e) => setLinkCode(e.target.value.toUpperCase().trim())}
+                placeholder={t('profile.linking.enterCode', 'Введите код привязки')}
+                className="input sm:flex-1"
+              />
+              <Button
+                variant="secondary"
+                onClick={() => previewLinkCodeMutation.mutate(linkCode)}
+                loading={previewLinkCodeMutation.isPending}
+                disabled={!linkCode}
+              >
+                {t('profile.linking.preview', 'Проверить')}
+              </Button>
+              <Button
+                onClick={() => confirmLinkCodeMutation.mutate(linkCode)}
+                loading={confirmLinkCodeMutation.isPending}
+                disabled={!linkCode}
+              >
+                {t('profile.linking.confirm', 'Привязать')}
+              </Button>
+            </div>
+
+            {linkPreview && (
+              <div className="rounded-linear border border-dark-700/80 bg-dark-800/60 p-3">
+                <p className="mb-2 text-sm text-dark-300">
+                  {t('profile.linking.previewSource', 'Будет привязан к аккаунту')} #{' '}
+                  <span className="font-semibold text-dark-100">{linkPreview.source_user_id}</span>
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(linkPreview.source_identity_hints).map(([provider, value]) => (
+                    <span
+                      key={`${provider}-${value}`}
+                      className="rounded-linear border border-dark-700/80 bg-dark-800/70 px-2 py-1 text-xs text-dark-200"
+                    >
+                      {provider}: {value}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {linkError && (
+              <div className="rounded-linear border border-error-500/30 bg-error-500/10 p-3 text-sm text-error-400">
+                {linkError}
+              </div>
+            )}
+            {linkSuccess && (
+              <div className="rounded-linear border border-success-500/30 bg-success-500/10 p-3 text-sm text-success-400">
+                {linkSuccess}
+              </div>
+            )}
           </div>
         </Card>
       </motion.div>
