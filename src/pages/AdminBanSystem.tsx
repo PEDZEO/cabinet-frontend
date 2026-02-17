@@ -11,188 +11,32 @@ import {
   type BanAgentsListResponse,
   type BanTrafficViolationsResponse,
   type BanSettingsResponse,
-  type BanSettingDefinition,
   type BanTrafficResponse,
   type BanReportResponse,
   type BanHealthResponse,
 } from '../api/banSystem';
-
-// Icons
-const ShieldIcon = () => (
-  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
-    />
-  </svg>
-);
-
-const UsersIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"
-    />
-  </svg>
-);
-
-const BanIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
-    />
-  </svg>
-);
-
-const ServerIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7m0 0a3 3 0 01-3 3m0 3h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008zm-3 6h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008z"
-    />
-  </svg>
-);
-
-const AgentIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M9.348 14.651a3.75 3.75 0 010-5.303m5.304 0a3.75 3.75 0 010 5.303m-7.425 2.122a6.75 6.75 0 010-9.546m9.546 0a6.75 6.75 0 010 9.546M5.106 18.894c-3.808-3.808-3.808-9.98 0-13.789m13.788 0c3.808 3.808 3.808 9.981 0 13.79M12 12h.008v.007H12V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
-    />
-  </svg>
-);
-
-const WarningIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
-    />
-  </svg>
-);
-
-const RefreshIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
-    />
-  </svg>
-);
-
-const ChartIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"
-    />
-  </svg>
-);
-
-const SearchIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-    />
-  </svg>
-);
-
-const SettingsIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"
-    />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-  </svg>
-);
-
-const TrafficIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5"
-    />
-  </svg>
-);
-
-const ReportIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"
-    />
-  </svg>
-);
-
-const HealthIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
-    />
-  </svg>
-);
-
-type TabType =
-  | 'dashboard'
-  | 'users'
-  | 'punishments'
-  | 'nodes'
-  | 'agents'
-  | 'violations'
-  | 'settings'
-  | 'traffic'
-  | 'reports'
-  | 'health';
-
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  subtitle?: string;
-  icon: React.ReactNode;
-  color: 'accent' | 'success' | 'warning' | 'error' | 'info';
-}
-
-function StatCard({ title, value, subtitle, icon, color }: StatCardProps) {
-  const colorClasses = {
-    accent: 'bg-accent-500/20 text-accent-400',
-    success: 'bg-success-500/20 text-success-400',
-    warning: 'bg-warning-500/20 text-warning-400',
-    error: 'bg-error-500/20 text-error-400',
-    info: 'bg-info-500/20 text-info-400',
-  };
-
-  return (
-    <div className="rounded-xl border border-dark-700 bg-dark-800/50 p-4 backdrop-blur transition-colors hover:border-dark-600">
-      <div className="mb-2 flex items-start justify-between">
-        <div className={`rounded-lg p-2 ${colorClasses[color]}`}>{icon}</div>
-      </div>
-      <div className="mb-1 text-2xl font-bold text-dark-100">{value}</div>
-      <div className="text-sm text-dark-400">{title}</div>
-      {subtitle && <div className="mt-1 text-xs text-dark-500">{subtitle}</div>}
-    </div>
-  );
-}
+import {
+  AgentIcon,
+  BanIcon,
+  ChartIcon,
+  RefreshIcon,
+  ServerIcon,
+  ShieldIcon,
+  TrafficIcon,
+  UsersIcon,
+  WarningIcon,
+} from './adminBanSystem/components/BanSystemIcons';
+import { getBanSystemTabs } from './adminBanSystem/constants';
+import { BanSystemHealthTab } from './adminBanSystem/components/BanSystemHealthTab';
+import { BanSystemReportsTab } from './adminBanSystem/components/BanSystemReportsTab';
+import { BanSystemSettingsTab } from './adminBanSystem/components/BanSystemSettingsTab';
+import { BanSystemUsersTab } from './adminBanSystem/components/BanSystemUsersTab';
+import { StatCard } from './adminBanSystem/components/StatCard';
+import type { BanSystemTabType } from './adminBanSystem/types';
 
 export default function AdminBanSystem() {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+  const [activeTab, setActiveTab] = useState<BanSystemTabType>('dashboard');
   const [status, setStatus] = useState<BanSystemStatus | null>(null);
   const [stats, setStats] = useState<BanSystemStats | null>(null);
   const [users, setUsers] = useState<BanUsersListResponse | null>(null);
@@ -277,7 +121,7 @@ export default function AdminBanSystem() {
   }, [t]);
 
   const loadTabData = useCallback(
-    async (tab: TabType) => {
+    async (tab: BanSystemTabType) => {
       try {
         setLoading(true);
         setError(null);
@@ -461,18 +305,7 @@ export default function AdminBanSystem() {
     return new Date(dateStr).toLocaleString();
   };
 
-  const tabs = [
-    { id: 'dashboard' as TabType, label: t('banSystem.tabs.dashboard'), icon: <ChartIcon /> },
-    { id: 'users' as TabType, label: t('banSystem.tabs.users'), icon: <UsersIcon /> },
-    { id: 'punishments' as TabType, label: t('banSystem.tabs.punishments'), icon: <BanIcon /> },
-    { id: 'nodes' as TabType, label: t('banSystem.tabs.nodes'), icon: <ServerIcon /> },
-    { id: 'agents' as TabType, label: t('banSystem.tabs.agents'), icon: <AgentIcon /> },
-    { id: 'violations' as TabType, label: t('banSystem.tabs.violations'), icon: <WarningIcon /> },
-    { id: 'traffic' as TabType, label: t('banSystem.tabs.traffic'), icon: <TrafficIcon /> },
-    { id: 'reports' as TabType, label: t('banSystem.tabs.reports'), icon: <ReportIcon /> },
-    { id: 'settings' as TabType, label: t('banSystem.tabs.settings'), icon: <SettingsIcon /> },
-    { id: 'health' as TabType, label: t('banSystem.tabs.health'), icon: <HealthIcon /> },
-  ];
+  const tabs = getBanSystemTabs(t);
 
   if (loading && !status) {
     return (
@@ -611,7 +444,7 @@ export default function AdminBanSystem() {
         <div className="md:hidden">
           <select
             value={activeTab}
-            onChange={(e) => setActiveTab(e.target.value as TabType)}
+            onChange={(e) => setActiveTab(e.target.value as BanSystemTabType)}
             className="input w-full"
             aria-label={t('banSystem.title')}
           >
@@ -711,104 +544,15 @@ export default function AdminBanSystem() {
 
           {/* Users Tab */}
           {activeTab === 'users' && (
-            <div className="space-y-4">
-              {/* Search */}
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <div className="relative flex-1">
-                  <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-dark-500">
-                    <SearchIcon />
-                  </div>
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                    placeholder={t('banSystem.users.searchPlaceholder')}
-                    className="input pl-10"
-                  />
-                </div>
-                <button
-                  onClick={handleSearch}
-                  className="rounded-lg bg-accent-500/20 px-4 py-2 text-accent-400 transition-colors hover:bg-accent-500/30 sm:w-auto"
-                >
-                  {t('common.search')}
-                </button>
-              </div>
-
-              {/* Users Table */}
-              <div className="overflow-hidden rounded-xl border border-dark-700 bg-dark-800/50">
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[760px]">
-                    <thead>
-                      <tr className="border-b border-dark-700">
-                        <th className="px-4 py-3 text-left text-xs font-medium text-dark-500">
-                          {t('banSystem.users.email')}
-                        </th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                          {t('banSystem.users.ipCount')}
-                        </th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                          {t('banSystem.users.limit')}
-                        </th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                          {t('banSystem.users.status')}
-                        </th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                          {t('banSystem.users.bans')}
-                        </th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-dark-500">
-                          {t('common.actions')}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {users?.users.map((user) => (
-                        <tr
-                          key={user.email}
-                          className="border-b border-dark-700/50 hover:bg-dark-800/50"
-                        >
-                          <td className="px-4 py-3 text-dark-100">{user.email}</td>
-                          <td className="px-4 py-3 text-center text-dark-300">
-                            {user.unique_ip_count}
-                          </td>
-                          <td className="px-4 py-3 text-center text-dark-300">
-                            {user.limit ?? '-'}
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            <span
-                              className={`rounded-full px-2 py-1 text-xs ${
-                                user.is_over_limit
-                                  ? 'bg-error-500/20 text-error-400'
-                                  : 'bg-success-500/20 text-success-400'
-                              }`}
-                            >
-                              {user.is_over_limit
-                                ? t('banSystem.users.overLimit')
-                                : t('banSystem.users.ok')}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-center text-dark-300">
-                            {user.blocked_count}
-                          </td>
-                          <td className="px-4 py-3 text-right">
-                            <button
-                              onClick={() => handleViewUser(user.email)}
-                              disabled={actionLoading === user.email}
-                              className="text-sm text-accent-400 hover:text-accent-300 disabled:opacity-50"
-                            >
-                              {t('banSystem.users.viewDetails')}
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                {(!users?.users || users.users.length === 0) && (
-                  <div className="py-8 text-center text-dark-500">{t('common.noData')}</div>
-                )}
-              </div>
-            </div>
+            <BanSystemUsersTab
+              t={t}
+              users={users}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              actionLoading={actionLoading}
+              handleSearch={handleSearch}
+              handleViewUser={handleViewUser}
+            />
           )}
 
           {/* Punishments Tab */}
@@ -1231,448 +975,39 @@ export default function AdminBanSystem() {
 
           {/* Reports Tab */}
           {activeTab === 'reports' && (
-            <div className="space-y-4">
-              {/* Period Selector */}
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <span className="text-dark-400">{t('banSystem.reports.period')}:</span>
-                <div className="flex flex-wrap gap-2">
-                  {[6, 12, 24, 48, 72].map((hours) => (
-                    <button
-                      key={hours}
-                      onClick={() => handleReportPeriodChange(hours)}
-                      className={`rounded-lg px-3 py-1.5 text-sm transition-colors ${
-                        reportHours === hours
-                          ? 'bg-accent-500/20 text-accent-400'
-                          : 'bg-dark-800 text-dark-400 hover:text-dark-200'
-                      }`}
-                    >
-                      {hours}h
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {report && (
-                <>
-                  {/* Report Stats */}
-                  <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                    <StatCard
-                      title={t('banSystem.reports.currentUsers')}
-                      value={report.current_users}
-                      icon={<UsersIcon />}
-                      color="accent"
-                    />
-                    <StatCard
-                      title={t('banSystem.reports.currentIps')}
-                      value={report.current_ips}
-                      icon={<ServerIcon />}
-                      color="info"
-                    />
-                  </div>
-
-                  {/* Top Violators */}
-                  {report.top_violators && report.top_violators.length > 0 && (
-                    <div className="overflow-hidden rounded-xl border border-dark-700 bg-dark-800/50">
-                      <div className="border-b border-dark-700 p-4">
-                        <h3 className="text-sm font-medium text-dark-200">
-                          {t('banSystem.reports.topViolators')}
-                        </h3>
-                      </div>
-                      <div className="overflow-x-auto">
-                        <table className="w-full min-w-[460px]">
-                          <thead>
-                            <tr className="border-b border-dark-700">
-                              <th className="px-4 py-3 text-left text-xs font-medium text-dark-500">
-                                {t('banSystem.reports.username')}
-                              </th>
-                              <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                                {t('banSystem.reports.count')}
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {report.top_violators.map((v, idx) => (
-                              <tr
-                                key={idx}
-                                className="border-b border-dark-700/50 hover:bg-dark-800/50"
-                              >
-                                <td className="px-4 py-3 text-dark-100">{v.username}</td>
-                                <td className="px-4 py-3 text-center text-warning-400">
-                                  {v.count}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
+            <BanSystemReportsTab
+              t={t}
+              report={report}
+              reportHours={reportHours}
+              onReportPeriodChange={handleReportPeriodChange}
+            />
           )}
 
           {/* Settings Tab */}
           {activeTab === 'settings' && settings && (
-            <div className="space-y-4">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div className="relative w-full sm:max-w-sm">
-                  <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-dark-500">
-                    <SearchIcon />
-                  </div>
-                  <input
-                    type="text"
-                    value={settingSearch}
-                    onChange={(e) => setSettingSearch(e.target.value)}
-                    placeholder={t('banSystem.settings.searchPlaceholder', {
-                      defaultValue: 'Поиск по настройкам',
-                    })}
-                    className="input pl-10"
-                    aria-label={t('banSystem.settings.searchPlaceholder', {
-                      defaultValue: 'Поиск по настройкам',
-                    })}
-                  />
-                </div>
-                <label className="flex items-center gap-2 text-sm text-dark-300">
-                  <input
-                    type="checkbox"
-                    checked={showEditableOnly}
-                    onChange={(e) => setShowEditableOnly(e.target.checked)}
-                    className="h-4 w-4 rounded border-dark-600 bg-dark-800 text-accent-500 focus:ring-accent-500"
-                  />
-                  {t('banSystem.settings.onlyEditable', { defaultValue: 'Только изменяемые' })}
-                </label>
-              </div>
-
-              {/* Group settings by category */}
-              {(() => {
-                const grouped: Record<string, BanSettingDefinition[]> = {};
-                const normalizedQuery = settingSearch.trim().toLowerCase();
-
-                // Smart categorization: use API category or infer from key prefix
-                const inferCategory = (key: string, apiCategory: string | null): string => {
-                  if (apiCategory) return apiCategory;
-                  if (key.startsWith('punishment_') || key.startsWith('progressive_ban'))
-                    return 'punishment';
-                  if (key.startsWith('traffic_')) return 'traffic';
-                  if (key.startsWith('network_')) return 'network';
-                  if (key.startsWith('rate_limit_')) return 'rate_limit';
-                  if (key.startsWith('notify_') || key.startsWith('daily_report'))
-                    return 'notifications';
-                  return 'general';
-                };
-
-                settings.settings.forEach((s) => {
-                  const cat = inferCategory(s.key, s.category);
-                  if (!grouped[cat]) grouped[cat] = [];
-                  grouped[cat].push(s);
-                });
-
-                // Sort categories in logical order
-                const categoryOrder = [
-                  'general',
-                  'punishment',
-                  'progressive_bans',
-                  'traffic',
-                  'network',
-                  'notifications',
-                  'rate_limit',
-                ];
-                const sortedCategories = Object.keys(grouped).sort((a, b) => {
-                  const aIdx = categoryOrder.indexOf(a);
-                  const bIdx = categoryOrder.indexOf(b);
-                  if (aIdx === -1 && bIdx === -1) return a.localeCompare(b);
-                  if (aIdx === -1) return 1;
-                  if (bIdx === -1) return -1;
-                  return aIdx - bIdx;
-                });
-
-                const renderedCategories = sortedCategories
-                  .map((category) => {
-                    const categorySettings = grouped[category].filter((setting) => {
-                      if (showEditableOnly && !setting.editable) {
-                        return false;
-                      }
-                      if (!normalizedQuery) {
-                        return true;
-                      }
-                      const label = formatSettingKey(setting.key).toLowerCase();
-                      const description = (setting.description ?? '').toLowerCase();
-                      return (
-                        setting.key.toLowerCase().includes(normalizedQuery) ||
-                        label.includes(normalizedQuery) ||
-                        description.includes(normalizedQuery)
-                      );
-                    });
-
-                    if (categorySettings.length === 0) return null;
-
-                    const isCollapsed = collapsedSettingCategories[category] ?? false;
-
-                    return (
-                      <div
-                        key={category}
-                        className="overflow-hidden rounded-xl border border-dark-700 bg-dark-800/50"
-                      >
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setCollapsedSettingCategories((prev) => ({
-                              ...prev,
-                              [category]: !isCollapsed,
-                            }))
-                          }
-                          className="flex w-full items-center justify-between border-b border-dark-700 p-4 text-left transition-colors hover:bg-dark-700/40"
-                          aria-expanded={!isCollapsed}
-                          aria-controls={`settings-${category}`}
-                        >
-                          <h3 className="text-sm font-medium text-dark-200">
-                            {formatCategory(category)}
-                          </h3>
-                          <div className="flex items-center gap-3 text-xs text-dark-500">
-                            <span>{categorySettings.length}</span>
-                            <span>{isCollapsed ? '▾' : '▴'}</span>
-                          </div>
-                        </button>
-                        {!isCollapsed && (
-                          <div id={`settings-${category}`} className="divide-y divide-dark-700">
-                            {categorySettings.map((setting) => (
-                              <div
-                                key={setting.key}
-                                className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
-                              >
-                                <div className="min-w-0 flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <div className="font-medium text-dark-100">
-                                      {formatSettingKey(setting.key)}
-                                    </div>
-                                    {!setting.editable && (
-                                      <span className="rounded bg-dark-700 px-1.5 py-0.5 text-[10px] text-dark-400">
-                                        RO
-                                      </span>
-                                    )}
-                                  </div>
-                                  {setting.description && (
-                                    <div className="mt-0.5 text-xs text-dark-500">
-                                      {setting.description}
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="w-full sm:w-auto sm:flex-shrink-0">
-                                  {setting.type === 'bool' ? (
-                                    <button
-                                      onClick={() => handleToggleSetting(setting.key)}
-                                      disabled={!setting.editable || settingLoading === setting.key}
-                                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                                        setting.value ? 'bg-accent-500' : 'bg-dark-600'
-                                      } ${!setting.editable ? 'cursor-not-allowed opacity-50' : ''}`}
-                                      aria-label={formatSettingKey(setting.key)}
-                                      aria-pressed={Boolean(setting.value)}
-                                    >
-                                      <span
-                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                          setting.value ? 'translate-x-6' : 'translate-x-1'
-                                        }`}
-                                      />
-                                    </button>
-                                  ) : setting.type === 'int' ? (
-                                    <div className="flex w-full gap-2 sm:w-auto">
-                                      <input
-                                        type="number"
-                                        value={settingDrafts[setting.key] ?? String(setting.value)}
-                                        onChange={(e) =>
-                                          handleIntDraftChange(setting.key, e.target.value)
-                                        }
-                                        onKeyDown={(e) => {
-                                          if (e.key === 'Enter') {
-                                            handleIntSettingSave(setting.key);
-                                          }
-                                        }}
-                                        min={setting.min_value ?? undefined}
-                                        max={setting.max_value ?? undefined}
-                                        disabled={
-                                          !setting.editable || settingLoading === setting.key
-                                        }
-                                        className="input w-full sm:w-24"
-                                      />
-                                      <button
-                                        type="button"
-                                        onClick={() => handleIntSettingSave(setting.key)}
-                                        disabled={
-                                          !setting.editable ||
-                                          settingLoading === setting.key ||
-                                          (settingDrafts[setting.key] ?? String(setting.value)) ===
-                                            String(setting.value)
-                                        }
-                                        className="rounded-lg bg-accent-500/20 px-3 py-2 text-xs font-medium text-accent-400 transition-colors hover:bg-accent-500/30 disabled:opacity-50"
-                                      >
-                                        {t('common.save', { defaultValue: 'Сохранить' })}
-                                      </button>
-                                    </div>
-                                  ) : setting.type === 'list' ? (
-                                    <div className="flex flex-wrap gap-1.5 sm:max-w-xs sm:justify-end">
-                                      {Array.isArray(setting.value) && setting.value.length > 0 ? (
-                                        setting.value.map((item, idx) => (
-                                          <span
-                                            key={idx}
-                                            className="rounded bg-accent-500/20 px-2 py-0.5 text-xs text-accent-400"
-                                          >
-                                            {String(item)}
-                                          </span>
-                                        ))
-                                      ) : (
-                                        <span className="text-sm text-dark-500">
-                                          {t('common.noData')}
-                                        </span>
-                                      )}
-                                      {setting.editable &&
-                                        nodes &&
-                                        setting.key.includes('nodes') && (
-                                          <select
-                                            className="input py-1 text-xs"
-                                            onChange={(e) => {
-                                              if (e.target.value) {
-                                                const currentList = Array.isArray(setting.value)
-                                                  ? setting.value
-                                                  : [];
-                                                if (!currentList.includes(e.target.value)) {
-                                                  handleSetSetting(
-                                                    setting.key,
-                                                    [...currentList, e.target.value].join(','),
-                                                  );
-                                                }
-                                                e.target.value = '';
-                                              }
-                                            }}
-                                            disabled={settingLoading === setting.key}
-                                            aria-label={formatSettingKey(setting.key)}
-                                          >
-                                            <option value="">+ {t('common.add')}</option>
-                                            {nodes.nodes
-                                              .filter(
-                                                (n) =>
-                                                  !Array.isArray(setting.value) ||
-                                                  !setting.value.includes(n.name),
-                                              )
-                                              .map((n) => (
-                                                <option key={n.name} value={n.name}>
-                                                  {n.name}
-                                                </option>
-                                              ))}
-                                          </select>
-                                        )}
-                                    </div>
-                                  ) : (
-                                    <div className="text-sm text-dark-300">
-                                      {String(setting.value)}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })
-                  .filter(Boolean);
-
-                if (renderedCategories.length === 0) {
-                  return <div className="py-8 text-center text-dark-500">{t('common.noData')}</div>;
-                }
-
-                return renderedCategories;
-              })()}
-            </div>
+            <BanSystemSettingsTab
+              settings={settings}
+              nodes={nodes}
+              settingSearch={settingSearch}
+              setSettingSearch={setSettingSearch}
+              showEditableOnly={showEditableOnly}
+              setShowEditableOnly={setShowEditableOnly}
+              settingDrafts={settingDrafts}
+              collapsedSettingCategories={collapsedSettingCategories}
+              setCollapsedSettingCategories={setCollapsedSettingCategories}
+              settingLoading={settingLoading}
+              formatSettingKey={formatSettingKey}
+              formatCategory={formatCategory}
+              handleToggleSetting={handleToggleSetting}
+              handleIntDraftChange={handleIntDraftChange}
+              handleIntSettingSave={handleIntSettingSave}
+              handleSetSetting={handleSetSetting}
+            />
           )}
 
           {/* Health Tab */}
           {activeTab === 'health' && health && (
-            <div className="space-y-4">
-              {/* Overall Status */}
-              <div className="rounded-xl border border-dark-700 bg-dark-800/50 p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`h-4 w-4 rounded-full ${
-                        health.status === 'healthy'
-                          ? 'animate-pulse bg-success-500'
-                          : health.status === 'degraded'
-                            ? 'animate-pulse bg-warning-500'
-                            : 'animate-pulse bg-error-500'
-                      }`}
-                    />
-                    <div>
-                      <div className="font-medium text-dark-100">
-                        {t('banSystem.health.systemStatus')}
-                      </div>
-                      <div
-                        className={`text-sm ${
-                          health.status === 'healthy'
-                            ? 'text-success-400'
-                            : health.status === 'degraded'
-                              ? 'text-warning-400'
-                              : 'text-error-400'
-                        }`}
-                      >
-                        {health.status.toUpperCase()}
-                      </div>
-                    </div>
-                  </div>
-                  {health.uptime !== null && (
-                    <div className="text-right">
-                      <div className="text-xs text-dark-500">{t('banSystem.stats.uptime')}</div>
-                      <div className="text-dark-100">{formatUptime(health.uptime)}</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Components Status */}
-              {health.components && health.components.length > 0 && (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  {health.components.map((comp, idx) => (
-                    <div
-                      key={idx}
-                      className={`rounded-xl border bg-dark-800/50 p-4 ${
-                        comp.status === 'healthy'
-                          ? 'border-success-500/30'
-                          : comp.status === 'degraded'
-                            ? 'border-warning-500/30'
-                            : 'border-error-500/30'
-                      }`}
-                    >
-                      <div className="mb-2 flex items-center gap-3">
-                        <div
-                          className={`h-3 w-3 rounded-full ${
-                            comp.status === 'healthy'
-                              ? 'bg-success-500'
-                              : comp.status === 'degraded'
-                                ? 'bg-warning-500'
-                                : 'bg-error-500'
-                          }`}
-                        />
-                        <div className="font-medium text-dark-100">{comp.name}</div>
-                      </div>
-                      <div
-                        className={`text-sm ${
-                          comp.status === 'healthy'
-                            ? 'text-success-400'
-                            : comp.status === 'degraded'
-                              ? 'text-warning-400'
-                              : 'text-error-400'
-                        }`}
-                      >
-                        {comp.status}
-                      </div>
-                      {comp.message && (
-                        <div className="mt-1 text-xs text-dark-500">{comp.message}</div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <BanSystemHealthTab t={t} health={health} formatUptime={formatUptime} />
           )}
         </>
       )}
