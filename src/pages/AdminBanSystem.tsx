@@ -20,7 +20,6 @@ import {
   BanIcon,
   ChartIcon,
   RefreshIcon,
-  SearchIcon,
   ServerIcon,
   ShieldIcon,
   TrafficIcon,
@@ -28,7 +27,10 @@ import {
   WarningIcon,
 } from './adminBanSystem/components/BanSystemIcons';
 import { getBanSystemTabs } from './adminBanSystem/constants';
+import { BanSystemHealthTab } from './adminBanSystem/components/BanSystemHealthTab';
+import { BanSystemReportsTab } from './adminBanSystem/components/BanSystemReportsTab';
 import { BanSystemSettingsTab } from './adminBanSystem/components/BanSystemSettingsTab';
+import { BanSystemUsersTab } from './adminBanSystem/components/BanSystemUsersTab';
 import { StatCard } from './adminBanSystem/components/StatCard';
 import type { BanSystemTabType } from './adminBanSystem/types';
 
@@ -542,104 +544,15 @@ export default function AdminBanSystem() {
 
           {/* Users Tab */}
           {activeTab === 'users' && (
-            <div className="space-y-4">
-              {/* Search */}
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <div className="relative flex-1">
-                  <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-dark-500">
-                    <SearchIcon />
-                  </div>
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                    placeholder={t('banSystem.users.searchPlaceholder')}
-                    className="input pl-10"
-                  />
-                </div>
-                <button
-                  onClick={handleSearch}
-                  className="rounded-lg bg-accent-500/20 px-4 py-2 text-accent-400 transition-colors hover:bg-accent-500/30 sm:w-auto"
-                >
-                  {t('common.search')}
-                </button>
-              </div>
-
-              {/* Users Table */}
-              <div className="overflow-hidden rounded-xl border border-dark-700 bg-dark-800/50">
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[760px]">
-                    <thead>
-                      <tr className="border-b border-dark-700">
-                        <th className="px-4 py-3 text-left text-xs font-medium text-dark-500">
-                          {t('banSystem.users.email')}
-                        </th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                          {t('banSystem.users.ipCount')}
-                        </th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                          {t('banSystem.users.limit')}
-                        </th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                          {t('banSystem.users.status')}
-                        </th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                          {t('banSystem.users.bans')}
-                        </th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-dark-500">
-                          {t('common.actions')}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {users?.users.map((user) => (
-                        <tr
-                          key={user.email}
-                          className="border-b border-dark-700/50 hover:bg-dark-800/50"
-                        >
-                          <td className="px-4 py-3 text-dark-100">{user.email}</td>
-                          <td className="px-4 py-3 text-center text-dark-300">
-                            {user.unique_ip_count}
-                          </td>
-                          <td className="px-4 py-3 text-center text-dark-300">
-                            {user.limit ?? '-'}
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            <span
-                              className={`rounded-full px-2 py-1 text-xs ${
-                                user.is_over_limit
-                                  ? 'bg-error-500/20 text-error-400'
-                                  : 'bg-success-500/20 text-success-400'
-                              }`}
-                            >
-                              {user.is_over_limit
-                                ? t('banSystem.users.overLimit')
-                                : t('banSystem.users.ok')}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-center text-dark-300">
-                            {user.blocked_count}
-                          </td>
-                          <td className="px-4 py-3 text-right">
-                            <button
-                              onClick={() => handleViewUser(user.email)}
-                              disabled={actionLoading === user.email}
-                              className="text-sm text-accent-400 hover:text-accent-300 disabled:opacity-50"
-                            >
-                              {t('banSystem.users.viewDetails')}
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                {(!users?.users || users.users.length === 0) && (
-                  <div className="py-8 text-center text-dark-500">{t('common.noData')}</div>
-                )}
-              </div>
-            </div>
+            <BanSystemUsersTab
+              t={t}
+              users={users}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              actionLoading={actionLoading}
+              handleSearch={handleSearch}
+              handleViewUser={handleViewUser}
+            />
           )}
 
           {/* Punishments Tab */}
@@ -1062,85 +975,12 @@ export default function AdminBanSystem() {
 
           {/* Reports Tab */}
           {activeTab === 'reports' && (
-            <div className="space-y-4">
-              {/* Period Selector */}
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <span className="text-dark-400">{t('banSystem.reports.period')}:</span>
-                <div className="flex flex-wrap gap-2">
-                  {[6, 12, 24, 48, 72].map((hours) => (
-                    <button
-                      key={hours}
-                      onClick={() => handleReportPeriodChange(hours)}
-                      className={`rounded-lg px-3 py-1.5 text-sm transition-colors ${
-                        reportHours === hours
-                          ? 'bg-accent-500/20 text-accent-400'
-                          : 'bg-dark-800 text-dark-400 hover:text-dark-200'
-                      }`}
-                    >
-                      {hours}h
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {report && (
-                <>
-                  {/* Report Stats */}
-                  <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                    <StatCard
-                      title={t('banSystem.reports.currentUsers')}
-                      value={report.current_users}
-                      icon={<UsersIcon />}
-                      color="accent"
-                    />
-                    <StatCard
-                      title={t('banSystem.reports.currentIps')}
-                      value={report.current_ips}
-                      icon={<ServerIcon />}
-                      color="info"
-                    />
-                  </div>
-
-                  {/* Top Violators */}
-                  {report.top_violators && report.top_violators.length > 0 && (
-                    <div className="overflow-hidden rounded-xl border border-dark-700 bg-dark-800/50">
-                      <div className="border-b border-dark-700 p-4">
-                        <h3 className="text-sm font-medium text-dark-200">
-                          {t('banSystem.reports.topViolators')}
-                        </h3>
-                      </div>
-                      <div className="overflow-x-auto">
-                        <table className="w-full min-w-[460px]">
-                          <thead>
-                            <tr className="border-b border-dark-700">
-                              <th className="px-4 py-3 text-left text-xs font-medium text-dark-500">
-                                {t('banSystem.reports.username')}
-                              </th>
-                              <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                                {t('banSystem.reports.count')}
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {report.top_violators.map((v, idx) => (
-                              <tr
-                                key={idx}
-                                className="border-b border-dark-700/50 hover:bg-dark-800/50"
-                              >
-                                <td className="px-4 py-3 text-dark-100">{v.username}</td>
-                                <td className="px-4 py-3 text-center text-warning-400">
-                                  {v.count}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
+            <BanSystemReportsTab
+              t={t}
+              report={report}
+              reportHours={reportHours}
+              onReportPeriodChange={handleReportPeriodChange}
+            />
           )}
 
           {/* Settings Tab */}
@@ -1167,91 +1007,7 @@ export default function AdminBanSystem() {
 
           {/* Health Tab */}
           {activeTab === 'health' && health && (
-            <div className="space-y-4">
-              {/* Overall Status */}
-              <div className="rounded-xl border border-dark-700 bg-dark-800/50 p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`h-4 w-4 rounded-full ${
-                        health.status === 'healthy'
-                          ? 'animate-pulse bg-success-500'
-                          : health.status === 'degraded'
-                            ? 'animate-pulse bg-warning-500'
-                            : 'animate-pulse bg-error-500'
-                      }`}
-                    />
-                    <div>
-                      <div className="font-medium text-dark-100">
-                        {t('banSystem.health.systemStatus')}
-                      </div>
-                      <div
-                        className={`text-sm ${
-                          health.status === 'healthy'
-                            ? 'text-success-400'
-                            : health.status === 'degraded'
-                              ? 'text-warning-400'
-                              : 'text-error-400'
-                        }`}
-                      >
-                        {health.status.toUpperCase()}
-                      </div>
-                    </div>
-                  </div>
-                  {health.uptime !== null && (
-                    <div className="text-right">
-                      <div className="text-xs text-dark-500">{t('banSystem.stats.uptime')}</div>
-                      <div className="text-dark-100">{formatUptime(health.uptime)}</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Components Status */}
-              {health.components && health.components.length > 0 && (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  {health.components.map((comp, idx) => (
-                    <div
-                      key={idx}
-                      className={`rounded-xl border bg-dark-800/50 p-4 ${
-                        comp.status === 'healthy'
-                          ? 'border-success-500/30'
-                          : comp.status === 'degraded'
-                            ? 'border-warning-500/30'
-                            : 'border-error-500/30'
-                      }`}
-                    >
-                      <div className="mb-2 flex items-center gap-3">
-                        <div
-                          className={`h-3 w-3 rounded-full ${
-                            comp.status === 'healthy'
-                              ? 'bg-success-500'
-                              : comp.status === 'degraded'
-                                ? 'bg-warning-500'
-                                : 'bg-error-500'
-                          }`}
-                        />
-                        <div className="font-medium text-dark-100">{comp.name}</div>
-                      </div>
-                      <div
-                        className={`text-sm ${
-                          comp.status === 'healthy'
-                            ? 'text-success-400'
-                            : comp.status === 'degraded'
-                              ? 'text-warning-400'
-                              : 'text-error-400'
-                        }`}
-                      >
-                        {comp.status}
-                      </div>
-                      {comp.message && (
-                        <div className="mt-1 text-xs text-dark-500">{comp.message}</div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <BanSystemHealthTab t={t} health={health} formatUptime={formatUptime} />
           )}
         </>
       )}
