@@ -7,10 +7,7 @@ import { useNotify } from '../platform/hooks/useNotify';
 import {
   adminUsersApi,
   type UserDetailResponse,
-  type UserAvailableTariff,
   type UserListItem,
-  type UserPanelInfo,
-  type UserNodeUsageResponse,
   type PanelSyncStatusResponse,
   type UpdateSubscriptionRequest,
 } from '../api/adminUsers';
@@ -24,6 +21,7 @@ import { AdminUserSubscriptionTab } from './adminUserDetail/components/AdminUser
 import { AdminUserSyncTab } from './adminUserDetail/components/AdminUserSyncTab';
 import { AdminUserDetailHeader } from './adminUserDetail/components/AdminUserDetailHeader';
 import { AdminUserDetailTabs } from './adminUserDetail/components/AdminUserDetailTabs';
+import { useAdminUserSubscriptionData } from './adminUserDetail/hooks/useAdminUserSubscriptionData';
 import { useAdminUserTickets } from './adminUserDetail/hooks/useAdminUserTickets';
 import { useInlineConfirm } from './adminUserDetail/hooks/useInlineConfirm';
 import { buildNodeUsageForPeriod } from './adminUserDetail/utils/nodeUsage';
@@ -48,18 +46,11 @@ export default function AdminUserDetail() {
     'info' | 'subscription' | 'balance' | 'sync' | 'tickets'
   >('info');
   const [syncStatus, setSyncStatus] = useState<PanelSyncStatusResponse | null>(null);
-  const [tariffs, setTariffs] = useState<UserAvailableTariff[]>([]);
   const [actionLoading, setActionLoading] = useState(false);
 
   // Referrals
   const [referrals, setReferrals] = useState<UserListItem[]>([]);
   const [referralsLoading, setReferralsLoading] = useState(false);
-
-  // Panel info & node usage
-  const [panelInfo, setPanelInfo] = useState<UserPanelInfo | null>(null);
-  const [panelInfoLoading, setPanelInfoLoading] = useState(false);
-  const [nodeUsage, setNodeUsage] = useState<UserNodeUsageResponse | null>(null);
-  const [nodeUsageDays, setNodeUsageDays] = useState(7);
 
   const { confirmingAction, handleInlineConfirm } = useInlineConfirm();
 
@@ -88,15 +79,26 @@ export default function AdminUserDetail() {
   // Traffic packages
   const [selectedTrafficGb, setSelectedTrafficGb] = useState<string>('');
 
-  // Devices
-  const [devices, setDevices] = useState<
-    { hwid: string; platform: string; device_model: string; created_at: string | null }[]
-  >([]);
-  const [devicesTotal, setDevicesTotal] = useState(0);
-  const [deviceLimit, setDeviceLimit] = useState(0);
-  const [devicesLoading, setDevicesLoading] = useState(false);
-
   const userId = id ? parseInt(id, 10) : null;
+  const {
+    tariffs,
+    panelInfo,
+    panelInfoLoading,
+    nodeUsage,
+    nodeUsageDays,
+    setNodeUsageDays,
+    devices,
+    devicesTotal,
+    deviceLimit,
+    devicesLoading,
+    loadTariffs,
+    loadSubscriptionData,
+    loadDevices,
+    currentTariff,
+  } = useAdminUserSubscriptionData({
+    userId,
+    subscriptionTariffId: user?.subscription?.tariff_id ?? null,
+  });
   const {
     tickets,
     ticketsLoading,
@@ -139,16 +141,6 @@ export default function AdminUserDetail() {
     }
   }, [userId]);
 
-  const loadTariffs = useCallback(async () => {
-    if (!userId) return;
-    try {
-      const data = await adminUsersApi.getAvailableTariffs(userId, true);
-      setTariffs(data.tariffs);
-    } catch (error) {
-      console.error('Failed to load tariffs:', error);
-    }
-  }, [userId]);
-
   const loadReferrals = useCallback(async () => {
     if (!userId) return;
     try {
@@ -161,48 +153,6 @@ export default function AdminUserDetail() {
       setReferralsLoading(false);
     }
   }, [userId]);
-
-  const loadPanelInfo = useCallback(async () => {
-    if (!userId) return;
-    try {
-      setPanelInfoLoading(true);
-      const data = await adminUsersApi.getPanelInfo(userId);
-      setPanelInfo(data);
-    } catch {
-      // ignore
-    } finally {
-      setPanelInfoLoading(false);
-    }
-  }, [userId]);
-
-  const loadNodeUsage = useCallback(async () => {
-    if (!userId) return;
-    try {
-      const data = await adminUsersApi.getNodeUsage(userId);
-      setNodeUsage(data);
-    } catch {
-      // ignore
-    }
-  }, [userId]);
-
-  const loadDevices = useCallback(async () => {
-    if (!userId) return;
-    try {
-      setDevicesLoading(true);
-      const data = await adminUsersApi.getUserDevices(userId);
-      setDevices(data.devices);
-      setDevicesTotal(data.total);
-      setDeviceLimit(data.device_limit);
-    } catch {
-      // ignore
-    } finally {
-      setDevicesLoading(false);
-    }
-  }, [userId]);
-
-  const loadSubscriptionData = useCallback(async () => {
-    await Promise.all([loadPanelInfo(), loadNodeUsage(), loadDevices()]);
-  }, [loadPanelInfo, loadNodeUsage, loadDevices]);
 
   const loadPromoGroups = useCallback(async () => {
     try {
@@ -423,8 +373,6 @@ export default function AdminUserDetail() {
       setActionLoading(false);
     }
   };
-
-  const currentTariff = tariffs.find((t) => t.id === user?.subscription?.tariff_id) || null;
 
   const handleChangePromoGroup = async (groupId: number | null) => {
     if (!userId) return;
