@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/PEDZEO/cabinet-frontend/compare/v1.0.2...v1.0.3) (2026-02-17)
+
+
+### Bug Fixes
+
+* trigger release ([7519c40](https://github.com/PEDZEO/cabinet-frontend/commit/7519c40b6026d2d867803759a824560622c9de20))
+
 ## [1.0.2](https://github.com/PEDZEO/cabinet-frontend/compare/v1.0.1...v1.0.2) (2026-02-17)
 
 
