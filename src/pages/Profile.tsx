@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../store/auth';
 import { authApi } from '../api/auth';
 import { isValidEmail } from '../utils/validation';
-import type { LinkCodePreviewResponse } from '../types';
+import type { LinkCodePreviewResponse, LinkedIdentity } from '../types';
 import {
   notificationsApi,
   NotificationSettings,
@@ -160,7 +160,7 @@ export default function Profile() {
   };
 
   const getLocalizedLinkError = (err: unknown): string => {
-    const { code, message } = parseApiError(err);
+    const { code, message, retry_after_seconds } = parseApiError(err);
     switch (code) {
       case 'link_code_invalid':
         return t('profile.linking.errors.invalidCode', 'Код недействителен или истек');
@@ -192,9 +192,14 @@ export default function Profile() {
           'Чтобы привязать другой Telegram, сначала отвяжите текущий Telegram-аккаунт.',
         );
       case 'telegram_relink_cooldown_active':
-        return t(
-          'profile.linking.errors.telegramRelinkCooldown',
-          'Смена Telegram-аккаунта доступна не чаще одного раза в 30 дней.',
+        return (
+          t(
+            'profile.linking.errors.telegramRelinkCooldown',
+            'Смена Telegram-аккаунта доступна не чаще одного раза в 30 дней.',
+          ) +
+          (retry_after_seconds
+            ? ` ${t('profile.linking.availableAfter', 'Доступно через')}: ${formatDurationShort(retry_after_seconds)}.`
+            : '')
         );
       default:
         return message || t('common.error');
@@ -218,6 +223,18 @@ export default function Profile() {
       default:
         return t('profile.linking.unlink.reasons.generic');
     }
+  };
+
+  const getIdentityBlockedDetails = (identity: LinkedIdentity): string => {
+    const reasonText = getUnlinkReasonText(identity.blocked_reason);
+    if (identity.blocked_reason !== 'cooldown_active') return reasonText;
+    const cooldownText = identity.retry_after_seconds
+      ? `${t('profile.linking.availableAfter', 'Доступно через')}: ${formatDurationShort(identity.retry_after_seconds)}`
+      : '';
+    const dateText = identity.blocked_until
+      ? `${t('profile.linking.availableAt', 'Доступно в')}: ${formatDateTime(identity.blocked_until)}`
+      : '';
+    return [reasonText, cooldownText, dateText].filter(Boolean).join('. ');
   };
 
   const getLocalizedUnlinkError = (err: unknown) => {
@@ -458,7 +475,10 @@ export default function Profile() {
     enabled: !!user,
   });
 
-  const hasCurrentTelegramIdentity = (linkedIdentitiesData?.identities || []).some(
+  const linkedIdentities = linkedIdentitiesData?.identities || [];
+  const telegramRelink = linkedIdentitiesData?.telegram_relink;
+  const telegramIdentity = linkedIdentities.find((identity) => identity.provider === 'telegram');
+  const hasCurrentTelegramIdentity = linkedIdentities.some(
     (identity) => identity.provider === 'telegram',
   );
   const previewHasTelegramIdentity = !!linkPreview?.source_identity_hints?.telegram;
@@ -545,7 +565,14 @@ export default function Profile() {
     onSuccess: (data) => {
       setUnlinkError(null);
       setLinkError(null);
-      setLinkSuccess(t('profile.linking.unlink.codeSent'));
+      setLinkSuccess(
+        data.provider === 'telegram'
+          ? t(
+              'profile.linking.telegramStatus.unlinkCodeSent',
+              'Код подтверждения отправлен в Telegram. После отвязки сразу сможете привязать новый Telegram-код.',
+            )
+          : t('profile.linking.unlink.codeSent'),
+      );
       setUnlinkProvider(data.provider);
       setUnlinkRequestToken(data.request_token);
       setUnlinkOtpCode('');
@@ -686,8 +713,8 @@ export default function Profile() {
           </p>
 
           <div className="mb-4 flex flex-wrap gap-2">
-            {(linkedIdentitiesData?.identities || []).length > 0 ? (
-              linkedIdentitiesData?.identities.map((identity) => (
+            {linkedIdentities.length > 0 ? (
+              linkedIdentities.map((identity) => (
                 <div
                   key={`${identity.provider}-${identity.provider_user_id_masked}`}
                   className="flex items-center gap-2 rounded-linear border border-dark-700/80 bg-dark-800/70 px-3 py-1 text-xs text-dark-200"
@@ -700,9 +727,7 @@ export default function Profile() {
                     onClick={() => requestUnlinkMutation.mutate(identity.provider)}
                     disabled={!identity.can_unlink || requestUnlinkMutation.isPending}
                     className="rounded border border-error-500/40 px-2 py-0.5 text-[10px] text-error-300 transition-colors hover:bg-error-500/10 disabled:cursor-not-allowed disabled:border-dark-600 disabled:text-dark-500"
-                    title={
-                      identity.can_unlink ? undefined : getUnlinkReasonText(identity.blocked_reason)
-                    }
+                    title={identity.can_unlink ? undefined : getIdentityBlockedDetails(identity)}
                   >
                     {t('profile.linking.unlink.button')}
                   </button>
@@ -714,6 +739,56 @@ export default function Profile() {
               </span>
             )}
           </div>
+
+          {telegramRelink && (
+            <div className="mb-4 rounded-linear border border-dark-700/80 bg-dark-800/60 p-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-medium text-dark-100">
+                    {t('profile.linking.telegramStatus.title', 'Статус смены Telegram')}
+                  </p>
+                  {telegramRelink.requires_unlink_first ? (
+                    <p className="mt-1 text-xs text-warning-300">
+                      {t(
+                        'profile.linking.telegramStatus.requiresUnlink',
+                        'Сейчас привязан Telegram. Для смены сначала отвяжите текущий Telegram, затем привяжите новый.',
+                      )}
+                    </p>
+                  ) : telegramRelink.retry_after_seconds ? (
+                    <p className="mt-1 text-xs text-warning-300">
+                      {t('profile.linking.availableAfter', 'Доступно через')}:{' '}
+                      {formatDurationShort(telegramRelink.retry_after_seconds)}{' '}
+                      {telegramRelink.cooldown_until
+                        ? `(${t('profile.linking.availableAt', 'в')}: ${formatDateTime(telegramRelink.cooldown_until)})`
+                        : ''}
+                    </p>
+                  ) : (
+                    <p className="mt-1 text-xs text-success-400">
+                      {t(
+                        'profile.linking.telegramStatus.ready',
+                        'Смена Telegram доступна. Можно привязать другой Telegram-код.',
+                      )}
+                    </p>
+                  )}
+                  {telegramIdentity && (
+                    <p className="mt-2 text-xs text-dark-400">
+                      {t('profile.linking.telegramStatus.current', 'Текущий Telegram')}:{' '}
+                      {'telegram'}: {telegramIdentity.provider_user_id_masked}
+                    </p>
+                  )}
+                </div>
+                {telegramRelink.requires_unlink_first && (
+                  <Button
+                    variant="secondary"
+                    onClick={() => requestUnlinkMutation.mutate('telegram')}
+                    loading={requestUnlinkMutation.isPending}
+                  >
+                    {t('profile.linking.telegramStatus.startRelink', 'Сменить Telegram')}
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="space-y-3 border-t border-dark-800/50 pt-4">
             <div className="flex flex-wrap items-center gap-3">
@@ -1413,3 +1488,20 @@ export default function Profile() {
     </motion.div>
   );
 }
+const formatDateTime = (value?: string | null): string => {
+  if (!value) return '-';
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return '-';
+  return parsed.toLocaleString();
+};
+
+const formatDurationShort = (totalSeconds?: number | null): string => {
+  if (!totalSeconds || totalSeconds <= 0) return '0с';
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  if (days > 0) return `${days}д ${hours}ч`;
+  if (hours > 0) return `${hours}ч ${minutes}м`;
+  if (minutes > 0) return `${minutes}м`;
+  return `${totalSeconds}с`;
+};

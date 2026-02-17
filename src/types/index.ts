@@ -26,10 +26,20 @@ export interface LinkedIdentity {
   provider_user_id_masked: string;
   can_unlink: boolean;
   blocked_reason: string | null;
+  blocked_until?: string | null;
+  retry_after_seconds?: number | null;
+}
+
+export interface TelegramRelinkStatus {
+  can_start_relink: boolean;
+  requires_unlink_first: boolean;
+  cooldown_until: string | null;
+  retry_after_seconds: number | null;
 }
 
 export interface LinkedIdentitiesResponse {
   identities: LinkedIdentity[];
+  telegram_relink: TelegramRelinkStatus;
 }
 
 export interface LinkCodeCreateResponse {
