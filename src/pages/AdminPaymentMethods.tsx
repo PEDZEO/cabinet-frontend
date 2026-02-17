@@ -134,7 +134,7 @@ function SortablePaymentCard({ config, onClick }: SortableCardProps) {
       </button>
 
       {/* Content */}
-      <div className="min-w-0 flex-1 cursor-pointer" onClick={onClick}>
+      <button type="button" className="min-w-0 flex-1 cursor-pointer text-left" onClick={onClick}>
         <div className="flex flex-wrap items-center gap-2">
           <span className="truncate font-semibold text-dark-100">{displayName}</span>
           {config.is_enabled ? (
@@ -171,7 +171,7 @@ function SortablePaymentCard({ config, onClick }: SortableCardProps) {
             ))}
           </div>
         )}
-      </div>
+      </button>
 
       {/* Chevron */}
       <button
