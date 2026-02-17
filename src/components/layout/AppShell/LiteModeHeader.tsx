@@ -220,8 +220,8 @@ export function LiteModeHeader({
             : undefined,
         }}
       >
-        <div className="mx-auto w-full px-4">
-          <div className="flex h-16 items-center justify-between">
+        <div className="mx-auto w-full px-3 min-[360px]:px-4">
+          <div className="flex h-16 items-center justify-between gap-1.5 min-[360px]:gap-2">
             {/* Back button or Logo */}
             {!isMainPage ? (
               <button
@@ -268,23 +268,25 @@ export function LiteModeHeader({
             {/* Center: Balance & Status */}
             <Link
               to="/"
-              className="flex items-center gap-3 rounded-xl px-2 py-1 transition-colors hover:bg-dark-800/50 active:scale-[0.98]"
+              className="flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl px-1.5 py-1 transition-colors hover:bg-dark-800/50 active:scale-[0.98] min-[360px]:gap-2 min-[360px]:px-2"
             >
               <div className="text-right">
-                <div className="text-sm font-semibold text-dark-100">
+                <div className="text-xs font-semibold text-dark-100 min-[360px]:text-sm">
                   {formatWithCurrency(balance / 100)}
                 </div>
               </div>
-              {getSubscriptionStatus()}
+              <div className="hidden min-[390px]:block">{getSubscriptionStatus()}</div>
             </Link>
 
             {/* Right: Language + Theme + Admin link + Menu */}
-            <div className="flex items-center gap-2">
-              <LanguageSwitcher />
+            <div className="flex flex-shrink-0 items-center gap-1 min-[360px]:gap-2">
+              <div className="hidden min-[390px]:block">
+                <LanguageSwitcher />
+              </div>
               <button
                 onClick={toggleTheme}
                 className={cn(
-                  'rounded-xl p-2.5 transition-all duration-200',
+                  'rounded-xl p-2 transition-all duration-200 min-[360px]:p-2.5',
                   !canToggle && 'pointer-events-none invisible',
                   'text-dark-400 hover:bg-dark-800 hover:text-dark-100',
                 )}
@@ -299,7 +301,7 @@ export function LiteModeHeader({
                 <Link
                   to="/admin"
                   className={cn(
-                    'rounded-xl p-2.5 transition-all duration-200',
+                    'rounded-xl p-2 transition-all duration-200 min-[360px]:p-2.5',
                     isAdminPage
                       ? 'bg-warning-500/20 text-warning-400'
                       : 'text-warning-500/70 hover:bg-dark-800 hover:text-warning-400',
@@ -313,7 +315,7 @@ export function LiteModeHeader({
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
                 className={cn(
-                  'rounded-xl p-2.5 transition-all duration-200',
+                  'rounded-xl p-2 transition-all duration-200 min-[360px]:p-2.5',
                   menuOpen
                     ? 'bg-dark-700 text-dark-100'
                     : 'text-dark-400 hover:bg-dark-800 hover:text-dark-100',

@@ -35,10 +35,10 @@ export function LiteActionButton({
     <Link
       to={to}
       onClick={handleClick}
-      className={`flex w-full items-center justify-center gap-3 rounded-2xl px-6 py-5 text-lg font-semibold transition-transform active:scale-[0.98] ${getVariantStyles()}`}
+      className={`flex w-full items-center justify-center gap-2.5 rounded-2xl px-4 py-4 text-base font-semibold transition-transform active:scale-[0.98] sm:gap-3 sm:px-6 sm:py-5 sm:text-lg ${getVariantStyles()}`}
     >
-      <span className="text-xl">{icon}</span>
-      <span>{label}</span>
+      <span className="text-lg sm:text-xl">{icon}</span>
+      <span className="truncate">{label}</span>
     </Link>
   );
 }

@@ -208,7 +208,7 @@ export default function LiteBalance() {
   };
 
   return (
-    <div className="mx-auto max-w-md space-y-4 px-4 py-6">
+    <div className="mx-auto w-full max-w-md space-y-4 px-3 py-5 min-[360px]:px-4 min-[360px]:py-6">
       <div className="rounded-2xl border border-dark-600 bg-gradient-to-br from-accent-500/15 via-dark-800/85 to-dark-800/80 p-4 shadow-lg shadow-black/5">
         <div className="text-xs font-medium tracking-wide text-dark-400">{t('balance.currentBalance')}</div>
         <div className="mt-1 text-3xl font-bold text-dark-100">
@@ -248,7 +248,7 @@ export default function LiteBalance() {
 
       <div className="rounded-2xl border border-dark-600 bg-dark-800/80 p-4">
         <h2 className="mb-3 text-sm font-semibold text-dark-100">{t('balance.promocode.title')}</h2>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 min-[360px]:flex-row">
           <input
             type="text"
             value={promocode}
@@ -261,7 +261,7 @@ export default function LiteBalance() {
           <button
             onClick={handlePromocodeActivate}
             disabled={!promocode.trim() || promocodeLoading}
-            className="rounded-xl bg-accent-500 px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-600 disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-xl bg-accent-500 px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-600 disabled:cursor-not-allowed disabled:opacity-50 min-[360px]:w-auto"
           >
             {promocodeLoading ? t('common.loading') : t('balance.promocode.activate')}
           </button>
@@ -303,7 +303,7 @@ export default function LiteBalance() {
                 return (
                   <div
                     key={tx.id}
-                    className="flex items-center justify-between rounded-xl border border-dark-700/60 bg-dark-700/40 px-3 py-2"
+                    className="flex flex-col gap-1.5 rounded-xl border border-dark-700/60 bg-dark-700/40 px-3 py-2 min-[360px]:flex-row min-[360px]:items-center min-[360px]:justify-between"
                   >
                     <div className="min-w-0">
                       <span
@@ -315,7 +315,7 @@ export default function LiteBalance() {
                         {new Date(tx.created_at).toLocaleDateString()}
                       </div>
                     </div>
-                    <div className={`text-sm font-semibold ${amountClass}`}>
+                    <div className={`text-sm font-semibold ${amountClass} min-[360px]:text-right`}>
                       {sign}
                       {formatAmount(Math.abs(tx.amount_rubles))} {currencySymbol}
                     </div>

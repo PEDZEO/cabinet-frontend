@@ -314,7 +314,7 @@ export function LiteDashboard() {
     <>
       <PullToRefresh onRefresh={handleRefresh} className="min-h-[calc(100vh-120px)]">
         <div
-          className="mx-auto flex min-h-[calc(100vh-120px)] max-w-md flex-col px-4 py-6"
+          className="mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-md flex-col px-3 py-5 min-[360px]:px-4 min-[360px]:py-6"
           style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom, 24px))' }}
         >
           {/* Subscription status or Trial card */}
@@ -346,11 +346,11 @@ export function LiteDashboard() {
 
           {!hasMergedAnotherAccount && (
             <div className="mb-4 rounded-xl border border-accent-500/20 bg-accent-500/5 px-3 py-2">
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-col gap-1.5 min-[360px]:flex-row min-[360px]:items-center min-[360px]:justify-between min-[360px]:gap-3">
                 <p className="text-xs text-dark-300">{t('lite.accountLinking.title')}</p>
                 <Link
                   to="/profile"
-                  className="text-xs font-medium text-accent-400 transition-colors hover:text-accent-300"
+                  className="self-start text-xs font-medium text-accent-400 transition-colors hover:text-accent-300 min-[360px]:self-auto"
                 >
                   {t('lite.accountLinking.cta')}
                 </Link>
@@ -384,7 +384,7 @@ export function LiteDashboard() {
                 <p className="truncate text-xs text-dark-300">{referralLink}</p>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 max-[360px]:flex-col">
                 <button
                   onClick={copyReferralLink}
                   className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium transition-all ${

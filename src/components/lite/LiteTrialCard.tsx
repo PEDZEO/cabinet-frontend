@@ -25,7 +25,7 @@ export function LiteTrialCard({
       : t('lite.trialTraffic', { count: trialInfo.traffic_limit_gb });
 
   return (
-    <div className="rounded-2xl border border-accent-500/30 bg-gradient-to-br from-accent-500/10 to-transparent p-5">
+    <div className="rounded-2xl border border-accent-500/30 bg-gradient-to-br from-accent-500/10 to-transparent p-4 sm:p-5">
       <div className="mb-4 text-center">
         <h3 className="text-lg font-semibold text-dark-100">{t('lite.activateTrial')}</h3>
         <p className="mt-1 text-sm text-dark-400">
@@ -33,12 +33,11 @@ export function LiteTrialCard({
         </p>
       </div>
 
-      <div className="mb-4 flex justify-center gap-4 text-sm">
-        <div className="text-center">
+      <div className="mb-4 grid grid-cols-1 gap-2 text-sm min-[360px]:grid-cols-2">
+        <div className="rounded-xl bg-dark-900/30 px-3 py-2 text-center">
           <div className="font-medium text-dark-100">{trafficLabel}</div>
         </div>
-        <div className="text-dark-600">|</div>
-        <div className="text-center">
+        <div className="rounded-xl bg-dark-900/30 px-3 py-2 text-center">
           <div className="font-medium text-dark-100">
             {t('lite.trialDevices', { count: trialInfo.device_limit })}
           </div>

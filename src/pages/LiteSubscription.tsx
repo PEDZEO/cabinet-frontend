@@ -609,7 +609,7 @@ export function LiteSubscription() {
   return (
     <PullToRefresh onRefresh={handleRefresh} className="min-h-screen">
       <div
-        className="mx-auto max-w-md px-4 py-6"
+        className="mx-auto w-full max-w-md px-3 py-5 min-[360px]:px-4 min-[360px]:py-6"
         style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom, 24px))' }}
       >
         {/* Expiry warning - show when 3 days or less */}
@@ -659,7 +659,7 @@ export function LiteSubscription() {
 
         {/* Pause/Resume for daily subscriptions */}
         {subscription?.is_daily && !subscription?.is_trial && (
-          <div className="mb-4 flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
+          <div className="mb-4 flex flex-col gap-3 rounded-xl bg-dark-800/50 px-4 py-3 min-[380px]:flex-row min-[380px]:items-center min-[380px]:justify-between">
             <div className="flex items-center gap-3">
               <div
                 className={`flex h-8 w-8 items-center justify-center rounded-lg ${
@@ -686,7 +686,7 @@ export function LiteSubscription() {
             <button
               onClick={() => togglePauseMutation.mutate()}
               disabled={isLoading}
-              className={`rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+              className={`w-full rounded-lg px-3 py-2 text-sm font-medium transition-all min-[380px]:w-auto ${
                 subscription.is_daily_paused
                   ? 'bg-success-500 text-white hover:bg-success-600'
                   : 'bg-warning-500 text-white hover:bg-warning-600'
@@ -702,43 +702,45 @@ export function LiteSubscription() {
         )}
 
         {/* Tabs */}
-        <div className="mb-6 flex gap-2">
-          {(['tariffs', 'devices', 'traffic'] as TabType[])
-            .filter((tab) => {
-              // Hide traffic tab if topup is disabled in tariff settings
-              if (tab === 'traffic' && currentTariff && !currentTariff.traffic_topup_enabled) {
-                return false;
-              }
-              return true;
-            })
-            .map((tab) => (
-              <button
-                key={tab}
-                onClick={() => {
-                  haptic.selectionChanged();
-                  setActiveTab(tab);
-                  setError(null);
-                  setSuccess(null);
-                }}
-                disabled={tab !== 'tariffs' && !hasSubscription}
-                className={`flex-1 rounded-xl py-2.5 text-sm font-medium transition-all ${
-                  activeTab === tab
-                    ? 'bg-accent-500 text-white'
-                    : tab !== 'tariffs' && !hasSubscription
-                      ? 'cursor-not-allowed bg-dark-800/30 text-dark-500'
-                      : 'bg-dark-800/50 text-dark-300 hover:bg-dark-700/50'
-                }`}
-              >
-                {t(`lite.tab.${tab}`)}
-              </button>
-            ))}
+        <div className="mb-6 -mx-1 overflow-x-auto px-1">
+          <div className="flex min-w-max gap-2">
+            {(['tariffs', 'devices', 'traffic'] as TabType[])
+              .filter((tab) => {
+                // Hide traffic tab if topup is disabled in tariff settings
+                if (tab === 'traffic' && currentTariff && !currentTariff.traffic_topup_enabled) {
+                  return false;
+                }
+                return true;
+              })
+              .map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => {
+                    haptic.selectionChanged();
+                    setActiveTab(tab);
+                    setError(null);
+                    setSuccess(null);
+                  }}
+                  disabled={tab !== 'tariffs' && !hasSubscription}
+                  className={`min-w-[112px] rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
+                    activeTab === tab
+                      ? 'bg-accent-500 text-white'
+                      : tab !== 'tariffs' && !hasSubscription
+                        ? 'cursor-not-allowed bg-dark-800/30 text-dark-500'
+                        : 'bg-dark-800/50 text-dark-300 hover:bg-dark-700/50'
+                  }`}
+                >
+                  {t(`lite.tab.${tab}`)}
+                </button>
+              ))}
+          </div>
         </div>
 
         {/* Tariffs Tab */}
         {activeTab === 'tariffs' && (
           <div className="space-y-4">
             {promoGroupName && (
-              <div className="flex items-center gap-3 rounded-xl border border-success-500/30 bg-success-500/10 p-3">
+              <div className="flex items-start gap-3 rounded-xl border border-success-500/30 bg-success-500/10 p-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-success-500/20 text-success-400">
                   <svg
                     className="h-5 w-5"
@@ -843,8 +845,8 @@ export function LiteSubscription() {
                           ? (tariff.daily_discount_percent ?? null)
                           : promo.percent;
                         return (
-                          <div className="flex items-baseline justify-between">
-                            <div className="flex items-center gap-2">
+                          <div className="flex flex-col gap-1 min-[360px]:flex-row min-[360px]:items-baseline min-[360px]:justify-between">
+                            <div className="flex flex-wrap items-center gap-2">
                               <span className="text-xl font-bold text-accent-400">
                                 {formatPrice(promo.price)}
                               </span>
@@ -859,7 +861,9 @@ export function LiteSubscription() {
                                 </span>
                               )}
                             </div>
-                            <span className="text-sm text-dark-500">/{t('lite.day')}</span>
+                            <span className="text-sm text-dark-500 min-[360px]:text-right">
+                              /{t('lite.day')}
+                            </span>
                           </div>
                         );
                       })()
@@ -876,8 +880,8 @@ export function LiteSubscription() {
                             ? (period.discount_percent ?? null)
                             : promo.percent;
                           return (
-                            <div className="flex items-baseline justify-between">
-                              <div className="flex items-center gap-2">
+                            <div className="flex flex-col gap-1 min-[360px]:flex-row min-[360px]:items-baseline min-[360px]:justify-between">
+                              <div className="flex flex-wrap items-center gap-2">
                                 <span className="text-xl font-bold text-accent-400">
                                   {formatPrice(promo.price)}
                                 </span>
@@ -892,7 +896,9 @@ export function LiteSubscription() {
                                   </span>
                                 )}
                               </div>
-                              <span className="text-sm text-dark-500">/{t('lite.month')}</span>
+                              <span className="text-sm text-dark-500 min-[360px]:text-right">
+                                /{t('lite.month')}
+                              </span>
                             </div>
                           );
                         })()
@@ -907,7 +913,7 @@ export function LiteSubscription() {
               !shouldSwitchTariff(selectedTariff) && (
                 <div className="space-y-2">
                   <p className="text-sm text-dark-400">{t('lite.selectPeriod')}</p>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
                     {selectedTariff.periods.map((period) => (
                       <button
                         key={period.days}
@@ -997,17 +1003,17 @@ export function LiteSubscription() {
                   {devicesData.devices.map((device) => (
                     <div
                       key={device.hwid}
-                      className="flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3"
+                      className="flex items-center justify-between gap-3 rounded-xl bg-dark-800/50 px-4 py-3"
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex min-w-0 items-center gap-3">
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-dark-700 text-dark-400">
                           {getDeviceIcon(device.platform)}
                         </div>
-                        <div>
-                          <p className="text-sm font-medium text-dark-100">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-dark-100">
                             {formatDeviceName(device)}
                           </p>
-                          <p className="text-xs text-dark-500">{device.platform}</p>
+                          <p className="truncate text-xs text-dark-500">{device.platform}</p>
                         </div>
                       </div>
                       <button
@@ -1056,7 +1062,7 @@ export function LiteSubscription() {
                   <>
                     <div className="space-y-2">
                       <p className="text-sm text-dark-400">{t('lite.addDevices')}</p>
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center justify-center gap-4">
                         <button
                           onClick={() => {
                             haptic.selectionChanged();
@@ -1101,9 +1107,9 @@ export function LiteSubscription() {
                         ? (devicePrice.discount_percent ?? null)
                         : promo.percent;
                       return (
-                        <div className="flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
+                        <div className="flex flex-col gap-2 rounded-xl bg-dark-800/50 px-4 py-3 min-[360px]:flex-row min-[360px]:items-center min-[360px]:justify-between">
                           <span className="text-dark-400">{t('lite.total')}</span>
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             <span className="text-lg font-bold text-accent-400">
                               {formatPrice(promo.price)}
                             </span>
@@ -1241,7 +1247,7 @@ export function LiteSubscription() {
               ) : (
                 <>
                   {/* Usage statistics */}
-                  <div className="mb-3 grid grid-cols-3 gap-2 text-center">
+                  <div className="mb-3 grid grid-cols-1 gap-2 text-center min-[360px]:grid-cols-3">
                     <div className="rounded-lg bg-dark-700/50 p-2">
                       <p className="text-lg font-bold text-dark-100">
                         {(subscription?.traffic_used_gb ?? 0).toFixed(1)}
@@ -1293,7 +1299,7 @@ export function LiteSubscription() {
             {trafficPackages && trafficPackages.length > 0 && (
               <div className="space-y-2">
                 <p className="text-sm text-dark-400">{t('lite.addTraffic')}</p>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
                   {trafficPackages.map((pkg) => {
                     const hasExistingDiscount = !!(
                       pkg.discount_percent && pkg.discount_percent > 0
@@ -1368,7 +1374,7 @@ export function LiteSubscription() {
         </button>
 
         {/* Promo code input */}
-        <div className="mt-4 flex gap-2">
+        <div className="mt-4 flex flex-col gap-2 min-[360px]:flex-row">
           <input
             type="text"
             value={promoCode}
@@ -1384,7 +1390,7 @@ export function LiteSubscription() {
               }
             }}
             disabled={isLoading || !promoCode.trim()}
-            className="rounded-xl bg-accent-500 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-accent-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-xl bg-accent-500 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-accent-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 min-[360px]:w-auto"
           >
             {activatePromoMutation.isPending ? t('common.loading') : t('lite.promoApply')}
           </button>
