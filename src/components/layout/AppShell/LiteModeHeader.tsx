@@ -182,13 +182,7 @@ export function LiteModeHeader({
       );
     }
 
-    if (subscription.days_left > 0 || subscription.hours_left > 0) {
-      return (
-        <span className="rounded-full bg-success-500/20 px-2 py-0.5 text-xs font-medium text-success-400">
-          {t('lite.subscriptionActive')}
-        </span>
-      );
-    }
+    if (subscription.days_left > 0 || subscription.hours_left > 0) return null;
 
     return null;
   };
@@ -227,6 +221,8 @@ export function LiteModeHeader({
               <Link
                 to="/"
                 className={cn('flex flex-shrink-0 items-center gap-2.5', !appName && 'mr-4')}
+                aria-label={appName || 'Home'}
+                title={appName || undefined}
               >
                 <div className="relative flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-linear-lg border border-dark-700/50 bg-dark-800/80 shadow-md">
                   <span
@@ -249,10 +245,12 @@ export function LiteModeHeader({
                     />
                   )}
                 </div>
-                {appName && (
+                {appName && !isMainPage ? (
                   <span className="hidden whitespace-nowrap text-base font-semibold text-dark-100 sm:block">
                     {appName}
                   </span>
+                ) : (
+                  <span className="sr-only">{appName}</span>
                 )}
               </Link>
             )}

@@ -150,6 +150,7 @@ export function AppHeader({
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
   };
+  const isMainPage = location.pathname === '/';
   const isAdminActive = () => location.pathname.startsWith('/admin');
 
   const navItems = [
@@ -185,6 +186,8 @@ export function AppHeader({
               to="/"
               onClick={() => setMobileMenuOpen(false)}
               className={cn('flex flex-shrink-0 items-center gap-2.5', !appName && 'mr-4')}
+              aria-label={appName || 'Home'}
+              title={appName || undefined}
             >
               <div className="relative flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-linear-lg border border-dark-700/50 bg-dark-800/80 shadow-md">
                 <span
@@ -207,10 +210,12 @@ export function AppHeader({
                   />
                 )}
               </div>
-              {appName && (
+              {appName && !isMainPage ? (
                 <span className="whitespace-nowrap text-base font-semibold text-dark-100">
                   {appName}
                 </span>
+              ) : (
+                <span className="sr-only">{appName}</span>
               )}
             </Link>
 

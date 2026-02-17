@@ -195,6 +195,7 @@ interface AppShellProps {
 export function AppShell({ children }: AppShellProps) {
   const { t } = useTranslation();
   const location = useLocation();
+  const isMainPage = location.pathname === '/';
   const { isAdmin, logout } = useAuthStore();
   const { isFullscreen, safeAreaInset, contentSafeAreaInset, platform, isMobile } =
     useTelegramSDK();
@@ -308,7 +309,13 @@ export function AppShell({ children }: AppShellProps) {
       >
         <div className="mx-auto grid h-14 max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-4 px-6">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2.5" onClick={handleNavClick}>
+          <Link
+            to="/"
+            className="flex items-center gap-2.5"
+            onClick={handleNavClick}
+            aria-label={appName || 'Home'}
+            title={appName || undefined}
+          >
             <div className="relative flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-dark-800">
               <span
                 className={cn(
@@ -329,7 +336,11 @@ export function AppShell({ children }: AppShellProps) {
                 />
               )}
             </div>
-            <span className="text-base font-semibold text-dark-100">{appName}</span>
+            {!isMainPage ? (
+              <span className="text-base font-semibold text-dark-100">{appName}</span>
+            ) : (
+              <span className="sr-only">{appName}</span>
+            )}
           </Link>
 
           {/* Center Navigation */}
