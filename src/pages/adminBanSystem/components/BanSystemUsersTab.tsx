@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next';
 import type { BanUsersListResponse } from '../../../api/banSystem';
+import { getOverLimitBadgeClass } from '../utils/statusStyles';
 import { SearchIcon } from './BanSystemIcons';
 
 interface BanSystemUsersTabProps {
@@ -78,11 +79,7 @@ export function BanSystemUsersTab({
                   <td className="px-4 py-3 text-center text-dark-300">{user.limit ?? '-'}</td>
                   <td className="px-4 py-3 text-center">
                     <span
-                      className={`rounded-full px-2 py-1 text-xs ${
-                        user.is_over_limit
-                          ? 'bg-error-500/20 text-error-400'
-                          : 'bg-success-500/20 text-success-400'
-                      }`}
+                      className={`rounded-full px-2 py-1 text-xs ${getOverLimitBadgeClass(user.is_over_limit)}`}
                     >
                       {user.is_over_limit
                         ? t('banSystem.users.overLimit')
