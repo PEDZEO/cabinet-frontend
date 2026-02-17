@@ -10,6 +10,8 @@ import { AdminUserInfoTab } from './adminUserDetail/components/AdminUserInfoTab'
 import { AdminUserSubscriptionTab } from './adminUserDetail/components/AdminUserSubscriptionTab';
 import { AdminUserSyncTab } from './adminUserDetail/components/AdminUserSyncTab';
 import { AdminUserDetailHeader } from './adminUserDetail/components/AdminUserDetailHeader';
+import { AdminUserDetailLoadingState } from './adminUserDetail/components/AdminUserDetailLoadingState';
+import { AdminUserDetailNotFoundState } from './adminUserDetail/components/AdminUserDetailNotFoundState';
 import { AdminUserDetailTabs } from './adminUserDetail/components/AdminUserDetailTabs';
 import { useAdminUserActions } from './adminUserDetail/hooks/useAdminUserActions';
 import { useAdminUserCoreData } from './adminUserDetail/hooks/useAdminUserCoreData';
@@ -178,25 +180,11 @@ export default function AdminUserDetail() {
     });
 
   if (loading) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
-      </div>
-    );
+    return <AdminUserDetailLoadingState />;
   }
 
   if (!user) {
-    return (
-      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4">
-        <p className="text-dark-400">{t('admin.users.notFound')}</p>
-        <button
-          onClick={() => navigate('/admin/users')}
-          className="rounded-lg bg-accent-500 px-4 py-2 text-white transition-colors hover:bg-accent-600"
-        >
-          {t('common.back')}
-        </button>
-      </div>
-    );
+    return <AdminUserDetailNotFoundState onBack={navigateToUsers} />;
   }
 
   return (
