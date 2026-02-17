@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { type RowData } from '@tanstack/react-table';
 import { usePlatform } from '../platform/hooks/usePlatform';
 import { ProgressBar } from './adminTrafficUsage/components/ProgressBar';
 import { TrafficUsageControls } from './adminTrafficUsage/components/TrafficUsageControls';
@@ -11,19 +10,6 @@ import { TrafficUsageToast } from './adminTrafficUsage/components/TrafficUsageTo
 import { useAdminTrafficUsageData } from './adminTrafficUsage/hooks/useAdminTrafficUsageData';
 import { useTrafficColumns } from './adminTrafficUsage/hooks/useTrafficColumns';
 import { useTrafficTable } from './adminTrafficUsage/hooks/useTrafficTable';
-
-// ============ TanStack Table module augmentation ============
-
-declare module '@tanstack/react-table' {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface ColumnMeta<TData extends RowData, TValue> {
-    sticky?: boolean;
-    align?: 'left' | 'center';
-    bold?: boolean;
-  }
-}
-
-// ============ Main Page ============
 
 export default function AdminTrafficUsage() {
   const { t } = useTranslation();
