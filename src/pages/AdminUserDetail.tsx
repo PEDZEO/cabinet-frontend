@@ -16,7 +16,7 @@ import { useAdminUserActions } from './adminUserDetail/hooks/useAdminUserActions
 import { useAdminUserCoreData } from './adminUserDetail/hooks/useAdminUserCoreData';
 import { useAdminUserFormState } from './adminUserDetail/hooks/useAdminUserFormState';
 import { useAdminUserInfoData } from './adminUserDetail/hooks/useAdminUserInfoData';
-import { buildAdminUserDetailContentProps } from './adminUserDetail/hooks/useAdminUserDetailContentProps';
+import { buildAdminUserDetailContentProps } from './adminUserDetail/utils/adminUserDetailContentProps';
 import { useAdminUserSubscriptionData } from './adminUserDetail/hooks/useAdminUserSubscriptionData';
 import { useAdminUserTabDataLoader } from './adminUserDetail/hooks/useAdminUserTabDataLoader';
 import { useAdminUserTickets } from './adminUserDetail/hooks/useAdminUserTickets';
