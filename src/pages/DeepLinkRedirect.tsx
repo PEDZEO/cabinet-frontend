@@ -185,7 +185,7 @@ export default function DeepLinkRedirect() {
             <img
               src={logoUrl}
               alt={projectName || 'Logo'}
-              className="h-full w-full p-1 object-contain"
+              className="h-full w-full object-contain p-1"
               onLoad={handleLogoLoad}
             />
           ) : (

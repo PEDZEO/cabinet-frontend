@@ -54,7 +54,7 @@ export default function TelegramLoginButton({ botUsername }: TelegramLoginButton
           href={`https://t.me/${botUsername}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-telegram-blue inline-flex items-center gap-2 rounded-xl bg-telegram-blue/10 px-5 py-3 text-base font-semibold transition-colors hover:bg-telegram-blue/20"
+          className="text-telegram-blue bg-telegram-blue/10 hover:bg-telegram-blue/20 inline-flex items-center gap-2 rounded-xl px-5 py-3 text-base font-semibold transition-colors"
           aria-label={t('auth.openTelegramBot', 'Открыть Telegram-бота')}
         >
           <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">

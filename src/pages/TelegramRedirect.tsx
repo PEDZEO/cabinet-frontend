@@ -158,7 +158,7 @@ export default function TelegramRedirect() {
             <img
               src={logoUrl}
               alt={appName}
-              className="h-full w-full p-1 object-contain"
+              className="h-full w-full object-contain p-1"
               onLoad={handleLogoLoad}
             />
           ) : (

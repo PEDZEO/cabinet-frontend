@@ -702,7 +702,7 @@ export function LiteSubscription() {
         )}
 
         {/* Tabs */}
-        <div className="mb-6 -mx-1 overflow-x-auto px-1">
+        <div className="-mx-1 mb-6 overflow-x-auto px-1">
           <div className="flex min-w-max gap-2">
             {(['tariffs', 'devices', 'traffic'] as TabType[])
               .filter((tab) => {

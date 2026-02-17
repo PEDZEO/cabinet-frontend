@@ -105,7 +105,9 @@ export default function AdminAccountLinking() {
           <BackIcon />
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-dark-50 sm:text-3xl">{t('admin.accountLinking.title')}</h1>
+          <h1 className="text-2xl font-bold text-dark-50 sm:text-3xl">
+            {t('admin.accountLinking.title')}
+          </h1>
           <p className="text-sm text-dark-400">{t('admin.accountLinking.subtitle')}</p>
         </div>
       </div>
@@ -160,7 +162,9 @@ export default function AdminAccountLinking() {
                   {t('admin.accountLinking.requester')}: #{item.requester_user_id} |{' '}
                   {t('admin.accountLinking.source')}: #{item.source_user_id ?? '-'}
                 </p>
-                {item.user_comment && <p className="mt-2 text-sm text-dark-300">{item.user_comment}</p>}
+                {item.user_comment && (
+                  <p className="mt-2 text-sm text-dark-300">{item.user_comment}</p>
+                )}
               </button>
             ))}
           </div>
@@ -193,7 +197,9 @@ export default function AdminAccountLinking() {
 
       {selected && !selected.decision && (
         <div className="card space-y-4">
-          <h2 className="text-lg font-semibold text-dark-100">{t('admin.accountLinking.resolveTitle')}</h2>
+          <h2 className="text-lg font-semibold text-dark-100">
+            {t('admin.accountLinking.resolveTitle')}
+          </h2>
           <p className="text-sm text-dark-400">
             {t('admin.accountLinking.resolveHint', {
               current: selected.current_user_id ?? '-',

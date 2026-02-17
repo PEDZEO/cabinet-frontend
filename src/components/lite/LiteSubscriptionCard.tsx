@@ -84,11 +84,7 @@ export function LiteSubscriptionCard({ subscription, deviceLimit }: LiteSubscrip
   const statusMeta = getStatusMeta();
   const usedPercent = Math.min(subscription.traffic_used_percent, 100);
   const progressBarClass =
-    usedPercent >= 90
-      ? 'bg-error-500'
-      : usedPercent >= 70
-        ? 'bg-warning-500'
-        : 'bg-accent-500';
+    usedPercent >= 90 ? 'bg-error-500' : usedPercent >= 70 ? 'bg-warning-500' : 'bg-accent-500';
 
   return (
     <div className="rounded-2xl border border-dark-600 bg-gradient-to-br from-dark-800/90 via-dark-850/85 to-dark-900/90 p-4 shadow-lg shadow-black/10">
@@ -143,11 +139,15 @@ export function LiteSubscriptionCard({ subscription, deviceLimit }: LiteSubscrip
 
       <div className="mt-4 grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
         <div className="rounded-xl border border-dark-700/60 bg-dark-800/40 px-3 py-2">
-          <div className="text-2xs uppercase tracking-[0.04em] text-dark-500">{t('lite.tab.traffic')}</div>
+          <div className="text-2xs uppercase tracking-[0.04em] text-dark-500">
+            {t('lite.tab.traffic')}
+          </div>
           <div className="mt-1 break-words text-xs font-medium text-dark-200">{trafficDisplay}</div>
         </div>
         <div className="rounded-xl border border-dark-700/60 bg-dark-800/40 px-3 py-2">
-          <div className="text-2xs uppercase tracking-[0.04em] text-dark-500">{t('lite.devices')}</div>
+          <div className="text-2xs uppercase tracking-[0.04em] text-dark-500">
+            {t('lite.devices')}
+          </div>
           <div className="mt-1 text-xs font-medium text-dark-200">
             {deviceLimit ?? subscription.device_limit}
           </div>

@@ -341,7 +341,6 @@ export function LiteDashboard() {
                 <p className="text-dark-300">{t('lite.noSubscription')}</p>
               </div>
             )}
-
           </div>
 
           {!hasMergedAnotherAccount && (

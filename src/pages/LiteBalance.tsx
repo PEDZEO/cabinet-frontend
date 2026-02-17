@@ -210,7 +210,9 @@ export default function LiteBalance() {
   return (
     <div className="mx-auto w-full max-w-md space-y-4 px-3 py-5 min-[360px]:px-4 min-[360px]:py-6">
       <div className="rounded-2xl border border-dark-600 bg-gradient-to-br from-accent-500/15 via-dark-800/85 to-dark-800/80 p-4 shadow-lg shadow-black/5">
-        <div className="text-xs font-medium tracking-wide text-dark-400">{t('balance.currentBalance')}</div>
+        <div className="text-xs font-medium tracking-wide text-dark-400">
+          {t('balance.currentBalance')}
+        </div>
         <div className="mt-1 text-3xl font-bold text-dark-100">
           {formatAmount(balanceData?.balance_rubles || 0)}
           <span className="ml-2 text-lg text-dark-400">{currencySymbol}</span>

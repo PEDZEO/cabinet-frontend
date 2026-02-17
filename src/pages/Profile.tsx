@@ -167,9 +167,15 @@ export default function Profile() {
       case 'link_code_same_account':
         return t('profile.linking.errors.sameAccount', 'Нельзя привязать аккаунт к самому себе');
       case 'link_code_attempts_exceeded':
-        return t('profile.linking.errors.tooManyAttempts', 'Слишком много попыток. Попробуйте позже');
+        return t(
+          'profile.linking.errors.tooManyAttempts',
+          'Слишком много попыток. Попробуйте позже',
+        );
       case 'link_code_identity_conflict':
-        return t('profile.linking.errors.identityConflict', 'Конфликт идентификаторов. Нужна ручная проверка');
+        return t(
+          'profile.linking.errors.identityConflict',
+          'Конфликт идентификаторов. Нужна ручная проверка',
+        );
       case 'link_code_source_inactive':
       case 'link_code_target_inactive':
         return t('profile.linking.errors.inactiveAccount', 'Один из аккаунтов неактивен');
@@ -550,16 +556,21 @@ export default function Profile() {
   });
 
   const confirmUnlinkMutation = useMutation({
-    mutationFn: ({ provider, token, otpCode }: { provider: string; token: string; otpCode: string }) =>
-      authApi.confirmUnlinkIdentity(provider, token, otpCode),
+    mutationFn: ({
+      provider,
+      token,
+      otpCode,
+    }: {
+      provider: string;
+      token: string;
+      otpCode: string;
+    }) => authApi.confirmUnlinkIdentity(provider, token, otpCode),
     onSuccess: (data) => {
       setUnlinkError(null);
       setUnlinkProvider(null);
       setUnlinkRequestToken(null);
       setUnlinkOtpCode('');
-      setLinkSuccess(
-        t('profile.linking.unlink.success', { provider: data.provider }),
-      );
+      setLinkSuccess(t('profile.linking.unlink.success', { provider: data.provider }));
       queryClient.invalidateQueries({ queryKey: ['linked-identities'] });
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
@@ -689,7 +700,9 @@ export default function Profile() {
                     onClick={() => requestUnlinkMutation.mutate(identity.provider)}
                     disabled={!identity.can_unlink || requestUnlinkMutation.isPending}
                     className="rounded border border-error-500/40 px-2 py-0.5 text-[10px] text-error-300 transition-colors hover:bg-error-500/10 disabled:cursor-not-allowed disabled:border-dark-600 disabled:text-dark-500"
-                    title={identity.can_unlink ? undefined : getUnlinkReasonText(identity.blocked_reason)}
+                    title={
+                      identity.can_unlink ? undefined : getUnlinkReasonText(identity.blocked_reason)
+                    }
                   >
                     {t('profile.linking.unlink.button')}
                   </button>
@@ -874,7 +887,8 @@ export default function Profile() {
                 <div className="text-sm text-dark-300">{getManualMergeStatusLabel()}</div>
                 {latestManualMerge.resolution_comment && (
                   <div className="mt-2 text-xs text-dark-400">
-                    {t('profile.linking.manualStatus.comment', 'Комментарий')}: {latestManualMerge.resolution_comment}
+                    {t('profile.linking.manualStatus.comment', 'Комментарий')}:{' '}
+                    {latestManualMerge.resolution_comment}
                   </div>
                 )}
                 <div className="mt-1 text-xs text-dark-500">

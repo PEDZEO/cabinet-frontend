@@ -156,7 +156,7 @@ export function BrandingTab({ accentColor = '#3b82f6' }: BrandingTabProps) {
                 <img
                   src={brandingApi.getLogoUrl(branding) ?? undefined}
                   alt="Logo"
-                  className="h-full w-full p-1 object-contain"
+                  className="h-full w-full object-contain p-1"
                   onLoad={handleLogoLoad}
                 />
               ) : (

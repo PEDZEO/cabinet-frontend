@@ -204,9 +204,12 @@ export const authApi = {
   },
 
   previewLinkCode: async (code: string): Promise<LinkCodePreviewResponse> => {
-    const response = await apiClient.post<LinkCodePreviewResponse>('/cabinet/auth/link-code/preview', {
-      code,
-    });
+    const response = await apiClient.post<LinkCodePreviewResponse>(
+      '/cabinet/auth/link-code/preview',
+      {
+        code,
+      },
+    );
     return response.data;
   },
 
@@ -218,10 +221,13 @@ export const authApi = {
   },
 
   requestManualMerge: async (code: string, comment?: string): Promise<ManualMergeResponse> => {
-    const response = await apiClient.post<ManualMergeResponse>('/cabinet/auth/link-code/manual-request', {
-      code,
-      comment,
-    });
+    const response = await apiClient.post<ManualMergeResponse>(
+      '/cabinet/auth/link-code/manual-request',
+      {
+        code,
+        comment,
+      },
+    );
     return response.data;
   },
 

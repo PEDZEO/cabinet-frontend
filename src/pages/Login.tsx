@@ -19,7 +19,7 @@ import { isInTelegramWebApp, getTelegramInitData, useTelegramSDK } from '../hook
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import TelegramLoginButton from '../components/TelegramLoginButton';
 import OAuthProviderIcon from '../components/OAuthProviderIcon';
-import { saveOAuthState } from './OAuthCallback';
+import { saveOAuthState } from '../utils/oauthState';
 
 export default function Login() {
   const { t } = useTranslation();

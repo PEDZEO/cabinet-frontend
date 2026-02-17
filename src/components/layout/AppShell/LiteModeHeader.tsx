@@ -279,7 +279,9 @@ export function LiteModeHeader({
                 )}
                 title={isDark ? t('theme.light') || 'Light mode' : t('theme.dark') || 'Dark mode'}
                 aria-label={
-                  isDark ? t('theme.light') || 'Switch to light mode' : t('theme.dark') || 'Switch to dark mode'
+                  isDark
+                    ? t('theme.light') || 'Switch to light mode'
+                    : t('theme.dark') || 'Switch to dark mode'
                 }
               >
                 {isDark ? <SunIcon /> : <MoonIcon />}
