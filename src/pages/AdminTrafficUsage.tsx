@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
@@ -6,19 +6,10 @@ import {
   getCoreRowModel,
   flexRender,
   type ColumnDef,
-  type SortingState,
   type RowData,
 } from '@tanstack/react-table';
-import {
-  adminTrafficApi,
-  type UserTrafficItem,
-  type TrafficNodeInfo,
-  type TrafficUsageResponse,
-  type TrafficParams,
-  type TrafficEnrichmentData,
-} from '../api/adminTraffic';
+import { type UserTrafficItem } from '../api/adminTraffic';
 import { usePlatform } from '../platform/hooks/usePlatform';
-import { PERIODS } from './adminTrafficUsage/constants';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -45,7 +36,6 @@ import {
   formatGbPerDay,
   formatShortDate,
   getFlagEmoji,
-  toBackendSortField,
 } from './adminTrafficUsage/utils/formatters';
 import {
   bytesToGbPerDay,
@@ -55,6 +45,7 @@ import {
   getRiskLevel,
   getRowBgColor,
 } from './adminTrafficUsage/utils/risk';
+import { useAdminTrafficUsageData } from './adminTrafficUsage/hooks/useAdminTrafficUsageData';
 
 // ============ TanStack Table module augmentation ============
 
@@ -74,320 +65,59 @@ export default function AdminTrafficUsage() {
   const navigate = useNavigate();
   const { capabilities } = usePlatform();
 
-  const [items, setItems] = useState<UserTrafficItem[]>([]);
-  const [nodes, setNodes] = useState<TrafficNodeInfo[]>([]);
-  const [availableTariffs, setAvailableTariffs] = useState<string[]>([]);
-  const [availableStatuses, setAvailableStatuses] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [period, setPeriod] = useState(30);
-  const [dateMode, setDateMode] = useState(false);
-  const [customStart, setCustomStart] = useState('');
-  const [customEnd, setCustomEnd] = useState('');
-  const [searchInput, setSearchInput] = useState('');
-  const [committedSearch, setCommittedSearch] = useState('');
-  const [selectedTariffs, setSelectedTariffs] = useState<Set<string>>(new Set());
-  const [selectedStatuses, setSelectedStatuses] = useState<Set<string>>(new Set());
-  const [selectedNodes, setSelectedNodes] = useState<Set<string>>(new Set());
-  const [selectedCountries, setSelectedCountries] = useState<Set<string>>(new Set());
-  const [offset, setOffset] = useState(0);
-  const [total, setTotal] = useState(0);
-  const [enrichment, setEnrichment] = useState<Record<number, TrafficEnrichmentData> | null>(null);
-  const [enrichmentLoading, setEnrichmentLoading] = useState(false);
-  const [exporting, setExporting] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-  const [sorting, setSorting] = useState<SortingState>([{ id: 'total_bytes', desc: true }]);
   const [columnSizing, setColumnSizing] = useState<Record<string, number>>({});
-  const [totalThreshold, setTotalThreshold] = useState('');
-  const [nodeThreshold, setNodeThreshold] = useState('');
-  const [periodDays, setPeriodDays] = useState(30);
-
-  const limit = 50;
-  const hasData = items.length > 0 || nodes.length > 0;
-
-  const sortBy = sorting[0] ? toBackendSortField(sorting[0].id) : 'total_bytes';
-  const sortDesc = sorting[0]?.desc ?? true;
-  const tariffsParam = selectedTariffs.size > 0 ? [...selectedTariffs].join(',') : undefined;
-  const statusesParam = selectedStatuses.size > 0 ? [...selectedStatuses].join(',') : undefined;
-
-  // Merge country filter into node UUIDs so backend filters data consistently
-  const mergedNodesParam = useMemo(() => {
-    const countryUuids =
-      selectedCountries.size > 0
-        ? new Set(
-            nodes.filter((n) => selectedCountries.has(n.country_code)).map((n) => n.node_uuid),
-          )
-        : null;
-    const nodeUuids = selectedNodes.size > 0 ? new Set(selectedNodes) : null;
-
-    let merged: Set<string> | null = null;
-    if (countryUuids && nodeUuids) {
-      merged = new Set([...countryUuids].filter((id) => nodeUuids.has(id)));
-    } else {
-      merged = countryUuids || nodeUuids;
-    }
-    return merged && merged.size > 0 ? [...merged].join(',') : undefined;
-  }, [nodes, selectedCountries, selectedNodes]);
-
-  const buildParams = useCallback((): TrafficParams => {
-    const params: TrafficParams = {
-      limit,
-      offset,
-      search: committedSearch || undefined,
-      sort_by: sortBy,
-      sort_desc: sortDesc,
-      tariffs: tariffsParam,
-      statuses: statusesParam,
-      nodes: mergedNodesParam,
-    };
-    if (dateMode && customStart && customEnd) {
-      params.start_date = customStart;
-      params.end_date = customEnd;
-    } else {
-      params.period = period;
-    }
-    return params;
-  }, [
+  const {
+    items,
+    nodes,
+    availableTariffs,
+    availableStatuses,
+    loading,
+    initialLoading,
     period,
-    offset,
-    committedSearch,
-    sortBy,
-    sortDesc,
-    tariffsParam,
-    statusesParam,
-    mergedNodesParam,
     dateMode,
     customStart,
     customEnd,
-  ]);
-
-  const applyData = useCallback((data: TrafficUsageResponse) => {
-    setItems(data.items);
-    setNodes(data.nodes);
-    setTotal(data.total);
-    setAvailableTariffs(data.available_tariffs);
-    setAvailableStatuses(data.available_statuses);
-    setPeriodDays(data.period_days);
-  }, []);
-
-  const loadData = useCallback(
-    async (skipCache = false) => {
-      const params = buildParams();
-
-      // Check cache first — apply instantly without any loading state
-      if (!skipCache) {
-        const cached = adminTrafficApi.getCached(params);
-        if (cached) {
-          applyData(cached);
-          setInitialLoading(false);
-          return;
-        }
-      }
-
-      try {
-        setLoading(true);
-        const data = await adminTrafficApi.getTrafficUsage(params, { skipCache });
-        applyData(data);
-      } catch {
-        // silently fail — keep stale data visible
-      } finally {
-        setLoading(false);
-        setInitialLoading(false);
-      }
-    },
-    [buildParams, applyData],
-  );
-
-  // Load on param change
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  // Load enrichment after main data arrives
-  useEffect(() => {
-    if (initialLoading || items.length === 0) return;
-    let cancelled = false;
-    const load = async () => {
-      setEnrichmentLoading(true);
-      try {
-        const res = await adminTrafficApi.getEnrichment();
-        if (!cancelled) setEnrichment(res.data);
-      } catch {
-        // silently fail — enrichment is optional
-      } finally {
-        if (!cancelled) setEnrichmentLoading(false);
-      }
-    };
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [initialLoading, items.length]);
-
-  // Prefetch adjacent periods in background (only in period mode)
-  useEffect(() => {
-    if (dateMode) return;
-    const prefetchPeriods = PERIODS.filter((p) => p !== period);
-    const timer = setTimeout(() => {
-      prefetchPeriods.forEach((p) => {
-        const params: TrafficParams = {
-          period: p,
-          limit,
-          offset: 0,
-          sort_by: 'total_bytes',
-          sort_desc: true,
-        };
-        if (!adminTrafficApi.getCached(params)) {
-          adminTrafficApi.getTrafficUsage(params).catch(() => {});
-        }
-      });
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [period, dateMode]);
-
-  useEffect(() => {
-    if (toast) {
-      const timer = setTimeout(() => setToast(null), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [toast]);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setOffset(0);
-    setCommittedSearch(searchInput);
-  };
-
-  const handleExport = async () => {
-    try {
-      setExporting(true);
-      const exportData: {
-        period: number;
-        start_date?: string;
-        end_date?: string;
-        tariffs?: string;
-        statuses?: string;
-        nodes?: string;
-        total_threshold_gb?: number;
-        node_threshold_gb?: number;
-      } = { period };
-      if (dateMode && customStart && customEnd) {
-        exportData.start_date = customStart;
-        exportData.end_date = customEnd;
-      }
-      if (tariffsParam) exportData.tariffs = tariffsParam;
-      if (statusesParam) exportData.statuses = statusesParam;
-      if (mergedNodesParam) exportData.nodes = mergedNodesParam;
-
-      if (totalThresholdNum > 0) exportData.total_threshold_gb = totalThresholdNum;
-      if (nodeThresholdNum > 0) exportData.node_threshold_gb = nodeThresholdNum;
-
-      await adminTrafficApi.exportCsv(exportData);
-      setToast({ message: t('admin.trafficUsage.exportSuccess'), type: 'success' });
-    } catch {
-      setToast({ message: t('admin.trafficUsage.exportError'), type: 'error' });
-    } finally {
-      setExporting(false);
-    }
-  };
-
-  const handlePeriodChange = (p: number) => {
-    setPeriod(p);
-    setOffset(0);
-  };
-
-  const handleToggleDateMode = () => {
-    if (dateMode) {
-      // Switch back to period mode
-      setDateMode(false);
-      setCustomStart('');
-      setCustomEnd('');
-      setOffset(0);
-    } else {
-      // Switch to date mode — pre-fill with last N days
-      const end = new Date();
-      const start = new Date(end.getTime() - period * 24 * 60 * 60 * 1000);
-      setCustomStart(start.toISOString().split('T')[0]);
-      setCustomEnd(end.toISOString().split('T')[0]);
-      setDateMode(true);
-      setOffset(0);
-    }
-  };
-
-  const handleCustomStartChange = (v: string) => {
-    setCustomStart(v);
-    setOffset(0);
-  };
-
-  const handleCustomEndChange = (v: string) => {
-    setCustomEnd(v);
-    setOffset(0);
-  };
-
-  const handleSortingChange = (updater: SortingState | ((old: SortingState) => SortingState)) => {
-    const next = typeof updater === 'function' ? updater(sorting) : updater;
-    setSorting(next);
-    setOffset(0);
-  };
-
-  const handleTariffChange = (next: Set<string>) => {
-    setSelectedTariffs(next);
-    setOffset(0);
-  };
-
-  const handleStatusChange = (next: Set<string>) => {
-    setSelectedStatuses(next);
-    setOffset(0);
-  };
-
-  const handleNodeChange = (next: Set<string>) => {
-    setSelectedNodes(next);
-    setOffset(0);
-  };
-
-  const handleCountryChange = (next: Set<string>) => {
-    setSelectedCountries(next);
-    setOffset(0);
-  };
-
-  const handleRefresh = () => {
-    loadData(true);
-    setEnrichment(null);
-    setEnrichmentLoading(true);
-    adminTrafficApi
-      .getEnrichment({ skipCache: true })
-      .then((res) => setEnrichment(res.data))
-      .catch(() => {})
-      .finally(() => setEnrichmentLoading(false));
-  };
-
-  const availableCountries = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const n of nodes) {
-      if (n.country_code) map.set(n.country_code, (map.get(n.country_code) || 0) + 1);
-    }
-    return Array.from(map.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([code, count]) => ({ code, count }));
-  }, [nodes]);
-
-  // When country/node filter is active, show only matching node columns
-  const displayNodes = useMemo(() => {
-    let filtered = nodes;
-    if (selectedCountries.size > 0) {
-      filtered = filtered.filter((n) => selectedCountries.has(n.country_code));
-    }
-    if (selectedNodes.size > 0) {
-      filtered = filtered.filter((n) => selectedNodes.has(n.node_uuid));
-    }
-    return filtered;
-  }, [nodes, selectedCountries, selectedNodes]);
-
-  const totalThresholdNum = Math.max(0, parseFloat(totalThreshold) || 0);
-  const hasTotalThreshold = totalThresholdNum > 0;
-  const nodeThresholdNum = Math.max(0, parseFloat(nodeThreshold) || 0);
-  const hasNodeThreshold = nodeThresholdNum > 0;
-  const hasAnyThreshold = hasTotalThreshold || hasNodeThreshold;
+    searchInput,
+    setSearchInput,
+    selectedTariffs,
+    selectedStatuses,
+    selectedNodes,
+    selectedCountries,
+    offset,
+    setOffset,
+    total,
+    enrichment,
+    enrichmentLoading,
+    exporting,
+    toast,
+    sorting,
+    totalThreshold,
+    setTotalThreshold,
+    nodeThreshold,
+    setNodeThreshold,
+    periodDays,
+    limit,
+    hasData,
+    availableCountries,
+    displayNodes,
+    totalThresholdNum,
+    hasTotalThreshold,
+    nodeThresholdNum,
+    hasNodeThreshold,
+    hasAnyThreshold,
+    handleSearch,
+    handleExport,
+    handlePeriodChange,
+    handleToggleDateMode,
+    handleCustomStartChange,
+    handleCustomEndChange,
+    handleSortingChange,
+    handleTariffChange,
+    handleStatusChange,
+    handleNodeChange,
+    handleCountryChange,
+    handleRefresh,
+  } = useAdminTrafficUsageData({ t });
 
   const columns = useMemo<ColumnDef<UserTrafficItem>[]>(() => {
     const cols: ColumnDef<UserTrafficItem>[] = [
@@ -651,6 +381,8 @@ export default function AdminTrafficUsage() {
     enrichmentLoading,
   ]);
 
+  // TanStack Table returns non-memoizable functions; this is expected for table instance creation.
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: items,
     columns,
