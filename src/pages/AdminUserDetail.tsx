@@ -8,11 +8,7 @@ import {
   adminUsersApi,
   type UserDetailResponse,
   type PanelSyncStatusResponse,
-  type UpdateSubscriptionRequest,
 } from '../api/adminUsers';
-import { promocodesApi } from '../api/promocodes';
-import { promoOffersApi } from '../api/promoOffers';
-import { toNumber } from '../utils/inputHelpers';
 import { AdminUserTicketsTab } from './adminUserDetail/components/AdminUserTicketsTab';
 import { AdminUserBalanceTab } from './adminUserDetail/components/AdminUserBalanceTab';
 import { AdminUserInfoTab } from './adminUserDetail/components/AdminUserInfoTab';
@@ -20,6 +16,7 @@ import { AdminUserSubscriptionTab } from './adminUserDetail/components/AdminUser
 import { AdminUserSyncTab } from './adminUserDetail/components/AdminUserSyncTab';
 import { AdminUserDetailHeader } from './adminUserDetail/components/AdminUserDetailHeader';
 import { AdminUserDetailTabs } from './adminUserDetail/components/AdminUserDetailTabs';
+import { useAdminUserActions } from './adminUserDetail/hooks/useAdminUserActions';
 import { useAdminUserInfoData } from './adminUserDetail/hooks/useAdminUserInfoData';
 import { useAdminUserSubscriptionData } from './adminUserDetail/hooks/useAdminUserSubscriptionData';
 import { useAdminUserTickets } from './adminUserDetail/hooks/useAdminUserTickets';
@@ -115,7 +112,6 @@ export default function AdminUserDetail() {
     handleTicketReply,
     handleTicketStatusChange,
   } = useAdminUserTickets({ userId, setActionLoading });
-
   const loadUser = useCallback(async () => {
     if (!userId) return;
     try {
@@ -139,6 +135,54 @@ export default function AdminUserDetail() {
       console.error('Failed to load sync status:', error);
     }
   }, [userId]);
+
+  const {
+    handleUpdateBalance,
+    handleUpdateSubscription,
+    handleBlockUser,
+    handleUnblockUser,
+    handleSyncFromPanel,
+    handleSyncToPanel,
+    handleDeleteDevice,
+    handleResetDevices,
+    handleAddTraffic,
+    handleRemoveTraffic,
+    handleSetDeviceLimit,
+    handleChangePromoGroup,
+    handleUpdateReferralCommission,
+    handleDeactivateOffer,
+    handleSendOffer,
+    handleResetTrial,
+    handleResetSubscription,
+    handleDisableUser,
+    handleFullDeleteUser,
+  } = useAdminUserActions({
+    userId,
+    subAction,
+    subDays,
+    selectedTariffId,
+    balanceAmount,
+    balanceDescription,
+    referralCommissionValue,
+    offerDiscountPercent,
+    offerValidHours,
+    setActionLoading,
+    setOfferSending,
+    setBalanceAmount,
+    setBalanceDescription,
+    setEditingPromoGroup,
+    setEditingReferralCommission,
+    setOfferDiscountPercent,
+    setOfferValidHours,
+    setSelectedTrafficGb,
+    loadUser,
+    loadSyncStatus,
+    loadDevices,
+    navigateToUsers: () => navigate('/admin/users'),
+    confirmAction: (message) => confirm(message),
+    t,
+    notify,
+  });
 
   useEffect(() => {
     if (!userId || isNaN(userId)) {
@@ -168,330 +212,6 @@ export default function AdminUserDetail() {
     loadSubscriptionData,
     loadPromoGroups,
   ]);
-
-  const handleUpdateBalance = async (isAdd: boolean) => {
-    if (balanceAmount === '' || !userId) return;
-    setActionLoading(true);
-    try {
-      const amount = Math.abs(toNumber(balanceAmount) * 100);
-      await adminUsersApi.updateBalance(userId, {
-        amount_kopeks: isAdd ? amount : -amount,
-        description:
-          balanceDescription ||
-          (isAdd
-            ? t('admin.users.detail.balance.addByAdmin')
-            : t('admin.users.detail.balance.subtractByAdmin')),
-      });
-      await loadUser();
-      setBalanceAmount('');
-      setBalanceDescription('');
-    } catch (error) {
-      console.error('Failed to update balance:', error);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleUpdateSubscription = async (overrideAction?: string) => {
-    if (!userId) return;
-    setActionLoading(true);
-    try {
-      const action = overrideAction || subAction;
-      const data: UpdateSubscriptionRequest = {
-        action: action as UpdateSubscriptionRequest['action'],
-        ...(action === 'extend' ? { days: toNumber(subDays, 30) } : {}),
-        ...(action === 'change_tariff' && selectedTariffId ? { tariff_id: selectedTariffId } : {}),
-        ...(action === 'create'
-          ? {
-              days: toNumber(subDays, 30),
-              ...(selectedTariffId ? { tariff_id: selectedTariffId } : {}),
-            }
-          : {}),
-      };
-      await adminUsersApi.updateSubscription(userId, data);
-      await loadUser();
-    } catch (error) {
-      console.error('Failed to update subscription:', error);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleBlockUser = async () => {
-    if (!userId || !confirm(t('admin.users.confirm.block'))) return;
-    setActionLoading(true);
-    try {
-      await adminUsersApi.blockUser(userId);
-      await loadUser();
-    } catch (error) {
-      console.error('Failed to block user:', error);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleUnblockUser = async () => {
-    if (!userId) return;
-    setActionLoading(true);
-    try {
-      await adminUsersApi.unblockUser(userId);
-      await loadUser();
-    } catch (error) {
-      console.error('Failed to unblock user:', error);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleSyncFromPanel = async () => {
-    if (!userId) return;
-    setActionLoading(true);
-    try {
-      await adminUsersApi.syncFromPanel(userId, {
-        update_subscription: true,
-        update_traffic: true,
-      });
-      await loadUser();
-      await loadSyncStatus();
-    } catch (error) {
-      console.error('Failed to sync from panel:', error);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleSyncToPanel = async () => {
-    if (!userId) return;
-    setActionLoading(true);
-    try {
-      await adminUsersApi.syncToPanel(userId, { create_if_missing: true });
-      await loadUser();
-      await loadSyncStatus();
-    } catch (error) {
-      console.error('Failed to sync to panel:', error);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleDeleteDevice = async (hwid: string) => {
-    if (!userId) return;
-    setActionLoading(true);
-    try {
-      await adminUsersApi.deleteUserDevice(userId, hwid);
-      notify.success(t('admin.users.detail.devices.deleted'));
-      await loadDevices();
-    } catch {
-      notify.error(t('admin.users.userActions.error'), t('common.error'));
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleResetDevices = async () => {
-    if (!userId) return;
-    setActionLoading(true);
-    try {
-      await adminUsersApi.resetUserDevices(userId);
-      notify.success(t('admin.users.detail.devices.allDeleted'));
-      await loadDevices();
-    } catch {
-      notify.error(t('admin.users.userActions.error'), t('common.error'));
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleAddTraffic = async (gb: number) => {
-    if (!userId) return;
-    setActionLoading(true);
-    try {
-      await adminUsersApi.updateSubscription(userId, { action: 'add_traffic', traffic_gb: gb });
-      notify.success(t('admin.users.detail.subscription.trafficAdded'));
-      setSelectedTrafficGb('');
-      await loadUser();
-    } catch {
-      notify.error(t('admin.users.userActions.error'), t('common.error'));
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleRemoveTraffic = async (purchaseId: number) => {
-    if (!userId) return;
-    setActionLoading(true);
-    try {
-      await adminUsersApi.updateSubscription(userId, {
-        action: 'remove_traffic',
-        traffic_purchase_id: purchaseId,
-      });
-      notify.success(t('admin.users.detail.subscription.trafficRemoved'));
-      await loadUser();
-    } catch {
-      notify.error(t('admin.users.userActions.error'), t('common.error'));
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleSetDeviceLimit = async (newLimit: number) => {
-    if (!userId) return;
-    setActionLoading(true);
-    try {
-      await adminUsersApi.updateSubscription(userId, {
-        action: 'set_device_limit',
-        device_limit: newLimit,
-      });
-      notify.success(t('admin.users.detail.subscription.deviceLimitUpdated'));
-      await loadUser();
-    } catch {
-      notify.error(t('admin.users.userActions.error'), t('common.error'));
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleChangePromoGroup = async (groupId: number | null) => {
-    if (!userId) return;
-    setActionLoading(true);
-    try {
-      await adminUsersApi.updatePromoGroup(userId, groupId);
-      await loadUser();
-      setEditingPromoGroup(false);
-    } catch {
-      notify.error(t('admin.users.userActions.error'), t('common.error'));
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleUpdateReferralCommission = async () => {
-    if (!userId) return;
-    setActionLoading(true);
-    try {
-      const value = referralCommissionValue === '' ? null : toNumber(referralCommissionValue);
-      if (value !== null && (value < 0 || value > 100)) {
-        notify.error(t('admin.users.detail.referral.invalidPercent'), t('common.error'));
-        return;
-      }
-      await adminUsersApi.updateReferralCommission(userId, value);
-      await loadUser();
-      setEditingReferralCommission(false);
-    } catch {
-      notify.error(t('admin.users.userActions.error'), t('common.error'));
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleDeactivateOffer = async () => {
-    if (!userId) return;
-    setActionLoading(true);
-    try {
-      await promocodesApi.deactivateDiscount(userId);
-      notify.success(t('admin.users.detail.offerDeactivated'), t('common.success'));
-      await loadUser();
-    } catch {
-      notify.error(t('admin.users.userActions.error'), t('common.error'));
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleSendOffer = async () => {
-    if (!userId || offerDiscountPercent === '' || offerValidHours === '') return;
-    setOfferSending(true);
-    try {
-      await promoOffersApi.broadcastOffer({
-        user_id: userId,
-        notification_type: 'admin_personal',
-        discount_percent: toNumber(offerDiscountPercent),
-        valid_hours: toNumber(offerValidHours, 24),
-        effect_type: 'percent_discount',
-        send_notification: true,
-      });
-      notify.success(t('admin.users.detail.offerSent'), t('common.success'));
-      setOfferDiscountPercent('');
-      setOfferValidHours(24);
-      await loadUser();
-    } catch {
-      notify.error(t('admin.users.detail.offerSendError'), t('common.error'));
-    } finally {
-      setOfferSending(false);
-    }
-  };
-
-  const handleResetTrial = async () => {
-    if (!userId) return;
-    setActionLoading(true);
-    try {
-      const result = await adminUsersApi.resetTrial(userId);
-      if (result.success) {
-        notify.success(t('admin.users.userActions.success.resetTrial'), t('common.success'));
-        await loadUser();
-      } else {
-        notify.error(result.message || t('admin.users.userActions.error'), t('common.error'));
-      }
-    } catch {
-      notify.error(t('admin.users.userActions.error'), t('common.error'));
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleResetSubscription = async () => {
-    if (!userId) return;
-    setActionLoading(true);
-    try {
-      const result = await adminUsersApi.resetSubscription(userId);
-      if (result.success) {
-        notify.success(t('admin.users.userActions.success.resetSubscription'), t('common.success'));
-        await loadUser();
-      } else {
-        notify.error(result.message || t('admin.users.userActions.error'), t('common.error'));
-      }
-    } catch {
-      notify.error(t('admin.users.userActions.error'), t('common.error'));
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleDisableUser = async () => {
-    if (!userId) return;
-    setActionLoading(true);
-    try {
-      const result = await adminUsersApi.disableUser(userId);
-      if (result.success) {
-        notify.success(t('admin.users.userActions.success.disable'), t('common.success'));
-        await loadUser();
-      } else {
-        notify.error(result.message || t('admin.users.userActions.error'), t('common.error'));
-      }
-    } catch {
-      notify.error(t('admin.users.userActions.error'), t('common.error'));
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleFullDeleteUser = async () => {
-    if (!userId) return;
-    setActionLoading(true);
-    try {
-      const result = await adminUsersApi.fullDeleteUser(userId);
-      if (result.success) {
-        notify.success(t('admin.users.userActions.success.delete'), t('common.success'));
-        navigate('/admin/users');
-      } else {
-        notify.error(result.message || t('admin.users.userActions.error'), t('common.error'));
-      }
-    } catch {
-      notify.error(t('admin.users.userActions.error'), t('common.error'));
-    } finally {
-      setActionLoading(false);
-    }
-  };
 
   const formatDate = (date: string | null) => formatDateTime(date, locale);
 
