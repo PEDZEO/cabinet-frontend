@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback, type SyntheticEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
@@ -124,6 +124,7 @@ export function LiteModeHeader({
   const { toggleTheme, isDark, canToggle } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoLoaded, setLogoLoaded] = useState(() => isLogoPreloaded());
+  const [logoShape, setLogoShape] = useState<'square' | 'wide' | 'tall'>('square');
 
   // Branding
   const { data: branding } = useQuery({
@@ -153,6 +154,25 @@ export function LiteModeHeader({
   const logoUrl = branding ? brandingApi.getLogoUrl(branding) : null;
 
   const balance = balanceData?.balance_kopeks ?? 0;
+
+  const handleLogoLoad = useCallback((event: SyntheticEvent<HTMLImageElement>) => {
+    const { naturalWidth, naturalHeight } = event.currentTarget;
+
+    if (naturalWidth > naturalHeight * 1.2) {
+      setLogoShape('wide');
+    } else if (naturalHeight > naturalWidth * 1.2) {
+      setLogoShape('tall');
+    } else {
+      setLogoShape('square');
+    }
+
+    setLogoLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    setLogoShape('square');
+    setLogoLoaded(false);
+  }, [logoUrl]);
 
   const isAdminPage = location.pathname.startsWith('/admin');
   const isMainPage = location.pathname === '/';
@@ -191,7 +211,18 @@ export function LiteModeHeader({
                 aria-label={appName || 'Home'}
                 title={appName || undefined}
               >
-                <div className="relative flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-linear-lg border border-dark-700/50 bg-dark-800/80 shadow-md">
+                <div
+                  className={cn(
+                    'relative flex flex-shrink-0 items-center justify-center overflow-hidden rounded-linear-lg border border-dark-700/50 bg-dark-800/80 shadow-md',
+                    hasCustomLogo
+                      ? logoShape === 'wide'
+                        ? 'h-10 w-14'
+                        : logoShape === 'tall'
+                          ? 'h-11 w-9'
+                          : 'h-10 w-10'
+                      : 'h-10 w-10',
+                  )}
+                >
                   <span
                     className={cn(
                       'absolute text-lg font-bold text-accent-400 transition-opacity duration-200',
@@ -208,7 +239,7 @@ export function LiteModeHeader({
                         'absolute h-full w-full object-contain transition-opacity duration-200',
                         logoLoaded ? 'opacity-100' : 'opacity-0',
                       )}
-                      onLoad={() => setLogoLoaded(true)}
+                      onLoad={handleLogoLoad}
                     />
                   )}
                 </div>

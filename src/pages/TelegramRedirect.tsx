@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, type SyntheticEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
@@ -36,6 +36,7 @@ export default function TelegramRedirect() {
   const { loginWithTelegram, isAuthenticated, isLoading: authLoading } = useAuthStore();
   const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'not-telegram'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
+  const [logoShape, setLogoShape] = useState<'square' | 'wide' | 'tall'>('square');
   const [retryCount, setRetryCount] = useState(() => {
     const stored = sessionStorage.getItem(RETRY_COUNT_KEY);
     return stored ? parseInt(stored, 10) : 0;
@@ -51,6 +52,22 @@ export default function TelegramRedirect() {
   const appName = branding ? branding.name : import.meta.env.VITE_APP_NAME || 'VPN';
   const logoLetter = branding?.logo_letter || import.meta.env.VITE_APP_LOGO || 'V';
   const logoUrl = branding ? brandingApi.getLogoUrl(branding) : null;
+
+  const handleLogoLoad = useCallback((event: SyntheticEvent<HTMLImageElement>) => {
+    const { naturalWidth, naturalHeight } = event.currentTarget;
+
+    if (naturalWidth > naturalHeight * 1.2) {
+      setLogoShape('wide');
+    } else if (naturalHeight > naturalWidth * 1.2) {
+      setLogoShape('tall');
+    } else {
+      setLogoShape('square');
+    }
+  }, []);
+
+  useEffect(() => {
+    setLogoShape('square');
+  }, [logoUrl]);
 
   // Get redirect target from URL params (validated)
   const redirectTo = getSafeRedirectUrl(searchParams.get('redirect'));
@@ -126,9 +143,24 @@ export default function TelegramRedirect() {
 
       <div className="relative w-full max-w-sm text-center">
         {/* Logo */}
-        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-accent-400 to-accent-600 shadow-lg shadow-accent-500/30">
+        <div
+          className={`mx-auto mb-6 flex items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-accent-400 to-accent-600 shadow-lg shadow-accent-500/30 ${
+            branding?.has_custom_logo
+              ? logoShape === 'wide'
+                ? 'h-20 w-32'
+                : logoShape === 'tall'
+                  ? 'h-24 w-20'
+                  : 'h-24 w-24'
+              : 'h-20 w-20'
+          }`}
+        >
           {branding?.has_custom_logo && logoUrl ? (
-            <img src={logoUrl} alt={appName} className="h-full w-full p-1 object-contain" />
+            <img
+              src={logoUrl}
+              alt={appName}
+              className="h-full w-full p-1 object-contain"
+              onLoad={handleLogoLoad}
+            />
           ) : (
             <span className="text-3xl font-bold text-white">{logoLetter}</span>
           )}

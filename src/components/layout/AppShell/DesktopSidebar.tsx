@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect, useCallback, type SyntheticEvent } from 'react';
 
 import { useAuthStore } from '@/store/auth';
 import {
@@ -72,6 +73,27 @@ export function DesktopSidebar({
   const logoLetter = branding?.logo_letter || FALLBACK_LOGO;
   const hasCustomLogo = branding?.has_custom_logo || false;
   const logoUrl = branding ? brandingApi.getLogoUrl(branding) : null;
+  const [logoLoaded, setLogoLoaded] = useState(() => isLogoPreloaded());
+  const [logoShape, setLogoShape] = useState<'square' | 'wide' | 'tall'>('square');
+
+  const handleLogoLoad = useCallback((event: SyntheticEvent<HTMLImageElement>) => {
+    const { naturalWidth, naturalHeight } = event.currentTarget;
+
+    if (naturalWidth > naturalHeight * 1.2) {
+      setLogoShape('wide');
+    } else if (naturalHeight > naturalWidth * 1.2) {
+      setLogoShape('tall');
+    } else {
+      setLogoShape('square');
+    }
+
+    setLogoLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    setLogoShape('square');
+    setLogoLoaded(false);
+  }, [logoUrl]);
 
   const isActive = (path: string) => location.pathname === path;
   const isAdminActive = () => location.pathname.startsWith('/admin');
@@ -97,11 +119,22 @@ export function DesktopSidebar({
       {/* Logo */}
       <div className="flex h-16 items-center gap-3 border-b border-dark-700/30 px-4">
         <Link to="/" className="flex items-center gap-3" onClick={handleNavClick}>
-          <div className="relative flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-linear-lg border border-dark-700/50 bg-dark-800/80">
+          <div
+            className={cn(
+              'relative flex flex-shrink-0 items-center justify-center overflow-hidden rounded-linear-lg border border-dark-700/50 bg-dark-800/80',
+              hasCustomLogo
+                ? logoShape === 'wide'
+                  ? 'h-10 w-14'
+                  : logoShape === 'tall'
+                    ? 'h-11 w-9'
+                    : 'h-10 w-10'
+                : 'h-10 w-10',
+            )}
+          >
             <span
               className={cn(
                 'absolute text-lg font-bold text-accent-400 transition-opacity duration-200',
-                hasCustomLogo && isLogoPreloaded() ? 'opacity-0' : 'opacity-100',
+                hasCustomLogo && logoLoaded ? 'opacity-0' : 'opacity-100',
               )}
             >
               {logoLetter}
@@ -112,8 +145,9 @@ export function DesktopSidebar({
                 alt={appName || 'Logo'}
                 className={cn(
                   'absolute h-full w-full object-contain transition-opacity duration-200',
-                  isLogoPreloaded() ? 'opacity-100' : 'opacity-0',
+                  logoLoaded ? 'opacity-100' : 'opacity-0',
                 )}
+                onLoad={handleLogoLoad}
               />
             )}
           </div>

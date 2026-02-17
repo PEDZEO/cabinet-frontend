@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, type SyntheticEvent } from 'react';
 import { useSearchParams, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
@@ -47,6 +47,7 @@ export default function DeepLinkRedirect() {
   const [status, setStatus] = useState<Status>('countdown');
   const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
   const [copied, setCopied] = useState(false);
+  const [logoShape, setLogoShape] = useState<'square' | 'wide' | 'tall'>('square');
   const fallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const copiedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -60,6 +61,22 @@ export default function DeepLinkRedirect() {
   const projectName = branding ? branding.name : import.meta.env.VITE_APP_NAME || 'VPN';
   const logoLetter = branding?.logo_letter || import.meta.env.VITE_APP_LOGO || 'V';
   const logoUrl = branding ? brandingApi.getLogoUrl(branding) : null;
+
+  const handleLogoLoad = useCallback((event: SyntheticEvent<HTMLImageElement>) => {
+    const { naturalWidth, naturalHeight } = event.currentTarget;
+
+    if (naturalWidth > naturalHeight * 1.2) {
+      setLogoShape('wide');
+    } else if (naturalHeight > naturalWidth * 1.2) {
+      setLogoShape('tall');
+    } else {
+      setLogoShape('square');
+    }
+  }, []);
+
+  useEffect(() => {
+    setLogoShape('square');
+  }, [logoUrl]);
 
   // Get parameters
   const deepLink = searchParams.get('url') || searchParams.get('deeplink') || '';
@@ -153,12 +170,23 @@ export default function DeepLinkRedirect() {
 
       <div className="relative w-full max-w-sm text-center">
         {/* Logo with pulse animation */}
-        <div className="mx-auto mb-6 flex h-20 w-20 animate-pulse items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-accent-400 to-accent-600 shadow-lg shadow-accent-500/30">
+        <div
+          className={`mx-auto mb-6 flex animate-pulse items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-accent-400 to-accent-600 shadow-lg shadow-accent-500/30 ${
+            branding?.has_custom_logo
+              ? logoShape === 'wide'
+                ? 'h-20 w-32'
+                : logoShape === 'tall'
+                  ? 'h-24 w-20'
+                  : 'h-24 w-24'
+              : 'h-20 w-20'
+          }`}
+        >
           {branding?.has_custom_logo && logoUrl ? (
             <img
               src={logoUrl}
               alt={projectName || 'Logo'}
               className="h-full w-full p-1 object-contain"
+              onLoad={handleLogoLoad}
             />
           ) : (
             <span className="text-3xl font-bold text-white">{logoLetter}</span>

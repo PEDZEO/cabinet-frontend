@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, type SyntheticEvent } from 'react';
 import { useLocation, Link } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -206,6 +206,9 @@ export function AppShell({ children }: AppShellProps) {
   const { appName, logoLetter, hasCustomLogo, logoUrl } = useBranding();
   const { referralEnabled, wheelEnabled, hasContests, hasPolls } = useFeatureFlags();
   const { isLiteMode, isLiteModeReady } = useLiteMode();
+  const isLiteMainPage = isLiteMode && location.pathname === '/';
+  const [desktopLogoLoaded, setDesktopLogoLoaded] = useState(() => isLogoPreloaded());
+  const [desktopLogoShape, setDesktopLogoShape] = useState<'square' | 'wide' | 'tall'>('square');
   useScrollRestoration();
 
   // Theme toggle visibility
@@ -279,6 +282,25 @@ export function AppShell({ children }: AppShellProps) {
     ? 64 + Math.max(safeAreaInset.top, contentSafeAreaInset.top) + telegramHeaderHeight
     : 64;
 
+  const handleDesktopLogoLoad = useCallback((event: SyntheticEvent<HTMLImageElement>) => {
+    const { naturalWidth, naturalHeight } = event.currentTarget;
+
+    if (naturalWidth > naturalHeight * 1.2) {
+      setDesktopLogoShape('wide');
+    } else if (naturalHeight > naturalWidth * 1.2) {
+      setDesktopLogoShape('tall');
+    } else {
+      setDesktopLogoShape('square');
+    }
+
+    setDesktopLogoLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    setDesktopLogoShape('square');
+    setDesktopLogoLoaded(false);
+  }, [logoUrl]);
+
   return (
     <div className="min-h-screen">
       {/* Animated background */}
@@ -316,11 +338,22 @@ export function AppShell({ children }: AppShellProps) {
             aria-label={appName || 'Home'}
             title={appName || undefined}
           >
-            <div className="relative flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-dark-800">
+            <div
+              className={cn(
+                'relative flex flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-dark-800',
+                hasCustomLogo
+                  ? desktopLogoShape === 'wide'
+                    ? 'h-8 w-12'
+                    : desktopLogoShape === 'tall'
+                      ? 'h-9 w-7'
+                      : 'h-8 w-8'
+                  : 'h-8 w-8',
+              )}
+            >
               <span
                 className={cn(
                   'absolute text-sm font-bold text-accent-400 transition-opacity duration-200',
-                  hasCustomLogo && isLogoPreloaded() ? 'opacity-0' : 'opacity-100',
+                  hasCustomLogo && desktopLogoLoaded ? 'opacity-0' : 'opacity-100',
                 )}
               >
                 {logoLetter}
@@ -331,8 +364,9 @@ export function AppShell({ children }: AppShellProps) {
                   alt={appName || 'Logo'}
                   className={cn(
                     'absolute h-full w-full object-contain transition-opacity duration-200',
-                    isLogoPreloaded() ? 'opacity-100' : 'opacity-0',
+                    desktopLogoLoaded ? 'opacity-100' : 'opacity-0',
                   )}
+                  onLoad={handleDesktopLogoLoad}
                 />
               )}
             </div>
@@ -452,14 +486,14 @@ export function AppShell({ children }: AppShellProps) {
       {/* Mobile spacer */}
       <div
         className="lg:hidden"
-        style={{ height: isLiteMode ? Math.max(headerHeight - 10, 0) : headerHeight }}
+        style={{ height: isLiteMainPage ? Math.max(headerHeight - 10, 0) : headerHeight }}
       />
 
       {/* Main content */}
       <main
         className={cn(
           'mx-auto max-w-6xl px-4 pb-28 lg:px-6 lg:pb-8',
-          isLiteMode ? 'pt-0 sm:pt-1' : 'pt-6',
+          isLiteMainPage ? 'pt-0 sm:pt-1' : isLiteMode ? 'pt-2 sm:pt-3' : 'pt-6',
         )}
       >
         {children}

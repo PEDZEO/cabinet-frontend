@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback, type SyntheticEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { brandingApi, setCachedBranding } from '../../api/branding';
@@ -19,6 +19,7 @@ export function BrandingTab({ accentColor = '#3b82f6' }: BrandingTabProps) {
 
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState('');
+  const [logoShape, setLogoShape] = useState<'square' | 'wide' | 'tall'>('square');
 
   // Queries
   const { data: branding } = useQuery({
@@ -110,6 +111,22 @@ export function BrandingTab({ accentColor = '#3b82f6' }: BrandingTabProps) {
     }
   };
 
+  const handleLogoLoad = useCallback((event: SyntheticEvent<HTMLImageElement>) => {
+    const { naturalWidth, naturalHeight } = event.currentTarget;
+
+    if (naturalWidth > naturalHeight * 1.2) {
+      setLogoShape('wide');
+    } else if (naturalHeight > naturalWidth * 1.2) {
+      setLogoShape('tall');
+    } else {
+      setLogoShape('square');
+    }
+  }, []);
+
+  useEffect(() => {
+    setLogoShape('square');
+  }, [branding?.logo_url]);
+
   return (
     <div className="space-y-6">
       {/* Logo & Name */}
@@ -122,7 +139,15 @@ export function BrandingTab({ accentColor = '#3b82f6' }: BrandingTabProps) {
           {/* Logo */}
           <div className="flex-shrink-0">
             <div
-              className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl text-3xl font-bold text-white"
+              className={`flex items-center justify-center overflow-hidden rounded-2xl text-3xl font-bold text-white ${
+                branding?.has_custom_logo
+                  ? logoShape === 'wide'
+                    ? 'h-20 w-28'
+                    : logoShape === 'tall'
+                      ? 'h-24 w-20'
+                      : 'h-24 w-24'
+                  : 'h-20 w-20'
+              }`}
               style={{
                 background: `linear-gradient(135deg, ${accentColor}, ${accentColor}dd)`,
               }}
@@ -132,6 +157,7 @@ export function BrandingTab({ accentColor = '#3b82f6' }: BrandingTabProps) {
                   src={brandingApi.getLogoUrl(branding) ?? undefined}
                   alt="Logo"
                   className="h-full w-full p-1 object-contain"
+                  onLoad={handleLogoLoad}
                 />
               ) : (
                 branding?.logo_letter || 'V'
