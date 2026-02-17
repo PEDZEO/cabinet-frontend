@@ -21,7 +21,7 @@ export default function AdminPartnerCampaignAssign() {
   // Fetch all campaigns
   const { data: campaignsData, isLoading } = useQuery({
     queryKey: ['admin-campaigns-all'],
-    queryFn: () => campaignsApi.getCampaigns(true, 0, 200),
+    queryFn: () => campaignsApi.getCampaigns(true, 0, 100),
   });
 
   const assignMutation = useMutation({
