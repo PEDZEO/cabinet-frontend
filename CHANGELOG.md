@@ -7,6 +7,26 @@
 
 * trigger release ([7519c40](https://github.com/PEDZEO/cabinet-frontend/commit/7519c40b6026d2d867803759a824560622c9de20))
 
+### Manual Release Notes (PEDZEO)
+
+#### Major Changes
+
+* refactor admin user detail page into modular architecture (`components/`, `hooks/`, `utils/`) with tab-based content composition
+* extract login page logic and UI sections into dedicated modules (`useLoginPage`, Telegram/OAuth/Email/branding blocks)
+* refactor ban monitoring page (`AdminBanSystem`) into focused tabs, shared utils, and typed data hook
+* refactor admin traffic usage page into reusable table/filter/pagination components and dedicated hooks
+
+#### UX and Mobile
+
+* improve light-mode/mobile layouts in key pages and keep action controls visible on small screens
+* improve account-linking flows and warnings in profile-related UI
+* improve login flow stability and remove flicker/race conditions during auth provider loading
+
+#### Ops and Release
+
+* align release pipeline to fork repository and keep release-please working with project token
+* include manual project changelog notes for the custom PEDZEO release line
+
 ## [1.0.2](https://github.com/PEDZEO/cabinet-frontend/compare/v1.0.1...v1.0.2) (2026-02-17)
 
 
