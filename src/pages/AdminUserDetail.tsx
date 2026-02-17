@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
@@ -14,7 +14,6 @@ import {
   type PanelSyncStatusResponse,
   type UpdateSubscriptionRequest,
 } from '../api/adminUsers';
-import { adminApi, type AdminTicket, type AdminTicketDetail } from '../api/admin';
 import { promocodesApi, type PromoGroup } from '../api/promocodes';
 import { promoOffersApi } from '../api/promoOffers';
 import { toNumber } from '../utils/inputHelpers';
@@ -25,6 +24,7 @@ import { AdminUserSubscriptionTab } from './adminUserDetail/components/AdminUser
 import { AdminUserSyncTab } from './adminUserDetail/components/AdminUserSyncTab';
 import { AdminUserDetailHeader } from './adminUserDetail/components/AdminUserDetailHeader';
 import { AdminUserDetailTabs } from './adminUserDetail/components/AdminUserDetailTabs';
+import { useAdminUserTickets } from './adminUserDetail/hooks/useAdminUserTickets';
 import { useInlineConfirm } from './adminUserDetail/hooks/useInlineConfirm';
 import { buildNodeUsageForPeriod } from './adminUserDetail/utils/nodeUsage';
 import {
@@ -67,17 +67,6 @@ export default function AdminUserDetail() {
   const [balanceAmount, setBalanceAmount] = useState<number | ''>('');
   const [balanceDescription, setBalanceDescription] = useState('');
 
-  // Tickets
-  const [tickets, setTickets] = useState<AdminTicket[]>([]);
-  const [ticketsLoading, setTicketsLoading] = useState(false);
-  const [ticketsTotal, setTicketsTotal] = useState(0);
-  const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
-  const [selectedTicket, setSelectedTicket] = useState<AdminTicketDetail | null>(null);
-  const [ticketDetailLoading, setTicketDetailLoading] = useState(false);
-  const [replyText, setReplyText] = useState('');
-  const [replySending, setReplySending] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
-
   // Subscription form
   const [subAction, setSubAction] = useState<string>('extend');
   const [subDays, setSubDays] = useState<number | ''>(30);
@@ -108,6 +97,23 @@ export default function AdminUserDetail() {
   const [devicesLoading, setDevicesLoading] = useState(false);
 
   const userId = id ? parseInt(id, 10) : null;
+  const {
+    tickets,
+    ticketsLoading,
+    ticketsTotal,
+    selectedTicketId,
+    setSelectedTicketId,
+    selectedTicket,
+    setSelectedTicket,
+    ticketDetailLoading,
+    replyText,
+    setReplyText,
+    replySending,
+    messagesEndRef,
+    loadTickets,
+    handleTicketReply,
+    handleTicketStatusChange,
+  } = useAdminUserTickets({ userId, setActionLoading });
 
   const loadUser = useCallback(async () => {
     if (!userId) return;
@@ -142,32 +148,6 @@ export default function AdminUserDetail() {
       console.error('Failed to load tariffs:', error);
     }
   }, [userId]);
-
-  const loadTickets = useCallback(async () => {
-    if (!userId) return;
-    try {
-      setTicketsLoading(true);
-      const data = await adminApi.getTickets({ user_id: userId, per_page: 50 });
-      setTickets(data.items);
-      setTicketsTotal(data.total);
-    } catch (error) {
-      console.error('Failed to load tickets:', error);
-    } finally {
-      setTicketsLoading(false);
-    }
-  }, [userId]);
-
-  const loadTicketDetail = useCallback(async (ticketId: number) => {
-    try {
-      setTicketDetailLoading(true);
-      const data = await adminApi.getTicket(ticketId);
-      setSelectedTicket(data);
-    } catch (error) {
-      console.error('Failed to load ticket detail:', error);
-    } finally {
-      setTicketDetailLoading(false);
-    }
-  }, []);
 
   const loadReferrals = useCallback(async () => {
     if (!userId) return;
@@ -232,47 +212,6 @@ export default function AdminUserDetail() {
       // ignore
     }
   }, []);
-
-  const handleTicketReply = async () => {
-    if (!selectedTicketId || !replyText.trim()) return;
-    setReplySending(true);
-    try {
-      await adminApi.replyToTicket(selectedTicketId, replyText);
-      setReplyText('');
-      await loadTicketDetail(selectedTicketId);
-      await loadTickets();
-    } catch (error) {
-      console.error('Failed to reply:', error);
-    } finally {
-      setReplySending(false);
-    }
-  };
-
-  const handleTicketStatusChange = async (newStatus: string) => {
-    if (!selectedTicketId) return;
-    setActionLoading(true);
-    try {
-      await adminApi.updateTicketStatus(selectedTicketId, newStatus);
-      await loadTicketDetail(selectedTicketId);
-      await loadTickets();
-    } catch (error) {
-      console.error('Failed to update ticket status:', error);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (selectedTicketId) {
-      loadTicketDetail(selectedTicketId);
-    }
-  }, [selectedTicketId, loadTicketDetail]);
-
-  useEffect(() => {
-    if (selectedTicket && messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [selectedTicket]);
 
   useEffect(() => {
     if (!userId || isNaN(userId)) {
