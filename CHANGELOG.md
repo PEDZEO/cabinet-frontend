@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/PEDZEO/cabinet-frontend/compare/v1.0.4...v1.1.0) (2026-02-17)
+
+
+### Features
+
+* **profile:** improve telegram relink UX and status visibility ([36d28f2](https://github.com/PEDZEO/cabinet-frontend/commit/36d28f2b767bcbd366126f57e5ea8b22b1e99309))
+
 ## [1.0.4](https://github.com/PEDZEO/cabinet-frontend/compare/v1.0.3...v1.0.4) (2026-02-17)
 
 
