@@ -209,6 +209,12 @@ export default function AdminBanSystem() {
   const reportHoursRef = useRef(reportHours);
   reportHoursRef.current = reportHours;
   const [settingLoading, setSettingLoading] = useState<string | null>(null);
+  const [settingSearch, setSettingSearch] = useState('');
+  const [showEditableOnly, setShowEditableOnly] = useState(false);
+  const [settingDrafts, setSettingDrafts] = useState<Record<string, string>>({});
+  const [collapsedSettingCategories, setCollapsedSettingCategories] = useState<
+    Record<string, boolean>
+  >({});
   const [loading, setLoading] = useState(true);
 
   // Format snake_case to readable label
@@ -241,6 +247,19 @@ export default function AdminBanSystem() {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!settings) return;
+    setSettingDrafts((prev) => {
+      const next = { ...prev };
+      settings.settings.forEach((setting) => {
+        if (setting.type === 'int') {
+          next[setting.key] = String(setting.value);
+        }
+      });
+      return next;
+    });
+  }, [settings]);
 
   const loadStatus = useCallback(async () => {
     try {
@@ -398,6 +417,16 @@ export default function AdminBanSystem() {
     }
   };
 
+  const handleIntDraftChange = (key: string, value: string) => {
+    setSettingDrafts((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleIntSettingSave = async (key: string) => {
+    const draft = settingDrafts[key];
+    if (draft === undefined) return;
+    await handleSetSetting(key, draft);
+  };
+
   const handleReportPeriodChange = (hours: number) => {
     setReportHours(hours);
   };
@@ -553,22 +582,24 @@ export default function AdminBanSystem() {
   }
 
   return (
-    <div className="animate-fade-in space-y-6">
+    <div className="animate-fade-in space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-3">
           <div className="rounded-xl bg-error-500/20 p-3">
             <ShieldIcon />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-dark-100">{t('banSystem.title')}</h1>
-            <p className="text-dark-400">{t('banSystem.subtitle')}</p>
+          <div className="min-w-0">
+            <h1 className="truncate text-xl font-bold text-dark-100 sm:text-2xl">
+              {t('banSystem.title')}
+            </h1>
+            <p className="truncate text-sm text-dark-400 sm:text-base">{t('banSystem.subtitle')}</p>
           </div>
         </div>
         <button
           onClick={() => loadTabData(activeTab)}
           disabled={loading}
-          className="flex items-center gap-2 rounded-lg bg-dark-800 px-4 py-2 text-dark-300 transition-colors hover:bg-dark-700 hover:text-dark-100 disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-dark-800 px-4 py-2 text-dark-300 transition-colors hover:bg-dark-700 hover:text-dark-100 disabled:opacity-50 sm:w-auto"
         >
           <RefreshIcon />
           {t('common.refresh')}
@@ -576,21 +607,37 @@ export default function AdminBanSystem() {
       </div>
 
       {/* Tabs */}
-      <div className="flex flex-wrap gap-2 border-b border-dark-700 pb-2">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-              activeTab === tab.id
-                ? 'bg-accent-500/20 text-accent-400'
-                : 'text-dark-400 hover:bg-dark-800 hover:text-dark-200'
-            }`}
+      <div className="space-y-2 border-b border-dark-700 pb-2">
+        <div className="md:hidden">
+          <select
+            value={activeTab}
+            onChange={(e) => setActiveTab(e.target.value as TabType)}
+            className="input w-full"
+            aria-label={t('banSystem.title')}
           >
-            {tab.icon}
-            {tab.label}
-          </button>
-        ))}
+            {tabs.map((tab) => (
+              <option key={tab.id} value={tab.id}>
+                {tab.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="hidden gap-2 overflow-x-auto md:flex">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
+                activeTab === tab.id
+                  ? 'bg-accent-500/20 text-accent-400'
+                  : 'text-dark-400 hover:bg-dark-800 hover:text-dark-200'
+              }`}
+            >
+              {tab.icon}
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Content */}
@@ -666,9 +713,11 @@ export default function AdminBanSystem() {
           {activeTab === 'users' && (
             <div className="space-y-4">
               {/* Search */}
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row">
                 <div className="relative flex-1">
-                  <SearchIcon />
+                  <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-dark-500">
+                    <SearchIcon />
+                  </div>
                   <input
                     type="text"
                     value={searchQuery}
@@ -680,7 +729,7 @@ export default function AdminBanSystem() {
                 </div>
                 <button
                   onClick={handleSearch}
-                  className="rounded-lg bg-accent-500/20 px-4 py-2 text-accent-400 transition-colors hover:bg-accent-500/30"
+                  className="rounded-lg bg-accent-500/20 px-4 py-2 text-accent-400 transition-colors hover:bg-accent-500/30 sm:w-auto"
                 >
                   {t('common.search')}
                 </button>
@@ -688,69 +737,71 @@ export default function AdminBanSystem() {
 
               {/* Users Table */}
               <div className="overflow-hidden rounded-xl border border-dark-700 bg-dark-800/50">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-dark-700">
-                      <th className="px-4 py-3 text-left text-xs font-medium text-dark-500">
-                        {t('banSystem.users.email')}
-                      </th>
-                      <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                        {t('banSystem.users.ipCount')}
-                      </th>
-                      <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                        {t('banSystem.users.limit')}
-                      </th>
-                      <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                        {t('banSystem.users.status')}
-                      </th>
-                      <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                        {t('banSystem.users.bans')}
-                      </th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-dark-500">
-                        {t('common.actions')}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {users?.users.map((user) => (
-                      <tr
-                        key={user.email}
-                        className="border-b border-dark-700/50 hover:bg-dark-800/50"
-                      >
-                        <td className="px-4 py-3 text-dark-100">{user.email}</td>
-                        <td className="px-4 py-3 text-center text-dark-300">
-                          {user.unique_ip_count}
-                        </td>
-                        <td className="px-4 py-3 text-center text-dark-300">{user.limit ?? '-'}</td>
-                        <td className="px-4 py-3 text-center">
-                          <span
-                            className={`rounded-full px-2 py-1 text-xs ${
-                              user.is_over_limit
-                                ? 'bg-error-500/20 text-error-400'
-                                : 'bg-success-500/20 text-success-400'
-                            }`}
-                          >
-                            {user.is_over_limit
-                              ? t('banSystem.users.overLimit')
-                              : t('banSystem.users.ok')}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-center text-dark-300">
-                          {user.blocked_count}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <button
-                            onClick={() => handleViewUser(user.email)}
-                            disabled={actionLoading === user.email}
-                            className="text-sm text-accent-400 hover:text-accent-300 disabled:opacity-50"
-                          >
-                            {t('banSystem.users.viewDetails')}
-                          </button>
-                        </td>
+                <div className="overflow-x-auto">
+                  <table className="min-w-[760px] w-full">
+                    <thead>
+                      <tr className="border-b border-dark-700">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-dark-500">
+                          {t('banSystem.users.email')}
+                        </th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
+                          {t('banSystem.users.ipCount')}
+                        </th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
+                          {t('banSystem.users.limit')}
+                        </th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
+                          {t('banSystem.users.status')}
+                        </th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
+                          {t('banSystem.users.bans')}
+                        </th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-dark-500">
+                          {t('common.actions')}
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {users?.users.map((user) => (
+                        <tr
+                          key={user.email}
+                          className="border-b border-dark-700/50 hover:bg-dark-800/50"
+                        >
+                          <td className="px-4 py-3 text-dark-100">{user.email}</td>
+                          <td className="px-4 py-3 text-center text-dark-300">
+                            {user.unique_ip_count}
+                          </td>
+                          <td className="px-4 py-3 text-center text-dark-300">{user.limit ?? '-'}</td>
+                          <td className="px-4 py-3 text-center">
+                            <span
+                              className={`rounded-full px-2 py-1 text-xs ${
+                                user.is_over_limit
+                                  ? 'bg-error-500/20 text-error-400'
+                                  : 'bg-success-500/20 text-success-400'
+                              }`}
+                            >
+                              {user.is_over_limit
+                                ? t('banSystem.users.overLimit')
+                                : t('banSystem.users.ok')}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-center text-dark-300">
+                            {user.blocked_count}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <button
+                              onClick={() => handleViewUser(user.email)}
+                              disabled={actionLoading === user.email}
+                              className="text-sm text-accent-400 hover:text-accent-300 disabled:opacity-50"
+                            >
+                              {t('banSystem.users.viewDetails')}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
                 {(!users?.users || users.users.length === 0) && (
                   <div className="py-8 text-center text-dark-500">{t('common.noData')}</div>
                 )}
@@ -761,7 +812,8 @@ export default function AdminBanSystem() {
           {/* Punishments Tab */}
           {activeTab === 'punishments' && (
             <div className="overflow-hidden rounded-xl border border-dark-700 bg-dark-800/50">
-              <table className="w-full">
+              <div className="overflow-x-auto">
+                <table className="min-w-[900px] w-full">
                 <thead>
                   <tr className="border-b border-dark-700">
                     <th className="px-4 py-3 text-left text-xs font-medium text-dark-500">
@@ -818,7 +870,8 @@ export default function AdminBanSystem() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+                </table>
+              </div>
               {(!punishments?.punishments || punishments.punishments.length === 0) && (
                 <div className="py-8 text-center text-dark-500">
                   {t('banSystem.punishments.noBans')}
@@ -908,7 +961,8 @@ export default function AdminBanSystem() {
 
               {/* Agents List */}
               <div className="overflow-hidden rounded-xl border border-dark-700 bg-dark-800/50">
-                <table className="w-full">
+                <div className="overflow-x-auto">
+                  <table className="min-w-[860px] w-full">
                   <thead>
                     <tr className="border-b border-dark-700">
                       <th className="px-4 py-3 text-left text-xs font-medium text-dark-500">
@@ -978,7 +1032,8 @@ export default function AdminBanSystem() {
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                  </table>
+                </div>
                 {(!agents?.agents || agents.agents.length === 0) && (
                   <div className="py-8 text-center text-dark-500">
                     {t('banSystem.agents.noAgents')}
@@ -991,7 +1046,8 @@ export default function AdminBanSystem() {
           {/* Violations Tab */}
           {activeTab === 'violations' && (
             <div className="overflow-hidden rounded-xl border border-dark-700 bg-dark-800/50">
-              <table className="w-full">
+              <div className="overflow-x-auto">
+                <table className="min-w-[860px] w-full">
                 <thead>
                   <tr className="border-b border-dark-700">
                     <th className="px-4 py-3 text-left text-xs font-medium text-dark-500">
@@ -1039,7 +1095,8 @@ export default function AdminBanSystem() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+                </table>
+              </div>
               {(!violations?.violations || violations.violations.length === 0) && (
                 <div className="py-8 text-center text-dark-500">
                   {t('banSystem.violations.noViolations')}
@@ -1069,7 +1126,8 @@ export default function AdminBanSystem() {
                       {t('banSystem.traffic.topUsers')}
                     </h3>
                   </div>
-                  <table className="w-full">
+                  <div className="overflow-x-auto">
+                    <table className="min-w-[760px] w-full">
                     <thead>
                       <tr className="border-b border-dark-700">
                         <th className="px-4 py-3 text-left text-xs font-medium text-dark-500">
@@ -1112,7 +1170,8 @@ export default function AdminBanSystem() {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
+                    </table>
+                  </div>
                 </div>
               )}
 
@@ -1124,7 +1183,8 @@ export default function AdminBanSystem() {
                       {t('banSystem.traffic.recentViolations')}
                     </h3>
                   </div>
-                  <table className="w-full">
+                  <div className="overflow-x-auto">
+                    <table className="min-w-[620px] w-full">
                     <thead>
                       <tr className="border-b border-dark-700">
                         <th className="px-4 py-3 text-left text-xs font-medium text-dark-500">
@@ -1149,7 +1209,8 @@ export default function AdminBanSystem() {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
+                    </table>
+                  </div>
                 </div>
               )}
 
@@ -1164,9 +1225,9 @@ export default function AdminBanSystem() {
           {activeTab === 'reports' && (
             <div className="space-y-4">
               {/* Period Selector */}
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <span className="text-dark-400">{t('banSystem.reports.period')}:</span>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {[6, 12, 24, 48, 72].map((hours) => (
                     <button
                       key={hours}
@@ -1209,7 +1270,8 @@ export default function AdminBanSystem() {
                           {t('banSystem.reports.topViolators')}
                         </h3>
                       </div>
-                      <table className="w-full">
+                      <div className="overflow-x-auto">
+                        <table className="min-w-[460px] w-full">
                         <thead>
                           <tr className="border-b border-dark-700">
                             <th className="px-4 py-3 text-left text-xs font-medium text-dark-500">
@@ -1231,7 +1293,8 @@ export default function AdminBanSystem() {
                             </tr>
                           ))}
                         </tbody>
-                      </table>
+                        </table>
+                      </div>
                     </div>
                   )}
                 </>
@@ -1242,9 +1305,39 @@ export default function AdminBanSystem() {
           {/* Settings Tab */}
           {activeTab === 'settings' && settings && (
             <div className="space-y-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="relative w-full sm:max-w-sm">
+                  <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-dark-500">
+                    <SearchIcon />
+                  </div>
+                  <input
+                    type="text"
+                    value={settingSearch}
+                    onChange={(e) => setSettingSearch(e.target.value)}
+                    placeholder={t('banSystem.settings.searchPlaceholder', {
+                      defaultValue: 'Поиск по настройкам',
+                    })}
+                    className="input pl-10"
+                    aria-label={t('banSystem.settings.searchPlaceholder', {
+                      defaultValue: 'Поиск по настройкам',
+                    })}
+                  />
+                </div>
+                <label className="flex items-center gap-2 text-sm text-dark-300">
+                  <input
+                    type="checkbox"
+                    checked={showEditableOnly}
+                    onChange={(e) => setShowEditableOnly(e.target.checked)}
+                    className="h-4 w-4 rounded border-dark-600 bg-dark-800 text-accent-500 focus:ring-accent-500"
+                  />
+                  {t('banSystem.settings.onlyEditable', { defaultValue: 'Только изменяемые' })}
+                </label>
+              </div>
+
               {/* Group settings by category */}
               {(() => {
                 const grouped: Record<string, BanSettingDefinition[]> = {};
+                const normalizedQuery = settingSearch.trim().toLowerCase();
 
                 // Smart categorization: use API category or infer from key prefix
                 const inferCategory = (key: string, apiCategory: string | null): string => {
@@ -1284,116 +1377,197 @@ export default function AdminBanSystem() {
                   return aIdx - bIdx;
                 });
 
-                return sortedCategories.map((category) => (
-                  <div
-                    key={category}
-                    className="overflow-hidden rounded-xl border border-dark-700 bg-dark-800/50"
-                  >
-                    <div className="border-b border-dark-700 p-4">
-                      <h3 className="text-sm font-medium text-dark-200">
-                        {formatCategory(category)}
-                      </h3>
-                    </div>
-                    <div className="divide-y divide-dark-700">
-                      {grouped[category].map((setting) => (
-                        <div
-                          key={setting.key}
-                          className="flex items-center justify-between gap-4 p-4"
+                const renderedCategories = sortedCategories
+                  .map((category) => {
+                    const categorySettings = grouped[category].filter((setting) => {
+                      if (showEditableOnly && !setting.editable) {
+                        return false;
+                      }
+                      if (!normalizedQuery) {
+                        return true;
+                      }
+                      const label = formatSettingKey(setting.key).toLowerCase();
+                      const description = (setting.description ?? '').toLowerCase();
+                      return (
+                        setting.key.toLowerCase().includes(normalizedQuery) ||
+                        label.includes(normalizedQuery) ||
+                        description.includes(normalizedQuery)
+                      );
+                    });
+
+                    if (categorySettings.length === 0) return null;
+
+                    const isCollapsed = collapsedSettingCategories[category] ?? false;
+
+                    return (
+                      <div
+                        key={category}
+                        className="overflow-hidden rounded-xl border border-dark-700 bg-dark-800/50"
+                      >
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setCollapsedSettingCategories((prev) => ({
+                              ...prev,
+                              [category]: !isCollapsed,
+                            }))
+                          }
+                          className="flex w-full items-center justify-between border-b border-dark-700 p-4 text-left transition-colors hover:bg-dark-700/40"
+                          aria-expanded={!isCollapsed}
+                          aria-controls={`settings-${category}`}
                         >
-                          <div className="min-w-0 flex-1">
-                            <div className="font-medium text-dark-100">
-                              {formatSettingKey(setting.key)}
-                            </div>
-                            {setting.description && (
-                              <div className="mt-0.5 text-xs text-dark-500">
-                                {setting.description}
-                              </div>
-                            )}
+                          <h3 className="text-sm font-medium text-dark-200">
+                            {formatCategory(category)}
+                          </h3>
+                          <div className="flex items-center gap-3 text-xs text-dark-500">
+                            <span>{categorySettings.length}</span>
+                            <span>{isCollapsed ? '▾' : '▴'}</span>
                           </div>
-                          <div className="flex-shrink-0">
-                            {setting.type === 'bool' ? (
-                              <button
-                                onClick={() => handleToggleSetting(setting.key)}
-                                disabled={!setting.editable || settingLoading === setting.key}
-                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                                  setting.value ? 'bg-accent-500' : 'bg-dark-600'
-                                } ${!setting.editable ? 'cursor-not-allowed opacity-50' : ''}`}
+                        </button>
+                        {!isCollapsed && (
+                          <div id={`settings-${category}`} className="divide-y divide-dark-700">
+                            {categorySettings.map((setting) => (
+                              <div
+                                key={setting.key}
+                                className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
                               >
-                                <span
-                                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                    setting.value ? 'translate-x-6' : 'translate-x-1'
-                                  }`}
-                                />
-                              </button>
-                            ) : setting.type === 'int' ? (
-                              <input
-                                type="number"
-                                value={String(setting.value)}
-                                onChange={(e) => handleSetSetting(setting.key, e.target.value)}
-                                min={setting.min_value ?? undefined}
-                                max={setting.max_value ?? undefined}
-                                disabled={!setting.editable || settingLoading === setting.key}
-                                className="input w-24"
-                              />
-                            ) : setting.type === 'list' ? (
-                              <div className="flex max-w-xs flex-wrap justify-end gap-1.5">
-                                {Array.isArray(setting.value) && setting.value.length > 0 ? (
-                                  setting.value.map((item, idx) => (
-                                    <span
-                                      key={idx}
-                                      className="rounded bg-accent-500/20 px-2 py-0.5 text-xs text-accent-400"
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <div className="font-medium text-dark-100">
+                                      {formatSettingKey(setting.key)}
+                                    </div>
+                                    {!setting.editable && (
+                                      <span className="rounded bg-dark-700 px-1.5 py-0.5 text-[10px] text-dark-400">
+                                        RO
+                                      </span>
+                                    )}
+                                  </div>
+                                  {setting.description && (
+                                    <div className="mt-0.5 text-xs text-dark-500">
+                                      {setting.description}
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="w-full sm:w-auto sm:flex-shrink-0">
+                                  {setting.type === 'bool' ? (
+                                    <button
+                                      onClick={() => handleToggleSetting(setting.key)}
+                                      disabled={!setting.editable || settingLoading === setting.key}
+                                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                        setting.value ? 'bg-accent-500' : 'bg-dark-600'
+                                      } ${!setting.editable ? 'cursor-not-allowed opacity-50' : ''}`}
+                                      aria-label={formatSettingKey(setting.key)}
+                                      aria-pressed={Boolean(setting.value)}
                                     >
-                                      {String(item)}
-                                    </span>
-                                  ))
-                                ) : (
-                                  <span className="text-sm text-dark-500">
-                                    {t('common.noData')}
-                                  </span>
-                                )}
-                                {setting.editable && nodes && setting.key.includes('nodes') && (
-                                  <select
-                                    className="input py-1 text-xs"
-                                    onChange={(e) => {
-                                      if (e.target.value) {
-                                        const currentList = Array.isArray(setting.value)
-                                          ? setting.value
-                                          : [];
-                                        if (!currentList.includes(e.target.value)) {
-                                          handleSetSetting(
-                                            setting.key,
-                                            [...currentList, e.target.value].join(','),
-                                          );
+                                      <span
+                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                          setting.value ? 'translate-x-6' : 'translate-x-1'
+                                        }`}
+                                      />
+                                    </button>
+                                  ) : setting.type === 'int' ? (
+                                    <div className="flex w-full gap-2 sm:w-auto">
+                                      <input
+                                        type="number"
+                                        value={settingDrafts[setting.key] ?? String(setting.value)}
+                                        onChange={(e) =>
+                                          handleIntDraftChange(setting.key, e.target.value)
                                         }
-                                        e.target.value = '';
-                                      }
-                                    }}
-                                    disabled={settingLoading === setting.key}
-                                  >
-                                    <option value="">+ {t('common.add')}</option>
-                                    {nodes.nodes
-                                      .filter(
-                                        (n) =>
-                                          !Array.isArray(setting.value) ||
-                                          !setting.value.includes(n.name),
-                                      )
-                                      .map((n) => (
-                                        <option key={n.name} value={n.name}>
-                                          {n.name}
-                                        </option>
-                                      ))}
-                                  </select>
-                                )}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') {
+                                            handleIntSettingSave(setting.key);
+                                          }
+                                        }}
+                                        min={setting.min_value ?? undefined}
+                                        max={setting.max_value ?? undefined}
+                                        disabled={!setting.editable || settingLoading === setting.key}
+                                        className="input w-full sm:w-24"
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={() => handleIntSettingSave(setting.key)}
+                                        disabled={
+                                          !setting.editable ||
+                                          settingLoading === setting.key ||
+                                          (settingDrafts[setting.key] ?? String(setting.value)) ===
+                                            String(setting.value)
+                                        }
+                                        className="rounded-lg bg-accent-500/20 px-3 py-2 text-xs font-medium text-accent-400 transition-colors hover:bg-accent-500/30 disabled:opacity-50"
+                                      >
+                                        {t('common.save', { defaultValue: 'Сохранить' })}
+                                      </button>
+                                    </div>
+                                  ) : setting.type === 'list' ? (
+                                    <div className="flex flex-wrap gap-1.5 sm:max-w-xs sm:justify-end">
+                                      {Array.isArray(setting.value) && setting.value.length > 0 ? (
+                                        setting.value.map((item, idx) => (
+                                          <span
+                                            key={idx}
+                                            className="rounded bg-accent-500/20 px-2 py-0.5 text-xs text-accent-400"
+                                          >
+                                            {String(item)}
+                                          </span>
+                                        ))
+                                      ) : (
+                                        <span className="text-sm text-dark-500">
+                                          {t('common.noData')}
+                                        </span>
+                                      )}
+                                      {setting.editable && nodes && setting.key.includes('nodes') && (
+                                        <select
+                                          className="input py-1 text-xs"
+                                          onChange={(e) => {
+                                            if (e.target.value) {
+                                              const currentList = Array.isArray(setting.value)
+                                                ? setting.value
+                                                : [];
+                                              if (!currentList.includes(e.target.value)) {
+                                                handleSetSetting(
+                                                  setting.key,
+                                                  [...currentList, e.target.value].join(','),
+                                                );
+                                              }
+                                              e.target.value = '';
+                                            }
+                                          }}
+                                          disabled={settingLoading === setting.key}
+                                          aria-label={formatSettingKey(setting.key)}
+                                        >
+                                          <option value="">+ {t('common.add')}</option>
+                                          {nodes.nodes
+                                            .filter(
+                                              (n) =>
+                                                !Array.isArray(setting.value) ||
+                                                !setting.value.includes(n.name),
+                                            )
+                                            .map((n) => (
+                                              <option key={n.name} value={n.name}>
+                                                {n.name}
+                                              </option>
+                                            ))}
+                                        </select>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <div className="text-sm text-dark-300">
+                                      {String(setting.value)}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                            ) : (
-                              <div className="text-sm text-dark-300">{String(setting.value)}</div>
-                            )}
+                            ))}
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ));
+                        )}
+                      </div>
+                    );
+                  })
+                  .filter(Boolean);
+
+                if (renderedCategories.length === 0) {
+                  return <div className="py-8 text-center text-dark-500">{t('common.noData')}</div>;
+                }
+
+                return renderedCategories;
               })()}
             </div>
           )}
@@ -1544,7 +1718,8 @@ export default function AdminBanSystem() {
                   {t('banSystem.userDetail.ipHistory')}
                 </h4>
                 <div className="overflow-hidden rounded-lg bg-dark-900/50">
-                  <table className="w-full text-sm">
+                  <div className="overflow-x-auto">
+                    <table className="min-w-[640px] w-full text-sm">
                     <thead>
                       <tr className="border-b border-dark-700">
                         <th className="px-3 py-2 text-left text-xs text-dark-500">
@@ -1575,7 +1750,8 @@ export default function AdminBanSystem() {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
+                    </table>
+                  </div>
                   {selectedUser.ips.length === 0 && (
                     <div className="py-4 text-center text-dark-500">{t('common.noData')}</div>
                   )}
