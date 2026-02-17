@@ -4,11 +4,6 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 import { useCurrency } from '../hooks/useCurrency';
 import { useNotify } from '../platform/hooks/useNotify';
-import {
-  adminUsersApi,
-  type UserDetailResponse,
-  type PanelSyncStatusResponse,
-} from '../api/adminUsers';
 import { AdminUserTicketsTab } from './adminUserDetail/components/AdminUserTicketsTab';
 import { AdminUserBalanceTab } from './adminUserDetail/components/AdminUserBalanceTab';
 import { AdminUserInfoTab } from './adminUserDetail/components/AdminUserInfoTab';
@@ -17,6 +12,7 @@ import { AdminUserSyncTab } from './adminUserDetail/components/AdminUserSyncTab'
 import { AdminUserDetailHeader } from './adminUserDetail/components/AdminUserDetailHeader';
 import { AdminUserDetailTabs } from './adminUserDetail/components/AdminUserDetailTabs';
 import { useAdminUserActions } from './adminUserDetail/hooks/useAdminUserActions';
+import { useAdminUserCoreData } from './adminUserDetail/hooks/useAdminUserCoreData';
 import { useAdminUserInfoData } from './adminUserDetail/hooks/useAdminUserInfoData';
 import { useAdminUserSubscriptionData } from './adminUserDetail/hooks/useAdminUserSubscriptionData';
 import { useAdminUserTickets } from './adminUserDetail/hooks/useAdminUserTickets';
@@ -34,15 +30,13 @@ export default function AdminUserDetail() {
   const navigate = useNavigate();
   const notify = useNotify();
   const { id } = useParams<{ id: string }>();
+  const navigateToUsers = useCallback(() => navigate('/admin/users'), [navigate]);
 
   const locale = getUserDetailLocale(i18n.language);
 
-  const [user, setUser] = useState<UserDetailResponse | null>(null);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
     'info' | 'subscription' | 'balance' | 'sync' | 'tickets'
   >('info');
-  const [syncStatus, setSyncStatus] = useState<PanelSyncStatusResponse | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
   const { confirmingAction, handleInlineConfirm } = useInlineConfirm();
@@ -72,6 +66,10 @@ export default function AdminUserDetail() {
   const [selectedTrafficGb, setSelectedTrafficGb] = useState<string>('');
 
   const userId = id ? parseInt(id, 10) : null;
+  const { user, loading, syncStatus, loadUser, loadSyncStatus } = useAdminUserCoreData({
+    userId,
+    navigateToUsers,
+  });
   const { referrals, referralsLoading, promoGroups, loadReferrals, loadPromoGroups } =
     useAdminUserInfoData({
       userId,
@@ -112,30 +110,6 @@ export default function AdminUserDetail() {
     handleTicketReply,
     handleTicketStatusChange,
   } = useAdminUserTickets({ userId, setActionLoading });
-  const loadUser = useCallback(async () => {
-    if (!userId) return;
-    try {
-      setLoading(true);
-      const data = await adminUsersApi.getUser(userId);
-      setUser(data);
-    } catch (error) {
-      console.error('Failed to load user:', error);
-      navigate('/admin/users');
-    } finally {
-      setLoading(false);
-    }
-  }, [userId, navigate]);
-
-  const loadSyncStatus = useCallback(async () => {
-    if (!userId) return;
-    try {
-      const data = await adminUsersApi.getSyncStatus(userId);
-      setSyncStatus(data);
-    } catch (error) {
-      console.error('Failed to load sync status:', error);
-    }
-  }, [userId]);
-
   const {
     handleUpdateBalance,
     handleUpdateSubscription,
@@ -178,19 +152,11 @@ export default function AdminUserDetail() {
     loadUser,
     loadSyncStatus,
     loadDevices,
-    navigateToUsers: () => navigate('/admin/users'),
+    navigateToUsers,
     confirmAction: (message) => confirm(message),
     t,
     notify,
   });
-
-  useEffect(() => {
-    if (!userId || isNaN(userId)) {
-      navigate('/admin/users');
-      return;
-    }
-    loadUser();
-  }, [userId, loadUser, navigate]);
 
   useEffect(() => {
     if (activeTab === 'info') {
