@@ -7,11 +7,10 @@ import { useNotify } from '../platform/hooks/useNotify';
 import {
   adminUsersApi,
   type UserDetailResponse,
-  type UserListItem,
   type PanelSyncStatusResponse,
   type UpdateSubscriptionRequest,
 } from '../api/adminUsers';
-import { promocodesApi, type PromoGroup } from '../api/promocodes';
+import { promocodesApi } from '../api/promocodes';
 import { promoOffersApi } from '../api/promoOffers';
 import { toNumber } from '../utils/inputHelpers';
 import { AdminUserTicketsTab } from './adminUserDetail/components/AdminUserTicketsTab';
@@ -21,6 +20,7 @@ import { AdminUserSubscriptionTab } from './adminUserDetail/components/AdminUser
 import { AdminUserSyncTab } from './adminUserDetail/components/AdminUserSyncTab';
 import { AdminUserDetailHeader } from './adminUserDetail/components/AdminUserDetailHeader';
 import { AdminUserDetailTabs } from './adminUserDetail/components/AdminUserDetailTabs';
+import { useAdminUserInfoData } from './adminUserDetail/hooks/useAdminUserInfoData';
 import { useAdminUserSubscriptionData } from './adminUserDetail/hooks/useAdminUserSubscriptionData';
 import { useAdminUserTickets } from './adminUserDetail/hooks/useAdminUserTickets';
 import { useInlineConfirm } from './adminUserDetail/hooks/useInlineConfirm';
@@ -48,10 +48,6 @@ export default function AdminUserDetail() {
   const [syncStatus, setSyncStatus] = useState<PanelSyncStatusResponse | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // Referrals
-  const [referrals, setReferrals] = useState<UserListItem[]>([]);
-  const [referralsLoading, setReferralsLoading] = useState(false);
-
   const { confirmingAction, handleInlineConfirm } = useInlineConfirm();
 
   // Balance form
@@ -64,7 +60,6 @@ export default function AdminUserDetail() {
   const [selectedTariffId, setSelectedTariffId] = useState<number | null>(null);
 
   // Promo group
-  const [promoGroups, setPromoGroups] = useState<PromoGroup[]>([]);
   const [editingPromoGroup, setEditingPromoGroup] = useState(false);
 
   // Referral commission
@@ -80,6 +75,10 @@ export default function AdminUserDetail() {
   const [selectedTrafficGb, setSelectedTrafficGb] = useState<string>('');
 
   const userId = id ? parseInt(id, 10) : null;
+  const { referrals, referralsLoading, promoGroups, loadReferrals, loadPromoGroups } =
+    useAdminUserInfoData({
+      userId,
+    });
   const {
     tariffs,
     panelInfo,
@@ -140,28 +139,6 @@ export default function AdminUserDetail() {
       console.error('Failed to load sync status:', error);
     }
   }, [userId]);
-
-  const loadReferrals = useCallback(async () => {
-    if (!userId) return;
-    try {
-      setReferralsLoading(true);
-      const data = await adminUsersApi.getReferrals(userId, 0, 50);
-      setReferrals(data.users);
-    } catch {
-      // ignore
-    } finally {
-      setReferralsLoading(false);
-    }
-  }, [userId]);
-
-  const loadPromoGroups = useCallback(async () => {
-    try {
-      const data = await promocodesApi.getPromoGroups({ limit: 100 });
-      setPromoGroups(data.items);
-    } catch {
-      // ignore
-    }
-  }, []);
 
   useEffect(() => {
     if (!userId || isNaN(userId)) {
