@@ -94,18 +94,20 @@ export default function Login() {
   });
 
   // Check if email auth is enabled
-  const { data: emailAuthConfig } = useQuery<EmailAuthEnabled>({
+  const { data: emailAuthConfig, isLoading: isEmailAuthLoading } = useQuery<EmailAuthEnabled>({
     queryKey: ['email-auth-enabled'],
     queryFn: brandingApi.getEmailAuthEnabled,
     staleTime: 60000,
   });
-  const isEmailAuthEnabled = emailAuthConfig?.enabled ?? true;
+  // Default to disabled until config is loaded to avoid showing email auth when it is off.
+  const isEmailAuthEnabled = emailAuthConfig?.enabled ?? false;
 
   // Fetch enabled OAuth providers
-  const { data: oauthData } = useQuery({
+  const { data: oauthData, isLoading: isOAuthProvidersLoading } = useQuery({
     queryKey: ['oauth-providers'],
     queryFn: authApi.getOAuthProviders,
     staleTime: 60000,
+    retry: 2,
   });
   const oauthProviders = Array.isArray(oauthData?.providers) ? oauthData.providers : [];
 
@@ -479,7 +481,7 @@ export default function Login() {
             </div>
 
             {/* OAuth providers - compact icon row */}
-            {oauthProviders.length > 0 && (
+            {(isOAuthProvidersLoading || oauthProviders.length > 0) && (
               <>
                 <div className="my-4 flex items-center gap-3">
                   <div className="h-px flex-1 bg-dark-700" />
@@ -487,31 +489,41 @@ export default function Login() {
                   <div className="h-px flex-1 bg-dark-700" />
                 </div>
                 <div className="flex items-stretch gap-2">
-                  {oauthProviders.map((provider) => (
-                    <button
-                      key={provider.name}
-                      type="button"
-                      onClick={() => handleOAuthLogin(provider.name)}
-                      disabled={oauthLoading !== null}
-                      className="flex flex-1 flex-col items-center justify-center gap-1.5 rounded-xl border border-dark-700 bg-dark-800/80 py-2.5 transition-all hover:border-dark-600 hover:bg-dark-700 disabled:opacity-50"
-                      title={provider.display_name}
-                    >
-                      {oauthLoading === provider.name ? (
-                        <span className="h-5 w-5 animate-spin rounded-full border-2 border-dark-400 border-t-white" />
-                      ) : (
-                        <OAuthProviderIcon provider={provider.name} className="h-5 w-5" />
-                      )}
-                      <span className="text-[10px] leading-none text-dark-500">
-                        {provider.display_name}
-                      </span>
-                    </button>
-                  ))}
+                  {isOAuthProvidersLoading
+                    ? [0, 1, 2].map((idx) => (
+                        <div
+                          key={`oauth-skeleton-${idx}`}
+                          className="flex flex-1 flex-col items-center justify-center gap-1.5 rounded-xl border border-dark-700 bg-dark-800/60 py-2.5"
+                        >
+                          <span className="h-5 w-5 animate-pulse rounded-full bg-dark-600" />
+                          <span className="h-2 w-10 animate-pulse rounded bg-dark-600" />
+                        </div>
+                      ))
+                    : oauthProviders.map((provider) => (
+                        <button
+                          key={provider.name}
+                          type="button"
+                          onClick={() => handleOAuthLogin(provider.name)}
+                          disabled={oauthLoading !== null}
+                          className="flex flex-1 flex-col items-center justify-center gap-1.5 rounded-xl border border-dark-700 bg-dark-800/80 py-2.5 transition-all hover:border-dark-600 hover:bg-dark-700 disabled:opacity-50"
+                          title={provider.display_name}
+                        >
+                          {oauthLoading === provider.name ? (
+                            <span className="h-5 w-5 animate-spin rounded-full border-2 border-dark-400 border-t-white" />
+                          ) : (
+                            <OAuthProviderIcon provider={provider.name} className="h-5 w-5" />
+                          )}
+                          <span className="text-[10px] leading-none text-dark-500">
+                            {provider.display_name}
+                          </span>
+                        </button>
+                      ))}
                 </div>
               </>
             )}
 
             {/* Email auth section - collapsible */}
-            {isEmailAuthEnabled && (
+            {!isEmailAuthLoading && isEmailAuthEnabled && (
               <>
                 <div className="my-4 flex items-center gap-3">
                   <div className="h-px flex-1 bg-dark-700" />
