@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
@@ -18,13 +18,9 @@ import { useAdminUserInfoData } from './adminUserDetail/hooks/useAdminUserInfoDa
 import { useAdminUserSubscriptionData } from './adminUserDetail/hooks/useAdminUserSubscriptionData';
 import { useAdminUserTabDataLoader } from './adminUserDetail/hooks/useAdminUserTabDataLoader';
 import { useAdminUserTickets } from './adminUserDetail/hooks/useAdminUserTickets';
+import { useAdminUserViewHelpers } from './adminUserDetail/hooks/useAdminUserViewHelpers';
 import { useInlineConfirm } from './adminUserDetail/hooks/useInlineConfirm';
-import { buildNodeUsageForPeriod } from './adminUserDetail/utils/nodeUsage';
-import {
-  formatBytes,
-  formatDateTime,
-  getUserDetailLocale,
-} from './adminUserDetail/utils/formatters';
+import { formatBytes, getUserDetailLocale } from './adminUserDetail/utils/formatters';
 
 export default function AdminUserDetail() {
   const { t } = useTranslation();
@@ -171,22 +167,15 @@ export default function AdminUserDetail() {
     loadSubscriptionData,
     loadTickets,
   });
-
-  const formatDate = (date: string | null) => formatDateTime(date, locale);
-
-  const nodeUsageForPeriod = useMemo(
-    () => buildNodeUsageForPeriod(nodeUsage, nodeUsageDays),
-    [nodeUsage, nodeUsageDays],
-  );
-
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      notify.success(t('admin.users.detail.copied'));
-    } catch {
-      // ignore
-    }
-  };
+  const { formatDate, nodeUsageForPeriod, copyToClipboard, openAdminUser } =
+    useAdminUserViewHelpers({
+      locale,
+      nodeUsage,
+      nodeUsageDays,
+      notify,
+      t,
+      navigate,
+    });
 
   if (loading) {
     return (
@@ -235,7 +224,7 @@ export default function AdminUserDetail() {
             onUpdateReferralCommission={handleUpdateReferralCommission}
             referralsLoading={referralsLoading}
             referrals={referrals}
-            onOpenUser={(userId) => navigate(`/admin/users/${userId}`)}
+            onOpenUser={openAdminUser}
             onBlockUser={handleBlockUser}
             onUnblockUser={handleUnblockUser}
             confirmingAction={confirmingAction}
