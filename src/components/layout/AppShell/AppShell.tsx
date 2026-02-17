@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { UI } from '@/config/constants';
 
 import WebSocketNotifications from '@/components/WebSocketNotifications';
+import CampaignBonusNotifier from '@/components/CampaignBonusNotifier';
 import SuccessNotificationModal from '@/components/SuccessNotificationModal';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import TicketNotificationBell from '@/components/TicketNotificationBell';
@@ -284,6 +285,7 @@ export function AppShell({ children }: AppShellProps) {
 
       {/* Global components */}
       <WebSocketNotifications />
+      <CampaignBonusNotifier />
       <SuccessNotificationModal />
 
       {/* Lite Mode Header - wait for mode to be determined for new users */}

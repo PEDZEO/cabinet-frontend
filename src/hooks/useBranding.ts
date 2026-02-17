@@ -31,6 +31,7 @@ export function useBranding() {
     gcTime: 1000 * 60 * 30, // 30 minutes - keep in memory longer
     retry: 2,
     retryDelay: 1000,
+    initialDataUpdatedAt: 0,
     enabled: isAuthenticated,
   });
 

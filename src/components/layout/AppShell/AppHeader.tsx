@@ -93,6 +93,7 @@ export function AppHeader({
       return data;
     },
     initialData: getCachedBranding() ?? undefined,
+    initialDataUpdatedAt: 0,
     staleTime: 60000,
     refetchOnWindowFocus: true,
     retry: 1,

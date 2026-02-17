@@ -16,32 +16,44 @@ import type {
 
 export const authApi = {
   // Telegram WebApp authentication
-  loginTelegram: async (initData: string): Promise<AuthResponse> => {
+  loginTelegram: async (initData: string, campaignSlug?: string | null): Promise<AuthResponse> => {
     const response = await apiClient.post<AuthResponse>('/cabinet/auth/telegram', {
       init_data: initData,
+      campaign_slug: campaignSlug || undefined,
     });
     return response.data;
   },
 
   // Telegram Login Widget authentication
-  loginTelegramWidget: async (data: {
-    id: number;
-    first_name: string;
-    last_name?: string;
-    username?: string;
-    photo_url?: string;
-    auth_date: number;
-    hash: string;
-  }): Promise<AuthResponse> => {
-    const response = await apiClient.post<AuthResponse>('/cabinet/auth/telegram/widget', data);
+  loginTelegramWidget: async (
+    data: {
+      id: number;
+      first_name: string;
+      last_name?: string;
+      username?: string;
+      photo_url?: string;
+      auth_date: number;
+      hash: string;
+    },
+    campaignSlug?: string | null,
+  ): Promise<AuthResponse> => {
+    const response = await apiClient.post<AuthResponse>('/cabinet/auth/telegram/widget', {
+      ...data,
+      campaign_slug: campaignSlug || undefined,
+    });
     return response.data;
   },
 
   // Email login
-  loginEmail: async (email: string, password: string): Promise<AuthResponse> => {
+  loginEmail: async (
+    email: string,
+    password: string,
+    campaignSlug?: string | null,
+  ): Promise<AuthResponse> => {
     const response = await apiClient.post<AuthResponse>('/cabinet/auth/email/login', {
       email,
       password,
+      campaign_slug: campaignSlug || undefined,
     });
     return response.data;
   },
@@ -75,8 +87,11 @@ export const authApi = {
   },
 
   // Verify email and get auth tokens
-  verifyEmail: async (token: string): Promise<AuthResponse> => {
-    const response = await apiClient.post<AuthResponse>('/cabinet/auth/email/verify', { token });
+  verifyEmail: async (token: string, campaignSlug?: string | null): Promise<AuthResponse> => {
+    const response = await apiClient.post<AuthResponse>('/cabinet/auth/email/verify', {
+      token,
+      campaign_slug: campaignSlug || undefined,
+    });
     return response.data;
   },
 
@@ -163,11 +178,17 @@ export const authApi = {
     provider: string,
     code: string,
     state: string,
-    payload?: { device_id?: string; type?: string },
+    options?: { campaignSlug?: string | null; device_id?: string; type?: string },
   ): Promise<AuthResponse> => {
     const response = await apiClient.post<AuthResponse>(
       `/cabinet/auth/oauth/${encodeURIComponent(provider)}/callback`,
-      { code, state, ...payload },
+      {
+        code,
+        state,
+        campaign_slug: options?.campaignSlug || undefined,
+        device_id: options?.device_id,
+        type: options?.type,
+      },
     );
     return response.data;
   },

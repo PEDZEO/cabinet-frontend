@@ -50,25 +50,32 @@ export const isLogoPreloaded = (): boolean => {
   }
 };
 
-// Get cached branding from localStorage
+// Get cached branding from sessionStorage
 export const getCachedBranding = (): BrandingInfo | null => {
   try {
-    const cached = localStorage.getItem(BRANDING_CACHE_KEY);
+    const cached = sessionStorage.getItem(BRANDING_CACHE_KEY);
     if (cached) {
       return JSON.parse(cached);
     }
+    // One-time migration: move stale localStorage value to sessionStorage
+    const legacy = localStorage.getItem(BRANDING_CACHE_KEY);
+    if (legacy) {
+      localStorage.removeItem(BRANDING_CACHE_KEY);
+      sessionStorage.setItem(BRANDING_CACHE_KEY, legacy);
+      return JSON.parse(legacy);
+    }
   } catch {
-    // localStorage not available or invalid JSON
+    // storage not available or invalid JSON
   }
   return null;
 };
 
-// Update branding cache in localStorage
+// Update branding cache in sessionStorage
 export const setCachedBranding = (branding: BrandingInfo) => {
   try {
-    localStorage.setItem(BRANDING_CACHE_KEY, JSON.stringify(branding));
+    sessionStorage.setItem(BRANDING_CACHE_KEY, JSON.stringify(branding));
   } catch {
-    // localStorage not available
+    // sessionStorage not available
   }
 };
 

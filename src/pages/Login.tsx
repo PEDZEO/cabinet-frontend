@@ -90,6 +90,7 @@ export default function Login() {
     },
     staleTime: 60000,
     initialData: cachedBranding ?? undefined,
+    initialDataUpdatedAt: 0,
   });
 
   // Check if email auth is enabled

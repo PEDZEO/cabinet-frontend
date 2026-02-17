@@ -127,7 +127,30 @@ function generateColorStops(background: string, surface: string, accent: string)
   return [background, surface, dimAccent(accent)];
 }
 
+let _webglAvailable: boolean | null = null;
+
+function isWebglAvailable(): boolean {
+  if (_webglAvailable === null) {
+    try {
+      const renderer = new Renderer({
+        alpha: true,
+        antialias: false,
+        powerPreference: 'low-power',
+      });
+      _webglAvailable = !!renderer.gl;
+    } catch {
+      _webglAvailable = false;
+    }
+  }
+  return _webglAvailable;
+}
+
 export function Aurora() {
+  if (!isWebglAvailable()) return null;
+  return <AuroraImpl />;
+}
+
+function AuroraImpl() {
   const containerRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number>(0);
   const rendererRef = useRef<Renderer | null>(null);
