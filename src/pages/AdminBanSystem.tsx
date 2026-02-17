@@ -1,20 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  banSystemApi,
-  type BanSystemStatus,
-  type BanSystemStats,
-  type BanUsersListResponse,
-  type BanUserDetailResponse,
-  type BanPunishmentsListResponse,
-  type BanNodesListResponse,
-  type BanAgentsListResponse,
-  type BanTrafficViolationsResponse,
-  type BanSettingsResponse,
-  type BanTrafficResponse,
-  type BanReportResponse,
-  type BanHealthResponse,
-} from '../api/banSystem';
 import {
   AgentIcon,
   BanIcon,
@@ -36,256 +20,55 @@ import { BanSystemTrafficTab } from './adminBanSystem/components/BanSystemTraffi
 import { BanSystemUserDetailModal } from './adminBanSystem/components/BanSystemUserDetailModal';
 import { BanSystemUsersTab } from './adminBanSystem/components/BanSystemUsersTab';
 import { BanSystemViolationsTab } from './adminBanSystem/components/BanSystemViolationsTab';
+import { useAdminBanSystemData } from './adminBanSystem/hooks/useAdminBanSystemData';
 import { StatCard } from './adminBanSystem/components/StatCard';
 import type { BanSystemTabType } from './adminBanSystem/types';
 import { formatUptime } from './adminBanSystem/utils/formatters';
 
 export default function AdminBanSystem() {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<BanSystemTabType>('dashboard');
-  const [status, setStatus] = useState<BanSystemStatus | null>(null);
-  const [stats, setStats] = useState<BanSystemStats | null>(null);
-  const [users, setUsers] = useState<BanUsersListResponse | null>(null);
-  const [selectedUser, setSelectedUser] = useState<BanUserDetailResponse | null>(null);
-  const [punishments, setPunishments] = useState<BanPunishmentsListResponse | null>(null);
-  const [nodes, setNodes] = useState<BanNodesListResponse | null>(null);
-  const [agents, setAgents] = useState<BanAgentsListResponse | null>(null);
-  const [violations, setViolations] = useState<BanTrafficViolationsResponse | null>(null);
-  const [settings, setSettings] = useState<BanSettingsResponse | null>(null);
-  const [traffic, setTraffic] = useState<BanTrafficResponse | null>(null);
-  const [report, setReport] = useState<BanReportResponse | null>(null);
-  const [health, setHealth] = useState<BanHealthResponse | null>(null);
-  const [reportHours, setReportHours] = useState(24);
-  const reportHoursRef = useRef(reportHours);
-  reportHoursRef.current = reportHours;
-  const [settingLoading, setSettingLoading] = useState<string | null>(null);
-  const [settingSearch, setSettingSearch] = useState('');
-  const [showEditableOnly, setShowEditableOnly] = useState(false);
-  const [settingDrafts, setSettingDrafts] = useState<Record<string, string>>({});
-  const [collapsedSettingCategories, setCollapsedSettingCategories] = useState<
-    Record<string, boolean>
-  >({});
-  const [loading, setLoading] = useState(true);
-
-  // Format snake_case to readable label
-  const formatSettingKey = useCallback(
-    (key: string): string => {
-      // Try translation first
-      const translated = t(`banSystem.settings.${key}`, { defaultValue: '' });
-      if (translated && translated !== `banSystem.settings.${key}`) {
-        return translated;
-      }
-      // Fallback: convert snake_case to Title Case
-      return key
-        .split('_')
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join(' ');
-    },
-    [t],
-  );
-
-  const formatCategory = useCallback(
-    (category: string): string => {
-      const translated = t(`banSystem.settings.categories.${category}`, { defaultValue: '' });
-      if (translated && translated !== `banSystem.settings.categories.${category}`) {
-        return translated;
-      }
-      return category.charAt(0).toUpperCase() + category.slice(1).replace(/_/g, ' ');
-    },
-    [t],
-  );
-  const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!settings) return;
-    setSettingDrafts((prev) => {
-      const next = { ...prev };
-      settings.settings.forEach((setting) => {
-        if (setting.type === 'int') {
-          next[setting.key] = String(setting.value);
-        }
-      });
-      return next;
-    });
-  }, [settings]);
-
-  const loadStatus = useCallback(async () => {
-    try {
-      setLoading(true);
-      const data = await banSystemApi.getStatus();
-      setStatus(data);
-      if (!data.enabled || !data.configured) {
-        setError(t('banSystem.notConfigured'));
-      }
-    } catch {
-      setError(t('banSystem.loadError'));
-    } finally {
-      setLoading(false);
-    }
-  }, [t]);
-
-  const loadTabData = useCallback(
-    async (tab: BanSystemTabType) => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        switch (tab) {
-          case 'dashboard': {
-            const statsData = await banSystemApi.getStats();
-            setStats(statsData);
-            break;
-          }
-          case 'users': {
-            const usersData = await banSystemApi.getUsers({ limit: 50 });
-            setUsers(usersData);
-            break;
-          }
-          case 'punishments': {
-            const punishmentsData = await banSystemApi.getPunishments();
-            setPunishments(punishmentsData);
-            break;
-          }
-          case 'nodes': {
-            const nodesData = await banSystemApi.getNodes();
-            setNodes(nodesData);
-            break;
-          }
-          case 'agents': {
-            const agentsData = await banSystemApi.getAgents();
-            setAgents(agentsData);
-            break;
-          }
-          case 'violations': {
-            const violationsData = await banSystemApi.getTrafficViolations();
-            setViolations(violationsData);
-            break;
-          }
-          case 'settings': {
-            const settingsData = await banSystemApi.getSettings();
-            setSettings(settingsData);
-            break;
-          }
-          case 'traffic': {
-            const trafficData = await banSystemApi.getTraffic();
-            setTraffic(trafficData);
-            break;
-          }
-          case 'reports': {
-            const reportData = await banSystemApi.getReport(reportHoursRef.current);
-            setReport(reportData);
-            break;
-          }
-          case 'health': {
-            const healthData = await banSystemApi.getHealth();
-            setHealth(healthData);
-            break;
-          }
-        }
-      } catch {
-        setError(t('banSystem.loadError'));
-      } finally {
-        setLoading(false);
-      }
-    },
-    [t],
-  );
-
-  useEffect(() => {
-    loadStatus();
-  }, [loadStatus]);
-
-  useEffect(() => {
-    if (status?.enabled && status?.configured) {
-      loadTabData(activeTab);
-    }
-  }, [activeTab, status, loadTabData]);
-
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
-      loadTabData('users');
-      return;
-    }
-    try {
-      setLoading(true);
-      const data = await banSystemApi.searchUsers(searchQuery);
-      setUsers(data);
-    } catch {
-      setError(t('banSystem.loadError'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleViewUser = async (email: string) => {
-    try {
-      setActionLoading(email);
-      const data = await banSystemApi.getUser(email);
-      setSelectedUser(data);
-    } catch {
-      setError(t('banSystem.loadError'));
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleUnban = async (userId: string) => {
-    try {
-      setActionLoading(userId);
-      await banSystemApi.unbanUser(userId);
-      loadTabData('punishments');
-    } catch {
-      setError(t('banSystem.loadError'));
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleToggleSetting = async (key: string) => {
-    try {
-      setSettingLoading(key);
-      await banSystemApi.toggleSetting(key);
-      loadTabData('settings');
-    } catch {
-      setError(t('banSystem.loadError'));
-    } finally {
-      setSettingLoading(null);
-    }
-  };
-
-  const handleSetSetting = async (key: string, value: string) => {
-    try {
-      setSettingLoading(key);
-      await banSystemApi.setSetting(key, value);
-      loadTabData('settings');
-    } catch {
-      setError(t('banSystem.loadError'));
-    } finally {
-      setSettingLoading(null);
-    }
-  };
-
-  const handleIntDraftChange = (key: string, value: string) => {
-    setSettingDrafts((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const handleIntSettingSave = async (key: string) => {
-    const draft = settingDrafts[key];
-    if (draft === undefined) return;
-    await handleSetSetting(key, draft);
-  };
-
-  const handleReportPeriodChange = (hours: number) => {
-    setReportHours(hours);
-  };
-
-  useEffect(() => {
-    if (activeTab === 'reports' && status?.enabled) {
-      loadTabData('reports');
-    }
-  }, [reportHours, activeTab, status, loadTabData]);
+  const {
+    activeTab,
+    setActiveTab,
+    status,
+    stats,
+    users,
+    selectedUser,
+    setSelectedUser,
+    punishments,
+    nodes,
+    agents,
+    violations,
+    settings,
+    traffic,
+    report,
+    health,
+    reportHours,
+    settingLoading,
+    settingSearch,
+    setSettingSearch,
+    showEditableOnly,
+    setShowEditableOnly,
+    settingDrafts,
+    collapsedSettingCategories,
+    setCollapsedSettingCategories,
+    loading,
+    error,
+    searchQuery,
+    setSearchQuery,
+    actionLoading,
+    loadTabData,
+    handleSearch,
+    handleViewUser,
+    handleUnban,
+    handleToggleSetting,
+    handleSetSetting,
+    handleIntDraftChange,
+    handleIntSettingSave,
+    handleReportPeriodChange,
+    formatSettingKey,
+    formatCategory,
+  } = useAdminBanSystemData({ t });
 
   const tabs = getBanSystemTabs(t);
 
