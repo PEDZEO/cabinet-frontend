@@ -9,7 +9,6 @@ import {
   preloadLogo,
   isLogoPreloaded,
 } from '@/api/branding';
-import { subscriptionApi } from '@/api/subscription';
 import { balanceApi } from '@/api/balance';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useTheme } from '@/hooks/useTheme';
@@ -148,44 +147,12 @@ export function LiteModeHeader({
     staleTime: 30000,
   });
 
-  // Subscription
-  const { data: subscriptionResponse } = useQuery({
-    queryKey: ['subscription'],
-    queryFn: subscriptionApi.getSubscription,
-    staleTime: 30000,
-  });
-
   const appName = branding ? branding.name : FALLBACK_NAME;
   const logoLetter = branding?.logo_letter || FALLBACK_LOGO;
   const hasCustomLogo = branding?.has_custom_logo || false;
   const logoUrl = branding ? brandingApi.getLogoUrl(branding) : null;
 
-  const subscription = subscriptionResponse?.subscription;
   const balance = balanceData?.balance_kopeks ?? 0;
-
-  const getSubscriptionStatus = () => {
-    if (!subscription) return null;
-
-    if (subscription.is_trial) {
-      return (
-        <span className="rounded-full bg-warning-500/20 px-2 py-0.5 text-xs font-medium text-warning-400">
-          {t('lite.subscriptionTrial')}
-        </span>
-      );
-    }
-
-    if (subscription.is_expired) {
-      return (
-        <span className="rounded-full bg-error-500/20 px-2 py-0.5 text-xs font-medium text-error-400">
-          {t('lite.subscriptionExpired')}
-        </span>
-      );
-    }
-
-    if (subscription.days_left > 0 || subscription.hours_left > 0) return null;
-
-    return null;
-  };
 
   const isAdminPage = location.pathname.startsWith('/admin');
   const isMainPage = location.pathname === '/';
@@ -255,7 +222,7 @@ export function LiteModeHeader({
               </Link>
             )}
 
-            {/* Center: Balance & Status */}
+            {/* Center: Balance */}
             <Link
               to="/"
               className="flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl px-1.5 py-1 transition-colors hover:bg-dark-800/50 active:scale-[0.98] min-[360px]:gap-2 min-[360px]:px-2"
@@ -265,7 +232,6 @@ export function LiteModeHeader({
                   {formatWithCurrency(balance / 100)}
                 </div>
               </div>
-              <div className="hidden min-[390px]:block">{getSubscriptionStatus()}</div>
             </Link>
 
             {/* Right: Language + Theme + Admin link + Menu */}
