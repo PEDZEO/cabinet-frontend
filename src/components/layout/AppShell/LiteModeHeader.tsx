@@ -182,18 +182,10 @@ export function LiteModeHeader({
       );
     }
 
-    if (subscription.days_left > 0) {
+    if (subscription.days_left > 0 || subscription.hours_left > 0) {
       return (
         <span className="rounded-full bg-success-500/20 px-2 py-0.5 text-xs font-medium text-success-400">
-          {t('lite.daysLeft', { count: subscription.days_left })}
-        </span>
-      );
-    }
-
-    if (subscription.hours_left > 0) {
-      return (
-        <span className="rounded-full bg-warning-500/20 px-2 py-0.5 text-xs font-medium text-warning-400">
-          {t('lite.hoursLeft', { count: subscription.hours_left })}
+          {t('lite.subscriptionActive')}
         </span>
       );
     }
