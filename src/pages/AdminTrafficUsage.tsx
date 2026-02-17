@@ -6,21 +6,10 @@ import { usePlatform } from '../platform/hooks/usePlatform';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
-  DownloadIcon,
   RefreshIcon,
-  SearchIcon,
-  ServerSmallIcon,
-  ShieldIcon,
-  XIcon,
 } from './adminTrafficUsage/components/Icons';
-import {
-  CountryFilter,
-  NodeFilter,
-  PeriodSelector,
-  StatusFilter,
-  TariffFilter,
-} from './adminTrafficUsage/components/Filters';
 import { ProgressBar } from './adminTrafficUsage/components/ProgressBar';
+import { TrafficUsageControls } from './adminTrafficUsage/components/TrafficUsageControls';
 import { TrafficUsageTable } from './adminTrafficUsage/components/TrafficUsageTable';
 import { useAdminTrafficUsageData } from './adminTrafficUsage/hooks/useAdminTrafficUsageData';
 import { useTrafficColumns } from './adminTrafficUsage/hooks/useTrafficColumns';
@@ -171,106 +160,37 @@ export default function AdminTrafficUsage() {
         </button>
       </div>
 
-      {/* Controls */}
-      <div className="mb-4 flex flex-col gap-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <PeriodSelector
-            value={period}
-            onChange={handlePeriodChange}
-            label={t('admin.trafficUsage.period')}
-            dateMode={dateMode}
-            customStart={customStart}
-            customEnd={customEnd}
-            onToggleDateMode={handleToggleDateMode}
-            onCustomStartChange={handleCustomStartChange}
-            onCustomEndChange={handleCustomEndChange}
-          />
-          <TariffFilter
-            available={availableTariffs}
-            selected={selectedTariffs}
-            onChange={handleTariffChange}
-          />
-          <NodeFilter available={nodes} selected={selectedNodes} onChange={handleNodeChange} />
-          <CountryFilter
-            available={availableCountries}
-            selected={selectedCountries}
-            onChange={handleCountryChange}
-          />
-          <StatusFilter
-            available={availableStatuses}
-            selected={selectedStatuses}
-            onChange={handleStatusChange}
-          />
-
-          {/* Threshold inputs */}
-          <div className="flex items-center gap-1.5 rounded-lg border border-dark-700 bg-dark-800 px-2 py-1">
-            <ShieldIcon />
-            <input
-              type="number"
-              value={totalThreshold}
-              onChange={(e) => setTotalThreshold(e.target.value)}
-              placeholder={t('admin.trafficUsage.totalThreshold')}
-              step="0.1"
-              min="0"
-              max="9999"
-              className="w-20 bg-transparent text-xs text-dark-200 placeholder-dark-500 [appearance:textfield] focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-            />
-            {totalThreshold && (
-              <button
-                onClick={() => setTotalThreshold('')}
-                className="text-dark-500 hover:text-dark-300"
-              >
-                <XIcon />
-              </button>
-            )}
-          </div>
-          <div className="flex items-center gap-1.5 rounded-lg border border-dark-700 bg-dark-800 px-2 py-1">
-            <ServerSmallIcon />
-            <input
-              type="number"
-              value={nodeThreshold}
-              onChange={(e) => setNodeThreshold(e.target.value)}
-              placeholder={t('admin.trafficUsage.nodeThreshold')}
-              step="0.1"
-              min="0"
-              max="9999"
-              className="w-20 bg-transparent text-xs text-dark-200 placeholder-dark-500 [appearance:textfield] focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-            />
-            {nodeThreshold && (
-              <button
-                onClick={() => setNodeThreshold('')}
-                className="text-dark-500 hover:text-dark-300"
-              >
-                <XIcon />
-              </button>
-            )}
-          </div>
-
-          <button
-            onClick={handleExport}
-            disabled={exporting}
-            className="flex items-center gap-1.5 rounded-lg border border-dark-700 bg-dark-800 px-3 py-1.5 text-xs font-medium text-dark-200 transition-colors hover:border-dark-600 hover:bg-dark-700 disabled:opacity-50"
-          >
-            <DownloadIcon />
-            {t('admin.trafficUsage.exportCsv')}
-          </button>
-        </div>
-
-        <form onSubmit={handleSearch}>
-          <div className="relative">
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder={t('admin.trafficUsage.search')}
-              className="w-full rounded-xl border border-dark-700 bg-dark-800 py-2 pl-10 pr-4 text-dark-100 placeholder-dark-500 focus:border-dark-600 focus:outline-none"
-            />
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-500">
-              <SearchIcon />
-            </div>
-          </div>
-        </form>
-      </div>
+      <TrafficUsageControls
+        period={period}
+        dateMode={dateMode}
+        customStart={customStart}
+        customEnd={customEnd}
+        onPeriodChange={handlePeriodChange}
+        onToggleDateMode={handleToggleDateMode}
+        onCustomStartChange={handleCustomStartChange}
+        onCustomEndChange={handleCustomEndChange}
+        availableTariffs={availableTariffs}
+        selectedTariffs={selectedTariffs}
+        onTariffChange={handleTariffChange}
+        nodes={nodes}
+        selectedNodes={selectedNodes}
+        onNodeChange={handleNodeChange}
+        availableCountries={availableCountries}
+        selectedCountries={selectedCountries}
+        onCountryChange={handleCountryChange}
+        availableStatuses={availableStatuses}
+        selectedStatuses={selectedStatuses}
+        onStatusChange={handleStatusChange}
+        totalThreshold={totalThreshold}
+        setTotalThreshold={setTotalThreshold}
+        nodeThreshold={nodeThreshold}
+        setNodeThreshold={setNodeThreshold}
+        exporting={exporting}
+        onExport={handleExport}
+        searchInput={searchInput}
+        setSearchInput={setSearchInput}
+        onSearch={handleSearch}
+      />
 
       <TrafficUsageTable
         table={table}
