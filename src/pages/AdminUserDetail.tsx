@@ -21,7 +21,7 @@ import { AdminBackButton } from '../components/admin';
 import { createNumberInputHandler, toNumber } from '../utils/inputHelpers';
 import { AdminUserTicketsTab } from './adminUserDetail/components/AdminUserTicketsTab';
 import { AdminUserBalanceTab } from './adminUserDetail/components/AdminUserBalanceTab';
-import { AdminUserDangerZone } from './adminUserDetail/components/AdminUserDangerZone';
+import { AdminUserInfoTab } from './adminUserDetail/components/AdminUserInfoTab';
 import { AdminUserSyncTab } from './adminUserDetail/components/AdminUserSyncTab';
 import { MinusIcon, PlusIcon, RefreshIcon, TelegramIcon } from './adminUserDetail/components/Icons';
 import { StatusBadge } from './adminUserDetail/components/StatusBadge';
@@ -739,255 +739,33 @@ export default function AdminUserDetail() {
       <div className="space-y-4">
         {/* Info Tab */}
         {activeTab === 'info' && (
-          <div className="space-y-4">
-            {/* Status */}
-            <div className="flex items-center justify-between rounded-xl bg-dark-800/50 p-3">
-              <span className="text-dark-400">{t('admin.users.detail.status')}</span>
-              <div className="flex items-center gap-2">
-                <StatusBadge status={user.status} />
-                {user.status === 'active' ? (
-                  <button
-                    onClick={handleBlockUser}
-                    disabled={actionLoading}
-                    className="rounded-lg bg-error-500/20 px-3 py-1 text-xs text-error-400 transition-colors hover:bg-error-500/30"
-                  >
-                    {t('admin.users.actions.block')}
-                  </button>
-                ) : user.status === 'blocked' ? (
-                  <button
-                    onClick={handleUnblockUser}
-                    disabled={actionLoading}
-                    className="rounded-lg bg-success-500/20 px-3 py-1 text-xs text-success-400 transition-colors hover:bg-success-500/30"
-                  >
-                    {t('admin.users.actions.unblock')}
-                  </button>
-                ) : null}
-              </div>
-            </div>
-
-            {/* Details grid */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-xl bg-dark-800/50 p-3">
-                <div className="mb-1 text-xs text-dark-500">Email</div>
-                <div className="text-dark-100">{user.email || '-'}</div>
-              </div>
-              <div className="rounded-xl bg-dark-800/50 p-3">
-                <div className="mb-1 text-xs text-dark-500">{t('admin.users.detail.language')}</div>
-                <div className="text-dark-100">{user.language}</div>
-              </div>
-              <div className="rounded-xl bg-dark-800/50 p-3">
-                <div className="mb-1 text-xs text-dark-500">
-                  {t('admin.users.detail.registration')}
-                </div>
-                <div className="text-dark-100">{formatDate(user.created_at)}</div>
-              </div>
-              <div className="rounded-xl bg-dark-800/50 p-3">
-                <div className="mb-1 text-xs text-dark-500">
-                  {t('admin.users.detail.lastActivity')}
-                </div>
-                <div className="text-dark-100">{formatDate(user.last_activity)}</div>
-              </div>
-              <div className="rounded-xl bg-dark-800/50 p-3">
-                <div className="mb-1 text-xs text-dark-500">
-                  {t('admin.users.detail.totalSpent')}
-                </div>
-                <div className="text-dark-100">
-                  {formatWithCurrency(user.total_spent_kopeks / 100)}
-                </div>
-              </div>
-              <div className="rounded-xl bg-dark-800/50 p-3">
-                <div className="mb-1 text-xs text-dark-500">
-                  {t('admin.users.detail.purchases')}
-                </div>
-                <div className="text-dark-100">{user.purchase_count}</div>
-              </div>
-            </div>
-
-            {/* Campaign */}
-            {user.campaign_name && (
-              <div className="rounded-xl border border-accent-500/20 bg-accent-500/5 p-3">
-                <div className="mb-1 text-xs text-dark-500">{t('admin.users.detail.campaign')}</div>
-                <div className="text-sm font-medium text-accent-400">{user.campaign_name}</div>
-              </div>
-            )}
-
-            {/* Promo Group */}
-            <div className="rounded-xl bg-dark-800/50 p-3">
-              <div className="mb-1 flex items-center justify-between">
-                <span className="text-xs text-dark-500">{t('admin.users.detail.promoGroup')}</span>
-                <button
-                  onClick={() => setEditingPromoGroup(!editingPromoGroup)}
-                  className="text-xs text-accent-400 transition-colors hover:text-accent-300"
-                >
-                  {editingPromoGroup
-                    ? t('common.cancel')
-                    : t('admin.users.detail.changePromoGroup')}
-                </button>
-              </div>
-              {editingPromoGroup ? (
-                <div className="mt-2 space-y-2">
-                  <select
-                    value={user.promo_group?.id ?? ''}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      handleChangePromoGroup(val ? parseInt(val, 10) : null);
-                    }}
-                    disabled={actionLoading}
-                    className="input text-sm"
-                  >
-                    <option value="">{t('admin.users.detail.selectPromoGroup')}</option>
-                    {promoGroups.map((g) => (
-                      <option key={g.id} value={g.id}>
-                        {g.name}
-                      </option>
-                    ))}
-                  </select>
-                  {user.promo_group && (
-                    <button
-                      onClick={() => handleChangePromoGroup(null)}
-                      disabled={actionLoading}
-                      className="w-full rounded-lg bg-dark-700 py-1.5 text-xs text-dark-300 transition-colors hover:bg-dark-600"
-                    >
-                      {t('admin.users.detail.removePromoGroup')}
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <div className="text-sm font-medium text-dark-100">
-                  {user.promo_group?.name || (
-                    <span className="text-dark-500">{t('admin.users.detail.noPromoGroup')}</span>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Referral */}
-            <div className="rounded-xl bg-dark-800/50 p-3">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm font-medium text-dark-200">
-                  {t('admin.users.detail.referral.title')}
-                </span>
-                <button
-                  onClick={() => {
-                    if (!editingReferralCommission) {
-                      setReferralCommissionValue(user.referral.commission_percent ?? '');
-                    }
-                    setEditingReferralCommission(!editingReferralCommission);
-                  }}
-                  className="text-xs text-accent-400 transition-colors hover:text-accent-300"
-                >
-                  {editingReferralCommission ? t('common.cancel') : t('common.edit')}
-                </button>
-              </div>
-              <div className="grid grid-cols-3 gap-3 text-center">
-                <div>
-                  <div className="text-lg font-bold text-dark-100">
-                    {user.referral.referrals_count}
-                  </div>
-                  <div className="text-xs text-dark-500">
-                    {t('admin.users.detail.referral.referrals')}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-lg font-bold text-dark-100">
-                    {formatWithCurrency(user.referral.total_earnings_kopeks / 100)}
-                  </div>
-                  <div className="text-xs text-dark-500">
-                    {t('admin.users.detail.referral.earned')}
-                  </div>
-                </div>
-                <div>
-                  {editingReferralCommission ? (
-                    <div className="space-y-1">
-                      <input
-                        type="number"
-                        value={referralCommissionValue}
-                        onChange={createNumberInputHandler(setReferralCommissionValue, 0)}
-                        placeholder="0-100"
-                        className="input w-full text-center text-sm"
-                        min={0}
-                        max={100}
-                        disabled={actionLoading}
-                      />
-                      <button
-                        onClick={handleUpdateReferralCommission}
-                        disabled={actionLoading}
-                        className="w-full rounded-lg bg-accent-500 px-2 py-1 text-xs text-white transition-colors hover:bg-accent-600 disabled:opacity-50"
-                      >
-                        {actionLoading ? t('common.loading') : t('common.save')}
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="text-lg font-bold text-dark-100">
-                        {user.referral.commission_percent != null
-                          ? `${user.referral.commission_percent}%`
-                          : t('admin.users.detail.referral.default')}
-                      </div>
-                      <div className="text-xs text-dark-500">
-                        {t('admin.users.detail.referral.commission')}
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Referrals list */}
-            {user.referral.referrals_count > 0 && (
-              <div className="rounded-xl bg-dark-800/50 p-3">
-                <div className="mb-2 text-sm font-medium text-dark-200">
-                  {t('admin.users.detail.referralsList')}
-                </div>
-                {referralsLoading ? (
-                  <div className="flex justify-center py-4">
-                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
-                  </div>
-                ) : referrals.length === 0 ? (
-                  <div className="py-2 text-center text-xs text-dark-500">
-                    {t('admin.users.detail.noReferrals')}
-                  </div>
-                ) : (
-                  <div className="max-h-48 space-y-2 overflow-y-auto">
-                    {referrals.map((ref) => (
-                      <button
-                        key={ref.id}
-                        onClick={() => navigate(`/admin/users/${ref.id}`)}
-                        className="flex w-full items-center justify-between rounded-lg bg-dark-700/50 p-2 text-left transition-colors hover:bg-dark-700"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-dark-600 text-xs font-bold text-dark-300">
-                            {ref.first_name?.[0] || ref.username?.[0] || '?'}
-                          </div>
-                          <div>
-                            <div className="text-sm text-dark-100">{ref.full_name}</div>
-                            <div className="text-xs text-dark-500">
-                              {formatDate(ref.created_at)}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-xs text-dark-400">
-                          {formatWithCurrency(ref.total_spent_kopeks / 100)}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            <AdminUserDangerZone
-              user={user}
-              actionLoading={actionLoading}
-              confirmingAction={confirmingAction}
-              onConfirmResetTrial={() => handleInlineConfirm('resetTrial', handleResetTrial)}
-              onConfirmResetSubscription={() =>
-                handleInlineConfirm('resetSubscription', handleResetSubscription)
-              }
-              onConfirmDisable={() => handleInlineConfirm('disable', handleDisableUser)}
-              onConfirmFullDelete={() => handleInlineConfirm('fullDelete', handleFullDeleteUser)}
-            />
-          </div>
+          <AdminUserInfoTab
+            user={user}
+            actionLoading={actionLoading}
+            formatDate={formatDate}
+            formatWithCurrency={formatWithCurrency}
+            promoGroups={promoGroups}
+            editingPromoGroup={editingPromoGroup}
+            setEditingPromoGroup={setEditingPromoGroup}
+            onChangePromoGroup={handleChangePromoGroup}
+            editingReferralCommission={editingReferralCommission}
+            setEditingReferralCommission={setEditingReferralCommission}
+            referralCommissionValue={referralCommissionValue}
+            setReferralCommissionValue={setReferralCommissionValue}
+            onUpdateReferralCommission={handleUpdateReferralCommission}
+            referralsLoading={referralsLoading}
+            referrals={referrals}
+            onOpenUser={(userId) => navigate(`/admin/users/${userId}`)}
+            onBlockUser={handleBlockUser}
+            onUnblockUser={handleUnblockUser}
+            confirmingAction={confirmingAction}
+            onConfirmResetTrial={() => handleInlineConfirm('resetTrial', handleResetTrial)}
+            onConfirmResetSubscription={() =>
+              handleInlineConfirm('resetSubscription', handleResetSubscription)
+            }
+            onConfirmDisable={() => handleInlineConfirm('disable', handleDisableUser)}
+            onConfirmFullDelete={() => handleInlineConfirm('fullDelete', handleFullDeleteUser)}
+          />
         )}
 
         {/* Subscription Tab */}
