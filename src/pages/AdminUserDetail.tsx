@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
@@ -15,6 +15,7 @@ import { useAdminUserActions } from './adminUserDetail/hooks/useAdminUserActions
 import { useAdminUserCoreData } from './adminUserDetail/hooks/useAdminUserCoreData';
 import { useAdminUserInfoData } from './adminUserDetail/hooks/useAdminUserInfoData';
 import { useAdminUserSubscriptionData } from './adminUserDetail/hooks/useAdminUserSubscriptionData';
+import { useAdminUserTabDataLoader } from './adminUserDetail/hooks/useAdminUserTabDataLoader';
 import { useAdminUserTickets } from './adminUserDetail/hooks/useAdminUserTickets';
 import { useInlineConfirm } from './adminUserDetail/hooks/useInlineConfirm';
 import { buildNodeUsageForPeriod } from './adminUserDetail/utils/nodeUsage';
@@ -158,26 +159,15 @@ export default function AdminUserDetail() {
     notify,
   });
 
-  useEffect(() => {
-    if (activeTab === 'info') {
-      loadReferrals();
-      loadPromoGroups();
-    }
-    if (activeTab === 'sync') loadSyncStatus();
-    if (activeTab === 'subscription') {
-      loadTariffs();
-      loadSubscriptionData();
-    }
-    if (activeTab === 'tickets') loadTickets();
-  }, [
+  useAdminUserTabDataLoader({
     activeTab,
+    loadReferrals,
+    loadPromoGroups,
     loadSyncStatus,
     loadTariffs,
-    loadTickets,
-    loadReferrals,
     loadSubscriptionData,
-    loadPromoGroups,
-  ]);
+    loadTickets,
+  });
 
   const formatDate = (date: string | null) => formatDateTime(date, locale);
 
