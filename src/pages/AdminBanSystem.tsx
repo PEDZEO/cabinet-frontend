@@ -71,6 +71,7 @@ export default function AdminBanSystem() {
   } = useAdminBanSystemData({ t });
 
   const tabs = getBanSystemTabs(t);
+  const isNotConfigured = Boolean(status && (!status.enabled || !status.configured));
 
   if (loading && !status) {
     return (
@@ -80,7 +81,7 @@ export default function AdminBanSystem() {
     );
   }
 
-  if (error && !status?.enabled) {
+  if (error && isNotConfigured) {
     return (
       <div className="flex min-h-[60vh] animate-fade-in items-center justify-center">
         <div className="mx-4 w-full max-w-md">

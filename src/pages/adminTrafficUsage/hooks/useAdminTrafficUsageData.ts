@@ -134,13 +134,14 @@ export function useAdminTrafficUsageData({ t }: UseAdminTrafficUsageDataParams) 
         const data = await adminTrafficApi.getTrafficUsage(params, { skipCache });
         applyData(data);
       } catch {
-        // Keep stale data visible
+        // Keep stale data visible, but show explicit feedback about refresh failure.
+        setToast({ message: t('common.error'), type: 'error' });
       } finally {
         setLoading(false);
         setInitialLoading(false);
       }
     },
-    [buildParams, applyData],
+    [buildParams, applyData, t],
   );
 
   useEffect(() => {

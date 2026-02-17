@@ -4,6 +4,24 @@ import { promoOffersApi } from '../../../api/promoOffers';
 import { promocodesApi } from '../../../api/promocodes';
 import { toNumber } from '../../../utils/inputHelpers';
 
+const SUBSCRIPTION_ACTIONS: UpdateSubscriptionRequest['action'][] = [
+  'extend',
+  'set_end_date',
+  'change_tariff',
+  'set_traffic',
+  'toggle_autopay',
+  'cancel',
+  'activate',
+  'create',
+  'add_traffic',
+  'remove_traffic',
+  'set_device_limit',
+];
+
+function isValidSubscriptionAction(action: string): action is UpdateSubscriptionRequest['action'] {
+  return SUBSCRIPTION_ACTIONS.includes(action as UpdateSubscriptionRequest['action']);
+}
+
 interface NotifyLike {
   success: (message: string, title?: string) => void;
   error: (message: string, title?: string) => void;
@@ -110,9 +128,15 @@ export function useAdminUserActions({
 
       setActionLoading(true);
       try {
-        const action = overrideAction || subAction;
+        const actionRaw = overrideAction || subAction;
+        if (!isValidSubscriptionAction(actionRaw)) {
+          notify.error(t('admin.users.userActions.error'), t('common.error'));
+          return;
+        }
+
+        const action = actionRaw;
         const data: UpdateSubscriptionRequest = {
-          action: action as UpdateSubscriptionRequest['action'],
+          action,
           ...(action === 'extend' ? { days: toNumber(subDays, 30) } : {}),
           ...(action === 'change_tariff' && selectedTariffId
             ? { tariff_id: selectedTariffId }
@@ -128,11 +152,12 @@ export function useAdminUserActions({
         await loadUser();
       } catch (error) {
         console.error('Failed to update subscription:', error);
+        notify.error(t('admin.users.userActions.error'), t('common.error'));
       } finally {
         setActionLoading(false);
       }
     },
-    [loadUser, selectedTariffId, setActionLoading, subAction, subDays, userId],
+    [loadUser, notify, selectedTariffId, setActionLoading, subAction, subDays, t, userId],
   );
 
   const handleBlockUser = useCallback(async () => {
@@ -146,10 +171,11 @@ export function useAdminUserActions({
       await loadUser();
     } catch (error) {
       console.error('Failed to block user:', error);
+      notify.error(t('admin.users.userActions.error'), t('common.error'));
     } finally {
       setActionLoading(false);
     }
-  }, [confirmAction, loadUser, setActionLoading, t, userId]);
+  }, [confirmAction, loadUser, notify, setActionLoading, t, userId]);
 
   const handleUnblockUser = useCallback(async () => {
     if (!userId) {
@@ -162,10 +188,11 @@ export function useAdminUserActions({
       await loadUser();
     } catch (error) {
       console.error('Failed to unblock user:', error);
+      notify.error(t('admin.users.userActions.error'), t('common.error'));
     } finally {
       setActionLoading(false);
     }
-  }, [loadUser, setActionLoading, userId]);
+  }, [loadUser, notify, setActionLoading, t, userId]);
 
   const handleSyncFromPanel = useCallback(async () => {
     if (!userId) {
@@ -182,10 +209,11 @@ export function useAdminUserActions({
       await loadSyncStatus();
     } catch (error) {
       console.error('Failed to sync from panel:', error);
+      notify.error(t('admin.users.userActions.error'), t('common.error'));
     } finally {
       setActionLoading(false);
     }
-  }, [loadSyncStatus, loadUser, setActionLoading, userId]);
+  }, [loadSyncStatus, loadUser, notify, setActionLoading, t, userId]);
 
   const handleSyncToPanel = useCallback(async () => {
     if (!userId) {
@@ -199,10 +227,11 @@ export function useAdminUserActions({
       await loadSyncStatus();
     } catch (error) {
       console.error('Failed to sync to panel:', error);
+      notify.error(t('admin.users.userActions.error'), t('common.error'));
     } finally {
       setActionLoading(false);
     }
-  }, [loadSyncStatus, loadUser, setActionLoading, userId]);
+  }, [loadSyncStatus, loadUser, notify, setActionLoading, t, userId]);
 
   const handleDeleteDevice = useCallback(
     async (hwid: string) => {
