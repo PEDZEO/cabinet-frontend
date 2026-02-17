@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.4](https://github.com/PEDZEO/cabinet-frontend/compare/v1.0.3...v1.0.4) (2026-02-17)
+
+
+### Bug Fixes
+
+* improve refactor error handling and safety ([f1c197c](https://github.com/PEDZEO/cabinet-frontend/commit/f1c197c18c8401a6609bdccb435a944c1e77c838))
+
 ## [1.0.3](https://github.com/PEDZEO/cabinet-frontend/compare/v1.0.2...v1.0.3) (2026-02-17)
 
 
