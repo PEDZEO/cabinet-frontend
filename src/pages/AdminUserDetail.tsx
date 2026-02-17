@@ -20,114 +20,16 @@ import { promoOffersApi } from '../api/promoOffers';
 import { ticketsApi } from '../api/tickets';
 import { AdminBackButton } from '../components/admin';
 import { createNumberInputHandler, toNumber } from '../utils/inputHelpers';
-
-// ============ Helpers ============
-
-const getCountryFlag = (code: string | null | undefined): string => {
-  if (!code) return '';
-  const codeMap: Record<string, string> = {
-    RU: '\u{1F1F7}\u{1F1FA}',
-    US: '\u{1F1FA}\u{1F1F8}',
-    DE: '\u{1F1E9}\u{1F1EA}',
-    NL: '\u{1F1F3}\u{1F1F1}',
-    GB: '\u{1F1EC}\u{1F1E7}',
-    UK: '\u{1F1EC}\u{1F1E7}',
-    FR: '\u{1F1EB}\u{1F1F7}',
-    FI: '\u{1F1EB}\u{1F1EE}',
-    SE: '\u{1F1F8}\u{1F1EA}',
-    NO: '\u{1F1F3}\u{1F1F4}',
-    PL: '\u{1F1F5}\u{1F1F1}',
-    TR: '\u{1F1F9}\u{1F1F7}',
-    JP: '\u{1F1EF}\u{1F1F5}',
-    SG: '\u{1F1F8}\u{1F1EC}',
-    HK: '\u{1F1ED}\u{1F1F0}',
-    KR: '\u{1F1F0}\u{1F1F7}',
-    AU: '\u{1F1E6}\u{1F1FA}',
-    CA: '\u{1F1E8}\u{1F1E6}',
-    CH: '\u{1F1E8}\u{1F1ED}',
-    AT: '\u{1F1E6}\u{1F1F9}',
-    IT: '\u{1F1EE}\u{1F1F9}',
-    ES: '\u{1F1EA}\u{1F1F8}',
-    BR: '\u{1F1E7}\u{1F1F7}',
-    IN: '\u{1F1EE}\u{1F1F3}',
-    AE: '\u{1F1E6}\u{1F1EA}',
-    IL: '\u{1F1EE}\u{1F1F1}',
-    KZ: '\u{1F1F0}\u{1F1FF}',
-    UA: '\u{1F1FA}\u{1F1E6}',
-    CZ: '\u{1F1E8}\u{1F1FF}',
-    RO: '\u{1F1F7}\u{1F1F4}',
-    LV: '\u{1F1F1}\u{1F1FB}',
-    LT: '\u{1F1F1}\u{1F1F9}',
-    EE: '\u{1F1EA}\u{1F1EA}',
-    BG: '\u{1F1E7}\u{1F1EC}',
-    HU: '\u{1F1ED}\u{1F1FA}',
-    MD: '\u{1F1F2}\u{1F1E9}',
-  };
-  return codeMap[code.toUpperCase()] || code;
-};
-
-// ============ Icons ============
-
-const RefreshIcon = ({ className = 'w-5 h-5' }: { className?: string }) => (
-  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
-    />
-  </svg>
-);
-
-const PlusIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-  </svg>
-);
-
-const MinusIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
-  </svg>
-);
-
-const ArrowDownIcon = ({ className = 'w-5 h-5' }: { className?: string }) => (
-  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
-  </svg>
-);
-
-const ArrowUpIcon = ({ className = 'w-5 h-5' }: { className?: string }) => (
-  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18" />
-  </svg>
-);
-
-const TelegramIcon = () => (
-  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
-  </svg>
-);
-
-// ============ Components ============
-
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    active: 'bg-success-500/20 text-success-400 border-success-500/30',
-    blocked: 'bg-error-500/20 text-error-400 border-error-500/30',
-    deleted: 'bg-dark-600 text-dark-400 border-dark-500',
-    trial: 'bg-accent-500/20 text-accent-400 border-accent-500/30',
-    expired: 'bg-warning-500/20 text-warning-400 border-warning-500/30',
-    disabled: 'bg-dark-600 text-dark-400 border-dark-500',
-  };
-
-  return (
-    <span className={`rounded-full border px-2 py-0.5 text-xs ${styles[status] || styles.active}`}>
-      {status}
-    </span>
-  );
-}
-
-// ============ Main Page ============
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  MinusIcon,
+  PlusIcon,
+  RefreshIcon,
+  TelegramIcon,
+} from './adminUserDetail/components/Icons';
+import { StatusBadge } from './adminUserDetail/components/StatusBadge';
+import { getCountryFlag } from './adminUserDetail/utils/countryFlags';
 
 export default function AdminUserDetail() {
   const { t } = useTranslation();
