@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.1](https://github.com/PEDZEO/cabinet-frontend/compare/v1.0.0...v1.0.1) (2026-02-17)
+
+
+### Bug Fixes
+
+* align frontend with AGENTS compliance rules ([0327c68](https://github.com/PEDZEO/cabinet-frontend/commit/0327c6809d88bf38b8342f5d1f7c815a76f4ed0d))
+* align frontend with AGENTS compliance rules ([0324ab9](https://github.com/PEDZEO/cabinet-frontend/commit/0324ab97c70879f51819edc9f4da35df0001ca40))
+
 ## 1.0.0 (2026-02-17)
 
 
