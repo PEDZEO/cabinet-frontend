@@ -13,6 +13,7 @@ import { AdminUserDetailHeader } from './adminUserDetail/components/AdminUserDet
 import { AdminUserDetailTabs } from './adminUserDetail/components/AdminUserDetailTabs';
 import { useAdminUserActions } from './adminUserDetail/hooks/useAdminUserActions';
 import { useAdminUserCoreData } from './adminUserDetail/hooks/useAdminUserCoreData';
+import { useAdminUserFormState } from './adminUserDetail/hooks/useAdminUserFormState';
 import { useAdminUserInfoData } from './adminUserDetail/hooks/useAdminUserInfoData';
 import { useAdminUserSubscriptionData } from './adminUserDetail/hooks/useAdminUserSubscriptionData';
 import { useAdminUserTabDataLoader } from './adminUserDetail/hooks/useAdminUserTabDataLoader';
@@ -41,30 +42,32 @@ export default function AdminUserDetail() {
   const [actionLoading, setActionLoading] = useState(false);
 
   const { confirmingAction, handleInlineConfirm } = useInlineConfirm();
-
-  // Balance form
-  const [balanceAmount, setBalanceAmount] = useState<number | ''>('');
-  const [balanceDescription, setBalanceDescription] = useState('');
-
-  // Subscription form
-  const [subAction, setSubAction] = useState<string>('extend');
-  const [subDays, setSubDays] = useState<number | ''>(30);
-  const [selectedTariffId, setSelectedTariffId] = useState<number | null>(null);
-
-  // Promo group
-  const [editingPromoGroup, setEditingPromoGroup] = useState(false);
-
-  // Referral commission
-  const [editingReferralCommission, setEditingReferralCommission] = useState(false);
-  const [referralCommissionValue, setReferralCommissionValue] = useState<number | ''>('');
-
-  // Send promo offer
-  const [offerDiscountPercent, setOfferDiscountPercent] = useState<number | ''>('');
-  const [offerValidHours, setOfferValidHours] = useState<number | ''>(24);
-  const [offerSending, setOfferSending] = useState(false);
-
-  // Traffic packages
-  const [selectedTrafficGb, setSelectedTrafficGb] = useState<string>('');
+  const {
+    balanceAmount,
+    setBalanceAmount,
+    balanceDescription,
+    setBalanceDescription,
+    subAction,
+    setSubAction,
+    subDays,
+    setSubDays,
+    selectedTariffId,
+    setSelectedTariffId,
+    editingPromoGroup,
+    setEditingPromoGroup,
+    editingReferralCommission,
+    setEditingReferralCommission,
+    referralCommissionValue,
+    setReferralCommissionValue,
+    offerDiscountPercent,
+    setOfferDiscountPercent,
+    offerValidHours,
+    setOfferValidHours,
+    offerSending,
+    setOfferSending,
+    selectedTrafficGb,
+    setSelectedTrafficGb,
+  } = useAdminUserFormState();
 
   const userId = id ? parseInt(id, 10) : null;
   const { user, loading, syncStatus, loadUser, loadSyncStatus } = useAdminUserCoreData({
