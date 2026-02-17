@@ -17,14 +17,15 @@ import {
 import { adminApi, type AdminTicket, type AdminTicketDetail } from '../api/admin';
 import { promocodesApi, type PromoGroup } from '../api/promocodes';
 import { promoOffersApi } from '../api/promoOffers';
-import { AdminBackButton } from '../components/admin';
 import { toNumber } from '../utils/inputHelpers';
 import { AdminUserTicketsTab } from './adminUserDetail/components/AdminUserTicketsTab';
 import { AdminUserBalanceTab } from './adminUserDetail/components/AdminUserBalanceTab';
 import { AdminUserInfoTab } from './adminUserDetail/components/AdminUserInfoTab';
 import { AdminUserSubscriptionTab } from './adminUserDetail/components/AdminUserSubscriptionTab';
 import { AdminUserSyncTab } from './adminUserDetail/components/AdminUserSyncTab';
-import { RefreshIcon, TelegramIcon } from './adminUserDetail/components/Icons';
+import { AdminUserDetailHeader } from './adminUserDetail/components/AdminUserDetailHeader';
+import { AdminUserDetailTabs } from './adminUserDetail/components/AdminUserDetailTabs';
+import { useInlineConfirm } from './adminUserDetail/hooks/useInlineConfirm';
 import {
   formatBytes,
   formatDateTime,
@@ -59,9 +60,7 @@ export default function AdminUserDetail() {
   const [nodeUsage, setNodeUsage] = useState<UserNodeUsageResponse | null>(null);
   const [nodeUsageDays, setNodeUsageDays] = useState(7);
 
-  // Inline confirm state
-  const [confirmingAction, setConfirmingAction] = useState<string | null>(null);
-  const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { confirmingAction, handleInlineConfirm } = useInlineConfirm();
 
   // Balance form
   const [balanceAmount, setBalanceAmount] = useState<number | ''>('');
@@ -408,18 +407,6 @@ export default function AdminUserDetail() {
     }
   };
 
-  const handleInlineConfirm = (actionKey: string, executeFn: () => Promise<void>) => {
-    if (confirmingAction === actionKey) {
-      if (confirmTimerRef.current) clearTimeout(confirmTimerRef.current);
-      setConfirmingAction(null);
-      executeFn().catch(() => {});
-    } else {
-      if (confirmTimerRef.current) clearTimeout(confirmTimerRef.current);
-      setConfirmingAction(actionKey);
-      confirmTimerRef.current = setTimeout(() => setConfirmingAction(null), 3000);
-    }
-  };
-
   const handleDeleteDevice = async (hwid: string) => {
     if (!userId) return;
     setActionLoading(true);
@@ -689,50 +676,8 @@ export default function AdminUserDetail() {
 
   return (
     <div className="animate-fade-in">
-      {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <AdminBackButton to="/admin/users" />
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-accent-500 to-accent-700 text-lg font-bold text-white">
-            {user.first_name?.[0] || user.username?.[0] || '?'}
-          </div>
-          <div>
-            <div className="font-semibold text-dark-100">{user.full_name}</div>
-            <div className="flex items-center gap-2 text-sm text-dark-400">
-              <TelegramIcon />
-              {user.telegram_id}
-              {user.username && <span>@{user.username}</span>}
-            </div>
-          </div>
-        </div>
-        <button onClick={loadUser} className="rounded-lg p-2 transition-colors hover:bg-dark-700">
-          <RefreshIcon className={loading ? 'animate-spin' : ''} />
-        </button>
-      </div>
-
-      {/* Tabs */}
-      <div
-        className="scrollbar-hide -mx-4 mb-6 flex gap-2 overflow-x-auto px-4 py-1"
-        style={{ WebkitOverflowScrolling: 'touch' }}
-      >
-        {(['info', 'subscription', 'balance', 'sync', 'tickets'] as const).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`shrink-0 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
-              activeTab === tab
-                ? 'bg-accent-500/15 text-accent-400 ring-1 ring-accent-500/30'
-                : 'bg-dark-800/50 text-dark-400 active:bg-dark-700'
-            }`}
-          >
-            {tab === 'info' && t('admin.users.detail.tabs.info')}
-            {tab === 'subscription' && t('admin.users.detail.tabs.subscription')}
-            {tab === 'balance' && t('admin.users.detail.tabs.balance')}
-            {tab === 'sync' && t('admin.users.detail.tabs.sync')}
-            {tab === 'tickets' && t('admin.users.detail.tabs.tickets')}
-          </button>
-        ))}
-      </div>
+      <AdminUserDetailHeader user={user} loading={loading} onRefresh={loadUser} />
+      <AdminUserDetailTabs activeTab={activeTab} onSelectTab={setActiveTab} />
 
       {/* Content */}
       <div className="space-y-4">
