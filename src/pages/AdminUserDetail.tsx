@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
@@ -26,6 +26,7 @@ import { AdminUserSyncTab } from './adminUserDetail/components/AdminUserSyncTab'
 import { AdminUserDetailHeader } from './adminUserDetail/components/AdminUserDetailHeader';
 import { AdminUserDetailTabs } from './adminUserDetail/components/AdminUserDetailTabs';
 import { useInlineConfirm } from './adminUserDetail/hooks/useInlineConfirm';
+import { buildNodeUsageForPeriod } from './adminUserDetail/utils/nodeUsage';
 import {
   formatBytes,
   formatDateTime,
@@ -630,18 +631,10 @@ export default function AdminUserDetail() {
 
   const formatDate = (date: string | null) => formatDateTime(date, locale);
 
-  // Compute node usage for selected period from cached 30-day data
-  const nodeUsageForPeriod = (() => {
-    if (!nodeUsage || nodeUsage.items.length === 0) return [];
-    return nodeUsage.items
-      .map((item) => {
-        const daily = item.daily_bytes || [];
-        const sliced = daily.slice(-nodeUsageDays);
-        const total = sliced.reduce((sum, v) => sum + v, 0);
-        return { ...item, total_bytes: total };
-      })
-      .sort((a, b) => b.total_bytes - a.total_bytes);
-  })();
+  const nodeUsageForPeriod = useMemo(
+    () => buildNodeUsageForPeriod(nodeUsage, nodeUsageDays),
+    [nodeUsage, nodeUsageDays],
+  );
 
   const copyToClipboard = async (text: string) => {
     try {
