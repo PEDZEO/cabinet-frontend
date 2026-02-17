@@ -453,7 +453,14 @@ export function AppShell({ children }: AppShellProps) {
       <div className="lg:hidden" style={{ height: headerHeight }} />
 
       {/* Main content */}
-      <main className="mx-auto max-w-6xl px-4 py-6 pb-28 lg:px-6 lg:pb-8">{children}</main>
+      <main
+        className={cn(
+          'mx-auto max-w-6xl px-4 pb-28 lg:px-6 lg:pb-8',
+          isLiteMode ? 'pt-2 sm:pt-3' : 'pt-6',
+        )}
+      >
+        {children}
+      </main>
 
       {/* Mobile Bottom Navigation (hidden in Lite Mode) */}
       {isLiteModeReady && !isLiteMode && (
