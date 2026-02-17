@@ -30,6 +30,11 @@ import {
 } from './adminUserDetail/components/Icons';
 import { StatusBadge } from './adminUserDetail/components/StatusBadge';
 import { getCountryFlag } from './adminUserDetail/utils/countryFlags';
+import {
+  formatBytes,
+  formatDateTime,
+  getUserDetailLocale,
+} from './adminUserDetail/utils/formatters';
 
 export default function AdminUserDetail() {
   const { t } = useTranslation();
@@ -38,8 +43,7 @@ export default function AdminUserDetail() {
   const notify = useNotify();
   const { id } = useParams<{ id: string }>();
 
-  const localeMap: Record<string, string> = { ru: 'ru-RU', en: 'en-US', zh: 'zh-CN', fa: 'fa-IR' };
-  const locale = localeMap[i18n.language] || 'ru-RU';
+  const locale = getUserDetailLocale(i18n.language);
 
   const [user, setUser] = useState<UserDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -642,16 +646,7 @@ export default function AdminUserDetail() {
     }
   };
 
-  const formatDate = (date: string | null) => {
-    if (!date) return '-';
-    return new Date(date).toLocaleDateString(locale, {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  const formatDate = (date: string | null) => formatDateTime(date, locale);
 
   // Compute node usage for selected period from cached 30-day data
   const nodeUsageForPeriod = (() => {
@@ -665,14 +660,6 @@ export default function AdminUserDetail() {
       })
       .sort((a, b) => b.total_bytes - a.total_bytes);
   })();
-
-  const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0 B';
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-    return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
-  };
 
   const copyToClipboard = async (text: string) => {
     try {
