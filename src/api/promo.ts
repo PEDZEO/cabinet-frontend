@@ -1,5 +1,10 @@
 import apiClient from './client';
 
+interface PromoOfferExtraData {
+  test_squad_uuids?: string[];
+  [key: string]: unknown;
+}
+
 export interface PromoOffer {
   id: number;
   notification_type: string;
@@ -10,8 +15,7 @@ export interface PromoOffer {
   is_claimed: boolean;
   claimed_at: string | null;
   // Dynamic extra data from backend
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  extra_data: Record<string, any> | null;
+  extra_data: PromoOfferExtraData | null;
 }
 
 export interface ActiveDiscount {

@@ -273,7 +273,10 @@
     "selectServers": "选择服务器",
     "selectDevices": "选择设备",
     "perDevice": "/ 设备",
-    "summary": "摘要",
+    "summary": {
+      "period": "周期：{{label}}",
+      "traffic": "流量：{{gb}} GB"
+    },
     "total": "总计",
     "purchase": "购买",
     "step": "第 {{current}} 步，共 {{total}} 步",
@@ -294,14 +297,19 @@
       "unavailable": "试用不可用"
     },
     "pause": {
-      "paused": "订阅已暂停",
-      "active": "订阅活跃",
-      "pausedDescription": "暂停期间不收费",
-      "activeDescription": "每日计费",
-      "resume": "恢复",
-      "pause": "暂停",
-      "pausedMessage": "订阅已暂停",
-      "resumedMessage": "订阅已恢复"
+      "active": "活跃",
+      "days": "天",
+      "hours": "时",
+      "insufficientBalance": "余额不足，无法恢复订阅",
+      "minutes": "分",
+      "nextCharge": "距下次扣费",
+      "pauseBtn": "暂停",
+      "paused": "已暂停",
+      "pausedDescription": "扣费已停止。订阅有效期至",
+      "pausedInfo": "订阅已暂停",
+      "resumeBtn": "恢复",
+      "title": "暂停订阅",
+      "willBeCharged": "将扣费"
     },
     "connection": {
       "title": "连接VPN",
@@ -415,25 +423,6 @@
       "chargedDaily": "每天从余额中扣费",
       "costPerDay": "每天费用",
       "pausedOnLowBalance": "余额不足时订阅将暂停"
-    },
-    "pause": {
-      "active": "活跃",
-      "days": "天",
-      "hours": "时",
-      "insufficientBalance": "余额不足，无法恢复订阅",
-      "minutes": "分",
-      "nextCharge": "距下次扣费",
-      "pauseBtn": "暂停",
-      "paused": "已暂停",
-      "pausedDescription": "扣费已停止。订阅有效期至",
-      "pausedInfo": "订阅已暂停",
-      "resumeBtn": "恢复",
-      "title": "暂停订阅",
-      "willBeCharged": "将扣费"
-    },
-    "summary": {
-      "period": "周期：{{label}}",
-      "traffic": "流量：{{gb}} GB"
     }
   },
   "balance": {
@@ -708,7 +697,7 @@
       "total": "总计",
       "noData": "无流量数据",
       "loading": "正在加载流量数据...",
-      "noTariff": "\u2014",
+      "noTariff": "—",
       "search": "按名称或用户名搜索",
       "allTariffs": "所有套餐",
       "nodes": "节点",
@@ -2203,6 +2192,67 @@
       "promoOffers": "促销活动",
       "promoOffersDesc": "接收特别优惠和折扣",
       "unavailable": "通知设置不可用"
+    },
+    "linking": {
+      "title": "Linked login methods",
+      "description": "Link Telegram, Yandex and VK to one account so subscription stays shared.",
+      "none": "No linked login methods",
+      "generateCode": "Generate link code",
+      "enterCode": "Enter link code",
+      "preview": "Preview",
+      "confirm": "Link",
+      "previewSource": "Will be linked to account",
+      "codeGenerated": "Link code created",
+      "linked": "Accounts were linked successfully",
+      "manualHint": "Automatic merge is not possible. Send request to support for manual merge.",
+      "manualComment": "Describe which account should stay primary and why",
+      "sendManual": "Send to support",
+      "manualSent": "Manual merge request sent. Ticket",
+      "unlink": {
+        "button": "Unlink",
+        "confirmText": "Confirm unlink for login method: {{provider}}. Active sessions will be rotated for security.",
+        "confirm": "Confirm unlink",
+        "codeSent": "Confirmation code was sent to Telegram",
+        "otpPlaceholder": "Enter code from Telegram",
+        "success": "Login method {{provider}} was unlinked",
+        "reasons": {
+          "lastIdentity": "Cannot unlink the last login method",
+          "currentProvider": "Cannot unlink current login provider. Sign in with another method first",
+          "cooldownActive": "Temporary cooldown is active. Try again later",
+          "notLinked": "This login method is already not linked",
+          "providerNotSupported": "This login method does not support unlink",
+          "telegramRequired": "Telegram account is required for unlink confirmation",
+          "generic": "Unlink is not available"
+        },
+        "errors": {
+          "otpResendCooldown": "Code already sent. Please wait about a minute before retrying",
+          "otpRateLimited": "Too many code requests. Please try again later",
+          "requestInvalid": "Unlink confirmation request expired. Start unlink again",
+          "requestMismatch": "Unlink request does not match current account",
+          "storageError": "Failed to create unlink request. Please try again later",
+          "otpInvalid": "Invalid confirmation code",
+          "otpAttemptsExceeded": "Too many code attempts. Request unlink again",
+          "otpDeliveryFailed": "Failed to send code to Telegram. Please try again later"
+        }
+      },
+      "manualStatus": {
+        "title": "Latest disputed merge request",
+        "pending": "Request is under review",
+        "approved": "Request approved",
+        "rejected": "Request rejected",
+        "comment": "Comment",
+        "updatedAt": "Updated",
+        "openSupport": "Open support"
+      },
+      "errors": {
+        "invalidCode": "Code is invalid or expired",
+        "sameAccount": "Cannot link account to itself",
+        "tooManyAttempts": "Too many attempts. Please try again later",
+        "identityConflict": "Identity conflict. Manual review is required",
+        "inactiveAccount": "One of the accounts is inactive",
+        "manualRequired": "Both accounts contain data. Manual support merge is required.",
+        "supportDisabled": "Support tickets are disabled"
+      }
     }
   },
   "theme": {

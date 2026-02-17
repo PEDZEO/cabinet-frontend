@@ -200,7 +200,12 @@ export default function SuccessNotificationModal() {
   const modalContent = (
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={handleClose} />
+      <button
+        type="button"
+        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        onClick={handleClose}
+        aria-label={t('common.close', 'Close')}
+      />
 
       {/* Modal */}
       <div

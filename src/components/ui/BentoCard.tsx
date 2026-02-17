@@ -118,8 +118,23 @@ export const BentoCard = forwardRef<HTMLDivElement, BentoCardProps>((props, ref)
   }
 
   const { onClick } = props as BentoCardDivProps;
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!onClick) return;
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      withHaptic(onClick)?.();
+    }
+  };
+
   return (
-    <div ref={ref} onClick={withHaptic(onClick)} className={classes}>
+    <div
+      ref={ref}
+      onClick={withHaptic(onClick)}
+      onKeyDown={handleKeyDown}
+      className={classes}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+    >
       {children}
     </div>
   );
