@@ -5,6 +5,7 @@ import { Link } from 'react-router';
 import { subscriptionApi } from '@/api/subscription';
 import { balanceApi } from '@/api/balance';
 import { referralApi } from '@/api/referral';
+import { authApi } from '@/api/auth';
 import { useAuthStore } from '@/store/auth';
 import { useHapticFeedback } from '@/platform/hooks/useHaptic';
 import { LiteActionButton } from '@/components/lite/LiteActionButton';
@@ -133,7 +134,7 @@ function useLiteOnboarding() {
 export function LiteDashboard() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { refreshUser } = useAuthStore();
+  const { user, refreshUser } = useAuthStore();
   const haptic = useHapticFeedback();
   const [trialError, setTrialError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -177,6 +178,15 @@ export function LiteDashboard() {
     queryKey: ['purchase-options'],
     queryFn: subscriptionApi.getPurchaseOptions,
   });
+
+  const { data: linkedIdentitiesData } = useQuery({
+    queryKey: ['linked-identities'],
+    queryFn: authApi.getLinkedIdentities,
+    enabled: !!user,
+  });
+
+  const hasMergedAnotherAccount =
+    user?.auth_type === 'merged' || (linkedIdentitiesData?.identities?.length ?? 0) > 1;
 
   // Referral link and handlers
   const referralLink = referralInfo?.referral_code
@@ -334,17 +344,19 @@ export function LiteDashboard() {
 
           </div>
 
-          <div className="mb-6 rounded-2xl border border-accent-500/20 bg-gradient-to-br from-accent-500/10 to-transparent p-4">
-            <h3 className="text-sm font-semibold text-dark-100">{t('lite.accountLinking.title')}</h3>
-            <p className="mt-1 text-xs text-dark-400">{t('lite.accountLinking.description')}</p>
-            <p className="mt-2 text-xs text-dark-500">{t('lite.accountLinking.summary')}</p>
-            <Link
-              to="/profile"
-              className="mt-3 inline-flex w-full items-center justify-center rounded-lg bg-accent-500 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-accent-600"
-            >
-              {t('lite.accountLinking.cta')}
-            </Link>
-          </div>
+          {!hasMergedAnotherAccount && (
+            <div className="mb-4 rounded-xl border border-accent-500/20 bg-accent-500/5 px-3 py-2">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs text-dark-300">{t('lite.accountLinking.title')}</p>
+                <Link
+                  to="/profile"
+                  className="text-xs font-medium text-accent-400 transition-colors hover:text-accent-300"
+                >
+                  {t('lite.accountLinking.cta')}
+                </Link>
+              </div>
+            </div>
+          )}
 
           {/* Promo Offers */}
           <PromoOffersSection className="mb-6" useNowPath="/subscription" />

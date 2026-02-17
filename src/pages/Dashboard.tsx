@@ -8,6 +8,7 @@ import { subscriptionApi } from '../api/subscription';
 import { referralApi } from '../api/referral';
 import { balanceApi } from '../api/balance';
 import { wheelApi } from '../api/wheel';
+import { authApi } from '../api/auth';
 import Onboarding, { useOnboarding } from '../components/Onboarding';
 import PromoOffersSection from '../components/PromoOffersSection';
 import { useCurrency } from '../hooks/useCurrency';
@@ -109,6 +110,15 @@ function FullDashboard() {
     queryKey: ['referral-info'],
     queryFn: referralApi.getReferralInfo,
   });
+
+  const { data: linkedIdentitiesData } = useQuery({
+    queryKey: ['linked-identities'],
+    queryFn: authApi.getLinkedIdentities,
+    enabled: !!user,
+  });
+
+  const hasMergedAnotherAccount =
+    user?.auth_type === 'merged' || (linkedIdentitiesData?.identities?.length ?? 0) > 1;
 
   // Fetch wheel config to show banner if enabled
   const { data: wheelConfig } = useQuery({
@@ -278,20 +288,20 @@ function FullDashboard() {
         <p className="mt-1 text-dark-400">{t('dashboard.yourSubscription')}</p>
       </div>
 
-      <div className="bento-card border-accent-500/20 bg-gradient-to-br from-accent-500/10 to-transparent">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-dark-100">
-              {t('dashboard.accountLinking.title')}
-            </h2>
-            <p className="mt-1 text-sm text-dark-400">{t('dashboard.accountLinking.description')}</p>
-            <p className="mt-2 text-xs text-dark-500">{t('dashboard.accountLinking.summary')}</p>
+      {!hasMergedAnotherAccount && (
+        <div className="rounded-linear border border-accent-500/20 bg-accent-500/5 px-3 py-2">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm text-dark-300">{t('dashboard.accountLinking.title')}</p>
+            <Link
+              to="/profile"
+              className="inline-flex items-center gap-1 text-sm font-medium text-accent-400 transition-colors hover:text-accent-300"
+            >
+              {t('dashboard.accountLinking.cta')}
+              <ArrowRightIcon />
+            </Link>
           </div>
-          <Link to="/profile" className="btn-secondary py-2.5 text-center text-sm sm:min-w-52">
-            {t('dashboard.accountLinking.cta')}
-          </Link>
         </div>
-      </div>
+      )}
 
       {/* Subscription Status - Main Card */}
       {subLoading ? (

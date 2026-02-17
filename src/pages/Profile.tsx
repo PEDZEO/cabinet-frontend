@@ -591,6 +591,8 @@ export default function Profile() {
     registerEmailMutation.mutate({ email, password });
   };
 
+  const hasLinkCode = linkCode.trim().length > 0;
+
   return (
     <motion.div
       className="space-y-6"
@@ -695,21 +697,40 @@ export default function Profile() {
                 placeholder={t('profile.linking.enterCode', 'Введите код привязки')}
                 className="input sm:flex-1"
               />
-              <Button
-                variant="secondary"
-                onClick={() => previewLinkCodeMutation.mutate(linkCode)}
-                loading={previewLinkCodeMutation.isPending}
-                disabled={!linkCode}
-              >
-                {t('profile.linking.preview', 'Проверить')}
-              </Button>
-              <Button
-                onClick={() => confirmLinkCodeMutation.mutate(linkCode)}
-                loading={confirmLinkCodeMutation.isPending}
-                disabled={!linkCode}
-              >
-                {t('profile.linking.confirm', 'Привязать')}
-              </Button>
+            </div>
+
+            <div className="sticky bottom-3 z-20 rounded-linear border border-dark-700/80 bg-dark-900/90 p-2 backdrop-blur">
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => previewLinkCodeMutation.mutate(linkCode)}
+                  loading={previewLinkCodeMutation.isPending}
+                  disabled={!hasLinkCode}
+                >
+                  {t('profile.linking.preview', 'Проверить')}
+                </Button>
+                <Button
+                  onClick={() => confirmLinkCodeMutation.mutate(linkCode)}
+                  loading={confirmLinkCodeMutation.isPending}
+                  disabled={!hasLinkCode}
+                >
+                  {t('profile.linking.confirm', 'Привязать')}
+                </Button>
+                {showManualMergeAction && (
+                  <Button
+                    onClick={() =>
+                      manualMergeMutation.mutate({
+                        code: linkCode,
+                        comment: manualMergeComment.trim() || undefined,
+                      })
+                    }
+                    loading={manualMergeMutation.isPending}
+                    disabled={!hasLinkCode}
+                  >
+                    {t('profile.linking.sendManual', 'Отправить в поддержку')}
+                  </Button>
+                )}
+              </div>
             </div>
 
             {linkPreview && (
@@ -800,15 +821,6 @@ export default function Profile() {
                   )}
                   maxLength={1000}
                 />
-                <Button
-                  onClick={() =>
-                    manualMergeMutation.mutate({ code: linkCode, comment: manualMergeComment.trim() || undefined })
-                  }
-                  loading={manualMergeMutation.isPending}
-                  disabled={!linkCode}
-                >
-                  {t('profile.linking.sendManual', 'Отправить в поддержку')}
-                </Button>
               </div>
             )}
             {linkSuccess && (
