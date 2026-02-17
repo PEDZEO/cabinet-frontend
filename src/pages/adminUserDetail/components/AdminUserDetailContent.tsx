@@ -13,7 +13,7 @@ import { AdminUserTicketsTab } from './AdminUserTicketsTab';
 
 export type AdminUserDetailTab = 'info' | 'subscription' | 'balance' | 'sync' | 'tickets';
 
-interface InfoTabContentProps {
+export interface InfoTabContentProps {
   user: UserDetailResponse;
   actionLoading: boolean;
   formatDate: (date: string | null) => string;
@@ -40,7 +40,7 @@ interface InfoTabContentProps {
   onFullDeleteUser: () => Promise<void>;
 }
 
-interface SubscriptionTabContentProps {
+export interface SubscriptionTabContentProps {
   user: UserDetailResponse;
   actionLoading: boolean;
   confirmingAction: string | null;
@@ -78,7 +78,7 @@ interface SubscriptionTabContentProps {
   onDeleteDevice: (hwid: string) => Promise<void>;
 }
 
-interface BalanceTabContentProps {
+export interface BalanceTabContentProps {
   user: UserDetailResponse;
   balanceAmount: number | '';
   setBalanceAmount: Dispatch<SetStateAction<number | ''>>;
@@ -99,7 +99,7 @@ interface BalanceTabContentProps {
   onSendOffer: () => Promise<void>;
 }
 
-interface SyncTabContentProps {
+export interface SyncTabContentProps {
   syncStatus: PanelSyncStatusResponse | null;
   userRemnawaveUuid: string | null;
   locale: string;
@@ -108,7 +108,7 @@ interface SyncTabContentProps {
   onSyncToPanel: () => Promise<void>;
 }
 
-interface TicketsTabContentProps {
+export interface TicketsTabContentProps {
   selectedTicketId: number | null;
   selectedTicket: AdminTicketDetail | null;
   ticketDetailLoading: boolean;
@@ -127,7 +127,7 @@ interface TicketsTabContentProps {
   onOpenTicket: (ticketId: number) => void;
 }
 
-interface AdminUserDetailContentProps {
+export interface AdminUserDetailContentProps {
   activeTab: AdminUserDetailTab;
   infoTab: InfoTabContentProps;
   subscriptionTab: SubscriptionTabContentProps;
