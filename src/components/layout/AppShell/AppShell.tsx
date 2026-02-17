@@ -450,13 +450,16 @@ export function AppShell({ children }: AppShellProps) {
       <div className="hidden h-14 lg:block" />
 
       {/* Mobile spacer */}
-      <div className="lg:hidden" style={{ height: headerHeight }} />
+      <div
+        className="lg:hidden"
+        style={{ height: isLiteMode ? Math.max(headerHeight - 10, 0) : headerHeight }}
+      />
 
       {/* Main content */}
       <main
         className={cn(
           'mx-auto max-w-6xl px-4 pb-28 lg:px-6 lg:pb-8',
-          isLiteMode ? 'pt-2 sm:pt-3' : 'pt-6',
+          isLiteMode ? 'pt-0 sm:pt-1' : 'pt-6',
         )}
       >
         {children}

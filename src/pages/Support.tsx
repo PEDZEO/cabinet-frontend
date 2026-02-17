@@ -162,7 +162,7 @@ export default function Support() {
   const { openTelegramLink, openLink } = usePlatform();
   const [selectedTicket, setSelectedTicket] = useState<TicketDetail | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [isTicketsOpen, setIsTicketsOpen] = useState(true);
+  const [isTicketsOpen, setIsTicketsOpen] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newMessage, setNewMessage] = useState('');
   const [replyMessage, setReplyMessage] = useState('');
