@@ -135,14 +135,26 @@ export default function Profile() {
     (user?.email ? user.email.split('@')[0] : null) ||
     '-';
 
-  const parseApiError = (err: unknown): { code?: string; message?: string; reason?: string } => {
+  const parseApiError = (
+    err: unknown,
+  ): { code?: string; message?: string; reason?: string; retry_after_seconds?: number } => {
     const error = err as { response?: { data?: { detail?: unknown } } };
     const detail = error.response?.data?.detail;
     if (!detail) return {};
     if (typeof detail === 'string') return { message: detail };
     if (typeof detail === 'object') {
-      const payload = detail as { code?: string; message?: string; reason?: string };
-      return { code: payload.code, message: payload.message, reason: payload.reason };
+      const payload = detail as {
+        code?: string;
+        message?: string;
+        reason?: string;
+        retry_after_seconds?: number;
+      };
+      return {
+        code: payload.code,
+        message: payload.message,
+        reason: payload.reason,
+        retry_after_seconds: payload.retry_after_seconds,
+      };
     }
     return {};
   };
@@ -168,6 +180,16 @@ export default function Profile() {
         );
       case 'support_disabled':
         return t('profile.linking.errors.supportDisabled', 'Тикеты поддержки отключены');
+      case 'telegram_relink_requires_unlink':
+        return t(
+          'profile.linking.errors.telegramRelinkRequiresUnlink',
+          'Чтобы привязать другой Telegram, сначала отвяжите текущий Telegram-аккаунт.',
+        );
+      case 'telegram_relink_cooldown_active':
+        return t(
+          'profile.linking.errors.telegramRelinkCooldown',
+          'Смена Telegram-аккаунта доступна не чаще одного раза в 30 дней.',
+        );
       default:
         return message || t('common.error');
     }
@@ -429,6 +451,12 @@ export default function Profile() {
     queryFn: authApi.getLatestManualMergeRequest,
     enabled: !!user,
   });
+
+  const hasCurrentTelegramIdentity = (linkedIdentitiesData?.identities || []).some(
+    (identity) => identity.provider === 'telegram',
+  );
+  const previewHasTelegramIdentity = !!linkPreview?.source_identity_hints?.telegram;
+  const shouldShowTelegramReplaceWarning = hasCurrentTelegramIdentity && previewHasTelegramIdentity;
 
   const createLinkCodeMutation = useMutation({
     mutationFn: authApi.createLinkCode,
@@ -749,6 +777,14 @@ export default function Profile() {
                     </span>
                   ))}
                 </div>
+                {shouldShowTelegramReplaceWarning && (
+                  <div className="mt-3 rounded-linear border border-warning-500/30 bg-warning-500/10 p-2 text-xs text-warning-300">
+                    {t(
+                      'profile.linking.telegramReplaceWarning',
+                      'Внимание: вы пытаетесь сменить Telegram-аккаунт. После привязки нового Telegram старый Telegram-вход будет потерян.',
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
