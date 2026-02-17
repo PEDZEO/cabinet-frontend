@@ -22,15 +22,20 @@ import {
   RefreshIcon,
   ServerIcon,
   ShieldIcon,
-  TrafficIcon,
   UsersIcon,
   WarningIcon,
 } from './adminBanSystem/components/BanSystemIcons';
 import { getBanSystemTabs } from './adminBanSystem/constants';
+import { BanSystemAgentsTab } from './adminBanSystem/components/BanSystemAgentsTab';
 import { BanSystemHealthTab } from './adminBanSystem/components/BanSystemHealthTab';
+import { BanSystemNodesTab } from './adminBanSystem/components/BanSystemNodesTab';
+import { BanSystemPunishmentsTab } from './adminBanSystem/components/BanSystemPunishmentsTab';
 import { BanSystemReportsTab } from './adminBanSystem/components/BanSystemReportsTab';
 import { BanSystemSettingsTab } from './adminBanSystem/components/BanSystemSettingsTab';
+import { BanSystemTrafficTab } from './adminBanSystem/components/BanSystemTrafficTab';
+import { BanSystemUserDetailModal } from './adminBanSystem/components/BanSystemUserDetailModal';
 import { BanSystemUsersTab } from './adminBanSystem/components/BanSystemUsersTab';
+import { BanSystemViolationsTab } from './adminBanSystem/components/BanSystemViolationsTab';
 import { StatCard } from './adminBanSystem/components/StatCard';
 import type { BanSystemTabType } from './adminBanSystem/types';
 
@@ -557,420 +562,34 @@ export default function AdminBanSystem() {
 
           {/* Punishments Tab */}
           {activeTab === 'punishments' && (
-            <div className="overflow-hidden rounded-xl border border-dark-700 bg-dark-800/50">
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[900px]">
-                  <thead>
-                    <tr className="border-b border-dark-700">
-                      <th className="px-4 py-3 text-left text-xs font-medium text-dark-500">
-                        {t('banSystem.punishments.user')}
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-dark-500">
-                        {t('banSystem.punishments.reason')}
-                      </th>
-                      <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                        {t('banSystem.punishments.ipCount')}
-                      </th>
-                      <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                        {t('banSystem.punishments.limit')}
-                      </th>
-                      <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                        {t('banSystem.punishments.bannedAt')}
-                      </th>
-                      <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                        {t('banSystem.punishments.enableAt')}
-                      </th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-dark-500">
-                        {t('common.actions')}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {punishments?.punishments.map((p) => (
-                      <tr
-                        key={p.user_id}
-                        className="border-b border-dark-700/50 hover:bg-dark-800/50"
-                      >
-                        <td className="px-4 py-3">
-                          <div className="text-dark-100">{p.username}</div>
-                          <div className="text-xs text-dark-500">{p.user_id}</div>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-dark-300">{p.reason || '-'}</td>
-                        <td className="px-4 py-3 text-center text-error-400">{p.ip_count}</td>
-                        <td className="px-4 py-3 text-center text-dark-300">{p.limit}</td>
-                        <td className="px-4 py-3 text-center text-sm text-dark-300">
-                          {formatDate(p.punished_at)}
-                        </td>
-                        <td className="px-4 py-3 text-center text-sm text-dark-300">
-                          {formatDate(p.enable_at)}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <button
-                            onClick={() => handleUnban(p.user_id)}
-                            disabled={actionLoading === p.user_id}
-                            className="rounded-lg bg-success-500/20 px-3 py-1 text-sm text-success-400 transition-colors hover:bg-success-500/30 disabled:opacity-50"
-                          >
-                            {t('banSystem.punishments.unban')}
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {(!punishments?.punishments || punishments.punishments.length === 0) && (
-                <div className="py-8 text-center text-dark-500">
-                  {t('banSystem.punishments.noBans')}
-                </div>
-              )}
-            </div>
+            <BanSystemPunishmentsTab
+              t={t}
+              punishments={punishments}
+              actionLoading={actionLoading}
+              formatDate={formatDate}
+              onUnban={handleUnban}
+            />
           )}
 
           {/* Nodes Tab */}
-          {activeTab === 'nodes' && (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {nodes?.nodes.map((node) => (
-                <div
-                  key={node.name}
-                  className={`rounded-xl border bg-dark-800/50 p-4 ${
-                    node.is_connected ? 'border-success-500/30' : 'border-dark-700'
-                  }`}
-                >
-                  <div className="mb-3 flex items-center gap-3">
-                    <div
-                      className={`h-3 w-3 rounded-full ${node.is_connected ? 'animate-pulse bg-success-500' : 'bg-dark-500'}`}
-                    />
-                    <div>
-                      <div className="font-medium text-dark-100">{node.name}</div>
-                      <div className="text-xs text-dark-500">{node.address || '-'}</div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-lg bg-dark-900/50 p-2.5">
-                      <div className="text-xs text-dark-500">{t('banSystem.nodes.status')}</div>
-                      <div
-                        className={`text-sm font-medium ${node.is_connected ? 'text-success-400' : 'text-dark-400'}`}
-                      >
-                        {node.is_connected
-                          ? t('banSystem.nodes.online')
-                          : t('banSystem.nodes.offline')}
-                      </div>
-                    </div>
-                    <div className="rounded-lg bg-dark-900/50 p-2.5">
-                      <div className="text-xs text-dark-500">{t('banSystem.nodes.users')}</div>
-                      <div className="text-sm font-medium text-dark-100">{node.users_count}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {(!nodes?.nodes || nodes.nodes.length === 0) && (
-                <div className="col-span-full py-8 text-center text-dark-500">
-                  {t('banSystem.nodes.noNodes')}
-                </div>
-              )}
-            </div>
-          )}
+          {activeTab === 'nodes' && <BanSystemNodesTab t={t} nodes={nodes} />}
 
           {/* Agents Tab */}
-          {activeTab === 'agents' && (
-            <div className="space-y-4">
-              {/* Summary */}
-              {agents?.summary && (
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                  <StatCard
-                    title={t('banSystem.agents.online')}
-                    value={`${agents.summary.online_agents}/${agents.summary.total_agents}`}
-                    icon={<AgentIcon />}
-                    color="success"
-                  />
-                  <StatCard
-                    title={t('banSystem.agents.totalSent')}
-                    value={agents.summary.total_sent.toLocaleString()}
-                    icon={<ChartIcon />}
-                    color="accent"
-                  />
-                  <StatCard
-                    title={t('banSystem.agents.totalDropped')}
-                    value={agents.summary.total_dropped.toLocaleString()}
-                    icon={<WarningIcon />}
-                    color="warning"
-                  />
-                  <StatCard
-                    title={t('banSystem.agents.healthy')}
-                    value={agents.summary.healthy_count}
-                    subtitle={`${t('banSystem.agents.warning')}: ${agents.summary.warning_count}, ${t('banSystem.agents.critical')}: ${agents.summary.critical_count}`}
-                    icon={<AgentIcon />}
-                    color="info"
-                  />
-                </div>
-              )}
-
-              {/* Agents List */}
-              <div className="overflow-hidden rounded-xl border border-dark-700 bg-dark-800/50">
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[860px]">
-                    <thead>
-                      <tr className="border-b border-dark-700">
-                        <th className="px-4 py-3 text-left text-xs font-medium text-dark-500">
-                          {t('banSystem.agents.node')}
-                        </th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                          {t('banSystem.agents.status')}
-                        </th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                          {t('banSystem.agents.health')}
-                        </th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                          {t('banSystem.agents.sent')}
-                        </th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                          {t('banSystem.agents.dropped')}
-                        </th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                          {t('banSystem.agents.queue')}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {agents?.agents.map((agent) => (
-                        <tr
-                          key={agent.node_name}
-                          className="border-b border-dark-700/50 hover:bg-dark-800/50"
-                        >
-                          <td className="px-4 py-3 text-dark-100">{agent.node_name}</td>
-                          <td className="px-4 py-3 text-center">
-                            <span
-                              className={`rounded-full px-2 py-1 text-xs ${
-                                agent.is_online
-                                  ? 'bg-success-500/20 text-success-400'
-                                  : 'bg-dark-600 text-dark-400'
-                              }`}
-                            >
-                              {agent.is_online
-                                ? t('banSystem.agents.online')
-                                : t('banSystem.agents.offline')}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            <span
-                              className={`rounded-full px-2 py-1 text-xs ${
-                                agent.health === 'healthy'
-                                  ? 'bg-success-500/20 text-success-400'
-                                  : agent.health === 'warning'
-                                    ? 'bg-warning-500/20 text-warning-400'
-                                    : agent.health === 'critical'
-                                      ? 'bg-error-500/20 text-error-400'
-                                      : 'bg-dark-600 text-dark-400'
-                              }`}
-                            >
-                              {agent.health}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-center text-dark-300">
-                            {agent.sent_total.toLocaleString()}
-                          </td>
-                          <td className="px-4 py-3 text-center text-warning-400">
-                            {agent.dropped_total.toLocaleString()}
-                          </td>
-                          <td className="px-4 py-3 text-center text-dark-300">
-                            {agent.queue_size}/{agent.queue_max}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                {(!agents?.agents || agents.agents.length === 0) && (
-                  <div className="py-8 text-center text-dark-500">
-                    {t('banSystem.agents.noAgents')}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          {activeTab === 'agents' && <BanSystemAgentsTab t={t} agents={agents} />}
 
           {/* Violations Tab */}
           {activeTab === 'violations' && (
-            <div className="overflow-hidden rounded-xl border border-dark-700 bg-dark-800/50">
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[860px]">
-                  <thead>
-                    <tr className="border-b border-dark-700">
-                      <th className="px-4 py-3 text-left text-xs font-medium text-dark-500">
-                        {t('banSystem.violations.user')}
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-dark-500">
-                        {t('banSystem.violations.type')}
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-dark-500">
-                        {t('banSystem.violations.description')}
-                      </th>
-                      <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                        {t('banSystem.violations.detectedAt')}
-                      </th>
-                      <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                        {t('banSystem.violations.status')}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {violations?.violations.map((v, idx) => (
-                      <tr key={idx} className="border-b border-dark-700/50 hover:bg-dark-800/50">
-                        <td className="px-4 py-3">
-                          <div className="text-dark-100">{v.username}</div>
-                          <div className="text-xs text-dark-500">{v.email || '-'}</div>
-                        </td>
-                        <td className="px-4 py-3 text-warning-400">{v.violation_type}</td>
-                        <td className="px-4 py-3 text-sm text-dark-300">{v.description || '-'}</td>
-                        <td className="px-4 py-3 text-center text-sm text-dark-300">
-                          {formatDate(v.detected_at)}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <span
-                            className={`rounded-full px-2 py-1 text-xs ${
-                              v.resolved
-                                ? 'bg-success-500/20 text-success-400'
-                                : 'bg-warning-500/20 text-warning-400'
-                            }`}
-                          >
-                            {v.resolved
-                              ? t('banSystem.violations.resolved')
-                              : t('banSystem.violations.active')}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {(!violations?.violations || violations.violations.length === 0) && (
-                <div className="py-8 text-center text-dark-500">
-                  {t('banSystem.violations.noViolations')}
-                </div>
-              )}
-            </div>
+            <BanSystemViolationsTab t={t} violations={violations} formatDate={formatDate} />
           )}
 
           {/* Traffic Tab */}
           {activeTab === 'traffic' && traffic && (
-            <div className="space-y-4">
-              {/* Traffic Stats */}
-              <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                <StatCard
-                  title={t('banSystem.traffic.enabled')}
-                  value={traffic.enabled ? t('common.yes') : t('common.no')}
-                  icon={<TrafficIcon />}
-                  color={traffic.enabled ? 'success' : 'warning'}
-                />
-              </div>
-
-              {/* Top Users by Traffic */}
-              {traffic.top_users && traffic.top_users.length > 0 && (
-                <div className="overflow-hidden rounded-xl border border-dark-700 bg-dark-800/50">
-                  <div className="border-b border-dark-700 p-4">
-                    <h3 className="text-sm font-medium text-dark-200">
-                      {t('banSystem.traffic.topUsers')}
-                    </h3>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full min-w-[760px]">
-                      <thead>
-                        <tr className="border-b border-dark-700">
-                          <th className="px-4 py-3 text-left text-xs font-medium text-dark-500">
-                            {t('banSystem.traffic.username')}
-                          </th>
-                          <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                            {t('banSystem.traffic.bytesTotal')}
-                          </th>
-                          <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                            {t('banSystem.traffic.bytesLimit')}
-                          </th>
-                          <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                            {t('banSystem.traffic.status')}
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {traffic.top_users.map((user, idx) => (
-                          <tr
-                            key={idx}
-                            className="border-b border-dark-700/50 hover:bg-dark-800/50"
-                          >
-                            <td className="px-4 py-3 text-dark-100">{user.username}</td>
-                            <td className="px-4 py-3 text-center text-dark-300">
-                              {formatBytes(user.bytes_total)}
-                            </td>
-                            <td className="px-4 py-3 text-center text-dark-300">
-                              {user.bytes_limit ? formatBytes(user.bytes_limit) : '-'}
-                            </td>
-                            <td className="px-4 py-3 text-center">
-                              <span
-                                className={`rounded-full px-2 py-1 text-xs ${
-                                  user.over_limit
-                                    ? 'bg-error-500/20 text-error-400'
-                                    : 'bg-success-500/20 text-success-400'
-                                }`}
-                              >
-                                {user.over_limit
-                                  ? t('banSystem.traffic.overLimit')
-                                  : t('banSystem.traffic.ok')}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-
-              {/* Recent Violations */}
-              {traffic.recent_violations && traffic.recent_violations.length > 0 && (
-                <div className="overflow-hidden rounded-xl border border-dark-700 bg-dark-800/50">
-                  <div className="border-b border-dark-700 p-4">
-                    <h3 className="text-sm font-medium text-dark-200">
-                      {t('banSystem.traffic.recentViolations')}
-                    </h3>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full min-w-[620px]">
-                      <thead>
-                        <tr className="border-b border-dark-700">
-                          <th className="px-4 py-3 text-left text-xs font-medium text-dark-500">
-                            {t('banSystem.violations.user')}
-                          </th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-dark-500">
-                            {t('banSystem.violations.type')}
-                          </th>
-                          <th className="px-4 py-3 text-center text-xs font-medium text-dark-500">
-                            {t('banSystem.violations.detectedAt')}
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {traffic.recent_violations.map((v, idx) => (
-                          <tr
-                            key={idx}
-                            className="border-b border-dark-700/50 hover:bg-dark-800/50"
-                          >
-                            <td className="px-4 py-3 text-dark-100">{v.username}</td>
-                            <td className="px-4 py-3 text-warning-400">{v.violation_type}</td>
-                            <td className="px-4 py-3 text-center text-sm text-dark-300">
-                              {formatDate(v.detected_at)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-
-              {(!traffic.top_users || traffic.top_users.length === 0) &&
-                (!traffic.recent_violations || traffic.recent_violations.length === 0) && (
-                  <div className="py-8 text-center text-dark-500">{t('common.noData')}</div>
-                )}
-            </div>
+            <BanSystemTrafficTab
+              t={t}
+              traffic={traffic}
+              formatDate={formatDate}
+              formatBytes={formatBytes}
+            />
           )}
 
           {/* Reports Tab */}
@@ -1014,101 +633,7 @@ export default function AdminBanSystem() {
 
       {/* User Detail Modal */}
       {selectedUser && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          onClick={() => setSelectedUser(null)}
-        >
-          <div
-            className="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-xl border border-dark-700 bg-dark-800"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-dark-700 p-4">
-              <h3 className="text-lg font-semibold text-dark-100">
-                {t('banSystem.userDetail.title')}
-              </h3>
-              <button
-                onClick={() => setSelectedUser(null)}
-                className="text-dark-400 hover:text-dark-200"
-              >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-            <div className="space-y-4 p-4">
-              {/* User Info */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-xs text-dark-500">{t('banSystem.users.email')}</div>
-                  <div className="text-dark-100">{selectedUser.email}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-dark-500">{t('banSystem.users.limit')}</div>
-                  <div className="text-dark-100">{selectedUser.limit ?? '-'}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-dark-500">{t('banSystem.users.ipCount')}</div>
-                  <div className="text-dark-100">{selectedUser.unique_ip_count}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-dark-500">{t('banSystem.users.networkType')}</div>
-                  <div className="text-dark-100">{selectedUser.network_type || '-'}</div>
-                </div>
-              </div>
-
-              {/* IP History */}
-              <div>
-                <h4 className="mb-2 text-sm font-medium text-dark-200">
-                  {t('banSystem.userDetail.ipHistory')}
-                </h4>
-                <div className="overflow-hidden rounded-lg bg-dark-900/50">
-                  <div className="overflow-x-auto">
-                    <table className="w-full min-w-[640px] text-sm">
-                      <thead>
-                        <tr className="border-b border-dark-700">
-                          <th className="px-3 py-2 text-left text-xs text-dark-500">
-                            {t('banSystem.userDetail.ip')}
-                          </th>
-                          <th className="px-3 py-2 text-left text-xs text-dark-500">
-                            {t('banSystem.userDetail.country')}
-                          </th>
-                          <th className="px-3 py-2 text-left text-xs text-dark-500">
-                            {t('banSystem.userDetail.node')}
-                          </th>
-                          <th className="px-3 py-2 text-center text-xs text-dark-500">
-                            {t('banSystem.userDetail.requests')}
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {selectedUser.ips.map((ip, idx) => (
-                          <tr key={idx} className="border-b border-dark-700/50">
-                            <td className="px-3 py-2 text-dark-100">{ip.ip}</td>
-                            <td className="px-3 py-2 text-dark-300">
-                              {ip.country_name || ip.country_code || '-'}
-                            </td>
-                            <td className="px-3 py-2 text-dark-300">{ip.node || '-'}</td>
-                            <td className="px-3 py-2 text-center text-dark-300">
-                              {ip.request_count}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  {selectedUser.ips.length === 0 && (
-                    <div className="py-4 text-center text-dark-500">{t('common.noData')}</div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <BanSystemUserDetailModal t={t} user={selectedUser} onClose={() => setSelectedUser(null)} />
       )}
     </div>
   );
