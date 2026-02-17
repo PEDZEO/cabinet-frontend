@@ -72,6 +72,8 @@ const PencilIcon = () => (
   </svg>
 );
 
+type LinkFlowStep = 'idle' | 'preview' | 'warning' | 'manual' | 'done';
+
 export default function Profile() {
   const { t } = useTranslation();
   const { user, setUser, setTokens, checkAdminStatus } = useAuthStore();
@@ -90,7 +92,8 @@ export default function Profile() {
   const [linkSuccess, setLinkSuccess] = useState<string | null>(null);
   const [linkPreview, setLinkPreview] = useState<LinkCodePreviewResponse | null>(null);
   const [manualMergeComment, setManualMergeComment] = useState('');
-  const [showManualMergeAction, setShowManualMergeAction] = useState(false);
+  const [linkFlowStep, setLinkFlowStep] = useState<LinkFlowStep>('idle');
+  const [previewedCode, setPreviewedCode] = useState('');
   const [unlinkProvider, setUnlinkProvider] = useState<string | null>(null);
   const [unlinkRequestToken, setUnlinkRequestToken] = useState<string | null>(null);
   const [unlinkOtpCode, setUnlinkOtpCode] = useState('');
@@ -492,7 +495,8 @@ export default function Profile() {
       setActiveLinkCode(data.code);
       setLinkCode(data.code);
       setLinkPreview(null);
-      setShowManualMergeAction(false);
+      setPreviewedCode('');
+      setLinkFlowStep('idle');
       setManualMergeComment('');
     },
     onError: (err: { response?: { data?: { detail?: string } } }) => {
@@ -503,16 +507,19 @@ export default function Profile() {
 
   const previewLinkCodeMutation = useMutation({
     mutationFn: (code: string) => authApi.previewLinkCode(code),
-    onSuccess: (data) => {
+    onSuccess: (data, code) => {
       setLinkError(null);
       setLinkPreview(data);
-      setShowManualMergeAction(false);
+      const hasTelegramInPreview = !!data.source_identity_hints?.telegram;
+      setLinkFlowStep(hasCurrentTelegramIdentity && hasTelegramInPreview ? 'warning' : 'preview');
+      setPreviewedCode(code);
     },
     onError: (err: unknown) => {
       setLinkPreview(null);
       setLinkSuccess(null);
       const parsed = parseApiError(err);
-      setShowManualMergeAction(parsed.code === 'manual_merge_required');
+      setLinkFlowStep(parsed.code === 'manual_merge_required' ? 'manual' : 'idle');
+      setPreviewedCode('');
       setLinkError(getLocalizedLinkError(err));
     },
   });
@@ -528,7 +535,8 @@ export default function Profile() {
       setActiveLinkCode('');
       setLinkCode('');
       setLinkPreview(null);
-      setShowManualMergeAction(false);
+      setPreviewedCode('');
+      setLinkFlowStep('done');
       setManualMergeComment('');
       queryClient.invalidateQueries({ queryKey: ['linked-identities'] });
       queryClient.invalidateQueries({ queryKey: ['user'] });
@@ -536,7 +544,7 @@ export default function Profile() {
     onError: (err: unknown) => {
       setLinkSuccess(null);
       const parsed = parseApiError(err);
-      setShowManualMergeAction(parsed.code === 'manual_merge_required');
+      setLinkFlowStep(parsed.code === 'manual_merge_required' ? 'manual' : 'idle');
       setLinkError(getLocalizedLinkError(err));
     },
   });
@@ -550,7 +558,7 @@ export default function Profile() {
         t('profile.linking.manualSent', 'Запрос на ручное объединение отправлен. Тикет') +
           ` #${data.ticket_id}`,
       );
-      setShowManualMergeAction(false);
+      setLinkFlowStep('done');
       setManualMergeComment('');
       queryClient.invalidateQueries({ queryKey: ['latest-manual-merge-request'] });
     },
@@ -657,7 +665,11 @@ export default function Profile() {
     registerEmailMutation.mutate({ email, password });
   };
 
-  const hasLinkCode = linkCode.trim().length > 0;
+  const normalizedLinkCode = linkCode.trim().toUpperCase();
+  const hasLinkCode = normalizedLinkCode.length > 0;
+  const isCodePreviewed = hasLinkCode && previewedCode === normalizedLinkCode && !!linkPreview;
+  const canConfirmLink =
+    isCodePreviewed && (linkFlowStep === 'preview' || linkFlowStep === 'warning');
 
   return (
     <motion.div
@@ -809,34 +821,68 @@ export default function Profile() {
               <input
                 type="text"
                 value={linkCode}
-                onChange={(e) => setLinkCode(e.target.value.toUpperCase().trim())}
+                onChange={(e) => {
+                  const nextCode = e.target.value.toUpperCase().trim();
+                  setLinkCode(nextCode);
+                  setLinkError(null);
+                  setLinkSuccess(null);
+                  if (nextCode !== previewedCode) {
+                    setLinkPreview(null);
+                    setLinkFlowStep('idle');
+                  }
+                }}
                 placeholder={t('profile.linking.enterCode', 'Введите код привязки')}
                 className="input sm:flex-1"
               />
+            </div>
+
+            <div className="rounded-linear border border-dark-700/70 bg-dark-800/40 px-3 py-2 text-xs text-dark-300">
+              {linkFlowStep === 'idle' &&
+                t('profile.linking.flow.idle', 'Шаг 1: введите код и нажмите "Проверить".')}
+              {linkFlowStep === 'preview' &&
+                t(
+                  'profile.linking.flow.preview',
+                  'Шаг 2: код проверен. Проверьте данные аккаунта и нажмите "Привязать".',
+                )}
+              {linkFlowStep === 'warning' &&
+                t(
+                  'profile.linking.flow.warning',
+                  'Шаг 2: обнаружена смена Telegram. Подтвердите, если согласны заменить текущий Telegram.',
+                )}
+              {linkFlowStep === 'manual' &&
+                t(
+                  'profile.linking.flow.manual',
+                  'Шаг 2: автоматическое объединение недоступно. Отправьте запрос в поддержку.',
+                )}
+              {linkFlowStep === 'done' &&
+                t(
+                  'profile.linking.flow.done',
+                  'Операция завершена. Можно создать новый код при необходимости.',
+                )}
             </div>
 
             <div className="sticky bottom-3 z-20 rounded-linear border border-dark-700/80 bg-dark-900/90 p-2 backdrop-blur">
               <div className="flex flex-wrap gap-2">
                 <Button
                   variant="secondary"
-                  onClick={() => previewLinkCodeMutation.mutate(linkCode)}
+                  onClick={() => previewLinkCodeMutation.mutate(normalizedLinkCode)}
                   loading={previewLinkCodeMutation.isPending}
                   disabled={!hasLinkCode}
                 >
                   {t('profile.linking.preview', 'Проверить')}
                 </Button>
                 <Button
-                  onClick={() => confirmLinkCodeMutation.mutate(linkCode)}
+                  onClick={() => confirmLinkCodeMutation.mutate(normalizedLinkCode)}
                   loading={confirmLinkCodeMutation.isPending}
-                  disabled={!hasLinkCode}
+                  disabled={!canConfirmLink}
                 >
                   {t('profile.linking.confirm', 'Привязать')}
                 </Button>
-                {showManualMergeAction && (
+                {linkFlowStep === 'manual' && (
                   <Button
                     onClick={() =>
                       manualMergeMutation.mutate({
-                        code: linkCode,
+                        code: normalizedLinkCode,
                         comment: manualMergeComment.trim() || undefined,
                       })
                     }
@@ -927,7 +973,7 @@ export default function Profile() {
                 {unlinkError}
               </div>
             )}
-            {showManualMergeAction && (
+            {linkFlowStep === 'manual' && (
               <div className="rounded-linear border border-warning-500/30 bg-warning-500/10 p-3">
                 <p className="mb-2 text-sm text-warning-300">
                   {t(
