@@ -3,13 +3,10 @@ import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useReactTable, getCoreRowModel, type RowData } from '@tanstack/react-table';
 import { usePlatform } from '../platform/hooks/usePlatform';
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  RefreshIcon,
-} from './adminTrafficUsage/components/Icons';
 import { ProgressBar } from './adminTrafficUsage/components/ProgressBar';
 import { TrafficUsageControls } from './adminTrafficUsage/components/TrafficUsageControls';
+import { TrafficUsageHeader } from './adminTrafficUsage/components/TrafficUsageHeader';
+import { TrafficUsagePagination } from './adminTrafficUsage/components/TrafficUsagePagination';
 import { TrafficUsageTable } from './adminTrafficUsage/components/TrafficUsageTable';
 import { useAdminTrafficUsageData } from './adminTrafficUsage/hooks/useAdminTrafficUsageData';
 import { useTrafficColumns } from './adminTrafficUsage/hooks/useTrafficColumns';
@@ -114,9 +111,6 @@ export default function AdminTrafficUsage() {
     columnResizeMode: 'onChange',
   });
 
-  const totalPages = Math.ceil(total / limit);
-  const currentPage = Math.floor(offset / limit) + 1;
-
   return (
     <div className="relative animate-fade-in">
       {/* Progress bar — shown during background refresh */}
@@ -135,30 +129,14 @@ export default function AdminTrafficUsage() {
         </div>
       )}
 
-      {/* Header */}
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          {!capabilities.hasBackButton && (
-            <button
-              onClick={() => navigate('/admin')}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-dark-700 bg-dark-800 transition-colors hover:border-dark-600"
-            >
-              <ChevronLeftIcon />
-            </button>
-          )}
-          <div>
-            <h1 className="text-xl font-bold text-dark-100">{t('admin.trafficUsage.title')}</h1>
-            <p className="text-sm text-dark-400">{t('admin.trafficUsage.subtitle')}</p>
-          </div>
-        </div>
-        <button
-          onClick={handleRefresh}
-          disabled={loading}
-          className="rounded-lg p-2 transition-colors hover:bg-dark-700 disabled:opacity-50"
-        >
-          <RefreshIcon className={loading ? 'animate-spin' : ''} />
-        </button>
-      </div>
+      <TrafficUsageHeader
+        title={t('admin.trafficUsage.title')}
+        subtitle={t('admin.trafficUsage.subtitle')}
+        showBackButton={!capabilities.hasBackButton}
+        loading={loading}
+        onBack={() => navigate('/admin')}
+        onRefresh={handleRefresh}
+      />
 
       <TrafficUsageControls
         period={period}
@@ -205,35 +183,12 @@ export default function AdminTrafficUsage() {
         onUserClick={(userId) => navigate(`/admin/users/${userId}`)}
       />
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-4 flex items-center justify-between">
-          <div className="text-sm text-dark-400">
-            {offset + 1}
-            {'\u2013'}
-            {Math.min(offset + limit, total)} / {total}
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setOffset(Math.max(0, offset - limit))}
-              disabled={offset === 0}
-              className="rounded-lg border border-dark-700 bg-dark-800 p-2 transition-colors hover:bg-dark-700 disabled:opacity-50"
-            >
-              <ChevronLeftIcon />
-            </button>
-            <span className="px-3 py-2 text-dark-300">
-              {currentPage} / {totalPages}
-            </span>
-            <button
-              onClick={() => setOffset(offset + limit)}
-              disabled={offset + limit >= total}
-              className="rounded-lg border border-dark-700 bg-dark-800 p-2 transition-colors hover:bg-dark-700 disabled:opacity-50"
-            >
-              <ChevronRightIcon />
-            </button>
-          </div>
-        </div>
-      )}
+      <TrafficUsagePagination
+        offset={offset}
+        limit={limit}
+        total={total}
+        onOffsetChange={setOffset}
+      />
     </div>
   );
 }
