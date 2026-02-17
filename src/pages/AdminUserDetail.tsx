@@ -4,11 +4,7 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 import { useCurrency } from '../hooks/useCurrency';
 import { useNotify } from '../platform/hooks/useNotify';
-import { AdminUserTicketsTab } from './adminUserDetail/components/AdminUserTicketsTab';
-import { AdminUserBalanceTab } from './adminUserDetail/components/AdminUserBalanceTab';
-import { AdminUserInfoTab } from './adminUserDetail/components/AdminUserInfoTab';
-import { AdminUserSubscriptionTab } from './adminUserDetail/components/AdminUserSubscriptionTab';
-import { AdminUserSyncTab } from './adminUserDetail/components/AdminUserSyncTab';
+import { AdminUserDetailContent } from './adminUserDetail/components/AdminUserDetailContent';
 import { AdminUserDetailHeader } from './adminUserDetail/components/AdminUserDetailHeader';
 import { AdminUserDetailLoadingState } from './adminUserDetail/components/AdminUserDetailLoadingState';
 import { AdminUserDetailNotFoundState } from './adminUserDetail/components/AdminUserDetailNotFoundState';
@@ -191,142 +187,96 @@ export default function AdminUserDetail() {
     <div className="animate-fade-in">
       <AdminUserDetailHeader user={user} loading={loading} onRefresh={loadUser} />
       <AdminUserDetailTabs activeTab={activeTab} onSelectTab={setActiveTab} />
-
-      {/* Content */}
-      <div className="space-y-4">
-        {/* Info Tab */}
-        {activeTab === 'info' && (
-          <AdminUserInfoTab
-            user={user}
-            actionLoading={actionLoading}
-            formatDate={formatDate}
-            formatWithCurrency={formatWithCurrency}
-            promoGroups={promoGroups}
-            editingPromoGroup={editingPromoGroup}
-            setEditingPromoGroup={setEditingPromoGroup}
-            onChangePromoGroup={handleChangePromoGroup}
-            editingReferralCommission={editingReferralCommission}
-            setEditingReferralCommission={setEditingReferralCommission}
-            referralCommissionValue={referralCommissionValue}
-            setReferralCommissionValue={setReferralCommissionValue}
-            onUpdateReferralCommission={handleUpdateReferralCommission}
-            referralsLoading={referralsLoading}
-            referrals={referrals}
-            onOpenUser={openAdminUser}
-            onBlockUser={handleBlockUser}
-            onUnblockUser={handleUnblockUser}
-            confirmingAction={confirmingAction}
-            onConfirmResetTrial={() => handleInlineConfirm('resetTrial', handleResetTrial)}
-            onConfirmResetSubscription={() =>
-              handleInlineConfirm('resetSubscription', handleResetSubscription)
-            }
-            onConfirmDisable={() => handleInlineConfirm('disable', handleDisableUser)}
-            onConfirmFullDelete={() => handleInlineConfirm('fullDelete', handleFullDeleteUser)}
-          />
-        )}
-
-        {/* Subscription Tab */}
-        {activeTab === 'subscription' && (
-          <AdminUserSubscriptionTab
-            user={user}
-            actionLoading={actionLoading}
-            confirmingAction={confirmingAction}
-            subAction={subAction}
-            setSubAction={setSubAction}
-            subDays={subDays}
-            setSubDays={setSubDays}
-            selectedTariffId={selectedTariffId}
-            setSelectedTariffId={setSelectedTariffId}
-            tariffs={tariffs}
-            currentTariff={currentTariff}
-            selectedTrafficGb={selectedTrafficGb}
-            setSelectedTrafficGb={setSelectedTrafficGb}
-            panelInfoLoading={panelInfoLoading}
-            panelInfo={panelInfo}
-            nodeUsageForPeriod={nodeUsageForPeriod}
-            nodeUsageDays={nodeUsageDays}
-            setNodeUsageDays={setNodeUsageDays}
-            devices={devices}
-            devicesTotal={devicesTotal}
-            deviceLimit={deviceLimit}
-            devicesLoading={devicesLoading}
-            locale={locale}
-            formatDate={formatDate}
-            formatBytes={formatBytes}
-            onInlineConfirm={handleInlineConfirm}
-            onUpdateSubscription={handleUpdateSubscription}
-            onSetDeviceLimit={handleSetDeviceLimit}
-            onRemoveTraffic={handleRemoveTraffic}
-            onAddTraffic={handleAddTraffic}
-            onCopyToClipboard={copyToClipboard}
-            onReloadSubscriptionData={loadSubscriptionData}
-            onReloadDevices={loadDevices}
-            onResetDevices={handleResetDevices}
-            onDeleteDevice={handleDeleteDevice}
-          />
-        )}
-
-        {/* Balance Tab */}
-        {activeTab === 'balance' && (
-          <AdminUserBalanceTab
-            user={user}
-            balanceAmount={balanceAmount}
-            setBalanceAmount={setBalanceAmount}
-            balanceDescription={balanceDescription}
-            setBalanceDescription={setBalanceDescription}
-            offerDiscountPercent={offerDiscountPercent}
-            setOfferDiscountPercent={setOfferDiscountPercent}
-            offerValidHours={offerValidHours}
-            setOfferValidHours={setOfferValidHours}
-            offerSending={offerSending}
-            actionLoading={actionLoading}
-            confirmingAction={confirmingAction}
-            formatDate={formatDate}
-            formatWithCurrency={formatWithCurrency}
-            onUpdateBalance={handleUpdateBalance}
-            onConfirmDeactivateOffer={() =>
-              handleInlineConfirm('deactivateOffer', handleDeactivateOffer)
-            }
-            onSendOffer={handleSendOffer}
-          />
-        )}
-
-        {/* Sync Tab */}
-        {activeTab === 'sync' && (
-          <AdminUserSyncTab
-            syncStatus={syncStatus}
-            userRemnawaveUuid={user.remnawave_uuid}
-            locale={locale}
-            actionLoading={actionLoading}
-            onSyncFromPanel={handleSyncFromPanel}
-            onSyncToPanel={handleSyncToPanel}
-          />
-        )}
-
-        {activeTab === 'tickets' && (
-          <AdminUserTicketsTab
-            selectedTicketId={selectedTicketId}
-            selectedTicket={selectedTicket}
-            ticketDetailLoading={ticketDetailLoading}
-            actionLoading={actionLoading}
-            onBackToTickets={() => {
-              setSelectedTicketId(null);
-              setSelectedTicket(null);
-            }}
-            onTicketStatusChange={handleTicketStatusChange}
-            formatDate={formatDate}
-            replyText={replyText}
-            setReplyText={setReplyText}
-            onTicketReply={handleTicketReply}
-            replySending={replySending}
-            messagesEndRef={messagesEndRef}
-            ticketsLoading={ticketsLoading}
-            tickets={tickets}
-            ticketsTotal={ticketsTotal}
-            onOpenTicket={setSelectedTicketId}
-          />
-        )}
-      </div>
+      <AdminUserDetailContent
+        activeTab={activeTab}
+        user={user}
+        actionLoading={actionLoading}
+        formatDate={formatDate}
+        formatWithCurrency={formatWithCurrency}
+        promoGroups={promoGroups}
+        editingPromoGroup={editingPromoGroup}
+        setEditingPromoGroup={setEditingPromoGroup}
+        onChangePromoGroup={handleChangePromoGroup}
+        editingReferralCommission={editingReferralCommission}
+        setEditingReferralCommission={setEditingReferralCommission}
+        referralCommissionValue={referralCommissionValue}
+        setReferralCommissionValue={setReferralCommissionValue}
+        onUpdateReferralCommission={handleUpdateReferralCommission}
+        referralsLoading={referralsLoading}
+        referrals={referrals}
+        onOpenUser={openAdminUser}
+        onBlockUser={handleBlockUser}
+        onUnblockUser={handleUnblockUser}
+        confirmingAction={confirmingAction}
+        onInlineConfirm={handleInlineConfirm}
+        onResetTrial={handleResetTrial}
+        onResetSubscription={handleResetSubscription}
+        onDisableUser={handleDisableUser}
+        onFullDeleteUser={handleFullDeleteUser}
+        subAction={subAction}
+        setSubAction={setSubAction}
+        subDays={subDays}
+        setSubDays={setSubDays}
+        selectedTariffId={selectedTariffId}
+        setSelectedTariffId={setSelectedTariffId}
+        tariffs={tariffs}
+        currentTariff={currentTariff}
+        selectedTrafficGb={selectedTrafficGb}
+        setSelectedTrafficGb={setSelectedTrafficGb}
+        panelInfoLoading={panelInfoLoading}
+        panelInfo={panelInfo}
+        nodeUsageForPeriod={nodeUsageForPeriod}
+        nodeUsageDays={nodeUsageDays}
+        setNodeUsageDays={setNodeUsageDays}
+        devices={devices}
+        devicesTotal={devicesTotal}
+        deviceLimit={deviceLimit}
+        devicesLoading={devicesLoading}
+        locale={locale}
+        formatBytes={formatBytes}
+        onUpdateSubscription={handleUpdateSubscription}
+        onSetDeviceLimit={handleSetDeviceLimit}
+        onRemoveTraffic={handleRemoveTraffic}
+        onAddTraffic={handleAddTraffic}
+        onCopyToClipboard={copyToClipboard}
+        onReloadSubscriptionData={loadSubscriptionData}
+        onReloadDevices={loadDevices}
+        onResetDevices={handleResetDevices}
+        onDeleteDevice={handleDeleteDevice}
+        balanceAmount={balanceAmount}
+        setBalanceAmount={setBalanceAmount}
+        balanceDescription={balanceDescription}
+        setBalanceDescription={setBalanceDescription}
+        offerDiscountPercent={offerDiscountPercent}
+        setOfferDiscountPercent={setOfferDiscountPercent}
+        offerValidHours={offerValidHours}
+        setOfferValidHours={setOfferValidHours}
+        offerSending={offerSending}
+        onUpdateBalance={handleUpdateBalance}
+        onDeactivateOffer={handleDeactivateOffer}
+        onSendOffer={handleSendOffer}
+        syncStatus={syncStatus}
+        userRemnawaveUuid={user.remnawave_uuid}
+        onSyncFromPanel={handleSyncFromPanel}
+        onSyncToPanel={handleSyncToPanel}
+        selectedTicketId={selectedTicketId}
+        selectedTicket={selectedTicket}
+        ticketDetailLoading={ticketDetailLoading}
+        onBackToTickets={() => {
+          setSelectedTicketId(null);
+          setSelectedTicket(null);
+        }}
+        onTicketStatusChange={handleTicketStatusChange}
+        replyText={replyText}
+        setReplyText={setReplyText}
+        onTicketReply={handleTicketReply}
+        replySending={replySending}
+        messagesEndRef={messagesEndRef}
+        ticketsLoading={ticketsLoading}
+        tickets={tickets}
+        ticketsTotal={ticketsTotal}
+        onOpenTicket={setSelectedTicketId}
+      />
     </div>
   );
 }
