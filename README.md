@@ -1,6 +1,6 @@
 # Bedolaga Cabinet - Web Interface
 
-Веб-интерфейс личного кабинета для VPN бота на базе [Remnawave Bedolaga Telegram Bot V3.0.0+](https://github.com/BEDOLAGA-DEV/remnawave-bedolaga-telegram-bot).
+Веб-интерфейс личного кабинета для VPN бота на базе [Remnawave Bedolaga Telegram Bot V3.0.0+](https://github.com/PEDZEO/remnawave-bedolaga-telegram-bot).
 
 React + Vite + TypeScript | Авторизация через Telegram | Мультиязычность (EN/RU) | Адаптивный дизайн
 
@@ -45,14 +45,14 @@ CABINET_ALLOWED_ORIGINS=https://cabinet.example.com
 #### Вариант A: Готовый Docker образ (рекомендуется)
 
 ```bash
-docker pull ghcr.io/bedolaga-dev/bedolaga-cabinet:latest
+docker pull ghcr.io/pedzeo/cabinet-frontend:latest
 ```
 
 Извлеките собранные файлы из образа:
 
 ```bash
 # Создать временный контейнер и скопировать статику
-docker create --name tmp_cabinet ghcr.io/bedolaga-dev/bedolaga-cabinet:latest
+docker create --name tmp_cabinet ghcr.io/pedzeo/cabinet-frontend:latest
 docker cp tmp_cabinet:/usr/share/nginx/html ./cabinet-dist
 docker rm tmp_cabinet
 ```
@@ -60,8 +60,8 @@ docker rm tmp_cabinet
 #### Вариант B: Сборка из исходников
 
 ```bash
-git clone https://github.com/BEDOLAGA-DEV/bedolaga-cabinet.git
-cd bedolaga-cabinet
+git clone https://github.com/PEDZEO/cabinet-frontend.git
+cd cabinet-frontend
 cp .env.example .env
 ```
 
@@ -194,7 +194,7 @@ docker exec <nginx_container> nginx -s reload
 ```yaml
 services:
   cabinet-frontend:
-    image: ghcr.io/bedolaga-dev/bedolaga-cabinet:latest
+    image: ghcr.io/pedzeo/cabinet-frontend:latest
     container_name: cabinet_frontend
     restart: unless-stopped
     # Порты НЕ пробрасываем — доступ только через Docker сеть
@@ -293,8 +293,8 @@ https://cabinet.example.com {
 ## Разработка
 
 ```bash
-git clone https://github.com/BEDOLAGA-DEV/bedolaga-cabinet.git
-cd bedolaga-cabinet
+git clone https://github.com/PEDZEO/cabinet-frontend.git
+cd cabinet-frontend
 npm install
 cp .env.example .env
 # Отредактируйте .env
@@ -306,7 +306,7 @@ Dev-сервер запустится на `http://localhost:5173` с автом
 ## Структура проекта
 
 ```
-bedolaga-cabinet/
+cabinet-frontend/
 ├── src/
 │   ├── api/           # API клиенты (axios)
 │   ├── components/    # React компоненты (UI kit)
@@ -325,7 +325,7 @@ bedolaga-cabinet/
 
 ## Связанные проекты
 
-- [Remnawave Bedolaga Telegram Bot](https://github.com/BEDOLAGA-DEV/remnawave-bedolaga-telegram-bot) — Backend бота
+- [Remnawave Bedolaga Telegram Bot](https://github.com/PEDZEO/remnawave-bedolaga-telegram-bot) — Backend бота
 - [Bedolaga Chat](https://t.me/+wTdMtSWq8YdmZmVi) — Чат поддержки
 
 ## Контакты
