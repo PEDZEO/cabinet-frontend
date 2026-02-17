@@ -1,21 +1,16 @@
 import type { TFunction } from 'i18next';
 import type { BanTrafficResponse } from '../../../api/banSystem';
+import { formatBytes, formatDate } from '../utils/formatters';
+import { getOverLimitBadgeClass } from '../utils/statusStyles';
 import { TrafficIcon } from './BanSystemIcons';
 import { StatCard } from './StatCard';
 
 interface BanSystemTrafficTabProps {
   t: TFunction;
   traffic: BanTrafficResponse;
-  formatDate: (value: string | null) => string;
-  formatBytes: (value: number) => string;
 }
 
-export function BanSystemTrafficTab({
-  t,
-  traffic,
-  formatDate,
-  formatBytes,
-}: BanSystemTrafficTabProps) {
+export function BanSystemTrafficTab({ t, traffic }: BanSystemTrafficTabProps) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -62,11 +57,7 @@ export function BanSystemTrafficTab({
                     </td>
                     <td className="px-4 py-3 text-center">
                       <span
-                        className={`rounded-full px-2 py-1 text-xs ${
-                          user.over_limit
-                            ? 'bg-error-500/20 text-error-400'
-                            : 'bg-success-500/20 text-success-400'
-                        }`}
+                        className={`rounded-full px-2 py-1 text-xs ${getOverLimitBadgeClass(user.over_limit)}`}
                       >
                         {user.over_limit
                           ? t('banSystem.traffic.overLimit')

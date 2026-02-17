@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next';
 import type { BanAgentsListResponse } from '../../../api/banSystem';
+import { getAgentHealthBadgeClass, getAgentOnlineBadgeClass } from '../utils/statusStyles';
 import { AgentIcon, ChartIcon, WarningIcon } from './BanSystemIcons';
 import { StatCard } from './StatCard';
 
@@ -75,11 +76,7 @@ export function BanSystemAgentsTab({ t, agents }: BanSystemAgentsTabProps) {
                   <td className="px-4 py-3 text-dark-100">{agent.node_name}</td>
                   <td className="px-4 py-3 text-center">
                     <span
-                      className={`rounded-full px-2 py-1 text-xs ${
-                        agent.is_online
-                          ? 'bg-success-500/20 text-success-400'
-                          : 'bg-dark-600 text-dark-400'
-                      }`}
+                      className={`rounded-full px-2 py-1 text-xs ${getAgentOnlineBadgeClass(agent.is_online)}`}
                     >
                       {agent.is_online
                         ? t('banSystem.agents.online')
@@ -88,15 +85,7 @@ export function BanSystemAgentsTab({ t, agents }: BanSystemAgentsTabProps) {
                   </td>
                   <td className="px-4 py-3 text-center">
                     <span
-                      className={`rounded-full px-2 py-1 text-xs ${
-                        agent.health === 'healthy'
-                          ? 'bg-success-500/20 text-success-400'
-                          : agent.health === 'warning'
-                            ? 'bg-warning-500/20 text-warning-400'
-                            : agent.health === 'critical'
-                              ? 'bg-error-500/20 text-error-400'
-                              : 'bg-dark-600 text-dark-400'
-                      }`}
+                      className={`rounded-full px-2 py-1 text-xs ${getAgentHealthBadgeClass(agent.health)}`}
                     >
                       {agent.health}
                     </span>

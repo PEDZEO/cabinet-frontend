@@ -1,13 +1,14 @@
 import type { TFunction } from 'i18next';
 import type { BanTrafficViolationsResponse } from '../../../api/banSystem';
+import { formatDate } from '../utils/formatters';
+import { getBooleanStatusBadgeClass } from '../utils/statusStyles';
 
 interface BanSystemViolationsTabProps {
   t: TFunction;
   violations: BanTrafficViolationsResponse | null;
-  formatDate: (value: string | null) => string;
 }
 
-export function BanSystemViolationsTab({ t, violations, formatDate }: BanSystemViolationsTabProps) {
+export function BanSystemViolationsTab({ t, violations }: BanSystemViolationsTabProps) {
   return (
     <div className="overflow-hidden rounded-xl border border-dark-700 bg-dark-800/50">
       <div className="overflow-x-auto">
@@ -45,11 +46,7 @@ export function BanSystemViolationsTab({ t, violations, formatDate }: BanSystemV
                 </td>
                 <td className="px-4 py-3 text-center">
                   <span
-                    className={`rounded-full px-2 py-1 text-xs ${
-                      violation.resolved
-                        ? 'bg-success-500/20 text-success-400'
-                        : 'bg-warning-500/20 text-warning-400'
-                    }`}
+                    className={`rounded-full px-2 py-1 text-xs ${getBooleanStatusBadgeClass(violation.resolved)}`}
                   >
                     {violation.resolved
                       ? t('banSystem.violations.resolved')

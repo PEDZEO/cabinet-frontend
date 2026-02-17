@@ -38,6 +38,7 @@ import { BanSystemUsersTab } from './adminBanSystem/components/BanSystemUsersTab
 import { BanSystemViolationsTab } from './adminBanSystem/components/BanSystemViolationsTab';
 import { StatCard } from './adminBanSystem/components/StatCard';
 import type { BanSystemTabType } from './adminBanSystem/types';
+import { formatUptime } from './adminBanSystem/utils/formatters';
 
 export default function AdminBanSystem() {
   const { t } = useTranslation();
@@ -285,30 +286,6 @@ export default function AdminBanSystem() {
       loadTabData('reports');
     }
   }, [reportHours, activeTab, status, loadTabData]);
-
-  const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
-  };
-
-  const formatUptime = (seconds: number | null) => {
-    if (!seconds) return '-';
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    if (hours > 24) {
-      const days = Math.floor(hours / 24);
-      return `${days}d ${hours % 24}h`;
-    }
-    return `${hours}h ${minutes}m`;
-  };
-
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleString();
-  };
 
   const tabs = getBanSystemTabs(t);
 
@@ -566,7 +543,6 @@ export default function AdminBanSystem() {
               t={t}
               punishments={punishments}
               actionLoading={actionLoading}
-              formatDate={formatDate}
               onUnban={handleUnban}
             />
           )}
@@ -578,19 +554,10 @@ export default function AdminBanSystem() {
           {activeTab === 'agents' && <BanSystemAgentsTab t={t} agents={agents} />}
 
           {/* Violations Tab */}
-          {activeTab === 'violations' && (
-            <BanSystemViolationsTab t={t} violations={violations} formatDate={formatDate} />
-          )}
+          {activeTab === 'violations' && <BanSystemViolationsTab t={t} violations={violations} />}
 
           {/* Traffic Tab */}
-          {activeTab === 'traffic' && traffic && (
-            <BanSystemTrafficTab
-              t={t}
-              traffic={traffic}
-              formatDate={formatDate}
-              formatBytes={formatBytes}
-            />
-          )}
+          {activeTab === 'traffic' && traffic && <BanSystemTrafficTab t={t} traffic={traffic} />}
 
           {/* Reports Tab */}
           {activeTab === 'reports' && (
@@ -625,9 +592,7 @@ export default function AdminBanSystem() {
           )}
 
           {/* Health Tab */}
-          {activeTab === 'health' && health && (
-            <BanSystemHealthTab t={t} health={health} formatUptime={formatUptime} />
-          )}
+          {activeTab === 'health' && health && <BanSystemHealthTab t={t} health={health} />}
         </>
       )}
 

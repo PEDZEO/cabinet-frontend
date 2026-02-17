@@ -1,11 +1,11 @@
 import type { TFunction } from 'i18next';
 import type { BanPunishmentsListResponse } from '../../../api/banSystem';
+import { formatDate } from '../utils/formatters';
 
 interface BanSystemPunishmentsTabProps {
   t: TFunction;
   punishments: BanPunishmentsListResponse | null;
   actionLoading: string | null;
-  formatDate: (value: string | null) => string;
   onUnban: (userId: string) => Promise<void>;
 }
 
@@ -13,7 +13,6 @@ export function BanSystemPunishmentsTab({
   t,
   punishments,
   actionLoading,
-  formatDate,
   onUnban,
 }: BanSystemPunishmentsTabProps) {
   return (
