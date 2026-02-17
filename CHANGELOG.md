@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.2](https://github.com/PEDZEO/cabinet-frontend/compare/v1.0.1...v1.0.2) (2026-02-17)
+
+
+### Bug Fixes
+
+* **ci:** pass github token to release-please action ([6432663](https://github.com/PEDZEO/cabinet-frontend/commit/64326632b15de715a9033936a87f485654664060))
+* **ci:** pass github token to release-please action ([31b06da](https://github.com/PEDZEO/cabinet-frontend/commit/31b06da36eb9d13940a8e13e7c1c3fec4f00210a))
+
 ## [1.0.1](https://github.com/PEDZEO/cabinet-frontend/compare/v1.0.0...v1.0.1) (2026-02-17)
 
 
