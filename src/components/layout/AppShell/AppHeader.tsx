@@ -298,12 +298,8 @@ export function AppHeader({
                 </button>
               )}
 
-              <div onClick={() => setMobileMenuOpen(false)}>
-                <TicketNotificationBell isAdmin={isAdminActive()} />
-              </div>
-              <div onClick={() => setMobileMenuOpen(false)}>
-                <LanguageSwitcher />
-              </div>
+              <TicketNotificationBell isAdmin={isAdminActive()} />
+              <LanguageSwitcher />
 
               {/* Mobile menu button */}
               <button
@@ -338,7 +334,12 @@ export function AppHeader({
           style={{ top: headerHeight }}
         >
           {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/60" onClick={() => setMobileMenuOpen(false)} />
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/60"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-label={t('common.close', 'Close')}
+          />
 
           {/* Menu content */}
           <div

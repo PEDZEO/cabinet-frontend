@@ -273,7 +273,10 @@
     "selectServers": "انتخاب سرورها",
     "selectDevices": "انتخاب دستگاه‌ها",
     "perDevice": "/ دستگاه",
-    "summary": "خلاصه",
+    "summary": {
+      "period": "دوره: {{label}}",
+      "traffic": "ترافیک: {{gb}} GB"
+    },
     "total": "جمع کل",
     "purchase": "خرید",
     "step": "مرحله {{current}} از {{total}}",
@@ -294,14 +297,19 @@
       "unavailable": "دوره آزمایشی در دسترس نیست"
     },
     "pause": {
-      "paused": "اشتراک متوقف شده",
-      "active": "اشتراک فعال",
-      "pausedDescription": "بدون کسر هزینه",
-      "activeDescription": "صورتحساب روزانه",
-      "resume": "ادامه",
-      "pause": "توقف",
-      "pausedMessage": "اشتراک متوقف شد",
-      "resumedMessage": "اشتراک ادامه یافت"
+      "active": "فعال",
+      "days": "روز",
+      "hours": "ساعت",
+      "insufficientBalance": "موجودی ناکافی برای بازگرداندن اشتراک",
+      "minutes": "دقیقه",
+      "nextCharge": "تا کسر بعدی",
+      "pauseBtn": "توقف",
+      "paused": "متوقف شده",
+      "pausedDescription": "کسر متوقف شد. اشتراک فعال خواهد بود تا",
+      "pausedInfo": "اشتراک متوقف شده",
+      "resumeBtn": "ادامه",
+      "title": "توقف اشتراک",
+      "willBeCharged": "کسر خواهد شد"
     },
     "connection": {
       "title": "اتصال VPN",
@@ -395,10 +403,6 @@
       "selectVolume": "انتخاب حجم ترافیک",
       "default": "پیش‌فرض: {{label}}"
     },
-    "summary": {
-      "period": "دوره: {{label}}",
-      "traffic": "ترافیک: {{gb}} GB"
-    },
     "confirmDeleteAllDevices": "همه دستگاه‌ها حذف شوند؟",
     "confirmDeleteDevice": "این دستگاه حذف شود؟",
     "currentTariff": "فعلی",
@@ -419,21 +423,6 @@
       "chargedDaily": "هر روز از موجودی کسر می‌شود",
       "costPerDay": "هزینه روزانه",
       "pausedOnLowBalance": "با کمبود موجودی اشتراک متوقف می‌شود"
-    },
-    "pause": {
-      "active": "فعال",
-      "days": "روز",
-      "hours": "ساعت",
-      "insufficientBalance": "موجودی ناکافی برای بازگرداندن اشتراک",
-      "minutes": "دقیقه",
-      "nextCharge": "تا کسر بعدی",
-      "pauseBtn": "توقف",
-      "paused": "متوقف شده",
-      "pausedDescription": "کسر متوقف شد. اشتراک فعال خواهد بود تا",
-      "pausedInfo": "اشتراک متوقف شده",
-      "resumeBtn": "ادامه",
-      "title": "توقف اشتراک",
-      "willBeCharged": "کسر خواهد شد"
     }
   },
   "balance": {
@@ -708,7 +697,7 @@
       "total": "کل",
       "noData": "داده ترافیکی موجود نیست",
       "loading": "در حال بارگذاری داده‌های ترافیک...",
-      "noTariff": "\u2014",
+      "noTariff": "—",
       "search": "جستجو بر اساس نام یا نام کاربری",
       "allTariffs": "همه تعرفه‌ها",
       "nodes": "نودها",
@@ -2204,6 +2193,67 @@
       "promoOffers": "پیشنهادات تبلیغاتی",
       "promoOffersDesc": "دریافت پیشنهادات ویژه و تخفیف‌ها",
       "unavailable": "تنظیمات اعلان در دسترس نیست"
+    },
+    "linking": {
+      "title": "Linked login methods",
+      "description": "Link Telegram, Yandex and VK to one account so subscription stays shared.",
+      "none": "No linked login methods",
+      "generateCode": "Generate link code",
+      "enterCode": "Enter link code",
+      "preview": "Preview",
+      "confirm": "Link",
+      "previewSource": "Will be linked to account",
+      "codeGenerated": "Link code created",
+      "linked": "Accounts were linked successfully",
+      "manualHint": "Automatic merge is not possible. Send request to support for manual merge.",
+      "manualComment": "Describe which account should stay primary and why",
+      "sendManual": "Send to support",
+      "manualSent": "Manual merge request sent. Ticket",
+      "unlink": {
+        "button": "Unlink",
+        "confirmText": "Confirm unlink for login method: {{provider}}. Active sessions will be rotated for security.",
+        "confirm": "Confirm unlink",
+        "codeSent": "Confirmation code was sent to Telegram",
+        "otpPlaceholder": "Enter code from Telegram",
+        "success": "Login method {{provider}} was unlinked",
+        "reasons": {
+          "lastIdentity": "Cannot unlink the last login method",
+          "currentProvider": "Cannot unlink current login provider. Sign in with another method first",
+          "cooldownActive": "Temporary cooldown is active. Try again later",
+          "notLinked": "This login method is already not linked",
+          "providerNotSupported": "This login method does not support unlink",
+          "telegramRequired": "Telegram account is required for unlink confirmation",
+          "generic": "Unlink is not available"
+        },
+        "errors": {
+          "otpResendCooldown": "Code already sent. Please wait about a minute before retrying",
+          "otpRateLimited": "Too many code requests. Please try again later",
+          "requestInvalid": "Unlink confirmation request expired. Start unlink again",
+          "requestMismatch": "Unlink request does not match current account",
+          "storageError": "Failed to create unlink request. Please try again later",
+          "otpInvalid": "Invalid confirmation code",
+          "otpAttemptsExceeded": "Too many code attempts. Request unlink again",
+          "otpDeliveryFailed": "Failed to send code to Telegram. Please try again later"
+        }
+      },
+      "manualStatus": {
+        "title": "Latest disputed merge request",
+        "pending": "Request is under review",
+        "approved": "Request approved",
+        "rejected": "Request rejected",
+        "comment": "Comment",
+        "updatedAt": "Updated",
+        "openSupport": "Open support"
+      },
+      "errors": {
+        "invalidCode": "Code is invalid or expired",
+        "sameAccount": "Cannot link account to itself",
+        "tooManyAttempts": "Too many attempts. Please try again later",
+        "identityConflict": "Identity conflict. Manual review is required",
+        "inactiveAccount": "One of the accounts is inactive",
+        "manualRequired": "Both accounts contain data. Manual support merge is required.",
+        "supportDisabled": "Support tickets are disabled"
+      }
     }
   },
   "theme": {
