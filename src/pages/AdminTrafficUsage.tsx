@@ -1,15 +1,16 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { useReactTable, getCoreRowModel, type RowData } from '@tanstack/react-table';
+import { type RowData } from '@tanstack/react-table';
 import { usePlatform } from '../platform/hooks/usePlatform';
 import { ProgressBar } from './adminTrafficUsage/components/ProgressBar';
 import { TrafficUsageControls } from './adminTrafficUsage/components/TrafficUsageControls';
 import { TrafficUsageHeader } from './adminTrafficUsage/components/TrafficUsageHeader';
 import { TrafficUsagePagination } from './adminTrafficUsage/components/TrafficUsagePagination';
 import { TrafficUsageTable } from './adminTrafficUsage/components/TrafficUsageTable';
+import { TrafficUsageToast } from './adminTrafficUsage/components/TrafficUsageToast';
 import { useAdminTrafficUsageData } from './adminTrafficUsage/hooks/useAdminTrafficUsageData';
 import { useTrafficColumns } from './adminTrafficUsage/hooks/useTrafficColumns';
+import { useTrafficTable } from './adminTrafficUsage/hooks/useTrafficTable';
 
 // ============ TanStack Table module augmentation ============
 
@@ -29,7 +30,6 @@ export default function AdminTrafficUsage() {
   const navigate = useNavigate();
   const { capabilities } = usePlatform();
 
-  const [columnSizing, setColumnSizing] = useState<Record<string, number>>({});
   const {
     items,
     nodes,
@@ -96,19 +96,11 @@ export default function AdminTrafficUsage() {
     periodDays,
   });
 
-  // TanStack Table returns non-memoizable functions; this is expected for table instance creation.
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const table = useReactTable({
-    data: items,
+  const { table } = useTrafficTable({
+    items,
     columns,
-    state: { sorting, columnSizing },
+    sorting,
     onSortingChange: handleSortingChange,
-    onColumnSizingChange: setColumnSizing,
-    getCoreRowModel: getCoreRowModel(),
-    manualSorting: true,
-    enableSortingRemoval: false,
-    enableColumnResizing: true,
-    columnResizeMode: 'onChange',
   });
 
   return (
@@ -116,18 +108,7 @@ export default function AdminTrafficUsage() {
       {/* Progress bar — shown during background refresh */}
       <ProgressBar loading={loading} />
 
-      {/* Toast */}
-      {toast && (
-        <div
-          className={`fixed left-1/2 top-4 z-50 -translate-x-1/2 rounded-xl border px-4 py-2 text-sm shadow-lg ${
-            toast.type === 'success'
-              ? 'border-success-500/30 bg-success-500/20 text-success-400'
-              : 'border-error-500/30 bg-error-500/20 text-error-400'
-          }`}
-        >
-          {toast.message}
-        </div>
-      )}
+      <TrafficUsageToast toast={toast} />
 
       <TrafficUsageHeader
         title={t('admin.trafficUsage.title')}
