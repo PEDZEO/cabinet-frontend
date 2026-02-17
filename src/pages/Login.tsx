@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, type SyntheticEvent } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
@@ -48,6 +48,7 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [isTelegramWebApp, setIsTelegramWebApp] = useState(false);
   const [logoLoaded, setLogoLoaded] = useState(() => isLogoPreloaded());
+  const [logoShape, setLogoShape] = useState<'square' | 'wide' | 'tall'>('square');
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
@@ -150,10 +151,29 @@ export default function Login() {
   const appLogo = branding?.logo_letter || import.meta.env.VITE_APP_LOGO || 'V';
   const logoUrl = branding ? brandingApi.getLogoUrl(branding) : null;
 
+  const handleLogoLoad = useCallback((event: SyntheticEvent<HTMLImageElement>) => {
+    const { naturalWidth, naturalHeight } = event.currentTarget;
+
+    if (naturalWidth > naturalHeight * 1.2) {
+      setLogoShape('wide');
+    } else if (naturalHeight > naturalWidth * 1.2) {
+      setLogoShape('tall');
+    } else {
+      setLogoShape('square');
+    }
+
+    setLogoLoaded(true);
+  }, []);
+
   // Set document title
   useEffect(() => {
     document.title = appName || 'VPN';
   }, [appName]);
+
+  useEffect(() => {
+    setLogoShape('square');
+    setLogoLoaded(false);
+  }, [branding?.has_custom_logo, logoUrl]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -348,7 +368,17 @@ export default function Login() {
       <div className="relative w-full max-w-md space-y-5">
         {/* Logo & branding */}
         <div className="text-center">
-          <div className="relative mx-auto mb-3 flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border border-dark-700/50 bg-dark-800/80 shadow-md sm:h-24 sm:w-24">
+          <div
+            className={`relative mx-auto mb-3 flex items-center justify-center overflow-hidden rounded-2xl border border-dark-700/50 bg-dark-800/80 shadow-md ${
+              branding?.has_custom_logo
+                ? logoShape === 'wide'
+                  ? 'h-20 w-32 sm:h-24 sm:w-40'
+                  : logoShape === 'tall'
+                    ? 'h-24 w-20 sm:h-28 sm:w-24'
+                    : 'h-24 w-24 sm:h-28 sm:w-28'
+                : 'h-20 w-20 sm:h-24 sm:w-24'
+            }`}
+          >
             {/* Letter fallback */}
             <span
               className={`absolute text-3xl font-bold text-accent-400 transition-opacity duration-200 sm:text-4xl ${branding?.has_custom_logo && logoLoaded ? 'opacity-0' : 'opacity-100'}`}
@@ -361,7 +391,7 @@ export default function Login() {
                 src={logoUrl}
                 alt={appName || 'Logo'}
                 className={`absolute h-full w-full object-contain transition-opacity duration-200 ${logoLoaded ? 'opacity-100' : 'opacity-0'}`}
-                onLoad={() => setLogoLoaded(true)}
+                onLoad={handleLogoLoad}
               />
             )}
           </div>

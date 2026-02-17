@@ -128,7 +128,7 @@ export default function TelegramRedirect() {
         {/* Logo */}
         <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-accent-400 to-accent-600 shadow-lg shadow-accent-500/30">
           {branding?.has_custom_logo && logoUrl ? (
-            <img src={logoUrl} alt={appName} className="h-full w-full object-cover" />
+            <img src={logoUrl} alt={appName} className="h-full w-full p-1 object-contain" />
           ) : (
             <span className="text-3xl font-bold text-white">{logoLetter}</span>
           )}

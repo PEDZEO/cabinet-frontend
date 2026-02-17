@@ -155,7 +155,11 @@ export default function DeepLinkRedirect() {
         {/* Logo with pulse animation */}
         <div className="mx-auto mb-6 flex h-20 w-20 animate-pulse items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-accent-400 to-accent-600 shadow-lg shadow-accent-500/30">
           {branding?.has_custom_logo && logoUrl ? (
-            <img src={logoUrl} alt={projectName || 'Logo'} className="h-full w-full object-cover" />
+            <img
+              src={logoUrl}
+              alt={projectName || 'Logo'}
+              className="h-full w-full p-1 object-contain"
+            />
           ) : (
             <span className="text-3xl font-bold text-white">{logoLetter}</span>
           )}
