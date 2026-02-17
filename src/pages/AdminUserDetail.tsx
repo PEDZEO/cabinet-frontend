@@ -4,7 +4,10 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 import { useCurrency } from '../hooks/useCurrency';
 import { useNotify } from '../platform/hooks/useNotify';
-import { AdminUserDetailContent } from './adminUserDetail/components/AdminUserDetailContent';
+import {
+  AdminUserDetailContent,
+  type AdminUserDetailTab,
+} from './adminUserDetail/components/AdminUserDetailContent';
 import { AdminUserDetailHeader } from './adminUserDetail/components/AdminUserDetailHeader';
 import { AdminUserDetailLoadingState } from './adminUserDetail/components/AdminUserDetailLoadingState';
 import { AdminUserDetailNotFoundState } from './adminUserDetail/components/AdminUserDetailNotFoundState';
@@ -30,9 +33,7 @@ export default function AdminUserDetail() {
 
   const locale = getUserDetailLocale(i18n.language);
 
-  const [activeTab, setActiveTab] = useState<
-    'info' | 'subscription' | 'balance' | 'sync' | 'tickets'
-  >('info');
+  const [activeTab, setActiveTab] = useState<AdminUserDetailTab>('info');
   const [actionLoading, setActionLoading] = useState(false);
 
   const { confirmingAction, handleInlineConfirm } = useInlineConfirm();
@@ -189,93 +190,118 @@ export default function AdminUserDetail() {
       <AdminUserDetailTabs activeTab={activeTab} onSelectTab={setActiveTab} />
       <AdminUserDetailContent
         activeTab={activeTab}
-        user={user}
-        actionLoading={actionLoading}
-        formatDate={formatDate}
-        formatWithCurrency={formatWithCurrency}
-        promoGroups={promoGroups}
-        editingPromoGroup={editingPromoGroup}
-        setEditingPromoGroup={setEditingPromoGroup}
-        onChangePromoGroup={handleChangePromoGroup}
-        editingReferralCommission={editingReferralCommission}
-        setEditingReferralCommission={setEditingReferralCommission}
-        referralCommissionValue={referralCommissionValue}
-        setReferralCommissionValue={setReferralCommissionValue}
-        onUpdateReferralCommission={handleUpdateReferralCommission}
-        referralsLoading={referralsLoading}
-        referrals={referrals}
-        onOpenUser={openAdminUser}
-        onBlockUser={handleBlockUser}
-        onUnblockUser={handleUnblockUser}
-        confirmingAction={confirmingAction}
-        onInlineConfirm={handleInlineConfirm}
-        onResetTrial={handleResetTrial}
-        onResetSubscription={handleResetSubscription}
-        onDisableUser={handleDisableUser}
-        onFullDeleteUser={handleFullDeleteUser}
-        subAction={subAction}
-        setSubAction={setSubAction}
-        subDays={subDays}
-        setSubDays={setSubDays}
-        selectedTariffId={selectedTariffId}
-        setSelectedTariffId={setSelectedTariffId}
-        tariffs={tariffs}
-        currentTariff={currentTariff}
-        selectedTrafficGb={selectedTrafficGb}
-        setSelectedTrafficGb={setSelectedTrafficGb}
-        panelInfoLoading={panelInfoLoading}
-        panelInfo={panelInfo}
-        nodeUsageForPeriod={nodeUsageForPeriod}
-        nodeUsageDays={nodeUsageDays}
-        setNodeUsageDays={setNodeUsageDays}
-        devices={devices}
-        devicesTotal={devicesTotal}
-        deviceLimit={deviceLimit}
-        devicesLoading={devicesLoading}
-        locale={locale}
-        formatBytes={formatBytes}
-        onUpdateSubscription={handleUpdateSubscription}
-        onSetDeviceLimit={handleSetDeviceLimit}
-        onRemoveTraffic={handleRemoveTraffic}
-        onAddTraffic={handleAddTraffic}
-        onCopyToClipboard={copyToClipboard}
-        onReloadSubscriptionData={loadSubscriptionData}
-        onReloadDevices={loadDevices}
-        onResetDevices={handleResetDevices}
-        onDeleteDevice={handleDeleteDevice}
-        balanceAmount={balanceAmount}
-        setBalanceAmount={setBalanceAmount}
-        balanceDescription={balanceDescription}
-        setBalanceDescription={setBalanceDescription}
-        offerDiscountPercent={offerDiscountPercent}
-        setOfferDiscountPercent={setOfferDiscountPercent}
-        offerValidHours={offerValidHours}
-        setOfferValidHours={setOfferValidHours}
-        offerSending={offerSending}
-        onUpdateBalance={handleUpdateBalance}
-        onDeactivateOffer={handleDeactivateOffer}
-        onSendOffer={handleSendOffer}
-        syncStatus={syncStatus}
-        userRemnawaveUuid={user.remnawave_uuid}
-        onSyncFromPanel={handleSyncFromPanel}
-        onSyncToPanel={handleSyncToPanel}
-        selectedTicketId={selectedTicketId}
-        selectedTicket={selectedTicket}
-        ticketDetailLoading={ticketDetailLoading}
-        onBackToTickets={() => {
-          setSelectedTicketId(null);
-          setSelectedTicket(null);
+        infoTab={{
+          user,
+          actionLoading,
+          formatDate,
+          formatWithCurrency,
+          promoGroups,
+          editingPromoGroup,
+          setEditingPromoGroup,
+          onChangePromoGroup: handleChangePromoGroup,
+          editingReferralCommission,
+          setEditingReferralCommission,
+          referralCommissionValue,
+          setReferralCommissionValue,
+          onUpdateReferralCommission: handleUpdateReferralCommission,
+          referralsLoading,
+          referrals,
+          onOpenUser: openAdminUser,
+          onBlockUser: handleBlockUser,
+          onUnblockUser: handleUnblockUser,
+          confirmingAction,
+          onInlineConfirm: handleInlineConfirm,
+          onResetTrial: handleResetTrial,
+          onResetSubscription: handleResetSubscription,
+          onDisableUser: handleDisableUser,
+          onFullDeleteUser: handleFullDeleteUser,
         }}
-        onTicketStatusChange={handleTicketStatusChange}
-        replyText={replyText}
-        setReplyText={setReplyText}
-        onTicketReply={handleTicketReply}
-        replySending={replySending}
-        messagesEndRef={messagesEndRef}
-        ticketsLoading={ticketsLoading}
-        tickets={tickets}
-        ticketsTotal={ticketsTotal}
-        onOpenTicket={setSelectedTicketId}
+        subscriptionTab={{
+          user,
+          actionLoading,
+          confirmingAction,
+          subAction,
+          setSubAction,
+          subDays,
+          setSubDays,
+          selectedTariffId,
+          setSelectedTariffId,
+          tariffs,
+          currentTariff,
+          selectedTrafficGb,
+          setSelectedTrafficGb,
+          panelInfoLoading,
+          panelInfo,
+          nodeUsageForPeriod,
+          nodeUsageDays,
+          setNodeUsageDays,
+          devices,
+          devicesTotal,
+          deviceLimit,
+          devicesLoading,
+          locale,
+          formatDate,
+          formatBytes,
+          onInlineConfirm: handleInlineConfirm,
+          onUpdateSubscription: handleUpdateSubscription,
+          onSetDeviceLimit: handleSetDeviceLimit,
+          onRemoveTraffic: handleRemoveTraffic,
+          onAddTraffic: handleAddTraffic,
+          onCopyToClipboard: copyToClipboard,
+          onReloadSubscriptionData: loadSubscriptionData,
+          onReloadDevices: loadDevices,
+          onResetDevices: handleResetDevices,
+          onDeleteDevice: handleDeleteDevice,
+        }}
+        balanceTab={{
+          user,
+          balanceAmount,
+          setBalanceAmount,
+          balanceDescription,
+          setBalanceDescription,
+          offerDiscountPercent,
+          setOfferDiscountPercent,
+          offerValidHours,
+          setOfferValidHours,
+          offerSending,
+          actionLoading,
+          confirmingAction,
+          formatDate,
+          formatWithCurrency,
+          onInlineConfirm: handleInlineConfirm,
+          onUpdateBalance: handleUpdateBalance,
+          onDeactivateOffer: handleDeactivateOffer,
+          onSendOffer: handleSendOffer,
+        }}
+        syncTab={{
+          syncStatus,
+          userRemnawaveUuid: user.remnawave_uuid,
+          locale,
+          actionLoading,
+          onSyncFromPanel: handleSyncFromPanel,
+          onSyncToPanel: handleSyncToPanel,
+        }}
+        ticketsTab={{
+          selectedTicketId,
+          selectedTicket,
+          ticketDetailLoading,
+          actionLoading,
+          onBackToTickets: () => {
+            setSelectedTicketId(null);
+            setSelectedTicket(null);
+          },
+          onTicketStatusChange: handleTicketStatusChange,
+          formatDate,
+          replyText,
+          setReplyText,
+          onTicketReply: handleTicketReply,
+          replySending,
+          messagesEndRef,
+          ticketsLoading,
+          tickets,
+          ticketsTotal,
+          onOpenTicket: setSelectedTicketId,
+        }}
       />
     </div>
   );

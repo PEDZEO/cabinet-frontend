@@ -1,21 +1,19 @@
 import type { Dispatch, RefObject, SetStateAction } from 'react';
 import type { UserDetailResponse } from '../../../api/adminUsers';
 import type { PanelSyncStatusResponse } from '../../../api/adminUsers';
-import type { AdminTicketDetail, AdminTicket } from '../../../api/admin';
+import type { UserAvailableTariff, UserListItem, UserPanelInfo } from '../../../api/adminUsers';
+import type { AdminTicket, AdminTicketDetail } from '../../../api/admin';
+import type { PromoGroup } from '../../../api/promocodes';
+import type { NodeUsagePeriodItem } from './subscriptionTypes';
+import { AdminUserBalanceTab } from './AdminUserBalanceTab';
 import { AdminUserInfoTab } from './AdminUserInfoTab';
 import { AdminUserSubscriptionTab } from './AdminUserSubscriptionTab';
-import { AdminUserBalanceTab } from './AdminUserBalanceTab';
 import { AdminUserSyncTab } from './AdminUserSyncTab';
 import { AdminUserTicketsTab } from './AdminUserTicketsTab';
-import type { PromoGroup } from '../../../api/promocodes';
-import type { UserListItem } from '../../../api/adminUsers';
-import type { UserAvailableTariff, UserPanelInfo } from '../../../api/adminUsers';
-import type { NodeUsagePeriodItem } from './subscriptionTypes';
 
-type AdminUserDetailTab = 'info' | 'subscription' | 'balance' | 'sync' | 'tickets';
+export type AdminUserDetailTab = 'info' | 'subscription' | 'balance' | 'sync' | 'tickets';
 
-interface AdminUserDetailContentProps {
-  activeTab: AdminUserDetailTab;
+interface InfoTabContentProps {
   user: UserDetailResponse;
   actionLoading: boolean;
   formatDate: (date: string | null) => string;
@@ -40,6 +38,12 @@ interface AdminUserDetailContentProps {
   onResetSubscription: () => Promise<void>;
   onDisableUser: () => Promise<void>;
   onFullDeleteUser: () => Promise<void>;
+}
+
+interface SubscriptionTabContentProps {
+  user: UserDetailResponse;
+  actionLoading: boolean;
+  confirmingAction: string | null;
   subAction: string;
   setSubAction: Dispatch<SetStateAction<string>>;
   subDays: number | '';
@@ -60,7 +64,9 @@ interface AdminUserDetailContentProps {
   deviceLimit: number;
   devicesLoading: boolean;
   locale: string;
+  formatDate: (date: string | null) => string;
   formatBytes: (bytes: number) => string;
+  onInlineConfirm: (action: string, callback: () => Promise<void>) => void;
   onUpdateSubscription: (overrideAction?: string) => void;
   onSetDeviceLimit: (newLimit: number) => void;
   onRemoveTraffic: (purchaseId: number) => Promise<void>;
@@ -70,6 +76,10 @@ interface AdminUserDetailContentProps {
   onReloadDevices: () => Promise<void>;
   onResetDevices: () => Promise<void>;
   onDeleteDevice: (hwid: string) => Promise<void>;
+}
+
+interface BalanceTabContentProps {
+  user: UserDetailResponse;
   balanceAmount: number | '';
   setBalanceAmount: Dispatch<SetStateAction<number | ''>>;
   balanceDescription: string;
@@ -79,18 +89,33 @@ interface AdminUserDetailContentProps {
   offerValidHours: number | '';
   setOfferValidHours: Dispatch<SetStateAction<number | ''>>;
   offerSending: boolean;
+  actionLoading: boolean;
+  confirmingAction: string | null;
+  formatDate: (date: string | null) => string;
+  formatWithCurrency: (value: number) => string;
+  onInlineConfirm: (action: string, callback: () => Promise<void>) => void;
   onUpdateBalance: (isAdd: boolean) => Promise<void>;
   onDeactivateOffer: () => Promise<void>;
   onSendOffer: () => Promise<void>;
+}
+
+interface SyncTabContentProps {
   syncStatus: PanelSyncStatusResponse | null;
   userRemnawaveUuid: string | null;
+  locale: string;
+  actionLoading: boolean;
   onSyncFromPanel: () => Promise<void>;
   onSyncToPanel: () => Promise<void>;
+}
+
+interface TicketsTabContentProps {
   selectedTicketId: number | null;
   selectedTicket: AdminTicketDetail | null;
   ticketDetailLoading: boolean;
+  actionLoading: boolean;
   onBackToTickets: () => void;
   onTicketStatusChange: (status: string) => Promise<void>;
+  formatDate: (date: string | null) => string;
   replyText: string;
   setReplyText: Dispatch<SetStateAction<string>>;
   onTicketReply: () => Promise<void>;
@@ -102,216 +127,150 @@ interface AdminUserDetailContentProps {
   onOpenTicket: (ticketId: number) => void;
 }
 
+interface AdminUserDetailContentProps {
+  activeTab: AdminUserDetailTab;
+  infoTab: InfoTabContentProps;
+  subscriptionTab: SubscriptionTabContentProps;
+  balanceTab: BalanceTabContentProps;
+  syncTab: SyncTabContentProps;
+  ticketsTab: TicketsTabContentProps;
+}
+
 export function AdminUserDetailContent({
   activeTab,
-  user,
-  actionLoading,
-  formatDate,
-  formatWithCurrency,
-  promoGroups,
-  editingPromoGroup,
-  setEditingPromoGroup,
-  onChangePromoGroup,
-  editingReferralCommission,
-  setEditingReferralCommission,
-  referralCommissionValue,
-  setReferralCommissionValue,
-  onUpdateReferralCommission,
-  referralsLoading,
-  referrals,
-  onOpenUser,
-  onBlockUser,
-  onUnblockUser,
-  confirmingAction,
-  onInlineConfirm,
-  onResetTrial,
-  onResetSubscription,
-  onDisableUser,
-  onFullDeleteUser,
-  subAction,
-  setSubAction,
-  subDays,
-  setSubDays,
-  selectedTariffId,
-  setSelectedTariffId,
-  tariffs,
-  currentTariff,
-  selectedTrafficGb,
-  setSelectedTrafficGb,
-  panelInfoLoading,
-  panelInfo,
-  nodeUsageForPeriod,
-  nodeUsageDays,
-  setNodeUsageDays,
-  devices,
-  devicesTotal,
-  deviceLimit,
-  devicesLoading,
-  locale,
-  formatBytes,
-  onUpdateSubscription,
-  onSetDeviceLimit,
-  onRemoveTraffic,
-  onAddTraffic,
-  onCopyToClipboard,
-  onReloadSubscriptionData,
-  onReloadDevices,
-  onResetDevices,
-  onDeleteDevice,
-  balanceAmount,
-  setBalanceAmount,
-  balanceDescription,
-  setBalanceDescription,
-  offerDiscountPercent,
-  setOfferDiscountPercent,
-  offerValidHours,
-  setOfferValidHours,
-  offerSending,
-  onUpdateBalance,
-  onDeactivateOffer,
-  onSendOffer,
-  syncStatus,
-  userRemnawaveUuid,
-  onSyncFromPanel,
-  onSyncToPanel,
-  selectedTicketId,
-  selectedTicket,
-  ticketDetailLoading,
-  onBackToTickets,
-  onTicketStatusChange,
-  replyText,
-  setReplyText,
-  onTicketReply,
-  replySending,
-  messagesEndRef,
-  ticketsLoading,
-  tickets,
-  ticketsTotal,
-  onOpenTicket,
+  infoTab,
+  subscriptionTab,
+  balanceTab,
+  syncTab,
+  ticketsTab,
 }: AdminUserDetailContentProps) {
   return (
     <div className="space-y-4">
       {activeTab === 'info' && (
         <AdminUserInfoTab
-          user={user}
-          actionLoading={actionLoading}
-          formatDate={formatDate}
-          formatWithCurrency={formatWithCurrency}
-          promoGroups={promoGroups}
-          editingPromoGroup={editingPromoGroup}
-          setEditingPromoGroup={setEditingPromoGroup}
-          onChangePromoGroup={onChangePromoGroup}
-          editingReferralCommission={editingReferralCommission}
-          setEditingReferralCommission={setEditingReferralCommission}
-          referralCommissionValue={referralCommissionValue}
-          setReferralCommissionValue={setReferralCommissionValue}
-          onUpdateReferralCommission={onUpdateReferralCommission}
-          referralsLoading={referralsLoading}
-          referrals={referrals}
-          onOpenUser={onOpenUser}
-          onBlockUser={onBlockUser}
-          onUnblockUser={onUnblockUser}
-          confirmingAction={confirmingAction}
-          onConfirmResetTrial={() => onInlineConfirm('resetTrial', onResetTrial)}
+          user={infoTab.user}
+          actionLoading={infoTab.actionLoading}
+          formatDate={infoTab.formatDate}
+          formatWithCurrency={infoTab.formatWithCurrency}
+          promoGroups={infoTab.promoGroups}
+          editingPromoGroup={infoTab.editingPromoGroup}
+          setEditingPromoGroup={infoTab.setEditingPromoGroup}
+          onChangePromoGroup={infoTab.onChangePromoGroup}
+          editingReferralCommission={infoTab.editingReferralCommission}
+          setEditingReferralCommission={infoTab.setEditingReferralCommission}
+          referralCommissionValue={infoTab.referralCommissionValue}
+          setReferralCommissionValue={infoTab.setReferralCommissionValue}
+          onUpdateReferralCommission={infoTab.onUpdateReferralCommission}
+          referralsLoading={infoTab.referralsLoading}
+          referrals={infoTab.referrals}
+          onOpenUser={infoTab.onOpenUser}
+          onBlockUser={infoTab.onBlockUser}
+          onUnblockUser={infoTab.onUnblockUser}
+          confirmingAction={infoTab.confirmingAction}
+          onConfirmResetTrial={() => infoTab.onInlineConfirm('resetTrial', infoTab.onResetTrial)}
           onConfirmResetSubscription={() =>
-            onInlineConfirm('resetSubscription', onResetSubscription)
+            infoTab.onInlineConfirm('resetSubscription', infoTab.onResetSubscription)
           }
-          onConfirmDisable={() => onInlineConfirm('disable', onDisableUser)}
-          onConfirmFullDelete={() => onInlineConfirm('fullDelete', onFullDeleteUser)}
+          onConfirmDisable={() => infoTab.onInlineConfirm('disable', infoTab.onDisableUser)}
+          onConfirmFullDelete={() =>
+            infoTab.onInlineConfirm('fullDelete', infoTab.onFullDeleteUser)
+          }
         />
       )}
 
       {activeTab === 'subscription' && (
         <AdminUserSubscriptionTab
-          user={user}
-          actionLoading={actionLoading}
-          confirmingAction={confirmingAction}
-          subAction={subAction}
-          setSubAction={setSubAction}
-          subDays={subDays}
-          setSubDays={setSubDays}
-          selectedTariffId={selectedTariffId}
-          setSelectedTariffId={setSelectedTariffId}
-          tariffs={tariffs}
-          currentTariff={currentTariff}
-          selectedTrafficGb={selectedTrafficGb}
-          setSelectedTrafficGb={setSelectedTrafficGb}
-          panelInfoLoading={panelInfoLoading}
-          panelInfo={panelInfo}
-          nodeUsageForPeriod={nodeUsageForPeriod}
-          nodeUsageDays={nodeUsageDays}
-          setNodeUsageDays={setNodeUsageDays}
-          devices={devices}
-          devicesTotal={devicesTotal}
-          deviceLimit={deviceLimit}
-          devicesLoading={devicesLoading}
-          locale={locale}
-          formatDate={formatDate}
-          formatBytes={formatBytes}
-          onInlineConfirm={onInlineConfirm}
-          onUpdateSubscription={onUpdateSubscription}
-          onSetDeviceLimit={onSetDeviceLimit}
-          onRemoveTraffic={onRemoveTraffic}
-          onAddTraffic={onAddTraffic}
-          onCopyToClipboard={onCopyToClipboard}
-          onReloadSubscriptionData={onReloadSubscriptionData}
-          onReloadDevices={onReloadDevices}
-          onResetDevices={onResetDevices}
-          onDeleteDevice={onDeleteDevice}
+          user={subscriptionTab.user}
+          actionLoading={subscriptionTab.actionLoading}
+          confirmingAction={subscriptionTab.confirmingAction}
+          subAction={subscriptionTab.subAction}
+          setSubAction={subscriptionTab.setSubAction}
+          subDays={subscriptionTab.subDays}
+          setSubDays={subscriptionTab.setSubDays}
+          selectedTariffId={subscriptionTab.selectedTariffId}
+          setSelectedTariffId={subscriptionTab.setSelectedTariffId}
+          tariffs={subscriptionTab.tariffs}
+          currentTariff={subscriptionTab.currentTariff}
+          selectedTrafficGb={subscriptionTab.selectedTrafficGb}
+          setSelectedTrafficGb={subscriptionTab.setSelectedTrafficGb}
+          panelInfoLoading={subscriptionTab.panelInfoLoading}
+          panelInfo={subscriptionTab.panelInfo}
+          nodeUsageForPeriod={subscriptionTab.nodeUsageForPeriod}
+          nodeUsageDays={subscriptionTab.nodeUsageDays}
+          setNodeUsageDays={subscriptionTab.setNodeUsageDays}
+          devices={subscriptionTab.devices}
+          devicesTotal={subscriptionTab.devicesTotal}
+          deviceLimit={subscriptionTab.deviceLimit}
+          devicesLoading={subscriptionTab.devicesLoading}
+          locale={subscriptionTab.locale}
+          formatDate={subscriptionTab.formatDate}
+          formatBytes={subscriptionTab.formatBytes}
+          onInlineConfirm={subscriptionTab.onInlineConfirm}
+          onUpdateSubscription={subscriptionTab.onUpdateSubscription}
+          onSetDeviceLimit={subscriptionTab.onSetDeviceLimit}
+          onRemoveTraffic={subscriptionTab.onRemoveTraffic}
+          onAddTraffic={subscriptionTab.onAddTraffic}
+          onCopyToClipboard={subscriptionTab.onCopyToClipboard}
+          onReloadSubscriptionData={subscriptionTab.onReloadSubscriptionData}
+          onReloadDevices={subscriptionTab.onReloadDevices}
+          onResetDevices={subscriptionTab.onResetDevices}
+          onDeleteDevice={subscriptionTab.onDeleteDevice}
         />
       )}
 
       {activeTab === 'balance' && (
         <AdminUserBalanceTab
-          user={user}
-          balanceAmount={balanceAmount}
-          setBalanceAmount={setBalanceAmount}
-          balanceDescription={balanceDescription}
-          setBalanceDescription={setBalanceDescription}
-          offerDiscountPercent={offerDiscountPercent}
-          setOfferDiscountPercent={setOfferDiscountPercent}
-          offerValidHours={offerValidHours}
-          setOfferValidHours={setOfferValidHours}
-          offerSending={offerSending}
-          actionLoading={actionLoading}
-          confirmingAction={confirmingAction}
-          formatDate={formatDate}
-          formatWithCurrency={formatWithCurrency}
-          onUpdateBalance={onUpdateBalance}
-          onConfirmDeactivateOffer={() => onInlineConfirm('deactivateOffer', onDeactivateOffer)}
-          onSendOffer={onSendOffer}
+          user={balanceTab.user}
+          balanceAmount={balanceTab.balanceAmount}
+          setBalanceAmount={balanceTab.setBalanceAmount}
+          balanceDescription={balanceTab.balanceDescription}
+          setBalanceDescription={balanceTab.setBalanceDescription}
+          offerDiscountPercent={balanceTab.offerDiscountPercent}
+          setOfferDiscountPercent={balanceTab.setOfferDiscountPercent}
+          offerValidHours={balanceTab.offerValidHours}
+          setOfferValidHours={balanceTab.setOfferValidHours}
+          offerSending={balanceTab.offerSending}
+          actionLoading={balanceTab.actionLoading}
+          confirmingAction={balanceTab.confirmingAction}
+          formatDate={balanceTab.formatDate}
+          formatWithCurrency={balanceTab.formatWithCurrency}
+          onUpdateBalance={balanceTab.onUpdateBalance}
+          onConfirmDeactivateOffer={() =>
+            balanceTab.onInlineConfirm('deactivateOffer', balanceTab.onDeactivateOffer)
+          }
+          onSendOffer={balanceTab.onSendOffer}
         />
       )}
 
       {activeTab === 'sync' && (
         <AdminUserSyncTab
-          syncStatus={syncStatus}
-          userRemnawaveUuid={userRemnawaveUuid}
-          locale={locale}
-          actionLoading={actionLoading}
-          onSyncFromPanel={onSyncFromPanel}
-          onSyncToPanel={onSyncToPanel}
+          syncStatus={syncTab.syncStatus}
+          userRemnawaveUuid={syncTab.userRemnawaveUuid}
+          locale={syncTab.locale}
+          actionLoading={syncTab.actionLoading}
+          onSyncFromPanel={syncTab.onSyncFromPanel}
+          onSyncToPanel={syncTab.onSyncToPanel}
         />
       )}
 
       {activeTab === 'tickets' && (
         <AdminUserTicketsTab
-          selectedTicketId={selectedTicketId}
-          selectedTicket={selectedTicket}
-          ticketDetailLoading={ticketDetailLoading}
-          actionLoading={actionLoading}
-          onBackToTickets={onBackToTickets}
-          onTicketStatusChange={onTicketStatusChange}
-          formatDate={formatDate}
-          replyText={replyText}
-          setReplyText={setReplyText}
-          onTicketReply={onTicketReply}
-          replySending={replySending}
-          messagesEndRef={messagesEndRef}
-          ticketsLoading={ticketsLoading}
-          tickets={tickets}
-          ticketsTotal={ticketsTotal}
-          onOpenTicket={onOpenTicket}
+          selectedTicketId={ticketsTab.selectedTicketId}
+          selectedTicket={ticketsTab.selectedTicket}
+          ticketDetailLoading={ticketsTab.ticketDetailLoading}
+          actionLoading={ticketsTab.actionLoading}
+          onBackToTickets={ticketsTab.onBackToTickets}
+          onTicketStatusChange={ticketsTab.onTicketStatusChange}
+          formatDate={ticketsTab.formatDate}
+          replyText={ticketsTab.replyText}
+          setReplyText={ticketsTab.setReplyText}
+          onTicketReply={ticketsTab.onTicketReply}
+          replySending={ticketsTab.replySending}
+          messagesEndRef={ticketsTab.messagesEndRef}
+          ticketsLoading={ticketsTab.ticketsLoading}
+          tickets={ticketsTab.tickets}
+          ticketsTotal={ticketsTab.ticketsTotal}
+          onOpenTicket={ticketsTab.onOpenTicket}
         />
       )}
     </div>
