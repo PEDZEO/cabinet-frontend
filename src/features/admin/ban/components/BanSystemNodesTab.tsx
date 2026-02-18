@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import type { BanNodesListResponse } from '../../../api/banSystem';
+import type { BanNodesListResponse } from '@/api/banSystem';
 import {
   getNodeCardBorderClass,
   getNodeDotClass,

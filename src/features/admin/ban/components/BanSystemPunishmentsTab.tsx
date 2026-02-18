@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import type { BanPunishmentsListResponse } from '../../../api/banSystem';
+import type { BanPunishmentsListResponse } from '@/api/banSystem';
 import { formatDate } from '../utils/formatters';
 
 interface BanSystemPunishmentsTabProps {

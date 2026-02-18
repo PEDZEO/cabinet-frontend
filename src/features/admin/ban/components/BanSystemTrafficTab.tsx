@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import type { BanTrafficResponse } from '../../../api/banSystem';
+import type { BanTrafficResponse } from '@/api/banSystem';
 import { formatBytes, formatDate } from '../utils/formatters';
 import { getOverLimitBadgeClass } from '../utils/statusStyles';
 import { TrafficIcon } from './BanSystemIcons';

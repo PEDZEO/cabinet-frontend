@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import type { BanUserDetailResponse } from '../../../api/banSystem';
+import type { BanUserDetailResponse } from '@/api/banSystem';
 
 interface BanSystemUserDetailModalProps {
   t: TFunction;

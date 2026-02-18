@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import type { BanHealthResponse } from '../../../api/banSystem';
+import type { BanHealthResponse } from '@/api/banSystem';
 import { formatUptime } from '../utils/formatters';
 import {
   getHealthCardBorderClass,

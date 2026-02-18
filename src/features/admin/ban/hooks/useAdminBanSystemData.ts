@@ -14,7 +14,7 @@ import {
   type BanTrafficViolationsResponse,
   type BanUserDetailResponse,
   type BanUsersListResponse,
-} from '../../../api/banSystem';
+} from '@/api/banSystem';
 import type { BanSystemTabType } from '../types';
 
 interface UseAdminBanSystemDataParams {

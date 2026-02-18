@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import type { BanUsersListResponse } from '../../../api/banSystem';
+import type { BanUsersListResponse } from '@/api/banSystem';
 import { getOverLimitBadgeClass } from '../utils/statusStyles';
 import { SearchIcon } from './BanSystemIcons';
 

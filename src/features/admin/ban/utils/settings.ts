@@ -1,4 +1,4 @@
-import type { BanSettingDefinition } from '../../../api/banSystem';
+import type { BanSettingDefinition } from '@/api/banSystem';
 
 const CATEGORY_ORDER = [
   'general',

@@ -8,22 +8,22 @@ import {
   ShieldIcon,
   UsersIcon,
   WarningIcon,
-} from './adminBanSystem/components/BanSystemIcons';
-import { getBanSystemTabs } from './adminBanSystem/constants';
-import { BanSystemAgentsTab } from './adminBanSystem/components/BanSystemAgentsTab';
-import { BanSystemHealthTab } from './adminBanSystem/components/BanSystemHealthTab';
-import { BanSystemNodesTab } from './adminBanSystem/components/BanSystemNodesTab';
-import { BanSystemPunishmentsTab } from './adminBanSystem/components/BanSystemPunishmentsTab';
-import { BanSystemReportsTab } from './adminBanSystem/components/BanSystemReportsTab';
-import { BanSystemSettingsTab } from './adminBanSystem/components/BanSystemSettingsTab';
-import { BanSystemTrafficTab } from './adminBanSystem/components/BanSystemTrafficTab';
-import { BanSystemUserDetailModal } from './adminBanSystem/components/BanSystemUserDetailModal';
-import { BanSystemUsersTab } from './adminBanSystem/components/BanSystemUsersTab';
-import { BanSystemViolationsTab } from './adminBanSystem/components/BanSystemViolationsTab';
-import { useAdminBanSystemData } from './adminBanSystem/hooks/useAdminBanSystemData';
-import { StatCard } from './adminBanSystem/components/StatCard';
-import type { BanSystemTabType } from './adminBanSystem/types';
-import { formatUptime } from './adminBanSystem/utils/formatters';
+} from '@/features/admin/ban/components/BanSystemIcons';
+import { BanSystemAgentsTab } from '@/features/admin/ban/components/BanSystemAgentsTab';
+import { BanSystemHealthTab } from '@/features/admin/ban/components/BanSystemHealthTab';
+import { BanSystemNodesTab } from '@/features/admin/ban/components/BanSystemNodesTab';
+import { BanSystemPunishmentsTab } from '@/features/admin/ban/components/BanSystemPunishmentsTab';
+import { BanSystemReportsTab } from '@/features/admin/ban/components/BanSystemReportsTab';
+import { BanSystemSettingsTab } from '@/features/admin/ban/components/BanSystemSettingsTab';
+import { BanSystemTrafficTab } from '@/features/admin/ban/components/BanSystemTrafficTab';
+import { BanSystemUserDetailModal } from '@/features/admin/ban/components/BanSystemUserDetailModal';
+import { BanSystemUsersTab } from '@/features/admin/ban/components/BanSystemUsersTab';
+import { BanSystemViolationsTab } from '@/features/admin/ban/components/BanSystemViolationsTab';
+import { StatCard } from '@/features/admin/ban/components/StatCard';
+import { getBanSystemTabs } from '@/features/admin/ban/constants';
+import { useAdminBanSystemData } from '@/features/admin/ban/hooks/useAdminBanSystemData';
+import type { BanSystemTabType } from '@/features/admin/ban/types';
+import { formatUptime } from '@/features/admin/ban/utils/formatters';
 
 export default function AdminBanSystem() {
   const { t } = useTranslation();

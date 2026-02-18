@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import type { BanTrafficViolationsResponse } from '../../../api/banSystem';
+import type { BanTrafficViolationsResponse } from '@/api/banSystem';
 import { formatDate } from '../utils/formatters';
 import { getBooleanStatusBadgeClass } from '../utils/statusStyles';
 

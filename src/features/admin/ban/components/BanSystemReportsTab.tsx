@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import type { BanReportResponse } from '../../../api/banSystem';
+import type { BanReportResponse } from '@/api/banSystem';
 import { ServerIcon, UsersIcon } from './BanSystemIcons';
 import { StatCard } from './StatCard';
 

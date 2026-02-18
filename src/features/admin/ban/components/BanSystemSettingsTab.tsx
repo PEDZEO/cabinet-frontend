@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { BanNodesListResponse, BanSettingsResponse } from '../../../api/banSystem';
+import type { BanNodesListResponse, BanSettingsResponse } from '@/api/banSystem';
 import { SearchIcon } from './BanSystemIcons';
 import {
   filterBanSettings,

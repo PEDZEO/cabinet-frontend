@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import type { BanAgentsListResponse } from '../../../api/banSystem';
+import type { BanAgentsListResponse } from '@/api/banSystem';
 import { getAgentHealthBadgeClass, getAgentOnlineBadgeClass } from '../utils/statusStyles';
 import { AgentIcon, ChartIcon, WarningIcon } from './BanSystemIcons';
 import { StatCard } from './StatCard';
