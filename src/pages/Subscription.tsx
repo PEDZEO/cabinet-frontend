@@ -15,30 +15,32 @@ import type {
 import InsufficientBalancePrompt from '../components/InsufficientBalancePrompt';
 import { useCurrency } from '../hooks/useCurrency';
 import { useCloseOnSuccessNotification } from '../store/successNotification';
-import { getErrorMessage, getInsufficientBalanceError } from './subscription/utils/errors';
-import { getFlagEmoji } from './subscription/utils/flags';
-import { useDeviceManagementMutations } from './subscription/hooks/useDeviceManagementMutations';
-import { useSubscriptionAuxQueries } from './subscription/hooks/useSubscriptionAuxQueries';
-import { useTariffMutations } from './subscription/hooks/useTariffMutations';
-import { useTrafficAndCountriesMutations } from './subscription/hooks/useTrafficAndCountriesMutations';
-import { BuyDevicesSection } from './subscription/components/BuyDevicesSection';
-import { BuyTrafficSection } from './subscription/components/BuyTrafficSection';
-import { DeviceListSection } from './subscription/components/DeviceListSection';
-import { ReduceDevicesSection } from './subscription/components/ReduceDevicesSection';
-import { ServerManagementSection } from './subscription/components/ServerManagementSection';
-import { CheckIcon, CopyIcon } from './subscription/components/StatusIcons';
-import { TariffCardsGrid } from './subscription/components/TariffCardsGrid';
-import { TariffPurchaseForm } from './subscription/components/TariffPurchaseForm';
-import { TariffSwitchPreview } from './subscription/components/TariffSwitchPreview';
-import { useSubscriptionModals } from './subscription/hooks/useSubscriptionModals';
-import type { ApplyPromoDiscount } from './subscription/types';
 import {
   buildPurchaseSteps,
+  BuyDevicesSection,
+  BuyTrafficSection,
+  CheckIcon,
+  CopyIcon,
+  DeviceListSection,
   getAvailableServersForPeriod,
+  getErrorMessage,
+  getFlagEmoji,
+  getInsufficientBalanceError,
   getStepLabel,
   getTrafficColor,
+  ReduceDevicesSection,
+  ServerManagementSection,
+  TariffCardsGrid,
+  TariffPurchaseForm,
+  TariffSwitchPreview,
+  useDeviceManagementMutations,
+  useSubscriptionAuxQueries,
+  useSubscriptionModals,
+  useTariffMutations,
+  useTrafficAndCountriesMutations,
+  type ApplyPromoDiscount,
   type PurchaseStep,
-} from './subscription/utils/purchaseFlow';
+} from '@/features/subscription';
 
 // Import lite mode hook and component
 import { useLiteMode } from '../hooks/useLiteMode';
