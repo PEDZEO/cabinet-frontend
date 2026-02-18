@@ -38,6 +38,7 @@ export default function AccountLinking() {
   const [unlinkRequestToken, setUnlinkRequestToken] = useState<string | null>(null);
   const [unlinkOtpCode, setUnlinkOtpCode] = useState('');
   const [unlinkError, setUnlinkError] = useState<string | null>(null);
+  const [showTips, setShowTips] = useState(false);
 
   const parseApiError = (
     err: unknown,
@@ -319,8 +320,7 @@ export default function AccountLinking() {
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-dark-50">Привязка аккаунтов</h1>
             <p className="mt-1 text-sm text-dark-400">
-              Управляйте Telegram, Yandex и VK в одном месте. Здесь есть безопасная смена Telegram,
-              OTP-подтверждение и ручная заявка в поддержку для спорных кейсов.
+              Единая страница для безопасной привязки и смены Telegram, Yandex и VK.
             </p>
             <div className="mt-3 flex flex-wrap gap-2 text-xs">
               <span className="rounded-linear border border-dark-700/70 bg-dark-800/60 px-2 py-1 text-dark-300">
@@ -333,12 +333,30 @@ export default function AccountLinking() {
                 3. Подтверждение / support
               </span>
             </div>
-            <Link
-              to="/profile"
-              className="mt-3 inline-flex text-xs text-accent-400 hover:text-accent-300"
-            >
-              Вернуться в профиль
-            </Link>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <Button variant="secondary" onClick={() => setShowTips((prev) => !prev)}>
+                {showTips ? 'Скрыть подсказки' : 'Показать подсказки'}
+              </Button>
+              <Link
+                to="/profile"
+                className="inline-flex text-xs text-accent-400 hover:text-accent-300"
+              >
+                Вернуться в профиль
+              </Link>
+            </div>
+            {showTips && (
+              <div className="mt-3 rounded-linear border border-dark-700/70 bg-dark-800/50 p-3 text-xs text-dark-300">
+                <p>
+                  Если у вас уже есть Telegram: сначала отвязка через OTP, потом новая привязка.
+                </p>
+                <p className="mt-1">
+                  При конфликте аккаунтов используйте отправку в поддержку на этой странице.
+                </p>
+                <p className="mt-1">
+                  При ограничениях будет показано точное время, когда действие станет доступно.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </Card>
