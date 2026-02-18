@@ -324,13 +324,13 @@ export default function AccountLinking() {
             </p>
             <div className="mt-3 flex flex-wrap gap-2 text-xs">
               <span className="rounded-linear border border-dark-700/70 bg-dark-800/60 px-2 py-1 text-dark-300">
-                1. Проверка кода
+                1. Введите код с другого аккаунта
               </span>
               <span className="rounded-linear border border-dark-700/70 bg-dark-800/60 px-2 py-1 text-dark-300">
-                2. Предупреждение о Telegram
+                2. Проверьте, что найден нужный аккаунт
               </span>
               <span className="rounded-linear border border-dark-700/70 bg-dark-800/60 px-2 py-1 text-dark-300">
-                3. Подтверждение / support
+                3. Подтвердите привязку или отправьте в поддержку
               </span>
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -347,13 +347,20 @@ export default function AccountLinking() {
             {showTips && (
               <div className="mt-3 rounded-linear border border-dark-700/70 bg-dark-800/50 p-3 text-xs text-dark-300">
                 <p>
-                  Если у вас уже есть Telegram: сначала отвязка через OTP, потом новая привязка.
+                  Код нужно брать на втором аккаунте: нажмите там "Сгенерировать код", затем введите
+                  его здесь.
                 </p>
                 <p className="mt-1">
-                  При конфликте аккаунтов используйте отправку в поддержку на этой странице.
+                  Если Telegram уже привязан, сначала отвяжите его через код из Telegram. После
+                  этого можно сразу привязать новый.
                 </p>
                 <p className="mt-1">
-                  При ограничениях будет показано точное время, когда действие станет доступно.
+                  Если система не может объединить автоматически, нажмите "Отправить в поддержку" и
+                  коротко опишите ситуацию.
+                </p>
+                <p className="mt-1">
+                  Если есть ограничение по времени, мы покажем точную дату и время, когда можно
+                  повторить действие.
                 </p>
               </div>
             )}
@@ -453,15 +460,16 @@ export default function AccountLinking() {
           />
 
           <div className="rounded-linear border border-dark-700/70 bg-dark-800/40 px-3 py-2 text-xs text-dark-300">
-            {linkFlowStep === 'idle' && 'Шаг 1: введите код и нажмите "Проверить".'}
+            {linkFlowStep === 'idle' &&
+              'Шаг 1 из 3: вставьте код со второго аккаунта и нажмите "Проверить".'}
             {linkFlowStep === 'preview' &&
-              'Шаг 2: код проверен. Проверьте данные аккаунта и нажмите "Привязать".'}
+              'Шаг 2 из 3: код верный. Убедитесь, что это нужный аккаунт, и нажмите "Привязать".'}
             {linkFlowStep === 'warning' &&
-              'Шаг 2: обнаружена смена Telegram. Подтвердите, если согласны заменить текущий Telegram.'}
+              'Шаг 3 из 3: будет заменён Telegram. Подтвердите только если хотите отвязать старый Telegram и привязать новый.'}
             {linkFlowStep === 'manual' &&
-              'Шаг 2: автоматическое объединение недоступно. Отправьте запрос в поддержку.'}
+              'Шаг 3 из 3: автоматически объединить не получилось. Отправьте запрос в поддержку на этой странице.'}
             {linkFlowStep === 'done' &&
-              'Операция завершена. Можно создать новый код при необходимости.'}
+              'Готово. Привязка завершена. При необходимости можно создать новый код.'}
           </div>
 
           <div className="sticky bottom-3 z-20 rounded-linear border border-dark-700/80 bg-dark-900/90 p-2 backdrop-blur">
