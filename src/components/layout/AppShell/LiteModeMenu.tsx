@@ -3,6 +3,8 @@ import { Link } from 'react-router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@/store/auth';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
+import { useQuery } from '@tanstack/react-query';
+import { authApi } from '@/api/auth';
 
 interface LiteModeMenuProps {
   isOpen: boolean;
@@ -79,8 +81,16 @@ const LogoutIcon = () => (
 
 export function LiteModeMenu({ isOpen, onClose, headerHeight = 64 }: LiteModeMenuProps) {
   const { t } = useTranslation();
-  const { logout } = useAuthStore();
+  const { logout, user } = useAuthStore();
   const { referralEnabled } = useFeatureFlags();
+  const { data: linkedIdentitiesData } = useQuery({
+    queryKey: ['linked-identities'],
+    queryFn: authApi.getLinkedIdentities,
+    enabled: !!user,
+    staleTime: 30000,
+  });
+  const hasMergedAnotherAccount =
+    user?.auth_type === 'merged' || (linkedIdentitiesData?.identities?.length ?? 0) > 1;
 
   const handleLogout = async () => {
     onClose();
@@ -93,6 +103,15 @@ export function LiteModeMenu({ isOpen, onClose, headerHeight = 64 }: LiteModeMen
       ? [{ to: '/referral', label: t('nav.referral'), icon: <ReferralIcon /> }]
       : []),
     { to: '/profile', label: t('nav.profile'), icon: <ProfileIcon /> },
+    ...(hasMergedAnotherAccount
+      ? [
+          {
+            to: '/account-linking',
+            label: t('nav.accountLinking', 'Привязки'),
+            icon: <ProfileIcon />,
+          },
+        ]
+      : []),
   ];
 
   return (

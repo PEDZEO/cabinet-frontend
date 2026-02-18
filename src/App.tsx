@@ -27,6 +27,7 @@ const Balance = lazy(() => import('./pages/Balance'));
 const Referral = lazy(() => import('./pages/Referral'));
 const Support = lazy(() => import('./pages/Support'));
 const Profile = lazy(() => import('./pages/Profile'));
+const AccountLinking = lazy(() => import('./pages/AccountLinking'));
 const Contests = lazy(() => import('./pages/Contests'));
 const Polls = lazy(() => import('./pages/Polls'));
 const Info = lazy(() => import('./pages/Info'));
@@ -234,6 +235,16 @@ function App() {
             <ProtectedRoute>
               <LazyPage>
                 <Profile />
+              </LazyPage>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/account-linking"
+          element={
+            <ProtectedRoute>
+              <LazyPage>
+                <AccountLinking />
               </LazyPage>
             </ProtectedRoute>
           }

@@ -293,7 +293,7 @@ function FullDashboard() {
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm text-dark-300">{t('dashboard.accountLinking.title')}</p>
             <Link
-              to="/profile"
+              to="/account-linking"
               className="inline-flex items-center gap-1 text-sm font-medium text-accent-400 transition-colors hover:text-accent-300"
             >
               {t('dashboard.accountLinking.cta')}

@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect, useCallback, type SyntheticEvent } from 'react';
 
 import { useAuthStore } from '@/store/auth';
+import { authApi } from '@/api/auth';
 import {
   brandingApi,
   getCachedBranding,
@@ -52,6 +53,14 @@ export function DesktopSidebar({
   const location = useLocation();
   const { user, logout } = useAuthStore();
   const { haptic } = usePlatform();
+  const { data: linkedIdentitiesData } = useQuery({
+    queryKey: ['linked-identities'],
+    queryFn: authApi.getLinkedIdentities,
+    enabled: !!user,
+    staleTime: 30000,
+  });
+  const hasMergedAnotherAccount =
+    user?.auth_type === 'merged' || (linkedIdentitiesData?.identities?.length ?? 0) > 1;
 
   // Branding
   const { data: branding } = useQuery({
@@ -228,6 +237,22 @@ export function DesktopSidebar({
             </p>
           </div>
         </Link>
+
+        {hasMergedAnotherAccount && (
+          <Link
+            to="/account-linking"
+            onClick={handleNavClick}
+            className={cn(
+              'group mt-2 flex items-center gap-3 rounded-linear px-3 py-2.5 text-sm transition-all duration-200',
+              isActive('/account-linking')
+                ? 'bg-dark-800/80 text-dark-100'
+                : 'text-dark-400 hover:bg-dark-800/50',
+            )}
+          >
+            <ClipboardIcon className="h-5 w-5 shrink-0" />
+            <span>{t('nav.accountLinking', 'Привязки')}</span>
+          </Link>
+        )}
 
         <button
           onClick={() => {

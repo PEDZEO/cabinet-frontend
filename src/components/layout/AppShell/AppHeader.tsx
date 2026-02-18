@@ -15,6 +15,7 @@ import {
   isLogoPreloaded,
 } from '@/api/branding';
 import { themeColorsApi } from '@/api/themeColors';
+import { authApi } from '@/api/auth';
 import { cn } from '@/lib/utils';
 
 import LanguageSwitcher from '@/components/LanguageSwitcher';
@@ -172,6 +173,14 @@ export function AppHeader({
   };
   const isMainPage = location.pathname === '/';
   const isAdminActive = () => location.pathname.startsWith('/admin');
+  const { data: linkedIdentitiesData } = useQuery({
+    queryKey: ['linked-identities'],
+    queryFn: authApi.getLinkedIdentities,
+    enabled: !!user,
+    staleTime: 30000,
+  });
+  const hasMergedAnotherAccount =
+    user?.auth_type === 'merged' || (linkedIdentitiesData?.identities?.length ?? 0) > 1;
 
   const navItems = [
     { path: '/', label: t('nav.dashboard'), icon: HomeIcon },
@@ -426,6 +435,17 @@ export function AppHeader({
                   <UserIcon className="h-5 w-5" />
                   {t('nav.profile')}
                 </Link>
+
+                {hasMergedAnotherAccount && (
+                  <Link
+                    to="/account-linking"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={isActive('/account-linking') ? 'nav-item-active' : 'nav-item'}
+                  >
+                    <ClipboardIcon className="h-5 w-5" />
+                    {t('nav.accountLinking', 'Привязки')}
+                  </Link>
+                )}
 
                 <button
                   onClick={() => {
