@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { serversApi, ServerUpdateRequest } from '../api/servers';
-import { AdminBackButton } from '../components/admin';
+import { AdminBackButton, AdminPageErrorState, AdminPageLoadingState } from '../components/admin';
 import { ServerIcon } from '../components/icons';
+import { useMutationSuccessActions } from '../hooks/useMutationSuccessActions';
 import { createNumberInputHandler, toNumber } from '../utils/inputHelpers';
 
 // Country flags (simple emoji mapping)
@@ -44,7 +45,7 @@ export default function AdminServerEdit() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const runSuccessActions = useMutationSuccessActions();
 
   const serverId = parseInt(id || '0');
 
@@ -79,9 +80,10 @@ export default function AdminServerEdit() {
   const updateMutation = useMutation({
     mutationFn: (data: ServerUpdateRequest) => serversApi.updateServer(serverId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-servers'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-server', serverId] });
-      navigate('/admin/servers');
+      return runSuccessActions({
+        invalidateKeys: [['admin-servers'], ['admin-server', serverId]],
+        navigateTo: '/admin/servers',
+      });
     },
   });
 
@@ -99,30 +101,17 @@ export default function AdminServerEdit() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
-      </div>
-    );
+    return <AdminPageLoadingState />;
   }
 
   if (error || !server) {
     return (
-      <div className="animate-fade-in">
-        <div className="mb-6 flex items-center gap-3">
-          <AdminBackButton to="/admin/servers" />
-          <h1 className="text-xl font-semibold text-dark-100">{t('admin.servers.edit')}</h1>
-        </div>
-        <div className="rounded-xl border border-error-500/30 bg-error-500/10 p-6 text-center">
-          <p className="text-error-400">{t('admin.servers.loadError')}</p>
-          <button
-            onClick={() => navigate('/admin/servers')}
-            className="mt-4 text-sm text-dark-400 hover:text-dark-200"
-          >
-            {t('common.back')}
-          </button>
-        </div>
-      </div>
+      <AdminPageErrorState
+        backTo="/admin/servers"
+        title={t('admin.servers.edit')}
+        message={t('admin.servers.loadError')}
+        backLabel={t('common.back')}
+      />
     );
   }
 
