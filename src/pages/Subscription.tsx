@@ -18,8 +18,13 @@ import { useCloseOnSuccessNotification } from '../store/successNotification';
 import { getErrorMessage, getInsufficientBalanceError } from './subscription/utils/errors';
 import { getFlagEmoji } from './subscription/utils/flags';
 import { CheckIcon, CopyIcon } from './subscription/components/StatusIcons';
-
-type PurchaseStep = 'period' | 'traffic' | 'servers' | 'devices' | 'confirm';
+import {
+  buildPurchaseSteps,
+  getAvailableServersForPeriod,
+  getStepLabel,
+  getTrafficColor,
+  type PurchaseStep,
+} from './subscription/utils/purchaseFlow';
 
 // Import lite mode hook and component
 import { useLiteMode } from '../hooks/useLiteMode';
@@ -137,36 +142,15 @@ function FullSubscription() {
   const tariffs =
     isTariffsMode && purchaseOptions && 'tariffs' in purchaseOptions ? purchaseOptions.tariffs : [];
 
-  // Get truly available servers for a given period (same filter as rendering)
-  const getAvailableServers = useCallback(
-    (period: PeriodOption | null) => {
-      if (!period?.servers.options) return [];
-      return period.servers.options.filter((server) => {
-        if (!server.is_available) return false;
-        if (subscription?.is_trial && server.name.toLowerCase().includes('trial')) return false;
-        return true;
-      });
-    },
-    [subscription?.is_trial],
+  const selectedPeriodAvailableServers = useMemo(
+    () => getAvailableServersForPeriod(selectedPeriod, Boolean(subscription?.is_trial)),
+    [selectedPeriod, subscription?.is_trial],
   );
 
   // Determine which steps are needed
   const steps = useMemo<PurchaseStep[]>(() => {
-    const result: PurchaseStep[] = ['period'];
-    if (selectedPeriod?.traffic.selectable && (selectedPeriod.traffic.options?.length ?? 0) > 0) {
-      result.push('traffic');
-    }
-    const availableServers = getAvailableServers(selectedPeriod);
-    // Skip server selection step if only 1 server available (auto-select it)
-    if (availableServers.length > 1) {
-      result.push('servers');
-    }
-    if (selectedPeriod && selectedPeriod.devices.max > selectedPeriod.devices.min) {
-      result.push('devices');
-    }
-    result.push('confirm');
-    return result;
-  }, [selectedPeriod, getAvailableServers]);
+    return buildPurchaseSteps(selectedPeriod, selectedPeriodAvailableServers.length);
+  }, [selectedPeriod, selectedPeriodAvailableServers.length]);
 
   const currentStepIndex = steps.indexOf(currentStep);
   const isFirstStep = currentStepIndex === 0;
@@ -180,7 +164,10 @@ function FullSubscription() {
         classicOptions.periods[0];
       setSelectedPeriod(defaultPeriod);
       setSelectedTraffic(classicOptions.selection.traffic_value);
-      const availableServers = getAvailableServers(defaultPeriod);
+      const availableServers = getAvailableServersForPeriod(
+        defaultPeriod,
+        Boolean(subscription?.is_trial),
+      );
       const availableServerUuids = new Set(availableServers.map((s) => s.uuid));
       // If only 1 server available, auto-select it (step will be skipped)
       if (availableServers.length === 1) {
@@ -192,7 +179,7 @@ function FullSubscription() {
       }
       setSelectedDevices(classicOptions.selection.devices);
     }
-  }, [classicOptions, selectedPeriod, getAvailableServers]);
+  }, [classicOptions, selectedPeriod, subscription?.is_trial]);
 
   // Build selection object
   const currentSelection: PurchaseSelection = useMemo(
@@ -544,12 +531,6 @@ function FullSubscription() {
     }
   };
 
-  const getTrafficColor = (percent: number) => {
-    if (percent > 90) return 'bg-error-500';
-    if (percent > 70) return 'bg-warning-500';
-    return 'bg-success-500';
-  };
-
   const toggleServer = (uuid: string) => {
     if (selectedServers.includes(uuid)) {
       if (selectedServers.length > 1) {
@@ -577,21 +558,6 @@ function FullSubscription() {
   const resetPurchase = () => {
     setShowPurchaseForm(false);
     setCurrentStep('period');
-  };
-
-  const getStepLabel = (step: PurchaseStep) => {
-    switch (step) {
-      case 'period':
-        return t('subscription.stepPeriod');
-      case 'traffic':
-        return t('subscription.stepTraffic');
-      case 'servers':
-        return t('subscription.stepServers');
-      case 'devices':
-        return t('subscription.stepDevices');
-      case 'confirm':
-        return t('subscription.stepConfirm');
-    }
   };
 
   if (isLoading || optionsLoading) {
@@ -3142,7 +3108,7 @@ function FullSubscription() {
               </div>
 
               <div className="mb-4 text-lg font-medium text-dark-100">
-                {getStepLabel(currentStep)}
+                {getStepLabel(t, currentStep)}
               </div>
 
               {/* Step: Period Selection */}
@@ -3171,7 +3137,10 @@ function FullSubscription() {
                           if (period.traffic.current !== undefined) {
                             setSelectedTraffic(period.traffic.current);
                           }
-                          const availableServers = getAvailableServers(period);
+                          const availableServers = getAvailableServersForPeriod(
+                            period,
+                            Boolean(subscription?.is_trial),
+                          );
                           // If only 1 server available, auto-select it (step will be skipped)
                           if (availableServers.length === 1) {
                             setSelectedServers([availableServers[0].uuid]);
