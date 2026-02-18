@@ -10,9 +10,15 @@ export function CardsBlock({
   getSvgHtml,
   renderBlockButtons,
 }: BlockRendererProps) {
+  const visibleBlocks = blocks.filter(
+    (b) => getLocalizedText(b.title) || getLocalizedText(b.description) || b.buttons?.length,
+  );
+
+  if (!visibleBlocks.length) return null;
+
   return (
     <div className="space-y-3">
-      {blocks.map((block, index) => {
+      {visibleBlocks.map((block, index) => {
         const gradientStyle = getColorGradient(block.svgIconColor || 'cyan', isLight);
 
         return (

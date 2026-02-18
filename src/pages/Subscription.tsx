@@ -688,6 +688,12 @@ function FullSubscription() {
                 {(trafficData?.traffic_used_gb ?? subscription.traffic_used_gb).toFixed(1)} /{' '}
                 {subscription.traffic_limit_gb || '∞'} GB
               </div>
+              {subscription.traffic_reset_mode &&
+                subscription.traffic_reset_mode !== 'NO_RESET' && (
+                  <div className="mt-0.5 text-xs text-dark-500">
+                    {t(`subscription.trafficReset.${subscription.traffic_reset_mode}`)}
+                  </div>
+                )}
             </div>
             <div>
               <div className="mb-1 text-sm text-dark-500">{t('subscription.devices')}</div>
@@ -695,10 +701,10 @@ function FullSubscription() {
             </div>
           </div>
 
-          {/* Servers */}
+          {/* Locations */}
           {subscription.servers && subscription.servers.length > 0 && (
             <div className="mb-6">
-              <div className="mb-2 text-sm text-dark-500">{t('subscription.serversLabel')}</div>
+              <div className="mb-2 text-sm text-dark-500">{t('subscription.locationsLabel')}</div>
               <div className="flex flex-wrap gap-2">
                 {subscription.servers.map((server) => (
                   <span

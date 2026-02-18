@@ -116,6 +116,12 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
           pingIntervalRef.current = null;
         }
 
+        // Don't reconnect on auth failures (1008 = Policy Violation / invalid token)
+        if (event.code === 1008) {
+          if (isDev) console.log('[WS] Auth rejected, not reconnecting');
+          return;
+        }
+
         // Attempt to reconnect if not closed intentionally
         if (event.code !== 1000 && reconnectAttemptsRef.current < maxReconnectAttempts) {
           const delay = Math.min(

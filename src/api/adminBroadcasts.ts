@@ -90,6 +90,7 @@ export interface Broadcast {
   total_count: number;
   sent_count: number;
   failed_count: number;
+  blocked_count: number;
   status:
     | 'queued'
     | 'in_progress'

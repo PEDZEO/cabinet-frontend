@@ -13,9 +13,15 @@ export function AccordionBlock({
 }: BlockRendererProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
+  const visibleBlocks = blocks.filter(
+    (b) => getLocalizedText(b.title) || getLocalizedText(b.description) || b.buttons?.length,
+  );
+
+  if (!visibleBlocks.length) return null;
+
   return (
     <div className="space-y-2">
-      {blocks.map((block, index) => {
+      {visibleBlocks.map((block, index) => {
         const gradientStyle = getColorGradient(block.svgIconColor || 'cyan', isLight);
         const isOpen = openIndex === index;
 

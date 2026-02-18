@@ -217,6 +217,12 @@ export default function AdminBroadcasts() {
                     <span>{broadcast.target_type}</span>
                     <span>
                       {broadcast.sent_count}/{broadcast.total_count}
+                      {broadcast.blocked_count > 0 && (
+                        <span className="text-warning-400">
+                          {' '}
+                          ({broadcast.blocked_count} {t('admin.broadcasts.blockedShort')})
+                        </span>
+                      )}
                     </span>
                     <span>{new Date(broadcast.created_at).toLocaleDateString()}</span>
                   </div>

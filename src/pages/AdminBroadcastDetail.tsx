@@ -167,10 +167,7 @@ export default function AdminBroadcastDetail() {
     queryKey: ['admin', 'broadcasts', 'detail', broadcastId],
     queryFn: async () => {
       if (!broadcastId) throw new Error('Invalid broadcast ID');
-      const response = await adminBroadcastsApi.list(100, 0);
-      const found = response.items.find((b) => b.id === broadcastId);
-      if (!found) throw new Error('Broadcast not found');
-      return found;
+      return adminBroadcastsApi.get(broadcastId);
     },
     enabled: !!broadcastId && !isNaN(broadcastId),
     refetchInterval: (query) => {
@@ -266,7 +263,7 @@ export default function AdminBroadcastDetail() {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="rounded-xl border border-dark-700 bg-dark-800/50 p-4 text-center">
           <p className="text-3xl font-bold text-dark-100">{broadcast.total_count}</p>
           <p className="text-sm text-dark-400">{t('admin.broadcasts.total')}</p>
@@ -274,6 +271,10 @@ export default function AdminBroadcastDetail() {
         <div className="rounded-xl border border-success-500/30 bg-success-500/10 p-4 text-center">
           <p className="text-3xl font-bold text-success-400">{broadcast.sent_count}</p>
           <p className="text-sm text-dark-400">{t('admin.broadcasts.sent')}</p>
+        </div>
+        <div className="rounded-xl border border-warning-500/30 bg-warning-500/10 p-4 text-center">
+          <p className="text-3xl font-bold text-warning-400">{broadcast.blocked_count}</p>
+          <p className="text-sm text-dark-400">{t('admin.broadcasts.blocked')}</p>
         </div>
         <div className="rounded-xl border border-error-500/30 bg-error-500/10 p-4 text-center">
           <p className="text-3xl font-bold text-error-400">{broadcast.failed_count}</p>

@@ -61,6 +61,18 @@ const AdminCampaigns = lazy(() => import('./pages/AdminCampaigns'));
 const AdminCampaignCreate = lazy(() => import('./pages/AdminCampaignCreate'));
 const AdminCampaignStats = lazy(() => import('./pages/AdminCampaignStats'));
 const AdminCampaignEdit = lazy(() => import('./pages/AdminCampaignEdit'));
+const AdminPartners = lazy(() => import('./pages/AdminPartners'));
+const AdminPartnerSettings = lazy(() => import('./pages/AdminPartnerSettings'));
+const AdminPartnerDetail = lazy(() => import('./pages/AdminPartnerDetail'));
+const AdminApplicationReview = lazy(() => import('./pages/AdminApplicationReview'));
+const AdminPartnerCommission = lazy(() => import('./pages/AdminPartnerCommission'));
+const AdminPartnerRevoke = lazy(() => import('./pages/AdminPartnerRevoke'));
+const AdminPartnerCampaignAssign = lazy(() => import('./pages/AdminPartnerCampaignAssign'));
+const AdminWithdrawals = lazy(() => import('./pages/AdminWithdrawals'));
+const AdminWithdrawalDetail = lazy(() => import('./pages/AdminWithdrawalDetail'));
+const AdminWithdrawalReject = lazy(() => import('./pages/AdminWithdrawalReject'));
+const ReferralPartnerApply = lazy(() => import('./pages/ReferralPartnerApply'));
+const ReferralWithdrawalRequest = lazy(() => import('./pages/ReferralWithdrawalRequest'));
 const AdminUsers = lazy(() => import('./pages/AdminUsers'));
 const AdminPayments = lazy(() => import('./pages/AdminPayments'));
 const AdminPaymentMethods = lazy(() => import('./pages/AdminPaymentMethods'));
@@ -215,6 +227,26 @@ function App() {
             <ProtectedRoute>
               <LazyPage>
                 <Referral />
+              </LazyPage>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/referral/partner/apply"
+          element={
+            <ProtectedRoute>
+              <LazyPage>
+                <ReferralPartnerApply />
+              </LazyPage>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/referral/withdrawal/request"
+          element={
+            <ProtectedRoute>
+              <LazyPage>
+                <ReferralWithdrawalRequest />
               </LazyPage>
             </ProtectedRoute>
           }
@@ -567,6 +599,106 @@ function App() {
             <AdminRoute>
               <LazyPage>
                 <AdminCampaignEdit />
+              </LazyPage>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/partners"
+          element={
+            <AdminRoute>
+              <LazyPage>
+                <AdminPartners />
+              </LazyPage>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/partners/settings"
+          element={
+            <AdminRoute>
+              <LazyPage>
+                <AdminPartnerSettings />
+              </LazyPage>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/partners/applications/:id/review"
+          element={
+            <AdminRoute>
+              <LazyPage>
+                <AdminApplicationReview />
+              </LazyPage>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/partners/:userId/commission"
+          element={
+            <AdminRoute>
+              <LazyPage>
+                <AdminPartnerCommission />
+              </LazyPage>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/partners/:userId/revoke"
+          element={
+            <AdminRoute>
+              <LazyPage>
+                <AdminPartnerRevoke />
+              </LazyPage>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/partners/:userId/campaigns/assign"
+          element={
+            <AdminRoute>
+              <LazyPage>
+                <AdminPartnerCampaignAssign />
+              </LazyPage>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/partners/:userId"
+          element={
+            <AdminRoute>
+              <LazyPage>
+                <AdminPartnerDetail />
+              </LazyPage>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/withdrawals"
+          element={
+            <AdminRoute>
+              <LazyPage>
+                <AdminWithdrawals />
+              </LazyPage>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/withdrawals/:id/reject"
+          element={
+            <AdminRoute>
+              <LazyPage>
+                <AdminWithdrawalReject />
+              </LazyPage>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/withdrawals/:id"
+          element={
+            <AdminRoute>
+              <LazyPage>
+                <AdminWithdrawalDetail />
               </LazyPage>
             </AdminRoute>
           }

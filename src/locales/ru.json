@@ -268,6 +268,15 @@
     "servers_one": "{{count}} сервер",
     "servers_few": "{{count}} сервера",
     "servers_many": "{{count}} серверов",
+    "locationsLabel": "Локации",
+    "locations_one": "{{count}} локация",
+    "locations_few": "{{count}} локации",
+    "locations_many": "{{count}} локаций",
+    "trafficReset": {
+      "DAY": "Сброс ежедневно",
+      "WEEK": "Сброс еженедельно",
+      "MONTH": "Сброс ежемесячно"
+    },
     "traffic": "Трафик",
     "unlimited": "Безлимит",
     "used": "Использовано",
@@ -700,7 +709,83 @@
       "referral_subscription_renewal": "Продление подписки реферала",
       "referral_bonus": "Бонус за реферала"
     },
-    "disabled": "Реферальная программа временно отключена"
+    "disabled": "Реферальная программа временно отключена",
+    "partner": {
+      "becomePartner": "Стать партнером",
+      "becomePartnerDesc": "Подайте заявку на партнерскую программу, чтобы получить повышенную комиссию и возможность вывода заработка.",
+      "applyButton": "Подать заявку",
+      "applyTitle": "Заявка на партнерство",
+      "applyDesc": "Заполните форму ниже для подачи заявки на партнерскую программу. Все поля необязательные.",
+      "underReview": "Заявка на рассмотрении",
+      "underReviewDesc": "Ваша заявка на партнерство рассматривается. Мы уведомим вас, когда будет принято решение.",
+      "submittedAt": "Подана {{date}}",
+      "partnerStatus": "Партнер",
+      "active": "Активен",
+      "commissionInfo": "Ваша партнерская комиссия составляет {{percent}}%",
+      "rejected": "Заявка отклонена",
+      "reapplyButton": "Подать заново",
+      "applying": "Отправка...",
+      "submitApplication": "Отправить заявку",
+      "applyError": "Не удалось отправить заявку. Попробуйте снова.",
+      "yourCampaigns": "Ваши кампании",
+      "campaignLinks": {
+        "bot": "Ссылка в бот",
+        "web": "Ссылка в кабинет"
+      },
+      "campaignBonus": {
+        "title": "Бонус для реферала",
+        "balance": "+{{amount}} на баланс",
+        "balanceDesc": "{{amount}} на баланс при регистрации",
+        "subscription": "{{days}} дн. подписки",
+        "subscriptionDesc": "{{days}} дней бесплатной подписки",
+        "tariff": "Бонусный тариф",
+        "tariffDesc": "Бесплатный тарифный план"
+      },
+      "fields": {
+        "companyName": "Название компании",
+        "companyNamePlaceholder": "Название вашей компании или бренда",
+        "telegramChannel": "Telegram-канал",
+        "telegramChannelPlaceholder": "@вашканал",
+        "websiteUrl": "Сайт",
+        "websiteUrlPlaceholder": "https://example.com",
+        "description": "Описание",
+        "descriptionPlaceholder": "Расскажите о вашей аудитории и планах продвижения...",
+        "expectedReferrals": "Ожидаемое количество рефералов в месяц",
+        "expectedReferralsPlaceholder": "Примерное количество в месяц"
+      }
+    },
+    "withdrawal": {
+      "title": "Вывод средств",
+      "goToWithdrawal": "Вывести",
+      "available": "Доступно",
+      "totalEarned": "Всего заработано",
+      "withdrawn": "Выведено",
+      "spent": "Потрачено на услуги",
+      "pending": "В обработке",
+      "requestButton": "Запросить вывод",
+      "minAmount": "Минимальная сумма вывода: {{amount}}",
+      "history": "История выводов",
+      "noHistory": "Запросов на вывод пока нет",
+      "requestTitle": "Запрос на вывод",
+      "requestDesc": "Доступно для вывода: {{available}}",
+      "requesting": "Отправка...",
+      "submitRequest": "Отправить запрос",
+      "requestError": "Не удалось создать запрос на вывод. Попробуйте снова.",
+      "fields": {
+        "amount": "Сумма (копейки)",
+        "amountPlaceholder": "Введите сумму в копейках",
+        "amountHint": "Введите сумму в копейках (100 копеек = 1 {{currency}})",
+        "paymentDetails": "Реквизиты для оплаты",
+        "paymentDetailsPlaceholder": "Номер карты, адрес кошелька или другие реквизиты..."
+      },
+      "status": {
+        "pending": "В обработке",
+        "approved": "Одобрен",
+        "completed": "Завершен",
+        "rejected": "Отклонен",
+        "cancelled": "Отменен"
+      }
+    }
   },
   "support": {
     "title": "Поддержка",
@@ -818,7 +903,9 @@
       "trafficUsage": "Расход трафика",
       "updates": "Обновления",
       "pinnedMessages": "Закреплённые",
-      "accountLinking": "Merge аккаунтов"
+      "accountLinking": "Merge аккаунтов",
+      "partners": "Партнёры",
+      "withdrawals": "Выводы"
     },
     "panel": {
       "title": "Панель администратора",
@@ -844,7 +931,9 @@
       "trafficUsageDesc": "Трафик пользователей по нодам",
       "updatesDesc": "Версии бота и кабинета",
       "pinnedMessagesDesc": "Управление закреплёнными сообщениями",
-      "accountLinkingDesc": "Ручная модерация спорных объединений аккаунтов"
+      "accountLinkingDesc": "Ручная модерация спорных объединений аккаунтов",
+      "partnersDesc": "Управление заявками партнёров и комиссиями",
+      "withdrawalsDesc": "Проверка и обработка заявок на вывод"
     },
     "accountLinking": {
       "title": "Ручные заявки на объединение аккаунтов",
@@ -875,6 +964,7 @@
         "approve": "Одобрить объединение",
         "reject": "Отклонить запрос"
       }
+    },
     },
     "trafficUsage": {
       "title": "Расход трафика",
@@ -1194,6 +1284,8 @@
       "total": "Всего",
       "sent": "Отправлено",
       "failed": "Ошибки",
+      "blocked": "Заблокировали",
+      "blockedShort": "заблок.",
       "filter": "Фильтр",
       "message": "Сообщение",
       "unknownAdmin": "Неизвестный админ",
@@ -2240,7 +2332,11 @@
         "active": "Активна",
         "cancel": "Отмена",
         "save": "Сохранить",
-        "saving": "Сохранение..."
+        "saving": "Сохранение...",
+        "partner": "Партнёр",
+        "noPartner": "Без партнёра",
+        "selectPartner": "Выберите партнёра",
+        "partnerAutoAssign": "Кампания будет автоматически привязана к партнёру {{name}}"
       },
       "stats": {
         "title": "Статистика кампании",
@@ -2297,6 +2393,189 @@
       },
       "loadError": "Не удалось загрузить кампанию",
       "updateError": "Не удалось сохранить изменения"
+    },
+    "withdrawals": {
+      "title": "Выводы средств",
+      "subtitle": "Управление заявками на вывод",
+      "noData": "Нет заявок на вывод",
+      "risk": "Риск:",
+      "overview": {
+        "pendingCount": "Ожидают",
+        "pendingAmount": "Сумма ожидания",
+        "approvedCount": "Одобрено",
+        "completedCount": "Выполнено"
+      },
+      "filter": {
+        "all": "Все",
+        "pending": "Ожидание",
+        "approved": "Одобрено",
+        "rejected": "Отклонено",
+        "completed": "Выполнено",
+        "cancelled": "Отменено"
+      },
+      "status": {
+        "pending": "Ожидание",
+        "approved": "Одобрено",
+        "rejected": "Отклонено",
+        "completed": "Выполнено",
+        "cancelled": "Отменено",
+        "unknown": "Неизвестно"
+      },
+      "detail": {
+        "title": "Заявка на вывод",
+        "loadError": "Не удалось загрузить детали заявки",
+        "userInfo": "Информация о пользователе",
+        "username": "Имя пользователя",
+        "telegramId": "Telegram ID",
+        "balance": "Баланс",
+        "totalReferrals": "Всего рефералов",
+        "totalEarnings": "Общий заработок",
+        "createdAt": "Создано",
+        "paymentDetails": "Реквизиты для оплаты",
+        "noPaymentDetails": "Реквизиты не указаны",
+        "riskAnalysis": "Анализ рисков",
+        "riskScore": "Оценка риска",
+        "riskLevel": {
+          "low": "Низкий",
+          "medium": "Средний",
+          "high": "Высокий",
+          "critical": "Критический"
+        },
+        "flags": "Флаги",
+        "balanceStats": "Статистика баланса",
+        "referralDeposits": "Депозиты рефералов",
+        "suspiciousReferrals": "Подозрительные рефералы",
+        "earningsByReason": "Доходы по причинам",
+        "adminComment": "Комментарий администратора",
+        "processedAt": "Обработано",
+        "approve": "Одобрить",
+        "approving": "Одобрение...",
+        "reject": "Отклонить",
+        "rejecting": "Отклонение...",
+        "complete": "Отметить как выполнено",
+        "completing": "Завершение...",
+        "rejectTitle": "Отклонить заявку?",
+        "rejectDescription": "При необходимости добавьте комментарий с причиной отклонения.",
+        "commentPlaceholder": "Причина отклонения (необязательно)...",
+        "confirmReject": "Подтвердить отклонение"
+      }
+    },
+    "partners": {
+      "title": "Партнёры",
+      "subtitle": "Управление партнёрами и заявками",
+      "totalPartners": "Всего партнёров",
+      "pendingApplications": "Заявок на рассмотрении",
+      "totalReferrals": "Всего рефералов",
+      "totalEarnings": "Всего заработано",
+      "tabs": {
+        "partners": "Партнёры",
+        "applications": "Заявки"
+      },
+      "noPartners": "Партнёров пока нет",
+      "noApplications": "Нет заявок на рассмотрении",
+      "commission": "{{percent}}% комиссия",
+      "referrals": "{{count}} рефералов",
+      "actions": {
+        "approve": "Одобрить",
+        "reject": "Отклонить",
+        "review": "Рассмотреть"
+      },
+      "applicationFields": {
+        "companyName": "Компания",
+        "website": "Сайт",
+        "channel": "Канал",
+        "description": "Описание",
+        "expectedReferrals": "Ожидаемых рефералов/мес"
+      },
+      "approveDialog": {
+        "title": "Одобрить заявку",
+        "description": "Одобрить партнёрскую заявку от {{name}}",
+        "commissionLabel": "Комиссия (%)"
+      },
+      "rejectDialog": {
+        "title": "Отклонить заявку",
+        "description": "Отклонить партнёрскую заявку от {{name}}",
+        "commentLabel": "Комментарий (необязательно)",
+        "commentPlaceholder": "Причина отклонения..."
+      },
+      "settings": "Настройки",
+      "settingsSubtitle": "Настройки партнёрской программы и вывода средств",
+      "settingsLoadError": "Не удалось загрузить настройки",
+      "settingsUpdateError": "Не удалось сохранить настройки",
+      "settingsSection": {
+        "referralProgram": "Реферальная программа",
+        "withdrawalSettings": "Настройки вывода"
+      },
+      "settingsFields": {
+        "programEnabled": "Реферальная программа включена",
+        "programEnabledDesc": "Вкл/выкл реферальную программу для всех пользователей",
+        "partnerVisible": "Раздел партнёрки виден в кабинете",
+        "partnerVisibleDesc": "Показывать/скрывать секцию подачи заявки на партнёрство и вывода средств",
+        "withdrawalEnabled": "Вывод средств включён",
+        "withdrawalEnabledDesc": "Разрешить партнёрам запрашивать вывод реферального баланса",
+        "minAmount": "Мин. сумма вывода (копейки)",
+        "minAmountDesc": "Минимальная сумма для запроса вывода (100 коп. = 1 ₽)",
+        "cooldownDays": "Кулдаун между выводами (дни)",
+        "cooldownDaysDesc": "Сколько дней должно пройти между запросами на вывод",
+        "requisitesText": "Текст для поля реквизитов",
+        "requisitesTextDesc": "Кастомная подсказка пользователю, какие реквизиты указать при выводе",
+        "requisitesTextPlaceholder": "Например: Укажите номер карты Сбербанк / Тинькофф или USDT TRC-20 адрес"
+      }
+    },
+    "partnerDetail": {
+      "title": "Детали партнёра",
+      "loadError": "Не удалось загрузить данные партнёра",
+      "status": {
+        "approved": "Активен",
+        "pending": "На рассмотрении",
+        "rejected": "Отклонён",
+        "none": "Не партнёр"
+      },
+      "stats": {
+        "totalReferrals": "Всего рефералов",
+        "paidReferrals": "Оплативших",
+        "activeReferrals": "Активных",
+        "conversionRate": "Конверсия"
+      },
+      "earnings": {
+        "title": "Заработок",
+        "allTime": "За всё время",
+        "today": "Сегодня",
+        "week": "За неделю",
+        "month": "За месяц"
+      },
+      "commission": {
+        "title": "Комиссия",
+        "update": "Изменить"
+      },
+      "campaigns": {
+        "title": "Привязанные кампании",
+        "noCampaigns": "Нет привязанных кампаний",
+        "active": "Активна",
+        "inactive": "Неактивна",
+        "assign": "Привязать",
+        "unassign": "Отвязать",
+        "createNew": "Создать",
+        "assignTitle": "Привязать кампанию",
+        "noAvailable": "Нет доступных кампаний для привязки",
+        "createTitle": "Создать кампанию",
+        "createSubtitle": "Кампания будет автоматически привязана к партнёру",
+        "autoAssignNote": "Кампания будет автоматически привязана к партнёру {{name}}",
+        "createAndAssign": "Создать и привязать"
+      },
+      "dangerZone": {
+        "title": "Опасная зона",
+        "revokeButton": "Отозвать партнёрский статус"
+      },
+      "commissionDialog": {
+        "title": "Изменить комиссию",
+        "description": "Установите новый процент комиссии для этого партнёра.",
+        "label": "Комиссия (%)"
+      },
+      "revokeDialog": {
+        "title": "Отозвать статус партнёра?",
+        "description": "Это лишит партнёра привилегий. Партнёр больше не будет получать комиссию от рефералов."
+      }
     },
     "promocodes": {
       "title": "Промокоды",

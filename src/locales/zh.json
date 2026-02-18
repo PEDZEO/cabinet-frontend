@@ -239,6 +239,13 @@
     "baseTariff": "套餐",
     "serversLabel": "服务器",
     "servers_other": "{{count}} 个服务器",
+    "locationsLabel": "位置",
+    "locations_other": "{{count}} 个位置",
+    "trafficReset": {
+      "DAY": "每日重置",
+      "WEEK": "每周重置",
+      "MONTH": "每月重置"
+    },
     "traffic": "流量",
     "unlimited": "无限",
     "used": "已使用",
@@ -542,7 +549,83 @@
       "referral_subscription_renewal": "推荐用户续订",
       "referral_bonus": "推荐奖金"
     },
-    "disabled": "推荐计划暂时停用"
+    "disabled": "推荐计划暂时停用",
+    "partner": {
+      "becomePartner": "成为合作伙伴",
+      "becomePartnerDesc": "申请加入合作伙伴计划，获得更高的佣金率并可以提现您的收益。",
+      "applyButton": "申请",
+      "applyTitle": "合作伙伴申请",
+      "applyDesc": "填写以下表格申请我们的合作伙伴计划。所有字段均为可选。",
+      "underReview": "申请审核中",
+      "underReviewDesc": "您的合作伙伴申请正在审核中。我们会在做出决定后通知您。",
+      "submittedAt": "提交于 {{date}}",
+      "partnerStatus": "合作伙伴",
+      "active": "活跃",
+      "commissionInfo": "您的合作伙伴佣金率为 {{percent}}%",
+      "rejected": "申请被拒绝",
+      "reapplyButton": "重新申请",
+      "applying": "提交中...",
+      "submitApplication": "提交申请",
+      "applyError": "提交申请失败，请重试。",
+      "yourCampaigns": "您的活动",
+      "campaignLinks": {
+        "bot": "机器人链接",
+        "web": "网页链接"
+      },
+      "campaignBonus": {
+        "title": "推荐奖励",
+        "balance": "+{{amount}} 余额",
+        "balanceDesc": "注册时充值 {{amount}}",
+        "subscription": "{{days}} 天订阅",
+        "subscriptionDesc": "{{days}} 天免费订阅",
+        "tariff": "奖励套餐",
+        "tariffDesc": "免费套餐方案"
+      },
+      "fields": {
+        "companyName": "公司名称",
+        "companyNamePlaceholder": "您的公司或品牌名称",
+        "telegramChannel": "Telegram频道",
+        "telegramChannelPlaceholder": "@yourchannel",
+        "websiteUrl": "网站地址",
+        "websiteUrlPlaceholder": "https://example.com",
+        "description": "描述",
+        "descriptionPlaceholder": "请介绍您的受众以及推广计划...",
+        "expectedReferrals": "预计每月推荐数",
+        "expectedReferralsPlaceholder": "每月预估数量"
+      }
+    },
+    "withdrawal": {
+      "title": "提现",
+      "goToWithdrawal": "提现",
+      "available": "可提现",
+      "totalEarned": "总收益",
+      "withdrawn": "已提现",
+      "spent": "已用于服务",
+      "pending": "待处理",
+      "requestButton": "申请提现",
+      "minAmount": "最低提现金额：{{amount}}",
+      "history": "提现记录",
+      "noHistory": "暂无提现记录",
+      "requestTitle": "申请提现",
+      "requestDesc": "可提现金额：{{available}}",
+      "requesting": "提交中...",
+      "submitRequest": "提交请求",
+      "requestError": "创建提现请求失败，请重试。",
+      "fields": {
+        "amount": "金额（戈比）",
+        "amountPlaceholder": "输入金额（戈比）",
+        "amountHint": "请输入戈比金额（100戈比 = 1 {{currency}}）",
+        "paymentDetails": "付款信息",
+        "paymentDetailsPlaceholder": "银行卡号、钱包地址或其他付款信息..."
+      },
+      "status": {
+        "pending": "待处理",
+        "approved": "已批准",
+        "completed": "已完成",
+        "rejected": "已拒绝",
+        "cancelled": "已取消"
+      }
+    }
   },
   "support": {
     "title": "支持",
@@ -655,7 +738,9 @@
       "users": "用户",
       "trafficUsage": "流量使用",
       "updates": "更新",
-      "pinnedMessages": "置顶消息"
+      "pinnedMessages": "置顶消息",
+      "partners": "合作伙伴",
+      "withdrawals": "提现"
     },
     "panel": {
       "title": "管理面板",
@@ -680,7 +765,9 @@
       "usersDesc": "管理机器人用户",
       "trafficUsageDesc": "按节点统计用户流量",
       "updatesDesc": "机器人和面板版本",
-      "pinnedMessagesDesc": "管理用户置顶消息"
+      "pinnedMessagesDesc": "管理用户置顶消息",
+      "partnersDesc": "管理合作伙伴申请和佣金",
+      "withdrawalsDesc": "审核和处理提现请求"
     },
     "trafficUsage": {
       "title": "流量使用",
@@ -888,6 +975,8 @@
       "total": "总计",
       "sent": "已发送",
       "failed": "失败",
+      "blocked": "已屏蔽",
+      "blockedShort": "屏蔽",
       "filter": "筛选",
       "message": "消息",
       "unknownAdmin": "未知",
@@ -1404,7 +1493,11 @@
         "active": "启用",
         "cancel": "取消",
         "save": "保存",
-        "saving": "保存中..."
+        "saving": "保存中...",
+        "partner": "合作伙伴",
+        "noPartner": "无合作伙伴",
+        "selectPartner": "选择合作伙伴",
+        "partnerAutoAssign": "活动将自动分配给合作伙伴 {{name}}"
       },
       "stats": {
         "title": "活动统计",
@@ -1457,6 +1550,165 @@
       },
       "loadError": "加载活动失败",
       "updateError": "保存更改失败"
+    },
+    "withdrawals": {
+      "title": "提现",
+      "subtitle": "管理提现请求",
+      "noData": "暂无提现请求",
+      "risk": "风险：",
+      "overview": {
+        "pendingCount": "待处理",
+        "pendingAmount": "待处理金额",
+        "approvedCount": "已批准",
+        "completedCount": "已完成"
+      },
+      "filter": {
+        "all": "全部",
+        "pending": "待处理",
+        "approved": "已批准",
+        "rejected": "已拒绝",
+        "completed": "已完成",
+        "cancelled": "已取消"
+      },
+      "status": {
+        "pending": "待处理",
+        "approved": "已批准",
+        "rejected": "已拒绝",
+        "completed": "已完成",
+        "cancelled": "已取消"
+      },
+      "detail": {
+        "title": "提现详情",
+        "loadError": "加载提现详情失败",
+        "userInfo": "用户信息",
+        "username": "用户名",
+        "telegramId": "Telegram ID",
+        "balance": "余额",
+        "totalReferrals": "总推荐数",
+        "totalEarnings": "总收益",
+        "createdAt": "创建时间",
+        "paymentDetails": "付款信息",
+        "noPaymentDetails": "未提供付款信息",
+        "riskAnalysis": "风险分析",
+        "riskScore": "风险评分",
+        "riskLevel": {
+          "low": "低",
+          "medium": "中",
+          "high": "高",
+          "critical": "严重"
+        },
+        "flags": "标记",
+        "balanceStats": "余额统计",
+        "referralDeposits": "推荐充值",
+        "suspiciousReferrals": "可疑推荐",
+        "earningsByReason": "按原因分类收益",
+        "adminComment": "管理员备注",
+        "processedAt": "处理时间",
+        "approve": "批准",
+        "approving": "批准中...",
+        "reject": "拒绝",
+        "rejecting": "拒绝中...",
+        "complete": "标记为已完成",
+        "completing": "完成中...",
+        "rejectTitle": "拒绝提现？",
+        "rejectDescription": "可选择添加备注说明拒绝原因。",
+        "commentPlaceholder": "拒绝原因（可选）...",
+        "confirmReject": "确认拒绝"
+      }
+    },
+    "partners": {
+      "title": "合作伙伴",
+      "subtitle": "合作伙伴管理和申请",
+      "totalPartners": "总合作伙伴数",
+      "pendingApplications": "待审核申请",
+      "totalReferrals": "总推荐数",
+      "totalEarnings": "总收益",
+      "tabs": {
+        "partners": "合作伙伴",
+        "applications": "申请"
+      },
+      "noPartners": "暂无合作伙伴",
+      "noApplications": "暂无待审核申请",
+      "commission": "{{percent}}% 佣金",
+      "referrals": "{{count}} 个推荐",
+      "actions": {
+        "approve": "批准",
+        "reject": "拒绝",
+        "review": "审核"
+      },
+      "applicationFields": {
+        "companyName": "公司",
+        "website": "网站",
+        "channel": "频道",
+        "description": "描述",
+        "expectedReferrals": "预计每月推荐数"
+      },
+      "approveDialog": {
+        "title": "批准申请",
+        "description": "批准来自 {{name}} 的合作伙伴申请",
+        "commissionLabel": "佣金（%）"
+      },
+      "rejectDialog": {
+        "title": "拒绝申请",
+        "description": "拒绝来自 {{name}} 的合作伙伴申请",
+        "commentLabel": "备注（可选）",
+        "commentPlaceholder": "拒绝原因..."
+      }
+    },
+    "partnerDetail": {
+      "title": "合作伙伴详情",
+      "loadError": "加载合作伙伴详情失败",
+      "status": {
+        "approved": "活跃",
+        "pending": "审核中",
+        "rejected": "已拒绝",
+        "none": "非合作伙伴"
+      },
+      "stats": {
+        "totalReferrals": "总推荐数",
+        "paidReferrals": "已付费推荐",
+        "activeReferrals": "活跃推荐",
+        "conversionRate": "转化率"
+      },
+      "earnings": {
+        "title": "收益",
+        "allTime": "总计",
+        "today": "今日",
+        "week": "本周",
+        "month": "本月"
+      },
+      "commission": {
+        "title": "佣金",
+        "update": "更新"
+      },
+      "campaigns": {
+        "title": "分配的活动",
+        "noCampaigns": "暂无分配的活动",
+        "active": "活跃",
+        "inactive": "未激活",
+        "assign": "分配",
+        "unassign": "取消分配",
+        "createNew": "创建",
+        "assignTitle": "分配活动",
+        "noAvailable": "没有可分配的活动",
+        "createTitle": "创建活动",
+        "createSubtitle": "活动将自动分配给合作伙伴",
+        "autoAssignNote": "活动将自动分配给合作伙伴 {{name}}",
+        "createAndAssign": "创建并分配"
+      },
+      "dangerZone": {
+        "title": "危险操作",
+        "revokeButton": "撤销合作伙伴身份"
+      },
+      "commissionDialog": {
+        "title": "更新佣金",
+        "description": "为该合作伙伴设置新的佣金百分比。",
+        "label": "佣金（%）"
+      },
+      "revokeDialog": {
+        "title": "撤销合作伙伴身份？",
+        "description": "这将移除合作伙伴权限。该合作伙伴将不再从推荐中获得佣金。"
+      }
     },
     "promocodes": {
       "title": "促销码",

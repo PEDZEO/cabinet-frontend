@@ -10,11 +10,17 @@ export function MinimalBlock({
   getSvgHtml,
   renderBlockButtons,
 }: BlockRendererProps) {
+  const visibleBlocks = blocks.filter(
+    (b) => getLocalizedText(b.title) || getLocalizedText(b.description) || b.buttons?.length,
+  );
+
+  if (!visibleBlocks.length) return null;
+
   return (
     <div>
-      {blocks.map((block, index) => {
+      {visibleBlocks.map((block, index) => {
         const gradientStyle = getColorGradient(block.svgIconColor || 'cyan', isLight);
-        const isLast = index === blocks.length - 1;
+        const isLast = index === visibleBlocks.length - 1;
 
         return (
           <div

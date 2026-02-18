@@ -239,6 +239,13 @@
     "baseTariff": "تعرفه",
     "serversLabel": "سرورها",
     "servers_other": "{{count}} سرور",
+    "locationsLabel": "مکان‌ها",
+    "locations_other": "{{count}} مکان",
+    "trafficReset": {
+      "DAY": "بازنشانی روزانه",
+      "WEEK": "بازنشانی هفتگی",
+      "MONTH": "بازنشانی ماهانه"
+    },
     "traffic": "ترافیک",
     "unlimited": "نامحدود",
     "used": "استفاده شده",
@@ -542,7 +549,83 @@
       "referral_subscription_renewal": "تمدید اشتراک کاربر معرفی‌شده",
       "referral_bonus": "پاداش کاربر معرفی‌شده"
     },
-    "disabled": "برنامه معرفی موقتاً غیرفعال است"
+    "disabled": "برنامه معرفی موقتاً غیرفعال است",
+    "partner": {
+      "becomePartner": "شریک شوید",
+      "becomePartnerDesc": "برای دریافت نرخ کمیسیون بالاتر و امکان برداشت درآمد، درخواست شراکت دهید.",
+      "applyButton": "درخواست",
+      "applyTitle": "درخواست شراکت",
+      "applyDesc": "فرم زیر را برای درخواست برنامه شراکت پر کنید. تمام فیلدها اختیاری هستند.",
+      "underReview": "درخواست در حال بررسی",
+      "underReviewDesc": "درخواست شراکت شما در حال بررسی است. پس از تصمیم‌گیری به شما اطلاع خواهیم داد.",
+      "submittedAt": "ارسال شده در {{date}}",
+      "partnerStatus": "شریک",
+      "active": "فعال",
+      "commissionInfo": "نرخ کمیسیون شراکت شما {{percent}}% است",
+      "rejected": "درخواست رد شد",
+      "reapplyButton": "درخواست مجدد",
+      "applying": "در حال ارسال...",
+      "submitApplication": "ارسال درخواست",
+      "applyError": "ارسال درخواست ناموفق بود. لطفاً دوباره تلاش کنید.",
+      "yourCampaigns": "کمپین‌های شما",
+      "campaignLinks": {
+        "bot": "لینک ربات",
+        "web": "لینک کابینت"
+      },
+      "campaignBonus": {
+        "title": "جایزه معرفی",
+        "balance": "+{{amount}} به موجودی",
+        "balanceDesc": "{{amount}} هنگام ثبت‌نام",
+        "subscription": "{{days}} روز اشتراک",
+        "subscriptionDesc": "{{days}} روز اشتراک رایگان",
+        "tariff": "تعرفه جایزه",
+        "tariffDesc": "طرح تعرفه رایگان"
+      },
+      "fields": {
+        "companyName": "نام شرکت",
+        "companyNamePlaceholder": "نام شرکت یا برند شما",
+        "telegramChannel": "کانال تلگرام",
+        "telegramChannelPlaceholder": "@yourchannel",
+        "websiteUrl": "آدرس وب‌سایت",
+        "websiteUrlPlaceholder": "https://example.com",
+        "description": "توضیحات",
+        "descriptionPlaceholder": "درباره مخاطبان خود و نحوه تبلیغ بگویید...",
+        "expectedReferrals": "تعداد معرفی ماهانه مورد انتظار",
+        "expectedReferralsPlaceholder": "تعداد تخمینی در ماه"
+      }
+    },
+    "withdrawal": {
+      "title": "برداشت",
+      "goToWithdrawal": "برداشت",
+      "available": "قابل برداشت",
+      "totalEarned": "مجموع درآمد",
+      "withdrawn": "برداشت شده",
+      "spent": "صرف خدمات شده",
+      "pending": "در انتظار",
+      "requestButton": "درخواست برداشت",
+      "minAmount": "حداقل مبلغ برداشت: {{amount}}",
+      "history": "تاریخچه برداشت",
+      "noHistory": "هنوز درخواست برداشتی وجود ندارد",
+      "requestTitle": "درخواست برداشت",
+      "requestDesc": "قابل برداشت: {{available}}",
+      "requesting": "در حال ارسال...",
+      "submitRequest": "ارسال درخواست",
+      "requestError": "ایجاد درخواست برداشت ناموفق بود. لطفاً دوباره تلاش کنید.",
+      "fields": {
+        "amount": "مبلغ (کوپک)",
+        "amountPlaceholder": "مبلغ را به کوپک وارد کنید",
+        "amountHint": "مبلغ را به کوپک وارد کنید (۱۰۰ کوپک = ۱ {{currency}})",
+        "paymentDetails": "اطلاعات پرداخت",
+        "paymentDetailsPlaceholder": "شماره کارت، آدرس کیف پول یا سایر اطلاعات پرداخت..."
+      },
+      "status": {
+        "pending": "در انتظار",
+        "approved": "تأیید شده",
+        "completed": "تکمیل شده",
+        "rejected": "رد شده",
+        "cancelled": "لغو شده"
+      }
+    }
   },
   "support": {
     "title": "پشتیبانی",
@@ -655,7 +738,9 @@
       "users": "کاربران",
       "trafficUsage": "مصرف ترافیک",
       "updates": "به‌روزرسانی‌ها",
-      "pinnedMessages": "پیام‌های سنجاق‌شده"
+      "pinnedMessages": "پیام‌های سنجاق‌شده",
+      "partners": "شرکا",
+      "withdrawals": "برداشت‌ها"
     },
     "panel": {
       "title": "پنل مدیریت",
@@ -680,7 +765,9 @@
       "usersDesc": "مدیریت کاربران ربات",
       "trafficUsageDesc": "ترافیک هر کاربر بر اساس نود",
       "updatesDesc": "نسخه‌های ربات و کابینت",
-      "pinnedMessagesDesc": "مدیریت پیام‌های سنجاق‌شده"
+      "pinnedMessagesDesc": "مدیریت پیام‌های سنجاق‌شده",
+      "partnersDesc": "مدیریت درخواست‌های شراکت و کمیسیون‌ها",
+      "withdrawalsDesc": "بررسی و پردازش درخواست‌های برداشت"
     },
     "trafficUsage": {
       "title": "مصرف ترافیک",
@@ -836,6 +923,8 @@
       "total": "کل",
       "sent": "ارسال شده",
       "failed": "ناموفق",
+      "blocked": "مسدود شده",
+      "blockedShort": "مسدود",
       "filter": "فیلتر",
       "message": "پیام",
       "unknownAdmin": "نامعلوم",
@@ -1405,7 +1494,11 @@
         "active": "فعال",
         "cancel": "لغو",
         "save": "ذخیره",
-        "saving": "در حال ذخیره..."
+        "saving": "در حال ذخیره...",
+        "partner": "شریک",
+        "noPartner": "بدون شریک",
+        "selectPartner": "انتخاب شریک",
+        "partnerAutoAssign": "کمپین به طور خودکار به شریک {{name}} اختصاص داده می‌شود"
       },
       "stats": {
         "title": "آمار کمپین",
@@ -1458,6 +1551,165 @@
       },
       "loadError": "بارگذاری کمپین ناموفق بود",
       "updateError": "ذخیره تغییرات ناموفق بود"
+    },
+    "withdrawals": {
+      "title": "برداشت‌ها",
+      "subtitle": "مدیریت درخواست‌های برداشت",
+      "noData": "درخواست برداشتی وجود ندارد",
+      "risk": "ریسک:",
+      "overview": {
+        "pendingCount": "در انتظار",
+        "pendingAmount": "مبلغ در انتظار",
+        "approvedCount": "تأیید شده",
+        "completedCount": "تکمیل شده"
+      },
+      "filter": {
+        "all": "همه",
+        "pending": "در انتظار",
+        "approved": "تأیید شده",
+        "rejected": "رد شده",
+        "completed": "تکمیل شده",
+        "cancelled": "لغو شده"
+      },
+      "status": {
+        "pending": "در انتظار",
+        "approved": "تأیید شده",
+        "rejected": "رد شده",
+        "completed": "تکمیل شده",
+        "cancelled": "لغو شده"
+      },
+      "detail": {
+        "title": "جزئیات برداشت",
+        "loadError": "بارگذاری جزئیات برداشت ناموفق بود",
+        "userInfo": "اطلاعات کاربر",
+        "username": "نام کاربری",
+        "telegramId": "شناسه تلگرام",
+        "balance": "موجودی",
+        "totalReferrals": "مجموع معرفی‌ها",
+        "totalEarnings": "مجموع درآمد",
+        "createdAt": "تاریخ ایجاد",
+        "paymentDetails": "اطلاعات پرداخت",
+        "noPaymentDetails": "اطلاعات پرداختی ارائه نشده",
+        "riskAnalysis": "تحلیل ریسک",
+        "riskScore": "امتیاز ریسک",
+        "riskLevel": {
+          "low": "کم",
+          "medium": "متوسط",
+          "high": "زیاد",
+          "critical": "بحرانی"
+        },
+        "flags": "پرچم‌ها",
+        "balanceStats": "آمار موجودی",
+        "referralDeposits": "واریزهای معرفی",
+        "suspiciousReferrals": "معرفی‌های مشکوک",
+        "earningsByReason": "درآمد بر اساس دلیل",
+        "adminComment": "نظر مدیر",
+        "processedAt": "زمان پردازش",
+        "approve": "تأیید",
+        "approving": "در حال تأیید...",
+        "reject": "رد",
+        "rejecting": "در حال رد...",
+        "complete": "تکمیل شده علامت بزنید",
+        "completing": "در حال تکمیل...",
+        "rejectTitle": "رد درخواست برداشت؟",
+        "rejectDescription": "در صورت تمایل دلیل رد را بنویسید.",
+        "commentPlaceholder": "دلیل رد (اختیاری)...",
+        "confirmReject": "تأیید رد"
+      }
+    },
+    "partners": {
+      "title": "شرکا",
+      "subtitle": "مدیریت شرکا و درخواست‌ها",
+      "totalPartners": "مجموع شرکا",
+      "pendingApplications": "درخواست‌های در انتظار",
+      "totalReferrals": "مجموع معرفی‌ها",
+      "totalEarnings": "مجموع درآمد",
+      "tabs": {
+        "partners": "شرکا",
+        "applications": "درخواست‌ها"
+      },
+      "noPartners": "هنوز شریکی وجود ندارد",
+      "noApplications": "درخواست در انتظاری وجود ندارد",
+      "commission": "{{percent}}% کمیسیون",
+      "referrals": "{{count}} معرفی",
+      "actions": {
+        "approve": "تأیید",
+        "reject": "رد",
+        "review": "بررسی"
+      },
+      "applicationFields": {
+        "companyName": "شرکت",
+        "website": "وب‌سایت",
+        "channel": "کانال",
+        "description": "توضیحات",
+        "expectedReferrals": "معرفی مورد انتظار/ماه"
+      },
+      "approveDialog": {
+        "title": "تأیید درخواست",
+        "description": "تأیید درخواست شراکت از {{name}}",
+        "commissionLabel": "کمیسیون (%)"
+      },
+      "rejectDialog": {
+        "title": "رد درخواست",
+        "description": "رد درخواست شراکت از {{name}}",
+        "commentLabel": "نظر (اختیاری)",
+        "commentPlaceholder": "دلیل رد..."
+      }
+    },
+    "partnerDetail": {
+      "title": "جزئیات شریک",
+      "loadError": "بارگذاری جزئیات شریک ناموفق بود",
+      "status": {
+        "approved": "فعال",
+        "pending": "در انتظار بررسی",
+        "rejected": "رد شده",
+        "none": "شریک نیست"
+      },
+      "stats": {
+        "totalReferrals": "مجموع معرفی‌ها",
+        "paidReferrals": "معرفی‌های پرداختی",
+        "activeReferrals": "معرفی‌های فعال",
+        "conversionRate": "نرخ تبدیل"
+      },
+      "earnings": {
+        "title": "درآمد",
+        "allTime": "کل",
+        "today": "امروز",
+        "week": "این هفته",
+        "month": "این ماه"
+      },
+      "commission": {
+        "title": "کمیسیون",
+        "update": "به‌روزرسانی"
+      },
+      "campaigns": {
+        "title": "کمپین‌های اختصاص‌یافته",
+        "noCampaigns": "کمپینی اختصاص نیافته",
+        "active": "فعال",
+        "inactive": "غیرفعال",
+        "assign": "اختصاص",
+        "unassign": "لغو اختصاص",
+        "createNew": "ایجاد",
+        "assignTitle": "اختصاص کمپین",
+        "noAvailable": "کمپینی برای اختصاص موجود نیست",
+        "createTitle": "ایجاد کمپین",
+        "createSubtitle": "کمپین به‌طور خودکار به شریک اختصاص می‌یابد",
+        "autoAssignNote": "کمپین به‌طور خودکار به شریک {{name}} اختصاص می‌یابد",
+        "createAndAssign": "ایجاد و اختصاص"
+      },
+      "dangerZone": {
+        "title": "منطقه خطر",
+        "revokeButton": "لغو وضعیت شراکت"
+      },
+      "commissionDialog": {
+        "title": "به‌روزرسانی کمیسیون",
+        "description": "درصد کمیسیون جدیدی برای این شریک تعیین کنید.",
+        "label": "کمیسیون (%)"
+      },
+      "revokeDialog": {
+        "title": "لغو وضعیت شراکت؟",
+        "description": "این کار امتیازات شراکت را حذف می‌کند. شریک دیگر از معرفی‌ها کمیسیون دریافت نخواهد کرد."
+      }
     },
     "promocodes": {
       "title": "کدهای تخفیف",

@@ -10,11 +10,17 @@ export function TimelineBlock({
   getSvgHtml,
   renderBlockButtons,
 }: BlockRendererProps) {
+  const visibleBlocks = blocks.filter(
+    (b) => getLocalizedText(b.title) || getLocalizedText(b.description) || b.buttons?.length,
+  );
+
+  if (!visibleBlocks.length) return null;
+
   return (
     <div className="space-y-0">
-      {blocks.map((block, index) => {
+      {visibleBlocks.map((block, index) => {
         const gradientStyle = getColorGradientSolid(block.svgIconColor || 'cyan', isLight);
-        const isLast = index === blocks.length - 1;
+        const isLast = index === visibleBlocks.length - 1;
 
         return (
           <div key={index} className="flex gap-3 sm:gap-4">

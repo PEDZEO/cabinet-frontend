@@ -88,25 +88,7 @@ export const TariffPurchaseForm = ({
               )}
             </span>
           </div>
-          <div>
-            <span className="text-dark-500">{t('subscription.serversLabel')}:</span>
-            <span className="ml-2 text-dark-200">{selectedTariff.servers_count}</span>
-          </div>
         </div>
-        {selectedTariff.servers.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {selectedTariff.servers.map((server) => (
-              <span key={server.uuid} className="badge-secondary">
-                {server.name}
-              </span>
-            ))}
-            {selectedTariff.servers_count > selectedTariff.servers.length && (
-              <span className="text-sm text-dark-500">
-                +{selectedTariff.servers_count - selectedTariff.servers.length}
-              </span>
-            )}
-          </div>
-        )}
       </div>
 
       {isDailyTariff ? (

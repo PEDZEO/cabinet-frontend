@@ -254,6 +254,14 @@
     "serversLabel": "Servers",
     "servers_one": "{{count}} server",
     "servers_other": "{{count}} servers",
+    "locationsLabel": "Locations",
+    "locations_one": "{{count}} location",
+    "locations_other": "{{count}} locations",
+    "trafficReset": {
+      "DAY": "Resets daily",
+      "WEEK": "Resets weekly",
+      "MONTH": "Resets monthly"
+    },
     "traffic": "Traffic",
     "unlimited": "Unlimited",
     "used": "Used",
@@ -673,7 +681,83 @@
       "referral_subscription_renewal": "Referral Subscription Renewal",
       "referral_bonus": "Referral Bonus"
     },
-    "disabled": "Referral program is currently disabled"
+    "disabled": "Referral program is currently disabled",
+    "partner": {
+      "becomePartner": "Become a Partner",
+      "becomePartnerDesc": "Apply for the partner program to get higher commission rates and the ability to withdraw your earnings.",
+      "applyButton": "Apply",
+      "applyTitle": "Partner Application",
+      "applyDesc": "Fill out the form below to apply for our partner program. All fields are optional.",
+      "underReview": "Application Under Review",
+      "underReviewDesc": "Your partner application is being reviewed. We'll notify you once a decision is made.",
+      "submittedAt": "Submitted on {{date}}",
+      "partnerStatus": "Partner",
+      "active": "Active",
+      "commissionInfo": "Your partner commission rate is {{percent}}%",
+      "rejected": "Application Rejected",
+      "reapplyButton": "Reapply",
+      "applying": "Submitting...",
+      "submitApplication": "Submit Application",
+      "applyError": "Failed to submit application. Please try again.",
+      "yourCampaigns": "Your campaigns",
+      "campaignLinks": {
+        "bot": "Bot link",
+        "web": "Cabinet link"
+      },
+      "campaignBonus": {
+        "title": "Referral bonus",
+        "balance": "+{{amount}} to balance",
+        "balanceDesc": "{{amount}} credited on signup",
+        "subscription": "{{days}} days subscription",
+        "subscriptionDesc": "{{days}} days free subscription",
+        "tariff": "Bonus tariff",
+        "tariffDesc": "Free tariff plan"
+      },
+      "fields": {
+        "companyName": "Company Name",
+        "companyNamePlaceholder": "Your company or brand name",
+        "telegramChannel": "Telegram Channel",
+        "telegramChannelPlaceholder": "@yourchannel",
+        "websiteUrl": "Website URL",
+        "websiteUrlPlaceholder": "https://example.com",
+        "description": "Description",
+        "descriptionPlaceholder": "Tell us about your audience and how you plan to promote...",
+        "expectedReferrals": "Expected Monthly Referrals",
+        "expectedReferralsPlaceholder": "Estimated number per month"
+      }
+    },
+    "withdrawal": {
+      "title": "Withdrawal",
+      "goToWithdrawal": "Withdraw",
+      "available": "Available",
+      "totalEarned": "Total Earned",
+      "withdrawn": "Withdrawn",
+      "spent": "Spent on Services",
+      "pending": "Pending",
+      "requestButton": "Request Withdrawal",
+      "minAmount": "Minimum withdrawal amount: {{amount}}",
+      "history": "Withdrawal History",
+      "noHistory": "No withdrawal requests yet",
+      "requestTitle": "Request Withdrawal",
+      "requestDesc": "Available for withdrawal: {{available}}",
+      "requesting": "Submitting...",
+      "submitRequest": "Submit Request",
+      "requestError": "Failed to create withdrawal request. Please try again.",
+      "fields": {
+        "amount": "Amount (kopeks)",
+        "amountPlaceholder": "Enter amount in kopeks",
+        "amountHint": "Enter the amount in kopeks (100 kopeks = 1 {{currency}})",
+        "paymentDetails": "Payment Details",
+        "paymentDetailsPlaceholder": "Card number, wallet address, or other payment info..."
+      },
+      "status": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "completed": "Completed",
+        "rejected": "Rejected",
+        "cancelled": "Cancelled"
+      }
+    }
   },
   "support": {
     "title": "Support",
@@ -797,7 +881,9 @@
       "trafficUsage": "Traffic Usage",
       "updates": "Updates",
       "pinnedMessages": "Pinned Messages",
-      "accountLinking": "Account Merges"
+      "accountLinking": "Account Merges",
+      "partners": "Partners",
+      "withdrawals": "Withdrawals"
     },
     "panel": {
       "title": "Admin Panel",
@@ -823,7 +909,9 @@
       "trafficUsageDesc": "Per-user traffic by nodes",
       "updatesDesc": "Bot & cabinet versions",
       "pinnedMessagesDesc": "Manage pinned messages for users",
-      "accountLinkingDesc": "Manual moderation for disputed account merges"
+      "accountLinkingDesc": "Manual moderation for disputed account merges",
+      "partnersDesc": "Manage partner applications and commissions",
+      "withdrawalsDesc": "Review and process withdrawal requests"
     },
     "accountLinking": {
       "title": "Manual Account Merge Requests",
@@ -854,6 +942,7 @@
         "approve": "Approve merge",
         "reject": "Reject request"
       }
+    },
     },
     "trafficUsage": {
       "title": "Traffic Usage",
@@ -1169,6 +1258,8 @@
       "total": "Total",
       "sent": "Sent",
       "failed": "Failed",
+      "blocked": "Blocked",
+      "blockedShort": "blocked",
       "filter": "Filter",
       "message": "Message",
       "unknownAdmin": "Unknown",
@@ -1720,7 +1811,11 @@
         "active": "Active",
         "cancel": "Cancel",
         "save": "Save",
-        "saving": "Saving..."
+        "saving": "Saving...",
+        "partner": "Partner",
+        "noPartner": "No partner",
+        "selectPartner": "Select partner",
+        "partnerAutoAssign": "Campaign will be automatically assigned to partner {{name}}"
       },
       "stats": {
         "title": "Campaign Statistics",
@@ -1775,6 +1870,189 @@
       },
       "loadError": "Failed to load campaign",
       "updateError": "Failed to save changes"
+    },
+    "withdrawals": {
+      "title": "Withdrawals",
+      "subtitle": "Manage withdrawal requests",
+      "noData": "No withdrawal requests",
+      "risk": "Risk:",
+      "overview": {
+        "pendingCount": "Pending",
+        "pendingAmount": "Pending amount",
+        "approvedCount": "Approved",
+        "completedCount": "Completed"
+      },
+      "filter": {
+        "all": "All",
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      },
+      "status": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "completed": "Completed",
+        "cancelled": "Cancelled",
+        "unknown": "Unknown"
+      },
+      "detail": {
+        "title": "Withdrawal",
+        "loadError": "Failed to load withdrawal details",
+        "userInfo": "User Information",
+        "username": "Username",
+        "telegramId": "Telegram ID",
+        "balance": "Balance",
+        "totalReferrals": "Total referrals",
+        "totalEarnings": "Total earnings",
+        "createdAt": "Created",
+        "paymentDetails": "Payment Details",
+        "noPaymentDetails": "No payment details provided",
+        "riskAnalysis": "Risk Analysis",
+        "riskScore": "Risk score",
+        "riskLevel": {
+          "low": "Low",
+          "medium": "Medium",
+          "high": "High",
+          "critical": "Critical"
+        },
+        "flags": "Flags",
+        "balanceStats": "Balance Statistics",
+        "referralDeposits": "Referral Deposits",
+        "suspiciousReferrals": "Suspicious Referrals",
+        "earningsByReason": "Earnings by Reason",
+        "adminComment": "Admin Comment",
+        "processedAt": "Processed at",
+        "approve": "Approve",
+        "approving": "Approving...",
+        "reject": "Reject",
+        "rejecting": "Rejecting...",
+        "complete": "Mark as Completed",
+        "completing": "Completing...",
+        "rejectTitle": "Reject withdrawal?",
+        "rejectDescription": "Optionally add a comment explaining the reason for rejection.",
+        "commentPlaceholder": "Reason for rejection (optional)...",
+        "confirmReject": "Confirm Rejection"
+      }
+    },
+    "partners": {
+      "title": "Partners",
+      "subtitle": "Partner management and applications",
+      "totalPartners": "Total partners",
+      "pendingApplications": "Pending applications",
+      "totalReferrals": "Total referrals",
+      "totalEarnings": "Total earnings",
+      "tabs": {
+        "partners": "Partners",
+        "applications": "Applications"
+      },
+      "noPartners": "No partners yet",
+      "noApplications": "No pending applications",
+      "commission": "{{percent}}% commission",
+      "referrals": "{{count}} referrals",
+      "actions": {
+        "approve": "Approve",
+        "reject": "Reject",
+        "review": "Review"
+      },
+      "applicationFields": {
+        "companyName": "Company",
+        "website": "Website",
+        "channel": "Channel",
+        "description": "Description",
+        "expectedReferrals": "Expected referrals/mo"
+      },
+      "approveDialog": {
+        "title": "Approve Application",
+        "description": "Approve partner application from {{name}}",
+        "commissionLabel": "Commission (%)"
+      },
+      "rejectDialog": {
+        "title": "Reject Application",
+        "description": "Reject partner application from {{name}}",
+        "commentLabel": "Comment (optional)",
+        "commentPlaceholder": "Reason for rejection..."
+      },
+      "settings": "Settings",
+      "settingsSubtitle": "Partner program and withdrawal settings",
+      "settingsLoadError": "Failed to load settings",
+      "settingsUpdateError": "Failed to save settings",
+      "settingsSection": {
+        "referralProgram": "Referral Program",
+        "withdrawalSettings": "Withdrawal Settings"
+      },
+      "settingsFields": {
+        "programEnabled": "Referral program enabled",
+        "programEnabledDesc": "Enable/disable referral program for all users",
+        "partnerVisible": "Partner section visible in cabinet",
+        "partnerVisibleDesc": "Show/hide partner application and withdrawal sections for users",
+        "withdrawalEnabled": "Withdrawal enabled",
+        "withdrawalEnabledDesc": "Allow partners to request withdrawal of referral balance",
+        "minAmount": "Min. withdrawal amount (kopeks)",
+        "minAmountDesc": "Minimum amount for a withdrawal request (100 kopeks = 1 ₽)",
+        "cooldownDays": "Cooldown between withdrawals (days)",
+        "cooldownDaysDesc": "How many days must pass between withdrawal requests",
+        "requisitesText": "Requisites field prompt",
+        "requisitesTextDesc": "Custom text shown to users to describe what payment details to provide",
+        "requisitesTextPlaceholder": "E.g.: Provide your bank card number or USDT TRC-20 address"
+      }
+    },
+    "partnerDetail": {
+      "title": "Partner Details",
+      "loadError": "Failed to load partner details",
+      "status": {
+        "approved": "Active",
+        "pending": "Pending",
+        "rejected": "Rejected",
+        "none": "Not a partner"
+      },
+      "stats": {
+        "totalReferrals": "Total referrals",
+        "paidReferrals": "Paid referrals",
+        "activeReferrals": "Active referrals",
+        "conversionRate": "Conversion"
+      },
+      "earnings": {
+        "title": "Earnings",
+        "allTime": "All time",
+        "today": "Today",
+        "week": "This week",
+        "month": "This month"
+      },
+      "commission": {
+        "title": "Commission",
+        "update": "Update"
+      },
+      "campaigns": {
+        "title": "Assigned Campaigns",
+        "noCampaigns": "No campaigns assigned",
+        "active": "Active",
+        "inactive": "Inactive",
+        "assign": "Assign",
+        "unassign": "Unassign",
+        "createNew": "Create",
+        "assignTitle": "Assign Campaign",
+        "noAvailable": "No available campaigns to assign",
+        "createTitle": "Create Campaign",
+        "createSubtitle": "Campaign will be auto-assigned to the partner",
+        "autoAssignNote": "Campaign will be automatically assigned to partner {{name}}",
+        "createAndAssign": "Create & Assign"
+      },
+      "dangerZone": {
+        "title": "Danger Zone",
+        "revokeButton": "Revoke Partner Status"
+      },
+      "commissionDialog": {
+        "title": "Update Commission",
+        "description": "Set a new commission percentage for this partner.",
+        "label": "Commission (%)"
+      },
+      "revokeDialog": {
+        "title": "Revoke Partner Status?",
+        "description": "This will remove partner privileges. The partner will no longer earn commissions from referrals."
+      }
     },
     "promocodes": {
       "title": "Promo Codes",

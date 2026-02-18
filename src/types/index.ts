@@ -158,6 +158,7 @@ export interface Subscription {
   // Tariff info
   tariff_id?: number;
   tariff_name?: string;
+  traffic_reset_mode?: string;
 }
 
 // Response wrapper for subscription status endpoint
@@ -374,6 +375,8 @@ export interface Tariff {
   daily_discount_percent?: number;
   original_price_per_day_kopeks?: number;
   custom_days_discount_percent?: number;
+  // Traffic reset
+  traffic_reset_mode?: string;
 }
 
 export interface TariffsPurchaseOptions {
@@ -489,6 +492,7 @@ export interface ReferralTerms {
   first_topup_bonus_rubles: number;
   inviter_bonus_kopeks: number;
   inviter_bonus_rubles: number;
+  partner_section_visible?: boolean;
 }
 
 // Ticket types
