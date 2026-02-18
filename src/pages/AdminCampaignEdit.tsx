@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
   campaignsApi,
@@ -10,8 +10,9 @@ import {
   TariffListItem,
   AvailablePartner,
 } from '../api/campaigns';
-import { AdminBackButton } from '../components/admin';
+import { AdminBackButton, AdminPageErrorState, AdminPageLoadingState } from '../components/admin';
 import { CheckIcon, CampaignIcon } from '../components/icons';
+import { useMutationSuccessActions } from '../hooks/useMutationSuccessActions';
 import { createNumberInputHandler, toNumber } from '../utils/inputHelpers';
 
 // Bonus type config
@@ -163,7 +164,7 @@ export default function AdminCampaignEdit() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const runSuccessActions = useMutationSuccessActions();
 
   const campaignId = parseInt(id || '0');
 
@@ -242,9 +243,10 @@ export default function AdminCampaignEdit() {
   const updateMutation = useMutation({
     mutationFn: (data: CampaignUpdateRequest) => campaignsApi.updateCampaign(campaignId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-campaigns'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-campaign', campaignId] });
-      navigate('/admin/campaigns');
+      return runSuccessActions({
+        invalidateKeys: [['admin-campaigns'], ['admin-campaign', campaignId]],
+        navigateTo: '/admin/campaigns',
+      });
     },
   });
 
@@ -288,32 +290,17 @@ export default function AdminCampaignEdit() {
   const isValid = isNameValid && isStartParamValid;
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
-      </div>
-    );
+    return <AdminPageLoadingState />;
   }
 
   if (error || !campaign) {
     return (
-      <div className="animate-fade-in">
-        <div className="mb-6 flex items-center gap-3">
-          <AdminBackButton to="/admin/campaigns" />
-          <h1 className="text-xl font-semibold text-dark-100">
-            {t('admin.campaigns.modal.editTitle')}
-          </h1>
-        </div>
-        <div className="rounded-xl border border-error-500/30 bg-error-500/10 p-6 text-center">
-          <p className="text-error-400">{t('admin.campaigns.loadError')}</p>
-          <button
-            onClick={() => navigate('/admin/campaigns')}
-            className="mt-4 text-sm text-dark-400 hover:text-dark-200"
-          >
-            {t('common.back')}
-          </button>
-        </div>
-      </div>
+      <AdminPageErrorState
+        backTo="/admin/campaigns"
+        title={t('admin.campaigns.modal.editTitle')}
+        message={t('admin.campaigns.loadError')}
+        backLabel={t('common.back')}
+      />
     );
   }
 
