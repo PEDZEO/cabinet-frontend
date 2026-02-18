@@ -69,6 +69,7 @@
 - [~] Этап 2.7 (Subscription UI): вынесен блок `Buy Devices` в `src/pages/subscription/components/BuyDevicesSection.tsx`.
 - [~] Этап 2.8 (Subscription UI): вынесен блок `Buy Traffic` в `src/pages/subscription/components/BuyTrafficSection.tsx`.
 - [~] Этап 2.9 (Subscription UI): вынесен блок `Reduce Devices` в `src/pages/subscription/components/ReduceDevicesSection.tsx`.
-- [ ] Этап 2.10 (Subscription UI): вынести блок `Server Management` в отдельный компонент.
+- [x] Этап 2.10 (Subscription UI): вынесен блок `Server Management` в `src/pages/subscription/components/ServerManagementSection.tsx`.
+- [ ] Этап 2.11 (Subscription): вынести оставшиеся крупные фрагменты (Tariff cards/switch preview) в отдельные компоненты.
 - [ ] Этап 3 (App): разнести guard-обвязку и route-конфиг по отдельным модулям.
 - [ ] Этап 4 (types): декомпозировать `src/types/index.ts` по доменам.
