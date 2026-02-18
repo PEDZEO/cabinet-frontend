@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../store/auth';
 import { authApi } from '../api/auth';
 import { isValidEmail } from '../utils/validation';
-import type { LinkCodePreviewResponse, LinkedIdentity } from '../types';
 import {
   notificationsApi,
   NotificationSettings,
@@ -72,11 +71,9 @@ const PencilIcon = () => (
   </svg>
 );
 
-type LinkFlowStep = 'idle' | 'preview' | 'warning' | 'manual' | 'done';
-
 export default function Profile() {
   const { t } = useTranslation();
-  const { user, setUser, setTokens, checkAdminStatus } = useAuthStore();
+  const { user, setUser } = useAuthStore();
   const queryClient = useQueryClient();
 
   const [email, setEmail] = useState('');
@@ -86,18 +83,6 @@ export default function Profile() {
   const [success, setSuccess] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [notificationsExpanded, setNotificationsExpanded] = useState(false);
-  const [linkCode, setLinkCode] = useState('');
-  const [activeLinkCode, setActiveLinkCode] = useState('');
-  const [linkError, setLinkError] = useState<string | null>(null);
-  const [linkSuccess, setLinkSuccess] = useState<string | null>(null);
-  const [linkPreview, setLinkPreview] = useState<LinkCodePreviewResponse | null>(null);
-  const [manualMergeComment, setManualMergeComment] = useState('');
-  const [linkFlowStep, setLinkFlowStep] = useState<LinkFlowStep>('idle');
-  const [previewedCode, setPreviewedCode] = useState('');
-  const [unlinkProvider, setUnlinkProvider] = useState<string | null>(null);
-  const [unlinkRequestToken, setUnlinkRequestToken] = useState<string | null>(null);
-  const [unlinkOtpCode, setUnlinkOtpCode] = useState('');
-  const [unlinkError, setUnlinkError] = useState<string | null>(null);
 
   // Inline email change flow
   const [changeEmailStep, setChangeEmailStep] = useState<'email' | 'code' | 'success' | null>(null);
@@ -137,138 +122,6 @@ export default function Profile() {
     (user?.username ? `@${user.username}` : null) ||
     (user?.email ? user.email.split('@')[0] : null) ||
     '-';
-
-  const parseApiError = (
-    err: unknown,
-  ): { code?: string; message?: string; reason?: string; retry_after_seconds?: number } => {
-    const error = err as { response?: { data?: { detail?: unknown } } };
-    const detail = error.response?.data?.detail;
-    if (!detail) return {};
-    if (typeof detail === 'string') return { message: detail };
-    if (typeof detail === 'object') {
-      const payload = detail as {
-        code?: string;
-        message?: string;
-        reason?: string;
-        retry_after_seconds?: number;
-      };
-      return {
-        code: payload.code,
-        message: payload.message,
-        reason: payload.reason,
-        retry_after_seconds: payload.retry_after_seconds,
-      };
-    }
-    return {};
-  };
-
-  const getLocalizedLinkError = (err: unknown): string => {
-    const { code, message, retry_after_seconds } = parseApiError(err);
-    switch (code) {
-      case 'link_code_invalid':
-        return t('profile.linking.errors.invalidCode', 'Код недействителен или истек');
-      case 'link_code_same_account':
-        return t('profile.linking.errors.sameAccount', 'Нельзя привязать аккаунт к самому себе');
-      case 'link_code_attempts_exceeded':
-        return t(
-          'profile.linking.errors.tooManyAttempts',
-          'Слишком много попыток. Попробуйте позже',
-        );
-      case 'link_code_identity_conflict':
-        return t(
-          'profile.linking.errors.identityConflict',
-          'Конфликт идентификаторов. Нужна ручная проверка',
-        );
-      case 'link_code_source_inactive':
-      case 'link_code_target_inactive':
-        return t('profile.linking.errors.inactiveAccount', 'Один из аккаунтов неактивен');
-      case 'manual_merge_required':
-        return t(
-          'profile.linking.errors.manualRequired',
-          'Оба аккаунта содержат данные. Нужна ручная обработка support.',
-        );
-      case 'support_disabled':
-        return t('profile.linking.errors.supportDisabled', 'Тикеты поддержки отключены');
-      case 'telegram_relink_requires_unlink':
-        return t(
-          'profile.linking.errors.telegramRelinkRequiresUnlink',
-          'Чтобы привязать другой Telegram, сначала отвяжите текущий Telegram-аккаунт.',
-        );
-      case 'telegram_relink_cooldown_active':
-        return (
-          t(
-            'profile.linking.errors.telegramRelinkCooldown',
-            'Смена Telegram-аккаунта доступна не чаще одного раза в 30 дней.',
-          ) +
-          (retry_after_seconds
-            ? ` ${t('profile.linking.availableAfter', 'Доступно через')}: ${formatDurationShort(retry_after_seconds)}.`
-            : '')
-        );
-      default:
-        return message || t('common.error');
-    }
-  };
-
-  const getUnlinkReasonText = (reason?: string | null) => {
-    switch (reason) {
-      case 'last_identity':
-        return t('profile.linking.unlink.reasons.lastIdentity');
-      case 'current_auth_provider':
-        return t('profile.linking.unlink.reasons.currentProvider');
-      case 'cooldown_active':
-        return t('profile.linking.unlink.reasons.cooldownActive');
-      case 'identity_not_linked':
-        return t('profile.linking.unlink.reasons.notLinked');
-      case 'provider_not_supported':
-        return t('profile.linking.unlink.reasons.providerNotSupported');
-      case 'telegram_required':
-        return t('profile.linking.unlink.reasons.telegramRequired');
-      default:
-        return t('profile.linking.unlink.reasons.generic');
-    }
-  };
-
-  const getIdentityBlockedDetails = (identity: LinkedIdentity): string => {
-    const reasonText = getUnlinkReasonText(identity.blocked_reason);
-    if (identity.blocked_reason !== 'cooldown_active') return reasonText;
-    const cooldownText = identity.retry_after_seconds
-      ? `${t('profile.linking.availableAfter', 'Доступно через')}: ${formatDurationShort(identity.retry_after_seconds)}`
-      : '';
-    const dateText = identity.blocked_until
-      ? `${t('profile.linking.availableAt', 'Доступно в')}: ${formatDateTime(identity.blocked_until)}`
-      : '';
-    return [reasonText, cooldownText, dateText].filter(Boolean).join('. ');
-  };
-
-  const getLocalizedUnlinkError = (err: unknown) => {
-    const parsed = parseApiError(err);
-    if (parsed.reason) return getUnlinkReasonText(parsed.reason);
-    if (parsed.code === 'unlink_otp_resend_cooldown') {
-      return t('profile.linking.unlink.errors.otpResendCooldown');
-    }
-    if (parsed.code === 'unlink_otp_rate_limited') {
-      return t('profile.linking.unlink.errors.otpRateLimited');
-    }
-    if (parsed.code === 'unlink_request_invalid') {
-      return t('profile.linking.unlink.errors.requestInvalid');
-    }
-    if (parsed.code === 'unlink_request_mismatch') {
-      return t('profile.linking.unlink.errors.requestMismatch');
-    }
-    if (parsed.code === 'unlink_request_storage_error') {
-      return t('profile.linking.unlink.errors.storageError');
-    }
-    if (parsed.code === 'unlink_otp_invalid') {
-      return t('profile.linking.unlink.errors.otpInvalid');
-    }
-    if (parsed.code === 'unlink_otp_attempts_exceeded') {
-      return t('profile.linking.unlink.errors.otpAttemptsExceeded');
-    }
-    if (parsed.code === 'unlink_otp_delivery_failed') {
-      return t('profile.linking.unlink.errors.otpDeliveryFailed');
-    }
-    return parsed.message || t('common.error');
-  };
 
   // Build referral link for cabinet
   const referralLink = referralInfo?.referral_code
@@ -466,154 +319,6 @@ export default function Profile() {
     queryFn: notificationsApi.getSettings,
   });
 
-  const { data: linkedIdentitiesData } = useQuery({
-    queryKey: ['linked-identities'],
-    queryFn: authApi.getLinkedIdentities,
-    enabled: !!user,
-  });
-
-  const { data: latestManualMerge } = useQuery({
-    queryKey: ['latest-manual-merge-request'],
-    queryFn: authApi.getLatestManualMergeRequest,
-    enabled: !!user,
-  });
-
-  const linkedIdentities = linkedIdentitiesData?.identities || [];
-  const telegramRelink = linkedIdentitiesData?.telegram_relink;
-  const telegramIdentity = linkedIdentities.find((identity) => identity.provider === 'telegram');
-  const hasCurrentTelegramIdentity = linkedIdentities.some(
-    (identity) => identity.provider === 'telegram',
-  );
-  const previewHasTelegramIdentity = !!linkPreview?.source_identity_hints?.telegram;
-  const shouldShowTelegramReplaceWarning = hasCurrentTelegramIdentity && previewHasTelegramIdentity;
-
-  const createLinkCodeMutation = useMutation({
-    mutationFn: authApi.createLinkCode,
-    onSuccess: (data) => {
-      setLinkError(null);
-      setLinkSuccess(t('profile.linking.codeGenerated', 'Код привязки создан'));
-      setActiveLinkCode(data.code);
-      setLinkCode(data.code);
-      setLinkPreview(null);
-      setPreviewedCode('');
-      setLinkFlowStep('idle');
-      setManualMergeComment('');
-    },
-    onError: (err: { response?: { data?: { detail?: string } } }) => {
-      setLinkSuccess(null);
-      setLinkError(getLocalizedLinkError(err));
-    },
-  });
-
-  const previewLinkCodeMutation = useMutation({
-    mutationFn: (code: string) => authApi.previewLinkCode(code),
-    onSuccess: (data, code) => {
-      setLinkError(null);
-      setLinkPreview(data);
-      const hasTelegramInPreview = !!data.source_identity_hints?.telegram;
-      setLinkFlowStep(hasCurrentTelegramIdentity && hasTelegramInPreview ? 'warning' : 'preview');
-      setPreviewedCode(code);
-    },
-    onError: (err: unknown) => {
-      setLinkPreview(null);
-      setLinkSuccess(null);
-      const parsed = parseApiError(err);
-      setLinkFlowStep(parsed.code === 'manual_merge_required' ? 'manual' : 'idle');
-      setPreviewedCode('');
-      setLinkError(getLocalizedLinkError(err));
-    },
-  });
-
-  const confirmLinkCodeMutation = useMutation({
-    mutationFn: (code: string) => authApi.confirmLinkCode(code),
-    onSuccess: async (data) => {
-      setTokens(data.access_token, data.refresh_token);
-      setUser(data.user);
-      await checkAdminStatus();
-      setLinkSuccess(t('profile.linking.linked', 'Аккаунты успешно объединены'));
-      setLinkError(null);
-      setActiveLinkCode('');
-      setLinkCode('');
-      setLinkPreview(null);
-      setPreviewedCode('');
-      setLinkFlowStep('done');
-      setManualMergeComment('');
-      queryClient.invalidateQueries({ queryKey: ['linked-identities'] });
-      queryClient.invalidateQueries({ queryKey: ['user'] });
-    },
-    onError: (err: unknown) => {
-      setLinkSuccess(null);
-      const parsed = parseApiError(err);
-      setLinkFlowStep(parsed.code === 'manual_merge_required' ? 'manual' : 'idle');
-      setLinkError(getLocalizedLinkError(err));
-    },
-  });
-
-  const manualMergeMutation = useMutation({
-    mutationFn: ({ code, comment }: { code: string; comment?: string }) =>
-      authApi.requestManualMerge(code, comment),
-    onSuccess: (data) => {
-      setLinkError(null);
-      setLinkSuccess(
-        t('profile.linking.manualSent', 'Запрос на ручное объединение отправлен. Тикет') +
-          ` #${data.ticket_id}`,
-      );
-      setLinkFlowStep('done');
-      setManualMergeComment('');
-      queryClient.invalidateQueries({ queryKey: ['latest-manual-merge-request'] });
-    },
-    onError: (err: unknown) => {
-      setLinkSuccess(null);
-      setLinkError(getLocalizedLinkError(err));
-    },
-  });
-
-  const requestUnlinkMutation = useMutation({
-    mutationFn: (provider: string) => authApi.requestUnlinkIdentity(provider),
-    onSuccess: (data) => {
-      setUnlinkError(null);
-      setLinkError(null);
-      setLinkSuccess(
-        data.provider === 'telegram'
-          ? t(
-              'profile.linking.telegramStatus.unlinkCodeSent',
-              'Код подтверждения отправлен в Telegram. После отвязки сразу сможете привязать новый Telegram-код.',
-            )
-          : t('profile.linking.unlink.codeSent'),
-      );
-      setUnlinkProvider(data.provider);
-      setUnlinkRequestToken(data.request_token);
-      setUnlinkOtpCode('');
-    },
-    onError: (err: unknown) => {
-      setUnlinkError(getLocalizedUnlinkError(err));
-    },
-  });
-
-  const confirmUnlinkMutation = useMutation({
-    mutationFn: ({
-      provider,
-      token,
-      otpCode,
-    }: {
-      provider: string;
-      token: string;
-      otpCode: string;
-    }) => authApi.confirmUnlinkIdentity(provider, token, otpCode),
-    onSuccess: (data) => {
-      setUnlinkError(null);
-      setUnlinkProvider(null);
-      setUnlinkRequestToken(null);
-      setUnlinkOtpCode('');
-      setLinkSuccess(t('profile.linking.unlink.success', { provider: data.provider }));
-      queryClient.invalidateQueries({ queryKey: ['linked-identities'] });
-      queryClient.invalidateQueries({ queryKey: ['user'] });
-    },
-    onError: (err: unknown) => {
-      setUnlinkError(getLocalizedUnlinkError(err));
-    },
-  });
-
   const updateNotificationsMutation = useMutation({
     mutationFn: notificationsApi.updateSettings,
     onSuccess: () => {
@@ -629,17 +334,6 @@ export default function Profile() {
   const handleNotificationValue = (key: keyof NotificationSettings, value: number) => {
     const update: NotificationSettingsUpdate = { [key]: value };
     updateNotificationsMutation.mutate(update);
-  };
-
-  const getManualMergeStatusLabel = () => {
-    if (!latestManualMerge) return null;
-    if (latestManualMerge.decision === 'approve') {
-      return t('profile.linking.manualStatus.approved', 'Запрос одобрен');
-    }
-    if (latestManualMerge.decision === 'reject') {
-      return t('profile.linking.manualStatus.rejected', 'Запрос отклонен');
-    }
-    return t('profile.linking.manualStatus.pending', 'Запрос на рассмотрении');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -664,12 +358,6 @@ export default function Profile() {
 
     registerEmailMutation.mutate({ email, password });
   };
-
-  const normalizedLinkCode = linkCode.trim().toUpperCase();
-  const hasLinkCode = normalizedLinkCode.length > 0;
-  const isCodePreviewed = hasLinkCode && previewedCode === normalizedLinkCode && !!linkPreview;
-  const canConfirmLink =
-    isCodePreviewed && (linkFlowStep === 'preview' || linkFlowStep === 'warning');
 
   return (
     <motion.div
@@ -711,320 +399,18 @@ export default function Profile() {
         </Card>
       </motion.div>
 
-      {/* Account Linking */}
       <motion.div variants={staggerItem}>
         <Card>
-          <h2 className="mb-4 text-lg font-semibold text-dark-100">
+          <h2 className="mb-3 text-lg font-semibold text-dark-100">
             {t('profile.linking.title', 'Связанные способы входа')}
           </h2>
           <p className="mb-4 text-sm text-dark-400">
-            {t(
-              'profile.linking.description',
-              'Привяжите Telegram, Yandex и VK к одному аккаунту, чтобы подписка была общей.',
-            )}
+            Управление привязками, сменой Telegram, OTP-подтверждением и ручным merge перенесено на
+            отдельную страницу.
           </p>
-
-          <div className="mb-4 flex flex-wrap gap-2">
-            {linkedIdentities.length > 0 ? (
-              linkedIdentities.map((identity) => (
-                <div
-                  key={`${identity.provider}-${identity.provider_user_id_masked}`}
-                  className="flex items-center gap-2 rounded-linear border border-dark-700/80 bg-dark-800/70 px-3 py-1 text-xs text-dark-200"
-                >
-                  <span>
-                    {identity.provider}: {identity.provider_user_id_masked}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => requestUnlinkMutation.mutate(identity.provider)}
-                    disabled={!identity.can_unlink || requestUnlinkMutation.isPending}
-                    className="rounded border border-error-500/40 px-2 py-0.5 text-[10px] text-error-300 transition-colors hover:bg-error-500/10 disabled:cursor-not-allowed disabled:border-dark-600 disabled:text-dark-500"
-                    title={identity.can_unlink ? undefined : getIdentityBlockedDetails(identity)}
-                  >
-                    {t('profile.linking.unlink.button')}
-                  </button>
-                </div>
-              ))
-            ) : (
-              <span className="text-sm text-dark-500">
-                {t('profile.linking.none', 'Нет привязанных способов входа')}
-              </span>
-            )}
-          </div>
-
-          {telegramRelink && (
-            <div className="mb-4 rounded-linear border border-dark-700/80 bg-dark-800/60 p-3">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm font-medium text-dark-100">
-                    {t('profile.linking.telegramStatus.title', 'Статус смены Telegram')}
-                  </p>
-                  {telegramRelink.requires_unlink_first ? (
-                    <p className="mt-1 text-xs text-warning-300">
-                      {t(
-                        'profile.linking.telegramStatus.requiresUnlink',
-                        'Сейчас привязан Telegram. Для смены сначала отвяжите текущий Telegram, затем привяжите новый.',
-                      )}
-                    </p>
-                  ) : telegramRelink.retry_after_seconds ? (
-                    <p className="mt-1 text-xs text-warning-300">
-                      {t('profile.linking.availableAfter', 'Доступно через')}:{' '}
-                      {formatDurationShort(telegramRelink.retry_after_seconds)}{' '}
-                      {telegramRelink.cooldown_until
-                        ? `(${t('profile.linking.availableAt', 'в')}: ${formatDateTime(telegramRelink.cooldown_until)})`
-                        : ''}
-                    </p>
-                  ) : (
-                    <p className="mt-1 text-xs text-success-400">
-                      {t(
-                        'profile.linking.telegramStatus.ready',
-                        'Смена Telegram доступна. Можно привязать другой Telegram-код.',
-                      )}
-                    </p>
-                  )}
-                  {telegramIdentity && (
-                    <p className="mt-2 text-xs text-dark-400">
-                      {t('profile.linking.telegramStatus.current', 'Текущий Telegram')}:{' '}
-                      {'telegram'}: {telegramIdentity.provider_user_id_masked}
-                    </p>
-                  )}
-                </div>
-                {telegramRelink.requires_unlink_first && (
-                  <Button
-                    variant="secondary"
-                    onClick={() => requestUnlinkMutation.mutate('telegram')}
-                    loading={requestUnlinkMutation.isPending}
-                  >
-                    {t('profile.linking.telegramStatus.startRelink', 'Сменить Telegram')}
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
-
-          <div className="space-y-3 border-t border-dark-800/50 pt-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <Button
-                onClick={() => createLinkCodeMutation.mutate()}
-                loading={createLinkCodeMutation.isPending}
-              >
-                {t('profile.linking.generateCode', 'Сгенерировать код привязки')}
-              </Button>
-              {activeLinkCode && (
-                <span className="rounded-linear border border-accent-500/40 bg-accent-500/10 px-3 py-2 font-mono text-sm text-accent-300">
-                  {activeLinkCode}
-                </span>
-              )}
-            </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <input
-                type="text"
-                value={linkCode}
-                onChange={(e) => {
-                  const nextCode = e.target.value.toUpperCase().trim();
-                  setLinkCode(nextCode);
-                  setLinkError(null);
-                  setLinkSuccess(null);
-                  if (nextCode !== previewedCode) {
-                    setLinkPreview(null);
-                    setLinkFlowStep('idle');
-                  }
-                }}
-                placeholder={t('profile.linking.enterCode', 'Введите код привязки')}
-                className="input sm:flex-1"
-              />
-            </div>
-
-            <div className="rounded-linear border border-dark-700/70 bg-dark-800/40 px-3 py-2 text-xs text-dark-300">
-              {linkFlowStep === 'idle' &&
-                t('profile.linking.flow.idle', 'Шаг 1: введите код и нажмите "Проверить".')}
-              {linkFlowStep === 'preview' &&
-                t(
-                  'profile.linking.flow.preview',
-                  'Шаг 2: код проверен. Проверьте данные аккаунта и нажмите "Привязать".',
-                )}
-              {linkFlowStep === 'warning' &&
-                t(
-                  'profile.linking.flow.warning',
-                  'Шаг 2: обнаружена смена Telegram. Подтвердите, если согласны заменить текущий Telegram.',
-                )}
-              {linkFlowStep === 'manual' &&
-                t(
-                  'profile.linking.flow.manual',
-                  'Шаг 2: автоматическое объединение недоступно. Отправьте запрос в поддержку.',
-                )}
-              {linkFlowStep === 'done' &&
-                t(
-                  'profile.linking.flow.done',
-                  'Операция завершена. Можно создать новый код при необходимости.',
-                )}
-            </div>
-
-            <div className="sticky bottom-3 z-20 rounded-linear border border-dark-700/80 bg-dark-900/90 p-2 backdrop-blur">
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => previewLinkCodeMutation.mutate(normalizedLinkCode)}
-                  loading={previewLinkCodeMutation.isPending}
-                  disabled={!hasLinkCode}
-                >
-                  {t('profile.linking.preview', 'Проверить')}
-                </Button>
-                <Button
-                  onClick={() => confirmLinkCodeMutation.mutate(normalizedLinkCode)}
-                  loading={confirmLinkCodeMutation.isPending}
-                  disabled={!canConfirmLink}
-                >
-                  {t('profile.linking.confirm', 'Привязать')}
-                </Button>
-                {linkFlowStep === 'manual' && (
-                  <Button
-                    onClick={() =>
-                      manualMergeMutation.mutate({
-                        code: normalizedLinkCode,
-                        comment: manualMergeComment.trim() || undefined,
-                      })
-                    }
-                    loading={manualMergeMutation.isPending}
-                    disabled={!hasLinkCode}
-                  >
-                    {t('profile.linking.sendManual', 'Отправить в поддержку')}
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            {linkPreview && (
-              <div className="rounded-linear border border-dark-700/80 bg-dark-800/60 p-3">
-                <p className="mb-2 text-sm text-dark-300">
-                  {t('profile.linking.previewSource', 'Будет привязан к аккаунту')} #{' '}
-                  <span className="font-semibold text-dark-100">{linkPreview.source_user_id}</span>
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {Object.entries(linkPreview.source_identity_hints).map(([provider, value]) => (
-                    <span
-                      key={`${provider}-${value}`}
-                      className="rounded-linear border border-dark-700/80 bg-dark-800/70 px-2 py-1 text-xs text-dark-200"
-                    >
-                      {provider}: {value}
-                    </span>
-                  ))}
-                </div>
-                {shouldShowTelegramReplaceWarning && (
-                  <div className="mt-3 rounded-linear border border-warning-500/30 bg-warning-500/10 p-2 text-xs text-warning-300">
-                    {t(
-                      'profile.linking.telegramReplaceWarning',
-                      'Внимание: вы пытаетесь сменить Telegram-аккаунт. После привязки нового Telegram старый Telegram-вход будет потерян.',
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {linkError && (
-              <div className="rounded-linear border border-error-500/30 bg-error-500/10 p-3 text-sm text-error-400">
-                {linkError}
-              </div>
-            )}
-            {unlinkProvider && unlinkRequestToken && (
-              <div className="rounded-linear border border-warning-500/30 bg-warning-500/10 p-3">
-                <p className="mb-2 text-sm text-warning-300">
-                  {t('profile.linking.unlink.confirmText', { provider: unlinkProvider })}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    onClick={() =>
-                      confirmUnlinkMutation.mutate({
-                        provider: unlinkProvider,
-                        token: unlinkRequestToken,
-                        otpCode: unlinkOtpCode.trim(),
-                      })
-                    }
-                    loading={confirmUnlinkMutation.isPending}
-                    disabled={unlinkOtpCode.trim().length !== 6}
-                  >
-                    {t('profile.linking.unlink.confirm')}
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={() => {
-                      setUnlinkProvider(null);
-                      setUnlinkRequestToken(null);
-                      setUnlinkOtpCode('');
-                      setUnlinkError(null);
-                    }}
-                  >
-                    {t('common.cancel')}
-                  </Button>
-                </div>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={unlinkOtpCode}
-                  onChange={(e) => setUnlinkOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  placeholder={t('profile.linking.unlink.otpPlaceholder')}
-                  className="input mt-3 w-full text-center tracking-[0.4em]"
-                />
-              </div>
-            )}
-            {unlinkError && (
-              <div className="rounded-linear border border-error-500/30 bg-error-500/10 p-3 text-sm text-error-400">
-                {unlinkError}
-              </div>
-            )}
-            {linkFlowStep === 'manual' && (
-              <div className="rounded-linear border border-warning-500/30 bg-warning-500/10 p-3">
-                <p className="mb-2 text-sm text-warning-300">
-                  {t(
-                    'profile.linking.manualHint',
-                    'Автоматическое объединение невозможно. Отправьте запрос в поддержку для ручного merge.',
-                  )}
-                </p>
-                <textarea
-                  value={manualMergeComment}
-                  onChange={(e) => setManualMergeComment(e.target.value)}
-                  className="input mb-3 min-h-[88px] w-full"
-                  placeholder={t(
-                    'profile.linking.manualComment',
-                    'Опишите, какой аккаунт основной и почему нужно объединение',
-                  )}
-                  maxLength={1000}
-                />
-              </div>
-            )}
-            {linkSuccess && (
-              <div className="rounded-linear border border-success-500/30 bg-success-500/10 p-3 text-sm text-success-400">
-                {linkSuccess}
-              </div>
-            )}
-
-            {latestManualMerge && (
-              <div className="rounded-linear border border-dark-700/80 bg-dark-800/60 p-3">
-                <div className="mb-1 text-sm font-medium text-dark-100">
-                  {t('profile.linking.manualStatus.title', 'Последний спорный merge-запрос')} #
-                  {latestManualMerge.ticket_id}
-                </div>
-                <div className="text-sm text-dark-300">{getManualMergeStatusLabel()}</div>
-                {latestManualMerge.resolution_comment && (
-                  <div className="mt-2 text-xs text-dark-400">
-                    {t('profile.linking.manualStatus.comment', 'Комментарий')}:{' '}
-                    {latestManualMerge.resolution_comment}
-                  </div>
-                )}
-                <div className="mt-1 text-xs text-dark-500">
-                  {t('profile.linking.manualStatus.updatedAt', 'Обновлено')}{' '}
-                  {new Date(latestManualMerge.updated_at).toLocaleString()}
-                </div>
-                <Link
-                  to="/support"
-                  className="mt-2 inline-flex items-center gap-1 text-xs text-accent-400 transition-colors hover:text-accent-300"
-                >
-                  {t('profile.linking.manualStatus.openSupport', 'Открыть поддержку')}
-                </Link>
-              </div>
-            )}
-          </div>
+          <Link to="/account-linking" className="inline-flex">
+            <Button>{t('nav.accountLinking', 'Открыть привязки')}</Button>
+          </Link>
         </Card>
       </motion.div>
 
@@ -1534,20 +920,3 @@ export default function Profile() {
     </motion.div>
   );
 }
-const formatDateTime = (value?: string | null): string => {
-  if (!value) return '-';
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return '-';
-  return parsed.toLocaleString();
-};
-
-const formatDurationShort = (totalSeconds?: number | null): string => {
-  if (!totalSeconds || totalSeconds <= 0) return '0с';
-  const days = Math.floor(totalSeconds / 86400);
-  const hours = Math.floor((totalSeconds % 86400) / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  if (days > 0) return `${days}д ${hours}ч`;
-  if (hours > 0) return `${hours}ч ${minutes}м`;
-  if (minutes > 0) return `${minutes}м`;
-  return `${totalSeconds}с`;
-};
