@@ -17,6 +17,7 @@ import { useCurrency } from '../hooks/useCurrency';
 import { useCloseOnSuccessNotification } from '../store/successNotification';
 import { getErrorMessage, getInsufficientBalanceError } from './subscription/utils/errors';
 import { getFlagEmoji } from './subscription/utils/flags';
+import { useDeviceManagementMutations } from './subscription/hooks/useDeviceManagementMutations';
 import { CheckIcon, CopyIcon } from './subscription/components/StatusIcons';
 import { useSubscriptionModals } from './subscription/hooks/useSubscriptionModals';
 import {
@@ -350,17 +351,6 @@ function FullSubscription() {
     enabled: showDeviceTopup && !!subscription,
   });
 
-  // Device purchase mutation
-  const devicePurchaseMutation = useMutation({
-    mutationFn: () => subscriptionApi.purchaseDevices(devicesToAdd),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['subscription'] });
-      queryClient.invalidateQueries({ queryKey: ['devices'] });
-      setShowDeviceTopup(false);
-      setDevicesToAdd(1);
-    },
-  });
-
   // Device reduction info query
   const { data: deviceReductionInfo } = useQuery({
     queryKey: ['device-reduction-info'],
@@ -380,15 +370,13 @@ function FullSubscription() {
     }
   }, [deviceReductionInfo, showDeviceReduction]);
 
-  // Device reduction mutation
-  const deviceReductionMutation = useMutation({
-    mutationFn: () => subscriptionApi.reduceDevices(targetDeviceLimit),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['subscription'] });
-      queryClient.invalidateQueries({ queryKey: ['devices'] });
-      queryClient.invalidateQueries({ queryKey: ['device-reduction-info'] });
-      setShowDeviceReduction(false);
-    },
+  const { devicePurchaseMutation, deviceReductionMutation } = useDeviceManagementMutations({
+    queryClient,
+    devicesToAdd,
+    targetDeviceLimit,
+    setShowDeviceTopup,
+    setDevicesToAdd,
+    setShowDeviceReduction,
   });
 
   // Traffic packages query
