@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { partnerApi } from '../api/partners';
 import { AdminBackButton } from '../components/admin';
+import { useMutationSuccessActions } from '../hooks/useMutationSuccessActions';
 
 export default function AdminPartnerCommission() {
   const { t } = useTranslation();
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const queryClient = useQueryClient();
+  const runSuccessActions = useMutationSuccessActions();
 
   // Try to get current commission from navigate state
   const passedCommission = (location.state as { currentCommission?: number } | null)
@@ -35,9 +36,10 @@ export default function AdminPartnerCommission() {
   const updateMutation = useMutation({
     mutationFn: (commission: number) => partnerApi.updateCommission(Number(userId), commission),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-partner-detail', userId] });
-      queryClient.invalidateQueries({ queryKey: ['admin-partners'] });
-      navigate(`/admin/partners/${userId}`);
+      return runSuccessActions({
+        invalidateKeys: [['admin-partner-detail', userId], ['admin-partners']],
+        navigateTo: `/admin/partners/${userId}`,
+      });
     },
   });
 

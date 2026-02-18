@@ -1,9 +1,10 @@
 import { useParams, useNavigate } from 'react-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { withdrawalApi } from '../api/withdrawals';
 import { AdminBackButton } from '../components/admin';
 import { useCurrency } from '../hooks/useCurrency';
+import { useMutationSuccessActions } from '../hooks/useMutationSuccessActions';
 import {
   formatDate,
   getWithdrawalStatusBadge,
@@ -25,7 +26,7 @@ export default function AdminWithdrawalDetail() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const runSuccessActions = useMutationSuccessActions();
   const { formatWithCurrency } = useCurrency();
 
   // Fetch detail
@@ -43,16 +44,18 @@ export default function AdminWithdrawalDetail() {
   const approveMutation = useMutation({
     mutationFn: () => withdrawalApi.approve(Number(id)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-withdrawal-detail', id] });
-      queryClient.invalidateQueries({ queryKey: ['admin-withdrawals'] });
+      return runSuccessActions({
+        invalidateKeys: [['admin-withdrawal-detail', id], ['admin-withdrawals']],
+      });
     },
   });
 
   const completeMutation = useMutation({
     mutationFn: () => withdrawalApi.complete(Number(id)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-withdrawal-detail', id] });
-      queryClient.invalidateQueries({ queryKey: ['admin-withdrawals'] });
+      return runSuccessActions({
+        invalidateKeys: [['admin-withdrawal-detail', id], ['admin-withdrawals']],
+      });
     },
   });
 

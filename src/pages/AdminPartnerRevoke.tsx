@@ -1,22 +1,27 @@
 import { useParams, useNavigate } from 'react-router';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { partnerApi } from '../api/partners';
 import { AdminBackButton } from '../components/admin';
+import { useMutationSuccessActions } from '../hooks/useMutationSuccessActions';
 
 export default function AdminPartnerRevoke() {
   const { t } = useTranslation();
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const runSuccessActions = useMutationSuccessActions();
 
   const revokeMutation = useMutation({
     mutationFn: () => partnerApi.revokePartner(Number(userId)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-partner-detail', userId] });
-      queryClient.invalidateQueries({ queryKey: ['admin-partners'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-partner-stats'] });
-      navigate(`/admin/partners/${userId}`);
+      return runSuccessActions({
+        invalidateKeys: [
+          ['admin-partner-detail', userId],
+          ['admin-partners'],
+          ['admin-partner-stats'],
+        ],
+        navigateTo: `/admin/partners/${userId}`,
+      });
     },
   });
 

@@ -1,15 +1,16 @@
 import { useParams, useNavigate } from 'react-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { partnerApi } from '../api/partners';
 import { campaignsApi } from '../api/campaigns';
 import { AdminBackButton } from '../components/admin';
+import { useMutationSuccessActions } from '../hooks/useMutationSuccessActions';
 
 export default function AdminPartnerCampaignAssign() {
   const { t } = useTranslation();
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const runSuccessActions = useMutationSuccessActions();
 
   // Fetch partner detail to know already assigned campaign IDs
   const { data: partner } = useQuery({
@@ -27,8 +28,10 @@ export default function AdminPartnerCampaignAssign() {
   const assignMutation = useMutation({
     mutationFn: (campaignId: number) => partnerApi.assignCampaign(Number(userId), campaignId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-partner-detail', userId] });
-      navigate(`/admin/partners/${userId}`);
+      return runSuccessActions({
+        invalidateKeys: [['admin-partner-detail', userId]],
+        navigateTo: `/admin/partners/${userId}`,
+      });
     },
   });
 

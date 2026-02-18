@@ -1,17 +1,18 @@
 import { useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { withdrawalApi } from '../api/withdrawals';
 import { AdminBackButton } from '../components/admin';
 import { useCurrency } from '../hooks/useCurrency';
+import { useMutationSuccessActions } from '../hooks/useMutationSuccessActions';
 
 export default function AdminWithdrawalReject() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const queryClient = useQueryClient();
+  const runSuccessActions = useMutationSuccessActions();
   const { formatWithCurrency } = useCurrency();
 
   const [comment, setComment] = useState('');
@@ -27,9 +28,10 @@ export default function AdminWithdrawalReject() {
     mutationFn: (rejectComment: string) =>
       withdrawalApi.reject(Number(id), rejectComment || undefined),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-withdrawal-detail', id] });
-      queryClient.invalidateQueries({ queryKey: ['admin-withdrawals'] });
-      navigate(`/admin/withdrawals/${id}`);
+      return runSuccessActions({
+        invalidateKeys: [['admin-withdrawal-detail', id], ['admin-withdrawals']],
+        navigateTo: `/admin/withdrawals/${id}`,
+      });
     },
   });
 

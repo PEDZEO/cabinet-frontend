@@ -1,16 +1,16 @@
 import { useState } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useParams, useLocation } from 'react-router';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { partnerApi, type AdminPartnerApplicationItem } from '../api/partners';
 import { AdminBackButton } from '../components/admin';
+import { useMutationSuccessActions } from '../hooks/useMutationSuccessActions';
 
 export default function AdminApplicationReview() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const location = useLocation();
-  const queryClient = useQueryClient();
+  const runSuccessActions = useMutationSuccessActions();
 
   const [commission, setCommission] = useState('10');
   const [rejectComment, setRejectComment] = useState('');
@@ -31,10 +31,14 @@ export default function AdminApplicationReview() {
     mutationFn: ({ appId, commissionPercent }: { appId: number; commissionPercent: number }) =>
       partnerApi.approveApplication(appId, { commission_percent: commissionPercent }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-partner-applications'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-partners'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-partner-stats'] });
-      navigate('/admin/partners');
+      return runSuccessActions({
+        invalidateKeys: [
+          ['admin-partner-applications'],
+          ['admin-partners'],
+          ['admin-partner-stats'],
+        ],
+        navigateTo: '/admin/partners',
+      });
     },
   });
 
@@ -42,9 +46,10 @@ export default function AdminApplicationReview() {
     mutationFn: ({ appId, comment }: { appId: number; comment?: string }) =>
       partnerApi.rejectApplication(appId, { comment }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-partner-applications'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-partner-stats'] });
-      navigate('/admin/partners');
+      return runSuccessActions({
+        invalidateKeys: [['admin-partner-applications'], ['admin-partner-stats']],
+        navigateTo: '/admin/partners',
+      });
     },
   });
 
