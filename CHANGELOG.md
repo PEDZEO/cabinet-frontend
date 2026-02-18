@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.3.0](https://github.com/PEDZEO/cabinet-frontend/compare/v1.2.1...v1.3.0) (2026-02-18)
+
+
+### Features
+
+* admin partner settings page, partner section visibility toggle, custom requisites text ([76d20fd](https://github.com/PEDZEO/cabinet-frontend/commit/76d20fdb1aa374b2de3f075bda4672484b8b8de6))
+* partner-campaign integration in admin UI ([959f892](https://github.com/PEDZEO/cabinet-frontend/commit/959f89266bd7fe6e8a38d218c7d34e14c509a21b))
+* show traffic reset info in subscription card ([271a005](https://github.com/PEDZEO/cabinet-frontend/commit/271a005e87d21f6a82aad7272c92775a6e1aec6c))
+* show traffic reset period on tariff cards ([cfe9f64](https://github.com/PEDZEO/cabinet-frontend/commit/cfe9f642d842fc0696e379ef59934b300c363a24))
+
+
+### Bug Fixes
+
+* hide empty blocks in connection installation guide ([96f9a71](https://github.com/PEDZEO/cabinet-frontend/commit/96f9a719fd02d5f21c2bd3753c4eb8afd36887c6))
+* **i18n:** remove extra brace in merged locale admin section ([5b9de68](https://github.com/PEDZEO/cabinet-frontend/commit/5b9de68d6fccaf6aae77c5ee367bb6ed5586585b))
+* remove duplicate min withdrawal amount on referral page ([98ab109](https://github.com/PEDZEO/cabinet-frontend/commit/98ab1099b9f9b639221b431205bd7eb9e8432d34))
+* remove server/location count from tariff cards and confirmation ([0fac368](https://github.com/PEDZEO/cabinet-frontend/commit/0fac3689e57eee63489a379a966e89825f1a5854))
+* rename Серверы to Локации in subscription card ([19e62fc](https://github.com/PEDZEO/cabinet-frontend/commit/19e62fccf1efbb0c17a160348c75f9e695691bf1))
+* show locations count instead of servers on tariff cards ([ecc089d](https://github.com/PEDZEO/cabinet-frontend/commit/ecc089da641c3b40739fbc4e77a997c27529b582))
+* use correct translation key for inactive campaign badge ([8207368](https://github.com/PEDZEO/cabinet-frontend/commit/8207368ef77a772fdcf70d7ec798ddbbbfd9e63c))
+
 ## [1.18.0](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/compare/v1.17.0...v1.18.0) (2026-02-18)
 
 
