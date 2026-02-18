@@ -6,6 +6,7 @@ interface LoginTelegramSectionProps {
   isTelegramWebApp: boolean;
   hasError: boolean;
   botUsername: string;
+  referralCode?: string;
   onRetryTelegramAuth: () => void;
 }
 
@@ -14,6 +15,7 @@ export function LoginTelegramSection({
   isTelegramWebApp,
   hasError,
   botUsername,
+  referralCode,
   onRetryTelegramAuth,
 }: LoginTelegramSectionProps) {
   const { t } = useTranslation();
@@ -56,5 +58,5 @@ export function LoginTelegramSection({
     );
   }
 
-  return <TelegramLoginButton botUsername={botUsername} />;
+  return <TelegramLoginButton botUsername={botUsername} referralCode={referralCode} />;
 }

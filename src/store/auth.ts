@@ -4,6 +4,7 @@ import type { CampaignBonusInfo, RegisterResponse, User } from '../types';
 import { authApi } from '../api/auth';
 import { apiClient } from '../api/client';
 import { captureCampaignFromUrl, consumeCampaignSlug } from '../utils/campaign';
+import { captureReferralFromUrl, consumeReferralCode } from '../utils/referral';
 import { tokenStorage, isTokenValid, tokenRefreshManager } from '../utils/token';
 
 export interface TelegramWidgetData {
@@ -247,7 +248,8 @@ export const useAuthStore = create<AuthState>()(
 
       loginWithTelegram: async (initData) => {
         const campaignSlug = consumeCampaignSlug();
-        const response = await authApi.loginTelegram(initData, campaignSlug);
+        const referralCode = consumeReferralCode();
+        const response = await authApi.loginTelegram(initData, campaignSlug, referralCode);
         tokenStorage.setTokens(response.access_token, response.refresh_token);
         set({
           accessToken: response.access_token,
@@ -261,7 +263,8 @@ export const useAuthStore = create<AuthState>()(
 
       loginWithTelegramWidget: async (data) => {
         const campaignSlug = consumeCampaignSlug();
-        const response = await authApi.loginTelegramWidget(data, campaignSlug);
+        const referralCode = consumeReferralCode();
+        const response = await authApi.loginTelegramWidget(data, campaignSlug, referralCode);
         tokenStorage.setTokens(response.access_token, response.refresh_token);
         set({
           accessToken: response.access_token,
@@ -275,7 +278,8 @@ export const useAuthStore = create<AuthState>()(
 
       loginWithEmail: async (email, password) => {
         const campaignSlug = consumeCampaignSlug();
-        const response = await authApi.loginEmail(email, password, campaignSlug);
+        const referralCode = consumeReferralCode();
+        const response = await authApi.loginEmail(email, password, campaignSlug, referralCode);
         tokenStorage.setTokens(response.access_token, response.refresh_token);
         set({
           accessToken: response.access_token,
@@ -289,8 +293,10 @@ export const useAuthStore = create<AuthState>()(
 
       loginWithOAuth: async (provider, code, state, payload) => {
         const campaignSlug = consumeCampaignSlug();
+        const referralCode = consumeReferralCode();
         const response = await authApi.oauthCallback(provider, code, state, {
           campaignSlug,
+          referralCode,
           ...payload,
         });
         tokenStorage.setTokens(response.access_token, response.refresh_token);
@@ -308,12 +314,13 @@ export const useAuthStore = create<AuthState>()(
         // Registration now returns message, not tokens
         // User must verify email before they can login
         // Campaign slug stays in localStorage — consumed during verify_email step
+        const code = referralCode || consumeReferralCode() || undefined;
         const response = await authApi.registerEmailStandalone({
           email,
           password,
           first_name: firstName,
           language: navigator.language.split('-')[0] || 'ru',
-          referral_code: referralCode,
+          referral_code: code,
         });
         return response;
       },
@@ -329,8 +336,9 @@ export const useAuthStore = create<AuthState>()(
   ),
 );
 
-// Capture campaign slug from URL before auth initialization
+// Capture campaign slug and referral code from URL before auth initialization
 captureCampaignFromUrl();
+captureReferralFromUrl();
 
 // Initialize auth on app load
 useAuthStore.getState().initialize();

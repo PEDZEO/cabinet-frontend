@@ -3,9 +3,13 @@ import { useTranslation } from 'react-i18next';
 
 interface TelegramLoginButtonProps {
   botUsername: string;
+  referralCode?: string;
 }
 
-export default function TelegramLoginButton({ botUsername }: TelegramLoginButtonProps) {
+export default function TelegramLoginButton({
+  botUsername,
+  referralCode,
+}: TelegramLoginButtonProps) {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -51,7 +55,11 @@ export default function TelegramLoginButton({ botUsername }: TelegramLoginButton
       <div className="text-center">
         <p className="mb-2 text-xs text-gray-500">{t('auth.orOpenInApp')}</p>
         <a
-          href={`https://t.me/${botUsername}`}
+          href={
+            referralCode
+              ? `https://t.me/${botUsername}?start=${encodeURIComponent(referralCode)}`
+              : `https://t.me/${botUsername}`
+          }
           target="_blank"
           rel="noopener noreferrer"
           className="text-telegram-blue bg-telegram-blue/10 hover:bg-telegram-blue/20 inline-flex items-center gap-2 rounded-xl px-5 py-3 text-base font-semibold transition-colors"

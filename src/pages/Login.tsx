@@ -108,6 +108,7 @@ export default function Login() {
                 isTelegramWebApp={isTelegramWebApp}
                 hasError={Boolean(error)}
                 botUsername={botUsername}
+                referralCode={referralCode || undefined}
                 onRetryTelegramAuth={handleRetryTelegramAuth}
               />
             </div>

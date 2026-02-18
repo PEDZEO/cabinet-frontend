@@ -23,6 +23,7 @@ import { useTelegramSDK, getTelegramInitData, isInTelegramWebApp } from '@/hooks
 import { useAuthStore } from '@/store/auth';
 import { saveOAuthState } from '@/utils/oauthState';
 import { getAndClearReturnUrl } from '@/utils/token';
+import { consumeReferralCode, getPendingReferralCode } from '@/utils/referral';
 import { isValidEmail } from '@/utils/validation';
 
 type AuthMode = 'login' | 'register';
@@ -52,7 +53,7 @@ export function useLoginPage() {
     registerWithEmail,
   } = useAuthStore();
 
-  const referralCode = searchParams.get('ref') || '';
+  const referralCode = searchParams.get('ref') || getPendingReferralCode() || '';
 
   const [authMode, setAuthMode] = useState<AuthMode>(() => (referralCode ? 'register' : 'login'));
   const [email, setEmail] = useState('');
@@ -128,6 +129,7 @@ export function useLoginPage() {
 
   useEffect(() => {
     if (referralCode && emailAuthConfig?.enabled === false && botUsername) {
+      consumeReferralCode();
       window.location.href = `https://t.me/${botUsername}?start=${encodeURIComponent(referralCode)}`;
     }
   }, [referralCode, emailAuthConfig, botUsername]);
