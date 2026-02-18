@@ -18,6 +18,8 @@ import { useCloseOnSuccessNotification } from '../store/successNotification';
 import { getErrorMessage, getInsufficientBalanceError } from './subscription/utils/errors';
 import { getFlagEmoji } from './subscription/utils/flags';
 import { useDeviceManagementMutations } from './subscription/hooks/useDeviceManagementMutations';
+import { useTariffMutations } from './subscription/hooks/useTariffMutations';
+import { useTrafficAndCountriesMutations } from './subscription/hooks/useTrafficAndCountriesMutations';
 import { CheckIcon, CopyIcon } from './subscription/components/StatusIcons';
 import { useSubscriptionModals } from './subscription/hooks/useSubscriptionModals';
 import {
@@ -282,66 +284,22 @@ function FullSubscription() {
     enabled: !!switchTariffId,
   });
 
-  // Tariff switch mutation
-  const switchTariffMutation = useMutation({
-    mutationFn: (tariffId: number) => subscriptionApi.switchTariff(tariffId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['subscription'] });
-      queryClient.invalidateQueries({ queryKey: ['purchase-options'] });
-      setSwitchTariffId(null);
-    },
-    onError: (error: unknown) => {
-      // Handle subscription_expired error - redirect to purchase flow
-      if (error instanceof AxiosError) {
-        const detail = error.response?.data?.detail;
-        if (
-          typeof detail === 'object' &&
-          detail?.error_code === 'subscription_expired' &&
-          detail?.use_purchase_flow === true
-        ) {
-          // Find the tariff user was trying to switch to and open purchase form
-          const targetTariff = tariffs.find((t) => t.id === switchTariffId);
-          if (targetTariff) {
-            setSwitchTariffId(null);
-            setSelectedTariff(targetTariff);
-            setSelectedTariffPeriod(targetTariff.periods[0] || null);
-            setShowTariffPurchase(true);
-            // Refetch purchase-options to get updated expired status
-            queryClient.invalidateQueries({ queryKey: ['purchase-options'] });
-          }
-        }
-      }
-    },
-  });
-
-  // Tariff purchase mutation
-  const tariffPurchaseMutation = useMutation({
-    mutationFn: () => {
-      if (!selectedTariff) {
-        throw new Error('Tariff not selected');
-      }
-      // For daily tariffs, always use 1 day
-      const isDailyTariff =
-        selectedTariff.is_daily ||
-        (selectedTariff.daily_price_kopeks && selectedTariff.daily_price_kopeks > 0);
-      const days = isDailyTariff
-        ? 1
-        : useCustomDays
-          ? customDays
-          : selectedTariffPeriod?.days || 30;
-      const trafficGb =
-        useCustomTraffic && selectedTariff.custom_traffic_enabled ? customTrafficGb : undefined;
-      return subscriptionApi.purchaseTariff(selectedTariff.id, days, trafficGb);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['subscription'] });
-      queryClient.invalidateQueries({ queryKey: ['purchase-options'] });
-      setShowTariffPurchase(false);
-      setSelectedTariff(null);
-      setSelectedTariffPeriod(null);
-      setUseCustomDays(false);
-      setUseCustomTraffic(false);
-    },
+  const { switchTariffMutation, tariffPurchaseMutation } = useTariffMutations({
+    queryClient,
+    tariffs,
+    switchTariffId,
+    selectedTariff,
+    selectedTariffPeriod,
+    useCustomDays,
+    useCustomTraffic,
+    customDays,
+    customTrafficGb,
+    setSwitchTariffId,
+    setSelectedTariff,
+    setSelectedTariffPeriod,
+    setShowTariffPurchase,
+    setUseCustomDays,
+    setUseCustomTraffic,
   });
 
   // Device price query
@@ -386,16 +344,6 @@ function FullSubscription() {
     enabled: showTrafficTopup && !!subscription,
   });
 
-  // Traffic purchase mutation
-  const trafficPurchaseMutation = useMutation({
-    mutationFn: (gb: number) => subscriptionApi.purchaseTraffic(gb),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['subscription'] });
-      setShowTrafficTopup(false);
-      setSelectedTrafficPackage(null);
-    },
-  });
-
   // Countries/servers query
   const { data: countriesData, isLoading: countriesLoading } = useQuery({
     queryKey: ['countries'],
@@ -411,42 +359,15 @@ function FullSubscription() {
     }
   }, [countriesData, showServerManagement]);
 
-  // Countries update mutation
-  const updateCountriesMutation = useMutation({
-    mutationFn: (countries: string[]) => subscriptionApi.updateCountries(countries),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['subscription'] });
-      queryClient.invalidateQueries({ queryKey: ['countries'] });
-      setShowServerManagement(false);
-    },
-  });
-
-  // Traffic refresh mutation
-  const refreshTrafficMutation = useMutation({
-    mutationFn: subscriptionApi.refreshTraffic,
-    onSuccess: (data) => {
-      setTrafficData({
-        traffic_used_gb: data.traffic_used_gb,
-        traffic_used_percent: data.traffic_used_percent,
-        is_unlimited: data.is_unlimited,
-      });
-      localStorage.setItem('traffic_refresh_ts', Date.now().toString());
-      if (data.rate_limited && data.retry_after_seconds) {
-        setTrafficRefreshCooldown(data.retry_after_seconds);
-      } else {
-        setTrafficRefreshCooldown(30);
-      }
-      queryClient.invalidateQueries({ queryKey: ['subscription'] });
-    },
-    onError: (error: {
-      response?: { status?: number; headers?: { get?: (key: string) => string } };
-    }) => {
-      if (error.response?.status === 429) {
-        const retryAfter = error.response.headers?.get?.('Retry-After');
-        setTrafficRefreshCooldown(retryAfter ? parseInt(retryAfter, 10) : 30);
-      }
-    },
-  });
+  const { trafficPurchaseMutation, updateCountriesMutation, refreshTrafficMutation } =
+    useTrafficAndCountriesMutations({
+      queryClient,
+      setShowTrafficTopup,
+      setSelectedTrafficPackage,
+      setShowServerManagement,
+      setTrafficData,
+      setTrafficRefreshCooldown,
+    });
 
   // Track if we've already triggered auto-refresh this session
   const hasAutoRefreshed = useRef(false);

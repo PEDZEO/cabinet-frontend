@@ -61,6 +61,9 @@
 - [~] Этап 2 (Subscription): частично вынесена логика purchase-flow в `src/pages/subscription/utils/purchaseFlow.ts` (шаги, лейблы шагов, фильтрация доступных серверов, цвет прогресса).
 - [~] Этап 2.2 (Subscription): вынесено управление модалками в `src/pages/subscription/hooks/useSubscriptionModals.ts`.
 - [~] Этап 2.3 (Subscription): вынесены device mutation-обработчики в `src/pages/subscription/hooks/useDeviceManagementMutations.ts`.
-- [ ] Этап 2.4 (Subscription): вынести оставшиеся mutation-обработчики (`traffic`, `countries`, `tariff switch/purchase`) в `hooks/`.
+- [x] Этап 2.4 (Subscription): вынесены оставшиеся mutation-обработчики:
+  - `src/pages/subscription/hooks/useTariffMutations.ts`
+  - `src/pages/subscription/hooks/useTrafficAndCountriesMutations.ts`
+- [ ] Этап 2.5 (Subscription): вынести query-блоки (`device price`, `device reduction info`, `countries`) в hooks.
 - [ ] Этап 3 (App): разнести guard-обвязку и route-конфиг по отдельным модулям.
 - [ ] Этап 4 (types): декомпозировать `src/types/index.ts` по доменам.
