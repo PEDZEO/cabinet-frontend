@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.4.0](https://github.com/PEDZEO/cabinet-frontend/compare/v1.3.0...v1.4.0) (2026-02-18)
+
+
+### Features
+
+* **admin:** finish shared page states and detail data blocks ([bb4399e](https://github.com/PEDZEO/cabinet-frontend/commit/bb4399ed2bf87409cb8357664e90e502d19c9ede))
+* **admin:** standardize server and ticket page state handling ([048b276](https://github.com/PEDZEO/cabinet-frontend/commit/048b276da40a2f2c0b84db13999f37802ad3b321))
+* **admin:** unify loading and error page states ([9cdef80](https://github.com/PEDZEO/cabinet-frontend/commit/9cdef80add7ebf34df7fd8bd7b79a995f5e47aea))
+* **auth:** organize login module under feature folders ([7a5b749](https://github.com/PEDZEO/cabinet-frontend/commit/7a5b7492b0d6a6ecac4d33be9fee5ac8a66cc39c))
+* **ban:** move admin ban module into feature structure ([d806f90](https://github.com/PEDZEO/cabinet-frontend/commit/d806f9024991a4d966e543e73e9dfa0f7b5274a2))
+* **campaigns:** standardize edit page loading and error states ([0fefc82](https://github.com/PEDZEO/cabinet-frontend/commit/0fefc8237b5dab7a6d634971727fbf1812a1906b))
+* **subscription:** move module into feature-based structure ([ad762ea](https://github.com/PEDZEO/cabinet-frontend/commit/ad762eaf03e9f4290eec94484faec9a35ab78b4b))
+
 ## [1.3.0](https://github.com/PEDZEO/cabinet-frontend/compare/v1.2.1...v1.3.0) (2026-02-18)
 
 
