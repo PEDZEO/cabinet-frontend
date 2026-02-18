@@ -943,7 +943,6 @@
         "reject": "Reject request"
       }
     },
-    },
     "trafficUsage": {
       "title": "Traffic Usage",
       "subtitle": "Per-user traffic statistics by nodes",
