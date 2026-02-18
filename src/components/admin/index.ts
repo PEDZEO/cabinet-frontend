@@ -1,5 +1,6 @@
 // Components
 export * from './AdminBackButton';
+export * from './AdminDataBlocks';
 export * from './AdminPageState';
 export * from './icons';
 export * from './Toggle';

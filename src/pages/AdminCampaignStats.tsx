@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router';
+import { useParams, Link } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 import { campaignsApi, CampaignBonusType } from '../api/campaigns';
-import { AdminBackButton } from '../components/admin';
+import { AdminBackButton, AdminPageErrorState, AdminPageLoadingState } from '../components/admin';
 
 // Icons
 const CopyIcon = () => (
@@ -98,7 +98,6 @@ const formatDate = (date: string | null): string => {
 export default function AdminCampaignStats() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [copiedBot, setCopiedBot] = useState(false);
   const [copiedWeb, setCopiedWeb] = useState(false);
   const [showUsers, setShowUsers] = useState(false);
@@ -157,32 +156,17 @@ export default function AdminCampaignStats() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
-      </div>
-    );
+    return <AdminPageLoadingState />;
   }
 
   if (error || !stats) {
     return (
-      <div className="animate-fade-in">
-        <div className="mb-6 flex items-center gap-3">
-          <AdminBackButton to="/admin/campaigns" />
-          <h1 className="text-xl font-semibold text-dark-100">
-            {t('admin.campaigns.stats.title')}
-          </h1>
-        </div>
-        <div className="rounded-xl border border-error-500/30 bg-error-500/10 p-6 text-center">
-          <p className="text-error-400">{t('admin.campaigns.stats.loadError')}</p>
-          <button
-            onClick={() => navigate('/admin/campaigns')}
-            className="mt-4 text-sm text-dark-400 hover:text-dark-200"
-          >
-            {t('common.back')}
-          </button>
-        </div>
-      </div>
+      <AdminPageErrorState
+        backTo="/admin/campaigns"
+        title={t('admin.campaigns.stats.title')}
+        message={t('admin.campaigns.stats.loadError')}
+        backLabel={t('common.back')}
+      />
     );
   }
 

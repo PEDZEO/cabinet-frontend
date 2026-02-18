@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 import { promocodesApi, PromoCodeType } from '../api/promocodes';
-import { AdminBackButton } from '../components/admin';
+import { AdminBackButton, AdminPageErrorState, AdminPageLoadingState } from '../components/admin';
 
 // Icons
 const EditIcon = () => (
@@ -99,26 +99,17 @@ export default function AdminPromocodeStats() {
   });
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
-      </div>
-    );
+    return <AdminPageLoadingState />;
   }
 
   if (error || !promocode) {
     return (
-      <div className="animate-fade-in">
-        <div className="mb-6 flex items-center gap-3">
-          <AdminBackButton to="/admin/promocodes" />
-          <h1 className="text-xl font-semibold text-dark-100">
-            {t('admin.promocodes.stats.title')}
-          </h1>
-        </div>
-        <div className="py-12 text-center">
-          <p className="text-error-400">{t('admin.promocodes.stats.notFound')}</p>
-        </div>
-      </div>
+      <AdminPageErrorState
+        backTo="/admin/promocodes"
+        title={t('admin.promocodes.stats.title')}
+        message={t('admin.promocodes.stats.notFound')}
+        backLabel={t('common.back')}
+      />
     );
   }
 

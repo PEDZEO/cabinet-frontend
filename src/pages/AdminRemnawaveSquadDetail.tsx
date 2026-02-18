@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { adminRemnawaveApi, SquadWithLocalInfo } from '../api/adminRemnawave';
-import { AdminBackButton } from '../components/admin';
+import { AdminBackButton, AdminPageErrorState, AdminPageLoadingState } from '../components/admin';
 import { ServerIcon, UsersIcon, CheckIcon, XIcon } from '../components/icons';
 // Country flags helper
 const getCountryFlag = (code: string | null | undefined): string => {
@@ -68,34 +68,17 @@ export default function AdminRemnawaveSquadDetail() {
   );
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
-      </div>
-    );
+    return <AdminPageLoadingState />;
   }
 
   if (error || !squad) {
     return (
-      <div className="animate-fade-in">
-        <div className="mb-6 flex items-center gap-3">
-          <AdminBackButton to="/admin/remnawave" />
-          <h1 className="text-xl font-semibold text-dark-100">
-            {t('admin.remnawave.squads.detail', 'Squad Details')}
-          </h1>
-        </div>
-        <div className="rounded-xl border border-error-500/30 bg-error-500/10 p-6 text-center">
-          <p className="text-error-400">
-            {t('admin.remnawave.squads.loadError', 'Failed to load squad')}
-          </p>
-          <button
-            onClick={() => navigate('/admin/remnawave')}
-            className="mt-4 text-sm text-dark-400 hover:text-dark-200"
-          >
-            {t('common.back', 'Back')}
-          </button>
-        </div>
-      </div>
+      <AdminPageErrorState
+        backTo="/admin/remnawave"
+        title={t('admin.remnawave.squads.detail', 'Squad Details')}
+        message={t('admin.remnawave.squads.loadError', 'Failed to load squad')}
+        backLabel={t('common.back', 'Back')}
+      />
     );
   }
 

@@ -2,7 +2,13 @@ import { useParams, useNavigate } from 'react-router';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { withdrawalApi } from '../api/withdrawals';
-import { AdminBackButton, AdminPageErrorState, AdminPageLoadingState } from '../components/admin';
+import {
+  AdminBackButton,
+  AdminInfoTile,
+  AdminPageErrorState,
+  AdminPageLoadingState,
+  AdminSectionCard,
+} from '../components/admin';
 import { useCurrency } from '../hooks/useCurrency';
 import { useMutationSuccessActions } from '../hooks/useMutationSuccessActions';
 import {
@@ -110,71 +116,53 @@ export default function AdminWithdrawalDetail() {
 
       <div className="space-y-6">
         {/* User Info Section */}
-        <div className="rounded-xl border border-dark-700 bg-dark-800 p-4">
-          <h3 className="mb-4 font-medium text-dark-200">
-            {t('admin.withdrawals.detail.userInfo')}
-          </h3>
+        <AdminSectionCard title={t('admin.withdrawals.detail.userInfo')}>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <div className="rounded-lg bg-dark-700/50 p-3">
-              <div className="mb-1 text-sm text-dark-400">
-                {t('admin.withdrawals.detail.username')}
-              </div>
-              <div className="text-sm font-medium text-dark-200">
-                {detail.username ? `@${detail.username}` : detail.first_name || '-'}
-              </div>
-            </div>
-            <div className="rounded-lg bg-dark-700/50 p-3">
-              <div className="mb-1 text-sm text-dark-400">
-                {t('admin.withdrawals.detail.telegramId')}
-              </div>
-              <div className="font-mono text-sm font-medium text-dark-200">
-                {detail.telegram_id ?? '-'}
-              </div>
-            </div>
-            <div className="rounded-lg bg-dark-700/50 p-3">
-              <div className="mb-1 text-sm text-dark-400">
-                {t('admin.withdrawals.detail.balance')}
-              </div>
-              <div className="text-sm font-medium text-dark-200">
-                {formatWithCurrency(detail.balance_kopeks / 100)}
-              </div>
-            </div>
-            <div className="rounded-lg bg-dark-700/50 p-3">
-              <div className="mb-1 text-sm text-dark-400">
-                {t('admin.withdrawals.detail.totalReferrals')}
-              </div>
-              <div className="text-lg font-medium text-dark-200">{detail.total_referrals}</div>
-            </div>
-            <div className="rounded-lg bg-dark-700/50 p-3">
-              <div className="mb-1 text-sm text-dark-400">
-                {t('admin.withdrawals.detail.totalEarnings')}
-              </div>
-              <div className="text-sm font-medium text-dark-200">
-                {formatWithCurrency(detail.total_earnings_kopeks / 100)}
-              </div>
-            </div>
-            <div className="rounded-lg bg-dark-700/50 p-3">
-              <div className="mb-1 text-sm text-dark-400">
-                {t('admin.withdrawals.detail.createdAt')}
-              </div>
-              <div className="text-sm font-medium text-dark-200">
-                {formatDate(detail.created_at)}
-              </div>
-            </div>
+            <AdminInfoTile
+              label={t('admin.withdrawals.detail.username')}
+              value={detail.username ? `@${detail.username}` : detail.first_name || '-'}
+            />
+            <AdminInfoTile
+              label={t('admin.withdrawals.detail.telegramId')}
+              value={detail.telegram_id ?? '-'}
+              valueClassName="font-mono text-sm font-medium text-dark-200"
+            />
+            <AdminInfoTile
+              label={t('admin.withdrawals.detail.balance')}
+              value={formatWithCurrency(detail.balance_kopeks / 100)}
+            />
+            <AdminInfoTile
+              label={t('admin.withdrawals.detail.totalReferrals')}
+              value={detail.total_referrals}
+              valueClassName="text-lg font-medium text-dark-200"
+            />
+            <AdminInfoTile
+              label={t('admin.withdrawals.detail.totalEarnings')}
+              value={formatWithCurrency(detail.total_earnings_kopeks / 100)}
+            />
+            <AdminInfoTile
+              label={t('admin.withdrawals.detail.createdAt')}
+              value={formatDate(detail.created_at)}
+            />
           </div>
-        </div>
+        </AdminSectionCard>
 
         {/* Payment Details Section */}
-        <div className="rounded-xl border border-dark-700 bg-dark-800 p-4">
-          <h3 className="mb-3 font-medium text-dark-200">
-            {t('admin.withdrawals.detail.paymentDetails')}
-          </h3>
-          <div className="rounded-lg bg-dark-700/50 p-3">
-            <p className="whitespace-pre-wrap break-all text-sm text-dark-300">
-              {detail.payment_details || t('admin.withdrawals.detail.noPaymentDetails')}
-            </p>
-          </div>
-        </div>
+        <AdminSectionCard
+          title={t('admin.withdrawals.detail.paymentDetails')}
+          titleClassName="mb-3 font-medium text-dark-200"
+        >
+          <AdminInfoTile
+            label=""
+            value={
+              <p className="whitespace-pre-wrap break-all text-sm text-dark-300">
+                {detail.payment_details || t('admin.withdrawals.detail.noPaymentDetails')}
+              </p>
+            }
+            labelClassName="hidden"
+            valueClassName=""
+          />
+        </AdminSectionCard>
 
         {/* Risk Analysis Section */}
         <div className="rounded-xl border border-dark-700 bg-dark-800 p-4">

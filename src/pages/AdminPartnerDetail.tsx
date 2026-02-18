@@ -2,7 +2,14 @@ import { useParams, useNavigate } from 'react-router';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { partnerApi } from '../api/partners';
-import { AdminBackButton, AdminPageErrorState, AdminPageLoadingState } from '../components/admin';
+import {
+  AdminBackButton,
+  AdminInfoTile,
+  AdminMetricCard,
+  AdminPageErrorState,
+  AdminPageLoadingState,
+  AdminSectionCard,
+} from '../components/admin';
 import { useCurrency } from '../hooks/useCurrency';
 import { useMutationSuccessActions } from '../hooks/useMutationSuccessActions';
 
@@ -101,72 +108,52 @@ export default function AdminPartnerDetail() {
       <div className="space-y-6">
         {/* Referral Stats */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-xl border border-dark-700 bg-dark-800 p-4 text-center">
-            <div className="text-2xl font-bold text-dark-100">{partner.total_referrals}</div>
-            <div className="text-xs text-dark-500">
-              {t('admin.partnerDetail.stats.totalReferrals')}
-            </div>
-          </div>
-          <div className="rounded-xl border border-dark-700 bg-dark-800 p-4 text-center">
-            <div className="text-2xl font-bold text-success-400">{partner.paid_referrals}</div>
-            <div className="text-xs text-dark-500">
-              {t('admin.partnerDetail.stats.paidReferrals')}
-            </div>
-          </div>
-          <div className="rounded-xl border border-dark-700 bg-dark-800 p-4 text-center">
-            <div className="text-2xl font-bold text-accent-400">{partner.active_referrals}</div>
-            <div className="text-xs text-dark-500">
-              {t('admin.partnerDetail.stats.activeReferrals')}
-            </div>
-          </div>
-          <div className="rounded-xl border border-dark-700 bg-dark-800 p-4 text-center">
-            <div className="text-2xl font-bold text-accent-400">{partner.conversion_to_paid}%</div>
-            <div className="text-xs text-dark-500">
-              {t('admin.partnerDetail.stats.conversionRate')}
-            </div>
-          </div>
+          <AdminMetricCard
+            value={partner.total_referrals}
+            label={t('admin.partnerDetail.stats.totalReferrals')}
+          />
+          <AdminMetricCard
+            value={partner.paid_referrals}
+            label={t('admin.partnerDetail.stats.paidReferrals')}
+            valueClassName="text-2xl font-bold text-success-400"
+          />
+          <AdminMetricCard
+            value={partner.active_referrals}
+            label={t('admin.partnerDetail.stats.activeReferrals')}
+            valueClassName="text-2xl font-bold text-accent-400"
+          />
+          <AdminMetricCard
+            value={`${partner.conversion_to_paid}%`}
+            label={t('admin.partnerDetail.stats.conversionRate')}
+            valueClassName="text-2xl font-bold text-accent-400"
+          />
         </div>
 
         {/* Earnings */}
-        <div className="rounded-xl border border-dark-700 bg-dark-800 p-4">
-          <h3 className="mb-4 font-medium text-dark-200">
-            {t('admin.partnerDetail.earnings.title')}
-          </h3>
+        <AdminSectionCard title={t('admin.partnerDetail.earnings.title')}>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="rounded-lg bg-dark-700/50 p-3">
-              <div className="mb-1 text-sm text-dark-400">
-                {t('admin.partnerDetail.earnings.allTime')}
-              </div>
-              <div className="text-lg font-medium text-success-400">
-                {formatWithCurrency(partner.earnings_all_time / 100)}
-              </div>
-            </div>
-            <div className="rounded-lg bg-dark-700/50 p-3">
-              <div className="mb-1 text-sm text-dark-400">
-                {t('admin.partnerDetail.earnings.today')}
-              </div>
-              <div className="text-lg font-medium text-dark-200">
-                {formatWithCurrency(partner.earnings_today / 100)}
-              </div>
-            </div>
-            <div className="rounded-lg bg-dark-700/50 p-3">
-              <div className="mb-1 text-sm text-dark-400">
-                {t('admin.partnerDetail.earnings.week')}
-              </div>
-              <div className="text-lg font-medium text-dark-200">
-                {formatWithCurrency(partner.earnings_week / 100)}
-              </div>
-            </div>
-            <div className="rounded-lg bg-dark-700/50 p-3">
-              <div className="mb-1 text-sm text-dark-400">
-                {t('admin.partnerDetail.earnings.month')}
-              </div>
-              <div className="text-lg font-medium text-dark-200">
-                {formatWithCurrency(partner.earnings_month / 100)}
-              </div>
-            </div>
+            <AdminInfoTile
+              label={t('admin.partnerDetail.earnings.allTime')}
+              value={formatWithCurrency(partner.earnings_all_time / 100)}
+              valueClassName="text-lg font-medium text-success-400"
+            />
+            <AdminInfoTile
+              label={t('admin.partnerDetail.earnings.today')}
+              value={formatWithCurrency(partner.earnings_today / 100)}
+              valueClassName="text-lg font-medium text-dark-200"
+            />
+            <AdminInfoTile
+              label={t('admin.partnerDetail.earnings.week')}
+              value={formatWithCurrency(partner.earnings_week / 100)}
+              valueClassName="text-lg font-medium text-dark-200"
+            />
+            <AdminInfoTile
+              label={t('admin.partnerDetail.earnings.month')}
+              value={formatWithCurrency(partner.earnings_month / 100)}
+              valueClassName="text-lg font-medium text-dark-200"
+            />
           </div>
-        </div>
+        </AdminSectionCard>
 
         {/* Commission */}
         <div className="rounded-xl border border-dark-700 bg-dark-800 p-4">
