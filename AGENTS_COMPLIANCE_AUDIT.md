@@ -59,6 +59,7 @@
   - `src/pages/subscription/utils/flags.ts`
   - `src/pages/subscription/components/StatusIcons.tsx`
 - [~] Этап 2 (Subscription): частично вынесена логика purchase-flow в `src/pages/subscription/utils/purchaseFlow.ts` (шаги, лейблы шагов, фильтрация доступных серверов, цвет прогресса).
-- [ ] Этап 2.2 (Subscription): вынести mutation-обработчики и управление модалками в `hooks/`.
+- [~] Этап 2.2 (Subscription): вынесено управление модалками в `src/pages/subscription/hooks/useSubscriptionModals.ts`.
+- [ ] Этап 2.3 (Subscription): вынести mutation-обработчики в `hooks/`.
 - [ ] Этап 3 (App): разнести guard-обвязку и route-конфиг по отдельным модулям.
 - [ ] Этап 4 (types): декомпозировать `src/types/index.ts` по доменам.

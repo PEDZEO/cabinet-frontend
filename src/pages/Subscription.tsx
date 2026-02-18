@@ -18,6 +18,7 @@ import { useCloseOnSuccessNotification } from '../store/successNotification';
 import { getErrorMessage, getInsufficientBalanceError } from './subscription/utils/errors';
 import { getFlagEmoji } from './subscription/utils/flags';
 import { CheckIcon, CopyIcon } from './subscription/components/StatusIcons';
+import { useSubscriptionModals } from './subscription/hooks/useSubscriptionModals';
 import {
   buildPurchaseSteps,
   getAvailableServersForPeriod,
@@ -84,25 +85,34 @@ function FullSubscription() {
   const [selectedTraffic, setSelectedTraffic] = useState<number | null>(null);
   const [selectedServers, setSelectedServers] = useState<string[]>([]);
   const [selectedDevices, setSelectedDevices] = useState<number>(1);
-  const [showPurchaseForm, setShowPurchaseForm] = useState(false);
+  const {
+    showPurchaseForm,
+    setShowPurchaseForm,
+    showTariffPurchase,
+    setShowTariffPurchase,
+    showDeviceTopup,
+    setShowDeviceTopup,
+    showDeviceReduction,
+    setShowDeviceReduction,
+    showTrafficTopup,
+    setShowTrafficTopup,
+    showServerManagement,
+    setShowServerManagement,
+    closeAllModals,
+  } = useSubscriptionModals();
 
   // Tariffs mode state
   const [selectedTariff, setSelectedTariff] = useState<Tariff | null>(null);
   const [selectedTariffPeriod, setSelectedTariffPeriod] = useState<TariffPeriod | null>(null);
-  const [showTariffPurchase, setShowTariffPurchase] = useState(false);
   // Custom days/traffic state
   const [customDays, setCustomDays] = useState<number>(30);
   const [customTrafficGb, setCustomTrafficGb] = useState<number>(50);
   const [useCustomDays, setUseCustomDays] = useState(false);
   const [useCustomTraffic, setUseCustomTraffic] = useState(false);
   // Device/traffic topup state
-  const [showDeviceTopup, setShowDeviceTopup] = useState(false);
   const [devicesToAdd, setDevicesToAdd] = useState(1);
-  const [showDeviceReduction, setShowDeviceReduction] = useState(false);
   const [targetDeviceLimit, setTargetDeviceLimit] = useState<number>(1);
-  const [showTrafficTopup, setShowTrafficTopup] = useState(false);
   const [selectedTrafficPackage, setSelectedTrafficPackage] = useState<number | null>(null);
-  const [showServerManagement, setShowServerManagement] = useState(false);
   const [selectedServersToUpdate, setSelectedServersToUpdate] = useState<string[]>([]);
 
   // Traffic refresh state
@@ -258,16 +268,11 @@ function FullSubscription() {
 
   // Auto-close all modals/forms when success notification appears (e.g., subscription purchased via WebSocket)
   const handleCloseAllModals = useCallback(() => {
-    setShowPurchaseForm(false);
-    setShowTariffPurchase(false);
-    setShowDeviceTopup(false);
-    setShowDeviceReduction(false);
-    setShowTrafficTopup(false);
-    setShowServerManagement(false);
+    closeAllModals();
     setSwitchTariffId(null);
     setSelectedTariff(null);
     setSelectedTariffPeriod(null);
-  }, []);
+  }, [closeAllModals]);
   useCloseOnSuccessNotification(handleCloseAllModals);
 
   const { data: switchPreview, isLoading: switchPreviewLoading } = useQuery({
