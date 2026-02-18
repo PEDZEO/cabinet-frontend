@@ -21,6 +21,7 @@ import { useDeviceManagementMutations } from './subscription/hooks/useDeviceMana
 import { useSubscriptionAuxQueries } from './subscription/hooks/useSubscriptionAuxQueries';
 import { useTariffMutations } from './subscription/hooks/useTariffMutations';
 import { useTrafficAndCountriesMutations } from './subscription/hooks/useTrafficAndCountriesMutations';
+import { BuyDevicesSection } from './subscription/components/BuyDevicesSection';
 import { DeviceListSection } from './subscription/components/DeviceListSection';
 import { CheckIcon, CopyIcon } from './subscription/components/StatusIcons';
 import { useSubscriptionModals } from './subscription/hooks/useSubscriptionModals';
@@ -943,196 +944,23 @@ function FullSubscription() {
             {t('subscription.additionalOptions.title')}
           </h2>
 
-          {/* Buy Devices */}
-          {!showDeviceTopup ? (
-            <button
-              onClick={() => setShowDeviceTopup(true)}
-              className="w-full rounded-xl border border-dark-700/50 bg-dark-800/50 p-4 text-left transition-colors hover:border-dark-600"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-medium text-dark-100">
-                    {t('subscription.additionalOptions.buyDevices')}
-                  </div>
-                  <div className="mt-1 text-sm text-dark-400">
-                    {t('subscription.additionalOptions.currentDeviceLimit', {
-                      count: subscription.device_limit,
-                    })}
-                  </div>
-                </div>
-                <svg
-                  className="h-5 w-5 text-dark-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            </button>
-          ) : (
-            <div className="rounded-xl border border-dark-700/50 bg-dark-800/50 p-5">
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="font-medium text-dark-100">{t('subscription.buyDevices')}</h3>
-                <button
-                  onClick={() => setShowDeviceTopup(false)}
-                  className="text-sm text-dark-400 hover:text-dark-200"
-                >
-                  ✕
-                </button>
-              </div>
-
-              {/* Check if completely unavailable (no subscription, price not set, etc.) */}
-              {devicePriceData?.available === false && !devicePriceData?.max_device_limit ? (
-                <div className="py-4 text-center text-sm text-dark-400">
-                  {devicePriceData.reason || t('subscription.additionalOptions.devicesUnavailable')}
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {/* Device selector - show even at max limit */}
-                  <div className="flex items-center justify-center gap-6">
-                    <button
-                      onClick={() => setDevicesToAdd(Math.max(1, devicesToAdd - 1))}
-                      disabled={devicesToAdd <= 1}
-                      className="btn-secondary flex h-12 w-12 items-center justify-center !p-0 text-2xl"
-                    >
-                      -
-                    </button>
-                    <div className="text-center">
-                      <div className="text-4xl font-bold text-dark-100">{devicesToAdd}</div>
-                      <div className="text-sm text-dark-500">
-                        {t('subscription.additionalOptions.devicesUnit')}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setDevicesToAdd(devicesToAdd + 1)}
-                      disabled={
-                        devicePriceData?.max_device_limit
-                          ? (devicePriceData.current_device_limit || 0) + devicesToAdd >=
-                            devicePriceData.max_device_limit
-                          : false
-                      }
-                      className="btn-secondary flex h-12 w-12 items-center justify-center !p-0 text-2xl"
-                    >
-                      +
-                    </button>
-                  </div>
-
-                  {/* Show limit info when at or near max */}
-                  {devicePriceData?.max_device_limit && (
-                    <div className="text-center text-sm text-dark-400">
-                      {t('subscription.additionalOptions.currentDeviceLimit', {
-                        count: devicePriceData.current_device_limit || subscription.device_limit,
-                      })}{' '}
-                      /{' '}
-                      {t('subscription.additionalOptions.maxDevices', {
-                        count: devicePriceData.max_device_limit,
-                      })}
-                    </div>
-                  )}
-
-                  {/* Show reason if can't add requested amount */}
-                  {devicePriceData?.available === false && devicePriceData?.reason && (
-                    <div className="rounded-lg bg-warning-500/10 p-3 text-center text-sm text-warning-400">
-                      {devicePriceData.reason}
-                    </div>
-                  )}
-
-                  {/* Price info - only when available */}
-                  {devicePriceData?.available && devicePriceData.price_per_device_label && (
-                    <div className="text-center">
-                      <div className="mb-2 text-sm text-dark-400">
-                        {/* Show original price with strikethrough if discount */}
-                        {devicePriceData.discount_percent &&
-                        devicePriceData.discount_percent > 0 ? (
-                          <span>
-                            <span className="text-dark-500 line-through">
-                              {formatPrice(devicePriceData.original_price_per_device_kopeks || 0)}
-                            </span>
-                            <span className="mx-1">{devicePriceData.price_per_device_label}</span>
-                          </span>
-                        ) : (
-                          devicePriceData.price_per_device_label
-                        )}
-                        /{t('subscription.perDevice').replace('/ ', '')} (
-                        {t('subscription.days', { count: devicePriceData.days_left })})
-                      </div>
-                      {/* Discount badge */}
-                      {devicePriceData.discount_percent && devicePriceData.discount_percent > 0 && (
-                        <div className="mb-2">
-                          <span className="inline-block rounded-full bg-green-500/20 px-2.5 py-0.5 text-sm font-medium text-green-400">
-                            -{devicePriceData.discount_percent}%
-                          </span>
-                        </div>
-                      )}
-                      {/* Total price - show as free if 100% discount or 0 */}
-                      {devicePriceData.total_price_kopeks === 0 ? (
-                        <div className="text-2xl font-bold text-green-400">
-                          {t('subscription.switchTariff.free')}
-                        </div>
-                      ) : (
-                        <div className="text-2xl font-bold text-accent-400">
-                          {/* Show original total with strikethrough if discount */}
-                          {devicePriceData.discount_percent &&
-                            devicePriceData.discount_percent > 0 &&
-                            devicePriceData.base_total_price_kopeks && (
-                              <span className="mr-2 text-lg text-dark-500 line-through">
-                                {formatPrice(devicePriceData.base_total_price_kopeks)}
-                              </span>
-                            )}
-                          {devicePriceData.total_price_label}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {devicePriceData?.available &&
-                    purchaseOptions &&
-                    devicePriceData.total_price_kopeks &&
-                    devicePriceData.total_price_kopeks > purchaseOptions.balance_kopeks && (
-                      <InsufficientBalancePrompt
-                        missingAmountKopeks={
-                          devicePriceData.total_price_kopeks - purchaseOptions.balance_kopeks
-                        }
-                        compact
-                        onBeforeTopUp={async () => {
-                          await subscriptionApi.saveDevicesCart(devicesToAdd);
-                        }}
-                      />
-                    )}
-
-                  <button
-                    onClick={() => devicePurchaseMutation.mutate()}
-                    disabled={
-                      devicePurchaseMutation.isPending ||
-                      !devicePriceData?.available ||
-                      !!(
-                        devicePriceData?.total_price_kopeks &&
-                        purchaseOptions &&
-                        devicePriceData.total_price_kopeks > purchaseOptions.balance_kopeks
-                      )
-                    }
-                    className="btn-primary w-full py-3"
-                  >
-                    {devicePurchaseMutation.isPending ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                      </span>
-                    ) : (
-                      t('subscription.additionalOptions.buy')
-                    )}
-                  </button>
-
-                  {devicePurchaseMutation.isError && (
-                    <div className="text-center text-sm text-error-400">
-                      {getErrorMessage(devicePurchaseMutation.error)}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
+          <BuyDevicesSection
+            t={t}
+            formatPrice={formatPrice}
+            showDeviceTopup={showDeviceTopup}
+            setShowDeviceTopup={setShowDeviceTopup}
+            devicesToAdd={devicesToAdd}
+            setDevicesToAdd={setDevicesToAdd}
+            currentDeviceLimit={subscription.device_limit}
+            devicePriceData={devicePriceData}
+            purchaseBalanceKopeks={purchaseOptions?.balance_kopeks}
+            isDevicePurchasePending={devicePurchaseMutation.isPending}
+            devicePurchaseErrorMessage={
+              devicePurchaseMutation.isError ? getErrorMessage(devicePurchaseMutation.error) : null
+            }
+            onPurchaseDevices={() => devicePurchaseMutation.mutate()}
+            onBeforeTopUp={(devices) => subscriptionApi.saveDevicesCart(devices)}
+          />
 
           {/* Reduce Devices */}
           <div className="mt-4">

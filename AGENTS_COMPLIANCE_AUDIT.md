@@ -66,6 +66,7 @@
   - `src/pages/subscription/hooks/useTrafficAndCountriesMutations.ts`
 - [x] Этап 2.5 (Subscription): вынесены query-блоки и связанные инициализационные эффекты в `src/pages/subscription/hooks/useSubscriptionAuxQueries.ts`.
 - [~] Этап 2.6 (Subscription UI): вынесен блок `My Devices` в `src/pages/subscription/components/DeviceListSection.tsx`.
-- [ ] Этап 2.7 (Subscription UI): вынести блоки `Additional options` (device topup/reduction, traffic, server management) в отдельные компоненты.
+- [~] Этап 2.7 (Subscription UI): вынесен блок `Buy Devices` в `src/pages/subscription/components/BuyDevicesSection.tsx`.
+- [ ] Этап 2.8 (Subscription UI): вынести оставшиеся блоки `Additional options` (device reduction, traffic, server management) в отдельные компоненты.
 - [ ] Этап 3 (App): разнести guard-обвязку и route-конфиг по отдельным модулям.
 - [ ] Этап 4 (types): декомпозировать `src/types/index.ts` по доменам.
