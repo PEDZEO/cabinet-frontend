@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import type { OAuthProvider } from '../../../types';
-import OAuthProviderIcon from '../../../components/OAuthProviderIcon';
+import OAuthProviderIcon from '@/components/OAuthProviderIcon';
+import type { OAuthProvider } from '@/types';
 
 interface LoginOAuthSectionProps {
   isLoading: boolean;

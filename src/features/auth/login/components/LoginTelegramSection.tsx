@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import TelegramLoginButton from '../../../components/TelegramLoginButton';
+import TelegramLoginButton from '@/components/TelegramLoginButton';
 
 interface LoginTelegramSectionProps {
   isLoading: boolean;

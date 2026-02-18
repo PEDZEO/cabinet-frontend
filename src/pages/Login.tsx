@@ -1,10 +1,12 @@
-import LanguageSwitcher from '../components/LanguageSwitcher';
-import { LoginBranding } from './login/components/LoginBranding';
-import { LoginCheckEmailCard } from './login/components/LoginCheckEmailCard';
-import { LoginEmailAuthSection } from './login/components/LoginEmailAuthSection';
-import { LoginOAuthSection } from './login/components/LoginOAuthSection';
-import { LoginTelegramSection } from './login/components/LoginTelegramSection';
-import { useLoginPage } from './login/hooks/useLoginPage';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import {
+  LoginBranding,
+  LoginCheckEmailCard,
+  LoginEmailAuthSection,
+  LoginOAuthSection,
+  LoginTelegramSection,
+  useLoginPage,
+} from '@/features/auth/login';
 
 export default function Login() {
   const {

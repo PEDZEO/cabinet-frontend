@@ -1,6 +1,6 @@
 import type { SyntheticEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { BrandingInfo } from '../../../api/branding';
+import type { BrandingInfo } from '@/api/branding';
 
 interface LoginBrandingProps {
   branding?: BrandingInfo;

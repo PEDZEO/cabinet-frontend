@@ -9,25 +9,21 @@ import {
 import { useNavigate, useLocation, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import { useAuthStore } from '../../../store/auth';
-import { authApi } from '../../../api/auth';
-import { isValidEmail } from '../../../utils/validation';
+import { authApi } from '@/api/auth';
 import {
   brandingApi,
   getCachedBranding,
-  setCachedBranding,
-  preloadLogo,
   isLogoPreloaded,
+  preloadLogo,
+  setCachedBranding,
   type BrandingInfo,
   type EmailAuthEnabled,
-} from '../../../api/branding';
-import { getAndClearReturnUrl } from '../../../utils/token';
-import {
-  isInTelegramWebApp,
-  getTelegramInitData,
-  useTelegramSDK,
-} from '../../../hooks/useTelegramSDK';
-import { saveOAuthState } from '../../../utils/oauthState';
+} from '@/api/branding';
+import { useTelegramSDK, getTelegramInitData, isInTelegramWebApp } from '@/hooks/useTelegramSDK';
+import { useAuthStore } from '@/store/auth';
+import { saveOAuthState } from '@/utils/oauthState';
+import { getAndClearReturnUrl } from '@/utils/token';
+import { isValidEmail } from '@/utils/validation';
 
 type AuthMode = 'login' | 'register';
 type LogoShape = 'square' | 'wide' | 'tall';
