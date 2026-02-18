@@ -64,6 +64,6 @@
 - [x] Этап 2.4 (Subscription): вынесены оставшиеся mutation-обработчики:
   - `src/pages/subscription/hooks/useTariffMutations.ts`
   - `src/pages/subscription/hooks/useTrafficAndCountriesMutations.ts`
-- [ ] Этап 2.5 (Subscription): вынести query-блоки (`device price`, `device reduction info`, `countries`) в hooks.
+- [x] Этап 2.5 (Subscription): вынесены query-блоки и связанные инициализационные эффекты в `src/pages/subscription/hooks/useSubscriptionAuxQueries.ts`.
 - [ ] Этап 3 (App): разнести guard-обвязку и route-конфиг по отдельным модулям.
 - [ ] Этап 4 (types): декомпозировать `src/types/index.ts` по доменам.

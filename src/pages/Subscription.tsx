@@ -18,6 +18,7 @@ import { useCloseOnSuccessNotification } from '../store/successNotification';
 import { getErrorMessage, getInsufficientBalanceError } from './subscription/utils/errors';
 import { getFlagEmoji } from './subscription/utils/flags';
 import { useDeviceManagementMutations } from './subscription/hooks/useDeviceManagementMutations';
+import { useSubscriptionAuxQueries } from './subscription/hooks/useSubscriptionAuxQueries';
 import { useTariffMutations } from './subscription/hooks/useTariffMutations';
 import { useTrafficAndCountriesMutations } from './subscription/hooks/useTrafficAndCountriesMutations';
 import { CheckIcon, CopyIcon } from './subscription/components/StatusIcons';
@@ -302,31 +303,16 @@ function FullSubscription() {
     setUseCustomTraffic,
   });
 
-  // Device price query
-  const { data: devicePriceData } = useQuery({
-    queryKey: ['device-price', devicesToAdd],
-    queryFn: () => subscriptionApi.getDevicePrice(devicesToAdd),
-    enabled: showDeviceTopup && !!subscription,
-  });
-
-  // Device reduction info query
-  const { data: deviceReductionInfo } = useQuery({
-    queryKey: ['device-reduction-info'],
-    queryFn: subscriptionApi.getDeviceReductionInfo,
-    enabled: showDeviceReduction && !!subscription,
-  });
-
-  // Initialize target device limit when reduction info loads
-  useEffect(() => {
-    if (deviceReductionInfo && showDeviceReduction) {
-      setTargetDeviceLimit(
-        Math.max(
-          deviceReductionInfo.min_device_limit,
-          deviceReductionInfo.current_device_limit - 1,
-        ),
-      );
-    }
-  }, [deviceReductionInfo, showDeviceReduction]);
+  const { devicePriceData, deviceReductionInfo, countriesData, countriesLoading } =
+    useSubscriptionAuxQueries({
+      devicesToAdd,
+      showDeviceTopup,
+      showDeviceReduction,
+      showServerManagement,
+      subscription,
+      setTargetDeviceLimit,
+      setSelectedServersToUpdate,
+    });
 
   const { devicePurchaseMutation, deviceReductionMutation } = useDeviceManagementMutations({
     queryClient,
@@ -343,21 +329,6 @@ function FullSubscription() {
     queryFn: subscriptionApi.getTrafficPackages,
     enabled: showTrafficTopup && !!subscription,
   });
-
-  // Countries/servers query
-  const { data: countriesData, isLoading: countriesLoading } = useQuery({
-    queryKey: ['countries'],
-    queryFn: subscriptionApi.getCountries,
-    enabled: showServerManagement && !!subscription && !subscription.is_trial,
-  });
-
-  // Initialize selected servers when data loads
-  useEffect(() => {
-    if (countriesData && showServerManagement) {
-      const connected = countriesData.countries.filter((c) => c.is_connected).map((c) => c.uuid);
-      setSelectedServersToUpdate(connected);
-    }
-  }, [countriesData, showServerManagement]);
 
   const { trafficPurchaseMutation, updateCountriesMutation, refreshTrafficMutation } =
     useTrafficAndCountriesMutations({
