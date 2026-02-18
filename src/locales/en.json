@@ -246,6 +246,11 @@
     "locationsLabel": "Locations",
     "locations_one": "{{count}} location",
     "locations_other": "{{count}} locations",
+    "trafficReset": {
+      "DAY": "Resets daily",
+      "WEEK": "Resets weekly",
+      "MONTH": "Resets monthly"
+    },
     "traffic": "Traffic",
     "unlimited": "Unlimited",
     "used": "Used",

@@ -241,6 +241,11 @@
     "servers_other": "{{count}} 个服务器",
     "locationsLabel": "位置",
     "locations_other": "{{count}} 个位置",
+    "trafficReset": {
+      "DAY": "每日重置",
+      "WEEK": "每周重置",
+      "MONTH": "每月重置"
+    },
     "traffic": "流量",
     "unlimited": "无限",
     "used": "已使用",

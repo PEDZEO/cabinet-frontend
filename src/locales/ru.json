@@ -261,6 +261,11 @@
     "locations_one": "{{count}} локация",
     "locations_few": "{{count}} локации",
     "locations_many": "{{count}} локаций",
+    "trafficReset": {
+      "DAY": "Сброс ежедневно",
+      "WEEK": "Сброс еженедельно",
+      "MONTH": "Сброс ежемесячно"
+    },
     "traffic": "Трафик",
     "unlimited": "Безлимит",
     "used": "Использовано",

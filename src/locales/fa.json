@@ -241,6 +241,11 @@
     "servers_other": "{{count}} سرور",
     "locationsLabel": "مکان‌ها",
     "locations_other": "{{count}} مکان",
+    "trafficReset": {
+      "DAY": "بازنشانی روزانه",
+      "WEEK": "بازنشانی هفتگی",
+      "MONTH": "بازنشانی ماهانه"
+    },
     "traffic": "ترافیک",
     "unlimited": "نامحدود",
     "used": "استفاده شده",
