@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { partnerApi } from '../api/partners';
-import { AdminBackButton } from '../components/admin';
+import { AdminBackButton, AdminPageErrorState, AdminPageLoadingState } from '../components/admin';
 import { useCurrency } from '../hooks/useCurrency';
 import { useMutationSuccessActions } from '../hooks/useMutationSuccessActions';
 
@@ -64,30 +64,17 @@ export default function AdminPartnerDetail() {
   });
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
-      </div>
-    );
+    return <AdminPageLoadingState />;
   }
 
   if (error || !partner) {
     return (
-      <div className="animate-fade-in">
-        <div className="mb-6 flex items-center gap-3">
-          <AdminBackButton to="/admin/partners" />
-          <h1 className="text-xl font-semibold text-dark-100">{t('admin.partnerDetail.title')}</h1>
-        </div>
-        <div className="rounded-xl border border-error-500/30 bg-error-500/10 p-6 text-center">
-          <p className="text-error-400">{t('admin.partnerDetail.loadError')}</p>
-          <button
-            onClick={() => navigate('/admin/partners')}
-            className="mt-4 text-sm text-dark-400 hover:text-dark-200"
-          >
-            {t('common.back')}
-          </button>
-        </div>
-      </div>
+      <AdminPageErrorState
+        backTo="/admin/partners"
+        title={t('admin.partnerDetail.title')}
+        message={t('admin.partnerDetail.loadError')}
+        backLabel={t('common.back')}
+      />
     );
   }
 
