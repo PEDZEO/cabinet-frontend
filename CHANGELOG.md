@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/PEDZEO/cabinet-frontend/compare/v1.1.0...v1.2.0) (2026-02-18)
+
+
+### Features
+
+* **account-linking:** add dedicated page and contextual navigation ([1bc3a8c](https://github.com/PEDZEO/cabinet-frontend/commit/1bc3a8cc4ce887ac14fcf5c78310b14f486ad4ad))
+
 ## [1.1.0](https://github.com/PEDZEO/cabinet-frontend/compare/v1.0.4...v1.1.0) (2026-02-17)
 
 
