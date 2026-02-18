@@ -402,6 +402,12 @@ export default function AccountLinking() {
         {telegramRelink && (
           <div className="mb-4 rounded-linear border border-dark-700/80 bg-dark-800/60 p-3">
             <p className="text-sm font-medium text-dark-100">Статус смены Telegram</p>
+            {linkedIdentities.length <= 1 && (
+              <p className="mt-1 text-xs text-warning-300">
+                Важно: если привязан только Telegram, сменить его не получится. Сначала привяжите
+                хотя бы один дополнительный способ входа (Yandex или VK).
+              </p>
+            )}
             {telegramRelink.requires_unlink_first ? (
               <p className="mt-1 text-xs text-warning-300">
                 Сейчас привязан Telegram. Для смены сначала отвяжите текущий Telegram, затем
