@@ -1,9 +1,10 @@
 import { useParams, useNavigate } from 'react-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { partnerApi } from '../api/partners';
 import { AdminBackButton } from '../components/admin';
 import { useCurrency } from '../hooks/useCurrency';
+import { useMutationSuccessActions } from '../hooks/useMutationSuccessActions';
 
 // Status badge config — keys must match backend PartnerStatus enum values
 const statusConfig: Record<string, { labelKey: string; color: string; bgColor: string }> = {
@@ -39,13 +40,15 @@ export default function AdminPartnerDetail() {
   const { t } = useTranslation();
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const runSuccessActions = useMutationSuccessActions();
   const { formatWithCurrency } = useCurrency();
 
   const unassignMutation = useMutation({
     mutationFn: (campaignId: number) => partnerApi.unassignCampaign(Number(userId), campaignId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-partner-detail', userId] });
+      return runSuccessActions({
+        invalidateKeys: [['admin-partner-detail', userId]],
+      });
     },
   });
 

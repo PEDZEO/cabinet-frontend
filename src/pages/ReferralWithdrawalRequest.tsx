@@ -1,14 +1,15 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate } from 'react-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { withdrawalApi } from '../api/withdrawals';
 import { useCurrency } from '../hooks/useCurrency';
+import { useMutationSuccessActions } from '../hooks/useMutationSuccessActions';
 
 export default function ReferralWithdrawalRequest() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const runSuccessActions = useMutationSuccessActions();
   const { formatWithCurrency, currencySymbol } = useCurrency();
 
   const [form, setForm] = useState({
@@ -31,9 +32,10 @@ export default function ReferralWithdrawalRequest() {
   const withdrawMutation = useMutation({
     mutationFn: withdrawalApi.create,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['withdrawal-balance'] });
-      queryClient.invalidateQueries({ queryKey: ['withdrawal-history'] });
-      navigate('/referral');
+      return runSuccessActions({
+        invalidateKeys: [['withdrawal-balance'], ['withdrawal-history']],
+        navigateTo: '/referral',
+      });
     },
   });
 

@@ -1,13 +1,14 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate } from 'react-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { partnerApi, type PartnerApplicationRequest } from '../api/partners';
+import { useMutationSuccessActions } from '../hooks/useMutationSuccessActions';
 
 export default function ReferralPartnerApply() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const runSuccessActions = useMutationSuccessActions();
 
   const [form, setForm] = useState<PartnerApplicationRequest>({
     company_name: '',
@@ -35,8 +36,10 @@ export default function ReferralPartnerApply() {
   const applyMutation = useMutation({
     mutationFn: partnerApi.apply,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['partner-status'] });
-      navigate('/referral');
+      return runSuccessActions({
+        invalidateKeys: [['partner-status']],
+        navigateTo: '/referral',
+      });
     },
   });
 

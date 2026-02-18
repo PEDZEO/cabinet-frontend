@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { partnerApi } from '../api/partners';
 import { AdminBackButton } from '../components/admin';
+import { useMutationSuccessActions } from '../hooks/useMutationSuccessActions';
 import { toNumber } from '../utils/inputHelpers';
 
 type NumberOrEmpty = number | '';
@@ -22,7 +23,7 @@ const SettingsIcon = () => (
 export default function AdminPartnerSettings() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const runSuccessActions = useMutationSuccessActions();
 
   const {
     data: settings,
@@ -65,9 +66,10 @@ export default function AdminPartnerSettings() {
   const updateMutation = useMutation({
     mutationFn: partnerApi.updatePartnerSettings,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['partner-settings'] });
-      queryClient.invalidateQueries({ queryKey: ['referral-terms'] });
-      navigate('/admin/partners');
+      return runSuccessActions({
+        invalidateKeys: [['partner-settings'], ['referral-terms']],
+        navigateTo: '/admin/partners',
+      });
     },
   });
 
