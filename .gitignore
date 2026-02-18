@@ -48,5 +48,9 @@ miniapp/
 .ai/
 CLAUDE.md
 **/CLAUDE.md
+AGENT.md
+**/AGENT.md
 AGENTS.md
 **/AGENTS.md
+AGENTS_COMPLIANCE_AUDIT.md
+**/AGENTS_COMPLIANCE_AUDIT.md
