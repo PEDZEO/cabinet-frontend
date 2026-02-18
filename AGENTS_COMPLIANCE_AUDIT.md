@@ -58,21 +58,18 @@
   - `src/pages/subscription/utils/errors.ts`
   - `src/pages/subscription/utils/flags.ts`
   - `src/pages/subscription/components/StatusIcons.tsx`
-- [x] Этап 2 (Subscription): вынесена логика purchase-flow в `src/pages/subscription/utils/purchaseFlow.ts` (шаги, лейблы шагов, фильтрация доступных серверов, цвет прогресса).
-- [x] Этап 2.2 (Subscription): вынесено управление модалками в `src/pages/subscription/hooks/useSubscriptionModals.ts`.
-- [x] Этап 2.3 (Subscription): вынесены device mutation-обработчики в `src/pages/subscription/hooks/useDeviceManagementMutations.ts`.
+- [~] Этап 2 (Subscription): частично вынесена логика purchase-flow в `src/pages/subscription/utils/purchaseFlow.ts` (шаги, лейблы шагов, фильтрация доступных серверов, цвет прогресса).
+- [~] Этап 2.2 (Subscription): вынесено управление модалками в `src/pages/subscription/hooks/useSubscriptionModals.ts`.
+- [~] Этап 2.3 (Subscription): вынесены device mutation-обработчики в `src/pages/subscription/hooks/useDeviceManagementMutations.ts`.
 - [x] Этап 2.4 (Subscription): вынесены оставшиеся mutation-обработчики:
   - `src/pages/subscription/hooks/useTariffMutations.ts`
   - `src/pages/subscription/hooks/useTrafficAndCountriesMutations.ts`
 - [x] Этап 2.5 (Subscription): вынесены query-блоки и связанные инициализационные эффекты в `src/pages/subscription/hooks/useSubscriptionAuxQueries.ts`.
-- [x] Этап 2.6 (Subscription UI): вынесен блок `My Devices` в `src/pages/subscription/components/DeviceListSection.tsx`.
-- [x] Этап 2.7 (Subscription UI): вынесен блок `Buy Devices` в `src/pages/subscription/components/BuyDevicesSection.tsx`.
-- [x] Этап 2.8 (Subscription UI): вынесен блок `Buy Traffic` в `src/pages/subscription/components/BuyTrafficSection.tsx`.
-- [x] Этап 2.9 (Subscription UI): вынесен блок `Reduce Devices` в `src/pages/subscription/components/ReduceDevicesSection.tsx`.
+- [~] Этап 2.6 (Subscription UI): вынесен блок `My Devices` в `src/pages/subscription/components/DeviceListSection.tsx`.
+- [~] Этап 2.7 (Subscription UI): вынесен блок `Buy Devices` в `src/pages/subscription/components/BuyDevicesSection.tsx`.
+- [~] Этап 2.8 (Subscription UI): вынесен блок `Buy Traffic` в `src/pages/subscription/components/BuyTrafficSection.tsx`.
+- [~] Этап 2.9 (Subscription UI): вынесен блок `Reduce Devices` в `src/pages/subscription/components/ReduceDevicesSection.tsx`.
 - [x] Этап 2.10 (Subscription UI): вынесен блок `Server Management` в `src/pages/subscription/components/ServerManagementSection.tsx`.
-- [x] Этап 2.11 (Subscription): вынесены оставшиеся крупные фрагменты тарифного потока:
-  - `src/pages/subscription/components/TariffCardsGrid.tsx`
-  - `src/pages/subscription/components/TariffSwitchPreview.tsx`
-  - `src/pages/subscription/components/TariffPurchaseForm.tsx`
+- [ ] Этап 2.11 (Subscription): вынести оставшиеся крупные фрагменты (Tariff cards/switch preview) в отдельные компоненты.
 - [ ] Этап 3 (App): разнести guard-обвязку и route-конфиг по отдельным модулям.
 - [ ] Этап 4 (types): декомпозировать `src/types/index.ts` по доменам.
