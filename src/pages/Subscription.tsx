@@ -15,66 +15,9 @@ import type {
 import InsufficientBalancePrompt from '../components/InsufficientBalancePrompt';
 import { useCurrency } from '../hooks/useCurrency';
 import { useCloseOnSuccessNotification } from '../store/successNotification';
-import i18n from '../i18n';
-
-// Helper to extract error message from axios/api errors
-const getErrorMessage = (error: unknown): string => {
-  if (error instanceof AxiosError) {
-    const detail = error.response?.data?.detail;
-    if (typeof detail === 'string') return detail;
-    if (typeof detail === 'object' && detail?.message) return detail.message;
-  }
-  if (error instanceof Error) return error.message;
-  return i18n.t('common.error');
-};
-
-// Helper to extract insufficient balance error details
-const getInsufficientBalanceError = (
-  error: unknown,
-): { required: number; balance: number; missingAmount?: number } | null => {
-  if (error instanceof AxiosError) {
-    const detail = error.response?.data?.detail;
-    // Support both 'insufficient_balance' and 'insufficient_funds' codes
-    if (
-      typeof detail === 'object' &&
-      (detail?.code === 'insufficient_balance' || detail?.code === 'insufficient_funds')
-    ) {
-      return {
-        required: detail.required || detail.total_price || 0,
-        balance: detail.balance || 0,
-        missingAmount: detail.missing_amount || detail.missingAmount || 0,
-      };
-    }
-  }
-  return null;
-};
-
-// Icons
-const CopyIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"
-    />
-  </svg>
-);
-
-const CheckIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-  </svg>
-);
-
-// Convert country code to flag emoji
-const getFlagEmoji = (countryCode: string): string => {
-  if (!countryCode || countryCode.length !== 2) return '';
-  const codePoints = countryCode
-    .toUpperCase()
-    .split('')
-    .map((char) => 127397 + char.charCodeAt(0));
-  return String.fromCodePoint(...codePoints);
-};
+import { getErrorMessage, getInsufficientBalanceError } from './subscription/utils/errors';
+import { getFlagEmoji } from './subscription/utils/flags';
+import { CheckIcon, CopyIcon } from './subscription/components/StatusIcons';
 
 type PurchaseStep = 'period' | 'traffic' | 'servers' | 'devices' | 'confirm';
 
