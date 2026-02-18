@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/PEDZEO/cabinet-frontend/compare/v1.2.0...v1.2.1) (2026-02-18)
+
+
+### Bug Fixes
+
+* **account-linking:** clarify telegram change requirement ([0dc014d](https://github.com/PEDZEO/cabinet-frontend/commit/0dc014d88d11809717a9d028e1f2809f6abd0b9b))
+
 ## [1.2.0](https://github.com/PEDZEO/cabinet-frontend/compare/v1.1.0...v1.2.0) (2026-02-18)
 
 
