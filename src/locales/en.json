@@ -826,11 +826,13 @@
       "accountLinkingDesc": "Manual moderation for disputed account merges"
     },
     "accountLinking": {
-      "title": "Manual Account Merges",
-      "subtitle": "Review disputed account-linking requests",
+      "title": "Manual Account Merge Requests",
+      "subtitle": "Review disputed requests and record admin decisions",
       "total": "Total",
       "requester": "Requester",
-      "source": "Source",
+      "source": "Account by code",
+      "userComment": "User comment",
+      "adminComment": "Admin comment",
       "empty": "No merge requests found",
       "primaryRequired": "Primary account ID is required",
       "resolveTitle": "Resolve request",

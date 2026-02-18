@@ -163,7 +163,14 @@ export default function AdminAccountLinking() {
                   {t('admin.accountLinking.source')}: #{item.source_user_id ?? '-'}
                 </p>
                 {item.user_comment && (
-                  <p className="mt-2 text-sm text-dark-300">{item.user_comment}</p>
+                  <p className="mt-2 text-sm text-dark-300">
+                    {t('admin.accountLinking.userComment')}: {item.user_comment}
+                  </p>
+                )}
+                {item.resolution_comment && (
+                  <p className="mt-1 text-xs text-dark-400">
+                    {t('admin.accountLinking.adminComment')}: {item.resolution_comment}
+                  </p>
                 )}
               </button>
             ))}
