@@ -722,12 +722,13 @@ export function LiteSubscription() {
                     setSuccess(null);
                   }}
                   disabled={tab !== 'tariffs' && !hasSubscription}
-                  className={`min-w-[112px] rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
+                  aria-label={t(`lite.tab.${tab}`)}
+                  className={`min-w-[112px] rounded-xl border px-3 py-2.5 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 ${
                     activeTab === tab
-                      ? 'bg-accent-500 text-white'
+                      ? 'border-accent-400/70 bg-accent-500 text-white shadow-lg shadow-accent-500/25'
                       : tab !== 'tariffs' && !hasSubscription
-                        ? 'cursor-not-allowed bg-dark-800/30 text-dark-500'
-                        : 'bg-dark-800/50 text-dark-300 hover:bg-dark-700/50'
+                        ? 'cursor-not-allowed border-dark-700/60 bg-dark-800/30 text-dark-500'
+                        : 'border-dark-700/80 bg-dark-800/50 text-dark-300 hover:border-dark-600 hover:bg-dark-700/60'
                   }`}
                 >
                   {t(`lite.tab.${tab}`)}
@@ -786,12 +787,12 @@ export function LiteSubscription() {
                       setSelectedPeriodDays(tariff.periods[0].days);
                     }
                   }}
-                  className={`relative w-full rounded-2xl border p-4 text-left transition-all ${
+                  className={`relative w-full rounded-2xl border p-4 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 ${
                     isSelected
-                      ? 'border-accent-500 bg-accent-500/10'
+                      ? 'border-accent-400/70 bg-accent-500/10 shadow-lg shadow-accent-500/10'
                       : isCurrent && !subscription?.is_trial
-                        ? 'border-success-500/50 bg-success-500/5'
-                        : 'border-dark-700 bg-dark-800/50 hover:border-dark-600'
+                        ? 'border-success-500/50 bg-success-500/5 shadow-md shadow-success-500/10'
+                        : 'border-dark-700/90 bg-dark-800/55 hover:border-dark-600'
                   }`}
                 >
                   {isCurrent && !subscription?.is_trial && (
@@ -815,19 +816,17 @@ export function LiteSubscription() {
                     <p className="mb-3 text-sm text-dark-400">{tariff.description}</p>
                   )}
 
-                  <div className="mb-3 flex flex-wrap gap-2 text-sm text-dark-400">
-                    <span>
+                  <div className="mb-3 flex flex-wrap gap-1.5 text-xs font-medium text-dark-300">
+                    <span className="rounded-full border border-dark-600/80 bg-dark-900/35 px-2 py-0.5 tabular-nums">
                       {tariff.is_unlimited_traffic ||
                       isUnlimitedTrafficLimit(tariff.traffic_limit_gb)
                         ? '∞'
                         : `${tariff.traffic_limit_gb} GB`}
                     </span>
-                    <span>•</span>
-                    <span>
+                    <span className="rounded-full border border-dark-600/80 bg-dark-900/35 px-2 py-0.5 tabular-nums">
                       {tariff.device_limit} {t('lite.devices')}
                     </span>
-                    <span>•</span>
-                    <span>
+                    <span className="rounded-full border border-dark-600/80 bg-dark-900/35 px-2 py-0.5 tabular-nums">
                       {tariff.servers_count} {t('lite.servers')}
                     </span>
                   </div>
@@ -847,7 +846,7 @@ export function LiteSubscription() {
                         return (
                           <div className="flex flex-col gap-1 min-[360px]:flex-row min-[360px]:items-baseline min-[360px]:justify-between">
                             <div className="flex flex-wrap items-center gap-2">
-                              <span className="text-xl font-bold text-accent-400">
+                              <span className="text-xl font-bold tabular-nums text-accent-400">
                                 {formatPrice(promo.price)}
                               </span>
                               {promo.original && (
@@ -882,7 +881,7 @@ export function LiteSubscription() {
                           return (
                             <div className="flex flex-col gap-1 min-[360px]:flex-row min-[360px]:items-baseline min-[360px]:justify-between">
                               <div className="flex flex-wrap items-center gap-2">
-                                <span className="text-xl font-bold text-accent-400">
+                                <span className="text-xl font-bold tabular-nums text-accent-400">
                                   {formatPrice(promo.price)}
                                 </span>
                                 {promo.original && (
@@ -921,10 +920,10 @@ export function LiteSubscription() {
                           haptic.selectionChanged();
                           setSelectedPeriodDays(period.days);
                         }}
-                        className={`rounded-xl px-3 py-2 text-sm transition-all ${
+                        className={`rounded-xl border px-3 py-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 ${
                           selectedPeriodDays === period.days
-                            ? 'bg-accent-500 text-white'
-                            : 'bg-dark-800 text-dark-300 hover:bg-dark-700'
+                            ? 'border-accent-400/70 bg-accent-500 text-white shadow-lg shadow-accent-500/25'
+                            : 'border-dark-700/80 bg-dark-800 text-dark-300 hover:border-dark-600 hover:bg-dark-700'
                         }`}
                       >
                         {period.label}
@@ -942,9 +941,9 @@ export function LiteSubscription() {
                   handleTariffAction();
                 }}
                 disabled={isLoading}
-                className={`w-full rounded-xl py-4 font-semibold transition-all active:scale-[0.98] ${
+                className={`w-full rounded-xl border border-accent-400/60 py-4 font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 active:scale-[0.98] ${
                   isLoading
-                    ? 'cursor-not-allowed bg-dark-700 text-dark-400'
+                    ? 'cursor-not-allowed border-dark-700 bg-dark-700 text-dark-400'
                     : 'bg-accent-500 text-white hover:bg-accent-600'
                 }`}
               >
@@ -964,13 +963,13 @@ export function LiteSubscription() {
         {activeTab === 'devices' && hasSubscription && (
           <div className="space-y-4">
             {/* Current devices info */}
-            <div className="rounded-xl bg-dark-800/50 p-4">
+            <div className="rounded-xl border border-dark-700/80 bg-dark-800/55 p-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-500/20 text-accent-400">
                   <DeviceIcon />
                 </div>
                 <div>
-                  <p className="font-medium text-dark-100">
+                  <p className="font-medium tabular-nums text-dark-100">
                     {deviceLimitFromTariff} {t('lite.devicesTotal')}
                   </p>
                   <p className="text-sm text-dark-400">{t('lite.devicesDescription')}</p>
@@ -993,7 +992,7 @@ export function LiteSubscription() {
                     <button
                       onClick={() => deleteAllDevicesMutation.mutate()}
                       disabled={isLoading}
-                      className="text-xs text-error-400 hover:text-error-300 disabled:opacity-50"
+                      className="rounded-md px-2 py-1 text-xs text-error-400 transition-colors hover:bg-error-500/10 hover:text-error-300 disabled:opacity-50"
                     >
                       {t('lite.deleteAll')}
                     </button>
@@ -1003,10 +1002,10 @@ export function LiteSubscription() {
                   {devicesData.devices.map((device) => (
                     <div
                       key={device.hwid}
-                      className="flex items-center justify-between gap-3 rounded-xl bg-dark-800/50 px-4 py-3"
+                      className="flex items-center justify-between gap-3 rounded-xl border border-dark-700/70 bg-dark-800/55 px-4 py-3"
                     >
                       <div className="flex min-w-0 items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-dark-700 text-dark-400">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-dark-700/80 text-dark-300">
                           {getDeviceIcon(device.platform)}
                         </div>
                         <div className="min-w-0">
@@ -1019,8 +1018,9 @@ export function LiteSubscription() {
                       <button
                         onClick={() => deleteDeviceMutation.mutate(device.hwid)}
                         disabled={isLoading}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-dark-400 transition-colors hover:bg-error-500/20 hover:text-error-400 disabled:opacity-50"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-dark-400 transition-colors hover:bg-error-500/20 hover:text-error-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-400/60 disabled:opacity-50"
                         title={t('lite.deleteDevice')}
+                        aria-label={t('lite.deleteDevice')}
                       >
                         <TrashIcon />
                       </button>
@@ -1049,7 +1049,7 @@ export function LiteSubscription() {
                 {/* Device limit info */}
                 {typeof devicePrice.current_device_limit === 'number' &&
                   typeof devicePrice.max_device_limit === 'number' && (
-                    <div className="rounded-xl bg-dark-800/30 px-4 py-2 text-center text-sm text-dark-400">
+                    <div className="rounded-xl border border-dark-700/70 bg-dark-800/30 px-4 py-2 text-center text-sm tabular-nums text-dark-400">
                       {t('lite.deviceLimit', {
                         current: devicePrice.current_device_limit,
                         max: devicePrice.max_device_limit,
@@ -1069,11 +1069,11 @@ export function LiteSubscription() {
                             setDeviceCount(Math.max(1, deviceCount - 1));
                           }}
                           disabled={deviceCount <= 1}
-                          className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-800 text-dark-300 transition-colors hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="flex h-10 w-10 items-center justify-center rounded-xl border border-dark-700 bg-dark-800 text-dark-300 transition-colors hover:border-dark-600 hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           −
                         </button>
-                        <span className="w-12 text-center text-xl font-bold text-dark-100">
+                        <span className="w-12 text-center text-xl font-bold tabular-nums text-dark-100">
                           {deviceCount}
                         </span>
                         <button
@@ -1085,7 +1085,7 @@ export function LiteSubscription() {
                             }
                           }}
                           disabled={deviceCount >= (devicePrice.can_add ?? 0)}
-                          className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-800 text-dark-300 transition-colors hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="flex h-10 w-10 items-center justify-center rounded-xl border border-dark-700 bg-dark-800 text-dark-300 transition-colors hover:border-dark-600 hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           +
                         </button>
@@ -1107,10 +1107,10 @@ export function LiteSubscription() {
                         ? (devicePrice.discount_percent ?? null)
                         : promo.percent;
                       return (
-                        <div className="flex flex-col gap-2 rounded-xl bg-dark-800/50 px-4 py-3 min-[360px]:flex-row min-[360px]:items-center min-[360px]:justify-between">
+                        <div className="flex flex-col gap-2 rounded-xl border border-dark-700/70 bg-dark-800/55 px-4 py-3 min-[360px]:flex-row min-[360px]:items-center min-[360px]:justify-between">
                           <span className="text-dark-400">{t('lite.total')}</span>
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-lg font-bold text-accent-400">
+                            <span className="text-lg font-bold tabular-nums text-accent-400">
                               {formatPrice(promo.price)}
                             </span>
                             {promo.original && (
@@ -1134,7 +1134,7 @@ export function LiteSubscription() {
                         handleDevicePurchase();
                       }}
                       disabled={isLoading || deviceCount < 1}
-                      className="w-full rounded-xl bg-accent-500 py-4 font-semibold text-white transition-all hover:bg-accent-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="w-full rounded-xl border border-accent-400/60 bg-accent-500 py-4 font-semibold text-white transition-all hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {isLoading ? t('common.loading') : t('lite.buyDevices')}
                     </button>
@@ -1160,7 +1160,7 @@ export function LiteSubscription() {
                 <div className="mt-4 space-y-3 border-t border-dark-700 pt-4">
                   <p className="text-sm text-dark-400">{t('lite.reduceDevices')}</p>
 
-                  <div className="rounded-xl bg-dark-800/30 px-4 py-2 text-center text-sm text-dark-400">
+                  <div className="rounded-xl border border-dark-700/70 bg-dark-800/30 px-4 py-2 text-center text-sm tabular-nums text-dark-400">
                     {t('lite.connectedDevicesCount', {
                       count: reductionInfo.connected_devices_count,
                     })}
@@ -1173,11 +1173,11 @@ export function LiteSubscription() {
                         setReduceCount(Math.max(1, reduceCount - 1));
                       }}
                       disabled={reduceCount <= 1}
-                      className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-800 text-dark-300 transition-colors hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex h-10 w-10 items-center justify-center rounded-xl border border-dark-700 bg-dark-800 text-dark-300 transition-colors hover:border-dark-600 hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       −
                     </button>
-                    <span className="w-12 text-center text-xl font-bold text-dark-100">
+                    <span className="w-12 text-center text-xl font-bold tabular-nums text-dark-100">
                       {reduceCount}
                     </span>
                     <button
@@ -1186,7 +1186,7 @@ export function LiteSubscription() {
                         setReduceCount(Math.min(reductionInfo.can_reduce, reduceCount + 1));
                       }}
                       disabled={reduceCount >= reductionInfo.can_reduce}
-                      className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-800 text-dark-300 transition-colors hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex h-10 w-10 items-center justify-center rounded-xl border border-dark-700 bg-dark-800 text-dark-300 transition-colors hover:border-dark-600 hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       +
                     </button>
@@ -1195,9 +1195,9 @@ export function LiteSubscription() {
                     {t('lite.canReduceDevices', { count: reductionInfo.can_reduce })}
                   </p>
 
-                  <div className="flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
+                  <div className="flex items-center justify-between rounded-xl border border-dark-700/70 bg-dark-800/55 px-4 py-3">
                     <span className="text-dark-400">{t('lite.newDeviceLimit')}</span>
-                    <span className="text-lg font-bold text-dark-100">
+                    <span className="text-lg font-bold tabular-nums text-dark-100">
                       {reductionInfo.current_device_limit - reduceCount}
                     </span>
                   </div>
@@ -1210,7 +1210,7 @@ export function LiteSubscription() {
                       );
                     }}
                     disabled={isLoading || reduceCount < 1}
-                    className="w-full rounded-xl bg-warning-500 py-4 font-semibold text-white transition-all hover:bg-warning-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="w-full rounded-xl border border-warning-400/60 bg-warning-500 py-4 font-semibold text-white transition-all hover:bg-warning-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning-400/70 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {isLoading ? t('common.loading') : t('lite.reduceDevicesButton')}
                   </button>
@@ -1223,7 +1223,7 @@ export function LiteSubscription() {
         {activeTab === 'traffic' && hasSubscription && (
           <div className="space-y-4">
             {/* Traffic usage card with progress */}
-            <div className="rounded-2xl border border-dark-700 bg-dark-800/50 p-4">
+            <div className="rounded-2xl border border-dark-700/90 bg-dark-800/55 p-4">
               <div className="mb-4 flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-500/20 text-accent-400">
                   <TrafficIcon />
@@ -1249,22 +1249,23 @@ export function LiteSubscription() {
                   {/* Usage statistics */}
                   <div className="mb-3 grid grid-cols-1 gap-2 text-center min-[360px]:grid-cols-3">
                     <div className="rounded-lg bg-dark-700/50 p-2">
-                      <p className="text-lg font-bold text-dark-100">
+                      <p className="text-lg font-bold tabular-nums text-dark-100">
                         {(subscription?.traffic_used_gb ?? 0).toFixed(1)}
                       </p>
                       <p className="text-xs text-dark-400">{t('lite.trafficUsed')}</p>
                     </div>
                     <div className="rounded-lg bg-dark-700/50 p-2">
-                      <p className="text-lg font-bold text-dark-100">
-                        {(
+                      <p className="text-lg font-bold tabular-nums text-dark-100">
+                        {Math.max(
+                          0,
                           (subscription?.traffic_limit_gb ?? 0) -
-                          (subscription?.traffic_used_gb ?? 0)
+                            (subscription?.traffic_used_gb ?? 0),
                         ).toFixed(1)}
                       </p>
                       <p className="text-xs text-dark-400">{t('lite.trafficRemaining')}</p>
                     </div>
                     <div className="rounded-lg bg-dark-700/50 p-2">
-                      <p className="text-lg font-bold text-dark-100">
+                      <p className="text-lg font-bold tabular-nums text-dark-100">
                         {subscription?.traffic_limit_gb ?? 0}
                       </p>
                       <p className="text-xs text-dark-400">{t('lite.trafficTotal')}</p>
@@ -1315,13 +1316,13 @@ export function LiteSubscription() {
                           haptic.selectionChanged();
                           setSelectedTraffic(pkg);
                         }}
-                        className={`rounded-xl p-3 text-center transition-all ${
+                        className={`rounded-xl border p-3 text-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 ${
                           selectedTraffic?.gb === pkg.gb
-                            ? 'bg-accent-500 text-white'
-                            : 'bg-dark-800 text-dark-300 hover:bg-dark-700'
+                            ? 'border-accent-400/70 bg-accent-500 text-white shadow-lg shadow-accent-500/25'
+                            : 'border-dark-700/80 bg-dark-800 text-dark-300 hover:border-dark-600 hover:bg-dark-700'
                         }`}
                       >
-                        <div className="text-lg font-bold">
+                        <div className="text-lg font-bold tabular-nums">
                           {pkg.is_unlimited ? '∞' : `${pkg.gb} GB`}
                         </div>
                         <div className="flex items-center justify-center gap-1 text-sm opacity-80">
@@ -1351,7 +1352,7 @@ export function LiteSubscription() {
                   handleTrafficPurchase();
                 }}
                 disabled={isLoading}
-                className="w-full rounded-xl bg-accent-500 py-4 font-semibold text-white transition-all hover:bg-accent-600 active:scale-[0.98]"
+                className="w-full rounded-xl border border-accent-400/60 bg-accent-500 py-4 font-semibold text-white transition-all hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 active:scale-[0.98]"
               >
                 {isLoading ? t('common.loading') : t('lite.buyTraffic')}
               </button>
@@ -1368,7 +1369,7 @@ export function LiteSubscription() {
         {/* Top up button */}
         <button
           onClick={() => navigate('/balance')}
-          className="mt-6 w-full rounded-xl border border-dark-600 bg-dark-800/50 py-3 text-sm font-medium text-dark-300 transition-all hover:border-dark-500 hover:bg-dark-700/50 active:scale-[0.98]"
+          className="mt-6 w-full rounded-xl border border-dark-600 bg-dark-800/50 py-3 text-sm font-medium text-dark-300 transition-all hover:border-dark-500 hover:bg-dark-700/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 active:scale-[0.98]"
         >
           {t('lite.topUpBalance')}
         </button>
@@ -1380,7 +1381,7 @@ export function LiteSubscription() {
             value={promoCode}
             onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
             placeholder={t('lite.promoPlaceholder')}
-            className="flex-1 rounded-xl border border-dark-600 bg-dark-800/50 px-4 py-3 text-sm text-dark-100 placeholder:text-dark-500 focus:border-accent-500 focus:outline-none"
+            className="flex-1 rounded-xl border border-dark-600 bg-dark-800/50 px-4 py-3 text-sm text-dark-100 placeholder:text-dark-500 focus:border-accent-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
           />
           <button
             onClick={() => {
@@ -1390,7 +1391,7 @@ export function LiteSubscription() {
               }
             }}
             disabled={isLoading || !promoCode.trim()}
-            className="w-full rounded-xl bg-accent-500 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-accent-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 min-[360px]:w-auto"
+            className="w-full rounded-xl border border-accent-400/60 bg-accent-500 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 min-[360px]:w-auto"
           >
             {activatePromoMutation.isPending ? t('common.loading') : t('lite.promoApply')}
           </button>

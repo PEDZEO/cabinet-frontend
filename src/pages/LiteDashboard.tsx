@@ -192,6 +192,10 @@ export function LiteDashboard() {
   const referralLink = referralInfo?.referral_code
     ? `${window.location.origin}/login?ref=${referralInfo.referral_code}`
     : '';
+  const referralLinkPreview =
+    referralLink.length > 44
+      ? `${referralLink.slice(0, 30)}...${referralLink.slice(-10)}`
+      : referralLink;
 
   const copyReferralLink = () => {
     if (referralLink) {
@@ -318,7 +322,7 @@ export function LiteDashboard() {
           style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom, 24px))' }}
         >
           {/* Subscription status or Trial card */}
-          <div className="mb-6" data-onboarding="lite-subscription">
+          <div className="mb-5" data-onboarding="lite-subscription">
             {subscription && (
               <LiteSubscriptionCard
                 subscription={subscription}
@@ -344,12 +348,12 @@ export function LiteDashboard() {
           </div>
 
           {!hasMergedAnotherAccount && (
-            <div className="mb-4 rounded-xl border border-accent-500/20 bg-accent-500/5 px-3 py-2">
+            <div className="mb-5 rounded-xl border border-accent-500/20 bg-accent-500/5 px-3 py-2">
               <div className="flex flex-col gap-1.5 min-[360px]:flex-row min-[360px]:items-center min-[360px]:justify-between min-[360px]:gap-3">
                 <p className="text-xs text-dark-300">{t('lite.accountLinking.title')}</p>
                 <Link
                   to="/profile"
-                  className="self-start text-xs font-medium text-accent-400 transition-colors hover:text-accent-300 min-[360px]:self-auto"
+                  className="self-start text-xs font-medium text-accent-400 transition-colors hover:text-accent-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 min-[360px]:self-auto"
                 >
                   {t('lite.accountLinking.cta')}
                 </Link>
@@ -358,46 +362,51 @@ export function LiteDashboard() {
           )}
 
           {/* Promo Offers */}
-          <PromoOffersSection className="mb-6" useNowPath="/subscription" />
+          <PromoOffersSection className="mb-5" useNowPath="/subscription" />
 
           {/* Referral card */}
           {referralLink && (
-            <div className="mb-6 rounded-2xl border border-accent-500/20 bg-gradient-to-br from-accent-500/10 to-transparent p-4">
-              <div className="mb-3 flex items-center gap-2">
+            <div className="from-accent-500/12 via-accent-500/6 mb-6 rounded-2xl border border-accent-500/25 bg-gradient-to-br to-transparent p-4">
+              <div className="mb-3 flex items-center gap-2.5">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-500/20 text-accent-400">
                   <GiftIcon />
                 </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-dark-100">
-                    {t('lite.referral.title')}
-                  </h3>
-                  <p className="text-xs text-dark-400">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-sm font-semibold text-dark-50">{t('lite.referral.title')}</h3>
+                  <p className="text-xs text-dark-300">
                     {t('lite.referral.description', {
                       percent: referralInfo?.commission_percent || 0,
                     })}
                   </p>
                 </div>
+                <span className="rounded-full border border-accent-400/40 bg-accent-500/15 px-2 py-1 text-2xs font-semibold tabular-nums text-accent-300">
+                  {referralInfo?.commission_percent || 0}%
+                </span>
               </div>
 
-              <div className="mb-3 overflow-hidden rounded-lg bg-dark-900/50 px-3 py-2">
-                <p className="truncate text-xs text-dark-300">{referralLink}</p>
+              <div className="mb-3 overflow-hidden rounded-lg border border-dark-700/70 bg-dark-900/60 px-3 py-2">
+                <p className="truncate text-xs font-medium text-dark-200" title={referralLink}>
+                  {referralLinkPreview}
+                </p>
               </div>
 
               <div className="flex gap-2 max-[360px]:flex-col">
                 <button
                   onClick={copyReferralLink}
-                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium transition-all ${
+                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg border py-2 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 ${
                     copied
-                      ? 'bg-success-500/20 text-success-400'
-                      : 'bg-dark-800 text-dark-300 hover:bg-dark-700'
+                      ? 'border-success-500/40 bg-success-500/20 text-success-300'
+                      : 'border-dark-600 bg-dark-800 text-dark-200 hover:border-dark-500 hover:bg-dark-700'
                   }`}
+                  aria-label={copied ? t('lite.referral.copied') : t('lite.referral.copy')}
                 >
                   {copied ? <CopyCheckIcon /> : <CopyIcon />}
                   {copied ? t('lite.referral.copied') : t('lite.referral.copy')}
                 </button>
                 <button
                   onClick={shareReferralLink}
-                  className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-accent-500 py-2 text-xs font-medium text-white transition-all hover:bg-accent-600"
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-accent-400/60 bg-accent-500 py-2 text-xs font-semibold text-white transition-all hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70"
+                  aria-label={t('lite.referral.share')}
                 >
                   <ShareIcon />
                   {t('lite.referral.share')}
@@ -407,7 +416,11 @@ export function LiteDashboard() {
           )}
 
           {/* Action buttons */}
-          <div className="flex flex-1 flex-col justify-center gap-4">
+          <div className="flex flex-1 flex-col justify-center gap-3">
+            <p className="px-1 text-xs font-semibold uppercase tracking-[0.08em] text-dark-400">
+              {t('lite.menu')}
+            </p>
+
             <div data-onboarding="lite-connect">
               <LiteActionButton
                 to="/connection"
@@ -417,16 +430,26 @@ export function LiteDashboard() {
               />
             </div>
 
-            <div data-onboarding="lite-topup">
-              <LiteActionButton to="/balance" label={t('lite.topUp')} icon={<WalletIcon />} />
-            </div>
+            <div className="rounded-2xl border border-dark-700/70 bg-dark-900/35 p-2">
+              <div className="flex flex-col gap-2">
+                <div data-onboarding="lite-topup">
+                  <LiteActionButton
+                    to="/balance"
+                    label={t('lite.topUp')}
+                    icon={<WalletIcon />}
+                    size="compact"
+                  />
+                </div>
 
-            <div data-onboarding="lite-tariffs">
-              <LiteActionButton
-                to="/subscription"
-                label={t('lite.tariffs')}
-                icon={<TariffIcon />}
-              />
+                <div data-onboarding="lite-tariffs">
+                  <LiteActionButton
+                    to="/subscription"
+                    label={t('lite.tariffs')}
+                    icon={<TariffIcon />}
+                    size="compact"
+                  />
+                </div>
+              </div>
             </div>
 
             <LiteActionButton
@@ -434,6 +457,8 @@ export function LiteDashboard() {
               label={t('lite.support')}
               icon={<SupportIcon />}
               variant="ghost"
+              size="compact"
+              className="border border-transparent"
             />
           </div>
         </div>

@@ -209,18 +209,18 @@ export default function LiteBalance() {
 
   return (
     <div className="mx-auto w-full max-w-md space-y-4 px-3 py-5 min-[360px]:px-4 min-[360px]:py-6">
-      <div className="rounded-2xl border border-dark-600 bg-gradient-to-br from-accent-500/15 via-dark-800/85 to-dark-800/80 p-4 shadow-lg shadow-black/5">
+      <div className="from-accent-500/18 rounded-2xl border border-dark-600/90 bg-gradient-to-br via-dark-800/90 to-dark-850/85 p-4 shadow-lg shadow-black/10">
         <div className="text-xs font-medium tracking-wide text-dark-400">
           {t('balance.currentBalance')}
         </div>
-        <div className="mt-1 text-3xl font-bold text-dark-100">
+        <div className="mt-1 text-3xl font-bold tabular-nums text-dark-100">
           {formatAmount(balanceData?.balance_rubles || 0)}
           <span className="ml-2 text-lg text-dark-400">{currencySymbol}</span>
         </div>
       </div>
 
       {paymentMethods && paymentMethods.length > 0 && (
-        <div className="rounded-2xl border border-dark-600 bg-dark-800/80 p-4">
+        <div className="rounded-2xl border border-dark-600/90 bg-dark-800/85 p-4">
           <h2 className="mb-3 text-sm font-semibold text-dark-100">{t('balance.topUpBalance')}</h2>
           <div className="space-y-2">
             {paymentMethods
@@ -230,11 +230,12 @@ export default function LiteBalance() {
                 <button
                   key={method.id}
                   onClick={() => navigate(`/balance/top-up/${method.id}`)}
-                  className="group flex w-full items-center justify-between rounded-xl border border-dark-600 bg-dark-700/60 px-3 py-2.5 text-left transition-colors hover:border-dark-500 hover:bg-dark-700"
+                  className="group flex w-full items-center justify-between rounded-xl border border-dark-600/90 bg-dark-700/65 px-3 py-2.5 text-left transition-colors hover:border-dark-500 hover:bg-dark-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70"
+                  aria-label={method.name}
                 >
                   <div className="min-w-0">
                     <div className="truncate text-sm font-medium text-dark-100">{method.name}</div>
-                    <div className="text-xs text-dark-500">
+                    <div className="text-xs tabular-nums text-dark-500">
                       {formatAmount(method.min_amount_kopeks / 100, 0)} -{' '}
                       {formatAmount(method.max_amount_kopeks / 100, 0)} {currencySymbol}
                     </div>
@@ -257,13 +258,13 @@ export default function LiteBalance() {
             onChange={(e) => setPromocode(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handlePromocodeActivate()}
             placeholder={t('balance.promocode.placeholder')}
-            className="flex-1 rounded-xl border border-dark-600 bg-dark-700/60 px-3 py-2.5 text-sm text-dark-100 placeholder:text-dark-500 focus:border-accent-500 focus:outline-none"
+            className="flex-1 rounded-xl border border-dark-600 bg-dark-700/60 px-3 py-2.5 text-sm text-dark-100 placeholder:text-dark-500 focus:border-accent-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70"
             disabled={promocodeLoading}
           />
           <button
             onClick={handlePromocodeActivate}
             disabled={!promocode.trim() || promocodeLoading}
-            className="w-full rounded-xl bg-accent-500 px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-600 disabled:cursor-not-allowed disabled:opacity-50 min-[360px]:w-auto"
+            className="w-full rounded-xl border border-accent-400/60 bg-accent-500 px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 disabled:cursor-not-allowed disabled:opacity-50 min-[360px]:w-auto"
           >
             {promocodeLoading ? t('common.loading') : t('balance.promocode.activate')}
           </button>
@@ -273,7 +274,7 @@ export default function LiteBalance() {
           <div className="mt-2 rounded-xl border border-success-500/30 bg-success-500/10 px-3 py-2 text-xs text-success-400">
             <div>{promocodeSuccess.message}</div>
             {promocodeSuccess.amount > 0 && (
-              <div className="mt-1">
+              <div className="mt-1 tabular-nums">
                 {t('balance.promocode.balanceAdded', {
                   amount: promocodeSuccess.amount.toFixed(2),
                 })}
@@ -283,10 +284,10 @@ export default function LiteBalance() {
         )}
       </div>
 
-      <div className="rounded-2xl border border-dark-600 bg-dark-800/80 p-4">
+      <div className="rounded-2xl border border-dark-600/90 bg-dark-800/85 p-4">
         <button
           type="button"
-          className="mb-3 flex w-full items-center justify-between rounded-xl px-1 py-1 text-left transition-colors hover:bg-dark-700/40"
+          className="mb-3 flex w-full items-center justify-between rounded-xl px-1 py-1 text-left transition-colors hover:bg-dark-700/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70"
           onClick={() => setIsHistoryOpen((prev) => !prev)}
           aria-expanded={isHistoryOpen}
         >
@@ -305,7 +306,7 @@ export default function LiteBalance() {
                 return (
                   <div
                     key={tx.id}
-                    className="flex flex-col gap-1.5 rounded-xl border border-dark-700/60 bg-dark-700/40 px-3 py-2 min-[360px]:flex-row min-[360px]:items-center min-[360px]:justify-between"
+                    className="flex flex-col gap-1.5 rounded-xl border border-dark-700/70 bg-dark-700/45 px-3 py-2 min-[360px]:flex-row min-[360px]:items-center min-[360px]:justify-between"
                   >
                     <div className="min-w-0">
                       <span
@@ -313,11 +314,13 @@ export default function LiteBalance() {
                       >
                         {getTypeLabel(tx.type)}
                       </span>
-                      <div className="text-2xs text-dark-500">
+                      <div className="text-2xs tabular-nums text-dark-500">
                         {new Date(tx.created_at).toLocaleDateString()}
                       </div>
                     </div>
-                    <div className={`text-sm font-semibold ${amountClass} min-[360px]:text-right`}>
+                    <div
+                      className={`text-sm font-semibold tabular-nums ${amountClass} min-[360px]:text-right`}
+                    >
                       {sign}
                       {formatAmount(Math.abs(tx.amount_rubles))} {currencySymbol}
                     </div>
@@ -331,7 +334,7 @@ export default function LiteBalance() {
                     type="button"
                     onClick={handleShowMoreTransactions}
                     disabled={isTransactionsFetching}
-                    className="rounded-xl border border-dark-600 bg-dark-700/40 px-3 py-2 text-xs font-medium text-dark-300 transition-colors hover:bg-dark-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="rounded-xl border border-dark-600 bg-dark-700/40 px-3 py-2 text-xs font-medium text-dark-300 transition-colors hover:bg-dark-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isTransactionsFetching ? t('common.loading') : t('common.next')}
                   </button>
@@ -340,7 +343,7 @@ export default function LiteBalance() {
                   <button
                     type="button"
                     onClick={() => setVisibleTransactionsCount(5)}
-                    className="rounded-xl border border-dark-600 bg-dark-700/40 px-3 py-2 text-xs font-medium text-dark-300 transition-colors hover:bg-dark-700"
+                    className="rounded-xl border border-dark-600 bg-dark-700/40 px-3 py-2 text-xs font-medium text-dark-300 transition-colors hover:bg-dark-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70"
                   >
                     {t('common.collapse')}
                   </button>

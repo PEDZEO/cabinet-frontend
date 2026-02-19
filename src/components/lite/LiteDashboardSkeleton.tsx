@@ -40,11 +40,16 @@ export function LiteDashboardSkeleton() {
       </div>
 
       {/* Action buttons skeleton */}
-      <div className="flex flex-1 flex-col justify-center gap-4">
+      <div className="flex flex-1 flex-col justify-center gap-3">
+        <div className="h-3 w-16 rounded bg-dark-600/80" />
         <div className="h-[68px] w-full rounded-2xl bg-dark-700/80" />
-        <div className="h-[68px] w-full rounded-2xl border border-dark-600 bg-dark-800/80" />
-        <div className="h-[68px] w-full rounded-2xl border border-dark-600 bg-dark-800/80" />
-        <div className="h-[68px] w-full rounded-2xl bg-dark-800/30" />
+        <div className="rounded-2xl border border-dark-600/70 bg-dark-900/35 p-2">
+          <div className="flex flex-col gap-2">
+            <div className="h-[52px] w-full rounded-2xl border border-dark-600 bg-dark-800/80" />
+            <div className="h-[52px] w-full rounded-2xl border border-dark-600 bg-dark-800/80" />
+          </div>
+        </div>
+        <div className="h-[52px] w-full rounded-2xl bg-dark-800/30" />
       </div>
     </div>
   );

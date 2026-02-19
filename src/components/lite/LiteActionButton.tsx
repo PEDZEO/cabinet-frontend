@@ -6,6 +6,8 @@ interface LiteActionButtonProps {
   label: string;
   icon: React.ReactNode;
   variant?: 'primary' | 'secondary' | 'ghost';
+  size?: 'default' | 'compact';
+  className?: string;
 }
 
 export function LiteActionButton({
@@ -13,17 +15,19 @@ export function LiteActionButton({
   label,
   icon,
   variant = 'secondary',
+  size = 'default',
+  className = '',
 }: LiteActionButtonProps) {
   const haptic = useHapticFeedback();
 
   const getVariantStyles = () => {
     switch (variant) {
       case 'primary':
-        return 'bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-lg shadow-accent-500/25 hover:shadow-accent-500/40';
+        return 'border border-accent-400/50 bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-lg shadow-accent-500/30 hover:border-accent-300/70 hover:shadow-accent-500/45';
       case 'ghost':
-        return 'text-dark-400 hover:text-dark-200 hover:bg-dark-800/50';
+        return 'text-dark-300 hover:text-dark-100 hover:bg-dark-800/60';
       default:
-        return 'border border-dark-600 bg-dark-800/80 text-dark-100 hover:border-dark-500 hover:bg-dark-700/80';
+        return 'border border-dark-600 bg-dark-800/85 text-dark-100 hover:border-dark-500 hover:bg-dark-700/85';
     }
   };
 
@@ -31,13 +35,30 @@ export function LiteActionButton({
     haptic.buttonPress();
   };
 
+  const getSizeStyles = () => {
+    if (size === 'compact') {
+      return 'min-h-12 px-4 py-3 text-sm sm:px-5 sm:py-3.5 sm:text-base';
+    }
+
+    return 'min-h-14 px-4 py-4 text-base sm:px-6 sm:py-5 sm:text-lg';
+  };
+
+  const getIconSizeStyles = () => {
+    if (size === 'compact') {
+      return 'text-base sm:text-lg';
+    }
+
+    return 'text-lg sm:text-xl';
+  };
+
   return (
     <Link
       to={to}
       onClick={handleClick}
-      className={`flex w-full items-center justify-center gap-2.5 rounded-2xl px-4 py-4 text-base font-semibold transition-transform active:scale-[0.98] sm:gap-3 sm:px-6 sm:py-5 sm:text-lg ${getVariantStyles()}`}
+      className={`flex w-full items-center justify-center gap-2.5 rounded-2xl font-semibold transition-[transform,colors,shadow,border-color] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-900 active:scale-[0.98] sm:gap-3 ${getSizeStyles()} ${getVariantStyles()} ${className}`}
+      aria-label={label}
     >
-      <span className="text-lg sm:text-xl">{icon}</span>
+      <span className={getIconSizeStyles()}>{icon}</span>
       <span className="truncate">{label}</span>
     </Link>
   );

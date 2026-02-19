@@ -87,10 +87,10 @@ export function LiteSubscriptionCard({ subscription, deviceLimit }: LiteSubscrip
     usedPercent >= 90 ? 'bg-error-500' : usedPercent >= 70 ? 'bg-warning-500' : 'bg-accent-500';
 
   return (
-    <div className="rounded-2xl border border-dark-600 bg-gradient-to-br from-dark-800/90 via-dark-850/85 to-dark-900/90 p-4 shadow-lg shadow-black/10">
+    <div className="rounded-2xl border border-dark-600/90 bg-gradient-to-br from-dark-800/95 via-dark-850/90 to-dark-900/95 p-4 shadow-lg shadow-black/15">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 text-xs text-dark-400">
+          <div className="flex items-center gap-2 text-xs text-dark-300">
             <div className="relative flex items-center">
               <div
                 className={`h-2.5 w-2.5 rounded-full ${isOnline ? 'bg-success-400' : 'bg-dark-500'}`}
@@ -108,7 +108,7 @@ export function LiteSubscriptionCard({ subscription, deviceLimit }: LiteSubscrip
               {statusMeta.label}
             </span>
             {subscription.tariff_name && (
-              <span className="max-w-full truncate rounded-full border border-accent-500/25 bg-accent-500/10 px-2.5 py-1 text-xs font-medium text-accent-400">
+              <span className="max-w-full truncate rounded-full border border-accent-500/25 bg-accent-500/10 px-2.5 py-1 text-xs font-medium text-accent-300">
                 {subscription.tariff_name}
               </span>
             )}
@@ -119,18 +119,19 @@ export function LiteSubscriptionCard({ subscription, deviceLimit }: LiteSubscrip
           {showCopyButton && (
             <button
               onClick={copySubscriptionLink}
-              className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all ${
+              className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 ${
                 copied
                   ? 'bg-success-500/20 text-success-400'
                   : 'bg-dark-700 text-dark-400 hover:bg-dark-600 hover:text-dark-200'
               }`}
               title={t('lite.copyLink')}
+              aria-label={t('lite.copyLink')}
             >
               {copied ? <CopyCheckIcon /> : <CopyIcon />}
             </button>
           )}
           {getTimeLeft() && (
-            <div className="max-w-[120px] rounded-lg border border-dark-600 bg-dark-700/50 px-2.5 py-1 text-xs font-semibold text-dark-100">
+            <div className="max-w-[120px] rounded-lg border border-dark-500/90 bg-dark-700/70 px-2.5 py-1 text-xs font-semibold text-dark-50">
               {getTimeLeft()}
             </div>
           )}
@@ -139,16 +140,18 @@ export function LiteSubscriptionCard({ subscription, deviceLimit }: LiteSubscrip
 
       <div className="mt-4 grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
         <div className="rounded-xl border border-dark-700/60 bg-dark-800/40 px-3 py-2">
-          <div className="text-2xs uppercase tracking-[0.04em] text-dark-500">
+          <div className="text-2xs uppercase tracking-[0.04em] text-dark-400">
             {t('lite.tab.traffic')}
           </div>
-          <div className="mt-1 break-words text-xs font-medium text-dark-200">{trafficDisplay}</div>
+          <div className="mt-1 break-words text-xs font-semibold tabular-nums text-dark-100">
+            {trafficDisplay}
+          </div>
         </div>
         <div className="rounded-xl border border-dark-700/60 bg-dark-800/40 px-3 py-2">
-          <div className="text-2xs uppercase tracking-[0.04em] text-dark-500">
+          <div className="text-2xs uppercase tracking-[0.04em] text-dark-400">
             {t('lite.devices')}
           </div>
-          <div className="mt-1 text-xs font-medium text-dark-200">
+          <div className="mt-1 text-xs font-semibold tabular-nums text-dark-100">
             {deviceLimit ?? subscription.device_limit}
           </div>
         </div>
@@ -156,11 +159,13 @@ export function LiteSubscriptionCard({ subscription, deviceLimit }: LiteSubscrip
 
       {!isUnlimitedTraffic && (
         <div className="mt-3">
-          <div className="mb-1 flex items-center justify-between text-2xs text-dark-500">
+          <div className="mb-1 flex items-center justify-between text-2xs text-dark-400">
             <span>{t('lite.trafficUsage')}</span>
-            <span>{usedPercent.toFixed(0)}%</span>
+            <span className="font-semibold tabular-nums text-dark-200">
+              {usedPercent.toFixed(0)}%
+            </span>
           </div>
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-dark-700/70">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-dark-700/80">
             <div
               className={`h-full rounded-full transition-all ${progressBarClass}`}
               style={{ width: `${usedPercent}%` }}
