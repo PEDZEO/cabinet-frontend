@@ -12,7 +12,6 @@ import {
 import {
   SortableContext,
   arrayMove,
-  rectSortingStrategy,
   sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
@@ -40,6 +39,16 @@ const DEFAULT_FORM: FormState = {
   visibility: 'all',
   enabled: true,
 };
+
+const GripIcon = () => (
+  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+    />
+  </svg>
+);
 
 function getLangCode(language: string): string {
   return language.split('-')[0] || 'ru';
@@ -83,6 +92,117 @@ function chunkByRowCaps<T>(items: T[], rowCaps: number[]): T[][] {
   return rows;
 }
 
+function reorderVisibleSubset(
+  source: string[],
+  visibleIds: string[],
+  activeId: string,
+  overId: string,
+): string[] {
+  const oldVisibleIndex = visibleIds.findIndex((id) => id === activeId);
+  const newVisibleIndex = visibleIds.findIndex((id) => id === overId);
+  if (oldVisibleIndex === -1 || newVisibleIndex === -1) {
+    return source;
+  }
+
+  const reorderedVisible = arrayMove(visibleIds, oldVisibleIndex, newVisibleIndex);
+  let cursor = 0;
+
+  return source.map((id) => {
+    if (!visibleIds.includes(id)) {
+      return id;
+    }
+
+    const next = reorderedVisible[cursor];
+    cursor += 1;
+    return next;
+  });
+}
+
+interface SortableMenuButtonCardProps {
+  buttonId: string;
+  button: MenuButtonConfig;
+  lang: string;
+  position: number;
+  onEdit: () => void;
+  onToggleEnabled: () => void;
+  t: (key: string) => string;
+}
+
+function SortableMenuButtonCard({
+  buttonId,
+  button,
+  lang,
+  position,
+  onEdit,
+  onToggleEnabled,
+  t,
+}: SortableMenuButtonCardProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: buttonId,
+  });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : undefined,
+    position: isDragging ? 'relative' : undefined,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`group flex items-center gap-3 rounded-xl border p-4 ${
+        isDragging
+          ? 'border-accent-500/50 bg-dark-800 shadow-xl shadow-accent-500/20'
+          : 'border-dark-700/50 bg-dark-800/50 hover:border-dark-600'
+      }`}
+    >
+      <button
+        type="button"
+        {...attributes}
+        {...listeners}
+        className="flex-shrink-0 cursor-grab touch-none rounded-lg p-2.5 text-dark-500 hover:bg-dark-700/50 hover:text-dark-300 active:cursor-grabbing sm:p-1.5"
+        title={t('admin.mainMenuButtons.previewHint')}
+        aria-label={`Drag ${buttonId}`}
+      >
+        <GripIcon />
+      </button>
+
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="rounded bg-accent-500/15 px-2 py-0.5 text-xs text-accent-300">
+            #{position}
+          </span>
+          <span className="rounded bg-dark-700/70 px-2 py-0.5 text-xs text-dark-200">
+            {buttonId}
+          </span>
+          <span className="truncate font-semibold text-dark-100">
+            {getButtonText(buttonId, button, lang)}
+          </span>
+        </div>
+        <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs">
+          <span className="rounded-md border border-dark-700/60 bg-dark-800/70 px-2 py-0.5 text-dark-300">
+            {t('admin.mainMenuButtons.actionTypeLabel')}: {button.type}
+          </span>
+          <span className="rounded-md border border-dark-700/60 bg-dark-800/70 px-2 py-0.5 text-dark-300">
+            {t('admin.mainMenuButtons.visibilityLabel')}: {button.visibility}
+          </span>
+        </div>
+      </div>
+
+      <div className="flex flex-shrink-0 flex-wrap gap-2">
+        <button type="button" className="btn-secondary" onClick={onToggleEnabled}>
+          {t('admin.mainMenuButtons.deactivate')}
+        </button>
+        <button type="button" className="btn-secondary" onClick={onEdit}>
+          {t('common.edit')}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminMainMenuButtons() {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
@@ -97,7 +217,7 @@ export default function AdminMainMenuButtons() {
   const [showInactive, setShowInactive] = useState(false);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
@@ -135,6 +255,7 @@ export default function AdminMainMenuButtons() {
     () => orderedButtons.filter((item) => item.config.enabled),
     [orderedButtons],
   );
+
   const inactiveButtons = useMemo(
     () => orderedButtons.filter((item) => !item.config.enabled),
     [orderedButtons],
@@ -167,6 +288,7 @@ export default function AdminMainMenuButtons() {
       if (!data) {
         return;
       }
+
       const rows = data.rows.map((row) => ({
         id: row.id,
         max_per_row: row.max_per_row,
@@ -222,14 +344,14 @@ export default function AdminMainMenuButtons() {
     }
 
     setSuccess(null);
-    setOrderIds((prev) => {
-      const oldIndex = prev.findIndex((id) => id === String(active.id));
-      const newIndex = prev.findIndex((id) => id === String(over.id));
-      if (oldIndex === -1 || newIndex === -1) {
-        return prev;
-      }
-      return arrayMove(prev, oldIndex, newIndex);
-    });
+    setOrderIds((prev) =>
+      reorderVisibleSubset(
+        prev,
+        activeButtons.map((item) => item.id),
+        String(active.id),
+        String(over.id),
+      ),
+    );
   };
 
   const handleEdit = (buttonId: string) => {
@@ -237,6 +359,7 @@ export default function AdminMainMenuButtons() {
     if (!button) {
       return;
     }
+
     setEditingId(buttonId);
     setForm({
       text: getButtonText(buttonId, button, lang),
@@ -252,14 +375,17 @@ export default function AdminMainMenuButtons() {
     if (!editingId) {
       return;
     }
+
     const button = buttonsById[editingId];
     if (!button) {
       return;
     }
+
     if (!form.text.trim()) {
       setError(t('admin.mainMenuButtons.textRequired'));
       return;
     }
+
     if (!form.action.trim()) {
       setError(t('admin.mainMenuButtons.actionValueRequired'));
       return;
@@ -277,6 +403,7 @@ export default function AdminMainMenuButtons() {
         enabled: form.enabled,
       },
     });
+
     setEditingId(null);
     setForm(DEFAULT_FORM);
   };
@@ -289,116 +416,9 @@ export default function AdminMainMenuButtons() {
     setSuccess(null);
   };
 
-  function SortablePreviewButton({ buttonId }: { buttonId: string }) {
-    const button = buttonsById[buttonId];
-    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-      id: buttonId,
-    });
-
-    if (!button) {
-      return null;
-    }
-
-    const style = {
-      transform: CSS.Transform.toString(transform),
-      transition,
-    };
-
-    return (
-      <div
-        ref={setNodeRef}
-        style={style}
-        className={`flex min-h-[44px] items-center justify-between gap-2 rounded-lg border border-dark-700/80 bg-dark-800/60 px-3 py-2 text-sm text-dark-100 ${
-          isDragging ? 'opacity-70 ring-2 ring-accent-500/40' : ''
-        }`}
-      >
-        <span className="truncate">{getButtonText(buttonId, button, lang)}</span>
-        <button
-          type="button"
-          className="rounded border border-dark-600 px-2 py-1 text-[11px] text-dark-300 hover:border-accent-500/60 hover:text-accent-300"
-          aria-label="Перетащить кнопку"
-          {...attributes}
-          {...listeners}
-        >
-          drag
-        </button>
-      </div>
-    );
-  }
-
-  function SortableActiveButtonRow({ buttonId }: { buttonId: string }) {
-    const button = buttonsById[buttonId];
-    const index = orderedIds.findIndex((id) => id === buttonId);
-    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-      id: buttonId,
-    });
-
-    if (!button) {
-      return null;
-    }
-
-    const style = {
-      transform: CSS.Transform.toString(transform),
-      transition,
-    };
-
-    return (
-      <div
-        ref={setNodeRef}
-        style={style}
-        className={`grid gap-3 rounded-xl border border-dark-700/60 bg-dark-800/40 p-3 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center ${
-          isDragging ? 'opacity-70 ring-2 ring-accent-500/40' : ''
-        }`}
-      >
-        <button
-          type="button"
-          className="h-9 rounded-lg border border-dark-600 px-2 text-xs text-dark-300 hover:border-accent-500/60 hover:text-accent-300"
-          aria-label={`Перетащить ${getButtonText(buttonId, button, lang)}`}
-          title="Перетаскивание"
-          {...attributes}
-          {...listeners}
-        >
-          drag
-        </button>
-
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded bg-accent-500/20 px-2 py-0.5 text-xs text-accent-300">
-              {index + 1}
-            </span>
-            <span className="rounded bg-dark-700/70 px-2 py-0.5 text-xs text-dark-200">
-              {buttonId}
-            </span>
-            <span className="truncate text-sm font-medium text-dark-100">
-              {getButtonText(buttonId, button, lang)}
-            </span>
-          </div>
-          <div className="mt-1 text-xs text-dark-400">
-            {t('admin.mainMenuButtons.actionTypeLabel')}: {button.type} ·{' '}
-            {t('admin.mainMenuButtons.visibilityLabel')}: {button.visibility}
-          </div>
-        </div>
-
-        <div className="flex flex-wrap justify-start gap-2 md:justify-end">
-          <button
-            type="button"
-            className="btn-secondary"
-            aria-pressed={button.enabled}
-            onClick={() => toggleEnabled(buttonId, button.enabled)}
-          >
-            {t('admin.mainMenuButtons.deactivate')}
-          </button>
-          <button type="button" className="btn-secondary" onClick={() => handleEdit(buttonId)}>
-            {t('common.edit')}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <AdminBackButton to="/admin" />
           <div>
@@ -433,22 +453,18 @@ export default function AdminMainMenuButtons() {
         </div>
       )}
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(360px,0.9fr)_minmax(0,1.1fr)]">
+      <div className="grid gap-4 xl:grid-cols-[minmax(340px,0.9fr)_minmax(0,1.1fr)]">
         <div className="space-y-4">
           <div className="card p-4">
             <div className="mb-3 flex items-center justify-between gap-2">
-              <div>
-                <h2 className="text-sm font-semibold text-dark-200">
-                  {t('admin.mainMenuButtons.previewTitle')}
-                </h2>
-                <p className="mt-1 text-xs text-dark-500">
-                  {t('admin.mainMenuButtons.previewHint')}
-                </p>
-              </div>
+              <h2 className="text-sm font-semibold text-dark-200">
+                {t('admin.mainMenuButtons.previewTitle')}
+              </h2>
               <span className="text-xs text-dark-500">
                 {t('admin.mainMenuButtons.total', { count: orderedIds.length })}
               </span>
             </div>
+            <p className="mb-3 text-xs text-dark-500">{t('admin.mainMenuButtons.previewHint')}</p>
 
             <div className="rounded-xl border border-dark-700/60 bg-dark-950/70 p-3">
               {activeButtons.length === 0 ? (
@@ -456,26 +472,31 @@ export default function AdminMainMenuButtons() {
                   {t('admin.mainMenuButtons.empty')}
                 </div>
               ) : (
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={handleDragEnd}
-                >
-                  <SortableContext
-                    items={activeButtons.map((item) => item.id)}
-                    strategy={rectSortingStrategy}
-                  >
-                    <div className="space-y-2">
-                      {previewRows.map((row, rowIndex) => (
-                        <div key={`preview-row-${rowIndex}`} className="grid gap-2 sm:grid-cols-2">
-                          {row.map((item) => (
-                            <SortablePreviewButton key={item.id} buttonId={item.id} />
-                          ))}
-                        </div>
-                      ))}
+                <div className="space-y-2">
+                  {previewRows.map((row, rowIndex) => (
+                    <div
+                      key={`menu-row-${rowIndex}`}
+                      className="rounded-lg border border-dark-700/50 bg-dark-900/40 p-2"
+                    >
+                      <div className="mb-2 text-[11px] uppercase tracking-wide text-dark-500">
+                        Row {rowIndex + 1}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {row.map((item) => (
+                          <div
+                            key={`preview-${item.id}`}
+                            className="min-w-[120px] flex-1 rounded-md border border-dark-700/70 bg-dark-800/70 px-3 py-2 text-center text-xs text-dark-100"
+                            title={getButtonText(item.id, item.config, lang)}
+                          >
+                            <span className="line-clamp-2">
+                              {getButtonText(item.id, item.config, lang)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </SortableContext>
-                </DndContext>
+                  ))}
+                </div>
               )}
             </div>
           </div>
@@ -539,6 +560,11 @@ export default function AdminMainMenuButtons() {
         </div>
 
         <div className="space-y-4">
+          <div className="flex items-center gap-2 text-sm text-dark-500">
+            <GripIcon />
+            {t('admin.mainMenuButtons.previewHint')}
+          </div>
+
           <div className="card p-4">
             <h2 className="mb-3 text-sm font-semibold text-dark-200">
               {t('admin.mainMenuButtons.activeListTitle')} ({activeButtons.length})
@@ -561,9 +587,21 @@ export default function AdminMainMenuButtons() {
                   strategy={verticalListSortingStrategy}
                 >
                   <div className="space-y-2">
-                    {activeButtons.map((item) => (
-                      <SortableActiveButtonRow key={item.id} buttonId={item.id} />
-                    ))}
+                    {activeButtons.map((item) => {
+                      const position = orderedIds.findIndex((id) => id === item.id) + 1;
+                      return (
+                        <SortableMenuButtonCard
+                          key={item.id}
+                          buttonId={item.id}
+                          button={item.config}
+                          lang={lang}
+                          position={position}
+                          onToggleEnabled={() => toggleEnabled(item.id, item.config.enabled)}
+                          onEdit={() => handleEdit(item.id)}
+                          t={(key) => t(key)}
+                        />
+                      );
+                    })}
                   </div>
                 </SortableContext>
               </DndContext>
