@@ -89,6 +89,7 @@ const AdminUserDetail = lazy(() => import('./pages/AdminUserDetail'));
 const AdminBroadcastDetail = lazy(() => import('./pages/AdminBroadcastDetail'));
 const AdminPinnedMessages = lazy(() => import('./pages/AdminPinnedMessages'));
 const AdminPinnedMessageCreate = lazy(() => import('./pages/AdminPinnedMessageCreate'));
+const AdminMainMenuButtons = lazy(() => import('./pages/AdminMainMenuButtons'));
 const AdminEmailTemplatePreview = lazy(() => import('./pages/AdminEmailTemplatePreview'));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -869,6 +870,16 @@ function App() {
             <AdminRoute>
               <LazyPage>
                 <AdminPinnedMessageCreate />
+              </LazyPage>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/main-menu-buttons"
+          element={
+            <AdminRoute>
+              <LazyPage>
+                <AdminMainMenuButtons />
               </LazyPage>
             </AdminRoute>
           }

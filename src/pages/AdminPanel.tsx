@@ -176,6 +176,16 @@ const PinnedMessageIcon = () => (
   </svg>
 );
 
+const MainMenuButtonsIcon = () => (
+  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+    />
+  </svg>
+);
+
 const PaperAirplaneIcon = () => (
   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
     <path
@@ -468,6 +478,12 @@ export default function AdminPanel() {
           icon: <PinnedMessageIcon />,
           title: t('admin.nav.pinnedMessages'),
           description: t('admin.panel.pinnedMessagesDesc'),
+        },
+        {
+          to: '/admin/main-menu-buttons',
+          icon: <MainMenuButtonsIcon />,
+          title: t('admin.nav.mainMenuButtons'),
+          description: t('admin.panel.mainMenuButtonsDesc'),
         },
         {
           to: '/admin/wheel',

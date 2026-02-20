@@ -14,6 +14,7 @@ export { adminApi, statsApi } from './admin';
 export { adminAppsApi } from './adminApps';
 export { adminBroadcastsApi } from './adminBroadcasts';
 export { adminEmailTemplatesApi } from './adminEmailTemplates';
+export { adminMainMenuButtonsApi } from './adminMainMenuButtons';
 export { adminPaymentMethodsApi } from './adminPaymentMethods';
 export { adminPaymentsApi } from './adminPayments';
 export { adminRemnawaveApi } from './adminRemnawave';
