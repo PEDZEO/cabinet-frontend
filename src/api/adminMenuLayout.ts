@@ -43,6 +43,8 @@ export interface MenuButtonUpdateRequest {
   text?: Record<string, string>;
   icon?: string | null;
   action?: string;
+  open_mode?: 'callback' | 'direct';
+  webapp_url?: string | null;
   enabled?: boolean;
   visibility?: MenuButtonVisibility;
   conditions?: Record<string, unknown> | null;

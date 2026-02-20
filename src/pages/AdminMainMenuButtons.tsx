@@ -29,6 +29,8 @@ import { AdminBackButton } from '../components/admin';
 interface FormState {
   text: string;
   action: string;
+  openMode: 'callback' | 'direct';
+  webappUrl: string;
   visibility: MenuButtonVisibility;
   enabled: boolean;
 }
@@ -36,6 +38,8 @@ interface FormState {
 const DEFAULT_FORM: FormState = {
   text: '',
   action: '',
+  openMode: 'callback',
+  webappUrl: '',
   visibility: 'all',
   enabled: true,
 };
@@ -365,6 +369,8 @@ export default function AdminMainMenuButtons() {
     setForm({
       text: getButtonText(buttonId, button, lang),
       action: button.action || '',
+      openMode: button.open_mode || 'callback',
+      webappUrl: button.webapp_url || '',
       visibility: button.visibility,
       enabled: button.enabled,
     });
@@ -400,6 +406,8 @@ export default function AdminMainMenuButtons() {
           [lang]: form.text.trim(),
         },
         action: form.action.trim(),
+        open_mode: form.openMode,
+        webapp_url: form.openMode === 'direct' ? form.webappUrl.trim() || null : null,
         visibility: form.visibility,
         enabled: form.enabled,
       },
@@ -636,6 +644,35 @@ export default function AdminMainMenuButtons() {
                     onChange={(e) => setForm((prev) => ({ ...prev, action: e.target.value }))}
                     className="input"
                     maxLength={1024}
+                  />
+                </label>
+
+                <label className="space-y-1">
+                  <span className="text-xs text-dark-400">Режим открытия</span>
+                  <select
+                    value={form.openMode}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        openMode: e.target.value as 'callback' | 'direct',
+                      }))
+                    }
+                    className="input"
+                  >
+                    <option value="callback">Callback (через бота)</option>
+                    <option value="direct">WebApp URL (напрямую)</option>
+                  </select>
+                </label>
+
+                <label className="space-y-1">
+                  <span className="text-xs text-dark-400">WebApp URL (для direct)</span>
+                  <input
+                    value={form.webappUrl}
+                    onChange={(e) => setForm((prev) => ({ ...prev, webappUrl: e.target.value }))}
+                    className="input"
+                    placeholder="https://..."
+                    maxLength={1024}
+                    disabled={form.openMode !== 'direct'}
                   />
                 </label>
 
