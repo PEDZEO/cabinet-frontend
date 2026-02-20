@@ -12,9 +12,9 @@ import {
 import {
   SortableContext,
   arrayMove,
+  rectSortingStrategy,
   sortableKeyboardCoordinates,
   useSortable,
-  verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useTranslation } from 'react-i18next';
@@ -149,6 +149,19 @@ export default function AdminMainMenuButtons() {
     },
     onError: () => {
       setError(t('admin.mainMenuButtons.deleteError'));
+    },
+  });
+
+  const toggleActiveMutation = useMutation({
+    mutationFn: ({ id, isActive }: { id: number; isActive: boolean }) =>
+      adminMainMenuButtonsApi.update(id, { is_active: isActive }),
+    onSuccess: () => {
+      setError(null);
+      setSuccess(t('admin.mainMenuButtons.saved'));
+      queryClient.invalidateQueries({ queryKey: ['admin', 'main-menu-buttons'] });
+    },
+    onError: () => {
+      setError(t('admin.mainMenuButtons.saveError'));
     },
   });
 
@@ -297,24 +310,15 @@ export default function AdminMainMenuButtons() {
     updateOrderMutation.mutate(orderedItems);
   };
 
-  const previewRows = useMemo(() => {
-    const visible = orderedItems.filter((item) => item.is_active);
-    const rows: MainMenuButtonResponse[][] = [];
-    for (let i = 0; i < visible.length; i += 2) {
-      rows.push(visible.slice(i, i + 2));
-    }
-    return rows;
-  }, [orderedItems]);
+  const previewItems = useMemo(() => orderedItems.filter((item) => item.is_active), [orderedItems]);
+  const activeItems = previewItems;
+  const inactiveItems = useMemo(
+    () => orderedItems.filter((item) => !item.is_active),
+    [orderedItems],
+  );
+  const sortableIds = useMemo(() => previewItems.map((item) => item.id), [previewItems]);
 
-  const sortableIds = useMemo(() => orderedItems.map((item) => item.id), [orderedItems]);
-
-  function SortableButtonCard({
-    button,
-    index,
-  }: {
-    button: MainMenuButtonResponse;
-    index: number;
-  }) {
+  function SortablePreviewButton({ button }: { button: MainMenuButtonResponse }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
       id: button.id,
     });
@@ -328,10 +332,21 @@ export default function AdminMainMenuButtons() {
       <div
         ref={setNodeRef}
         style={style}
-        className={`flex flex-col gap-3 rounded-lg border border-dark-700/60 bg-dark-800/30 p-3 md:flex-row md:items-center md:justify-between ${
-          isDragging ? 'opacity-70' : ''
+        className={`flex min-h-[48px] cursor-grab items-center justify-center rounded-lg border border-dark-700/80 bg-dark-800/60 px-3 py-2 text-center text-sm text-dark-100 active:cursor-grabbing ${
+          isDragging ? 'opacity-70 ring-2 ring-accent-500/40' : ''
         }`}
+        title={button.text}
+        {...attributes}
+        {...listeners}
       >
+        <span className="truncate">{button.text}</span>
+      </div>
+    );
+  }
+
+  function ManageButtonRow({ button, index }: { button: MainMenuButtonResponse; index: number }) {
+    return (
+      <div className="flex flex-col gap-3 rounded-lg border border-dark-700/60 bg-dark-800/30 p-3 md:flex-row md:items-center md:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded bg-accent-500/20 px-2 py-0.5 text-xs text-accent-300">
@@ -361,15 +376,6 @@ export default function AdminMainMenuButtons() {
 
         <div className="flex flex-wrap gap-2">
           <button
-            className="btn-secondary cursor-grab active:cursor-grabbing"
-            aria-label={t('admin.mainMenuButtons.dragHandle')}
-            title={t('admin.mainMenuButtons.dragHint')}
-            {...attributes}
-            {...listeners}
-          >
-            ⋮⋮
-          </button>
-          <button
             className="btn-secondary"
             onClick={() => moveItem(index, -1)}
             disabled={index === 0 || updateOrderMutation.isPending}
@@ -384,6 +390,17 @@ export default function AdminMainMenuButtons() {
             aria-label={t('admin.mainMenuButtons.moveDown')}
           >
             ↓
+          </button>
+          <button
+            className="btn-secondary"
+            onClick={() =>
+              toggleActiveMutation.mutate({ id: button.id, isActive: !button.is_active })
+            }
+            disabled={toggleActiveMutation.isPending}
+          >
+            {button.is_active
+              ? t('admin.mainMenuButtons.deactivate')
+              : t('admin.mainMenuButtons.activate')}
           </button>
           <button className="btn-secondary" onClick={() => handleEdit(button)}>
             {t('common.edit')}
@@ -562,26 +579,24 @@ export default function AdminMainMenuButtons() {
           </h3>
           <p className="mt-1 text-xs text-dark-500">{t('admin.mainMenuButtons.previewHint')}</p>
           <div className="mt-3 rounded-xl border border-dark-700/60 bg-dark-950/70 p-3">
-            {previewRows.length === 0 ? (
+            {previewItems.length === 0 ? (
               <div className="text-center text-xs text-dark-500">
                 {t('admin.mainMenuButtons.empty')}
               </div>
             ) : (
-              <div className="space-y-2">
-                {previewRows.map((row, rowIndex) => (
-                  <div key={rowIndex} className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    {row.map((button) => (
-                      <div
-                        key={button.id}
-                        className="truncate rounded-lg border border-dark-700/80 bg-dark-800/60 px-3 py-2 text-center text-sm text-dark-100"
-                        title={button.text}
-                      >
-                        {button.text}
-                      </div>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext items={sortableIds} strategy={rectSortingStrategy}>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    {previewItems.map((button) => (
+                      <SortablePreviewButton key={button.id} button={button} />
                     ))}
                   </div>
-                ))}
-              </div>
+                </SortableContext>
+              </DndContext>
             )}
           </div>
         </div>
@@ -595,19 +610,39 @@ export default function AdminMainMenuButtons() {
         ) : (
           <>
             <p className="mb-3 text-xs text-dark-500">{t('admin.mainMenuButtons.dragHint')}</p>
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
-                <div className="space-y-2">
-                  {orderedItems.map((button, index) => (
-                    <SortableButtonCard key={button.id} button={button} index={index} />
-                  ))}
-                </div>
-              </SortableContext>
-            </DndContext>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-dark-300">
+                  {t('admin.mainMenuButtons.activeListTitle')} ({activeItems.length})
+                </h3>
+                {activeItems.length === 0 ? (
+                  <div className="rounded-lg border border-dark-700/50 bg-dark-800/30 p-4 text-center text-xs text-dark-500">
+                    {t('admin.mainMenuButtons.empty')}
+                  </div>
+                ) : (
+                  activeItems.map((button) => {
+                    const index = orderedItems.findIndex((item) => item.id === button.id);
+                    return <ManageButtonRow key={button.id} button={button} index={index} />;
+                  })
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-dark-300">
+                  {t('admin.mainMenuButtons.inactiveListTitle')} ({inactiveItems.length})
+                </h3>
+                {inactiveItems.length === 0 ? (
+                  <div className="rounded-lg border border-dark-700/50 bg-dark-800/30 p-4 text-center text-xs text-dark-500">
+                    {t('admin.mainMenuButtons.empty')}
+                  </div>
+                ) : (
+                  inactiveItems.map((button) => {
+                    const index = orderedItems.findIndex((item) => item.id === button.id);
+                    return <ManageButtonRow key={button.id} button={button} index={index} />;
+                  })
+                )}
+              </div>
+            </div>
           </>
         )}
       </div>

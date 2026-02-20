@@ -1390,7 +1390,11 @@
       "dragHint": "Drag by handle to reorder buttons",
       "dragHandle": "Drag handle",
       "moveUp": "Move up",
-      "moveDown": "Move down"
+      "moveDown": "Move down",
+      "activeListTitle": "Active buttons",
+      "inactiveListTitle": "Inactive buttons",
+      "activate": "Enable",
+      "deactivate": "Disable"
     },
     "settings": {
       "title": "System Settings",
