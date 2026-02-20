@@ -105,10 +105,11 @@ function reorderVisibleSubset(
   }
 
   const reorderedVisible = arrayMove(visibleIds, oldVisibleIndex, newVisibleIndex);
+  const visibleIdSet = new Set(visibleIds);
   let cursor = 0;
 
   return source.map((id) => {
-    if (!visibleIds.includes(id)) {
+    if (!visibleIdSet.has(id)) {
       return id;
     }
 
@@ -152,7 +153,7 @@ function SortableMenuButtonCard({
     <div
       ref={setNodeRef}
       style={style}
-      className={`group flex items-center gap-3 rounded-xl border p-4 ${
+      className={`group flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center ${
         isDragging
           ? 'border-accent-500/50 bg-dark-800 shadow-xl shadow-accent-500/20'
           : 'border-dark-700/50 bg-dark-800/50 hover:border-dark-600'
@@ -162,8 +163,8 @@ function SortableMenuButtonCard({
         type="button"
         {...attributes}
         {...listeners}
-        className="flex-shrink-0 cursor-grab touch-none rounded-lg p-2.5 text-dark-500 hover:bg-dark-700/50 hover:text-dark-300 active:cursor-grabbing sm:p-1.5"
-        title={t('admin.mainMenuButtons.previewHint')}
+        className="self-start rounded-lg p-2.5 text-dark-500 transition-colors hover:bg-dark-700/50 hover:text-dark-300 sm:self-auto sm:p-1.5"
+        title="Перетащить для смены порядка"
         aria-label={`Drag ${buttonId}`}
       >
         <GripIcon />
@@ -191,7 +192,7 @@ function SortableMenuButtonCard({
         </div>
       </div>
 
-      <div className="flex flex-shrink-0 flex-wrap gap-2">
+      <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:flex-shrink-0">
         <button type="button" className="btn-secondary" onClick={onToggleEnabled}>
           {t('admin.mainMenuButtons.deactivate')}
         </button>
@@ -562,7 +563,7 @@ export default function AdminMainMenuButtons() {
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-sm text-dark-500">
             <GripIcon />
-            {t('admin.mainMenuButtons.previewHint')}
+            Перетащите карточку за иконку и нажмите «Сохранить порядок»
           </div>
 
           <div className="card p-4">
