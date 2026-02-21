@@ -98,6 +98,32 @@ function reorderVisibleSubset(
   });
 }
 
+function buildBuckets(ids: string[], lengths: number[]): string[][] {
+  const buckets: string[][] = [];
+  let pointer = 0;
+  lengths.forEach((count) => {
+    const safeCount = Math.max(count, 0);
+    buckets.push(ids.slice(pointer, pointer + safeCount));
+    pointer += safeCount;
+  });
+  if (pointer < ids.length) {
+    if (buckets.length === 0) {
+      buckets.push([]);
+    }
+    buckets[buckets.length - 1] = [...buckets[buckets.length - 1], ...ids.slice(pointer)];
+  }
+  return buckets;
+}
+
+function findRowIndexById(buckets: string[][], buttonId: string): number {
+  for (let idx = 0; idx < buckets.length; idx += 1) {
+    if (buckets[idx].includes(buttonId)) {
+      return idx;
+    }
+  }
+  return -1;
+}
+
 interface SortablePreviewButtonProps {
   buttonId: string;
   button: MenuButtonConfig;
@@ -190,6 +216,7 @@ export default function AdminMainMenuButtons() {
   const [success, setSuccess] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'layout' | 'sections'>('layout');
   const [selectedRowIndex, setSelectedRowIndex] = useState(0);
+  const [addMenuRowIndex, setAddMenuRowIndex] = useState<number | null>(null);
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
@@ -211,6 +238,7 @@ export default function AdminMainMenuButtons() {
     setOrderIds(buildInitialOrder(data));
     setRowLengths(data.rows.map((row) => row.buttons.length));
     setSelectedRowIndex(0);
+    setAddMenuRowIndex(null);
   }, [data]);
 
   const buttonsById = useMemo(() => data?.buttons ?? {}, [data?.buttons]);
@@ -362,15 +390,39 @@ export default function AdminMainMenuButtons() {
       return;
     }
 
+    const activeId = String(active.id);
+    const overId = String(over.id);
+    const buckets = buildBuckets(orderedIds, rowLengths);
+    const sourceRowIndex = findRowIndexById(buckets, activeId);
+    const targetRowIndex = findRowIndexById(buckets, overId);
+
     setSuccess(null);
     setOrderIds((prev) =>
       reorderVisibleSubset(
         prev,
         activeButtons.map((item) => item.id),
-        String(active.id),
-        String(over.id),
+        activeId,
+        overId,
       ),
     );
+
+    if (
+      data &&
+      sourceRowIndex !== -1 &&
+      targetRowIndex !== -1 &&
+      sourceRowIndex !== targetRowIndex
+    ) {
+      const targetMaxPerRow = Math.max(data.rows[targetRowIndex]?.max_per_row ?? 2, 1);
+      const targetCurrent = rowLengths[targetRowIndex] ?? 0;
+      if (targetCurrent < targetMaxPerRow) {
+        setRowLengths((prev) => {
+          const next = [...prev];
+          next[sourceRowIndex] = Math.max((next[sourceRowIndex] ?? 0) - 1, 0);
+          next[targetRowIndex] = (next[targetRowIndex] ?? 0) + 1;
+          return next;
+        });
+      }
+    }
   };
 
   const handleEdit = (buttonId: string) => {
@@ -444,44 +496,36 @@ export default function AdminMainMenuButtons() {
       return;
     }
 
-    const buckets: string[][] = [];
-    let pointer = 0;
-    rowLengths.forEach((count) => {
-      const safeCount = Math.max(count, 0);
-      buckets.push(orderedIds.slice(pointer, pointer + safeCount));
-      pointer += safeCount;
-    });
-
-    if (pointer < orderedIds.length) {
-      if (buckets.length === 0) {
-        buckets.push([]);
-      }
-      buckets[buckets.length - 1] = [...buckets[buckets.length - 1], ...orderedIds.slice(pointer)];
-    }
-
-    let sourceRowIndex = -1;
-    buckets.forEach((row, idx) => {
-      const pos = row.indexOf(buttonId);
-      if (pos !== -1) {
-        row.splice(pos, 1);
-        sourceRowIndex = idx;
-      }
-    });
+    const buckets = buildBuckets(orderedIds, rowLengths);
+    const sourceRowIndex = findRowIndexById(buckets, buttonId);
 
     if (sourceRowIndex === -1) {
       return;
     }
 
     const safeTarget = Math.min(Math.max(targetRowIndex, 0), buckets.length - 1);
+    const targetMaxPerRow = Math.max(data.rows[safeTarget]?.max_per_row ?? 2, 1);
+    const targetCurrent = rowLengths[safeTarget] ?? 0;
+    if (sourceRowIndex !== safeTarget && targetCurrent >= targetMaxPerRow) {
+      setError(`ROW ${safeTarget + 1} уже заполнен`);
+      return;
+    }
+
+    const sourcePos = buckets[sourceRowIndex].indexOf(buttonId);
+    if (sourcePos === -1) {
+      return;
+    }
+    buckets[sourceRowIndex].splice(sourcePos, 1);
     buckets[safeTarget].push(buttonId);
 
     setOrderIds(buckets.flat());
     setRowLengths(buckets.map((row) => row.length));
   };
 
-  const activateToSelectedRow = (buttonId: string, current: boolean) => {
-    moveButtonToRow(buttonId, selectedRowIndex);
+  const activateToRow = (buttonId: string, current: boolean, rowIndex: number) => {
+    moveButtonToRow(buttonId, rowIndex);
     toggleEnabled(buttonId, current);
+    setAddMenuRowIndex(null);
   };
 
   return (
@@ -613,53 +657,76 @@ export default function AdminMainMenuButtons() {
                                 ))}
                               </div>
                             )}
+                            {row.rowIndex === selectedRowIndex &&
+                              (() => {
+                                const maxPerRow = Math.max(
+                                  data?.rows[row.rowIndex]?.max_per_row ?? 2,
+                                  1,
+                                );
+                                const freeSlots = Math.max(maxPerRow - row.items.length, 0);
+                                if (freeSlots === 0) {
+                                  return null;
+                                }
+                                return (
+                                  <div className="mt-2 flex flex-wrap gap-2">
+                                    {Array.from({ length: freeSlots }).map((_, slotIdx) => (
+                                      <button
+                                        key={`row-${row.rowIndex}-slot-${slotIdx}`}
+                                        type="button"
+                                        onClick={(event) => {
+                                          event.stopPropagation();
+                                          setAddMenuRowIndex((prev) =>
+                                            prev === row.rowIndex ? null : row.rowIndex,
+                                          );
+                                        }}
+                                        className="rounded-md border border-dashed border-accent-500/40 bg-accent-500/10 px-3 py-1.5 text-xs text-accent-300 hover:bg-accent-500/20"
+                                      >
+                                        + Добавить
+                                      </button>
+                                    ))}
+                                  </div>
+                                );
+                              })()}
+                            {addMenuRowIndex === row.rowIndex && (
+                              <div
+                                className="mt-2 space-y-2 rounded-md border border-dark-700/60 bg-dark-900/70 p-2"
+                                onClick={(event) => event.stopPropagation()}
+                              >
+                                {inactiveButtons.length === 0 ? (
+                                  <div className="text-xs text-dark-500">Нет неактивных кнопок</div>
+                                ) : (
+                                  <>
+                                    <div className="text-xs text-dark-500">
+                                      Добавить в ROW {row.rowIndex + 1}
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                      {inactiveButtons.map((item) => (
+                                        <button
+                                          key={`inline-add-${row.rowIndex}-${item.id}`}
+                                          type="button"
+                                          className="rounded-md border border-dark-700/70 bg-dark-800/70 px-2 py-1 text-xs text-dark-200 hover:border-accent-500/50"
+                                          onClick={() =>
+                                            activateToRow(
+                                              item.id,
+                                              item.config.enabled,
+                                              row.rowIndex,
+                                            )
+                                          }
+                                          title={getButtonText(item.id, item.config, lang)}
+                                        >
+                                          {getButtonText(item.id, item.config, lang)}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
                     </SortableContext>
                   </DndContext>
-                )}
-              </div>
-
-              <div className="mt-4 rounded-xl border border-dark-700/60 bg-dark-900/30 p-3">
-                <div className="mb-2 text-sm font-semibold text-dark-200">
-                  Быстро добавить в предпросмотр ({inactiveButtons.length})
-                </div>
-                <p className="mb-2 text-xs text-dark-500">Выбран ряд: ROW {selectedRowIndex + 1}</p>
-                {inactiveButtons.length === 0 ? (
-                  <div className="text-xs text-dark-500">Все кнопки уже добавлены</div>
-                ) : (
-                  <div className="space-y-2">
-                    {inactiveButtons.map((item) => (
-                      <div
-                        key={`inactive-${item.id}`}
-                        className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-dark-700/60 bg-dark-800/40 px-3 py-2"
-                      >
-                        <div className="min-w-0">
-                          <div className="truncate text-sm text-dark-100">
-                            {getButtonText(item.id, item.config, lang)}
-                          </div>
-                          <div className="text-[11px] text-dark-500">{item.id}</div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            className="btn-secondary"
-                            onClick={() => handleEdit(item.id)}
-                          >
-                            {t('common.edit')}
-                          </button>
-                          <button
-                            type="button"
-                            className="btn-primary"
-                            onClick={() => activateToSelectedRow(item.id, item.config.enabled)}
-                          >
-                            Добавить в ROW {selectedRowIndex + 1}
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
                 )}
               </div>
             </div>
