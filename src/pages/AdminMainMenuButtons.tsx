@@ -268,6 +268,13 @@ export default function AdminMainMenuButtons() {
     () => orderedButtons.filter((item) => !item.config.enabled),
     [orderedButtons],
   );
+  const rowBuckets = useMemo(() => buildBuckets(orderedIds, rowLengths), [orderedIds, rowLengths]);
+
+  const getEnabledCountForRow = (rowIndex: number): number =>
+    (rowBuckets[rowIndex] ?? []).reduce(
+      (count, id) => count + (buttonsById[id]?.enabled ? 1 : 0),
+      0,
+    );
 
   const hasOrderChanges = useMemo(() => {
     if (orderedIds.length !== initialOrder.length) {
@@ -395,9 +402,8 @@ export default function AdminMainMenuButtons() {
 
     const activeId = String(active.id);
     const overId = String(over.id);
-    const buckets = buildBuckets(orderedIds, rowLengths);
-    const sourceRowIndex = findRowIndexById(buckets, activeId);
-    const targetRowIndex = findRowIndexById(buckets, overId);
+    const sourceRowIndex = findRowIndexById(rowBuckets, activeId);
+    const targetRowIndex = findRowIndexById(rowBuckets, overId);
 
     setSuccess(null);
     setOrderIds((prev) =>
@@ -419,7 +425,7 @@ export default function AdminMainMenuButtons() {
         rowCapacities[targetRowIndex] ?? data.rows[targetRowIndex]?.max_per_row ?? MAX_ROW_SLOTS,
         1,
       );
-      const targetCurrent = rowLengths[targetRowIndex] ?? 0;
+      const targetCurrent = getEnabledCountForRow(targetRowIndex);
       if (targetCurrent < targetMaxPerRow) {
         setRowLengths((prev) => {
           const next = [...prev];
@@ -526,7 +532,7 @@ export default function AdminMainMenuButtons() {
       rowCapacities[safeTarget] ?? data.rows[safeTarget]?.max_per_row ?? MAX_ROW_SLOTS,
       1,
     );
-    const targetCurrent = rowLengths[safeTarget] ?? 0;
+    const targetCurrent = getEnabledCountForRow(safeTarget);
     if (sourceRowIndex !== safeTarget && targetCurrent >= targetMaxPerRow) {
       setError(`ROW ${safeTarget + 1} уже заполнен`);
       return;
@@ -559,7 +565,7 @@ export default function AdminMainMenuButtons() {
   };
 
   const collapseEmptyRow = (rowIndex: number) => {
-    if ((rowLengths[rowIndex] ?? 0) > 0) {
+    if (getEnabledCountForRow(rowIndex) > 0) {
       setError('Можно удалить только пустой ряд');
       return;
     }
