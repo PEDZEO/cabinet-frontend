@@ -1,24 +1,13 @@
-import { lazy, Suspense } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router';
-import { useAuthStore } from './store/auth';
-import { useBlockingStore } from './store/blocking';
-import Layout from './components/layout/Layout';
-import PageLoader from './components/common/PageLoader';
-import {
-  MaintenanceScreen,
-  ChannelSubscriptionScreen,
-  BlacklistedScreen,
-} from './components/blocking';
-import { saveReturnUrl } from './utils/token';
+import { lazy } from 'react';
+import { Routes, Route, Navigate } from 'react-router';
 import { useAnalyticsCounters } from './hooks/useAnalyticsCounters';
-// Auth pages - load immediately (small)
-import Login from './pages/Login';
-import TelegramCallback from './pages/TelegramCallback';
-import TelegramRedirect from './pages/TelegramRedirect';
-import DeepLinkRedirect from './pages/DeepLinkRedirect';
-import VerifyEmail from './pages/VerifyEmail';
-import ResetPassword from './pages/ResetPassword';
-import OAuthCallback from './pages/OAuthCallback';
+import {
+  AdminRoute,
+  BlockingOverlay,
+  LazyPage,
+  ProtectedRoute,
+} from './components/routing/RouteShells';
+import { publicRoutes } from './pages/routes/publicRoutes';
 
 // User pages - lazy load
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -92,67 +81,6 @@ const AdminPinnedMessageCreate = lazy(() => import('./pages/AdminPinnedMessageCr
 const AdminMainMenuButtons = lazy(() => import('./pages/AdminMainMenuButtons'));
 const AdminEmailTemplatePreview = lazy(() => import('./pages/AdminEmailTemplatePreview'));
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuthStore();
-  const location = useLocation();
-
-  if (isLoading) {
-    return <PageLoader variant="dark" />;
-  }
-
-  if (!isAuthenticated) {
-    // Сохраняем текущий URL для возврата после авторизации
-    saveReturnUrl();
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
-  }
-
-  return <Layout>{children}</Layout>;
-}
-
-function AdminRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading, isAdmin } = useAuthStore();
-  const location = useLocation();
-
-  if (isLoading) {
-    return <PageLoader variant="light" />;
-  }
-
-  if (!isAuthenticated) {
-    // Сохраняем текущий URL для возврата после авторизации
-    saveReturnUrl();
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
-  }
-
-  if (!isAdmin) {
-    return <Navigate to="/" replace />;
-  }
-
-  return <Layout>{children}</Layout>;
-}
-
-// Suspense wrapper for lazy components
-function LazyPage({ children }: { children: React.ReactNode }) {
-  return <Suspense fallback={<PageLoader variant="dark" />}>{children}</Suspense>;
-}
-
-function BlockingOverlay() {
-  const { blockingType } = useBlockingStore();
-
-  if (blockingType === 'maintenance') {
-    return <MaintenanceScreen />;
-  }
-
-  if (blockingType === 'channel_subscription') {
-    return <ChannelSubscriptionScreen />;
-  }
-
-  if (blockingType === 'blacklisted') {
-    return <BlacklistedScreen />;
-  }
-
-  return null;
-}
-
 function App() {
   useAnalyticsCounters();
 
@@ -161,15 +89,9 @@ function App() {
       <BlockingOverlay />
       <Routes>
         {/* Public routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/auth/telegram/callback" element={<TelegramCallback />} />
-        <Route path="/auth/telegram" element={<TelegramRedirect />} />
-        <Route path="/tg" element={<TelegramRedirect />} />
-        <Route path="/connect" element={<DeepLinkRedirect />} />
-        <Route path="/add" element={<DeepLinkRedirect />} />
-        <Route path="/auth/oauth/callback" element={<OAuthCallback />} />
-        <Route path="/verify-email" element={<VerifyEmail />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+        {publicRoutes.map((route) => (
+          <Route key={route.path} path={route.path} element={route.element} />
+        ))}
 
         {/* Protected routes */}
         <Route
