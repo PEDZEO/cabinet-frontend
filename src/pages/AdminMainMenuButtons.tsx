@@ -288,9 +288,49 @@ export default function AdminMainMenuButtons() {
   );
 
   const previewRows = useMemo(() => {
-    const rowCaps = data?.rows.map((row) => Math.max(row.max_per_row, 1)) ?? [];
-    return chunkByRowCaps(activeButtons, rowCaps);
-  }, [activeButtons, data?.rows]);
+    if (!data || orderedIds.length === 0) {
+      return [];
+    }
+
+    const rows: { id: string; config: MenuButtonConfig }[][] = [];
+    let pointer = 0;
+
+    rowLengths.forEach((count) => {
+      const slice = orderedIds.slice(pointer, pointer + Math.max(count, 0));
+      pointer += Math.max(count, 0);
+      const rowItems = slice
+        .map((id) => {
+          const config = buttonsById[id];
+          if (!config || !config.enabled) {
+            return null;
+          }
+          return { id, config };
+        })
+        .filter((item): item is { id: string; config: MenuButtonConfig } => item !== null);
+
+      rows.push(rowItems);
+    });
+
+    // Defensive fallback for newly added IDs not reflected in rowLengths yet.
+    if (pointer < orderedIds.length) {
+      const tailItems = orderedIds
+        .slice(pointer)
+        .map((id) => {
+          const config = buttonsById[id];
+          if (!config || !config.enabled) {
+            return null;
+          }
+          return { id, config };
+        })
+        .filter((item): item is { id: string; config: MenuButtonConfig } => item !== null);
+      if (tailItems.length > 0) {
+        const fallbackRow = data.rows.length > 0 ? data.rows[data.rows.length - 1] : null;
+        rows.push(...chunkByRowCaps(tailItems, [Math.max(fallbackRow?.max_per_row ?? 2, 1)]));
+      }
+    }
+
+    return rows.filter((row) => row.length > 0);
+  }, [buttonsById, data, orderedIds, rowLengths]);
 
   const saveLayoutMutation = useMutation({
     mutationFn: async (ids: string[]) => {
