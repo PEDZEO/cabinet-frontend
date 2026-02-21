@@ -71,33 +71,6 @@ function buildInitialOrder(layout: MenuLayoutResponse): string[] {
   return [...fromRows, ...missing];
 }
 
-function chunkByRowCaps<T>(items: T[], rowCaps: number[]): T[][] {
-  if (items.length === 0) {
-    return [];
-  }
-
-  const rows: T[][] = [];
-  let cursor = 0;
-
-  for (const cap of rowCaps) {
-    if (cursor >= items.length) {
-      break;
-    }
-
-    const safeCap = Math.max(cap, 1);
-    rows.push(items.slice(cursor, cursor + safeCap));
-    cursor += safeCap;
-  }
-
-  const fallbackCap = Math.max(rowCaps[rowCaps.length - 1] ?? 2, 1);
-  while (cursor < items.length) {
-    rows.push(items.slice(cursor, cursor + fallbackCap));
-    cursor += fallbackCap;
-  }
-
-  return rows;
-}
-
 function reorderVisibleSubset(
   source: string[],
   visibleIds: string[],
@@ -216,6 +189,7 @@ export default function AdminMainMenuButtons() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'layout' | 'sections'>('layout');
+  const [selectedRowIndex, setSelectedRowIndex] = useState(0);
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
@@ -236,6 +210,7 @@ export default function AdminMainMenuButtons() {
     }
     setOrderIds(buildInitialOrder(data));
     setRowLengths(data.rows.map((row) => row.buttons.length));
+    setSelectedRowIndex(0);
   }, [data]);
 
   const buttonsById = useMemo(() => data?.buttons ?? {}, [data?.buttons]);
@@ -285,10 +260,10 @@ export default function AdminMainMenuButtons() {
       return [];
     }
 
-    const rows: { id: string; config: MenuButtonConfig }[][] = [];
+    const rows: { rowIndex: number; items: { id: string; config: MenuButtonConfig }[] }[] = [];
     let pointer = 0;
 
-    rowLengths.forEach((count) => {
+    rowLengths.forEach((count, rowIndex) => {
       const slice = orderedIds.slice(pointer, pointer + Math.max(count, 0));
       pointer += Math.max(count, 0);
       const rowItems = slice
@@ -301,7 +276,7 @@ export default function AdminMainMenuButtons() {
         })
         .filter((item): item is { id: string; config: MenuButtonConfig } => item !== null);
 
-      rows.push(rowItems);
+      rows.push({ rowIndex, items: rowItems });
     });
 
     // Defensive fallback for newly added IDs not reflected in rowLengths yet.
@@ -317,12 +292,15 @@ export default function AdminMainMenuButtons() {
         })
         .filter((item): item is { id: string; config: MenuButtonConfig } => item !== null);
       if (tailItems.length > 0) {
-        const fallbackRow = data.rows.length > 0 ? data.rows[data.rows.length - 1] : null;
-        rows.push(...chunkByRowCaps(tailItems, [Math.max(fallbackRow?.max_per_row ?? 2, 1)]));
+        const lastRowIndex = Math.max(rows.length - 1, 0);
+        if (!rows[lastRowIndex]) {
+          rows[lastRowIndex] = { rowIndex: lastRowIndex, items: [] };
+        }
+        rows[lastRowIndex].items = [...rows[lastRowIndex].items, ...tailItems];
       }
     }
 
-    return rows.filter((row) => row.length > 0);
+    return rows;
   }, [buttonsById, data, orderedIds, rowLengths]);
 
   const saveLayoutMutation = useMutation({
@@ -461,6 +439,51 @@ export default function AdminMainMenuButtons() {
     setSuccess(null);
   };
 
+  const moveButtonToRow = (buttonId: string, targetRowIndex: number) => {
+    if (!data || rowLengths.length === 0) {
+      return;
+    }
+
+    const buckets: string[][] = [];
+    let pointer = 0;
+    rowLengths.forEach((count) => {
+      const safeCount = Math.max(count, 0);
+      buckets.push(orderedIds.slice(pointer, pointer + safeCount));
+      pointer += safeCount;
+    });
+
+    if (pointer < orderedIds.length) {
+      if (buckets.length === 0) {
+        buckets.push([]);
+      }
+      buckets[buckets.length - 1] = [...buckets[buckets.length - 1], ...orderedIds.slice(pointer)];
+    }
+
+    let sourceRowIndex = -1;
+    buckets.forEach((row, idx) => {
+      const pos = row.indexOf(buttonId);
+      if (pos !== -1) {
+        row.splice(pos, 1);
+        sourceRowIndex = idx;
+      }
+    });
+
+    if (sourceRowIndex === -1) {
+      return;
+    }
+
+    const safeTarget = Math.min(Math.max(targetRowIndex, 0), buckets.length - 1);
+    buckets[safeTarget].push(buttonId);
+
+    setOrderIds(buckets.flat());
+    setRowLengths(buckets.map((row) => row.length));
+  };
+
+  const activateToSelectedRow = (buttonId: string, current: boolean) => {
+    moveButtonToRow(buttonId, selectedRowIndex);
+    toggleEnabled(buttonId, current);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -559,26 +582,37 @@ export default function AdminMainMenuButtons() {
                       strategy={verticalListSortingStrategy}
                     >
                       <div className="space-y-2">
-                        {previewRows.map((row, rowIndex) => (
+                        {previewRows.map((row) => (
                           <div
-                            key={`menu-row-${rowIndex}`}
-                            className="rounded-lg border border-dark-700/50 bg-dark-900/40 p-2"
+                            key={`menu-row-${row.rowIndex}`}
+                            className={`rounded-lg border bg-dark-900/40 p-2 transition-colors ${
+                              row.rowIndex === selectedRowIndex
+                                ? 'border-accent-500/60'
+                                : 'border-dark-700/50'
+                            }`}
+                            onClick={() => setSelectedRowIndex(row.rowIndex)}
                           >
                             <div className="mb-2 text-[11px] uppercase tracking-wide text-dark-500">
-                              Row {rowIndex + 1}
+                              Row {row.rowIndex + 1}
                             </div>
-                            <div className="space-y-2">
-                              {row.map((item) => (
-                                <SortablePreviewButton
-                                  key={`preview-${item.id}`}
-                                  buttonId={item.id}
-                                  button={item.config}
-                                  lang={lang}
-                                  onEdit={() => handleEdit(item.id)}
-                                  onDeactivate={() => toggleEnabled(item.id, item.config.enabled)}
-                                />
-                              ))}
-                            </div>
+                            {row.items.length === 0 ? (
+                              <div className="rounded-md border border-dashed border-dark-700/70 px-3 py-2 text-xs text-dark-500">
+                                Пустой ряд
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                {row.items.map((item) => (
+                                  <SortablePreviewButton
+                                    key={`preview-${item.id}`}
+                                    buttonId={item.id}
+                                    button={item.config}
+                                    lang={lang}
+                                    onEdit={() => handleEdit(item.id)}
+                                    onDeactivate={() => toggleEnabled(item.id, item.config.enabled)}
+                                  />
+                                ))}
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -591,6 +625,7 @@ export default function AdminMainMenuButtons() {
                 <div className="mb-2 text-sm font-semibold text-dark-200">
                   Быстро добавить в предпросмотр ({inactiveButtons.length})
                 </div>
+                <p className="mb-2 text-xs text-dark-500">Выбран ряд: ROW {selectedRowIndex + 1}</p>
                 {inactiveButtons.length === 0 ? (
                   <div className="text-xs text-dark-500">Все кнопки уже добавлены</div>
                 ) : (
@@ -617,9 +652,9 @@ export default function AdminMainMenuButtons() {
                           <button
                             type="button"
                             className="btn-primary"
-                            onClick={() => toggleEnabled(item.id, item.config.enabled)}
+                            onClick={() => activateToSelectedRow(item.id, item.config.enabled)}
                           >
-                            {t('admin.mainMenuButtons.activate')}
+                            Добавить в ROW {selectedRowIndex + 1}
                           </button>
                         </div>
                       </div>
