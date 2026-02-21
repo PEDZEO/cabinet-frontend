@@ -228,6 +228,7 @@ export default function AdminMainMenuButtons() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [showInactive, setShowInactive] = useState(false);
+  const [showButtonSections, setShowButtonSections] = useState(true);
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
@@ -492,36 +493,50 @@ export default function AdminMainMenuButtons() {
       <div className="grid gap-4 xl:grid-cols-[minmax(340px,0.9fr)_minmax(0,1.1fr)]">
         <div className="space-y-4">
           <div className="card p-4">
-            <h2 className="mb-2 text-sm font-semibold text-dark-200">
-              Секции из «Настройки → Кнопки»
-            </h2>
-            <p className="mb-3 text-xs text-dark-500">
-              Эти переключатели используют тот же API, что и раздел «Кнопки» в настройках.
-            </p>
-            <div className="space-y-2">
-              {BUTTON_SECTIONS.map((section) => {
-                const enabled = buttonStyles?.[section]?.enabled ?? true;
-                return (
-                  <div
-                    key={section}
-                    className="flex items-center justify-between rounded-lg border border-dark-700/60 bg-dark-800/40 px-3 py-2"
-                  >
-                    <span className="text-sm text-dark-200">
-                      {t(`admin.buttons.sections.${section}`)}
-                    </span>
-                    <Toggle
-                      checked={enabled}
-                      onChange={() =>
-                        updateButtonSectionMutation.mutate({
-                          section,
-                          enabled: !enabled,
-                        })
-                      }
-                    />
-                  </div>
-                );
-              })}
-            </div>
+            <button
+              type="button"
+              className="mb-2 flex w-full items-center justify-between rounded-lg border border-dark-700/60 bg-dark-800/40 px-3 py-2 text-left"
+              onClick={() => setShowButtonSections((prev) => !prev)}
+              aria-expanded={showButtonSections}
+            >
+              <h2 className="text-sm font-semibold text-dark-200">
+                Секции из «Настройки → Кнопки»
+              </h2>
+              <span className="text-xs text-dark-400">
+                {showButtonSections ? 'Скрыть' : 'Показать'}
+              </span>
+            </button>
+            {showButtonSections && (
+              <>
+                <p className="mb-3 text-xs text-dark-500">
+                  Эти переключатели используют тот же API, что и раздел «Кнопки» в настройках.
+                </p>
+                <div className="space-y-2">
+                  {BUTTON_SECTIONS.map((section) => {
+                    const enabled = buttonStyles?.[section]?.enabled ?? true;
+                    return (
+                      <div
+                        key={section}
+                        className="flex items-center justify-between rounded-lg border border-dark-700/60 bg-dark-800/40 px-3 py-2"
+                      >
+                        <span className="text-sm text-dark-200">
+                          {t(`admin.buttons.sections.${section}`)}
+                        </span>
+                        <Toggle
+                          checked={enabled}
+                          onChange={() =>
+                            updateButtonSectionMutation.mutate({
+                              section,
+                              enabled: !enabled,
+                            })
+                          }
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
 
           <div className="card p-4">
