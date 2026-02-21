@@ -25,7 +25,14 @@ import {
   MenuButtonVisibility,
   MenuLayoutResponse,
 } from '../api/adminMenuLayout';
+import {
+  BUTTON_SECTIONS,
+  buttonStylesApi,
+  type ButtonSection,
+  type ButtonStylesUpdate,
+} from '../api/buttonStyles';
 import { AdminBackButton } from '../components/admin';
+import { Toggle } from '../components/admin/Toggle';
 
 interface FormState {
   text: string;
@@ -44,8 +51,6 @@ const DEFAULT_FORM: FormState = {
   visibility: 'all',
   enabled: true,
 };
-
-const COLOR_ACCENTS_STORAGE_KEY = 'admin-main-menu-color-accents';
 
 const GripIcon = () => (
   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -131,7 +136,6 @@ interface SortableMenuButtonCardProps {
   button: MenuButtonConfig;
   lang: string;
   position: number;
-  colorAccentsEnabled: boolean;
   onEdit: () => void;
   onToggleEnabled: () => void;
   t: (key: string) => string;
@@ -142,7 +146,6 @@ function SortableMenuButtonCard({
   button,
   lang,
   position,
-  colorAccentsEnabled,
   onEdit,
   onToggleEnabled,
   t,
@@ -181,13 +184,7 @@ function SortableMenuButtonCard({
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span
-            className={`rounded px-2 py-0.5 text-xs ${
-              colorAccentsEnabled
-                ? 'bg-accent-500/15 text-accent-300'
-                : 'bg-dark-700/70 text-dark-200'
-            }`}
-          >
+          <span className="rounded bg-dark-700/70 px-2 py-0.5 text-xs text-dark-200">
             #{position}
           </span>
           <span className="rounded bg-dark-700/70 px-2 py-0.5 text-xs text-dark-200">
@@ -231,7 +228,6 @@ export default function AdminMainMenuButtons() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [showInactive, setShowInactive] = useState(false);
-  const [colorAccentsEnabled, setColorAccentsEnabled] = useState(true);
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
@@ -243,6 +239,10 @@ export default function AdminMainMenuButtons() {
     queryKey: ['admin', 'menu-layout'],
     queryFn: adminMenuLayoutApi.get,
   });
+  const { data: buttonStyles } = useQuery({
+    queryKey: ['button-styles'],
+    queryFn: buttonStylesApi.getStyles,
+  });
 
   const initialOrder = useMemo(() => (data ? buildInitialOrder(data) : []), [data]);
 
@@ -253,20 +253,6 @@ export default function AdminMainMenuButtons() {
     setOrderIds(buildInitialOrder(data));
     setRowLengths(data.rows.map((row) => row.buttons.length));
   }, [data]);
-
-  useEffect(() => {
-    const saved = localStorage.getItem(COLOR_ACCENTS_STORAGE_KEY);
-    if (saved === '0') {
-      setColorAccentsEnabled(false);
-    }
-    if (saved === '1') {
-      setColorAccentsEnabled(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem(COLOR_ACCENTS_STORAGE_KEY, colorAccentsEnabled ? '1' : '0');
-  }, [colorAccentsEnabled]);
 
   const buttonsById = useMemo(() => data?.buttons ?? {}, [data?.buttons]);
   const orderedIds = useMemo(
@@ -368,6 +354,20 @@ export default function AdminMainMenuButtons() {
       setError(t('admin.mainMenuButtons.saveError'));
     },
   });
+  const updateButtonSectionMutation = useMutation({
+    mutationFn: async ({ section, enabled }: { section: ButtonSection; enabled: boolean }) => {
+      const payload: ButtonStylesUpdate = { [section]: { enabled } };
+      return buttonStylesApi.updateStyles(payload);
+    },
+    onSuccess: (styles) => {
+      queryClient.setQueryData(['button-styles'], styles);
+      setError(null);
+      setSuccess('Настройки секций кнопок обновлены');
+    },
+    onError: () => {
+      setError(t('common.error'));
+    },
+  });
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -463,24 +463,6 @@ export default function AdminMainMenuButtons() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            role="switch"
-            aria-checked={colorAccentsEnabled}
-            onClick={() => setColorAccentsEnabled((prev) => !prev)}
-            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition ${
-              colorAccentsEnabled
-                ? 'border-accent-500/40 bg-accent-500/10 text-accent-300'
-                : 'border-dark-600 bg-dark-800/40 text-dark-300'
-            }`}
-          >
-            <span
-              className={`h-2.5 w-2.5 rounded-full ${
-                colorAccentsEnabled ? 'bg-accent-400' : 'bg-dark-500'
-              }`}
-            />
-            Цвет кнопок
-          </button>
           <button onClick={() => refetch()} className="btn-secondary" disabled={isFetching}>
             {t('common.refresh')}
           </button>
@@ -509,6 +491,39 @@ export default function AdminMainMenuButtons() {
 
       <div className="grid gap-4 xl:grid-cols-[minmax(340px,0.9fr)_minmax(0,1.1fr)]">
         <div className="space-y-4">
+          <div className="card p-4">
+            <h2 className="mb-2 text-sm font-semibold text-dark-200">
+              Секции из «Настройки → Кнопки»
+            </h2>
+            <p className="mb-3 text-xs text-dark-500">
+              Эти переключатели используют тот же API, что и раздел «Кнопки» в настройках.
+            </p>
+            <div className="space-y-2">
+              {BUTTON_SECTIONS.map((section) => {
+                const enabled = buttonStyles?.[section]?.enabled ?? true;
+                return (
+                  <div
+                    key={section}
+                    className="flex items-center justify-between rounded-lg border border-dark-700/60 bg-dark-800/40 px-3 py-2"
+                  >
+                    <span className="text-sm text-dark-200">
+                      {t(`admin.buttons.sections.${section}`)}
+                    </span>
+                    <Toggle
+                      checked={enabled}
+                      onChange={() =>
+                        updateButtonSectionMutation.mutate({
+                          section,
+                          enabled: !enabled,
+                        })
+                      }
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="card p-4">
             <div className="mb-3 flex items-center justify-between gap-2">
               <h2 className="text-sm font-semibold text-dark-200">
@@ -539,11 +554,7 @@ export default function AdminMainMenuButtons() {
                         {row.map((item) => (
                           <div
                             key={`preview-${item.id}`}
-                            className={`min-w-[120px] flex-1 rounded-md border px-3 py-2 text-center text-xs ${
-                              colorAccentsEnabled
-                                ? 'border-accent-500/25 bg-accent-500/10 text-accent-100'
-                                : 'border-dark-700/70 bg-dark-800/70 text-dark-100'
-                            }`}
+                            className="min-w-[120px] flex-1 rounded-md border border-dark-700/70 bg-dark-800/70 px-3 py-2 text-center text-xs text-dark-100"
                             title={getButtonText(item.id, item.config, lang)}
                           >
                             <span className="line-clamp-2">
@@ -654,7 +665,6 @@ export default function AdminMainMenuButtons() {
                           button={item.config}
                           lang={lang}
                           position={position}
-                          colorAccentsEnabled={colorAccentsEnabled}
                           onToggleEnabled={() => toggleEnabled(item.id, item.config.enabled)}
                           onEdit={() => handleEdit(item.id)}
                           t={(key) => t(key)}
