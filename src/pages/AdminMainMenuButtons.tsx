@@ -125,25 +125,21 @@ function reorderVisibleSubset(
   });
 }
 
-interface SortableMenuButtonCardProps {
+interface SortablePreviewButtonProps {
   buttonId: string;
   button: MenuButtonConfig;
   lang: string;
-  position: number;
   onEdit: () => void;
-  onToggleEnabled: () => void;
-  t: (key: string) => string;
+  onDeactivate: () => void;
 }
 
-function SortableMenuButtonCard({
+function SortablePreviewButton({
   buttonId,
   button,
   lang,
-  position,
   onEdit,
-  onToggleEnabled,
-  t,
-}: SortableMenuButtonCardProps) {
+  onDeactivate,
+}: SortablePreviewButtonProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: buttonId,
   });
@@ -159,53 +155,51 @@ function SortableMenuButtonCard({
     <div
       ref={setNodeRef}
       style={style}
-      className={`group flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center ${
+      className={`group flex min-h-[40px] items-center gap-2 rounded-md border px-2 py-1.5 ${
         isDragging
-          ? 'border-accent-500/50 bg-dark-800 shadow-xl shadow-accent-500/20'
-          : 'border-dark-700/50 bg-dark-800/50 hover:border-dark-600'
+          ? 'border-accent-500/50 bg-dark-800 shadow-lg shadow-accent-500/20'
+          : 'border-dark-700/70 bg-dark-800/70 hover:border-dark-600'
       }`}
     >
       <button
         type="button"
         {...attributes}
         {...listeners}
-        className="touch-none self-start rounded-lg p-2.5 text-dark-500 transition-colors hover:bg-dark-700/50 hover:text-dark-300 sm:self-auto sm:p-1.5"
+        className="touch-none rounded-lg p-1.5 text-dark-500 transition-colors hover:bg-dark-700/50 hover:text-dark-300"
         title="Перетащить для смены порядка"
         aria-label={`Drag ${buttonId}`}
       >
-        <GripIcon />
+        <svg
+          className="h-4 w-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+          />
+        </svg>
       </button>
 
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded bg-dark-700/70 px-2 py-0.5 text-xs text-dark-200">
-            #{position}
-          </span>
-          <span className="rounded bg-dark-700/70 px-2 py-0.5 text-xs text-dark-200">
-            {buttonId}
-          </span>
-          <span className="truncate font-semibold text-dark-100">
-            {getButtonText(buttonId, button, lang)}
-          </span>
-        </div>
-        <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs">
-          <span className="rounded-md border border-dark-700/60 bg-dark-800/70 px-2 py-0.5 text-dark-300">
-            {t('admin.mainMenuButtons.actionTypeLabel')}: {button.type}
-          </span>
-          <span className="rounded-md border border-dark-700/60 bg-dark-800/70 px-2 py-0.5 text-dark-300">
-            {t('admin.mainMenuButtons.visibilityLabel')}: {button.visibility}
-          </span>
-        </div>
-      </div>
+      <button
+        type="button"
+        onClick={onEdit}
+        className="line-clamp-2 min-w-0 flex-1 text-left text-sm text-dark-100"
+        title={getButtonText(buttonId, button, lang)}
+      >
+        {getButtonText(buttonId, button, lang)}
+      </button>
 
-      <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:flex-shrink-0">
-        <button type="button" className="btn-secondary" onClick={onToggleEnabled}>
-          {t('admin.mainMenuButtons.deactivate')}
-        </button>
-        <button type="button" className="btn-secondary" onClick={onEdit}>
-          {t('common.edit')}
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={onDeactivate}
+        className="rounded-md border border-dark-700/70 px-2 py-1 text-xs text-dark-300 hover:border-dark-500 hover:text-dark-100"
+      >
+        Скрыть
+      </button>
     </div>
   );
 }
@@ -221,7 +215,6 @@ export default function AdminMainMenuButtons() {
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [showInactive, setShowInactive] = useState(false);
   const [activeTab, setActiveTab] = useState<'layout' | 'sections'>('layout');
 
   const sensors = useSensors(
@@ -549,32 +542,85 @@ export default function AdminMainMenuButtons() {
               <p className="mb-3 text-xs text-dark-500">{t('admin.mainMenuButtons.previewHint')}</p>
 
               <div className="rounded-xl border border-dark-700/60 bg-dark-950/70 p-3">
-                {activeButtons.length === 0 ? (
+                {isLoading ? (
+                  <div className="py-8 text-center text-dark-400">{t('common.loading')}</div>
+                ) : activeButtons.length === 0 ? (
                   <div className="text-center text-xs text-dark-500">
                     {t('admin.mainMenuButtons.empty')}
                   </div>
                 ) : (
-                  <div className="space-y-2">
-                    {previewRows.map((row, rowIndex) => (
-                      <div
-                        key={`menu-row-${rowIndex}`}
-                        className="rounded-lg border border-dark-700/50 bg-dark-900/40 p-2"
-                      >
-                        <div className="mb-2 text-[11px] uppercase tracking-wide text-dark-500">
-                          Row {rowIndex + 1}
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {row.map((item) => (
-                            <div
-                              key={`preview-${item.id}`}
-                              className="min-w-[120px] flex-1 rounded-md border border-dark-700/70 bg-dark-800/70 px-3 py-2 text-center text-xs text-dark-100"
-                              title={getButtonText(item.id, item.config, lang)}
-                            >
-                              <span className="line-clamp-2">
-                                {getButtonText(item.id, item.config, lang)}
-                              </span>
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext
+                      items={activeButtons.map((item) => item.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <div className="space-y-2">
+                        {previewRows.map((row, rowIndex) => (
+                          <div
+                            key={`menu-row-${rowIndex}`}
+                            className="rounded-lg border border-dark-700/50 bg-dark-900/40 p-2"
+                          >
+                            <div className="mb-2 text-[11px] uppercase tracking-wide text-dark-500">
+                              Row {rowIndex + 1}
                             </div>
-                          ))}
+                            <div className="space-y-2">
+                              {row.map((item) => (
+                                <SortablePreviewButton
+                                  key={`preview-${item.id}`}
+                                  buttonId={item.id}
+                                  button={item.config}
+                                  lang={lang}
+                                  onEdit={() => handleEdit(item.id)}
+                                  onDeactivate={() => toggleEnabled(item.id, item.config.enabled)}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
+                )}
+              </div>
+
+              <div className="mt-4 rounded-xl border border-dark-700/60 bg-dark-900/30 p-3">
+                <div className="mb-2 text-sm font-semibold text-dark-200">
+                  Быстро добавить в предпросмотр ({inactiveButtons.length})
+                </div>
+                {inactiveButtons.length === 0 ? (
+                  <div className="text-xs text-dark-500">Все кнопки уже добавлены</div>
+                ) : (
+                  <div className="space-y-2">
+                    {inactiveButtons.map((item) => (
+                      <div
+                        key={`inactive-${item.id}`}
+                        className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-dark-700/60 bg-dark-800/40 px-3 py-2"
+                      >
+                        <div className="min-w-0">
+                          <div className="truncate text-sm text-dark-100">
+                            {getButtonText(item.id, item.config, lang)}
+                          </div>
+                          <div className="text-[11px] text-dark-500">{item.id}</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            className="btn-secondary"
+                            onClick={() => handleEdit(item.id)}
+                          >
+                            {t('common.edit')}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-primary"
+                            onClick={() => toggleEnabled(item.id, item.config.enabled)}
+                          >
+                            {t('admin.mainMenuButtons.activate')}
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -582,112 +628,12 @@ export default function AdminMainMenuButtons() {
                 )}
               </div>
             </div>
-
-            <div className="card p-4">
-              <button
-                type="button"
-                className="flex w-full items-center justify-between rounded-lg border border-dark-700/60 bg-dark-800/40 px-3 py-2 text-left text-sm text-dark-200"
-                onClick={() => setShowInactive((prev) => !prev)}
-                aria-expanded={showInactive}
-              >
-                <span>
-                  {t('admin.mainMenuButtons.inactiveListTitle')} ({inactiveButtons.length})
-                </span>
-                <span className="text-dark-400">{showInactive ? 'Скрыть' : 'Показать'}</span>
-              </button>
-
-              {showInactive && (
-                <div className="mt-3 space-y-2">
-                  {inactiveButtons.length === 0 && (
-                    <div className="rounded-lg border border-dark-700/60 bg-dark-800/30 p-3 text-sm text-dark-400">
-                      Нет неактивных кнопок
-                    </div>
-                  )}
-                  {inactiveButtons.map((item) => (
-                    <div
-                      key={item.id}
-                      className="grid gap-3 rounded-xl border border-dark-700/60 bg-dark-800/30 p-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center"
-                    >
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="rounded bg-dark-700/70 px-2 py-0.5 text-xs text-dark-200">
-                            {item.id}
-                          </span>
-                          <span className="truncate text-sm font-medium text-dark-100">
-                            {getButtonText(item.id, item.config, lang)}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap justify-start gap-2 md:justify-end">
-                        <button
-                          type="button"
-                          className="btn-secondary"
-                          onClick={() => toggleEnabled(item.id, item.config.enabled)}
-                        >
-                          {t('admin.mainMenuButtons.activate')}
-                        </button>
-                        <button
-                          type="button"
-                          className="btn-secondary"
-                          onClick={() => handleEdit(item.id)}
-                        >
-                          {t('common.edit')}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
           </div>
 
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-sm text-dark-500">
               <GripIcon />
-              Перетащите карточку за иконку и нажмите «Сохранить порядок»
-            </div>
-
-            <div className="card p-4">
-              <h2 className="mb-3 text-sm font-semibold text-dark-200">
-                {t('admin.mainMenuButtons.activeListTitle')} ({activeButtons.length})
-              </h2>
-
-              {isLoading ? (
-                <div className="py-8 text-center text-dark-400">{t('common.loading')}</div>
-              ) : activeButtons.length === 0 ? (
-                <div className="rounded-lg border border-dark-700/60 bg-dark-800/30 p-4 text-center text-dark-400">
-                  {t('admin.mainMenuButtons.empty')}
-                </div>
-              ) : (
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={handleDragEnd}
-                >
-                  <SortableContext
-                    items={activeButtons.map((item) => item.id)}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    <div className="space-y-2">
-                      {activeButtons.map((item) => {
-                        const position = orderedIds.findIndex((id) => id === item.id) + 1;
-                        return (
-                          <SortableMenuButtonCard
-                            key={item.id}
-                            buttonId={item.id}
-                            button={item.config}
-                            lang={lang}
-                            position={position}
-                            onToggleEnabled={() => toggleEnabled(item.id, item.config.enabled)}
-                            onEdit={() => handleEdit(item.id)}
-                            t={(key) => t(key)}
-                          />
-                        );
-                      })}
-                    </div>
-                  </SortableContext>
-                </DndContext>
-              )}
+              Перетаскивайте кнопки прямо в предпросмотре слева
             </div>
 
             {editingId && (
