@@ -45,6 +45,7 @@ const DEFAULT_FORM: FormState = {
   visibility: 'all',
   enabled: true,
 };
+const MAX_ROW_SLOTS = 2;
 
 const GripIcon = () => (
   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -217,6 +218,7 @@ export default function AdminMainMenuButtons() {
   const [activeTab, setActiveTab] = useState<'layout' | 'sections'>('layout');
   const [selectedRowIndex, setSelectedRowIndex] = useState(0);
   const [addMenuRowIndex, setAddMenuRowIndex] = useState<number | null>(null);
+  const [rowCapacities, setRowCapacities] = useState<number[]>([]);
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
@@ -237,6 +239,7 @@ export default function AdminMainMenuButtons() {
     }
     setOrderIds(buildInitialOrder(data));
     setRowLengths(data.rows.map((row) => row.buttons.length));
+    setRowCapacities(data.rows.map((row) => Math.max(row.max_per_row || 1, 1)));
     setSelectedRowIndex(0);
     setAddMenuRowIndex(null);
   }, [data]);
@@ -337,9 +340,9 @@ export default function AdminMainMenuButtons() {
         return;
       }
 
-      const rows = data.rows.map((row) => ({
+      const rows = data.rows.map((row, index) => ({
         id: row.id,
-        max_per_row: row.max_per_row,
+        max_per_row: Math.max(rowCapacities[index] ?? row.max_per_row, 1),
         conditions: row.conditions,
         buttons: [] as string[],
       }));
@@ -412,9 +415,24 @@ export default function AdminMainMenuButtons() {
       targetRowIndex !== -1 &&
       sourceRowIndex !== targetRowIndex
     ) {
-      const targetMaxPerRow = Math.max(data.rows[targetRowIndex]?.max_per_row ?? 2, 1);
+      const targetMaxPerRow = Math.max(
+        rowCapacities[targetRowIndex] ?? data.rows[targetRowIndex]?.max_per_row ?? MAX_ROW_SLOTS,
+        1,
+      );
       const targetCurrent = rowLengths[targetRowIndex] ?? 0;
       if (targetCurrent < targetMaxPerRow) {
+        setRowLengths((prev) => {
+          const next = [...prev];
+          next[sourceRowIndex] = Math.max((next[sourceRowIndex] ?? 0) - 1, 0);
+          next[targetRowIndex] = (next[targetRowIndex] ?? 0) + 1;
+          return next;
+        });
+      } else if (targetMaxPerRow < MAX_ROW_SLOTS) {
+        setRowCapacities((prev) => {
+          const next = [...prev];
+          next[targetRowIndex] = MAX_ROW_SLOTS;
+          return next;
+        });
         setRowLengths((prev) => {
           const next = [...prev];
           next[sourceRowIndex] = Math.max((next[sourceRowIndex] ?? 0) - 1, 0);
@@ -504,7 +522,10 @@ export default function AdminMainMenuButtons() {
     }
 
     const safeTarget = Math.min(Math.max(targetRowIndex, 0), buckets.length - 1);
-    const targetMaxPerRow = Math.max(data.rows[safeTarget]?.max_per_row ?? 2, 1);
+    const targetMaxPerRow = Math.max(
+      rowCapacities[safeTarget] ?? data.rows[safeTarget]?.max_per_row ?? MAX_ROW_SLOTS,
+      1,
+    );
     const targetCurrent = rowLengths[safeTarget] ?? 0;
     if (sourceRowIndex !== safeTarget && targetCurrent >= targetMaxPerRow) {
       setError(`ROW ${safeTarget + 1} уже заполнен`);
@@ -526,6 +547,52 @@ export default function AdminMainMenuButtons() {
     moveButtonToRow(buttonId, rowIndex);
     toggleEnabled(buttonId, current);
     setAddMenuRowIndex(null);
+  };
+
+  const expandRowCapacity = (rowIndex: number) => {
+    setRowCapacities((prev) => {
+      const next = [...prev];
+      const current = Math.max(next[rowIndex] ?? 1, 1);
+      next[rowIndex] = Math.min(current + 1, MAX_ROW_SLOTS);
+      return next;
+    });
+  };
+
+  const collapseEmptyRow = (rowIndex: number) => {
+    if ((rowLengths[rowIndex] ?? 0) > 0) {
+      setError('Можно удалить только пустой ряд');
+      return;
+    }
+
+    setRowLengths((prev) => {
+      if (prev.length <= 1) {
+        return prev;
+      }
+      const removed = prev.filter((_, idx) => idx !== rowIndex);
+      removed.push(0);
+      return removed;
+    });
+
+    setRowCapacities((prev) => {
+      if (prev.length <= 1) {
+        return prev;
+      }
+      const removedCapacity = prev[rowIndex] ?? 1;
+      const next = prev.filter((_, idx) => idx !== rowIndex);
+      next.push(Math.max(removedCapacity, 1));
+      return next;
+    });
+
+    setAddMenuRowIndex(null);
+    setSelectedRowIndex((prev) => {
+      if (prev === rowIndex) {
+        return Math.max(rowIndex - 1, 0);
+      }
+      if (prev > rowIndex) {
+        return prev - 1;
+      }
+      return prev;
+    });
   };
 
   return (
@@ -660,15 +727,26 @@ export default function AdminMainMenuButtons() {
                             {row.rowIndex === selectedRowIndex &&
                               (() => {
                                 const maxPerRow = Math.max(
-                                  data?.rows[row.rowIndex]?.max_per_row ?? 2,
+                                  rowCapacities[row.rowIndex] ??
+                                    data?.rows[row.rowIndex]?.max_per_row ??
+                                    MAX_ROW_SLOTS,
                                   1,
                                 );
                                 const freeSlots = Math.max(maxPerRow - row.items.length, 0);
-                                if (freeSlots === 0) {
-                                  return null;
-                                }
                                 return (
                                   <div className="mt-2 flex flex-wrap gap-2">
+                                    {maxPerRow < MAX_ROW_SLOTS && (
+                                      <button
+                                        type="button"
+                                        onClick={(event) => {
+                                          event.stopPropagation();
+                                          expandRowCapacity(row.rowIndex);
+                                        }}
+                                        className="rounded-md border border-dark-600 bg-dark-900/70 px-3 py-1.5 text-xs text-dark-200 hover:border-dark-500"
+                                      >
+                                        + Добавить место в ROW
+                                      </button>
+                                    )}
                                     {Array.from({ length: freeSlots }).map((_, slotIdx) => (
                                       <button
                                         key={`row-${row.rowIndex}-slot-${slotIdx}`}
@@ -684,6 +762,18 @@ export default function AdminMainMenuButtons() {
                                         + Добавить
                                       </button>
                                     ))}
+                                    {row.items.length === 0 && (
+                                      <button
+                                        type="button"
+                                        onClick={(event) => {
+                                          event.stopPropagation();
+                                          collapseEmptyRow(row.rowIndex);
+                                        }}
+                                        className="rounded-md border border-error-500/30 bg-error-500/10 px-3 py-1.5 text-xs text-error-300 hover:bg-error-500/20"
+                                      >
+                                        Удалить пустой ROW
+                                      </button>
+                                    )}
                                   </div>
                                 );
                               })()}
