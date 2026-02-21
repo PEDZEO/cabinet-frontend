@@ -23,6 +23,7 @@ import {
   adminMenuLayoutApi,
   MenuButtonConfig,
   MenuButtonVisibility,
+  MenuRowConfig,
   MenuLayoutResponse,
 } from '../api/adminMenuLayout';
 import { AdminBackButton } from '../components/admin';
@@ -45,7 +46,7 @@ const DEFAULT_FORM: FormState = {
   visibility: 'all',
   enabled: true,
 };
-const MAX_ROW_SLOTS = 2;
+const MAX_ROW_SLOTS = 4;
 
 const GripIcon = () => (
   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -219,6 +220,7 @@ export default function AdminMainMenuButtons() {
   const [selectedRowIndex, setSelectedRowIndex] = useState(0);
   const [addMenuRowIndex, setAddMenuRowIndex] = useState<number | null>(null);
   const [rowCapacities, setRowCapacities] = useState<number[]>([]);
+  const [rowDefs, setRowDefs] = useState<Array<Pick<MenuRowConfig, 'id' | 'conditions'>>>([]);
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
@@ -240,6 +242,7 @@ export default function AdminMainMenuButtons() {
     setOrderIds(buildInitialOrder(data));
     setRowLengths(data.rows.map((row) => row.buttons.length));
     setRowCapacities(data.rows.map((row) => Math.max(row.max_per_row || 1, 1)));
+    setRowDefs(data.rows.map((row) => ({ id: row.id, conditions: row.conditions })));
     setSelectedRowIndex(0);
     setAddMenuRowIndex(null);
   }, [data]);
@@ -282,6 +285,31 @@ export default function AdminMainMenuButtons() {
     }
     return orderedIds.some((id, index) => initialOrder[index] !== id);
   }, [initialOrder, orderedIds]);
+
+  const hasRowsConfigChanges = useMemo(() => {
+    if (!data) {
+      return false;
+    }
+    if (rowDefs.length !== data.rows.length || rowLengths.length !== data.rows.length) {
+      return true;
+    }
+    for (let index = 0; index < data.rows.length; index += 1) {
+      const sourceRow = data.rows[index];
+      const sourceCapacity = Math.max(sourceRow.max_per_row || 1, 1);
+      if (rowDefs[index]?.id !== sourceRow.id) {
+        return true;
+      }
+      if ((rowLengths[index] ?? 0) !== sourceRow.buttons.length) {
+        return true;
+      }
+      if (Math.max(rowCapacities[index] ?? sourceCapacity, 1) !== sourceCapacity) {
+        return true;
+      }
+    }
+    return false;
+  }, [data, rowCapacities, rowDefs, rowLengths]);
+
+  const hasPendingChanges = hasOrderChanges || hasRowsConfigChanges;
 
   const visibilityOptions = useMemo(
     () => [
@@ -347,9 +375,9 @@ export default function AdminMainMenuButtons() {
         return;
       }
 
-      const rows = data.rows.map((row, index) => ({
+      const rows = rowDefs.map((row, index) => ({
         id: row.id,
-        max_per_row: Math.max(rowCapacities[index] ?? row.max_per_row, 1),
+        max_per_row: Math.max(rowCapacities[index] ?? 1, 1),
         conditions: row.conditions,
         buttons: [] as string[],
       }));
@@ -574,19 +602,21 @@ export default function AdminMainMenuButtons() {
       if (prev.length <= 1) {
         return prev;
       }
-      const removed = prev.filter((_, idx) => idx !== rowIndex);
-      removed.push(0);
-      return removed;
+      return prev.filter((_, idx) => idx !== rowIndex);
     });
 
     setRowCapacities((prev) => {
       if (prev.length <= 1) {
         return prev;
       }
-      const removedCapacity = prev[rowIndex] ?? 1;
-      const next = prev.filter((_, idx) => idx !== rowIndex);
-      next.push(Math.max(removedCapacity, 1));
-      return next;
+      return prev.filter((_, idx) => idx !== rowIndex);
+    });
+
+    setRowDefs((prev) => {
+      if (prev.length <= 1) {
+        return prev;
+      }
+      return prev.filter((_, idx) => idx !== rowIndex);
     });
 
     setAddMenuRowIndex(null);
@@ -619,7 +649,7 @@ export default function AdminMainMenuButtons() {
             <button
               className="btn-primary"
               onClick={() => saveLayoutMutation.mutate(orderedIds)}
-              disabled={!hasOrderChanges || saveLayoutMutation.isPending}
+              disabled={!hasPendingChanges || saveLayoutMutation.isPending}
             >
               {saveLayoutMutation.isPending
                 ? t('admin.mainMenuButtons.savingOrder')
