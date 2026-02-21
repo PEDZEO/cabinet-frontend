@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.5.0](https://github.com/PEDZEO/cabinet-frontend/compare/v1.4.0...v1.5.0) (2026-02-21)
+
+
+### Features
+
+* **admin:** add main menu buttons manager with drag and drop ([d18e0f2](https://github.com/PEDZEO/cabinet-frontend/commit/d18e0f2f330a66e0bf5fbabd9f916ce986d43948))
+* **admin:** improve main menu buttons editor UX ([b43f9d2](https://github.com/PEDZEO/cabinet-frontend/commit/b43f9d2e67359edb394eeb85a5f5fb245a056b57))
+* **admin:** improve menu editor desktop ux and mouse drag ([1aaa588](https://github.com/PEDZEO/cabinet-frontend/commit/1aaa588341c17d2f4c0edb27625f474e34e164b1))
+* **admin:** make menu sections settings collapsible ([c4a21af](https://github.com/PEDZEO/cabinet-frontend/commit/c4a21af258f042612154c2c6a63597fad3c9bb91))
+* **admin:** manage menu directly in preview ([59d2696](https://github.com/PEDZEO/cabinet-frontend/commit/59d269685e3f92efc56416e078ddcaa10f556c63))
+* **admin:** switch menu editor to live menu-layout api ([a42460d](https://github.com/PEDZEO/cabinet-frontend/commit/a42460dd91b7e793b81bb0446177087ec0def229))
+* **lite-ui:** polish dashboard subscription and balance screens ([5c3250e](https://github.com/PEDZEO/cabinet-frontend/commit/5c3250eb1da49e6a0263d55506c1adc3353e1b56))
+
+
+### Bug Fixes
+
+* **admin:** add inactive buttons to selected preview row ([bcea8c5](https://github.com/PEDZEO/cabinet-frontend/commit/bcea8c5cecf083d34a587ceb1e0adf39354c2d6b))
+* **admin:** add via row plus and respect row capacity ([6b447a9](https://github.com/PEDZEO/cabinet-frontend/commit/6b447a9257184d910bed0a586fdb05594c13593d))
+* **admin:** align menu editor toggles with settings buttons ([82168e6](https://github.com/PEDZEO/cabinet-frontend/commit/82168e6a4bf455801078e0d781fe614b11c9b050))
+* **admin:** enable mobile drag and add color accents toggle ([4eb1d27](https://github.com/PEDZEO/cabinet-frontend/commit/4eb1d27117edf18eda763bd37fa1c2c499123a53))
+* **admin:** improve menu row slot handling and drag behavior ([dcdf548](https://github.com/PEDZEO/cabinet-frontend/commit/dcdf54851ac5c17d4a8c0917c1f1f7403ad4df88))
+* **admin:** keep preview rows aligned with layout buckets ([5d26470](https://github.com/PEDZEO/cabinet-frontend/commit/5d26470cc43fcb2b37cd9ec35906d42a696a9595))
+* **admin:** polish menu editor responsiveness and dnd hint ([d83a45f](https://github.com/PEDZEO/cabinet-frontend/commit/d83a45fccd6ad7c27a4116ff3e9604c1c2d9b2aa))
+* **admin:** sync menu button open mode and webapp url ([374b3df](https://github.com/PEDZEO/cabinet-frontend/commit/374b3dfcf16833183d3da436089493e2e4fec396))
+* **menu-layout:** allow row slot growth and true empty-row removal ([181f2a3](https://github.com/PEDZEO/cabinet-frontend/commit/181f2a3b78dbfa10cc92c43e764124c9cf2ac1c7))
+* **menu-layout:** count row capacity by active buttons ([757a0ac](https://github.com/PEDZEO/cabinet-frontend/commit/757a0ac5d2eb6e94622defc10a0bf03ddbb4f62b))
+
 ## [1.4.0](https://github.com/PEDZEO/cabinet-frontend/compare/v1.3.0...v1.4.0) (2026-02-18)
 
 
