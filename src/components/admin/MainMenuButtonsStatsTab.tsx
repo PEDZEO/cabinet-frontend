@@ -118,12 +118,7 @@ export function MainMenuButtonsStatsTab() {
   const compareTrend = typeof compareTrendRaw === 'string' ? compareTrendRaw : null;
 
   const globalError =
-    overviewQuery.error ||
-    byTypeQuery.error ||
-    byHourQuery.error ||
-    byWeekdayQuery.error ||
-    topUsersQuery.error ||
-    compareQuery.error;
+    overviewQuery.error || byTypeQuery.error || byHourQuery.error || byWeekdayQuery.error;
 
   if (overviewQuery.isLoading || byTypeQuery.isLoading) {
     return (
