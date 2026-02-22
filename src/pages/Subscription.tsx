@@ -128,6 +128,7 @@ function FullSubscription() {
 
   // Traffic refresh state
   const [trafficRefreshCooldown, setTrafficRefreshCooldown] = useState(0);
+  const devicesSectionRef = useRef<HTMLDivElement | null>(null);
   const [trafficData, setTrafficData] = useState<{
     traffic_used_gb: number;
     traffic_used_percent: number;
@@ -414,6 +415,18 @@ function FullSubscription() {
       return () => clearTimeout(timer);
     }
   }, [location.state, tariffs.length]);
+
+  // Auto-scroll to devices section when coming from Dashboard devices metric
+  useEffect(() => {
+    const state = location.state as { scrollToExtend?: boolean; scrollToDevices?: boolean } | null;
+    if (state?.scrollToDevices && devicesSectionRef.current) {
+      const timer = setTimeout(() => {
+        devicesSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+      window.history.replaceState({}, document.title);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
 
   const copyUrl = () => {
     if (subscription?.subscription_url) {
@@ -1087,23 +1100,25 @@ function FullSubscription() {
 
       {/* My Devices Section */}
       {subscription && (
-        <DeviceListSection
-          t={t}
-          devicesData={devicesData}
-          devicesLoading={devicesLoading}
-          isDeleteDevicePending={deleteDeviceMutation.isPending}
-          isDeleteAllDevicesPending={deleteAllDevicesMutation.isPending}
-          onDeleteAllDevices={() => {
-            if (confirm(t('subscription.confirmDeleteAllDevices'))) {
-              deleteAllDevicesMutation.mutate();
-            }
-          }}
-          onDeleteDevice={(hwid) => {
-            if (confirm(t('subscription.confirmDeleteDevice'))) {
-              deleteDeviceMutation.mutate(hwid);
-            }
-          }}
-        />
+        <div ref={devicesSectionRef}>
+          <DeviceListSection
+            t={t}
+            devicesData={devicesData}
+            devicesLoading={devicesLoading}
+            isDeleteDevicePending={deleteDeviceMutation.isPending}
+            isDeleteAllDevicesPending={deleteAllDevicesMutation.isPending}
+            onDeleteAllDevices={() => {
+              if (confirm(t('subscription.confirmDeleteAllDevices'))) {
+                deleteAllDevicesMutation.mutate();
+              }
+            }}
+            onDeleteDevice={(hwid) => {
+              if (confirm(t('subscription.confirmDeleteDevice'))) {
+                deleteDeviceMutation.mutate(hwid);
+              }
+            }}
+          />
+        </div>
       )}
 
       {/* Tariffs Section - Combined Purchase/Extend/Switch like MiniApp */}

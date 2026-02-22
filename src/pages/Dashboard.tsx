@@ -411,7 +411,14 @@ function FullDashboard() {
             </div>
             <div>
               <div className="mb-1 text-sm text-dark-500">{t('subscription.devices')}</div>
-              <div className="font-medium text-dark-100">{subscription.device_limit}</div>
+              <button
+                type="button"
+                onClick={() => navigate('/subscription', { state: { scrollToDevices: true } })}
+                className="font-medium text-dark-100 transition-colors hover:text-accent-400"
+                aria-label={t('subscription.myDevices')}
+              >
+                {subscription.device_limit}
+              </button>
             </div>
             <div>
               <div className="mb-1 text-sm text-dark-500">{t('subscription.timeLeft')}</div>
