@@ -61,9 +61,17 @@ export default function DeepLinkRedirect() {
   const logoLetter = branding?.logo_letter || import.meta.env.VITE_APP_LOGO || 'V';
   const logoUrl = branding ? brandingApi.getLogoUrl(branding) : null;
 
+  // Get raw URL parameter preserving '+' chars (URLSearchParams decodes '+' as space, breaking base64 in crypto links)
+  const getRawParam = (key: string) => {
+    const params = new URLSearchParams(window.location.search);
+    const raw = params.get(key);
+    if (!raw) return '';
+    return decodeURIComponent(raw.replace(/ /g, '+'));
+  };
+
   // Get parameters
-  const deepLink = searchParams.get('url') || searchParams.get('deeplink') || '';
-  const subscriptionUrl = searchParams.get('sub') || '';
+  const deepLink = getRawParam('url') || getRawParam('deeplink') || '';
+  const subscriptionUrl = getRawParam('sub') || '';
   const appParam = searchParams.get('app') || '';
 
   // Detect app from deep link
