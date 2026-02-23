@@ -221,9 +221,10 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
         {/* Progress bar */}
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-dark-800/50">
           <div
-            className={`h-full ${style.progress} opacity-60`}
+            className={`h-full w-full ${style.progress} opacity-60`}
             style={{
               animation: `shrink ${toast.duration}ms linear forwards`,
+              transformOrigin: 'left',
             }}
           />
         </div>
