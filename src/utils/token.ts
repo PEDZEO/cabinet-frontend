@@ -158,24 +158,73 @@ export const tokenStorage = {
   },
 };
 
+/**
+ * Extract Telegram user ID from raw initData string.
+ * Does NOT validate cryptographic signature — used only for client-side identity comparison.
+ */
+function extractTelegramUserId(initData: string): string | null {
+  try {
+    const params = new URLSearchParams(initData);
+    const userJson = params.get('user');
+    if (!userJson) return null;
+    const user = JSON.parse(decodeURIComponent(userJson));
+    return user.id != null ? String(user.id) : null;
+  } catch {
+    return null;
+  }
+}
+
+const TG_USER_ID_KEY = 'tg_user_id';
+
+/**
+ * Detect Telegram account switch and clear stale auth data.
+ *
+ * Telegram Mini App WebView shares localStorage across accounts on the same device
+ * (confirmed bug on Desktop, likely on mobile too). This means that when user A logs in,
+ * then user B opens the same Mini App, user A's refresh_token persists in localStorage.
+ *
+ * The old approach stored initData in sessionStorage for comparison, but sessionStorage
+ * is cleared on tab close — so the comparison never triggers between separate openings.
+ *
+ * Fix: store the Telegram user ID in localStorage (survives tab close) and compare it
+ * with the fresh initData on every app launch.
+ */
 export function clearStaleSessionIfNeeded(freshInitData: string | null): void {
   if (!freshInitData) return;
 
   try {
-    const stored = sessionStorage.getItem(TOKEN_KEYS.TELEGRAM_INIT);
+    const currentTgUserId = extractTelegramUserId(freshInitData);
 
-    if (stored && stored !== freshInitData) {
-      // New Telegram session (different user) — clear all auth tokens
+    // PRIMARY CHECK: compare Telegram user ID stored in localStorage (survives tab close)
+    const storedTgUserId = localStorage.getItem(TG_USER_ID_KEY);
+    if (storedTgUserId && currentTgUserId && storedTgUserId !== currentTgUserId) {
+      // Account switch detected — purge all auth data
       sessionStorage.removeItem(TOKEN_KEYS.ACCESS);
       sessionStorage.removeItem(TOKEN_KEYS.REFRESH);
       sessionStorage.removeItem(TOKEN_KEYS.USER);
       localStorage.removeItem(TOKEN_KEYS.REFRESH);
+      localStorage.removeItem('cabinet-auth');
+    }
+
+    // SECONDARY CHECK: same-session switch (initData changed without tab close)
+    const storedInitData = sessionStorage.getItem(TOKEN_KEYS.TELEGRAM_INIT);
+    if (storedInitData && storedInitData !== freshInitData) {
+      sessionStorage.removeItem(TOKEN_KEYS.ACCESS);
+      sessionStorage.removeItem(TOKEN_KEYS.REFRESH);
+      sessionStorage.removeItem(TOKEN_KEYS.USER);
+      localStorage.removeItem(TOKEN_KEYS.REFRESH);
+      localStorage.removeItem('cabinet-auth');
+    }
+
+    // Persist current Telegram user ID for future comparisons
+    if (currentTgUserId) {
+      localStorage.setItem(TG_USER_ID_KEY, currentTgUserId);
     }
 
     sessionStorage.setItem(TOKEN_KEYS.TELEGRAM_INIT, freshInitData);
     localStorage.removeItem(TOKEN_KEYS.TELEGRAM_INIT);
   } catch {
-    // Storage недоступен
+    // Storage not available
   }
 }
 
