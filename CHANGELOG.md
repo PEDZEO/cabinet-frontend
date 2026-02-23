@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.19.1](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/compare/v1.19.0...v1.19.1) (2026-02-23)
+
+
+### Bug Fixes
+
+* add max attribute to expected referrals input ([d1043e8](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/d1043e83eaa163079a0272860b2d6a8f68332cf6))
+* add resend email cooldown and allow email change for all auth types ([91d567f](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/91d567f9cc48dea7d605b55c6014174806b8d9ab))
+* correct memory display to use actual usage instead of cache-inclusive ([67bacd3](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/67bacd3e7a36fa70c4ee97008849f0251600a7b8))
+* detect Telegram account switch across tab closes ([ee6ec59](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/ee6ec5959c2e25deecfdbf93b79c04cb150dc7f2))
+* parse raw query string for deep link params to avoid double-decode ([ed65c29](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/ed65c29bacbfc50cdfa11e58f0cb638c6c8c1841))
+* plug memory leaks in blob URLs and traffic cache ([7cf7273](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/7cf72735ece0510acc7a4e6af8997e8e7acdc9d8))
+* preserve + chars in deep link URL params for crypto links ([65add9a](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/65add9a111086f970c77d686447016551ca9ab0f))
+* remove double URL-decode in extractTelegramUserId ([e8acfee](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/e8acfee3e462ad127d42b382d7a9c56f7742bba9))
+* render newlines in tariff description ([0b4e825](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/0b4e8253aa7a55b2cac7f6632912816b3234adc3))
+* stack promo offer discounts with promo group discounts ([321bedc](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/321bedcb61a231d3dd8ecba8623d1ee9d632b9b7))
+
+
+### Performance Improvements
+
+* add Zustand selectors to prevent cascading re-renders ([03ad255](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/03ad255bf1cf8d3d80552351e26c4b1dc11fb9b9))
+* extract Twemoji options to module-level const ([17b2f2e](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/17b2f2e90328b9388175d1047fa01bf6257d584c))
+* fix critical WebGL GPU resource leaks in Aurora ([9a84e13](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/9a84e13e6cd4dcc3a6d5e7f95fddb4c9c1ec076e))
+* fix GPU-heavy CSS patterns ([8604930](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/860493058a7d583edaea0e5261db1e485a016fc8))
+* fix render cycle in useBranding and conditional polling ([30ece69](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/commit/30ece694d43bd74fd2c26126926ec6452077681f))
+
 ## [1.19.0](https://github.com/BEDOLAGA-DEV/bedolaga-cabinet/compare/v1.18.0...v1.19.0) (2026-02-18)
 
 
