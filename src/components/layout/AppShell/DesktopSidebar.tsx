@@ -49,7 +49,8 @@ export function DesktopSidebar({
 }: DesktopSidebarProps) {
   const { t } = useTranslation();
   const location = useLocation();
-  const { user, logout } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
   const { haptic } = usePlatform();
 
   // Branding

@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../store/auth';
+import { useShallow } from 'zustand/shallow';
 import { authApi } from '../api/auth';
 import { isValidEmail } from '../utils/validation';
 import {
@@ -32,7 +33,15 @@ export default function Login() {
     loginWithTelegram,
     loginWithEmail,
     registerWithEmail,
-  } = useAuthStore();
+  } = useAuthStore(
+    useShallow((state) => ({
+      isAuthenticated: state.isAuthenticated,
+      isLoading: state.isLoading,
+      loginWithTelegram: state.loginWithTelegram,
+      loginWithEmail: state.loginWithEmail,
+      registerWithEmail: state.registerWithEmail,
+    })),
+  );
 
   // Get referral code from localStorage (captured from ?ref= param at module level in auth store)
   const referralCode = getPendingReferralCode() || '';

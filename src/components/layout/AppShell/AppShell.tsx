@@ -193,7 +193,8 @@ interface AppShellProps {
 export function AppShell({ children }: AppShellProps) {
   const { t } = useTranslation();
   const location = useLocation();
-  const { isAdmin, logout } = useAuthStore();
+  const isAdmin = useAuthStore((state) => state.isAdmin);
+  const logout = useAuthStore((state) => state.logout);
   const { isFullscreen, safeAreaInset, contentSafeAreaInset, platform, isMobile } =
     useTelegramSDK();
   const haptic = useHaptic();

@@ -89,24 +89,47 @@ export default function Subscription() {
   // Helper to format price from kopeks
   const formatPrice = (kopeks: number) => `${formatAmount(kopeks / 100)} ${currencySymbol}`;
 
-  // Helper to apply promo discount to a price
+  // Helper to apply promo discount to a price, stacking with existing promo group discount
   const applyPromoDiscount = (
     priceKopeks: number,
-    hasExistingDiscount: boolean = false,
+    existingOriginalPrice?: number | null,
   ): {
     price: number;
     original: number | null;
     percent: number | null;
+    isPromoGroup: boolean;
   } => {
-    // Only apply promo discount if no existing discount (from promo group) and we have an active promo discount
-    if (!activeDiscount?.is_active || !activeDiscount.discount_percent || hasExistingDiscount) {
-      return { price: priceKopeks, original: null, percent: null };
+    const hasExisting = (existingOriginalPrice ?? 0) > priceKopeks;
+    const hasPromo = !!activeDiscount?.is_active && !!activeDiscount.discount_percent;
+
+    if (!hasExisting && !hasPromo) {
+      return { price: priceKopeks, original: null, percent: null, isPromoGroup: false };
     }
-    const discountedPrice = Math.round(priceKopeks * (1 - activeDiscount.discount_percent / 100));
+
+    let finalPrice = priceKopeks;
+    if (hasPromo) {
+      finalPrice = Math.round(priceKopeks * (1 - activeDiscount!.discount_percent! / 100));
+    }
+
+    if (hasExisting) {
+      // Promo group discount exists — calculate combined percent from deepest original
+      const combinedPercent = hasPromo
+        ? Math.round((1 - finalPrice / existingOriginalPrice!) * 100)
+        : Math.round((1 - priceKopeks / existingOriginalPrice!) * 100);
+      return {
+        price: finalPrice,
+        original: existingOriginalPrice!,
+        percent: combinedPercent,
+        isPromoGroup: true,
+      };
+    }
+
+    // Only promo offer discount (no promo group)
     return {
-      price: discountedPrice,
+      price: finalPrice,
       original: priceKopeks,
-      percent: activeDiscount.discount_percent,
+      percent: activeDiscount!.discount_percent!,
+      isPromoGroup: false,
     };
   };
 
@@ -2338,7 +2361,9 @@ export default function Subscription() {
                           <div>
                             <div className="text-lg font-semibold text-dark-100">{tariff.name}</div>
                             {tariff.description && (
-                              <div className="mt-1 text-sm text-dark-400">{tariff.description}</div>
+                              <div className="mt-1 whitespace-pre-line text-sm text-dark-400">
+                                {tariff.description}
+                              </div>
                             )}
                           </div>
                           {isCurrentTariff && (
@@ -2416,41 +2441,34 @@ export default function Subscription() {
                             const dailyPrice =
                               tariff.daily_price_kopeks ?? tariff.price_per_day_kopeks ?? 0;
                             const originalDailyPrice = tariff.original_daily_price_kopeks || 0;
-                            const hasExistingDailyDiscount = originalDailyPrice > dailyPrice;
                             if (dailyPrice > 0) {
-                              // Apply promo discount if no existing discount
                               const promoDaily = applyPromoDiscount(
                                 dailyPrice,
-                                hasExistingDailyDiscount,
+                                originalDailyPrice > dailyPrice ? originalDailyPrice : undefined,
                               );
                               return (
                                 <span className="flex items-center gap-2">
                                   <span className="font-medium text-accent-400">
                                     {formatPrice(promoDaily.price)}
                                   </span>
-                                  {/* Show original price from promo group or promo offer */}
-                                  {(hasExistingDailyDiscount || promoDaily.original) && (
-                                    <span className="text-xs text-dark-500 line-through">
-                                      {formatPrice(
-                                        hasExistingDailyDiscount
-                                          ? originalDailyPrice
-                                          : promoDaily.original!,
-                                      )}
-                                    </span>
-                                  )}
+                                  {promoDaily.original &&
+                                    promoDaily.original > promoDaily.price && (
+                                      <span className="text-xs text-dark-500 line-through">
+                                        {formatPrice(promoDaily.original)}
+                                      </span>
+                                    )}
                                   <span>{t('subscription.tariff.perDay')}</span>
                                   {/* Show discount badge */}
-                                  {tariff.daily_discount_percent &&
-                                  tariff.daily_discount_percent > 0 ? (
-                                    <span className="rounded bg-success-500/20 px-1.5 py-0.5 text-xs text-success-400">
-                                      -{tariff.daily_discount_percent}%
+                                  {promoDaily.percent && promoDaily.percent > 0 && (
+                                    <span
+                                      className={`rounded px-1.5 py-0.5 text-xs ${
+                                        promoDaily.isPromoGroup
+                                          ? 'bg-success-500/20 text-success-400'
+                                          : 'bg-orange-500/20 text-orange-400'
+                                      }`}
+                                    >
+                                      -{promoDaily.percent}%
                                     </span>
-                                  ) : (
-                                    promoDaily.percent && (
-                                      <span className="rounded bg-orange-500/20 px-1.5 py-0.5 text-xs text-orange-400">
-                                        -{promoDaily.percent}%
-                                      </span>
-                                    )
                                   )}
                                 </span>
                               );
@@ -2458,14 +2476,9 @@ export default function Subscription() {
                             // Period-based price
                             if (tariff.periods.length > 0) {
                               const firstPeriod = tariff.periods[0];
-                              const hasExistingDiscount = !!(
-                                firstPeriod?.original_price_kopeks &&
-                                firstPeriod.original_price_kopeks > firstPeriod.price_kopeks
-                              );
-                              // Apply promo discount if no existing discount
                               const promoPeriod = applyPromoDiscount(
                                 firstPeriod?.price_kopeks || 0,
-                                hasExistingDiscount,
+                                firstPeriod?.original_price_kopeks,
                               );
                               return (
                                 <span className="flex flex-wrap items-center gap-2">
@@ -2473,27 +2486,22 @@ export default function Subscription() {
                                   <span className="font-medium text-accent-400">
                                     {formatPrice(promoPeriod.price)}
                                   </span>
-                                  {/* Show original price from promo group or promo offer */}
-                                  {(hasExistingDiscount || promoPeriod.original) && (
-                                    <span className="text-xs text-dark-500 line-through">
-                                      {formatPrice(
-                                        hasExistingDiscount
-                                          ? firstPeriod.original_price_kopeks!
-                                          : promoPeriod.original!,
-                                      )}
-                                    </span>
-                                  )}
-                                  {/* Show discount badge */}
-                                  {hasExistingDiscount && firstPeriod.discount_percent ? (
-                                    <span className="rounded bg-success-500/20 px-1.5 py-0.5 text-xs text-success-400">
-                                      -{firstPeriod.discount_percent}%
-                                    </span>
-                                  ) : (
-                                    promoPeriod.percent && (
-                                      <span className="rounded bg-orange-500/20 px-1.5 py-0.5 text-xs text-orange-400">
-                                        -{promoPeriod.percent}%
+                                  {promoPeriod.original &&
+                                    promoPeriod.original > promoPeriod.price && (
+                                      <span className="text-xs text-dark-500 line-through">
+                                        {formatPrice(promoPeriod.original)}
                                       </span>
-                                    )
+                                    )}
+                                  {promoPeriod.percent && promoPeriod.percent > 0 && (
+                                    <span
+                                      className={`rounded px-1.5 py-0.5 text-xs ${
+                                        promoPeriod.isPromoGroup
+                                          ? 'bg-success-500/20 text-success-400'
+                                          : 'bg-orange-500/20 text-orange-400'
+                                      }`}
+                                    >
+                                      -{promoPeriod.percent}%
+                                    </span>
                                   )}
                                 </span>
                               );
@@ -2702,24 +2710,17 @@ export default function Subscription() {
                       {selectedTariff.periods.length > 0 && !useCustomDays && (
                         <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
                           {selectedTariff.periods.map((period) => {
-                            const hasExistingDiscount = !!(
-                              period.original_price_kopeks &&
-                              period.original_price_kopeks > period.price_kopeks
-                            );
                             const promoPeriod = applyPromoDiscount(
                               period.price_kopeks,
-                              hasExistingDiscount,
+                              period.original_price_kopeks,
                             );
-                            const displayDiscount = hasExistingDiscount
-                              ? period.discount_percent
-                              : promoPeriod.percent;
-                            const displayOriginal = hasExistingDiscount
-                              ? period.original_price_kopeks
-                              : promoPeriod.original;
+                            const displayDiscount = promoPeriod.percent;
+                            const displayOriginal = promoPeriod.original;
                             const displayPrice = promoPeriod.price;
-                            const displayPerMonth = hasExistingDiscount
-                              ? period.price_per_month_kopeks
-                              : Math.round(promoPeriod.price / (period.days / 30));
+                            const displayPerMonth =
+                              displayPrice !== period.price_kopeks
+                                ? Math.round(displayPrice / Math.max(1, period.days / 30))
+                                : period.price_per_month_kopeks;
 
                             return (
                               <button
@@ -2737,7 +2738,7 @@ export default function Subscription() {
                                 {displayDiscount && displayDiscount > 0 && (
                                   <div
                                     className={`absolute -right-2 -top-2 rounded-full px-2 py-0.5 text-xs font-medium text-white ${
-                                      hasExistingDiscount ? 'bg-success-500' : 'bg-orange-500'
+                                      promoPeriod.isPromoGroup ? 'bg-success-500' : 'bg-orange-500'
                                     }`}
                                   >
                                     -{displayDiscount}%
@@ -2821,14 +2822,15 @@ export default function Subscription() {
                                 {(() => {
                                   const basePrice =
                                     customDays * (selectedTariff.price_per_day_kopeks ?? 0);
-                                  const hasExistingDiscount = !!(
+                                  const existingOriginal =
                                     selectedTariff.original_price_per_day_kopeks &&
                                     selectedTariff.original_price_per_day_kopeks >
                                       (selectedTariff.price_per_day_kopeks ?? 0)
-                                  );
+                                      ? customDays * selectedTariff.original_price_per_day_kopeks
+                                      : undefined;
                                   const promoCustom = applyPromoDiscount(
                                     basePrice,
-                                    hasExistingDiscount,
+                                    existingOriginal,
                                   );
                                   return (
                                     <div className="flex justify-between text-sm">
@@ -2841,16 +2843,23 @@ export default function Subscription() {
                                         <span className="font-medium text-accent-400">
                                           {formatPrice(promoCustom.price)}
                                         </span>
-                                        {promoCustom.original && (
-                                          <>
-                                            <span className="text-xs text-dark-500 line-through">
-                                              {formatPrice(promoCustom.original)}
-                                            </span>
-                                            <span className="rounded bg-orange-500/20 px-1.5 py-0.5 text-xs text-orange-400">
-                                              -{promoCustom.percent}%
-                                            </span>
-                                          </>
-                                        )}
+                                        {promoCustom.original &&
+                                          promoCustom.original > promoCustom.price && (
+                                            <>
+                                              <span className="text-xs text-dark-500 line-through">
+                                                {formatPrice(promoCustom.original)}
+                                              </span>
+                                              <span
+                                                className={`rounded px-1.5 py-0.5 text-xs ${
+                                                  promoCustom.isPromoGroup
+                                                    ? 'bg-success-500/20 text-success-400'
+                                                    : 'bg-orange-500/20 text-orange-400'
+                                                }`}
+                                              >
+                                                -{promoCustom.percent}%
+                                              </span>
+                                            </>
+                                          )}
                                       </div>
                                     </div>
                                   );
@@ -2956,14 +2965,20 @@ export default function Subscription() {
                           const basePeriodPrice = useCustomDays
                             ? customDays * (selectedTariff.price_per_day_kopeks ?? 0)
                             : selectedTariffPeriod?.price_kopeks || 0;
-                          const hasExistingPeriodDiscount =
-                            !useCustomDays && selectedTariffPeriod?.original_price_kopeks
-                              ? selectedTariffPeriod.original_price_kopeks >
-                                selectedTariffPeriod.price_kopeks
-                              : false;
+                          const existingPeriodOriginal = useCustomDays
+                            ? selectedTariff.original_price_per_day_kopeks &&
+                              selectedTariff.original_price_per_day_kopeks >
+                                (selectedTariff.price_per_day_kopeks ?? 0)
+                              ? customDays * selectedTariff.original_price_per_day_kopeks
+                              : undefined
+                            : selectedTariffPeriod?.original_price_kopeks &&
+                                selectedTariffPeriod.original_price_kopeks >
+                                  selectedTariffPeriod.price_kopeks
+                              ? selectedTariffPeriod.original_price_kopeks
+                              : undefined;
                           const promoPeriod = applyPromoDiscount(
                             basePeriodPrice,
-                            hasExistingPeriodDiscount,
+                            existingPeriodOriginal,
                           );
 
                           const trafficPrice =
@@ -2988,11 +3003,12 @@ export default function Subscription() {
                                     </span>
                                     <div className="flex items-center gap-2">
                                       <span>{formatPrice(promoPeriod.price)}</span>
-                                      {promoPeriod.original && (
-                                        <span className="text-xs text-dark-500 line-through">
-                                          {formatPrice(promoPeriod.original)}
-                                        </span>
-                                      )}
+                                      {promoPeriod.original &&
+                                        promoPeriod.original > promoPeriod.price && (
+                                          <span className="text-xs text-dark-500 line-through">
+                                            {formatPrice(promoPeriod.original)}
+                                          </span>
+                                        )}
                                     </div>
                                   </div>
                                 ) : (
@@ -3035,16 +3051,12 @@ export default function Subscription() {
                                           </span>
                                           <div className="flex items-center gap-2">
                                             <span>{formatPrice(promoPeriod.price)}</span>
-                                            {(hasExistingPeriodDiscount ||
-                                              promoPeriod.original) && (
-                                              <span className="text-xs text-dark-500 line-through">
-                                                {formatPrice(
-                                                  hasExistingPeriodDiscount
-                                                    ? selectedTariffPeriod.original_price_kopeks!
-                                                    : promoPeriod.original!,
-                                                )}
-                                              </span>
-                                            )}
+                                            {promoPeriod.original &&
+                                              promoPeriod.original > promoPeriod.price && (
+                                                <span className="text-xs text-dark-500 line-through">
+                                                  {formatPrice(promoPeriod.original)}
+                                                </span>
+                                              )}
                                           </div>
                                         </div>
                                       )}
@@ -3177,19 +3189,10 @@ export default function Subscription() {
               {currentStep === 'period' && classicOptions && (
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                   {classicOptions.periods.map((period) => {
-                    const hasExistingDiscount = !!(
-                      period.discount_percent && period.discount_percent > 0
-                    );
                     const promoPeriod = applyPromoDiscount(
                       period.price_kopeks,
-                      hasExistingDiscount,
+                      period.original_price_kopeks,
                     );
-                    const displayDiscount = hasExistingDiscount
-                      ? period.discount_percent
-                      : promoPeriod.percent;
-                    const displayOriginal = hasExistingDiscount
-                      ? period.original_price_kopeks
-                      : promoPeriod.original;
 
                     return (
                       <button
@@ -3219,13 +3222,13 @@ export default function Subscription() {
                             : ''
                         }`}
                       >
-                        {displayDiscount && displayDiscount > 0 && (
+                        {promoPeriod.percent && promoPeriod.percent > 0 && (
                           <div
                             className={`absolute right-2 top-2 z-10 rounded-full px-2 py-0.5 text-xs font-medium text-white shadow-sm ${
-                              hasExistingDiscount ? 'bg-success-500' : 'bg-orange-500'
+                              promoPeriod.isPromoGroup ? 'bg-success-500' : 'bg-orange-500'
                             }`}
                           >
-                            -{displayDiscount}%
+                            -{promoPeriod.percent}%
                           </div>
                         )}
                         <div className="text-lg font-semibold text-dark-100">{period.label}</div>
@@ -3233,9 +3236,9 @@ export default function Subscription() {
                           <span className="font-medium text-accent-400">
                             {formatPrice(promoPeriod.price)}
                           </span>
-                          {displayOriginal && displayOriginal > promoPeriod.price && (
+                          {promoPeriod.original && promoPeriod.original > promoPeriod.price && (
                             <span className="text-sm text-dark-500 line-through">
-                              {formatPrice(displayOriginal)}
+                              {formatPrice(promoPeriod.original)}
                             </span>
                           )}
                         </div>
@@ -3249,12 +3252,9 @@ export default function Subscription() {
               {currentStep === 'traffic' && selectedPeriod?.traffic.options && (
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   {selectedPeriod.traffic.options.map((option) => {
-                    const hasExistingDiscount = !!(
-                      option.discount_percent && option.discount_percent > 0
-                    );
                     const promoTraffic = applyPromoDiscount(
                       option.price_kopeks,
-                      hasExistingDiscount,
+                      option.original_price_kopeks,
                     );
 
                     return (
@@ -3268,41 +3268,24 @@ export default function Subscription() {
                             : ''
                         } ${!option.is_available ? 'cursor-not-allowed opacity-50' : ''}`}
                       >
-                        {(() => {
-                          const trafficDisplayDiscount = hasExistingDiscount
-                            ? option.discount_percent
-                            : promoTraffic.percent;
-                          const trafficDisplayOriginal = hasExistingDiscount
-                            ? option.original_price_kopeks
-                            : promoTraffic.original;
-                          return (
-                            <>
-                              {trafficDisplayDiscount && trafficDisplayDiscount > 0 && (
-                                <div
-                                  className={`absolute right-2 top-2 z-10 rounded-full px-2 py-0.5 text-xs font-medium text-white shadow-sm ${
-                                    hasExistingDiscount ? 'bg-success-500' : 'bg-orange-500'
-                                  }`}
-                                >
-                                  -{trafficDisplayDiscount}%
-                                </div>
-                              )}
-                              <div className="text-lg font-semibold text-dark-100">
-                                {option.label}
-                              </div>
-                              <div className="mt-1 flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
-                                <span className="text-accent-400">
-                                  {formatPrice(promoTraffic.price)}
-                                </span>
-                                {trafficDisplayOriginal &&
-                                  trafficDisplayOriginal > promoTraffic.price && (
-                                    <span className="text-xs text-dark-500 line-through">
-                                      {formatPrice(trafficDisplayOriginal)}
-                                    </span>
-                                  )}
-                              </div>
-                            </>
-                          );
-                        })()}
+                        {promoTraffic.percent && promoTraffic.percent > 0 && (
+                          <div
+                            className={`absolute right-2 top-2 z-10 rounded-full px-2 py-0.5 text-xs font-medium text-white shadow-sm ${
+                              promoTraffic.isPromoGroup ? 'bg-success-500' : 'bg-orange-500'
+                            }`}
+                          >
+                            -{promoTraffic.percent}%
+                          </div>
+                        )}
+                        <div className="text-lg font-semibold text-dark-100">{option.label}</div>
+                        <div className="mt-1 flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+                          <span className="text-accent-400">{formatPrice(promoTraffic.price)}</span>
+                          {promoTraffic.original && promoTraffic.original > promoTraffic.price && (
+                            <span className="text-xs text-dark-500 line-through">
+                              {formatPrice(promoTraffic.original)}
+                            </span>
+                          )}
+                        </div>
                       </button>
                     );
                   })}
@@ -3322,12 +3305,9 @@ export default function Subscription() {
                       return true;
                     })
                     .map((server) => {
-                      const hasExistingDiscount = !!(
-                        server.discount_percent && server.discount_percent > 0
-                      );
                       const promoServer = applyPromoDiscount(
                         server.price_kopeks,
-                        hasExistingDiscount,
+                        server.original_price_kopeks,
                       );
 
                       return (
@@ -3343,20 +3323,15 @@ export default function Subscription() {
                                 : 'cursor-not-allowed border-dark-800/30 bg-dark-900/30 opacity-50'
                           }`}
                         >
-                          {(() => {
-                            const serverDisplayDiscount = hasExistingDiscount
-                              ? server.discount_percent
-                              : promoServer.percent;
-                            return serverDisplayDiscount && serverDisplayDiscount > 0 ? (
-                              <div
-                                className={`absolute right-2 top-2 z-10 rounded-full px-2 py-0.5 text-xs font-medium text-white shadow-sm ${
-                                  hasExistingDiscount ? 'bg-success-500' : 'bg-orange-500'
-                                }`}
-                              >
-                                -{serverDisplayDiscount}%
-                              </div>
-                            ) : null;
-                          })()}
+                          {promoServer.percent && promoServer.percent > 0 ? (
+                            <div
+                              className={`absolute right-2 top-2 z-10 rounded-full px-2 py-0.5 text-xs font-medium text-white shadow-sm ${
+                                promoServer.isPromoGroup ? 'bg-success-500' : 'bg-orange-500'
+                              }`}
+                            >
+                              -{promoServer.percent}%
+                            </div>
+                          ) : null}
                           <div className="flex items-center gap-3">
                             <div
                               className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded border-2 ${
@@ -3374,16 +3349,12 @@ export default function Subscription() {
                                   {formatPrice(promoServer.price)}
                                   {t('subscription.perMonth')}
                                 </span>
-                                {(() => {
-                                  const serverOriginal = hasExistingDiscount
-                                    ? server.original_price_kopeks
-                                    : promoServer.original;
-                                  return serverOriginal && serverOriginal > promoServer.price ? (
-                                    <span className="text-xs text-dark-500 line-through">
-                                      {formatPrice(serverOriginal)}
-                                    </span>
-                                  ) : null;
-                                })()}
+                                {promoServer.original &&
+                                promoServer.original > promoServer.price ? (
+                                  <span className="text-xs text-dark-500 line-through">
+                                    {formatPrice(promoServer.original)}
+                                  </span>
+                                ) : null}
                               </div>
                             </div>
                           </div>
@@ -3448,28 +3419,26 @@ export default function Subscription() {
                   ) : preview ? (
                     <div className="space-y-4 rounded-xl bg-dark-800/50 p-5">
                       {/* Active promo discount banner */}
-                      {activeDiscount?.is_active &&
-                        activeDiscount.discount_percent &&
-                        !preview.original_price_kopeks && (
-                          <div className="flex items-center justify-center gap-2 rounded-lg border border-orange-500/30 bg-orange-500/10 p-3">
-                            <svg
-                              className="h-4 w-4 text-orange-400"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth={2}
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"
-                              />
-                            </svg>
-                            <span className="text-sm font-medium text-orange-400">
-                              {t('promo.discountApplied')} -{activeDiscount.discount_percent}%
-                            </span>
-                          </div>
-                        )}
+                      {activeDiscount?.is_active && activeDiscount.discount_percent && (
+                        <div className="flex items-center justify-center gap-2 rounded-lg border border-orange-500/30 bg-orange-500/10 p-3">
+                          <svg
+                            className="h-4 w-4 text-orange-400"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"
+                            />
+                          </svg>
+                          <span className="text-sm font-medium text-orange-400">
+                            {t('promo.discountApplied')} -{activeDiscount.discount_percent}%
+                          </span>
+                        </div>
+                      )}
 
                       {preview.breakdown.map((item, idx) => (
                         <div key={idx} className="flex justify-between text-dark-300">
@@ -3479,16 +3448,10 @@ export default function Subscription() {
                       ))}
 
                       {(() => {
-                        // Apply promo discount if not already applied by server
-                        const hasServerDiscount = !!preview.original_price_kopeks;
                         const promoTotal = applyPromoDiscount(
                           preview.total_price_kopeks,
-                          hasServerDiscount,
+                          preview.original_price_kopeks,
                         );
-                        const displayTotal = promoTotal.price;
-                        const displayOriginal = hasServerDiscount
-                          ? preview.original_price_kopeks
-                          : promoTotal.original;
 
                         return (
                           <div className="flex items-center justify-between border-t border-dark-700/50 pt-4">
@@ -3497,11 +3460,11 @@ export default function Subscription() {
                             </span>
                             <div className="text-right">
                               <div className="text-2xl font-bold text-accent-400">
-                                {formatPrice(displayTotal)}
+                                {formatPrice(promoTotal.price)}
                               </div>
-                              {displayOriginal && (
+                              {promoTotal.original && promoTotal.original > promoTotal.price && (
                                 <div className="text-sm text-dark-500 line-through">
-                                  {formatPrice(displayOriginal)}
+                                  {formatPrice(promoTotal.original)}
                                 </div>
                               )}
                             </div>

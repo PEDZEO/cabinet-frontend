@@ -114,6 +114,7 @@ export default function ReferralPartnerApply() {
             <input
               type="number"
               min={0}
+              max={2000000000}
               className="input w-full"
               value={form.expected_monthly_referrals ?? ''}
               onChange={(e) =>

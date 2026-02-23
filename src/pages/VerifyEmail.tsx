@@ -3,6 +3,7 @@ import { useSearchParams, Link, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { authApi } from '../api/auth';
 import { useAuthStore } from '../store/auth';
+import { useShallow } from 'zustand/shallow';
 import { consumeCampaignSlug } from '../utils/campaign';
 import { tokenStorage } from '../utils/token';
 import LanguageSwitcher from '../components/LanguageSwitcher';
@@ -13,7 +14,13 @@ export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [error, setError] = useState('');
-  const { setTokens, setUser, checkAdminStatus } = useAuthStore();
+  const { setTokens, setUser, checkAdminStatus } = useAuthStore(
+    useShallow((state) => ({
+      setTokens: state.setTokens,
+      setUser: state.setUser,
+      checkAdminStatus: state.checkAdminStatus,
+    })),
+  );
   const hasVerified = useRef(false);
 
   useEffect(() => {

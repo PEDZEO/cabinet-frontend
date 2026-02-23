@@ -3,7 +3,7 @@ import { useBlockingStore } from '../../store/blocking';
 
 export default function BlacklistedScreen() {
   const { t } = useTranslation();
-  const { blacklistedInfo } = useBlockingStore();
+  const blacklistedInfo = useBlockingStore((state) => state.blacklistedInfo);
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-dark-950 p-6">

@@ -26,7 +26,8 @@ export default function OAuthCallback() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [error, setError] = useState('');
-  const { loginWithOAuth, isAuthenticated } = useAuthStore();
+  const loginWithOAuth = useAuthStore((state) => state.loginWithOAuth);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
     if (isAuthenticated) {

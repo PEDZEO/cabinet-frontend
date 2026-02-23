@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/auth';
 import { useTelegramSDK, setCachedFullscreenEnabled } from '@/hooks/useTelegramSDK';
@@ -14,8 +14,8 @@ const FALLBACK_NAME = import.meta.env.VITE_APP_NAME || 'Cabinet';
 const FALLBACK_LOGO = import.meta.env.VITE_APP_LOGO || 'V';
 
 export function useBranding() {
-  const { isAuthenticated } = useAuthStore();
-  const { isFullscreen, isTelegramWebApp, requestFullscreen, isMobile } = useTelegramSDK();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const { isTelegramWebApp, requestFullscreen, isMobile } = useTelegramSDK();
 
   // Branding data
   const { data: branding } = useQuery({
@@ -62,13 +62,16 @@ export function useBranding() {
     staleTime: 60000,
   });
 
+  const fullscreenRequestedRef = useRef(false);
+
   useEffect(() => {
     if (!fullscreenSetting || !isTelegramWebApp) return;
     setCachedFullscreenEnabled(fullscreenSetting.enabled);
-    if (fullscreenSetting.enabled && !isFullscreen && isMobile) {
+    if (fullscreenSetting.enabled && isMobile && !fullscreenRequestedRef.current) {
+      fullscreenRequestedRef.current = true;
       requestFullscreen();
     }
-  }, [fullscreenSetting, isTelegramWebApp, isFullscreen, requestFullscreen, isMobile]);
+  }, [fullscreenSetting, isTelegramWebApp, requestFullscreen, isMobile]);
 
   return {
     appName,

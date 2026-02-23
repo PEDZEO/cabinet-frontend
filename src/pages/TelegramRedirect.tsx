@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../store/auth';
+import { useShallow } from 'zustand/shallow';
 import { brandingApi } from '../api/branding';
 import { isInTelegramWebApp, getTelegramInitData } from '../hooks/useTelegramSDK';
 
@@ -33,7 +34,17 @@ export default function TelegramRedirect() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { loginWithTelegram, isAuthenticated, isLoading: authLoading } = useAuthStore();
+  const {
+    loginWithTelegram,
+    isAuthenticated,
+    isLoading: authLoading,
+  } = useAuthStore(
+    useShallow((state) => ({
+      loginWithTelegram: state.loginWithTelegram,
+      isAuthenticated: state.isAuthenticated,
+      isLoading: state.isLoading,
+    })),
+  );
   const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'not-telegram'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
   const [retryCount, setRetryCount] = useState(() => {

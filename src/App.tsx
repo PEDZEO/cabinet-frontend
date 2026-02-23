@@ -90,7 +90,8 @@ const AdminPinnedMessageCreate = lazy(() => import('./pages/AdminPinnedMessageCr
 const AdminEmailTemplatePreview = lazy(() => import('./pages/AdminEmailTemplatePreview'));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuthStore();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isLoading = useAuthStore((state) => state.isLoading);
   const location = useLocation();
 
   if (isLoading) {
@@ -107,7 +108,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading, isAdmin } = useAuthStore();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const isAdmin = useAuthStore((state) => state.isAdmin);
   const location = useLocation();
 
   if (isLoading) {
@@ -133,7 +136,7 @@ function LazyPage({ children }: { children: React.ReactNode }) {
 }
 
 function BlockingOverlay() {
-  const { blockingType } = useBlockingStore();
+  const blockingType = useBlockingStore((state) => state.blockingType);
 
   if (blockingType === 'maintenance') {
     return <MaintenanceScreen />;

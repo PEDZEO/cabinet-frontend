@@ -9,7 +9,8 @@ export type { WSMessage } from './WebSocketContext';
 const isDev = import.meta.env.DEV;
 
 export function WebSocketProvider({ children }: { children: React.ReactNode }) {
-  const { accessToken, isAuthenticated } = useAuthStore();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);

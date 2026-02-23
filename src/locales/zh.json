@@ -2401,6 +2401,7 @@
     "notVerified": "未验证",
     "verificationRequired": "请验证邮箱以使用邮箱登录。",
     "resendVerification": "重新发送验证邮件",
+    "resendIn": "{{seconds}} 秒后重新发送",
     "verificationResent": "验证邮件已重新发送！",
     "canLoginWithEmail": "现在您可以使用邮箱和密码登录。",
     "emailAlreadyRegistered": "此邮箱已绑定到其他账户。如果这是您的邮箱，请使用邮箱登录或联系客服。",

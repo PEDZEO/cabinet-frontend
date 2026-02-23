@@ -16,6 +16,8 @@ import { ToastProvider } from './components/Toast';
 import { TooltipProvider } from './components/primitives/Tooltip';
 import { isInTelegramWebApp } from './hooks/useTelegramSDK';
 
+const TWEMOJI_OPTIONS = { className: 'twemoji', folder: 'svg', ext: '.svg' } as const;
+
 /**
  * Manages Telegram BackButton visibility based on navigation location.
  * Shows back button on non-root routes, hides on root.
@@ -77,7 +79,7 @@ export function AppWithNavigator() {
             <TooltipProvider>
               <ToastProvider>
                 <WebSocketProvider>
-                  <Twemoji options={{ className: 'twemoji', folder: 'svg', ext: '.svg' }}>
+                  <Twemoji options={TWEMOJI_OPTIONS}>
                     <App />
                   </Twemoji>
                 </WebSocketProvider>

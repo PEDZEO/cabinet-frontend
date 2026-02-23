@@ -3,7 +3,7 @@ import { useBlockingStore } from '../../store/blocking';
 
 export default function MaintenanceScreen() {
   const { t } = useTranslation();
-  const { maintenanceInfo } = useBlockingStore();
+  const maintenanceInfo = useBlockingStore((state) => state.maintenanceInfo);
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-dark-950 p-6">

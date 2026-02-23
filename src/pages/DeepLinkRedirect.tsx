@@ -61,9 +61,24 @@ export default function DeepLinkRedirect() {
   const logoLetter = branding?.logo_letter || import.meta.env.VITE_APP_LOGO || 'V';
   const logoUrl = branding ? brandingApi.getLogoUrl(branding) : null;
 
+  // Parse raw query string to preserve '+' chars in base64 crypto links.
+  // URLSearchParams decodes '+' as space, breaking ss://, vless:// etc.
+  // decodeURIComponent does NOT treat '+' as space, so parsing raw pairs is correct.
+  const getRawParam = (key: string): string => {
+    const search = window.location.search.substring(1);
+    for (const pair of search.split('&')) {
+      const idx = pair.indexOf('=');
+      if (idx === -1) continue;
+      if (decodeURIComponent(pair.substring(0, idx)) === key) {
+        return decodeURIComponent(pair.substring(idx + 1));
+      }
+    }
+    return '';
+  };
+
   // Get parameters
-  const deepLink = searchParams.get('url') || searchParams.get('deeplink') || '';
-  const subscriptionUrl = searchParams.get('sub') || '';
+  const deepLink = getRawParam('url') || getRawParam('deeplink') || '';
+  const subscriptionUrl = getRawParam('sub') || '';
   const appParam = searchParams.get('app') || '';
 
   // Detect app from deep link

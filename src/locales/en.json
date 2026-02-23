@@ -2902,6 +2902,7 @@
     "notVerified": "Not verified",
     "verificationRequired": "Please verify your email to use email login.",
     "resendVerification": "Resend Verification Email",
+    "resendIn": "Resend in {{seconds}} sec.",
     "verificationResent": "Verification email resent!",
     "canLoginWithEmail": "You can now log in using your email and password.",
     "emailAlreadyRegistered": "This email is already linked to another account. If this is your email, log in with it or contact support.",

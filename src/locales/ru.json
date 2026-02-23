@@ -3454,6 +3454,7 @@
     "notVerified": "Не подтверждён",
     "verificationRequired": "Подтвердите email для использования входа по почте.",
     "resendVerification": "Отправить письмо повторно",
+    "resendIn": "Повторить через {{seconds}} сек.",
     "verificationResent": "Письмо отправлено повторно!",
     "canLoginWithEmail": "Теперь вы можете входить с помощью email и пароля.",
     "emailAlreadyRegistered": "Этот email уже привязан к другому аккаунту. Если это ваш email, войдите через него или обратитесь в поддержку.",

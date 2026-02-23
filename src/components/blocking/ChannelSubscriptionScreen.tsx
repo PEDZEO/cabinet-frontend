@@ -7,7 +7,8 @@ const CHECK_COOLDOWN_SECONDS = 5;
 
 export default function ChannelSubscriptionScreen() {
   const { t } = useTranslation();
-  const { channelInfo, clearBlocking } = useBlockingStore();
+  const channelInfo = useBlockingStore((state) => state.channelInfo);
+  const clearBlocking = useBlockingStore((state) => state.clearBlocking);
   const [isChecking, setIsChecking] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const [error, setError] = useState<string | null>(null);

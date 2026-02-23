@@ -40,7 +40,7 @@ const WalletIcon = ({ className = 'h-8 w-8' }: { className?: string }) => (
 
 export default function Balance() {
   const { t } = useTranslation();
-  const { refreshUser } = useAuthStore();
+  const refreshUser = useAuthStore((state) => state.refreshUser);
   const queryClient = useQueryClient();
   const { formatAmount, currencySymbol } = useCurrency();
   const [searchParams] = useSearchParams();

@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { initDataUser } from '@telegram-apps/sdk-react';
 
 import { useAuthStore } from '@/store/auth';
+import { useShallow } from 'zustand/shallow';
 import { useTheme } from '@/hooks/useTheme';
 import { usePlatform } from '@/platform';
 import {
@@ -77,7 +78,9 @@ export function AppHeader({
 }: AppHeaderProps) {
   const { t } = useTranslation();
   const location = useLocation();
-  const { user, logout, isAdmin } = useAuthStore();
+  const { user, logout, isAdmin } = useAuthStore(
+    useShallow((state) => ({ user: state.user, logout: state.logout, isAdmin: state.isAdmin })),
+  );
   const { toggleTheme, isDark } = useTheme();
   const { haptic, platform } = usePlatform();
   const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null);

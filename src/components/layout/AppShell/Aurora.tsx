@@ -132,12 +132,13 @@ let _webglAvailable: boolean | null = null;
 function isWebglAvailable(): boolean {
   if (_webglAvailable === null) {
     try {
-      const renderer = new Renderer({
-        alpha: true,
-        antialias: false,
-        powerPreference: 'low-power',
-      });
-      _webglAvailable = !!renderer.gl;
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+      _webglAvailable = !!gl;
+      if (gl) {
+        const loseCtx = gl.getExtension('WEBGL_lose_context');
+        if (loseCtx) loseCtx.loseContext();
+      }
     } catch {
       _webglAvailable = false;
     }
@@ -258,15 +259,16 @@ function AuroraImpl() {
     resize();
 
     let lastTime = 0;
-    const targetFPS = 20;
+    const targetFPS = 10;
     const frameInterval = 1000 / targetFPS;
     const speed = 0.3;
 
     function animate(currentTime: number) {
-      animationFrameRef.current = requestAnimationFrame(animate);
-
       const delta = currentTime - lastTime;
-      if (delta < frameInterval) return;
+      if (delta < frameInterval) {
+        animationFrameRef.current = requestAnimationFrame(animate);
+        return;
+      }
 
       lastTime = currentTime - (delta % frameInterval);
 
@@ -274,15 +276,45 @@ function AuroraImpl() {
         programRef.current.uniforms.uTime.value += speed * 0.01;
         rendererRef.current.render({ scene: mesh });
       }
+
+      animationFrameRef.current = requestAnimationFrame(animate);
     }
+
+    function handleVisibilityChange() {
+      if (document.hidden) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = 0;
+      } else {
+        lastTime = 0;
+        animationFrameRef.current = requestAnimationFrame(animate);
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     animationFrameRef.current = requestAnimationFrame(animate);
 
     return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('resize', resize);
       cancelAnimationFrame(animationFrameRef.current);
-      if (rendererRef.current && container.contains(rendererRef.current.gl.canvas)) {
-        container.removeChild(rendererRef.current.gl.canvas);
+
+      if (rendererRef.current) {
+        const glCtx = rendererRef.current.gl;
+
+        // Delete GPU resources
+        if (programRef.current) {
+          glCtx.deleteProgram(programRef.current.program);
+        }
+
+        // Force-release the WebGL context
+        const loseCtx = glCtx.getExtension('WEBGL_lose_context');
+        if (loseCtx) loseCtx.loseContext();
+
+        if (container.contains(glCtx.canvas)) {
+          container.removeChild(glCtx.canvas);
+        }
       }
+
       rendererRef.current = null;
       programRef.current = null;
     };
