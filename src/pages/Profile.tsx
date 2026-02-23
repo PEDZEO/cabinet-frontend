@@ -90,6 +90,7 @@ export default function Profile() {
   const [changeCode, setChangeCode] = useState('');
   const [changeError, setChangeError] = useState<string | null>(null);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [verificationResendCooldown, setVerificationResendCooldown] = useState(0);
   const newEmailInputRef = useRef<HTMLInputElement>(null);
   const codeInputRef = useRef<HTMLInputElement>(null);
 
@@ -189,6 +190,7 @@ export default function Profile() {
     onSuccess: () => {
       setSuccess(t('profile.verificationResent'));
       setError(null);
+      setVerificationResendCooldown(UI.RESEND_COOLDOWN_SEC);
     },
     onError: (err: { response?: { data?: { detail?: string } } }) => {
       setError(err.response?.data?.detail || t('common.error'));
@@ -246,7 +248,7 @@ export default function Profile() {
     },
   });
 
-  // Resend cooldown timer
+  // Resend cooldown timers
   useEffect(() => {
     if (resendCooldown <= 0) return;
     const timer = setInterval(() => {
@@ -254,6 +256,14 @@ export default function Profile() {
     }, 1000);
     return () => clearInterval(timer);
   }, [resendCooldown]);
+
+  useEffect(() => {
+    if (verificationResendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setVerificationResendCooldown((prev) => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [verificationResendCooldown]);
 
   // Auto-focus inputs on step change
   useEffect(() => {
@@ -485,34 +495,34 @@ export default function Profile() {
                       <Button
                         onClick={() => resendVerificationMutation.mutate()}
                         loading={resendVerificationMutation.isPending}
+                        disabled={verificationResendCooldown > 0}
                       >
-                        {t('profile.resendVerification')}
+                        {verificationResendCooldown > 0
+                          ? t('profile.resendIn', { seconds: verificationResendCooldown })
+                          : t('profile.resendVerification')}
                       </Button>
-                      {(user.auth_type === 'telegram' || user.auth_type === 'email') && (
-                        <button
-                          onClick={() => setChangeEmailStep('email')}
-                          className="text-sm text-accent-400 transition-colors hover:text-accent-300"
-                        >
-                          {t('profile.changeEmail.button')}
-                        </button>
-                      )}
+                      <button
+                        onClick={() => setChangeEmailStep('email')}
+                        className="text-sm text-accent-400 transition-colors hover:text-accent-300"
+                      >
+                        {t('profile.changeEmail.button')}
+                      </button>
                     </div>
                   </div>
                 )}
 
-                {user.email_verified &&
-                  (user.auth_type === 'telegram' || user.auth_type === 'email') && (
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm text-dark-400">{t('profile.canLoginWithEmail')}</p>
-                      <button
-                        onClick={() => setChangeEmailStep('email')}
-                        className="flex items-center gap-2 text-sm text-accent-400 transition-colors hover:text-accent-300"
-                      >
-                        <PencilIcon />
-                        <span>{t('profile.changeEmail.button')}</span>
-                      </button>
-                    </div>
-                  )}
+                {user.email_verified && (
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-dark-400">{t('profile.canLoginWithEmail')}</p>
+                    <button
+                      onClick={() => setChangeEmailStep('email')}
+                      className="flex items-center gap-2 text-sm text-accent-400 transition-colors hover:text-accent-300"
+                    >
+                      <PencilIcon />
+                      <span>{t('profile.changeEmail.button')}</span>
+                    </button>
+                  </div>
+                )}
 
                 {/* Inline email change flow */}
                 <AnimatePresence>
