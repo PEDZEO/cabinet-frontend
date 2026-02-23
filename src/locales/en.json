@@ -884,7 +884,8 @@
       "mainMenuButtons": "Main Menu Buttons",
       "accountLinking": "Account Merges",
       "partners": "Partners",
-      "withdrawals": "Withdrawals"
+      "withdrawals": "Withdrawals",
+      "channelSubscriptions": "Required Channels"
     },
     "panel": {
       "title": "Admin Panel",
@@ -913,7 +914,8 @@
       "mainMenuButtonsDesc": "Configure custom main menu buttons",
       "accountLinkingDesc": "Manual moderation for disputed account merges",
       "partnersDesc": "Manage partner applications and commissions",
-      "withdrawalsDesc": "Review and process withdrawal requests"
+      "withdrawalsDesc": "Review and process withdrawal requests",
+      "channelSubscriptionsDesc": "Manage required channel subscriptions"
     },
     "accountLinking": {
       "title": "Manual Account Merge Requests",
@@ -1428,6 +1430,28 @@
         "enterUserId": "Enter user ID to load click sequence",
         "selectedButton": "Selected button",
         "noData": "No data for selected period"
+      }
+    },
+    "channelSubscriptions": {
+      "title": "Required Channels",
+      "subtitle": "Users must subscribe to these channels",
+      "addChannel": "Add Channel",
+      "empty": "No channels configured",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "enable": "Enable",
+      "disable": "Disable",
+      "delete": "Delete",
+      "deleteConfirm": "Delete this channel?",
+      "sortOrder": "Order",
+      "form": {
+        "title": "Display Name",
+        "channelId": "Channel ID",
+        "channelIdHint": "@username or -100XXXXXXXXXX",
+        "channelLink": "Channel Link",
+        "channelLinkHint": "https://t.me/channel",
+        "submit": "Add",
+        "cancel": "Cancel"
       }
     },
     "settings": {
@@ -3325,7 +3349,9 @@
       "waitSeconds": "Wait {{seconds}} sec.",
       "hint": "Click check button after subscribing",
       "notSubscribed": "You haven't subscribed to the channel yet",
-      "checkError": "Check failed. Please try again later."
+      "checkError": "Check failed. Please try again later.",
+      "subscribed": "Subscribed",
+      "channelsRequired": "Subscribe to all channels below to continue"
     },
     "blacklisted": {
       "title": "Access Denied",

@@ -906,7 +906,8 @@
       "mainMenuButtons": "Кнопки меню",
       "accountLinking": "Merge аккаунтов",
       "partners": "Партнёры",
-      "withdrawals": "Выводы"
+      "withdrawals": "Выводы",
+      "channelSubscriptions": "Обязательные каналы"
     },
     "panel": {
       "title": "Панель администратора",
@@ -935,7 +936,8 @@
       "mainMenuButtonsDesc": "Настройка дополнительных кнопок главного меню",
       "accountLinkingDesc": "Ручная модерация спорных объединений аккаунтов",
       "partnersDesc": "Управление заявками партнёров и комиссиями",
-      "withdrawalsDesc": "Проверка и обработка заявок на вывод"
+      "withdrawalsDesc": "Проверка и обработка заявок на вывод",
+      "channelSubscriptionsDesc": "Управление обязательными подписками на каналы"
     },
     "accountLinking": {
       "title": "Ручные заявки на объединение аккаунтов",
@@ -1454,6 +1456,28 @@
         "enterUserId": "Введите ID пользователя для просмотра последовательности",
         "selectedButton": "Выбранная кнопка",
         "noData": "Нет данных за выбранный период"
+      }
+    },
+    "channelSubscriptions": {
+      "title": "Обязательные каналы",
+      "subtitle": "Пользователи должны подписаться на эти каналы",
+      "addChannel": "Добавить канал",
+      "empty": "Каналы не настроены",
+      "enabled": "Активен",
+      "disabled": "Отключён",
+      "enable": "Включить",
+      "disable": "Отключить",
+      "delete": "Удалить",
+      "deleteConfirm": "Удалить этот канал?",
+      "sortOrder": "Порядок",
+      "form": {
+        "title": "Название",
+        "channelId": "ID канала",
+        "channelIdHint": "@username или -100XXXXXXXXXX",
+        "channelLink": "Ссылка на канал",
+        "channelLinkHint": "https://t.me/channel",
+        "submit": "Добавить",
+        "cancel": "Отмена"
       }
     },
     "settings": {
@@ -3880,7 +3904,9 @@
       "waitSeconds": "Подождите {{seconds}} сек.",
       "hint": "После подписки нажмите кнопку проверки",
       "notSubscribed": "Вы ещё не подписались на канал",
-      "checkError": "Ошибка проверки. Попробуйте позже."
+      "checkError": "Ошибка проверки. Попробуйте позже.",
+      "subscribed": "Подписан",
+      "channelsRequired": "Подпишитесь на все каналы ниже для продолжения"
     },
     "blacklisted": {
       "title": "Доступ запрещён",
