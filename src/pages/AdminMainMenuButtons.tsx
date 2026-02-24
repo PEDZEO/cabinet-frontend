@@ -35,6 +35,7 @@ import {
   getLangCode,
   getSelectedRowAfterCollapse,
   MAX_ROW_SLOTS,
+  moveButtonToRowState,
   removeRowAtIndexIfPossible,
   reorderVisibleSubset,
 } from './adminMainMenuButtons/utils';
@@ -324,33 +325,30 @@ export default function AdminMainMenuButtons() {
       return;
     }
 
-    const buckets = buildBuckets(orderedIds, rowLengths);
-    const sourceRowIndex = findRowIndexById(buckets, buttonId);
-
-    if (sourceRowIndex === -1) {
+    const safeTarget = Math.min(Math.max(targetRowIndex, 0), rowLengths.length - 1);
+    const moveResult = moveButtonToRowState({
+      orderedIds,
+      rowLengths,
+      rowCapacities,
+      rowDefaultCapacities: data.rows.map((row) => row.max_per_row ?? MAX_ROW_SLOTS),
+      buttonId,
+      targetRowIndex,
+      targetEnabledCount: getEnabledCountForRow(safeTarget),
+      maxRowSlots: MAX_ROW_SLOTS,
+    });
+    if (moveResult.error === 'button_not_found') {
+      return;
+    }
+    if (moveResult.error === 'row_full') {
+      setError(`ROW ${moveResult.safeTarget + 1} уже заполнен`);
+      return;
+    }
+    if (!moveResult.nextOrderIds || !moveResult.nextRowLengths) {
       return;
     }
 
-    const safeTarget = Math.min(Math.max(targetRowIndex, 0), buckets.length - 1);
-    const targetMaxPerRow = Math.max(
-      rowCapacities[safeTarget] ?? data.rows[safeTarget]?.max_per_row ?? MAX_ROW_SLOTS,
-      1,
-    );
-    const targetCurrent = getEnabledCountForRow(safeTarget);
-    if (sourceRowIndex !== safeTarget && targetCurrent >= targetMaxPerRow) {
-      setError(`ROW ${safeTarget + 1} уже заполнен`);
-      return;
-    }
-
-    const sourcePos = buckets[sourceRowIndex].indexOf(buttonId);
-    if (sourcePos === -1) {
-      return;
-    }
-    buckets[sourceRowIndex].splice(sourcePos, 1);
-    buckets[safeTarget].push(buttonId);
-
-    setOrderIds(buckets.flat());
-    setRowLengths(buckets.map((row) => row.length));
+    setOrderIds(moveResult.nextOrderIds);
+    setRowLengths(moveResult.nextRowLengths);
   };
 
   const activateToRow = (buttonId: string, current: boolean, rowIndex: number) => {

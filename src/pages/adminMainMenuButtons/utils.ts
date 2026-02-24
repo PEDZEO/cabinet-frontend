@@ -200,6 +200,82 @@ export function getSelectedRowAfterCollapse(previous: number, removedRowIndex: n
   return previous;
 }
 
+export interface MoveButtonToRowOptions {
+  orderedIds: string[];
+  rowLengths: number[];
+  rowCapacities: number[];
+  rowDefaultCapacities: number[];
+  buttonId: string;
+  targetRowIndex: number;
+  targetEnabledCount: number;
+  maxRowSlots: number;
+}
+
+export interface MoveButtonToRowResult {
+  nextOrderIds: string[] | null;
+  nextRowLengths: number[] | null;
+  safeTarget: number;
+  error: 'button_not_found' | 'row_full' | null;
+}
+
+export function moveButtonToRowState(options: MoveButtonToRowOptions): MoveButtonToRowResult {
+  const {
+    orderedIds,
+    rowLengths,
+    rowCapacities,
+    rowDefaultCapacities,
+    buttonId,
+    targetRowIndex,
+    targetEnabledCount,
+    maxRowSlots,
+  } = options;
+
+  const buckets = buildBuckets(orderedIds, rowLengths);
+  const sourceRowIndex = findRowIndexById(buckets, buttonId);
+
+  if (sourceRowIndex === -1) {
+    return {
+      nextOrderIds: null,
+      nextRowLengths: null,
+      safeTarget: Math.max(targetRowIndex, 0),
+      error: 'button_not_found',
+    };
+  }
+
+  const safeTarget = Math.min(Math.max(targetRowIndex, 0), buckets.length - 1);
+  const targetMaxPerRow = Math.max(
+    rowCapacities[safeTarget] ?? rowDefaultCapacities[safeTarget] ?? maxRowSlots,
+    1,
+  );
+  if (sourceRowIndex !== safeTarget && targetEnabledCount >= targetMaxPerRow) {
+    return {
+      nextOrderIds: null,
+      nextRowLengths: null,
+      safeTarget,
+      error: 'row_full',
+    };
+  }
+
+  const sourcePos = buckets[sourceRowIndex].indexOf(buttonId);
+  if (sourcePos === -1) {
+    return {
+      nextOrderIds: null,
+      nextRowLengths: null,
+      safeTarget,
+      error: 'button_not_found',
+    };
+  }
+  buckets[sourceRowIndex].splice(sourcePos, 1);
+  buckets[safeTarget].push(buttonId);
+
+  return {
+    nextOrderIds: buckets.flat(),
+    nextRowLengths: buckets.map((row) => row.length),
+    safeTarget,
+    error: null,
+  };
+}
+
 export interface MenuButtonEditFormValues {
   text: string;
   action: string;
