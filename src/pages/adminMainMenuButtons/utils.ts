@@ -142,3 +142,30 @@ export function buildRowDefinitions(
 ): Array<Pick<MenuRowConfig, 'id' | 'conditions'>> {
   return rows.map((row) => ({ id: row.id, conditions: row.conditions }));
 }
+
+export function buildRowsUpdatePayload(
+  ids: string[],
+  rowDefs: Array<Pick<MenuRowConfig, 'id' | 'conditions'>>,
+  rowLengths: number[],
+  rowCapacities: number[],
+): MenuRowConfig[] {
+  const rows = rowDefs.map((row, index) => ({
+    id: row.id,
+    max_per_row: Math.max(rowCapacities[index] ?? 1, 1),
+    conditions: row.conditions,
+    buttons: [] as string[],
+  }));
+
+  let pointer = 0;
+  rows.forEach((row, index) => {
+    const count = rowLengths[index] ?? 0;
+    row.buttons = ids.slice(pointer, pointer + count);
+    pointer += count;
+  });
+
+  if (pointer < ids.length && rows.length > 0) {
+    rows[rows.length - 1].buttons = [...rows[rows.length - 1].buttons, ...ids.slice(pointer)];
+  }
+
+  return rows;
+}

@@ -26,6 +26,7 @@ import {
   buildInitialOrder,
   buildPreviewRows,
   buildRowDefinitions,
+  buildRowsUpdatePayload,
   findRowIndexById,
   getButtonText,
   getLangCode,
@@ -178,23 +179,7 @@ export default function AdminMainMenuButtons() {
         return;
       }
 
-      const rows = rowDefs.map((row, index) => ({
-        id: row.id,
-        max_per_row: Math.max(rowCapacities[index] ?? 1, 1),
-        conditions: row.conditions,
-        buttons: [] as string[],
-      }));
-
-      let pointer = 0;
-      rows.forEach((row, index) => {
-        const count = rowLengths[index] ?? 0;
-        row.buttons = ids.slice(pointer, pointer + count);
-        pointer += count;
-      });
-
-      if (pointer < ids.length && rows.length > 0) {
-        rows[rows.length - 1].buttons = [...rows[rows.length - 1].buttons, ...ids.slice(pointer)];
-      }
+      const rows = buildRowsUpdatePayload(ids, rowDefs, rowLengths, rowCapacities);
 
       await adminMenuLayoutApi.update({ rows });
     },
