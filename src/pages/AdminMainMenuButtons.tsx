@@ -28,6 +28,7 @@ import {
   buildButtonUpdatePayload,
   buildVisibilityOptions,
   buildInitialOrder,
+  DEFAULT_MENU_BUTTON_EDIT_FORM,
   getMainMenuButtonsTabClass,
   type MenuButtonEditFormValues,
   type MainMenuButtonsTab,
@@ -49,15 +50,6 @@ import {
 
 type FormState = MenuButtonEditFormValues;
 
-const DEFAULT_FORM: FormState = {
-  text: '',
-  action: '',
-  openMode: 'callback',
-  webappUrl: '',
-  visibility: 'all',
-  enabled: true,
-};
-
 export default function AdminMainMenuButtons() {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
@@ -66,7 +58,7 @@ export default function AdminMainMenuButtons() {
   const [orderIds, setOrderIds] = useState<string[]>([]);
   const [rowLengths, setRowLengths] = useState<number[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<FormState>(DEFAULT_FORM);
+  const [form, setForm] = useState<FormState>(DEFAULT_MENU_BUTTON_EDIT_FORM);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<MainMenuButtonsTab>('layout');
@@ -281,7 +273,7 @@ export default function AdminMainMenuButtons() {
     });
 
     setEditingId(null);
-    setForm(DEFAULT_FORM);
+    setForm(DEFAULT_MENU_BUTTON_EDIT_FORM);
   };
 
   const toggleEnabled = (buttonId: string, current: boolean) => {
@@ -696,7 +688,7 @@ export default function AdminMainMenuButtons() {
                     className="btn-secondary"
                     onClick={() => {
                       setEditingId(null);
-                      setForm(DEFAULT_FORM);
+                      setForm(DEFAULT_MENU_BUTTON_EDIT_FORM);
                     }}
                   >
                     {t('common.cancel')}

@@ -347,6 +347,15 @@ export interface MenuButtonEditFormValues {
 
 export type MainMenuButtonsTab = 'layout' | 'sections' | 'stats';
 
+export const DEFAULT_MENU_BUTTON_EDIT_FORM: MenuButtonEditFormValues = {
+  text: '',
+  action: '',
+  openMode: 'callback',
+  webappUrl: '',
+  visibility: 'all',
+  enabled: true,
+};
+
 export function buildEditFormState(
   buttonId: string,
   button: MenuButtonConfig,
