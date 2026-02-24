@@ -24,6 +24,13 @@ export function buildInitialOrder(layout: MenuLayoutResponse): string[] {
   return [...fromRows, ...missing];
 }
 
+export function hasOrderChanged(initialOrder: string[], orderedIds: string[]): boolean {
+  if (orderedIds.length !== initialOrder.length) {
+    return false;
+  }
+  return orderedIds.some((id, index) => initialOrder[index] !== id);
+}
+
 export function reorderVisibleSubset(
   source: string[],
   visibleIds: string[],

@@ -35,6 +35,7 @@ import {
   getButtonText,
   getLangCode,
   getSelectedRowAfterCollapse,
+  hasOrderChanged,
   hasRowsConfigChanged,
   MAX_ROW_SLOTS,
   moveButtonToRowState,
@@ -127,12 +128,10 @@ export default function AdminMainMenuButtons() {
       0,
     );
 
-  const hasOrderChanges = useMemo(() => {
-    if (orderedIds.length !== initialOrder.length) {
-      return false;
-    }
-    return orderedIds.some((id, index) => initialOrder[index] !== id);
-  }, [initialOrder, orderedIds]);
+  const hasOrderChanges = useMemo(
+    () => hasOrderChanged(initialOrder, orderedIds),
+    [initialOrder, orderedIds],
+  );
 
   const hasRowsConfigChanges = useMemo(() => {
     if (!data) {
