@@ -23,6 +23,8 @@ import {
   CopyIcon,
   DeviceListSection,
   getAvailableServersForPeriod,
+  createApplyPromoDiscount,
+  createPriceFormatter,
   getErrorMessage,
   getFlagEmoji,
   getInsufficientBalanceError,
@@ -38,7 +40,6 @@ import {
   useSubscriptionModals,
   useTariffMutations,
   useTrafficAndCountriesMutations,
-  type ApplyPromoDiscount,
   type PurchaseStep,
 } from '@/features/subscription';
 
@@ -69,36 +70,6 @@ function FullSubscription() {
   const navigate = useNavigate();
   const { formatAmount, currencySymbol } = useCurrency();
   const [copied, setCopied] = useState(false);
-
-  // Helper to format price from kopeks
-  const formatPrice = (kopeks: number) => `${formatAmount(kopeks / 100)} ${currencySymbol}`;
-
-  // Helper to apply promo discount to a price
-  const applyPromoDiscount: ApplyPromoDiscount = (
-    priceKopeks: number,
-    existingOriginalPrice: number | boolean | null = null,
-  ) => {
-    const hasPromo = !!activeDiscount?.is_active && !!activeDiscount?.discount_percent;
-    const normalizedOriginal =
-      typeof existingOriginalPrice === 'number' && existingOriginalPrice > priceKopeks
-        ? existingOriginalPrice
-        : null;
-
-    if (!hasPromo) {
-      return { price: priceKopeks, original: null, percent: null };
-    }
-
-    const discountedPrice = Math.round(priceKopeks * (1 - activeDiscount.discount_percent / 100));
-    const combinedPercent = normalizedOriginal
-      ? Math.round((1 - discountedPrice / normalizedOriginal) * 100)
-      : activeDiscount.discount_percent;
-
-    return {
-      price: discountedPrice,
-      original: normalizedOriginal ?? priceKopeks,
-      percent: combinedPercent,
-    };
-  };
 
   // Purchase state (classic mode)
   const [currentStep, setCurrentStep] = useState<PurchaseStep>('period');
@@ -167,6 +138,15 @@ function FullSubscription() {
     queryFn: promoApi.getActiveDiscount,
     staleTime: 30000,
   });
+
+  const formatPrice = useMemo(
+    () => createPriceFormatter(formatAmount, currencySymbol),
+    [formatAmount, currencySymbol],
+  );
+  const applyPromoDiscount = useMemo(
+    () => createApplyPromoDiscount(activeDiscount),
+    [activeDiscount],
+  );
 
   // Check if in tariffs mode (moved up to be available for useEffect)
   const isTariffsMode = purchaseOptions?.sales_mode === 'tariffs';
