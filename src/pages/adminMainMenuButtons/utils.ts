@@ -32,6 +32,13 @@ export function hasOrderChanged(initialOrder: string[], orderedIds: string[]): b
   return orderedIds.some((id, index) => initialOrder[index] !== id);
 }
 
+export function hasPendingLayoutChanges(
+  hasOrderChanges: boolean,
+  hasRowsConfigChanges: boolean,
+): boolean {
+  return hasOrderChanges || hasRowsConfigChanges;
+}
+
 export function countEnabledButtonsForRow(
   rowBuckets: string[][],
   buttonsById: Record<string, MenuButtonConfig>,

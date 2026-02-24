@@ -41,6 +41,7 @@ import {
   getLangCode,
   getSelectedRowAfterCollapse,
   hasOrderChanged,
+  hasPendingLayoutChanges,
   hasRowsConfigChanged,
   MAX_ROW_SLOTS,
   moveButtonToRowState,
@@ -134,7 +135,7 @@ export default function AdminMainMenuButtons() {
     return hasRowsConfigChanged(data.rows, rowDefs, rowLengths, rowCapacities);
   }, [data, rowCapacities, rowDefs, rowLengths]);
 
-  const hasPendingChanges = hasOrderChanges || hasRowsConfigChanges;
+  const hasPendingChanges = hasPendingLayoutChanges(hasOrderChanges, hasRowsConfigChanges);
 
   const visibilityOptions = useMemo(() => buildVisibilityOptions(t), [t]);
 
