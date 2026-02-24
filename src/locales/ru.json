@@ -331,7 +331,10 @@
     "extraDevicesIncluded_many": "Вкл. {{count}} доп. устр.",
     "baseTariff": "Тариф",
     "perMonth": "/мес",
-    "summary": "Итого",
+    "summary": {
+      "period": "Период: {{label}}",
+      "traffic": "Трафик: {{gb}} ГБ"
+    },
     "total": "К оплате",
     "purchase": "Купить",
     "step": "Шаг {{current}} из {{total}}",
@@ -364,14 +367,25 @@
       "unavailable": "Пробный период недоступен"
     },
     "pause": {
-      "paused": "Подписка на паузе",
-      "active": "Подписка активна",
-      "pausedDescription": "Деньги не списываются",
-      "activeDescription": "Ежедневное списание",
-      "resume": "Возобновить",
-      "pause": "Пауза",
-      "pausedMessage": "Подписка поставлена на паузу",
-      "resumedMessage": "Подписка возобновлена"
+      "title": "Пауза подписки",
+      "paused": "На паузе",
+      "active": "Активна",
+      "pauseBtn": "Приостановить",
+      "resumeBtn": "Возобновить",
+      "pausedMessage": "Подписка приостановлена",
+      "resumedMessage": "Подписка возобновлена",
+      "dailyOnly": "Пауза доступна только для суточных тарифов",
+      "insufficientBalance": "Недостаточно средств для возобновления подписки",
+      "pausedInfo": "Подписка приостановлена",
+      "pausedDescription": "Списания остановлены. Подписка будет действовать до",
+      "nextCharge": "До следующего списания",
+      "willBeCharged": "Будет списано",
+      "days_one": "{{count}} день",
+      "days_few": "{{count}} дня",
+      "days_many": "{{count}} дней",
+      "hours": "ч",
+      "minutes": "м",
+      "days": "дн."
     },
     "trialBanner": {
       "title": "Пробный период активен",
@@ -430,27 +444,6 @@
     "platform": "Платформа",
     "model": "Модель",
     "connectedAt": "Подключено",
-    "pause": {
-      "title": "Пауза подписки",
-      "paused": "На паузе",
-      "active": "Активна",
-      "pauseBtn": "Приостановить",
-      "resumeBtn": "Возобновить",
-      "pausedMessage": "Подписка приостановлена",
-      "resumedMessage": "Подписка возобновлена",
-      "dailyOnly": "Пауза доступна только для суточных тарифов",
-      "insufficientBalance": "Недостаточно средств для возобновления подписки",
-      "pausedInfo": "Подписка приостановлена",
-      "pausedDescription": "Списания остановлены. Подписка будет действовать до",
-      "nextCharge": "До следующего списания",
-      "willBeCharged": "Будет списано",
-      "days_one": "{{count}} день",
-      "days_few": "{{count}} дня",
-      "days_many": "{{count}} дней",
-      "hours": "ч",
-      "minutes": "м",
-      "days": "дн."
-    },
     "dailyPurchase": {
       "costPerDay": "Стоимость в день",
       "chargedDaily": "Оплата списывается ежедневно с баланса",
@@ -556,10 +549,6 @@
       "label": "Трафик",
       "selectVolume": "Выбрать объём трафика",
       "default": "По умолчанию: {{label}}"
-    },
-    "summary": {
-      "period": "Период: {{label}}",
-      "traffic": "Трафик: {{gb}} ГБ"
     }
   },
   "balance": {
@@ -569,7 +558,41 @@
     "topUpBalance": "Пополнение баланса",
     "enterAmount": "Введите сумму",
     "paymentMethod": "Способ оплаты",
-    "paymentMethods": "Способы оплаты",
+    "paymentMethods": {
+      "yookassa": {
+        "description": "Оплата через ЮKassa"
+      },
+      "cryptobot": {
+        "description": "Оплата криптовалютой через CryptoBot"
+      },
+      "telegram_stars": {
+        "description": "Оплата через Telegram Stars"
+      },
+      "heleket": {
+        "description": "Оплата криптовалютой через Heleket"
+      },
+      "mulenpay": {
+        "description": "Оплата через MulenPay"
+      },
+      "pal24": {
+        "description": "Оплата через PAL24"
+      },
+      "platega": {
+        "description": "Оплата через Platega"
+      },
+      "wata": {
+        "description": "Оплата через Wata"
+      },
+      "cloudpayments": {
+        "description": "Оплата банковской картой через CloudPayments"
+      },
+      "freekassa": {
+        "description": "Оплата через FreeKassa"
+      },
+      "tribute": {
+        "description": "Оплата банковской картой через Tribute"
+      }
+    },
     "transactionHistory": "История операций",
     "noTransactions": "Нет операций",
     "date": "Дата",
@@ -611,41 +634,6 @@
     "topUpToComplete": "Пополните баланс для завершения покупки",
     "missing": "Не хватает",
     "noPaymentMethods": "Способы оплаты недоступны",
-    "paymentMethods": {
-      "yookassa": {
-        "description": "Оплата через ЮKassa"
-      },
-      "cryptobot": {
-        "description": "Оплата криптовалютой через CryptoBot"
-      },
-      "telegram_stars": {
-        "description": "Оплата через Telegram Stars"
-      },
-      "heleket": {
-        "description": "Оплата криптовалютой через Heleket"
-      },
-      "mulenpay": {
-        "description": "Оплата через MulenPay"
-      },
-      "pal24": {
-        "description": "Оплата через PAL24"
-      },
-      "platega": {
-        "description": "Оплата через Platega"
-      },
-      "wata": {
-        "description": "Оплата через Wata"
-      },
-      "cloudpayments": {
-        "description": "Оплата банковской картой через CloudPayments"
-      },
-      "freekassa": {
-        "description": "Оплата через FreeKassa"
-      },
-      "tribute": {
-        "description": "Оплата банковской картой через Tribute"
-      }
-    },
     "pendingPayments": {
       "title": "Ожидающие платежи",
       "pay": "Оплатить",
@@ -972,7 +960,8 @@
         "debugStats": "Debug stats",
         "nodeStats": "Node stats",
         "tokenDebug": "Результат token debug",
-        "nodeStatsEmpty": "Статистика нод пока недоступна"
+        "nodeStatsEmpty": "Статистика нод пока недоступна",
+        "nodeStatsHint": "Показаны только реальные ноды (без alias inbound-тегов)."
       },
       "groups": {
         "title": "Редактор групп",
@@ -991,7 +980,8 @@
         "clearSelection": "Очистить выбор",
         "emptyExcludeHint": "Добавьте хотя бы одну группу, чтобы управлять исключениями",
         "previewTitle": "Предпросмотр конфига",
-        "previewHint": "Это payload для PUT /admin/groups."
+        "previewHint": "Это payload для PUT /admin/groups.",
+        "loadError": "Не удалось загрузить группы. Проверьте доступность /admin/groups."
       },
       "labels": {
         "status": "Статус",
@@ -1078,7 +1068,7 @@
       "total": "Всего",
       "noData": "Нет данных о трафике",
       "loading": "Загрузка данных о трафике...",
-      "noTariff": "\u2014",
+      "noTariff": "—",
       "search": "Поиск по имени или юзернейму",
       "allTariffs": "Все тарифы",
       "nodes": "Ноды",
@@ -2293,7 +2283,7 @@
       "name": "Название",
       "namePlaceholder": "Введите название тарифа",
       "description": "Описание",
-      "descriptionPlaceholder": "Введите описание тарифа",
+      "descriptionPlaceholder": "Краткое описание тарифа",
       "trafficLimit": "Лимит трафика",
       "trafficHint": "0 = безлимитный трафик",
       "deviceLimit": "Лимит устройств",
@@ -2361,7 +2351,6 @@
       "nameExampleDaily": "Например: Суточный",
       "nameHint": "От 2 до 50 символов",
       "descriptionLabel": "Описание",
-      "descriptionPlaceholder": "Краткое описание тарифа",
       "trafficLimitLabel": "Лимит трафика",
       "gbUnit": "ГБ",
       "trafficLimitHint": "0 = безлимитный трафик",

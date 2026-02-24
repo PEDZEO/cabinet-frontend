@@ -194,7 +194,12 @@ export default function AdminBalancer() {
     refetchInterval: 60_000,
   });
 
-  const { data: groupsData, refetch: refetchGroups } = useQuery({
+  const {
+    data: groupsData,
+    refetch: refetchGroups,
+    isLoading: groupsLoading,
+    isError: groupsError,
+  } = useQuery({
     queryKey: ['admin', 'balancer', 'groups'],
     queryFn: adminBalancerApi.getGroups,
     refetchInterval: 30_000,
@@ -309,9 +314,15 @@ export default function AdminBalancer() {
         ramLoad: prettyValue(statRecord.ramLoad),
         connected: prettyValue(statRecord.isConnected),
         disabled: prettyValue(statRecord.isDisabled),
+        isAlias: Boolean(statRecord.isAlias),
       };
     });
   }, [nodeStats]);
+
+  const visibleNodeRows = useMemo(() => {
+    const primaryRows = nodeRows.filter((row) => !row.isAlias);
+    return primaryRows.length > 0 ? primaryRows : nodeRows;
+  }, [nodeRows]);
 
   const addGroup = () => {
     setGroupsDirty(true);
@@ -668,7 +679,22 @@ export default function AdminBalancer() {
         </div>
 
         <div className="space-y-3">
-          {groupsDraft.length === 0 && (
+          {groupsError && (
+            <div className="rounded-lg border border-error-500/40 bg-error-500/10 p-3 text-sm text-error-200">
+              {t(
+                'admin.balancer.groups.loadError',
+                'Failed to load groups. Check /admin/groups availability.',
+              )}
+            </div>
+          )}
+
+          {groupsLoading && (
+            <div className="rounded-lg border border-dark-700 bg-dark-900/40 p-3 text-sm text-dark-400">
+              {t('common.loading', 'Loading...')}
+            </div>
+          )}
+
+          {!groupsLoading && groupsDraft.length === 0 && (
             <div className="rounded-lg border border-dark-700 bg-dark-900/40 p-3 text-sm text-dark-400">
               {t('admin.balancer.groups.empty', 'No groups configured.')}
             </div>
@@ -884,12 +910,18 @@ export default function AdminBalancer() {
 
         {nodesLoading ? (
           <p className="text-sm text-dark-400">{t('common.loading', 'Loading...')}</p>
-        ) : nodeRows.length === 0 ? (
+        ) : visibleNodeRows.length === 0 ? (
           <p className="text-sm text-dark-500">
             {t('admin.balancer.cards.nodeStatsEmpty', 'No node stats yet.')}
           </p>
         ) : (
           <div className="overflow-x-auto">
+            <p className="mb-2 text-xs text-dark-500">
+              {t(
+                'admin.balancer.cards.nodeStatsHint',
+                'Showing real nodes without inbound aliases.',
+              )}
+            </p>
             <table className="min-w-full text-left text-sm text-dark-200">
               <thead>
                 <tr className="border-b border-dark-700 text-xs uppercase text-dark-400">
@@ -903,7 +935,7 @@ export default function AdminBalancer() {
                 </tr>
               </thead>
               <tbody>
-                {nodeRows.map((row) => (
+                {visibleNodeRows.map((row) => (
                   <tr key={row.nodeName} className="border-b border-dark-800/70">
                     <td className="px-2 py-2 font-medium text-dark-100">{row.nodeName}</td>
                     <td className="px-2 py-2">{row.usersOnline}</td>

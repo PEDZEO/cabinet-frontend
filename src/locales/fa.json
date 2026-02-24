@@ -804,7 +804,8 @@
         "debugStats": "Debug stats",
         "nodeStats": "Node stats",
         "tokenDebug": "نتیجه Token debug",
-        "nodeStatsEmpty": "آمار نود هنوز موجود نیست"
+        "nodeStatsEmpty": "آمار نود هنوز موجود نیست",
+        "nodeStatsHint": "فقط نودهای واقعی نمایش داده می‌شوند (بدون alias های inbound)."
       },
       "groups": {
         "title": "ویرایشگر گروه‌ها",
@@ -823,7 +824,8 @@
         "clearSelection": "پاک کردن انتخاب",
         "emptyExcludeHint": "برای مدیریت استثناها حداقل یک گروه اضافه کنید",
         "previewTitle": "پیش‌نمایش config",
-        "previewHint": "این payload برای PUT /admin/groups است."
+        "previewHint": "این payload برای PUT /admin/groups است.",
+        "loadError": "بارگذاری گروه‌ها ناموفق بود. دسترسی /admin/groups را بررسی کنید."
       },
       "labels": {
         "status": "وضعیت",

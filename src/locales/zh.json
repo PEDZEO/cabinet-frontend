@@ -804,7 +804,8 @@
         "debugStats": "Debug stats",
         "nodeStats": "Node stats",
         "tokenDebug": "Token 调试结果",
-        "nodeStatsEmpty": "暂无节点统计数据"
+        "nodeStatsEmpty": "暂无节点统计数据",
+        "nodeStatsHint": "仅显示真实节点（已隐藏 inbound 别名）。"
       },
       "groups": {
         "title": "分组编辑器",
@@ -823,7 +824,8 @@
         "clearSelection": "清空选择",
         "emptyExcludeHint": "至少添加一个分组后才能设置排除项",
         "previewTitle": "配置预览",
-        "previewHint": "这是发送到 PUT /admin/groups 的 payload。"
+        "previewHint": "这是发送到 PUT /admin/groups 的 payload。",
+        "loadError": "加载分组失败，请检查 /admin/groups 可用性。"
       },
       "labels": {
         "status": "状态",

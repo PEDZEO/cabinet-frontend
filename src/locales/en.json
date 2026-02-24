@@ -310,7 +310,10 @@
     "extraDevicesIncluded_other": "Incl. {{count}} extra dev.",
     "baseTariff": "Tariff",
     "perMonth": "/mo",
-    "summary": "Summary",
+    "summary": {
+      "period": "Period: {{label}}",
+      "traffic": "Traffic: {{gb}} GB"
+    },
     "total": "Total",
     "purchase": "Purchase",
     "step": "Step {{current}} of {{total}}",
@@ -341,14 +344,25 @@
       "unavailable": "Trial is not available"
     },
     "pause": {
-      "paused": "Subscription paused",
-      "active": "Subscription active",
-      "pausedDescription": "No charges while paused",
-      "activeDescription": "Daily billing",
-      "resume": "Resume",
-      "pause": "Pause",
+      "title": "Subscription Pause",
+      "paused": "Paused",
+      "active": "Active",
+      "pauseBtn": "Pause",
+      "resumeBtn": "Resume",
       "pausedMessage": "Subscription paused",
-      "resumedMessage": "Subscription resumed"
+      "resumedMessage": "Subscription resumed",
+      "dailyOnly": "Pause is only available for daily tariffs",
+      "insufficientBalance": "Insufficient balance to resume subscription",
+      "pausedInfo": "Subscription paused",
+      "pausedDescription": "Charges stopped. Subscription will be active until",
+      "nextCharge": "Until next charge",
+      "willBeCharged": "Will be charged",
+      "days_one": "{{count}} day",
+      "days_few": "{{count}} days",
+      "days_many": "{{count}} days",
+      "days": "d.",
+      "hours": "h",
+      "minutes": "m"
     },
     "trialBanner": {
       "title": "Trial period active",
@@ -407,27 +421,6 @@
     "platform": "Platform",
     "model": "Model",
     "connectedAt": "Connected",
-    "pause": {
-      "title": "Subscription Pause",
-      "paused": "Paused",
-      "active": "Active",
-      "pauseBtn": "Pause",
-      "resumeBtn": "Resume",
-      "pausedMessage": "Subscription paused",
-      "resumedMessage": "Subscription resumed",
-      "dailyOnly": "Pause is only available for daily tariffs",
-      "insufficientBalance": "Insufficient balance to resume subscription",
-      "pausedInfo": "Subscription paused",
-      "pausedDescription": "Charges stopped. Subscription will be active until",
-      "nextCharge": "Until next charge",
-      "willBeCharged": "Will be charged",
-      "days_one": "{{count}} day",
-      "days_few": "{{count}} days",
-      "days_many": "{{count}} days",
-      "days": "d.",
-      "hours": "h",
-      "minutes": "m"
-    },
     "dailyPurchase": {
       "costPerDay": "Cost per day",
       "chargedDaily": "Payment is charged daily from balance",
@@ -528,10 +521,6 @@
       "label": "Traffic",
       "selectVolume": "Select traffic volume",
       "default": "Default: {{label}}"
-    },
-    "summary": {
-      "period": "Period: {{label}}",
-      "traffic": "Traffic: {{gb}} GB"
     }
   },
   "balance": {
@@ -541,7 +530,41 @@
     "topUpBalance": "Top Up Balance",
     "enterAmount": "Enter amount",
     "paymentMethod": "Payment Method",
-    "paymentMethods": "Payment Methods",
+    "paymentMethods": {
+      "yookassa": {
+        "description": "Pay via YooKassa"
+      },
+      "cryptobot": {
+        "description": "Pay with cryptocurrency via CryptoBot"
+      },
+      "telegram_stars": {
+        "description": "Pay with Telegram Stars"
+      },
+      "heleket": {
+        "description": "Pay with cryptocurrency via Heleket"
+      },
+      "mulenpay": {
+        "description": "Pay via MulenPay"
+      },
+      "pal24": {
+        "description": "Pay via PAL24"
+      },
+      "platega": {
+        "description": "Pay via Platega"
+      },
+      "wata": {
+        "description": "Pay via Wata"
+      },
+      "cloudpayments": {
+        "description": "Pay with bank card via CloudPayments"
+      },
+      "freekassa": {
+        "description": "Pay via FreeKassa"
+      },
+      "tribute": {
+        "description": "Pay with bank card via Tribute"
+      }
+    },
     "transactionHistory": "Transaction History",
     "noTransactions": "No transactions",
     "date": "Date",
@@ -583,41 +606,6 @@
     "topUpToComplete": "Top up your balance to complete the purchase",
     "missing": "Missing",
     "noPaymentMethods": "No payment methods available",
-    "paymentMethods": {
-      "yookassa": {
-        "description": "Pay via YooKassa"
-      },
-      "cryptobot": {
-        "description": "Pay with cryptocurrency via CryptoBot"
-      },
-      "telegram_stars": {
-        "description": "Pay with Telegram Stars"
-      },
-      "heleket": {
-        "description": "Pay with cryptocurrency via Heleket"
-      },
-      "mulenpay": {
-        "description": "Pay via MulenPay"
-      },
-      "pal24": {
-        "description": "Pay via PAL24"
-      },
-      "platega": {
-        "description": "Pay via Platega"
-      },
-      "wata": {
-        "description": "Pay via Wata"
-      },
-      "cloudpayments": {
-        "description": "Pay with bank card via CloudPayments"
-      },
-      "freekassa": {
-        "description": "Pay via FreeKassa"
-      },
-      "tribute": {
-        "description": "Pay with bank card via Tribute"
-      }
-    },
     "pendingPayments": {
       "title": "Pending Payments",
       "pay": "Pay",
@@ -950,7 +938,8 @@
         "debugStats": "Debug stats",
         "nodeStats": "Node stats",
         "tokenDebug": "Token debug result",
-        "nodeStatsEmpty": "No node stats yet."
+        "nodeStatsEmpty": "No node stats yet.",
+        "nodeStatsHint": "Showing real nodes without inbound aliases."
       },
       "groups": {
         "title": "Groups editor",
@@ -969,7 +958,8 @@
         "clearSelection": "Clear selection",
         "emptyExcludeHint": "Add at least one group to manage exclusions.",
         "previewTitle": "Config preview",
-        "previewHint": "This is the payload for PUT /admin/groups."
+        "previewHint": "This is the payload for PUT /admin/groups.",
+        "loadError": "Failed to load groups. Check /admin/groups availability."
       },
       "labels": {
         "status": "Status",
@@ -1056,7 +1046,7 @@
       "total": "Total",
       "noData": "No traffic data",
       "loading": "Loading traffic data...",
-      "noTariff": "\u2014",
+      "noTariff": "—",
       "search": "Search by name or username",
       "allTariffs": "All tariffs",
       "nodes": "Nodes",
@@ -1852,7 +1842,7 @@
       "periodsTabHint": "Add periods and prices for the tariff. Users will be able to choose from the added periods.",
       "addPeriodTitle": "Add period",
       "daysLabel": "Days",
-      "priceLabel": "Price (\u20bd)",
+      "priceLabel": "Price (₽)",
       "addButton": "Add",
       "noPeriodsHint": "No added periods. Add at least one period.",
       "daysShort": "d.",
@@ -1902,7 +1892,7 @@
       "dailyType": "Daily",
       "periodType": "Period-based",
       "dailyPriceLabel": "Price per day",
-      "currencyPerDay": "\u20bd/day",
+      "currencyPerDay": "₽/day",
       "dailyDeductionDesc": "Charged daily from user's balance",
       "dailyPriceRequired": "Enter a price per day greater than 0",
       "cannotSave": "Cannot save tariff:",
