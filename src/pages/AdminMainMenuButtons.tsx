@@ -35,6 +35,7 @@ import {
   getButtonText,
   getLangCode,
   getSelectedRowAfterCollapse,
+  hasRowsConfigChanged,
   MAX_ROW_SLOTS,
   moveButtonToRowState,
   removeRowAtIndexIfPossible,
@@ -137,23 +138,7 @@ export default function AdminMainMenuButtons() {
     if (!data) {
       return false;
     }
-    if (rowDefs.length !== data.rows.length || rowLengths.length !== data.rows.length) {
-      return true;
-    }
-    for (let index = 0; index < data.rows.length; index += 1) {
-      const sourceRow = data.rows[index];
-      const sourceCapacity = Math.max(sourceRow.max_per_row || 1, 1);
-      if (rowDefs[index]?.id !== sourceRow.id) {
-        return true;
-      }
-      if ((rowLengths[index] ?? 0) !== sourceRow.buttons.length) {
-        return true;
-      }
-      if (Math.max(rowCapacities[index] ?? sourceCapacity, 1) !== sourceCapacity) {
-        return true;
-      }
-    }
-    return false;
+    return hasRowsConfigChanged(data.rows, rowDefs, rowLengths, rowCapacities);
   }, [data, rowCapacities, rowDefs, rowLengths]);
 
   const hasPendingChanges = hasOrderChanges || hasRowsConfigChanges;

@@ -145,6 +145,31 @@ export function buildRowDefinitions(
   return rows.map((row) => ({ id: row.id, conditions: row.conditions }));
 }
 
+export function hasRowsConfigChanged(
+  rows: MenuRowConfig[],
+  rowDefs: Array<Pick<MenuRowConfig, 'id' | 'conditions'>>,
+  rowLengths: number[],
+  rowCapacities: number[],
+): boolean {
+  if (rowDefs.length !== rows.length || rowLengths.length !== rows.length) {
+    return true;
+  }
+  for (let index = 0; index < rows.length; index += 1) {
+    const sourceRow = rows[index];
+    const sourceCapacity = Math.max(sourceRow.max_per_row || 1, 1);
+    if (rowDefs[index]?.id !== sourceRow.id) {
+      return true;
+    }
+    if ((rowLengths[index] ?? 0) !== sourceRow.buttons.length) {
+      return true;
+    }
+    if (Math.max(rowCapacities[index] ?? sourceCapacity, 1) !== sourceCapacity) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export function buildRowsUpdatePayload(
   ids: string[],
   rowDefs: Array<Pick<MenuRowConfig, 'id' | 'conditions'>>,
