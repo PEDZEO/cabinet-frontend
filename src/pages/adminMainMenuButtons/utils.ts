@@ -445,6 +445,17 @@ export function buildButtonUpdatePayload(
   };
 }
 
+export function updateMenuButtonEditFormField<K extends keyof MenuButtonEditFormValues>(
+  previous: MenuButtonEditFormValues,
+  field: K,
+  value: MenuButtonEditFormValues[K],
+): MenuButtonEditFormValues {
+  return {
+    ...previous,
+    [field]: value,
+  };
+}
+
 export function buildVisibilityOptions(
   t: TFunction,
 ): Array<{ value: MenuButtonVisibility; label: string }> {

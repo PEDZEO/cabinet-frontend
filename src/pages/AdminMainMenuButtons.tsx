@@ -52,6 +52,7 @@ import {
   resetMenuButtonEditState,
   reorderVisibleSubset,
   splitOrderedButtonsByEnabled,
+  updateMenuButtonEditFormField,
   validateMenuButtonEditForm,
 } from './adminMainMenuButtons/utils';
 
@@ -273,6 +274,10 @@ export default function AdminMainMenuButtons() {
     const resetState = resetMenuButtonEditState();
     setEditingId(resetState.editingId);
     setForm(resetState.form);
+  };
+
+  const updateFormField = <K extends keyof FormState>(field: K, value: FormState[K]) => {
+    setForm((previous) => updateMenuButtonEditFormField(previous, field, value));
   };
 
   const toggleEnabled = (buttonId: string, current: boolean) => {
@@ -575,7 +580,7 @@ export default function AdminMainMenuButtons() {
                     </span>
                     <input
                       value={form.text}
-                      onChange={(e) => setForm((prev) => ({ ...prev, text: e.target.value }))}
+                      onChange={(e) => updateFormField('text', e.target.value)}
                       className="input"
                       maxLength={64}
                     />
@@ -587,7 +592,7 @@ export default function AdminMainMenuButtons() {
                     </span>
                     <input
                       value={form.action}
-                      onChange={(e) => setForm((prev) => ({ ...prev, action: e.target.value }))}
+                      onChange={(e) => updateFormField('action', e.target.value)}
                       className="input"
                       maxLength={1024}
                     />
@@ -598,10 +603,7 @@ export default function AdminMainMenuButtons() {
                     <select
                       value={form.openMode}
                       onChange={(e) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          openMode: e.target.value as 'callback' | 'direct',
-                        }))
+                        updateFormField('openMode', e.target.value as 'callback' | 'direct')
                       }
                       className="input"
                     >
@@ -614,7 +616,7 @@ export default function AdminMainMenuButtons() {
                     <span className="text-xs text-dark-400">WebApp URL (для direct)</span>
                     <input
                       value={form.webappUrl}
-                      onChange={(e) => setForm((prev) => ({ ...prev, webappUrl: e.target.value }))}
+                      onChange={(e) => updateFormField('webappUrl', e.target.value)}
                       className="input"
                       placeholder="https://..."
                       maxLength={1024}
@@ -629,10 +631,7 @@ export default function AdminMainMenuButtons() {
                     <select
                       value={form.visibility}
                       onChange={(e) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          visibility: e.target.value as MenuButtonVisibility,
-                        }))
+                        updateFormField('visibility', e.target.value as MenuButtonVisibility)
                       }
                       className="input"
                     >
@@ -649,7 +648,7 @@ export default function AdminMainMenuButtons() {
                   type="button"
                   role="switch"
                   aria-checked={form.enabled}
-                  onClick={() => setForm((prev) => ({ ...prev, enabled: !prev.enabled }))}
+                  onClick={() => updateFormField('enabled', !form.enabled)}
                   className={`inline-flex w-fit items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition ${
                     form.enabled
                       ? 'border-success-500/50 bg-success-500/10 text-success-300'
