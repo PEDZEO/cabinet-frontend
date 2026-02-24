@@ -16,12 +16,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { useTranslation } from 'react-i18next';
-import {
-  adminMenuLayoutApi,
-  MenuButtonConfig,
-  MenuButtonVisibility,
-  MenuRowConfig,
-} from '../api/adminMenuLayout';
+import { adminMenuLayoutApi, MenuButtonVisibility, MenuRowConfig } from '../api/adminMenuLayout';
 import { AdminBackButton } from '../components/admin';
 import { ButtonsTab } from '../components/admin/ButtonsTab';
 import { MainMenuButtonsStatsTab } from '../components/admin/MainMenuButtonsStatsTab';
@@ -29,6 +24,7 @@ import { GripIcon, SortablePreviewButton } from './adminMainMenuButtons/Sortable
 import {
   buildBuckets,
   buildInitialOrder,
+  buildPreviewRows,
   buildRowDefinitions,
   findRowIndexById,
   getButtonText,
@@ -171,53 +167,10 @@ export default function AdminMainMenuButtons() {
     [t],
   );
 
-  const previewRows = useMemo(() => {
-    if (!data || orderedIds.length === 0) {
-      return [];
-    }
-
-    const rows: { rowIndex: number; items: { id: string; config: MenuButtonConfig }[] }[] = [];
-    let pointer = 0;
-
-    rowLengths.forEach((count, rowIndex) => {
-      const slice = orderedIds.slice(pointer, pointer + Math.max(count, 0));
-      pointer += Math.max(count, 0);
-      const rowItems = slice
-        .map((id) => {
-          const config = buttonsById[id];
-          if (!config || !config.enabled) {
-            return null;
-          }
-          return { id, config };
-        })
-        .filter((item): item is { id: string; config: MenuButtonConfig } => item !== null);
-
-      rows.push({ rowIndex, items: rowItems });
-    });
-
-    // Defensive fallback for newly added IDs not reflected in rowLengths yet.
-    if (pointer < orderedIds.length) {
-      const tailItems = orderedIds
-        .slice(pointer)
-        .map((id) => {
-          const config = buttonsById[id];
-          if (!config || !config.enabled) {
-            return null;
-          }
-          return { id, config };
-        })
-        .filter((item): item is { id: string; config: MenuButtonConfig } => item !== null);
-      if (tailItems.length > 0) {
-        const lastRowIndex = Math.max(rows.length - 1, 0);
-        if (!rows[lastRowIndex]) {
-          rows[lastRowIndex] = { rowIndex: lastRowIndex, items: [] };
-        }
-        rows[lastRowIndex].items = [...rows[lastRowIndex].items, ...tailItems];
-      }
-    }
-
-    return rows;
-  }, [buttonsById, data, orderedIds, rowLengths]);
+  const previewRows = useMemo(
+    () => buildPreviewRows(orderedIds, rowLengths, buttonsById, Boolean(data)),
+    [buttonsById, data, orderedIds, rowLengths],
+  );
 
   const saveLayoutMutation = useMutation({
     mutationFn: async (ids: string[]) => {

@@ -75,6 +75,68 @@ export function findRowIndexById(buckets: string[][], buttonId: string): number 
   return -1;
 }
 
+export interface PreviewRowItem {
+  id: string;
+  config: MenuButtonConfig;
+}
+
+export interface PreviewRow {
+  rowIndex: number;
+  items: PreviewRowItem[];
+}
+
+export function buildPreviewRows(
+  orderedIds: string[],
+  rowLengths: number[],
+  buttonsById: Record<string, MenuButtonConfig>,
+  hasLayoutData: boolean,
+): PreviewRow[] {
+  if (!hasLayoutData || orderedIds.length === 0) {
+    return [];
+  }
+
+  const rows: PreviewRow[] = [];
+  let pointer = 0;
+
+  rowLengths.forEach((count, rowIndex) => {
+    const slice = orderedIds.slice(pointer, pointer + Math.max(count, 0));
+    pointer += Math.max(count, 0);
+    const rowItems = slice
+      .map((id) => {
+        const config = buttonsById[id];
+        if (!config || !config.enabled) {
+          return null;
+        }
+        return { id, config };
+      })
+      .filter((item): item is PreviewRowItem => item !== null);
+
+    rows.push({ rowIndex, items: rowItems });
+  });
+
+  if (pointer < orderedIds.length) {
+    const tailItems = orderedIds
+      .slice(pointer)
+      .map((id) => {
+        const config = buttonsById[id];
+        if (!config || !config.enabled) {
+          return null;
+        }
+        return { id, config };
+      })
+      .filter((item): item is PreviewRowItem => item !== null);
+    if (tailItems.length > 0) {
+      const lastRowIndex = Math.max(rows.length - 1, 0);
+      if (!rows[lastRowIndex]) {
+        rows[lastRowIndex] = { rowIndex: lastRowIndex, items: [] };
+      }
+      rows[lastRowIndex].items = [...rows[lastRowIndex].items, ...tailItems];
+    }
+  }
+
+  return rows;
+}
+
 export function buildRowDefinitions(
   rows: MenuRowConfig[],
 ): Array<Pick<MenuRowConfig, 'id' | 'conditions'>> {
