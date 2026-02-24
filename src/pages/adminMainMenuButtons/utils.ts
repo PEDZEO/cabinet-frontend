@@ -1,4 +1,5 @@
 import { arrayMove } from '@dnd-kit/sortable';
+import type { TFunction } from 'i18next';
 import type {
   MenuButtonConfig,
   MenuButtonUpdateRequest,
@@ -348,4 +349,18 @@ export function buildButtonUpdatePayload(
     visibility: form.visibility,
     enabled: form.enabled,
   };
+}
+
+export function buildVisibilityOptions(
+  t: TFunction,
+): Array<{ value: MenuButtonVisibility; label: string }> {
+  return [
+    { value: 'all', label: t('admin.mainMenuButtons.visibilityAll') },
+    { value: 'admins', label: t('admin.mainMenuButtons.visibilityAdmins') },
+    { value: 'subscribers', label: t('admin.mainMenuButtons.visibilitySubscribers') },
+    {
+      value: 'moderators',
+      label: t('admin.mainMenuButtons.visibilityModerators', { defaultValue: 'Moderators only' }),
+    },
+  ];
 }

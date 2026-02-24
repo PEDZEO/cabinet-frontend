@@ -24,6 +24,7 @@ import { GripIcon, SortablePreviewButton } from './adminMainMenuButtons/Sortable
 import {
   buildBuckets,
   buildEditFormState,
+  buildVisibilityOptions,
   buildButtonUpdatePayload,
   buildInitialOrder,
   type MenuButtonEditFormValues,
@@ -142,15 +143,7 @@ export default function AdminMainMenuButtons() {
 
   const hasPendingChanges = hasOrderChanges || hasRowsConfigChanges;
 
-  const visibilityOptions = useMemo(
-    () => [
-      { value: 'all' as const, label: t('admin.mainMenuButtons.visibilityAll') },
-      { value: 'admins' as const, label: t('admin.mainMenuButtons.visibilityAdmins') },
-      { value: 'subscribers' as const, label: t('admin.mainMenuButtons.visibilitySubscribers') },
-      { value: 'moderators' as const, label: 'Moderators only' },
-    ],
-    [t],
-  );
+  const visibilityOptions = useMemo(() => buildVisibilityOptions(t), [t]);
 
   const previewRows = useMemo(
     () => buildPreviewRows(orderedIds, rowLengths, buttonsById, Boolean(data)),
