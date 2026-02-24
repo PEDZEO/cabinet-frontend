@@ -1467,16 +1467,19 @@
       "disabled": "Отключён",
       "enable": "Включить",
       "disable": "Отключить",
+      "edit": "Изменить",
+      "editing": "Редактирование",
       "delete": "Удалить",
       "deleteConfirm": "Удалить этот канал?",
       "sortOrder": "Порядок",
       "form": {
         "title": "Название",
         "channelId": "ID канала",
-        "channelIdHint": "@username или -100XXXXXXXXXX",
+        "channelIdHint": "-100XXXXXXXXXX",
         "channelLink": "Ссылка на канал",
         "channelLinkHint": "https://t.me/channel",
         "submit": "Добавить",
+        "save": "Сохранить",
         "cancel": "Отмена"
       }
     },

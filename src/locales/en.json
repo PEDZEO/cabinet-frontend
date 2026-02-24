@@ -1441,16 +1441,19 @@
       "disabled": "Disabled",
       "enable": "Enable",
       "disable": "Disable",
+      "edit": "Edit",
+      "editing": "Editing",
       "delete": "Delete",
       "deleteConfirm": "Delete this channel?",
       "sortOrder": "Order",
       "form": {
         "title": "Display Name",
         "channelId": "Channel ID",
-        "channelIdHint": "@username or -100XXXXXXXXXX",
+        "channelIdHint": "-100XXXXXXXXXX",
         "channelLink": "Channel Link",
         "channelLinkHint": "https://t.me/channel",
         "submit": "Add",
+        "save": "Save",
         "cancel": "Cancel"
       }
     },

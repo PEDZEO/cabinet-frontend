@@ -1010,16 +1010,19 @@
       "disabled": "غیرفعال",
       "enable": "فعال‌سازی",
       "disable": "غیرفعال‌سازی",
+      "edit": "ویرایش",
+      "editing": "ویرایش",
       "delete": "حذف",
       "deleteConfirm": "این کانال حذف شود؟",
       "sortOrder": "ترتیب",
       "form": {
         "title": "نام نمایشی",
         "channelId": "شناسه کانال",
-        "channelIdHint": "@username یا -100XXXXXXXXXX",
+        "channelIdHint": "-100XXXXXXXXXX",
         "channelLink": "لینک کانال",
         "channelLinkHint": "https://t.me/channel",
         "submit": "افزودن",
+        "save": "ذخیره",
         "cancel": "لغو"
       }
     },

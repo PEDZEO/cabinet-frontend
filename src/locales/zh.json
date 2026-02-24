@@ -1062,16 +1062,19 @@
       "disabled": "已禁用",
       "enable": "启用",
       "disable": "禁用",
+      "edit": "编辑",
+      "editing": "编辑",
       "delete": "删除",
       "deleteConfirm": "删除此频道？",
       "sortOrder": "排序",
       "form": {
         "title": "显示名称",
         "channelId": "频道ID",
-        "channelIdHint": "@username 或 -100XXXXXXXXXX",
+        "channelIdHint": "-100XXXXXXXXXX",
         "channelLink": "频道链接",
         "channelLinkHint": "https://t.me/channel",
         "submit": "添加",
+        "save": "保存",
         "cancel": "取消"
       }
     },

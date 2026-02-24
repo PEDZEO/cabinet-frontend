@@ -6,6 +6,7 @@ import {
   adminChannelsApi,
   type RequiredChannel,
   type CreateChannelRequest,
+  type UpdateChannelRequest,
 } from '../api/adminChannels';
 import { AdminBackButton } from '../components/admin';
 
@@ -58,6 +59,16 @@ const XIcon = () => (
   </svg>
 );
 
+const EditIcon = () => (
+  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
+    />
+  </svg>
+);
+
 const LinkIcon = () => (
   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
     <path
@@ -73,10 +84,12 @@ function ChannelCard({
   channel,
   onToggle,
   onDelete,
+  onEdit,
 }: {
   channel: RequiredChannel;
   onToggle: (id: number) => void;
   onDelete: (id: number) => void;
+  onEdit: (channel: RequiredChannel) => void;
 }) {
   const { t } = useTranslation();
 
@@ -137,6 +150,14 @@ function ChannelCard({
 
       {/* Action buttons */}
       <div className="mt-3 flex flex-wrap gap-2 border-t border-dark-700/50 pt-3">
+        <button
+          onClick={() => onEdit(channel)}
+          className="flex items-center gap-1.5 rounded-lg bg-accent-500/20 px-3 py-1.5 text-xs text-accent-400 transition-colors hover:bg-accent-500/30"
+        >
+          <EditIcon />
+          {t('admin.channelSubscriptions.edit')}
+        </button>
+
         {channel.is_active ? (
           <button
             onClick={() => onToggle(channel.id)}
@@ -167,6 +188,95 @@ function ChannelCard({
   );
 }
 
+// Shared form fields component
+function ChannelFormFields({
+  channelId,
+  setChannelId,
+  title,
+  setTitle,
+  channelLink,
+  setChannelLink,
+  sortOrder,
+  setSortOrder,
+  showChannelId,
+  showSortOrder,
+}: {
+  channelId: string;
+  setChannelId: (v: string) => void;
+  title: string;
+  setTitle: (v: string) => void;
+  channelLink: string;
+  setChannelLink: (v: string) => void;
+  sortOrder: string;
+  setSortOrder: (v: string) => void;
+  showChannelId: boolean;
+  showSortOrder: boolean;
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <>
+      {showChannelId && (
+        <div>
+          <label className="mb-1 block text-xs font-medium text-dark-300">
+            {t('admin.channelSubscriptions.form.channelId')} *
+          </label>
+          <input
+            type="text"
+            value={channelId}
+            onChange={(e) => setChannelId(e.target.value)}
+            placeholder={t('admin.channelSubscriptions.form.channelIdHint')}
+            className="w-full rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 placeholder-dark-500 outline-none transition-colors focus:border-accent-500"
+            autoFocus
+          />
+        </div>
+      )}
+
+      <div>
+        <label className="mb-1 block text-xs font-medium text-dark-300">
+          {t('admin.channelSubscriptions.form.title')}
+        </label>
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder={t('admin.channelSubscriptions.form.title')}
+          className="w-full rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 placeholder-dark-500 outline-none transition-colors focus:border-accent-500"
+          autoFocus={!showChannelId}
+        />
+      </div>
+
+      <div>
+        <label className="mb-1 block text-xs font-medium text-dark-300">
+          {t('admin.channelSubscriptions.form.channelLink')}
+        </label>
+        <input
+          type="text"
+          value={channelLink}
+          onChange={(e) => setChannelLink(e.target.value)}
+          placeholder={t('admin.channelSubscriptions.form.channelLinkHint')}
+          className="w-full rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 placeholder-dark-500 outline-none transition-colors focus:border-accent-500"
+        />
+      </div>
+
+      {showSortOrder && (
+        <div>
+          <label className="mb-1 block text-xs font-medium text-dark-300">
+            {t('admin.channelSubscriptions.sortOrder')}
+          </label>
+          <input
+            type="number"
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value)}
+            placeholder="0"
+            className="w-full rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 placeholder-dark-500 outline-none transition-colors focus:border-accent-500"
+          />
+        </div>
+      )}
+    </>
+  );
+}
+
 // Add channel form component
 function AddChannelForm({
   onSubmit,
@@ -194,50 +304,19 @@ function AddChannelForm({
   return (
     <div className="rounded-xl border border-accent-500/30 bg-dark-800/50 p-4">
       <div className="space-y-3">
-        {/* Channel ID (required) */}
-        <div>
-          <label className="mb-1 block text-xs font-medium text-dark-300">
-            {t('admin.channelSubscriptions.form.channelId')} *
-          </label>
-          <input
-            type="text"
-            value={channelId}
-            onChange={(e) => setChannelId(e.target.value)}
-            placeholder={t('admin.channelSubscriptions.form.channelIdHint')}
-            className="w-full rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 placeholder-dark-500 outline-none transition-colors focus:border-accent-500"
-            autoFocus
-          />
-        </div>
+        <ChannelFormFields
+          channelId={channelId}
+          setChannelId={setChannelId}
+          title={title}
+          setTitle={setTitle}
+          channelLink={channelLink}
+          setChannelLink={setChannelLink}
+          sortOrder=""
+          setSortOrder={() => {}}
+          showChannelId
+          showSortOrder={false}
+        />
 
-        {/* Title (optional) */}
-        <div>
-          <label className="mb-1 block text-xs font-medium text-dark-300">
-            {t('admin.channelSubscriptions.form.title')}
-          </label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder={t('admin.channelSubscriptions.form.title')}
-            className="w-full rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 placeholder-dark-500 outline-none transition-colors focus:border-accent-500"
-          />
-        </div>
-
-        {/* Channel Link (optional) */}
-        <div>
-          <label className="mb-1 block text-xs font-medium text-dark-300">
-            {t('admin.channelSubscriptions.form.channelLink')}
-          </label>
-          <input
-            type="text"
-            value={channelLink}
-            onChange={(e) => setChannelLink(e.target.value)}
-            placeholder={t('admin.channelSubscriptions.form.channelLinkHint')}
-            className="w-full rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 placeholder-dark-500 outline-none transition-colors focus:border-accent-500"
-          />
-        </div>
-
-        {/* Buttons */}
         <div className="flex gap-2 pt-1">
           <button
             onClick={handleSubmit}
@@ -261,6 +340,81 @@ function AddChannelForm({
   );
 }
 
+// Edit channel form component
+function EditChannelForm({
+  channel,
+  onSubmit,
+  onCancel,
+  isLoading,
+}: {
+  channel: RequiredChannel;
+  onSubmit: (id: number, data: UpdateChannelRequest) => void;
+  onCancel: () => void;
+  isLoading: boolean;
+}) {
+  const { t } = useTranslation();
+  const [title, setTitle] = useState(channel.title ?? '');
+  const [channelLink, setChannelLink] = useState(channel.channel_link ?? '');
+  const [sortOrder, setSortOrder] = useState(String(channel.sort_order));
+
+  const handleSubmit = () => {
+    const updates: UpdateChannelRequest = {};
+    const newTitle = title.trim() || undefined;
+    const newLink = channelLink.trim() || undefined;
+    const newSort = parseInt(sortOrder, 10);
+
+    if (newTitle !== (channel.title ?? undefined))
+      updates.title = newTitle ?? (null as unknown as string);
+    if (newLink !== (channel.channel_link ?? undefined))
+      updates.channel_link = newLink ?? (null as unknown as string);
+    if (!isNaN(newSort) && newSort !== channel.sort_order) updates.sort_order = newSort;
+
+    onSubmit(channel.id, updates);
+  };
+
+  return (
+    <div className="rounded-xl border border-accent-500/30 bg-dark-800/50 p-4">
+      <p className="mb-3 text-xs text-dark-400">
+        {t('admin.channelSubscriptions.editing')}:{' '}
+        <code className="text-dark-300">{channel.channel_id}</code>
+      </p>
+      <div className="space-y-3">
+        <ChannelFormFields
+          channelId=""
+          setChannelId={() => {}}
+          title={title}
+          setTitle={setTitle}
+          channelLink={channelLink}
+          setChannelLink={setChannelLink}
+          sortOrder={sortOrder}
+          setSortOrder={setSortOrder}
+          showChannelId={false}
+          showSortOrder
+        />
+
+        <div className="flex gap-2 pt-1">
+          <button
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className="flex items-center gap-2 rounded-lg bg-accent-500 px-4 py-2 text-sm text-white transition-colors hover:bg-accent-600 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <CheckIcon />
+            {t('admin.channelSubscriptions.form.save')}
+          </button>
+          <button
+            onClick={onCancel}
+            disabled={isLoading}
+            className="flex items-center gap-2 rounded-lg bg-dark-700 px-4 py-2 text-sm text-dark-300 transition-colors hover:bg-dark-600 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <XIcon />
+            {t('admin.channelSubscriptions.form.cancel')}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Main component
 export default function AdminChannelSubscriptions() {
   const { t } = useTranslation();
@@ -268,6 +422,7 @@ export default function AdminChannelSubscriptions() {
   const haptic = useHaptic();
   const notify = useNotify();
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingChannel, setEditingChannel] = useState<RequiredChannel | null>(null);
 
   // Fetch channels
   const { data, isLoading, refetch } = useQuery({
@@ -312,6 +467,20 @@ export default function AdminChannelSubscriptions() {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: UpdateChannelRequest }) =>
+      adminChannelsApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-channels'] });
+      setEditingChannel(null);
+      haptic.impact('light');
+    },
+    onError: () => {
+      haptic.notification('error');
+      notify.error(t('common.error'));
+    },
+  });
+
   const handleToggle = (id: number) => {
     toggleMutation.mutate(id);
   };
@@ -324,6 +493,15 @@ export default function AdminChannelSubscriptions() {
 
   const handleCreate = (data: CreateChannelRequest) => {
     createMutation.mutate(data);
+  };
+
+  const handleUpdate = (id: number, data: UpdateChannelRequest) => {
+    updateMutation.mutate({ id, data });
+  };
+
+  const handleEdit = (channel: RequiredChannel) => {
+    setEditingChannel(channel);
+    setShowAddForm(false);
   };
 
   const channels = data?.items ?? [];
@@ -354,7 +532,7 @@ export default function AdminChannelSubscriptions() {
           >
             <RefreshIcon />
           </button>
-          {!showAddForm && (
+          {!showAddForm && !editingChannel && (
             <button
               onClick={() => setShowAddForm(true)}
               aria-label={t('admin.channelSubscriptions.addChannel')}
@@ -373,6 +551,16 @@ export default function AdminChannelSubscriptions() {
           onSubmit={handleCreate}
           onCancel={() => setShowAddForm(false)}
           isLoading={createMutation.isPending}
+        />
+      )}
+
+      {/* Edit form */}
+      {editingChannel && (
+        <EditChannelForm
+          channel={editingChannel}
+          onSubmit={handleUpdate}
+          onCancel={() => setEditingChannel(null)}
+          isLoading={updateMutation.isPending}
         />
       )}
 
@@ -399,6 +587,7 @@ export default function AdminChannelSubscriptions() {
               channel={channel}
               onToggle={handleToggle}
               onDelete={handleDelete}
+              onEdit={handleEdit}
             />
           ))}
         </div>

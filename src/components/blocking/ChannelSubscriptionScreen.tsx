@@ -42,7 +42,8 @@ export default function ChannelSubscriptionScreen() {
     return () => clearInterval(timer);
   }, [cooldown]);
 
-  const channels = channelInfo?.channels ?? [];
+  const allChannels = channelInfo?.channels ?? [];
+  const channels = allChannels.filter((ch) => !ch.is_subscribed);
 
   const checkSubscription = useCallback(async () => {
     if (isCheckingRef.current) return;
@@ -87,35 +88,23 @@ export default function ChannelSubscriptionScreen() {
           {channelInfo?.message || t('blocking.channel.defaultMessage')}
         </p>
 
-        {/* Channel list */}
+        {/* Channel list (only unsubscribed channels) */}
         {channels.length > 0 && (
           <div className="mb-6 space-y-3">
             {channels.map((ch) => (
               <div
                 key={ch.channel_id}
-                className={`flex items-center justify-between rounded-xl border p-3 ${
-                  ch.is_subscribed
-                    ? 'border-green-500/30 bg-green-500/10'
-                    : 'border-red-500/30 bg-red-500/10'
-                }`}
+                className="flex items-center justify-between rounded-xl border border-red-500/30 bg-red-500/10 p-3"
               >
                 <span className="text-sm font-medium text-white">{ch.title || ch.channel_id}</span>
-                <div className="flex items-center gap-2">
-                  {ch.is_subscribed ? (
-                    <span className="text-xs text-green-400">
-                      {t('blocking.channel.subscribed')}
-                    </span>
-                  ) : (
-                    ch.channel_link && (
-                      <button
-                        onClick={() => safeOpenUrl(ch.channel_link)}
-                        className="rounded-lg bg-blue-500/20 px-3 py-1 text-xs font-medium text-blue-400 hover:bg-blue-500/30"
-                      >
-                        {t('blocking.channel.openChannel')}
-                      </button>
-                    )
-                  )}
-                </div>
+                {ch.channel_link && (
+                  <button
+                    onClick={() => safeOpenUrl(ch.channel_link)}
+                    className="rounded-lg bg-blue-500/20 px-3 py-1 text-xs font-medium text-blue-400 hover:bg-blue-500/30"
+                  >
+                    {t('blocking.channel.openChannel')}
+                  </button>
+                )}
               </div>
             ))}
           </div>
