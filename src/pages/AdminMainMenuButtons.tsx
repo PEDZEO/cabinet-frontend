@@ -271,13 +271,17 @@ export default function AdminMainMenuButtons() {
       payload: buildButtonUpdatePayload(button, lang, form),
     });
 
-    const resetState = resetMenuButtonEditState();
-    setEditingId(resetState.editingId);
-    setForm(resetState.form);
+    cancelEdit();
   };
 
   const updateFormField = <K extends keyof FormState>(field: K, value: FormState[K]) => {
     setForm((previous) => updateMenuButtonEditFormField(previous, field, value));
+  };
+
+  const cancelEdit = () => {
+    const resetState = resetMenuButtonEditState();
+    setEditingId(resetState.editingId);
+    setForm(resetState.form);
   };
 
   const toggleEnabled = (buttonId: string, current: boolean) => {
@@ -671,14 +675,7 @@ export default function AdminMainMenuButtons() {
                   >
                     {t('common.save')}
                   </button>
-                  <button
-                    className="btn-secondary"
-                    onClick={() => {
-                      const resetState = resetMenuButtonEditState();
-                      setEditingId(resetState.editingId);
-                      setForm(resetState.form);
-                    }}
-                  >
+                  <button className="btn-secondary" onClick={cancelEdit}>
                     {t('common.cancel')}
                   </button>
                 </div>
