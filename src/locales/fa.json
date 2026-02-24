@@ -832,8 +832,8 @@
         "howLine1": "هر گروه شامل pattern هایی برای تگ‌های outbound است.",
         "howLine2": "Fastest group یک گروه خودکار اضافی است که از همه گروه‌ها به جز موارد مستثنی ساخته می‌شود.",
         "howLine3": "با ذخیره، تنظیمات به /admin/groups ارسال و فوری اعمال می‌شود.",
-        "excludeFromFastest": "این گروه از fastest حذف شود",
-        "fastestName": "نام fastest group"
+        "fastestName": "نام fastest group",
+        "excludeCounter": "انتخاب شده {{selected}} / {{total}}"
       },
       "labels": {
         "status": "وضعیت",

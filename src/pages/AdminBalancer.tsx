@@ -823,26 +823,6 @@ export default function AdminBalancer() {
                     />
                   </div>
                 </div>
-
-                <div className="mt-2">
-                  <label className="inline-flex items-center gap-2 text-xs text-dark-300">
-                    <input
-                      type="checkbox"
-                      disabled={!group.name.trim()}
-                      checked={
-                        group.name.trim() ? excludeGroups.includes(group.name.trim()) : false
-                      }
-                      onChange={() => {
-                        if (!group.name.trim()) return;
-                        toggleExclude(group.name.trim());
-                      }}
-                    />
-                    {t(
-                      'admin.balancer.groups.excludeFromFastest',
-                      'Exclude this group from fastest',
-                    )}
-                  </label>
-                </div>
               </div>
             );
           })}
@@ -877,12 +857,20 @@ export default function AdminBalancer() {
           </div>
 
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-xs text-dark-400">
-              {t(
-                'admin.balancer.groups.excludeLabel',
-                'Exclude these groups from fastest selection:',
-              )}
-            </p>
+            <div>
+              <p className="text-xs text-dark-400">
+                {t(
+                  'admin.balancer.groups.excludeLabel',
+                  'Exclude these groups from fastest selection:',
+                )}
+              </p>
+              <p className="text-xs text-dark-500">
+                {t('admin.balancer.groups.excludeCounter', 'Selected {{selected}} / {{total}}', {
+                  selected: excludeGroups.length,
+                  total: availableGroupNames.length,
+                })}
+              </p>
+            </div>
             <button
               onClick={() => {
                 setGroupsDirty(true);

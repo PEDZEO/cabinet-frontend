@@ -966,8 +966,8 @@
         "howLine1": "Each group contains patterns for outbound tags.",
         "howLine2": "Fastest group is an additional auto-group built from all groups except excluded ones.",
         "howLine3": "Save sends config to /admin/groups and applies it immediately.",
-        "excludeFromFastest": "Exclude this group from fastest",
-        "fastestName": "Fastest group name"
+        "fastestName": "Fastest group name",
+        "excludeCounter": "Selected {{selected}} / {{total}}"
       },
       "labels": {
         "status": "Status",

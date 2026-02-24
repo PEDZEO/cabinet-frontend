@@ -988,8 +988,8 @@
         "howLine1": "Каждая группа содержит паттерны для тегов outbounds.",
         "howLine2": "Fastest group — это дополнительная авто-группа, которая строится по всем группам, кроме исключенных.",
         "howLine3": "После сохранения конфиг отправляется в /admin/groups и применяется сразу.",
-        "excludeFromFastest": "Исключить эту группу из fastest",
-        "fastestName": "Название fastest-группы"
+        "fastestName": "Название fastest-группы",
+        "excludeCounter": "Выбрано {{selected}} / {{total}}"
       },
       "labels": {
         "status": "Статус",

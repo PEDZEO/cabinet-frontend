@@ -832,8 +832,8 @@
         "howLine1": "每个分组包含用于匹配 outbound 标签的 pattern。",
         "howLine2": "Fastest group 是额外的自动分组，会基于所有未排除分组生成。",
         "howLine3": "保存后会发送到 /admin/groups 并立即生效。",
-        "excludeFromFastest": "将该分组排除出 fastest",
-        "fastestName": "Fastest 分组名称"
+        "fastestName": "Fastest 分组名称",
+        "excludeCounter": "已选择 {{selected}} / {{total}}"
       },
       "labels": {
         "status": "状态",
