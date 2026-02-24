@@ -554,7 +554,7 @@ export default function AdminBalancer() {
   }, [excludeGroups, fastestEnabled, fastestGroupName, groupsDraft]);
 
   return (
-    <div className="animate-fade-in space-y-4">
+    <div className="animate-fade-in space-y-4 pb-24 md:pb-0">
       <div className="flex items-center gap-3">
         <AdminBackButton to="/admin" />
         <div>
@@ -692,6 +692,37 @@ export default function AdminBalancer() {
               onClick={() => void saveGroups()}
               disabled={saveGroupsMutation.isPending}
               className="rounded-lg border border-accent-500/50 bg-accent-500/20 px-3 py-2 text-sm text-accent-300 transition-colors hover:bg-accent-500/30 disabled:opacity-60"
+            >
+              {t('common.save', 'Save')}
+            </button>
+          </div>
+        </div>
+
+        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-dark-700 bg-dark-900/95 p-3 backdrop-blur md:hidden">
+          <div className="mx-auto flex max-w-lg gap-2">
+            <button
+              onClick={() => {
+                if (!groupsData) return;
+                setGroupsDraft(groupsToDraft(groupsData));
+                setFastestEnabled(Boolean(groupsData.fastest_group));
+                setFastestGroupName(
+                  (groupsData.fastest_group_name || DEFAULT_FASTEST_GROUP_NAME).trim(),
+                );
+                setExcludeGroups(groupsData.fastest_exclude_groups || []);
+                setGroupsDirty(false);
+                setAlert(
+                  t('admin.balancer.actions.changesDiscarded', 'Changes discarded'),
+                  'default',
+                );
+              }}
+              className="flex-1 rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600"
+            >
+              {t('common.cancel', 'Cancel')}
+            </button>
+            <button
+              onClick={() => void saveGroups()}
+              disabled={saveGroupsMutation.isPending}
+              className="flex-1 rounded-lg border border-accent-500/50 bg-accent-500/20 px-3 py-2 text-sm text-accent-300 transition-colors hover:bg-accent-500/30 disabled:opacity-60"
             >
               {t('common.save', 'Save')}
             </button>
