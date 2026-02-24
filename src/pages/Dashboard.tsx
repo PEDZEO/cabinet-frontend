@@ -67,14 +67,15 @@ export default function Dashboard() {
 
 function FullDashboard() {
   const { t } = useTranslation();
-  const { user, refreshUser } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
+  const refreshUser = useAuthStore((state) => state.refreshUser);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { formatAmount, currencySymbol, formatPositive } = useCurrency();
   const [trialError, setTrialError] = useState<string | null>(null);
   const { isCompleted: isOnboardingCompleted, complete: completeOnboarding } = useOnboarding();
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const { blockingType } = useBlockingStore();
+  const blockingType = useBlockingStore((state) => state.blockingType);
 
   // Refresh user data on mount
   useEffect(() => {

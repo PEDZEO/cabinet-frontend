@@ -8,7 +8,8 @@ export default function TelegramCallback() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [error, setError] = useState('');
-  const { loginWithTelegramWidget, isAuthenticated } = useAuthStore();
+  const loginWithTelegramWidget = useAuthStore((state) => state.loginWithTelegramWidget);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
     if (isAuthenticated) {

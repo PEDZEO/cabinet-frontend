@@ -73,7 +73,8 @@ const PencilIcon = () => (
 
 export default function Profile() {
   const { t } = useTranslation();
-  const { user, setUser } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
   const queryClient = useQueryClient();
 
   const [email, setEmail] = useState('');

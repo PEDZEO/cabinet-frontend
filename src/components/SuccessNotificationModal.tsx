@@ -78,7 +78,9 @@ const CloseIcon = () => (
 export default function SuccessNotificationModal() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { isOpen, data, hide } = useSuccessNotification();
+  const isOpen = useSuccessNotification((state) => state.isOpen);
+  const data = useSuccessNotification((state) => state.data);
+  const hide = useSuccessNotification((state) => state.hide);
   const { formatAmount, currencySymbol } = useCurrency();
   const { safeAreaInset, contentSafeAreaInset, isTelegramWebApp } = useTelegramSDK();
   const haptic = useHaptic();

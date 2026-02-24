@@ -14,7 +14,8 @@ import InstallationGuide from '../components/connection/InstallationGuide';
 export default function Connection() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { user, isAdmin } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
+  const isAdmin = useAuthStore((state) => state.isAdmin);
   const { isTelegramWebApp } = useTelegramSDK();
   const { impact: hapticImpact } = useHaptic();
 
