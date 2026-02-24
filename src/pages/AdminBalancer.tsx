@@ -1,9 +1,15 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
-import { adminBalancerApi } from '../api/adminBalancer';
+import { BalancerGroupsResponse, adminBalancerApi } from '../api/adminBalancer';
 import { AdminBackButton } from '../components/admin/AdminBackButton';
+
+type GroupDraft = {
+  id: string;
+  name: string;
+  patterns: string;
+};
 
 function JsonCard({ title, data }: { title: string; data: unknown }) {
   return (
@@ -28,11 +34,30 @@ function StatusBadge({ ok, text }: { ok: boolean; text: string }) {
   );
 }
 
+function groupsToDraft(groupsData: BalancerGroupsResponse): GroupDraft[] {
+  return Object.entries(groupsData.groups).map(([name, patterns], idx) => ({
+    id: `${idx}-${name}`,
+    name,
+    patterns: patterns.join(', '),
+  }));
+}
+
+function parsePatterns(raw: string): string[] {
+  return raw
+    .split(/[\n,]/g)
+    .map((x) => x.trim())
+    .filter(Boolean);
+}
+
 export default function AdminBalancer() {
   const { t } = useTranslation();
   const [token, setToken] = useState('');
   const [tokenResult, setTokenResult] = useState<unknown>(null);
   const [actionMessage, setActionMessage] = useState<string>('');
+  const [groupsDraft, setGroupsDraft] = useState<GroupDraft[]>([]);
+  const [fastestEnabled, setFastestEnabled] = useState(true);
+  const [excludeGroups, setExcludeGroups] = useState<string[]>([]);
+  const [groupsDirty, setGroupsDirty] = useState(false);
 
   const {
     data: status,
@@ -84,11 +109,24 @@ export default function AdminBalancer() {
     refetchInterval: 60_000,
   });
 
+  const { data: groupsData, refetch: refetchGroups } = useQuery({
+    queryKey: ['admin', 'balancer', 'groups'],
+    queryFn: adminBalancerApi.getGroups,
+    refetchInterval: 30_000,
+  });
+
+  useEffect(() => {
+    if (!groupsData || groupsDirty) return;
+    setGroupsDraft(groupsToDraft(groupsData));
+    setFastestEnabled(Boolean(groupsData.fastest_group));
+    setExcludeGroups(groupsData.fastest_exclude_groups || []);
+  }, [groupsData, groupsDirty]);
+
   const refreshGroupsMutation = useMutation({
     mutationFn: adminBalancerApi.refreshGroups,
-    onSuccess: () => {
+    onSuccess: async () => {
       setActionMessage(t('admin.balancer.actions.refreshGroupsSuccess', 'Groups updated'));
-      void refetchDebugStats();
+      await Promise.all([refetchDebugStats(), refetchGroups()]);
     },
     onError: () => {
       setActionMessage(t('admin.balancer.actions.actionError', 'Action failed'));
@@ -103,6 +141,21 @@ export default function AdminBalancer() {
     },
     onError: () => {
       setActionMessage(t('admin.balancer.actions.actionError', 'Action failed'));
+    },
+  });
+
+  const saveGroupsMutation = useMutation({
+    mutationFn: adminBalancerApi.updateGroups,
+    onSuccess: async (data) => {
+      setActionMessage(t('admin.balancer.actions.groupsSaved', 'Groups saved'));
+      setGroupsDirty(false);
+      setGroupsDraft(groupsToDraft(data));
+      setFastestEnabled(Boolean(data.fastest_group));
+      setExcludeGroups(data.fastest_exclude_groups || []);
+      await refetchGroups();
+    },
+    onError: () => {
+      setActionMessage(t('admin.balancer.actions.groupsSaveError', 'Groups save failed'));
     },
   });
 
@@ -127,6 +180,80 @@ export default function AdminBalancer() {
 
   const readyOk = ready?.status === 'ready';
   const healthOk = health?.status === 'ok';
+
+  const availableGroupNames = useMemo(
+    () =>
+      groupsDraft
+        .map((g) => g.name.trim())
+        .filter(Boolean)
+        .filter((name, idx, arr) => arr.indexOf(name) === idx),
+    [groupsDraft],
+  );
+
+  const addGroup = () => {
+    setGroupsDirty(true);
+    setGroupsDraft((prev) => [
+      ...prev,
+      {
+        id: `${Date.now()}-${prev.length}`,
+        name: '',
+        patterns: '',
+      },
+    ]);
+  };
+
+  const removeGroup = (id: string) => {
+    setGroupsDirty(true);
+    setGroupsDraft((prev) => prev.filter((g) => g.id !== id));
+  };
+
+  const updateGroup = (id: string, patch: Partial<GroupDraft>) => {
+    setGroupsDirty(true);
+    setGroupsDraft((prev) => prev.map((g) => (g.id === id ? { ...g, ...patch } : g)));
+  };
+
+  const toggleExclude = (groupName: string) => {
+    setGroupsDirty(true);
+    setExcludeGroups((prev) =>
+      prev.includes(groupName) ? prev.filter((x) => x !== groupName) : [...prev, groupName],
+    );
+  };
+
+  const saveGroups = async () => {
+    const groups: Record<string, string[]> = {};
+    const names = new Set<string>();
+
+    for (const item of groupsDraft) {
+      const name = item.name.trim();
+      if (!name) {
+        setActionMessage(t('admin.balancer.actions.groupNameRequired', 'Group name is required'));
+        return;
+      }
+      if (names.has(name)) {
+        setActionMessage(
+          t('admin.balancer.actions.groupNamesUnique', 'Group names must be unique'),
+        );
+        return;
+      }
+      names.add(name);
+
+      const patterns = parsePatterns(item.patterns);
+      if (patterns.length === 0) {
+        setActionMessage(
+          t('admin.balancer.actions.groupPatternsRequired', 'Each group must contain patterns'),
+        );
+        return;
+      }
+      groups[name] = patterns;
+    }
+
+    const filteredExclude = excludeGroups.filter((x) => names.has(x));
+    await saveGroupsMutation.mutateAsync({
+      groups,
+      fastest_group: fastestEnabled,
+      fastest_exclude_groups: filteredExclude,
+    });
+  };
 
   return (
     <div className="animate-fade-in space-y-4">
@@ -196,6 +323,7 @@ export default function AdminBalancer() {
                 refetchReady(),
                 refetchDebugStats(),
                 refetchNodeStats(),
+                refetchGroups(),
               ])
             }
             className="rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600"
@@ -203,8 +331,110 @@ export default function AdminBalancer() {
             {t('common.refresh', 'Refresh')}
           </button>
         </div>
+      </div>
 
-        {actionMessage && <p className="mt-3 text-sm text-dark-300">{actionMessage}</p>}
+      <div className="rounded-xl border border-dark-700 bg-dark-800/50 p-4">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h3 className="text-sm font-semibold text-dark-100">
+            {t('admin.balancer.groups.title', 'Groups editor')}
+          </h3>
+          <button
+            onClick={addGroup}
+            className="rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600"
+          >
+            {t('admin.balancer.groups.add', 'Add group')}
+          </button>
+        </div>
+
+        <div className="space-y-3">
+          {groupsDraft.map((group) => (
+            <div key={group.id} className="rounded-lg border border-dark-700 bg-dark-900/50 p-3">
+              <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                <input
+                  value={group.name}
+                  onChange={(e) => updateGroup(group.id, { name: e.target.value })}
+                  placeholder={t('admin.balancer.groups.groupName', 'Group name')}
+                  className="rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none placeholder:text-dark-500 focus:border-accent-500"
+                />
+                <div className="flex gap-2">
+                  <input
+                    value={group.patterns}
+                    onChange={(e) => updateGroup(group.id, { patterns: e.target.value })}
+                    placeholder={t(
+                      'admin.balancer.groups.patterns',
+                      'Patterns separated by comma or new line',
+                    )}
+                    className="min-w-0 flex-1 rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none placeholder:text-dark-500 focus:border-accent-500"
+                  />
+                  <button
+                    onClick={() => removeGroup(group.id)}
+                    className="rounded-lg border border-error-500/50 bg-error-500/10 px-3 py-2 text-sm text-error-300 transition-colors hover:bg-error-500/20"
+                  >
+                    {t('common.delete', 'Delete')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4 rounded-lg border border-dark-700 bg-dark-900/40 p-3">
+          <label className="mb-2 flex items-center gap-2 text-sm text-dark-200">
+            <input
+              type="checkbox"
+              checked={fastestEnabled}
+              onChange={(e) => {
+                setGroupsDirty(true);
+                setFastestEnabled(e.target.checked);
+              }}
+            />
+            {t('admin.balancer.groups.fastestToggle', 'Enable fastest group')}
+          </label>
+
+          <p className="mb-2 text-xs text-dark-400">
+            {t(
+              'admin.balancer.groups.excludeLabel',
+              'Exclude these groups from fastest selection:',
+            )}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {availableGroupNames.map((name) => (
+              <label
+                key={name}
+                className="inline-flex items-center gap-1 rounded-md border border-dark-600 bg-dark-800 px-2 py-1 text-xs text-dark-200"
+              >
+                <input
+                  type="checkbox"
+                  checked={excludeGroups.includes(name)}
+                  onChange={() => toggleExclude(name)}
+                />
+                {name}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-4 flex gap-2">
+          <button
+            onClick={() => void saveGroups()}
+            disabled={saveGroupsMutation.isPending}
+            className="rounded-lg border border-accent-500/50 bg-accent-500/20 px-3 py-2 text-sm text-accent-300 transition-colors hover:bg-accent-500/30 disabled:opacity-60"
+          >
+            {t('common.save', 'Save')}
+          </button>
+          <button
+            onClick={() => {
+              if (!groupsData) return;
+              setGroupsDraft(groupsToDraft(groupsData));
+              setFastestEnabled(Boolean(groupsData.fastest_group));
+              setExcludeGroups(groupsData.fastest_exclude_groups || []);
+              setGroupsDirty(false);
+            }}
+            className="rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600"
+          >
+            {t('common.cancel', 'Cancel')}
+          </button>
+        </div>
       </div>
 
       <div className="rounded-xl border border-dark-700 bg-dark-800/50 p-4">
@@ -253,6 +483,8 @@ export default function AdminBalancer() {
           data={tokenResult}
         />
       )}
+
+      {actionMessage && <p className="text-sm text-dark-300">{actionMessage}</p>}
 
       {statusLoading && (
         <p className="text-sm text-dark-500">{t('common.loading', 'Loading...')}</p>

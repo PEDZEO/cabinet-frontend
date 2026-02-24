@@ -14,6 +14,13 @@ export interface BalancerRuntimeStatsResponse {
   circuit_breaker?: Record<string, unknown>;
 }
 
+export interface BalancerGroupsResponse {
+  status: string;
+  groups: Record<string, string[]>;
+  fastest_group: boolean;
+  fastest_exclude_groups: string[];
+}
+
 export const adminBalancerApi = {
   getStatus: async (): Promise<BalancerStatusResponse> => {
     const response = await apiClient.get('/cabinet/admin/balancer/status');
@@ -54,6 +61,20 @@ export const adminBalancerApi = {
 
   refreshStats: async (): Promise<Record<string, unknown>> => {
     const response = await apiClient.post('/cabinet/admin/balancer/refresh-stats');
+    return response.data;
+  },
+
+  getGroups: async (): Promise<BalancerGroupsResponse> => {
+    const response = await apiClient.get('/cabinet/admin/balancer/groups');
+    return response.data;
+  },
+
+  updateGroups: async (payload: {
+    groups: Record<string, string[]>;
+    fastest_group: boolean;
+    fastest_exclude_groups: string[];
+  }): Promise<BalancerGroupsResponse> => {
+    const response = await apiClient.put('/cabinet/admin/balancer/groups', payload);
     return response.data;
   },
 };
