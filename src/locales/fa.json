@@ -825,7 +825,15 @@
         "emptyExcludeHint": "برای مدیریت استثناها حداقل یک گروه اضافه کنید",
         "previewTitle": "پیش‌نمایش config",
         "previewHint": "این payload برای PUT /admin/groups است.",
-        "loadError": "بارگذاری گروه‌ها ناموفق بود. دسترسی /admin/groups را بررسی کنید."
+        "loadError": "بارگذاری گروه‌ها ناموفق بود. دسترسی /admin/groups را بررسی کنید.",
+        "viewExpanded": "نمای گسترده",
+        "viewCompact": "نمای فشرده",
+        "howTitle": "نحوه کار گروه‌ها",
+        "howLine1": "هر گروه شامل pattern هایی برای تگ‌های outbound است.",
+        "howLine2": "Fastest group یک گروه خودکار اضافی است که از همه گروه‌ها به جز موارد مستثنی ساخته می‌شود.",
+        "howLine3": "با ذخیره، تنظیمات به /admin/groups ارسال و فوری اعمال می‌شود.",
+        "excludeFromFastest": "این گروه از fastest حذف شود",
+        "fastestName": "نام fastest group"
       },
       "labels": {
         "status": "وضعیت",

@@ -981,7 +981,15 @@
         "emptyExcludeHint": "Добавьте хотя бы одну группу, чтобы управлять исключениями",
         "previewTitle": "Предпросмотр конфига",
         "previewHint": "Это payload для PUT /admin/groups.",
-        "loadError": "Не удалось загрузить группы. Проверьте доступность /admin/groups."
+        "loadError": "Не удалось загрузить группы. Проверьте доступность /admin/groups.",
+        "viewExpanded": "Развернутый вид",
+        "viewCompact": "Компактный вид",
+        "howTitle": "Как пользоваться группами",
+        "howLine1": "Каждая группа содержит паттерны для тегов outbounds.",
+        "howLine2": "Fastest group — это дополнительная авто-группа, которая строится по всем группам, кроме исключенных.",
+        "howLine3": "После сохранения конфиг отправляется в /admin/groups и применяется сразу.",
+        "excludeFromFastest": "Исключить эту группу из fastest",
+        "fastestName": "Название fastest-группы"
       },
       "labels": {
         "status": "Статус",

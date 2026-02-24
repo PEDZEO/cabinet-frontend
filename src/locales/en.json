@@ -959,7 +959,15 @@
         "emptyExcludeHint": "Add at least one group to manage exclusions.",
         "previewTitle": "Config preview",
         "previewHint": "This is the payload for PUT /admin/groups.",
-        "loadError": "Failed to load groups. Check /admin/groups availability."
+        "loadError": "Failed to load groups. Check /admin/groups availability.",
+        "viewExpanded": "Expanded view",
+        "viewCompact": "Compact view",
+        "howTitle": "How groups work",
+        "howLine1": "Each group contains patterns for outbound tags.",
+        "howLine2": "Fastest group is an additional auto-group built from all groups except excluded ones.",
+        "howLine3": "Save sends config to /admin/groups and applies it immediately.",
+        "excludeFromFastest": "Exclude this group from fastest",
+        "fastestName": "Fastest group name"
       },
       "labels": {
         "status": "Status",

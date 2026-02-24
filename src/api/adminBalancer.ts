@@ -18,6 +18,7 @@ export interface BalancerGroupsResponse {
   status: string;
   groups: Record<string, string[]>;
   fastest_group: boolean;
+  fastest_group_name?: string;
   fastest_exclude_groups: string[];
 }
 
@@ -90,6 +91,7 @@ export const adminBalancerApi = {
   updateGroups: async (payload: {
     groups: Record<string, string[]>;
     fastest_group: boolean;
+    fastest_group_name?: string;
     fastest_exclude_groups: string[];
   }): Promise<BalancerGroupsResponse> => {
     const response = await apiClient.put('/cabinet/admin/balancer/groups', payload);

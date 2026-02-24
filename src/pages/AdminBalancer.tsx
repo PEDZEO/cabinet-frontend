@@ -11,6 +11,8 @@ type GroupDraft = {
   patterns: string;
 };
 
+const DEFAULT_FASTEST_GROUP_NAME = '🏁 🇪🇺 Самые быстрые';
+
 type AlertTone = 'default' | 'success' | 'error';
 
 type MetricItem = {
@@ -141,8 +143,10 @@ export default function AdminBalancer() {
   const [actionTone, setActionTone] = useState<AlertTone>('default');
   const [groupsDraft, setGroupsDraft] = useState<GroupDraft[]>([]);
   const [fastestEnabled, setFastestEnabled] = useState(true);
+  const [fastestGroupName, setFastestGroupName] = useState(DEFAULT_FASTEST_GROUP_NAME);
   const [excludeGroups, setExcludeGroups] = useState<string[]>([]);
   const [groupsDirty, setGroupsDirty] = useState(false);
+  const [compactGroupsView, setCompactGroupsView] = useState(true);
 
   const {
     data: status,
@@ -209,6 +213,7 @@ export default function AdminBalancer() {
     if (!groupsData || groupsDirty) return;
     setGroupsDraft(groupsToDraft(groupsData));
     setFastestEnabled(Boolean(groupsData.fastest_group));
+    setFastestGroupName((groupsData.fastest_group_name || DEFAULT_FASTEST_GROUP_NAME).trim());
     setExcludeGroups(groupsData.fastest_exclude_groups || []);
   }, [groupsData, groupsDirty]);
 
@@ -246,6 +251,7 @@ export default function AdminBalancer() {
       setGroupsDirty(false);
       setGroupsDraft(groupsToDraft(data));
       setFastestEnabled(Boolean(data.fastest_group));
+      setFastestGroupName((data.fastest_group_name || DEFAULT_FASTEST_GROUP_NAME).trim());
       setExcludeGroups(data.fastest_exclude_groups || []);
       await refetchGroups();
     },
@@ -403,10 +409,12 @@ export default function AdminBalancer() {
 
     const availableNames = new Set(groupsDraft.map((item) => item.name.trim()).filter(Boolean));
     const filteredExclude = excludeGroups.filter((value) => availableNames.has(value));
+    const normalizedFastestName = fastestGroupName.trim() || DEFAULT_FASTEST_GROUP_NAME;
 
     await saveGroupsMutation.mutateAsync({
       groups,
       fastest_group: fastestEnabled,
+      fastest_group_name: normalizedFastestName,
       fastest_exclude_groups: filteredExclude,
     });
   };
@@ -540,9 +548,10 @@ export default function AdminBalancer() {
     return {
       groups,
       fastest_group: fastestEnabled,
+      fastest_group_name: fastestGroupName.trim() || DEFAULT_FASTEST_GROUP_NAME,
       fastest_exclude_groups: excludeGroups.filter((name) => availableNames.has(name)),
     };
-  }, [excludeGroups, fastestEnabled, groupsDraft]);
+  }, [excludeGroups, fastestEnabled, fastestGroupName, groupsDraft]);
 
   return (
     <div className="animate-fade-in space-y-4">
@@ -646,6 +655,14 @@ export default function AdminBalancer() {
           </h3>
           <div className="flex gap-2">
             <button
+              onClick={() => setCompactGroupsView((prev) => !prev)}
+              className="rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600"
+            >
+              {compactGroupsView
+                ? t('admin.balancer.groups.viewExpanded', 'Expanded view')
+                : t('admin.balancer.groups.viewCompact', 'Compact view')}
+            </button>
+            <button
               onClick={addGroup}
               className="rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600"
               aria-label="Add balancer group"
@@ -657,6 +674,9 @@ export default function AdminBalancer() {
                 if (!groupsData) return;
                 setGroupsDraft(groupsToDraft(groupsData));
                 setFastestEnabled(Boolean(groupsData.fastest_group));
+                setFastestGroupName(
+                  (groupsData.fastest_group_name || DEFAULT_FASTEST_GROUP_NAME).trim(),
+                );
                 setExcludeGroups(groupsData.fastest_exclude_groups || []);
                 setGroupsDirty(false);
                 setAlert(
@@ -676,6 +696,27 @@ export default function AdminBalancer() {
               {t('common.save', 'Save')}
             </button>
           </div>
+        </div>
+
+        <div className="mb-3 rounded-lg border border-dark-700 bg-dark-900/40 p-3 text-xs text-dark-300">
+          <p className="font-semibold text-dark-100">
+            {t('admin.balancer.groups.howTitle', 'How groups work')}
+          </p>
+          <p>
+            {t('admin.balancer.groups.howLine1', 'Each group contains patterns for outbound tags.')}
+          </p>
+          <p>
+            {t(
+              'admin.balancer.groups.howLine2',
+              'Fastest group is an additional auto-group built from all groups except excluded ones.',
+            )}
+          </p>
+          <p>
+            {t(
+              'admin.balancer.groups.howLine3',
+              'Save applies config to /admin/groups and updates balancer immediately.',
+            )}
+          </p>
         </div>
 
         <div className="space-y-3">
@@ -777,10 +818,30 @@ export default function AdminBalancer() {
                         'admin.balancer.groups.patterns',
                         'Patterns separated by comma or new line',
                       )}
-                      rows={4}
+                      rows={compactGroupsView ? 2 : 4}
                       className="w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none placeholder:text-dark-500 focus:border-accent-500"
                     />
                   </div>
+                </div>
+
+                <div className="mt-2">
+                  <label className="inline-flex items-center gap-2 text-xs text-dark-300">
+                    <input
+                      type="checkbox"
+                      disabled={!group.name.trim()}
+                      checked={
+                        group.name.trim() ? excludeGroups.includes(group.name.trim()) : false
+                      }
+                      onChange={() => {
+                        if (!group.name.trim()) return;
+                        toggleExclude(group.name.trim());
+                      }}
+                    />
+                    {t(
+                      'admin.balancer.groups.excludeFromFastest',
+                      'Exclude this group from fastest',
+                    )}
+                  </label>
                 </div>
               </div>
             );
@@ -800,6 +861,21 @@ export default function AdminBalancer() {
             {t('admin.balancer.groups.fastestToggle', 'Enable fastest group')}
           </label>
 
+          <div className="mb-2">
+            <label className="mb-1 block text-xs text-dark-400">
+              {t('admin.balancer.groups.fastestName', 'Fastest group name')}
+            </label>
+            <input
+              value={fastestGroupName}
+              onChange={(event) => {
+                setGroupsDirty(true);
+                setFastestGroupName(event.target.value);
+              }}
+              placeholder={DEFAULT_FASTEST_GROUP_NAME}
+              className="w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none placeholder:text-dark-500 focus:border-accent-500"
+            />
+          </div>
+
           <div className="mb-2 flex items-center justify-between">
             <p className="text-xs text-dark-400">
               {t(
@@ -818,7 +894,7 @@ export default function AdminBalancer() {
             </button>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="max-h-40 overflow-auto rounded-md border border-dark-700 bg-dark-900/40 p-2">
             {availableGroupNames.length === 0 && (
               <p className="text-xs text-dark-500">
                 {t(
@@ -827,24 +903,18 @@ export default function AdminBalancer() {
                 )}
               </p>
             )}
-
-            {availableGroupNames.map((name) => {
-              const active = excludeGroups.includes(name);
-              return (
-                <button
-                  key={name}
-                  onClick={() => toggleExclude(name)}
-                  className={`rounded-md border px-2 py-1 text-xs transition-colors ${
-                    active
-                      ? 'border-warning-400/60 bg-warning-500/20 text-warning-200'
-                      : 'border-dark-600 bg-dark-800 text-dark-200 hover:bg-dark-700'
-                  }`}
-                  aria-pressed={active}
-                >
-                  {name}
-                </button>
-              );
-            })}
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+              {availableGroupNames.map((name) => (
+                <label key={name} className="inline-flex items-center gap-2 text-xs text-dark-200">
+                  <input
+                    type="checkbox"
+                    checked={excludeGroups.includes(name)}
+                    onChange={() => toggleExclude(name)}
+                  />
+                  <span className="truncate">{name}</span>
+                </label>
+              ))}
+            </div>
           </div>
         </div>
 
