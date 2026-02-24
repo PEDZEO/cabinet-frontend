@@ -316,9 +316,9 @@ export default function AdminBalancer() {
         nodeName,
         usersOnline: prettyValue(statRecord.usersOnline),
         cpuCount: prettyValue(statRecord.cpuCount),
-        totalRamGb: prettyValue(statRecord.totalRamGb),
-        cpuLoad: prettyValue(statRecord.cpuLoad),
-        ramLoad: prettyValue(statRecord.ramLoad),
+        totalRamGb: `${prettyValue(statRecord.totalRamGb)} GB`,
+        cpuLoad: `${prettyValue(statRecord.cpuLoad)} u/core`,
+        ramLoad: `${prettyValue(statRecord.ramLoad)} u/GB`,
         connected: prettyValue(statRecord.isConnected),
         disabled: prettyValue(statRecord.isDisabled),
         isAlias: Boolean(statRecord.isAlias),
@@ -1012,12 +1012,19 @@ export default function AdminBalancer() {
                 'Showing real nodes without inbound aliases.',
               )}
             </p>
+            <p className="mb-2 text-xs text-dark-500">
+              {t(
+                'admin.balancer.cards.nodeStatsUnitsHint',
+                'RAM load and CPU load are user density metrics (users per GB/core), not used memory/CPU percent.',
+              )}
+            </p>
             <table className="min-w-full text-left text-sm text-dark-200">
               <thead>
                 <tr className="border-b border-dark-700 text-xs uppercase text-dark-400">
                   <th className="px-2 py-2">{t('admin.balancer.table.node', 'Node')}</th>
                   <th className="px-2 py-2">{t('admin.balancer.table.users', 'Users')}</th>
                   <th className="px-2 py-2">{t('admin.balancer.table.cpuCores', 'CPU Cores')}</th>
+                  <th className="px-2 py-2">{t('admin.balancer.table.cpuLoad', 'CPU Load')}</th>
                   <th className="px-2 py-2">{t('admin.balancer.table.ramLoad', 'RAM Load')}</th>
                   <th className="px-2 py-2">{t('admin.balancer.table.totalRam', 'Total RAM')}</th>
                   <th className="px-2 py-2">{t('admin.balancer.table.connected', 'Connected')}</th>
@@ -1030,6 +1037,7 @@ export default function AdminBalancer() {
                     <td className="px-2 py-2 font-medium text-dark-100">{row.nodeName}</td>
                     <td className="px-2 py-2">{row.usersOnline}</td>
                     <td className="px-2 py-2">{row.cpuCount}</td>
+                    <td className="px-2 py-2">{row.cpuLoad}</td>
                     <td className="px-2 py-2">{row.ramLoad}</td>
                     <td className="px-2 py-2">{row.totalRamGb}</td>
                     <td className="px-2 py-2">{row.connected}</td>

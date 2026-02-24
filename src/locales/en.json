@@ -939,7 +939,8 @@
         "nodeStats": "Node stats",
         "tokenDebug": "Token debug result",
         "nodeStatsEmpty": "No node stats yet.",
-        "nodeStatsHint": "Showing real nodes without inbound aliases."
+        "nodeStatsHint": "Showing real nodes without inbound aliases.",
+        "nodeStatsUnitsHint": "RAM load and CPU load are user density metrics (users per GB/core), not used memory or CPU percent."
       },
       "groups": {
         "title": "Groups editor",
@@ -1004,6 +1005,7 @@
         "cpu": "CPU",
         "ram": "RAM",
         "cpuCores": "CPU cores",
+        "cpuLoad": "CPU load",
         "ramLoad": "RAM load",
         "totalRam": "Total RAM",
         "connected": "Connected",

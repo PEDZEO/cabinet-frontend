@@ -961,7 +961,8 @@
         "nodeStats": "Node stats",
         "tokenDebug": "Результат token debug",
         "nodeStatsEmpty": "Статистика нод пока недоступна",
-        "nodeStatsHint": "Показаны только реальные ноды (без alias inbound-тегов)."
+        "nodeStatsHint": "Показаны только реальные ноды (без alias inbound-тегов).",
+        "nodeStatsUnitsHint": "RAM Load и CPU Load — это плотность пользователей (users per GB/core), а не занятая память или % CPU."
       },
       "groups": {
         "title": "Редактор групп",
@@ -1026,6 +1027,7 @@
         "cpu": "CPU",
         "ram": "RAM",
         "cpuCores": "CPU ядра",
+        "cpuLoad": "CPU нагрузка",
         "ramLoad": "RAM нагрузка",
         "totalRam": "Всего RAM",
         "connected": "Подключена",
