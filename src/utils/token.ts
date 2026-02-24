@@ -167,7 +167,7 @@ function extractTelegramUserId(initData: string): string | null {
     const params = new URLSearchParams(initData);
     const userJson = params.get('user');
     if (!userJson) return null;
-    const user = JSON.parse(decodeURIComponent(userJson));
+    const user = JSON.parse(userJson);
     return user.id != null ? String(user.id) : null;
   } catch {
     return null;

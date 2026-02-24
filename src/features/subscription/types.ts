@@ -6,5 +6,5 @@ export type PromoDiscountResult = {
 
 export type ApplyPromoDiscount = (
   priceKopeks: number,
-  hasExistingDiscount?: boolean,
+  existingOriginalPrice?: number | boolean | null,
 ) => PromoDiscountResult;
