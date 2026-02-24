@@ -7,6 +7,7 @@ import { promoApi } from '@/api/promo';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useHapticFeedback } from '@/platform/hooks/useHaptic';
 import { useNavigate } from 'react-router';
+import { useLocation } from 'react-router';
 import type { Tariff, TrafficPackage } from '@/types';
 import { PullToRefresh } from '@/components/lite/PullToRefresh';
 import { LiteSubscriptionSkeleton } from '@/components/lite/LiteSubscriptionSkeleton';
@@ -95,6 +96,7 @@ type TabType = 'tariffs' | 'devices' | 'traffic';
 export function LiteSubscription() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const { formatAmount, currencySymbol } = useCurrency();
   const haptic = useHapticFeedback();
@@ -115,21 +117,31 @@ export function LiteSubscription() {
   // Helper to apply promo discount to a price
   const applyPromoDiscount = (
     priceKopeks: number,
-    hasExistingDiscount: boolean = false,
+    existingOriginalPrice: number | boolean | null = null,
   ): {
     price: number;
     original: number | null;
     percent: number | null;
   } => {
-    // Only apply promo discount if no existing discount and we have an active promo discount
-    if (!activeDiscount?.is_active || !activeDiscount.discount_percent || hasExistingDiscount) {
+    const hasPromo = !!activeDiscount?.is_active && !!activeDiscount?.discount_percent;
+    const normalizedOriginal =
+      typeof existingOriginalPrice === 'number' && existingOriginalPrice > priceKopeks
+        ? existingOriginalPrice
+        : null;
+
+    if (!hasPromo) {
       return { price: priceKopeks, original: null, percent: null };
     }
+
     const discountedPrice = Math.round(priceKopeks * (1 - activeDiscount.discount_percent / 100));
+    const combinedPercent = normalizedOriginal
+      ? Math.round((1 - discountedPrice / normalizedOriginal) * 100)
+      : activeDiscount.discount_percent;
+
     return {
       price: discountedPrice,
-      original: priceKopeks,
-      percent: activeDiscount.discount_percent,
+      original: normalizedOriginal ?? priceKopeks,
+      percent: combinedPercent,
     };
   };
 
@@ -174,6 +186,14 @@ export function LiteSubscription() {
     queryFn: subscriptionApi.getDeviceReductionInfo,
     enabled: activeTab === 'devices' && !!subscriptionData?.has_subscription,
   });
+
+  useEffect(() => {
+    const state = location.state as { openDevicesTab?: boolean } | null;
+    if (state?.openDevicesTab && subscriptionData?.has_subscription) {
+      setActiveTab('devices');
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, subscriptionData?.has_subscription]);
 
   // Clamp device count when max limit changes
   useEffect(() => {

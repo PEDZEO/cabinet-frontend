@@ -56,7 +56,7 @@ export default function Balance() {
 
 function FullBalance() {
   const { t } = useTranslation();
-  const { refreshUser } = useAuthStore();
+  const refreshUser = useAuthStore((state) => state.refreshUser);
   const queryClient = useQueryClient();
   const { formatAmount, currencySymbol } = useCurrency();
   const [searchParams] = useSearchParams();

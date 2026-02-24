@@ -67,14 +67,15 @@ export default function Dashboard() {
 
 function FullDashboard() {
   const { t } = useTranslation();
-  const { user, refreshUser } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
+  const refreshUser = useAuthStore((state) => state.refreshUser);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { formatAmount, currencySymbol, formatPositive } = useCurrency();
   const [trialError, setTrialError] = useState<string | null>(null);
   const { isCompleted: isOnboardingCompleted, complete: completeOnboarding } = useOnboarding();
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const { blockingType } = useBlockingStore();
+  const blockingType = useBlockingStore((state) => state.blockingType);
 
   // Refresh user data on mount
   useEffect(() => {
@@ -409,10 +410,17 @@ function FullDashboard() {
                 {subscription.traffic_limit_gb || '∞'} GB
               </div>
             </div>
-            <div>
+            <button
+              type="button"
+              onClick={() => navigate('/subscription', { state: { scrollToDevices: true } })}
+              className="text-left"
+              aria-label={t('subscription.myDevices')}
+            >
               <div className="mb-1 text-sm text-dark-500">{t('subscription.devices')}</div>
-              <div className="font-medium text-dark-100">{subscription.device_limit}</div>
-            </div>
+              <div className="font-medium text-dark-100 transition-colors hover:text-accent-400">
+                {subscription.device_limit}
+              </div>
+            </button>
             <div>
               <div className="mb-1 text-sm text-dark-500">{t('subscription.timeLeft')}</div>
               <div className="font-medium text-dark-100">

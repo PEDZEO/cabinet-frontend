@@ -137,7 +137,13 @@ export default function AdminBroadcasts() {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['admin', 'broadcasts', 'list', page],
     queryFn: () => adminBroadcastsApi.list(limit, page * limit),
-    refetchInterval: 5000, // Auto refresh every 5s
+    refetchInterval: (query) => {
+      const items = query.state.data?.items;
+      const hasActive = items?.some((b: { status: string }) =>
+        ['queued', 'in_progress', 'cancelling'].includes(b.status),
+      );
+      return hasActive ? 5000 : false;
+    },
   });
 
   const broadcasts = data?.items || [];

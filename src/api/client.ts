@@ -133,6 +133,12 @@ export interface ChannelSubscriptionError {
   code: 'channel_subscription_required';
   message: string;
   channel_link?: string;
+  channels?: Array<{
+    channel_id: string;
+    channel_link?: string;
+    title?: string;
+    is_subscribed: boolean;
+  }>;
 }
 
 export interface BlacklistedError {
@@ -189,6 +195,7 @@ apiClient.interceptors.response.use(
       useBlockingStore.getState().setChannelSubscription({
         message: detail.message,
         channel_link: detail.channel_link,
+        channels: detail.channels,
       });
       return Promise.reject(error);
     }

@@ -18,9 +18,9 @@ export default function WebSocketNotifications() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { showToast } = useToast();
-  const { refreshUser } = useAuthStore();
+  const refreshUser = useAuthStore((state) => state.refreshUser);
   const { formatAmount, currencySymbol } = useCurrency();
-  const { show: showSuccessModal } = useSuccessNotification();
+  const showSuccessModal = useSuccessNotification((state) => state.show);
 
   const handleMessage = useCallback(
     (message: WSMessage) => {

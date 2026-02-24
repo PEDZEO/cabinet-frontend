@@ -740,7 +740,8 @@
       "updates": "更新",
       "pinnedMessages": "置顶消息",
       "partners": "合作伙伴",
-      "withdrawals": "提现"
+      "withdrawals": "提现",
+      "channelSubscriptions": "必订频道"
     },
     "panel": {
       "title": "管理面板",
@@ -767,7 +768,8 @@
       "updatesDesc": "机器人和面板版本",
       "pinnedMessagesDesc": "管理用户置顶消息",
       "partnersDesc": "管理合作伙伴申请和佣金",
-      "withdrawalsDesc": "审核和处理提现请求"
+      "withdrawalsDesc": "审核和处理提现请求",
+      "channelSubscriptionsDesc": "管理必订频道订阅"
     },
     "trafficUsage": {
       "title": "流量使用",
@@ -1050,6 +1052,31 @@
       "unpinnedCount": "已取消置顶",
       "editMessage": "编辑",
       "cantDeleteActive": "无法删除活跃消息"
+    },
+    "channelSubscriptions": {
+      "title": "必订频道",
+      "subtitle": "用户必须订阅这些频道",
+      "addChannel": "添加频道",
+      "empty": "未配置频道",
+      "enabled": "已启用",
+      "disabled": "已禁用",
+      "enable": "启用",
+      "disable": "禁用",
+      "edit": "编辑",
+      "editing": "编辑",
+      "delete": "删除",
+      "deleteConfirm": "删除此频道？",
+      "sortOrder": "排序",
+      "form": {
+        "title": "显示名称",
+        "channelId": "频道ID",
+        "channelIdHint": "-100XXXXXXXXXX",
+        "channelLink": "频道链接",
+        "channelLinkHint": "https://t.me/channel",
+        "submit": "添加",
+        "save": "保存",
+        "cancel": "取消"
+      }
     },
     "settings": {
       "title": "系统设置",
@@ -2402,6 +2429,7 @@
     "notVerified": "未验证",
     "verificationRequired": "请验证邮箱以使用邮箱登录。",
     "resendVerification": "重新发送验证邮件",
+    "resendIn": "{{seconds}} 秒后重新发送",
     "verificationResent": "验证邮件已重新发送！",
     "canLoginWithEmail": "现在您可以使用邮箱和密码登录。",
     "emailAlreadyRegistered": "此邮箱已绑定到其他账户。如果这是您的邮箱，请使用邮箱登录或联系客服。",
@@ -2701,7 +2729,9 @@
       "waitSeconds": "请等待 {{seconds}} 秒",
       "hint": "订阅后点击检查按钮",
       "notSubscribed": "您还没有订阅该频道",
-      "checkError": "检查失败。请稍后重试。"
+      "checkError": "检查失败。请稍后重试。",
+      "subscribed": "已订阅",
+      "channelsRequired": "请订阅以下所有频道以继续"
     },
     "blacklisted": {
       "title": "访问被拒绝",

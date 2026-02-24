@@ -79,6 +79,7 @@ const AdminBroadcastDetail = lazy(() => import('./pages/AdminBroadcastDetail'));
 const AdminPinnedMessages = lazy(() => import('./pages/AdminPinnedMessages'));
 const AdminPinnedMessageCreate = lazy(() => import('./pages/AdminPinnedMessageCreate'));
 const AdminMainMenuButtons = lazy(() => import('./pages/AdminMainMenuButtons'));
+const AdminChannelSubscriptions = lazy(() => import('./pages/AdminChannelSubscriptions'));
 const AdminEmailTemplatePreview = lazy(() => import('./pages/AdminEmailTemplatePreview'));
 
 function App() {
@@ -802,6 +803,16 @@ function App() {
             <AdminRoute>
               <LazyPage>
                 <AdminMainMenuButtons />
+              </LazyPage>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/channel-subscriptions"
+          element={
+            <AdminRoute>
+              <LazyPage>
+                <AdminChannelSubscriptions />
               </LazyPage>
             </AdminRoute>
           }

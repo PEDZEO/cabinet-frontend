@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
@@ -157,7 +157,7 @@ export default function Support() {
   log.debug('Component loaded');
 
   const { t } = useTranslation();
-  const { isAdmin } = useAuthStore();
+  const isAdmin = useAuthStore((state) => state.isAdmin);
   const queryClient = useQueryClient();
   const { openTelegramLink, openLink } = usePlatform();
   const [selectedTicket, setSelectedTicket] = useState<TicketDetail | null>(null);
@@ -173,6 +173,34 @@ export default function Support() {
   const [replyAttachment, setReplyAttachment] = useState<MediaAttachment | null>(null);
   const createFileInputRef = useRef<HTMLInputElement>(null);
   const replyFileInputRef = useRef<HTMLInputElement>(null);
+  const createPreviewRef = useRef<string | null>(null);
+  const replyPreviewRef = useRef<string | null>(null);
+
+  // Revoke blob URLs on unmount to prevent memory leaks
+  useEffect(() => {
+    const createRef = createPreviewRef;
+    const replyRef = replyPreviewRef;
+    return () => {
+      if (createRef.current) URL.revokeObjectURL(createRef.current);
+      if (replyRef.current) URL.revokeObjectURL(replyRef.current);
+    };
+  }, []);
+
+  const clearCreateAttachment = () => {
+    if (createPreviewRef.current) {
+      URL.revokeObjectURL(createPreviewRef.current);
+      createPreviewRef.current = null;
+    }
+    clearCreateAttachment();
+  };
+
+  const clearReplyAttachment = () => {
+    if (replyPreviewRef.current) {
+      URL.revokeObjectURL(replyPreviewRef.current);
+      replyPreviewRef.current = null;
+    }
+    clearReplyAttachment();
+  };
 
   // Get support configuration
   const { data: supportConfig, isLoading: configLoading } = useQuery({
@@ -220,8 +248,11 @@ export default function Support() {
       return;
     }
 
-    // Create preview
+    // Revoke old blob URL before creating new one
+    const previewRef = setAttachment === setCreateAttachment ? createPreviewRef : replyPreviewRef;
+    if (previewRef.current) URL.revokeObjectURL(previewRef.current);
     const preview = URL.createObjectURL(file);
+    previewRef.current = preview;
     setAttachment({ file, preview, uploading: true });
 
     try {
@@ -257,7 +288,7 @@ export default function Support() {
       setShowCreateForm(false);
       setNewTitle('');
       setNewMessage('');
-      setCreateAttachment(null);
+      clearCreateAttachment();
       setSelectedTicket(ticket);
     },
   });
@@ -275,7 +306,7 @@ export default function Support() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ticket', selectedTicket?.id] });
       setReplyMessage('');
-      setReplyAttachment(null);
+      clearReplyAttachment();
     },
   });
 
@@ -451,7 +482,7 @@ export default function Support() {
           onClick={() => {
             setShowCreateForm(true);
             setSelectedTicket(null);
-            setCreateAttachment(null);
+            clearCreateAttachment();
           }}
         >
           <PlusIcon />
@@ -487,7 +518,7 @@ export default function Support() {
                     onClick={() => {
                       setSelectedTicket(ticket as unknown as TicketDetail);
                       setShowCreateForm(false);
-                      setReplyAttachment(null);
+                      clearReplyAttachment();
                     }}
                     className={`w-full rounded-bento border p-4 text-left transition-all ${
                       selectedTicket?.id === ticket.id
@@ -592,7 +623,7 @@ export default function Support() {
                   {createAttachment ? (
                     <AttachmentPreview
                       attachment={createAttachment}
-                      onRemove={() => setCreateAttachment(null)}
+                      onRemove={() => clearCreateAttachment()}
                     />
                   ) : (
                     <button
@@ -626,7 +657,7 @@ export default function Support() {
                     variant="secondary"
                     onClick={() => {
                       setShowCreateForm(false);
-                      setCreateAttachment(null);
+                      clearCreateAttachment();
                     }}
                   >
                     {t('common.cancel')}
@@ -733,7 +764,7 @@ export default function Support() {
                         {replyAttachment ? (
                           <AttachmentPreview
                             attachment={replyAttachment}
-                            onRemove={() => setReplyAttachment(null)}
+                            onRemove={() => clearReplyAttachment()}
                           />
                         ) : (
                           <button

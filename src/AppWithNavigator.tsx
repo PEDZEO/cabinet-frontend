@@ -16,6 +16,8 @@ import { ToastProvider } from './components/Toast';
 import { TooltipProvider } from './components/primitives/Tooltip';
 import { isInTelegramWebApp } from './hooks/useTelegramSDK';
 
+const TWEMOJI_OPTIONS = { className: 'twemoji', folder: 'svg', ext: '.svg' } as const;
+
 /**
  * Resets scroll position to top on every route change.
  */
@@ -91,7 +93,7 @@ export function AppWithNavigator() {
             <TooltipProvider>
               <ToastProvider>
                 <WebSocketProvider>
-                  <Twemoji options={{ className: 'twemoji', folder: 'svg', ext: '.svg' }}>
+                  <Twemoji options={TWEMOJI_OPTIONS}>
                     <App />
                   </Twemoji>
                 </WebSocketProvider>

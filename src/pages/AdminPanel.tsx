@@ -515,6 +515,12 @@ export default function AdminPanel() {
       iconColor: 'text-violet-400',
       items: [
         {
+          to: '/admin/channel-subscriptions',
+          icon: <MegaphoneIcon />,
+          title: t('admin.nav.channelSubscriptions'),
+          description: t('admin.panel.channelSubscriptionsDesc'),
+        },
+        {
           to: '/admin/settings',
           icon: <CogIcon />,
           title: t('admin.nav.settings'),

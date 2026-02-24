@@ -28,6 +28,7 @@ import {
 } from '../api/adminMenuLayout';
 import { AdminBackButton } from '../components/admin';
 import { ButtonsTab } from '../components/admin/ButtonsTab';
+import { MainMenuButtonsStatsTab } from '../components/admin/MainMenuButtonsStatsTab';
 
 interface FormState {
   text: string;
@@ -216,7 +217,7 @@ export default function AdminMainMenuButtons() {
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'layout' | 'sections'>('layout');
+  const [activeTab, setActiveTab] = useState<'layout' | 'sections' | 'stats'>('layout');
   const [selectedRowIndex, setSelectedRowIndex] = useState(0);
   const [addMenuRowIndex, setAddMenuRowIndex] = useState<number | null>(null);
   const [rowCapacities, setRowCapacities] = useState<number[]>([]);
@@ -682,6 +683,17 @@ export default function AdminMainMenuButtons() {
         >
           {t('admin.settings.menu.buttons', 'Стили кнопок')}
         </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('stats')}
+          className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+            activeTab === 'stats'
+              ? 'bg-accent-500/15 text-accent-300'
+              : 'bg-dark-800 text-dark-300 hover:bg-dark-700/70'
+          }`}
+        >
+          {t('admin.mainMenuButtons.statsTab')}
+        </button>
       </div>
 
       {activeTab === 'layout' && error && (
@@ -697,6 +709,8 @@ export default function AdminMainMenuButtons() {
 
       {activeTab === 'sections' ? (
         <ButtonsTab />
+      ) : activeTab === 'stats' ? (
+        <MainMenuButtonsStatsTab />
       ) : (
         <div className="grid gap-4 xl:grid-cols-[minmax(340px,0.9fr)_minmax(0,1.1fr)]">
           <div className="space-y-4">

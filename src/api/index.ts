@@ -12,6 +12,7 @@ export { infoApi } from './info';
 export { adminSettingsApi } from './adminSettings';
 export { adminApi, statsApi } from './admin';
 export { adminAppsApi } from './adminApps';
+export { adminChannelsApi } from './adminChannels';
 export { adminBroadcastsApi } from './adminBroadcasts';
 export { adminEmailTemplatesApi } from './adminEmailTemplates';
 export { adminMainMenuButtonsApi } from './adminMainMenuButtons';

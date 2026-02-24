@@ -109,7 +109,9 @@ export const TariffCardsGrid = ({
                   <div>
                     <div className="text-lg font-semibold text-dark-100">{tariff.name}</div>
                     {tariff.description && (
-                      <div className="mt-1 text-sm text-dark-400">{tariff.description}</div>
+                      <div className="mt-1 whitespace-pre-line text-sm text-dark-400">
+                        {tariff.description}
+                      </div>
                     )}
                   </div>
                   {isCurrentTariff && (
@@ -182,7 +184,10 @@ export const TariffCardsGrid = ({
                     const originalDailyPrice = tariff.original_daily_price_kopeks || 0;
                     const hasExistingDailyDiscount = originalDailyPrice > dailyPrice;
                     if (dailyPrice > 0) {
-                      const promoDaily = applyPromoDiscount(dailyPrice, hasExistingDailyDiscount);
+                      const promoDaily = applyPromoDiscount(
+                        dailyPrice,
+                        hasExistingDailyDiscount ? originalDailyPrice : null,
+                      );
                       return (
                         <span className="flex items-center gap-2">
                           <span className="font-medium text-accent-400">
@@ -221,7 +226,7 @@ export const TariffCardsGrid = ({
                       );
                       const promoPeriod = applyPromoDiscount(
                         firstPeriod?.price_kopeks || 0,
-                        hasExistingDiscount,
+                        hasExistingDiscount ? (firstPeriod?.original_price_kopeks ?? null) : null,
                       );
                       return (
                         <span className="flex flex-wrap items-center gap-2">

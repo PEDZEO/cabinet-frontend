@@ -906,7 +906,8 @@
       "mainMenuButtons": "Кнопки меню",
       "accountLinking": "Merge аккаунтов",
       "partners": "Партнёры",
-      "withdrawals": "Выводы"
+      "withdrawals": "Выводы",
+      "channelSubscriptions": "Обязательные каналы"
     },
     "panel": {
       "title": "Панель администратора",
@@ -935,7 +936,8 @@
       "mainMenuButtonsDesc": "Настройка дополнительных кнопок главного меню",
       "accountLinkingDesc": "Ручная модерация спорных объединений аккаунтов",
       "partnersDesc": "Управление заявками партнёров и комиссиями",
-      "withdrawalsDesc": "Проверка и обработка заявок на вывод"
+      "withdrawalsDesc": "Проверка и обработка заявок на вывод",
+      "channelSubscriptionsDesc": "Управление обязательными подписками на каналы"
     },
     "accountLinking": {
       "title": "Ручные заявки на объединение аккаунтов",
@@ -1420,7 +1422,66 @@
       "activeListTitle": "Активные кнопки",
       "inactiveListTitle": "Неактивные кнопки",
       "activate": "Включить",
-      "deactivate": "Выключить"
+      "deactivate": "Выключить",
+      "statsTab": "Статистика",
+      "stats": {
+        "period": "Период",
+        "days": "дн.",
+        "allButtons": "Все кнопки",
+        "selectButton": "Выбрать кнопку",
+        "totalClicks": "Всего кликов",
+        "buttonsTracked": "Кнопок с логами",
+        "periodRange": "Интервал",
+        "byButton": "Статистика по кнопкам",
+        "buttonId": "ID кнопки",
+        "total": "Всего",
+        "today": "Сегодня",
+        "week": "7 дней",
+        "month": "30 дней",
+        "uniqueUsers": "Уникальные пользователи",
+        "lastClick": "Последний клик",
+        "byType": "По типам кнопок",
+        "byHour": "По часам",
+        "byWeekday": "По дням недели",
+        "topUsers": "Топ пользователей",
+        "periodComparison": "Сравнение периодов",
+        "currentDays": "Текущий период (дни)",
+        "previousDays": "Предыдущий период (дни)",
+        "currentPeriod": "Текущий период",
+        "previousPeriod": "Предыдущий период",
+        "changePercent": "Изменение, %",
+        "trend": "Тренд",
+        "userSequence": "Последовательность кликов пользователя",
+        "userIdPlaceholder": "ID пользователя",
+        "enterUserId": "Введите ID пользователя для просмотра последовательности",
+        "selectedButton": "Выбранная кнопка",
+        "noData": "Нет данных за выбранный период"
+      }
+    },
+    "channelSubscriptions": {
+      "title": "Обязательные каналы",
+      "subtitle": "Пользователи должны подписаться на эти каналы",
+      "addChannel": "Добавить канал",
+      "empty": "Каналы не настроены",
+      "enabled": "Активен",
+      "disabled": "Отключён",
+      "enable": "Включить",
+      "disable": "Отключить",
+      "edit": "Изменить",
+      "editing": "Редактирование",
+      "delete": "Удалить",
+      "deleteConfirm": "Удалить этот канал?",
+      "sortOrder": "Порядок",
+      "form": {
+        "title": "Название",
+        "channelId": "ID канала",
+        "channelIdHint": "-100XXXXXXXXXX",
+        "channelLink": "Ссылка на канал",
+        "channelLinkHint": "https://t.me/channel",
+        "submit": "Добавить",
+        "save": "Сохранить",
+        "cancel": "Отмена"
+      }
     },
     "settings": {
       "title": "Настройки системы",
@@ -3555,6 +3616,7 @@
     "notVerified": "Не подтверждён",
     "verificationRequired": "Подтвердите email для использования входа по почте.",
     "resendVerification": "Отправить письмо повторно",
+    "resendIn": "Повторить через {{seconds}} сек.",
     "verificationResent": "Письмо отправлено повторно!",
     "canLoginWithEmail": "Теперь вы можете входить с помощью email и пароля.",
     "emailAlreadyRegistered": "Этот email уже привязан к другому аккаунту. Если это ваш email, войдите через него или обратитесь в поддержку.",
@@ -3846,7 +3908,9 @@
       "waitSeconds": "Подождите {{seconds}} сек.",
       "hint": "После подписки нажмите кнопку проверки",
       "notSubscribed": "Вы ещё не подписались на канал",
-      "checkError": "Ошибка проверки. Попробуйте позже."
+      "checkError": "Ошибка проверки. Попробуйте позже.",
+      "subscribed": "Подписан",
+      "channelsRequired": "Подпишитесь на все каналы ниже для продолжения"
     },
     "blacklisted": {
       "title": "Доступ запрещён",

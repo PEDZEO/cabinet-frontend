@@ -6,7 +6,7 @@ import { contestsApi } from '@/api/contests';
 import { pollsApi } from '@/api/polls';
 
 export function useFeatureFlags() {
-  const { isAuthenticated } = useAuthStore();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const { data: referralTerms } = useQuery({
     queryKey: ['referral-terms'],

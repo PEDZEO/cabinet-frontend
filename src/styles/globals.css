@@ -192,7 +192,7 @@
     position: relative;
   }
 
-  /* Global Noise Texture */
+  /* Global Noise Texture — no mix-blend-mode to avoid fullscreen GPU compositing */
   body::before {
     content: '';
     position: fixed;
@@ -201,7 +201,13 @@
     pointer-events: none;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
     opacity: 0.03;
-    mix-blend-mode: overlay;
+  }
+
+  /* Disable noise on mobile to save GPU */
+  @media (max-width: 1023px) {
+    body::before {
+      display: none;
+    }
   }
 
   /* Optimize main scrollable content */
@@ -440,9 +446,7 @@ img.twemoji {
   /* Glass effect - Dark (optimized for mobile) */
   .glass {
     @apply border border-dark-700/30 bg-dark-900/80;
-    /* GPU acceleration */
     transform: translateZ(0);
-    will-change: transform;
   }
 
   /* Enable backdrop-blur only on desktop where it's performant */
@@ -1431,13 +1435,13 @@ input[type='checkbox']:hover:not(:checked) {
   animation: wheel-glow 2s ease-in-out infinite;
 }
 
-/* Toast progress bar animation */
+/* Toast progress bar animation — use scaleX instead of width to avoid layout thrashing */
 @keyframes shrink {
   from {
-    width: 100%;
+    transform: scaleX(1);
   }
   to {
-    width: 0%;
+    transform: scaleX(0);
   }
 }
 
@@ -1454,10 +1458,8 @@ input[type='checkbox']:hover:not(:checked) {
 .wave-blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(60px); /* Reduced from 80px for better performance */
+  filter: blur(60px);
   opacity: 0.5;
-  /* GPU acceleration */
-  will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
 }
@@ -1644,22 +1646,18 @@ input[type='checkbox']:hover:not(:checked) {
 @keyframes backdropFadeIn {
   from {
     opacity: 0;
-    backdrop-filter: blur(0);
   }
   to {
     opacity: 1;
-    backdrop-filter: blur(8px);
   }
 }
 
 @keyframes backdropFadeOut {
   from {
     opacity: 1;
-    backdrop-filter: blur(8px);
   }
   to {
     opacity: 0;
-    backdrop-filter: blur(0);
   }
 }
 

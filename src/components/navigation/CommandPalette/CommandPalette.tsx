@@ -62,7 +62,7 @@ export function CommandPalette({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { haptic } = usePlatform();
-  const { isAdmin } = useAuthStore();
+  const isAdmin = useAuthStore((state) => state.isAdmin);
   const { toggleTheme, isDark } = useTheme();
   const [search, setSearch] = useState('');
 
