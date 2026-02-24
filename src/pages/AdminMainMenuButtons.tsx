@@ -12,23 +12,30 @@ import {
 } from '@dnd-kit/core';
 import {
   SortableContext,
-  arrayMove,
   sortableKeyboardCoordinates,
-  useSortable,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import { useTranslation } from 'react-i18next';
 import {
   adminMenuLayoutApi,
   MenuButtonConfig,
   MenuButtonVisibility,
   MenuRowConfig,
-  MenuLayoutResponse,
 } from '../api/adminMenuLayout';
 import { AdminBackButton } from '../components/admin';
 import { ButtonsTab } from '../components/admin/ButtonsTab';
 import { MainMenuButtonsStatsTab } from '../components/admin/MainMenuButtonsStatsTab';
+import { GripIcon, SortablePreviewButton } from './adminMainMenuButtons/SortablePreviewButton';
+import {
+  buildBuckets,
+  buildInitialOrder,
+  buildRowDefinitions,
+  findRowIndexById,
+  getButtonText,
+  getLangCode,
+  MAX_ROW_SLOTS,
+  reorderVisibleSubset,
+} from './adminMainMenuButtons/utils';
 
 interface FormState {
   text: string;
@@ -47,164 +54,6 @@ const DEFAULT_FORM: FormState = {
   visibility: 'all',
   enabled: true,
 };
-const MAX_ROW_SLOTS = 4;
-
-const GripIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-    />
-  </svg>
-);
-
-function getLangCode(language: string): string {
-  return language.split('-')[0] || 'ru';
-}
-
-function getButtonText(buttonId: string, button: MenuButtonConfig, lang: string): string {
-  return button.text[lang] || button.text.ru || Object.values(button.text)[0] || buttonId;
-}
-
-function buildInitialOrder(layout: MenuLayoutResponse): string[] {
-  const fromRows = layout.rows.flatMap((row) => row.buttons);
-  const known = new Set(fromRows);
-  const missing = Object.keys(layout.buttons).filter((id) => !known.has(id));
-  return [...fromRows, ...missing];
-}
-
-function reorderVisibleSubset(
-  source: string[],
-  visibleIds: string[],
-  activeId: string,
-  overId: string,
-): string[] {
-  const oldVisibleIndex = visibleIds.findIndex((id) => id === activeId);
-  const newVisibleIndex = visibleIds.findIndex((id) => id === overId);
-  if (oldVisibleIndex === -1 || newVisibleIndex === -1) {
-    return source;
-  }
-
-  const reorderedVisible = arrayMove(visibleIds, oldVisibleIndex, newVisibleIndex);
-  const visibleIdSet = new Set(visibleIds);
-  let cursor = 0;
-
-  return source.map((id) => {
-    if (!visibleIdSet.has(id)) {
-      return id;
-    }
-
-    const next = reorderedVisible[cursor];
-    cursor += 1;
-    return next;
-  });
-}
-
-function buildBuckets(ids: string[], lengths: number[]): string[][] {
-  const buckets: string[][] = [];
-  let pointer = 0;
-  lengths.forEach((count) => {
-    const safeCount = Math.max(count, 0);
-    buckets.push(ids.slice(pointer, pointer + safeCount));
-    pointer += safeCount;
-  });
-  if (pointer < ids.length) {
-    if (buckets.length === 0) {
-      buckets.push([]);
-    }
-    buckets[buckets.length - 1] = [...buckets[buckets.length - 1], ...ids.slice(pointer)];
-  }
-  return buckets;
-}
-
-function findRowIndexById(buckets: string[][], buttonId: string): number {
-  for (let idx = 0; idx < buckets.length; idx += 1) {
-    if (buckets[idx].includes(buttonId)) {
-      return idx;
-    }
-  }
-  return -1;
-}
-
-interface SortablePreviewButtonProps {
-  buttonId: string;
-  button: MenuButtonConfig;
-  lang: string;
-  onEdit: () => void;
-  onDeactivate: () => void;
-}
-
-function SortablePreviewButton({
-  buttonId,
-  button,
-  lang,
-  onEdit,
-  onDeactivate,
-}: SortablePreviewButtonProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: buttonId,
-  });
-
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    zIndex: isDragging ? 50 : undefined,
-    position: isDragging ? 'relative' : undefined,
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`group flex min-h-[40px] items-center gap-2 rounded-md border px-2 py-1.5 ${
-        isDragging
-          ? 'border-accent-500/50 bg-dark-800 shadow-lg shadow-accent-500/20'
-          : 'border-dark-700/70 bg-dark-800/70 hover:border-dark-600'
-      }`}
-    >
-      <button
-        type="button"
-        {...attributes}
-        {...listeners}
-        className="touch-none rounded-lg p-1.5 text-dark-500 transition-colors hover:bg-dark-700/50 hover:text-dark-300"
-        title="Перетащить для смены порядка"
-        aria-label={`Drag ${buttonId}`}
-      >
-        <svg
-          className="h-4 w-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-          />
-        </svg>
-      </button>
-
-      <button
-        type="button"
-        onClick={onEdit}
-        className="line-clamp-2 min-w-0 flex-1 text-left text-sm text-dark-100"
-        title={getButtonText(buttonId, button, lang)}
-      >
-        {getButtonText(buttonId, button, lang)}
-      </button>
-
-      <button
-        type="button"
-        onClick={onDeactivate}
-        className="rounded-md border border-dark-700/70 px-2 py-1 text-xs text-dark-300 hover:border-dark-500 hover:text-dark-100"
-      >
-        Скрыть
-      </button>
-    </div>
-  );
-}
 
 export default function AdminMainMenuButtons() {
   const { t, i18n } = useTranslation();
@@ -243,7 +92,7 @@ export default function AdminMainMenuButtons() {
     setOrderIds(buildInitialOrder(data));
     setRowLengths(data.rows.map((row) => row.buttons.length));
     setRowCapacities(data.rows.map((row) => Math.max(row.max_per_row || 1, 1)));
-    setRowDefs(data.rows.map((row) => ({ id: row.id, conditions: row.conditions })));
+    setRowDefs(buildRowDefinitions(data.rows));
     setSelectedRowIndex(0);
     setAddMenuRowIndex(null);
   }, [data]);
