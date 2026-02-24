@@ -409,17 +409,17 @@ function FullDashboard() {
                 {subscription.traffic_limit_gb || '∞'} GB
               </div>
             </div>
-            <div>
+            <button
+              type="button"
+              onClick={() => navigate('/subscription', { state: { scrollToDevices: true } })}
+              className="text-left"
+              aria-label={t('subscription.myDevices')}
+            >
               <div className="mb-1 text-sm text-dark-500">{t('subscription.devices')}</div>
-              <button
-                type="button"
-                onClick={() => navigate('/subscription', { state: { scrollToDevices: true } })}
-                className="font-medium text-dark-100 transition-colors hover:text-accent-400"
-                aria-label={t('subscription.myDevices')}
-              >
+              <div className="font-medium text-dark-100 transition-colors hover:text-accent-400">
                 {subscription.device_limit}
-              </button>
-            </div>
+              </div>
+            </button>
             <div>
               <div className="mb-1 text-sm text-dark-500">{t('subscription.timeLeft')}</div>
               <div className="font-medium text-dark-100">

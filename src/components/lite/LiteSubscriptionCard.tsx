@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHapticFeedback } from '@/platform/hooks/useHaptic';
+import { useNavigate } from 'react-router';
 import type { Subscription } from '@/types';
 
 interface LiteSubscriptionCardProps {
@@ -27,6 +28,7 @@ const CopyCheckIcon = () => (
 export function LiteSubscriptionCard({ subscription, deviceLimit }: LiteSubscriptionCardProps) {
   const { t } = useTranslation();
   const haptic = useHapticFeedback();
+  const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const isUnlimitedTraffic = subscription.traffic_limit_gb <= 0;
 
@@ -147,14 +149,21 @@ export function LiteSubscriptionCard({ subscription, deviceLimit }: LiteSubscrip
             {trafficDisplay}
           </div>
         </div>
-        <div className="rounded-xl border border-dark-700/60 bg-dark-800/40 px-3 py-2">
+        <button
+          type="button"
+          onClick={() =>
+            navigate('/subscription', { state: { openDevicesTab: true, scrollToDevices: true } })
+          }
+          className="rounded-xl border border-dark-700/60 bg-dark-800/40 px-3 py-2 text-left transition-colors hover:border-accent-500/40"
+          aria-label={t('subscription.myDevices')}
+        >
           <div className="text-2xs uppercase tracking-[0.04em] text-dark-400">
             {t('lite.devices')}
           </div>
           <div className="mt-1 text-xs font-semibold tabular-nums text-dark-100">
             {deviceLimit ?? subscription.device_limit}
           </div>
-        </div>
+        </button>
       </div>
 
       {!isUnlimitedTraffic && (
