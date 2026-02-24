@@ -353,6 +353,9 @@ export interface MenuButtonEditFormValues {
 }
 
 export type MainMenuButtonsTab = 'layout' | 'sections' | 'stats';
+export type MenuButtonEditValidationErrorKey =
+  | 'admin.mainMenuButtons.textRequired'
+  | 'admin.mainMenuButtons.actionValueRequired';
 
 export const DEFAULT_MENU_BUTTON_EDIT_FORM: MenuButtonEditFormValues = {
   text: '',
@@ -371,6 +374,18 @@ export function resetMenuButtonEditState(): {
     editingId: null,
     form: DEFAULT_MENU_BUTTON_EDIT_FORM,
   };
+}
+
+export function validateMenuButtonEditForm(
+  form: MenuButtonEditFormValues,
+): MenuButtonEditValidationErrorKey | null {
+  if (!form.text.trim()) {
+    return 'admin.mainMenuButtons.textRequired';
+  }
+  if (!form.action.trim()) {
+    return 'admin.mainMenuButtons.actionValueRequired';
+  }
+  return null;
 }
 
 export function buildEditFormState(

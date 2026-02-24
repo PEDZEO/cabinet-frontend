@@ -48,6 +48,7 @@ import {
   removeRowAtIndexIfPossible,
   resetMenuButtonEditState,
   reorderVisibleSubset,
+  validateMenuButtonEditForm,
 } from './adminMainMenuButtons/utils';
 
 type FormState = MenuButtonEditFormValues;
@@ -259,13 +260,9 @@ export default function AdminMainMenuButtons() {
       return;
     }
 
-    if (!form.text.trim()) {
-      setError(t('admin.mainMenuButtons.textRequired'));
-      return;
-    }
-
-    if (!form.action.trim()) {
-      setError(t('admin.mainMenuButtons.actionValueRequired'));
+    const validationError = validateMenuButtonEditForm(form);
+    if (validationError) {
+      setError(t(validationError));
       return;
     }
 
