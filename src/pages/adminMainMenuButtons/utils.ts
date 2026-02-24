@@ -108,6 +108,11 @@ export interface PreviewRowItem {
   config: MenuButtonConfig;
 }
 
+export interface OrderedButtonItem {
+  id: string;
+  config: MenuButtonConfig;
+}
+
 export interface PreviewRow {
   rowIndex: number;
   items: PreviewRowItem[];
@@ -163,6 +168,25 @@ export function buildPreviewRows(
   }
 
   return rows;
+}
+
+export function buildOrderedButtons(
+  orderedIds: string[],
+  buttonsById: Record<string, MenuButtonConfig>,
+): OrderedButtonItem[] {
+  return orderedIds.map((id) => ({
+    id,
+    config: buttonsById[id],
+  }));
+}
+
+export function splitOrderedButtonsByEnabled(orderedButtons: OrderedButtonItem[]): {
+  activeButtons: OrderedButtonItem[];
+  inactiveButtons: OrderedButtonItem[];
+} {
+  const activeButtons = orderedButtons.filter((item) => item.config.enabled);
+  const inactiveButtons = orderedButtons.filter((item) => !item.config.enabled);
+  return { activeButtons, inactiveButtons };
 }
 
 export function buildRowDefinitions(

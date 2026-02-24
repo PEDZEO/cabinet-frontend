@@ -26,6 +26,7 @@ import {
   buildEditFormState,
   buildMenuLayoutDerivedState,
   buildButtonUpdatePayload,
+  buildOrderedButtons,
   buildVisibilityOptions,
   buildInitialOrder,
   DEFAULT_MENU_BUTTON_EDIT_FORM,
@@ -48,6 +49,7 @@ import {
   removeRowAtIndexIfPossible,
   resetMenuButtonEditState,
   reorderVisibleSubset,
+  splitOrderedButtonsByEnabled,
   validateMenuButtonEditForm,
 } from './adminMainMenuButtons/utils';
 
@@ -103,21 +105,11 @@ export default function AdminMainMenuButtons() {
   );
 
   const orderedButtons = useMemo(
-    () =>
-      orderedIds.map((id) => ({
-        id,
-        config: buttonsById[id],
-      })),
+    () => buildOrderedButtons(orderedIds, buttonsById),
     [buttonsById, orderedIds],
   );
-
-  const activeButtons = useMemo(
-    () => orderedButtons.filter((item) => item.config.enabled),
-    [orderedButtons],
-  );
-
-  const inactiveButtons = useMemo(
-    () => orderedButtons.filter((item) => !item.config.enabled),
+  const { activeButtons, inactiveButtons } = useMemo(
+    () => splitOrderedButtonsByEnabled(orderedButtons),
     [orderedButtons],
   );
   const rowBuckets = useMemo(() => buildBuckets(orderedIds, rowLengths), [orderedIds, rowLengths]);
