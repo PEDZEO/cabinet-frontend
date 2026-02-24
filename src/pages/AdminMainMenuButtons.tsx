@@ -29,10 +29,13 @@ import {
   buildPreviewRows,
   buildRowDefinitions,
   buildRowsUpdatePayload,
+  expandCapacityAtIndex,
   findRowIndexById,
   getButtonText,
   getLangCode,
+  getSelectedRowAfterCollapse,
   MAX_ROW_SLOTS,
+  removeRowAtIndexIfPossible,
   reorderVisibleSubset,
 } from './adminMainMenuButtons/utils';
 
@@ -357,12 +360,7 @@ export default function AdminMainMenuButtons() {
   };
 
   const expandRowCapacity = (rowIndex: number) => {
-    setRowCapacities((prev) => {
-      const next = [...prev];
-      const current = Math.max(next[rowIndex] ?? 1, 1);
-      next[rowIndex] = Math.min(current + 1, MAX_ROW_SLOTS);
-      return next;
-    });
+    setRowCapacities((prev) => expandCapacityAtIndex(prev, rowIndex, MAX_ROW_SLOTS));
   };
 
   const collapseEmptyRow = (rowIndex: number) => {
@@ -371,37 +369,14 @@ export default function AdminMainMenuButtons() {
       return;
     }
 
-    setRowLengths((prev) => {
-      if (prev.length <= 1) {
-        return prev;
-      }
-      return prev.filter((_, idx) => idx !== rowIndex);
-    });
+    setRowLengths((prev) => removeRowAtIndexIfPossible(prev, rowIndex));
 
-    setRowCapacities((prev) => {
-      if (prev.length <= 1) {
-        return prev;
-      }
-      return prev.filter((_, idx) => idx !== rowIndex);
-    });
+    setRowCapacities((prev) => removeRowAtIndexIfPossible(prev, rowIndex));
 
-    setRowDefs((prev) => {
-      if (prev.length <= 1) {
-        return prev;
-      }
-      return prev.filter((_, idx) => idx !== rowIndex);
-    });
+    setRowDefs((prev) => removeRowAtIndexIfPossible(prev, rowIndex));
 
     setAddMenuRowIndex(null);
-    setSelectedRowIndex((prev) => {
-      if (prev === rowIndex) {
-        return Math.max(rowIndex - 1, 0);
-      }
-      if (prev > rowIndex) {
-        return prev - 1;
-      }
-      return prev;
-    });
+    setSelectedRowIndex((prev) => getSelectedRowAfterCollapse(prev, rowIndex));
   };
 
   return (

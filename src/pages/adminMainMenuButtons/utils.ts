@@ -172,6 +172,34 @@ export function buildRowsUpdatePayload(
   return rows;
 }
 
+export function expandCapacityAtIndex(
+  capacities: number[],
+  rowIndex: number,
+  maxSlots: number,
+): number[] {
+  const next = [...capacities];
+  const current = Math.max(next[rowIndex] ?? 1, 1);
+  next[rowIndex] = Math.min(current + 1, maxSlots);
+  return next;
+}
+
+export function removeRowAtIndexIfPossible<T>(rows: T[], rowIndex: number): T[] {
+  if (rows.length <= 1) {
+    return rows;
+  }
+  return rows.filter((_, idx) => idx !== rowIndex);
+}
+
+export function getSelectedRowAfterCollapse(previous: number, removedRowIndex: number): number {
+  if (previous === removedRowIndex) {
+    return Math.max(removedRowIndex - 1, 0);
+  }
+  if (previous > removedRowIndex) {
+    return previous - 1;
+  }
+  return previous;
+}
+
 export interface MenuButtonEditFormValues {
   text: string;
   action: string;
