@@ -56,6 +56,7 @@ const AdminPinnedMessageCreate = lazy(() => import('../AdminPinnedMessageCreate'
 const AdminMainMenuButtons = lazy(() => import('../AdminMainMenuButtons'));
 const AdminChannelSubscriptions = lazy(() => import('../AdminChannelSubscriptions'));
 const AdminEmailTemplatePreview = lazy(() => import('../AdminEmailTemplatePreview'));
+const AdminBalancer = lazy(() => import('../AdminBalancer'));
 
 const withAdminLayout = (element: React.ReactNode) => (
   <AdminRoute>
@@ -145,4 +146,5 @@ export const adminRoutes: RouteConfig[] = [
   },
   { path: '/admin/main-menu-buttons', element: withAdminLayout(<AdminMainMenuButtons />) },
   { path: '/admin/channel-subscriptions', element: withAdminLayout(<AdminChannelSubscriptions />) },
+  { path: '/admin/balancer', element: withAdminLayout(<AdminBalancer />) },
 ];

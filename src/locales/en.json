@@ -872,6 +872,7 @@
       "users": "Users",
       "payments": "Payments",
       "remnawave": "RemnaWave",
+      "balancer": "Balancer",
       "emailTemplates": "Email Templates",
       "paymentMethods": "Payment Methods",
       "campaigns": "Campaigns",
@@ -902,6 +903,7 @@
       "usersDesc": "Manage bot users",
       "paymentsDesc": "Payment verification",
       "remnawaveDesc": "Panel management and statistics",
+      "balancerDesc": "xray-balancer controls and subscription diagnostics",
       "emailTemplatesDesc": "Manage email notification templates",
       "paymentMethodsDesc": "Configure payment methods and order",
       "campaignsDesc": "Advertising campaigns",
@@ -916,6 +918,33 @@
       "partnersDesc": "Manage partner applications and commissions",
       "withdrawalsDesc": "Review and process withdrawal requests",
       "channelSubscriptionsDesc": "Manage required channel subscriptions"
+    },
+    "balancer": {
+      "subtitle": "Manage xray-balancer middleware from cabinet",
+      "status": {
+        "configured": "Configured",
+        "notConfigured": "Not configured"
+      },
+      "actions": {
+        "refreshGroups": "Refresh groups",
+        "refreshStats": "Refresh stats",
+        "refreshGroupsSuccess": "Groups updated",
+        "refreshStatsSuccess": "Stats updated",
+        "actionError": "Action failed",
+        "tokenError": "Token debug failed"
+      },
+      "tokenDebug": {
+        "title": "Token debug",
+        "placeholder": "Paste subscription token",
+        "run": "Run debug"
+      },
+      "cards": {
+        "health": "Health",
+        "ready": "Ready",
+        "debugStats": "Debug stats",
+        "nodeStats": "Node stats",
+        "tokenDebug": "Token debug result"
+      }
     },
     "accountLinking": {
       "title": "Manual Account Merge Requests",

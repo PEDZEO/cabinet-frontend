@@ -545,6 +545,12 @@ export default function AdminPanel() {
           description: t('admin.panel.remnawaveDesc'),
         },
         {
+          to: '/admin/balancer',
+          icon: <ServerStackIcon />,
+          title: t('admin.nav.balancer'),
+          description: t('admin.panel.balancerDesc'),
+        },
+        {
           to: '/admin/email-templates',
           icon: <EnvelopeIcon />,
           title: t('admin.nav.emailTemplates'),

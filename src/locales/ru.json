@@ -894,6 +894,7 @@
       "users": "Пользователи",
       "payments": "Платежи",
       "remnawave": "RemnaWave",
+      "balancer": "Balancer",
       "emailTemplates": "Email-шаблоны",
       "paymentMethods": "Платёжные методы",
       "campaigns": "Кампании",
@@ -924,6 +925,7 @@
       "usersDesc": "Управление пользователями бота",
       "paymentsDesc": "Проверка платежей",
       "remnawaveDesc": "Управление панелью и статистика",
+      "balancerDesc": "Управление xray-balancer и диагностика подписки",
       "emailTemplatesDesc": "Шаблоны email-уведомлений",
       "paymentMethodsDesc": "Настройка и порядок платежек",
       "campaignsDesc": "Рекламные кампании",
@@ -938,6 +940,33 @@
       "partnersDesc": "Управление заявками партнёров и комиссиями",
       "withdrawalsDesc": "Проверка и обработка заявок на вывод",
       "channelSubscriptionsDesc": "Управление обязательными подписками на каналы"
+    },
+    "balancer": {
+      "subtitle": "Управление xray-balancer middleware из кабинета",
+      "status": {
+        "configured": "Настроен",
+        "notConfigured": "Не настроен"
+      },
+      "actions": {
+        "refreshGroups": "Обновить группы",
+        "refreshStats": "Обновить статистику",
+        "refreshGroupsSuccess": "Группы обновлены",
+        "refreshStatsSuccess": "Статистика обновлена",
+        "actionError": "Не удалось выполнить действие",
+        "tokenError": "Ошибка token debug"
+      },
+      "tokenDebug": {
+        "title": "Token debug",
+        "placeholder": "Вставьте subscription token",
+        "run": "Проверить"
+      },
+      "cards": {
+        "health": "Health",
+        "ready": "Ready",
+        "debugStats": "Debug stats",
+        "nodeStats": "Node stats",
+        "tokenDebug": "Результат token debug"
+      }
     },
     "accountLinking": {
       "title": "Ручные заявки на объединение аккаунтов",

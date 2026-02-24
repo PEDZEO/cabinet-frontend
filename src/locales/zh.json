@@ -735,6 +735,7 @@
       "promocodes": "促销码",
       "promoGroups": "折扣组",
       "remnawave": "RemnaWave",
+      "balancer": "Balancer",
       "users": "用户",
       "trafficUsage": "流量使用",
       "updates": "更新",
@@ -763,6 +764,7 @@
       "promocodesDesc": "管理促销码",
       "promoGroupsDesc": "用户折扣组",
       "remnawaveDesc": "面板管理和统计",
+      "balancerDesc": "xray-balancer 控制与订阅诊断",
       "usersDesc": "管理机器人用户",
       "trafficUsageDesc": "按节点统计用户流量",
       "updatesDesc": "机器人和面板版本",
@@ -770,6 +772,33 @@
       "partnersDesc": "管理合作伙伴申请和佣金",
       "withdrawalsDesc": "审核和处理提现请求",
       "channelSubscriptionsDesc": "管理必订频道订阅"
+    },
+    "balancer": {
+      "subtitle": "在控制台中管理 xray-balancer",
+      "status": {
+        "configured": "已配置",
+        "notConfigured": "未配置"
+      },
+      "actions": {
+        "refreshGroups": "刷新分组",
+        "refreshStats": "刷新统计",
+        "refreshGroupsSuccess": "分组已更新",
+        "refreshStatsSuccess": "统计已更新",
+        "actionError": "操作失败",
+        "tokenError": "Token 调试失败"
+      },
+      "tokenDebug": {
+        "title": "Token 调试",
+        "placeholder": "粘贴订阅 token",
+        "run": "开始调试"
+      },
+      "cards": {
+        "health": "Health",
+        "ready": "Ready",
+        "debugStats": "Debug stats",
+        "nodeStats": "Node stats",
+        "tokenDebug": "Token 调试结果"
+      }
     },
     "trafficUsage": {
       "title": "流量使用",

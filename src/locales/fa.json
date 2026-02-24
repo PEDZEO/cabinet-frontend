@@ -735,6 +735,7 @@
       "promocodes": "کدهای تخفیف",
       "promoGroups": "گروه‌های تخفیف",
       "remnawave": "RemnaWave",
+      "balancer": "Balancer",
       "users": "کاربران",
       "trafficUsage": "مصرف ترافیک",
       "updates": "به‌روزرسانی‌ها",
@@ -763,6 +764,7 @@
       "promocodesDesc": "مدیریت کدهای تخفیف",
       "promoGroupsDesc": "گروه‌های تخفیف برای کاربران",
       "remnawaveDesc": "مدیریت پنل و آمار",
+      "balancerDesc": "کنترل xray-balancer و عیب‌یابی اشتراک",
       "usersDesc": "مدیریت کاربران ربات",
       "trafficUsageDesc": "ترافیک هر کاربر بر اساس نود",
       "updatesDesc": "نسخه‌های ربات و کابینت",
@@ -770,6 +772,33 @@
       "partnersDesc": "مدیریت درخواست‌های شراکت و کمیسیون‌ها",
       "withdrawalsDesc": "بررسی و پردازش درخواست‌های برداشت",
       "channelSubscriptionsDesc": "مدیریت اشتراک‌های اجباری کانال"
+    },
+    "balancer": {
+      "subtitle": "مدیریت xray-balancer از داخل کابینت",
+      "status": {
+        "configured": "پیکربندی شده",
+        "notConfigured": "پیکربندی نشده"
+      },
+      "actions": {
+        "refreshGroups": "به‌روزرسانی گروه‌ها",
+        "refreshStats": "به‌روزرسانی آمار",
+        "refreshGroupsSuccess": "گروه‌ها به‌روزرسانی شدند",
+        "refreshStatsSuccess": "آمار به‌روزرسانی شد",
+        "actionError": "اجرای عملیات ناموفق بود",
+        "tokenError": "خطا در Token debug"
+      },
+      "tokenDebug": {
+        "title": "Token debug",
+        "placeholder": "توکن اشتراک را وارد کنید",
+        "run": "اجرا"
+      },
+      "cards": {
+        "health": "Health",
+        "ready": "Ready",
+        "debugStats": "Debug stats",
+        "nodeStats": "Node stats",
+        "tokenDebug": "نتیجه Token debug"
+      }
     },
     "trafficUsage": {
       "title": "مصرف ترافیک",
