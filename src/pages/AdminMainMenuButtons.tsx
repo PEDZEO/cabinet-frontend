@@ -24,13 +24,13 @@ import { GripIcon, SortablePreviewButton } from './adminMainMenuButtons/Sortable
 import {
   buildBuckets,
   buildEditFormState,
+  buildMenuLayoutDerivedState,
   buildButtonUpdatePayload,
   buildVisibilityOptions,
   buildInitialOrder,
   type MenuButtonEditFormValues,
   countEnabledButtonsForRow,
   buildPreviewRows,
-  buildRowDefinitions,
   buildRowsUpdatePayload,
   expandCapacityAtIndex,
   findRowIndexById,
@@ -90,10 +90,11 @@ export default function AdminMainMenuButtons() {
     if (!data) {
       return;
     }
-    setOrderIds(buildInitialOrder(data));
-    setRowLengths(data.rows.map((row) => row.buttons.length));
-    setRowCapacities(data.rows.map((row) => Math.max(row.max_per_row || 1, 1)));
-    setRowDefs(buildRowDefinitions(data.rows));
+    const derived = buildMenuLayoutDerivedState(data);
+    setOrderIds(derived.orderIds);
+    setRowLengths(derived.rowLengths);
+    setRowCapacities(derived.rowCapacities);
+    setRowDefs(derived.rowDefs);
     setSelectedRowIndex(0);
     setAddMenuRowIndex(null);
   }, [data]);

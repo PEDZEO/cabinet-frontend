@@ -164,6 +164,22 @@ export function buildRowDefinitions(
   return rows.map((row) => ({ id: row.id, conditions: row.conditions }));
 }
 
+export interface MenuLayoutDerivedState {
+  orderIds: string[];
+  rowLengths: number[];
+  rowCapacities: number[];
+  rowDefs: Array<Pick<MenuRowConfig, 'id' | 'conditions'>>;
+}
+
+export function buildMenuLayoutDerivedState(layout: MenuLayoutResponse): MenuLayoutDerivedState {
+  return {
+    orderIds: buildInitialOrder(layout),
+    rowLengths: layout.rows.map((row) => row.buttons.length),
+    rowCapacities: layout.rows.map((row) => Math.max(row.max_per_row || 1, 1)),
+    rowDefs: buildRowDefinitions(layout.rows),
+  };
+}
+
 export function hasRowsConfigChanged(
   rows: MenuRowConfig[],
   rowDefs: Array<Pick<MenuRowConfig, 'id' | 'conditions'>>,
