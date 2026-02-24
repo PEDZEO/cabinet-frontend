@@ -470,6 +470,19 @@ export function getMainMenuButtonsTabClass(
   }`;
 }
 
+export interface MainMenuButtonsTabOption {
+  key: MainMenuButtonsTab;
+  label: string;
+}
+
+export function buildMainMenuButtonsTabOptions(t: TFunction): MainMenuButtonsTabOption[] {
+  return [
+    { key: 'layout', label: t('admin.mainMenuButtons.title') },
+    { key: 'sections', label: t('admin.settings.menu.buttons', 'Стили кнопок') },
+    { key: 'stats', label: t('admin.mainMenuButtons.statsTab') },
+  ];
+}
+
 export interface RowCapacityState {
   maxPerRow: number;
   freeSlots: number;

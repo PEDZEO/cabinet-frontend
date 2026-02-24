@@ -23,6 +23,7 @@ import { MainMenuButtonsStatsTab } from '../components/admin/MainMenuButtonsStat
 import { GripIcon, SortablePreviewButton } from './adminMainMenuButtons/SortablePreviewButton';
 import {
   buildBuckets,
+  buildMainMenuButtonsTabOptions,
   buildEditFormState,
   buildMenuLayoutDerivedState,
   buildButtonUpdatePayload,
@@ -142,6 +143,7 @@ export default function AdminMainMenuButtons() {
     () => buildPreviewRows(orderedIds, rowLengths, buttonsById, Boolean(data)),
     [buttonsById, data, orderedIds, rowLengths],
   );
+  const tabOptions = useMemo(() => buildMainMenuButtonsTabOptions(t), [t]);
 
   const saveLayoutMutation = useMutation({
     mutationFn: async (ids: string[]) => {
@@ -367,27 +369,16 @@ export default function AdminMainMenuButtons() {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => setActiveTab('layout')}
-          className={getMainMenuButtonsTabClass(activeTab, 'layout')}
-        >
-          {t('admin.mainMenuButtons.title')}
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('sections')}
-          className={getMainMenuButtonsTabClass(activeTab, 'sections')}
-        >
-          {t('admin.settings.menu.buttons', 'Стили кнопок')}
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('stats')}
-          className={getMainMenuButtonsTabClass(activeTab, 'stats')}
-        >
-          {t('admin.mainMenuButtons.statsTab')}
-        </button>
+        {tabOptions.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            onClick={() => setActiveTab(tab.key)}
+            className={getMainMenuButtonsTabClass(activeTab, tab.key)}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {activeTab === 'layout' && error && (
