@@ -46,6 +46,7 @@ import {
   MAX_ROW_SLOTS,
   moveButtonToRowState,
   removeRowAtIndexIfPossible,
+  resetMenuButtonEditState,
   reorderVisibleSubset,
 } from './adminMainMenuButtons/utils';
 
@@ -273,8 +274,9 @@ export default function AdminMainMenuButtons() {
       payload: buildButtonUpdatePayload(button, lang, form),
     });
 
-    setEditingId(null);
-    setForm(DEFAULT_MENU_BUTTON_EDIT_FORM);
+    const resetState = resetMenuButtonEditState();
+    setEditingId(resetState.editingId);
+    setForm(resetState.form);
   };
 
   const toggleEnabled = (buttonId: string, current: boolean) => {
@@ -688,8 +690,9 @@ export default function AdminMainMenuButtons() {
                   <button
                     className="btn-secondary"
                     onClick={() => {
-                      setEditingId(null);
-                      setForm(DEFAULT_MENU_BUTTON_EDIT_FORM);
+                      const resetState = resetMenuButtonEditState();
+                      setEditingId(resetState.editingId);
+                      setForm(resetState.form);
                     }}
                   >
                     {t('common.cancel')}

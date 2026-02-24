@@ -363,6 +363,16 @@ export const DEFAULT_MENU_BUTTON_EDIT_FORM: MenuButtonEditFormValues = {
   enabled: true,
 };
 
+export function resetMenuButtonEditState(): {
+  editingId: null;
+  form: MenuButtonEditFormValues;
+} {
+  return {
+    editingId: null,
+    form: DEFAULT_MENU_BUTTON_EDIT_FORM,
+  };
+}
+
 export function buildEditFormState(
   buttonId: string,
   button: MenuButtonConfig,
