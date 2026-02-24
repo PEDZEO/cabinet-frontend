@@ -41,6 +41,7 @@ import {
   getButtonText,
   getLangCode,
   getSelectedRowAfterCollapse,
+  getRowCapacityState,
   hasOrderChanged,
   hasPendingLayoutChanges,
   hasRowsConfigChanged,
@@ -113,6 +114,10 @@ export default function AdminMainMenuButtons() {
     [orderedButtons],
   );
   const rowBuckets = useMemo(() => buildBuckets(orderedIds, rowLengths), [orderedIds, rowLengths]);
+  const rowDefaultCapacities = useMemo(
+    () => data?.rows.map((row) => row.max_per_row ?? MAX_ROW_SLOTS) ?? [],
+    [data?.rows],
+  );
 
   const getEnabledCountForRow = (rowIndex: number): number =>
     countEnabledButtonsForRow(rowBuckets, buttonsById, rowIndex);
@@ -286,7 +291,7 @@ export default function AdminMainMenuButtons() {
       orderedIds,
       rowLengths,
       rowCapacities,
-      rowDefaultCapacities: data.rows.map((row) => row.max_per_row ?? MAX_ROW_SLOTS),
+      rowDefaultCapacities,
       buttonId,
       targetRowIndex,
       targetEnabledCount: getEnabledCountForRow(safeTarget),
@@ -465,13 +470,13 @@ export default function AdminMainMenuButtons() {
                             )}
                             {row.rowIndex === selectedRowIndex &&
                               (() => {
-                                const maxPerRow = Math.max(
-                                  rowCapacities[row.rowIndex] ??
-                                    data?.rows[row.rowIndex]?.max_per_row ??
-                                    MAX_ROW_SLOTS,
-                                  1,
+                                const { maxPerRow, freeSlots } = getRowCapacityState(
+                                  row.rowIndex,
+                                  row.items.length,
+                                  rowCapacities,
+                                  rowDefaultCapacities,
+                                  MAX_ROW_SLOTS,
                                 );
-                                const freeSlots = Math.max(maxPerRow - row.items.length, 0);
                                 return (
                                   <div className="mt-2 flex flex-wrap gap-2">
                                     {maxPerRow < MAX_ROW_SLOTS && (

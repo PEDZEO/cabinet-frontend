@@ -469,3 +469,22 @@ export function getMainMenuButtonsTabClass(
       : 'bg-dark-800 text-dark-300 hover:bg-dark-700/70'
   }`;
 }
+
+export interface RowCapacityState {
+  maxPerRow: number;
+  freeSlots: number;
+}
+
+export function getRowCapacityState(
+  rowIndex: number,
+  rowItemsCount: number,
+  rowCapacities: number[],
+  rowDefaults: number[],
+  maxRowSlots: number,
+): RowCapacityState {
+  const maxPerRow = Math.max(rowCapacities[rowIndex] ?? rowDefaults[rowIndex] ?? maxRowSlots, 1);
+  return {
+    maxPerRow,
+    freeSlots: Math.max(maxPerRow - rowItemsCount, 0),
+  };
+}
