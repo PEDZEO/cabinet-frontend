@@ -52,6 +52,7 @@ import {
   resetMenuButtonEditState,
   reorderVisibleSubset,
   splitOrderedButtonsByEnabled,
+  toggleRowIndex,
   updateMenuButtonEditFormField,
   validateMenuButtonEditForm,
 } from './adminMainMenuButtons/utils';
@@ -498,7 +499,7 @@ export default function AdminMainMenuButtons() {
                                         onClick={(event) => {
                                           event.stopPropagation();
                                           setAddMenuRowIndex((prev) =>
-                                            prev === row.rowIndex ? null : row.rowIndex,
+                                            toggleRowIndex(prev, row.rowIndex),
                                           );
                                         }}
                                         className="rounded-md border border-dashed border-accent-500/40 bg-accent-500/10 px-3 py-1.5 text-xs text-accent-300 hover:bg-accent-500/20"

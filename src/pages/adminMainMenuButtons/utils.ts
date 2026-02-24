@@ -291,6 +291,10 @@ export function getSelectedRowAfterCollapse(previous: number, removedRowIndex: n
   return previous;
 }
 
+export function toggleRowIndex(current: number | null, target: number): number | null {
+  return current === target ? null : target;
+}
+
 export interface MoveButtonToRowOptions {
   orderedIds: string[];
   rowLengths: number[];
