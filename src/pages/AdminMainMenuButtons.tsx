@@ -28,7 +28,9 @@ import {
   buildButtonUpdatePayload,
   buildVisibilityOptions,
   buildInitialOrder,
+  getMainMenuButtonsTabClass,
   type MenuButtonEditFormValues,
+  type MainMenuButtonsTab,
   countEnabledButtonsForRow,
   buildPreviewRows,
   buildRowsUpdatePayload,
@@ -67,7 +69,7 @@ export default function AdminMainMenuButtons() {
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'layout' | 'sections' | 'stats'>('layout');
+  const [activeTab, setActiveTab] = useState<MainMenuButtonsTab>('layout');
   const [selectedRowIndex, setSelectedRowIndex] = useState(0);
   const [addMenuRowIndex, setAddMenuRowIndex] = useState<number | null>(null);
   const [rowCapacities, setRowCapacities] = useState<number[]>([]);
@@ -379,33 +381,21 @@ export default function AdminMainMenuButtons() {
         <button
           type="button"
           onClick={() => setActiveTab('layout')}
-          className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-            activeTab === 'layout'
-              ? 'bg-accent-500/15 text-accent-300'
-              : 'bg-dark-800 text-dark-300 hover:bg-dark-700/70'
-          }`}
+          className={getMainMenuButtonsTabClass(activeTab, 'layout')}
         >
           {t('admin.mainMenuButtons.title')}
         </button>
         <button
           type="button"
           onClick={() => setActiveTab('sections')}
-          className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-            activeTab === 'sections'
-              ? 'bg-accent-500/15 text-accent-300'
-              : 'bg-dark-800 text-dark-300 hover:bg-dark-700/70'
-          }`}
+          className={getMainMenuButtonsTabClass(activeTab, 'sections')}
         >
           {t('admin.settings.menu.buttons', 'Стили кнопок')}
         </button>
         <button
           type="button"
           onClick={() => setActiveTab('stats')}
-          className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-            activeTab === 'stats'
-              ? 'bg-accent-500/15 text-accent-300'
-              : 'bg-dark-800 text-dark-300 hover:bg-dark-700/70'
-          }`}
+          className={getMainMenuButtonsTabClass(activeTab, 'stats')}
         >
           {t('admin.mainMenuButtons.statsTab')}
         </button>

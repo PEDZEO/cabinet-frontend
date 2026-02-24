@@ -345,6 +345,8 @@ export interface MenuButtonEditFormValues {
   enabled: boolean;
 }
 
+export type MainMenuButtonsTab = 'layout' | 'sections' | 'stats';
+
 export function buildEditFormState(
   buttonId: string,
   button: MenuButtonConfig,
@@ -390,4 +392,15 @@ export function buildVisibilityOptions(
       label: t('admin.mainMenuButtons.visibilityModerators', { defaultValue: 'Moderators only' }),
     },
   ];
+}
+
+export function getMainMenuButtonsTabClass(
+  activeTab: MainMenuButtonsTab,
+  tab: MainMenuButtonsTab,
+): string {
+  return `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+    activeTab === tab
+      ? 'bg-accent-500/15 text-accent-300'
+      : 'bg-dark-800 text-dark-300 hover:bg-dark-700/70'
+  }`;
 }
