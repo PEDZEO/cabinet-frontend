@@ -35,16 +35,18 @@ function MetricsCard({
   title,
   items,
   loading,
+  loadingText,
 }: {
   title: string;
   items: MetricItem[];
   loading?: boolean;
+  loadingText: string;
 }) {
   return (
     <div className="rounded-xl border border-dark-700 bg-dark-800/50 p-4">
       <h3 className="mb-3 text-sm font-semibold text-dark-100">{title}</h3>
       {loading ? (
-        <p className="text-sm text-dark-400">Loading...</p>
+        <p className="text-sm text-dark-400">{loadingText}</p>
       ) : (
         <dl className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {items.map((item) => (
@@ -69,11 +71,19 @@ function MetricsCard({
   );
 }
 
-function JsonDetails({ title, data }: { title: string; data: unknown }) {
+function JsonDetails({
+  title,
+  data,
+  rawLabel,
+}: {
+  title: string;
+  data: unknown;
+  rawLabel: string;
+}) {
   return (
     <details className="rounded-xl border border-dark-700 bg-dark-800/30 p-3">
       <summary className="cursor-pointer text-sm font-semibold text-dark-200">
-        {title} (raw JSON)
+        {title} ({rawLabel})
       </summary>
       <pre className="mt-3 max-h-72 overflow-auto rounded-lg bg-dark-900/80 p-3 text-xs text-dark-300">
         {JSON.stringify(data, null, 2)}
@@ -124,7 +134,7 @@ function prettyValue(value: unknown): string {
 }
 
 export default function AdminBalancer() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [token, setToken] = useState('');
   const [tokenResult, setTokenResult] = useState<unknown>(null);
   const [actionMessage, setActionMessage] = useState<string>('');
@@ -287,116 +297,6 @@ export default function AdminBalancer() {
     return duplicates;
   }, [groupsDraft]);
 
-  const healthMetrics = useMemo<MetricItem[]>(() => {
-    const groupsRaw = Array.isArray(healthRecord.groups) ? healthRecord.groups : [];
-    return [
-      {
-        label: 'Status',
-        value: String(healthRecord.status ?? '—'),
-        tone: healthOk ? 'ok' : 'bad',
-      },
-      {
-        label: 'Groups',
-        value: groupsRaw.length ? groupsRaw.join(', ') : '—',
-      },
-      {
-        label: 'Auto groups',
-        value: prettyValue(healthRecord.auto_groups),
-      },
-      {
-        label: 'Fastest group',
-        value: prettyValue(healthRecord.fastest_group),
-      },
-      {
-        label: 'Node stats',
-        value: prettyValue(healthRecord.node_stats),
-      },
-      {
-        label: 'Cached nodes',
-        value: prettyValue(healthRecord.cached_nodes),
-      },
-      {
-        label: 'Panel auth',
-        value: prettyValue(healthRecord.panel_auth),
-      },
-      {
-        label: 'Sub page',
-        value: prettyValue(healthRecord.sub_page),
-      },
-    ];
-  }, [healthOk, healthRecord]);
-
-  const readyMetrics = useMemo<MetricItem[]>(() => {
-    return [
-      {
-        label: 'Status',
-        value: String(readyRecord.status ?? '—'),
-        tone: readyOk ? 'ok' : 'bad',
-      },
-      {
-        label: 'Recent upstream',
-        value: prettyValue(readyRecord.has_recent_upstream),
-      },
-      {
-        label: 'Cache ttl',
-        value: toNumber(readyRecord.cache_ttl_sec)?.toString() ?? '—',
-      },
-      {
-        label: 'Cache present',
-        value: prettyValue(readyRecord.has_cache),
-      },
-      {
-        label: 'Circuit open',
-        value: prettyValue(readyRecord.circuit_open),
-      },
-    ];
-  }, [readyOk, readyRecord]);
-
-  const runtimeMetrics = useMemo<MetricItem[]>(() => {
-    const startedAt = toNumber(runtimeStats.started_at);
-    const startedAtText =
-      startedAt !== null
-        ? new Date(startedAt * 1000).toLocaleString('ru-RU', { hour12: false })
-        : '—';
-
-    return [
-      {
-        label: 'Profile mode',
-        value: profileMode,
-      },
-      {
-        label: 'Started at',
-        value: startedAtText,
-      },
-      {
-        label: 'Requests total',
-        value: prettyValue(runtimeStats.requests_total),
-      },
-      {
-        label: 'Request failures',
-        value: prettyValue(runtimeStats.request_failures),
-        tone: toNumber(runtimeStats.request_failures) === 0 ? 'ok' : 'bad',
-      },
-      {
-        label: 'Rate limited',
-        value: prettyValue(runtimeStats.rate_limited_ip_total),
-      },
-      {
-        label: 'Circuit open total',
-        value: prettyValue(runtimeStats.circuit_open_total),
-      },
-      {
-        label: 'CB fail count',
-        value: prettyValue(circuitBreaker.fail_count),
-      },
-      {
-        label: 'CB half-open',
-        value: prettyValue(circuitBreaker.half_open),
-        tone: toBoolean(circuitBreaker.half_open) ? 'bad' : 'ok',
-      },
-    ];
-  }, [circuitBreaker, profileMode, runtimeStats]);
-
   const nodeRows = useMemo(() => {
     const source = toRecord(nodeStats);
     return Object.entries(source).map(([nodeName, stat]) => {
@@ -490,9 +390,8 @@ export default function AdminBalancer() {
       groups[name] = patterns;
     }
 
-    const filteredExclude = excludeGroups.filter((value) =>
-      Array.from(names).includes(value.trim().toLowerCase()),
-    );
+    const availableNames = new Set(groupsDraft.map((item) => item.name.trim()).filter(Boolean));
+    const filteredExclude = excludeGroups.filter((value) => availableNames.has(value));
 
     await saveGroupsMutation.mutateAsync({
       groups,
@@ -507,6 +406,132 @@ export default function AdminBalancer() {
       : actionTone === 'error'
         ? 'border-error-500/30 bg-error-500/10 text-error-200'
         : 'border-dark-700 bg-dark-800/40 text-dark-200';
+
+  const healthMetrics = useMemo<MetricItem[]>(
+    () => [
+      {
+        label: t('admin.balancer.labels.status', 'Status'),
+        value: String(healthRecord.status ?? '—'),
+        tone: healthOk ? 'ok' : 'bad',
+      },
+      {
+        label: t('admin.balancer.labels.groups', 'Groups'),
+        value: Array.isArray(healthRecord.groups) ? healthRecord.groups.join(', ') || '—' : '—',
+      },
+      {
+        label: t('admin.balancer.labels.autoGroups', 'Auto groups'),
+        value: prettyValue(healthRecord.auto_groups),
+      },
+      {
+        label: t('admin.balancer.labels.fastestGroup', 'Fastest group'),
+        value: prettyValue(healthRecord.fastest_group),
+      },
+      {
+        label: t('admin.balancer.labels.nodeStats', 'Node stats'),
+        value: prettyValue(healthRecord.node_stats),
+      },
+      {
+        label: t('admin.balancer.labels.cachedNodes', 'Cached nodes'),
+        value: prettyValue(healthRecord.cached_nodes),
+      },
+      {
+        label: t('admin.balancer.labels.panelAuth', 'Panel auth'),
+        value: prettyValue(healthRecord.panel_auth),
+      },
+      {
+        label: t('admin.balancer.labels.subPage', 'Sub page'),
+        value: prettyValue(healthRecord.sub_page),
+      },
+    ],
+    [healthOk, healthRecord, t],
+  );
+
+  const readyMetrics = useMemo<MetricItem[]>(
+    () => [
+      {
+        label: t('admin.balancer.labels.status', 'Status'),
+        value: String(readyRecord.status ?? '—'),
+        tone: readyOk ? 'ok' : 'bad',
+      },
+      {
+        label: t('admin.balancer.labels.recentUpstream', 'Recent upstream'),
+        value: prettyValue(readyRecord.has_recent_upstream),
+      },
+      {
+        label: t('admin.balancer.labels.cacheTtl', 'Cache ttl'),
+        value: toNumber(readyRecord.cache_ttl_sec)?.toString() ?? '—',
+      },
+      {
+        label: t('admin.balancer.labels.cachePresent', 'Cache present'),
+        value: prettyValue(readyRecord.has_cache),
+      },
+      {
+        label: t('admin.balancer.labels.circuitOpen', 'Circuit open'),
+        value: prettyValue(readyRecord.circuit_open),
+      },
+    ],
+    [readyOk, readyRecord, t],
+  );
+
+  const runtimeMetrics = useMemo<MetricItem[]>(() => {
+    const startedAt = toNumber(runtimeStats.started_at);
+    const startedAtText =
+      startedAt !== null
+        ? new Date(startedAt * 1000).toLocaleString(i18n.language, { hour12: false })
+        : '—';
+
+    return [
+      {
+        label: t('admin.balancer.labels.profileMode', 'Profile mode'),
+        value: profileMode,
+      },
+      {
+        label: t('admin.balancer.labels.startedAt', 'Started at'),
+        value: startedAtText,
+      },
+      {
+        label: t('admin.balancer.labels.requestsTotal', 'Requests total'),
+        value: prettyValue(runtimeStats.requests_total),
+      },
+      {
+        label: t('admin.balancer.labels.requestFailures', 'Request failures'),
+        value: prettyValue(runtimeStats.request_failures),
+        tone: toNumber(runtimeStats.request_failures) === 0 ? 'ok' : 'bad',
+      },
+      {
+        label: t('admin.balancer.labels.rateLimited', 'Rate limited'),
+        value: prettyValue(runtimeStats.rate_limited_ip_total),
+      },
+      {
+        label: t('admin.balancer.labels.circuitOpenTotal', 'Circuit open total'),
+        value: prettyValue(runtimeStats.circuit_open_total),
+      },
+      {
+        label: t('admin.balancer.labels.cbFailCount', 'CB fail count'),
+        value: prettyValue(circuitBreaker.fail_count),
+      },
+      {
+        label: t('admin.balancer.labels.cbHalfOpen', 'CB half-open'),
+        value: prettyValue(circuitBreaker.half_open),
+        tone: toBoolean(circuitBreaker.half_open) ? 'bad' : 'ok',
+      },
+    ];
+  }, [circuitBreaker, i18n.language, profileMode, runtimeStats, t]);
+
+  const previewConfig = useMemo(() => {
+    const groups: Record<string, string[]> = {};
+    for (const item of groupsDraft) {
+      const name = item.name.trim();
+      if (!name) continue;
+      groups[name] = parsePatterns(item.patterns);
+    }
+    const availableNames = new Set(Object.keys(groups));
+    return {
+      groups,
+      fastest_group: fastestEnabled,
+      fastest_exclude_groups: excludeGroups.filter((name) => availableNames.has(name)),
+    };
+  }, [excludeGroups, fastestEnabled, groupsDraft]);
 
   return (
     <div className="animate-fade-in space-y-4">
@@ -532,29 +557,41 @@ export default function AdminBalancer() {
                 : t('admin.balancer.status.notConfigured', 'Not configured')
             }
           />
-          <StatusBadge ok={healthOk} text={`health: ${String(healthRecord.status ?? '—')}`} />
-          <StatusBadge ok={readyOk} text={`ready: ${String(readyRecord.status ?? '—')}`} />
+          <StatusBadge
+            ok={healthOk}
+            text={`${t('admin.balancer.labels.health', 'Health')}: ${String(healthRecord.status ?? '—')}`}
+          />
+          <StatusBadge
+            ok={readyOk}
+            text={`${t('admin.balancer.labels.ready', 'Ready')}: ${String(readyRecord.status ?? '—')}`}
+          />
           <StatusBadge
             ok={Boolean(status?.has_admin_token)}
-            text={`token: ${status?.has_admin_token ? 'ok' : 'missing'}`}
+            text={`${t('admin.balancer.labels.token', 'Token')}: ${
+              status?.has_admin_token
+                ? t('admin.balancer.labels.ok', 'ok')
+                : t('admin.balancer.labels.missing', 'missing')
+            }`}
           />
           {groupsDirty && (
             <span className="inline-flex items-center rounded-full bg-warning-500/15 px-2.5 py-1 text-xs font-medium text-warning-300">
-              Unsaved groups changes
+              {t('admin.balancer.groups.unsaved', 'Unsaved groups changes')}
             </span>
           )}
         </div>
 
         <div className="grid grid-cols-1 gap-2 text-sm text-dark-300 md:grid-cols-2">
           <div>
-            base_url: <span className="font-mono text-dark-100">{status?.base_url || '—'}</span>
+            {t('admin.balancer.labels.baseUrl', 'Base URL')}:{' '}
+            <span className="font-mono text-dark-100">{status?.base_url || '—'}</span>
           </div>
           <div>
-            timeout:{' '}
+            {t('admin.balancer.labels.timeout', 'Timeout')}:{' '}
             <span className="font-mono text-dark-100">{status?.request_timeout_sec ?? '—'}s</span>
           </div>
           <div>
-            profile_mode: <span className="font-mono text-dark-100">{profileMode}</span>
+            {t('admin.balancer.labels.profileMode', 'Profile mode')}:{' '}
+            <span className="font-mono text-dark-100">{profileMode}</span>
           </div>
         </div>
 
@@ -611,7 +648,10 @@ export default function AdminBalancer() {
                 setFastestEnabled(Boolean(groupsData.fastest_group));
                 setExcludeGroups(groupsData.fastest_exclude_groups || []);
                 setGroupsDirty(false);
-                setAlert('Changes discarded');
+                setAlert(
+                  t('admin.balancer.actions.changesDiscarded', 'Changes discarded'),
+                  'default',
+                );
               }}
               className="rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600"
             >
@@ -630,7 +670,7 @@ export default function AdminBalancer() {
         <div className="space-y-3">
           {groupsDraft.length === 0 && (
             <div className="rounded-lg border border-dark-700 bg-dark-900/40 p-3 text-sm text-dark-400">
-              No groups configured.
+              {t('admin.balancer.groups.empty', 'No groups configured.')}
             </div>
           )}
 
@@ -642,7 +682,11 @@ export default function AdminBalancer() {
             return (
               <div key={group.id} className="rounded-lg border border-dark-700 bg-dark-900/50 p-3">
                 <div className="mb-2 flex items-center justify-between">
-                  <p className="text-xs text-dark-400">Group #{index + 1}</p>
+                  <p className="text-xs text-dark-400">
+                    {t('admin.balancer.groups.groupNumber', 'Group #{{index}}', {
+                      index: index + 1,
+                    })}
+                  </p>
                   <div className="flex gap-2">
                     <button
                       onClick={() => moveGroup(group.id, 'up')}
@@ -650,7 +694,7 @@ export default function AdminBalancer() {
                       className="rounded-md border border-dark-600 px-2 py-1 text-xs text-dark-200 disabled:opacity-40"
                       aria-label="Move group up"
                     >
-                      Up
+                      {t('admin.balancer.groups.moveUp', 'Up')}
                     </button>
                     <button
                       onClick={() => moveGroup(group.id, 'down')}
@@ -658,7 +702,7 @@ export default function AdminBalancer() {
                       className="rounded-md border border-dark-600 px-2 py-1 text-xs text-dark-200 disabled:opacity-40"
                       aria-label="Move group down"
                     >
-                      Down
+                      {t('admin.balancer.groups.moveDown', 'Down')}
                     </button>
                     <button
                       onClick={() => removeGroup(group.id)}
@@ -672,7 +716,9 @@ export default function AdminBalancer() {
 
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   <div>
-                    <label className="mb-1 block text-xs text-dark-400">Group name</label>
+                    <label className="mb-1 block text-xs text-dark-400">
+                      {t('admin.balancer.groups.groupName', 'Group name')}
+                    </label>
                     <input
                       value={group.name}
                       onChange={(event) => updateGroup(group.id, { name: event.target.value })}
@@ -684,13 +730,19 @@ export default function AdminBalancer() {
                       }`}
                     />
                     {hasDuplicate && (
-                      <p className="mt-1 text-xs text-error-300">Group name must be unique</p>
+                      <p className="mt-1 text-xs text-error-300">
+                        {t('admin.balancer.actions.groupNamesUnique', 'Group names must be unique')}
+                      </p>
                     )}
                   </div>
                   <div>
                     <div className="mb-1 flex items-center justify-between text-xs text-dark-400">
-                      <span>Patterns</span>
-                      <span>{patternCount} items</span>
+                      <span>{t('admin.balancer.groups.patternsTitle', 'Patterns')}</span>
+                      <span>
+                        {t('admin.balancer.groups.patternsCount', '{{count}} items', {
+                          count: patternCount,
+                        })}
+                      </span>
                     </div>
                     <textarea
                       value={group.patterns}
@@ -736,13 +788,18 @@ export default function AdminBalancer() {
               }}
               className="text-xs text-dark-300 underline hover:text-dark-100"
             >
-              Clear selection
+              {t('admin.balancer.groups.clearSelection', 'Clear selection')}
             </button>
           </div>
 
           <div className="flex flex-wrap gap-2">
             {availableGroupNames.length === 0 && (
-              <p className="text-xs text-dark-500">Add at least one group to manage exclusions.</p>
+              <p className="text-xs text-dark-500">
+                {t(
+                  'admin.balancer.groups.emptyExcludeHint',
+                  'Add at least one group to manage exclusions.',
+                )}
+              </p>
             )}
 
             {availableGroupNames.map((name) => {
@@ -763,6 +820,18 @@ export default function AdminBalancer() {
               );
             })}
           </div>
+        </div>
+
+        <div className="mt-4 rounded-lg border border-dark-700 bg-dark-900/40 p-3">
+          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-dark-300">
+            {t('admin.balancer.groups.previewTitle', 'Config preview')}
+          </h4>
+          <p className="mb-2 text-xs text-dark-500">
+            {t('admin.balancer.groups.previewHint', 'This is the payload for PUT /admin/groups.')}
+          </p>
+          <pre className="max-h-64 overflow-auto rounded-lg bg-dark-950/80 p-3 text-xs text-dark-300">
+            {JSON.stringify(previewConfig, null, 2)}
+          </pre>
         </div>
       </div>
 
@@ -792,16 +861,19 @@ export default function AdminBalancer() {
           title={t('admin.balancer.cards.health', 'Health')}
           items={healthMetrics}
           loading={healthLoading}
+          loadingText={t('common.loading', 'Loading...')}
         />
         <MetricsCard
           title={t('admin.balancer.cards.ready', 'Ready')}
           items={readyMetrics}
           loading={readyLoading}
+          loadingText={t('common.loading', 'Loading...')}
         />
         <MetricsCard
           title={t('admin.balancer.cards.debugStats', 'Debug stats')}
           items={runtimeMetrics}
           loading={debugLoading}
+          loadingText={t('common.loading', 'Loading...')}
         />
       </div>
 
@@ -811,21 +883,23 @@ export default function AdminBalancer() {
         </h3>
 
         {nodesLoading ? (
-          <p className="text-sm text-dark-400">Loading...</p>
+          <p className="text-sm text-dark-400">{t('common.loading', 'Loading...')}</p>
         ) : nodeRows.length === 0 ? (
-          <p className="text-sm text-dark-500">No node stats yet.</p>
+          <p className="text-sm text-dark-500">
+            {t('admin.balancer.cards.nodeStatsEmpty', 'No node stats yet.')}
+          </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full text-left text-sm text-dark-200">
               <thead>
                 <tr className="border-b border-dark-700 text-xs uppercase text-dark-400">
-                  <th className="px-2 py-2">Node</th>
-                  <th className="px-2 py-2">Users</th>
-                  <th className="px-2 py-2">CPU</th>
-                  <th className="px-2 py-2">RAM</th>
-                  <th className="px-2 py-2">Total RAM</th>
-                  <th className="px-2 py-2">Connected</th>
-                  <th className="px-2 py-2">Disabled</th>
+                  <th className="px-2 py-2">{t('admin.balancer.table.node', 'Node')}</th>
+                  <th className="px-2 py-2">{t('admin.balancer.table.users', 'Users')}</th>
+                  <th className="px-2 py-2">{t('admin.balancer.table.cpu', 'CPU')}</th>
+                  <th className="px-2 py-2">{t('admin.balancer.table.ram', 'RAM')}</th>
+                  <th className="px-2 py-2">{t('admin.balancer.table.totalRam', 'Total RAM')}</th>
+                  <th className="px-2 py-2">{t('admin.balancer.table.connected', 'Connected')}</th>
+                  <th className="px-2 py-2">{t('admin.balancer.table.disabled', 'Disabled')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -853,19 +927,30 @@ export default function AdminBalancer() {
             label: key,
             value: prettyValue(value),
           }))}
+          loadingText={t('common.loading', 'Loading...')}
         />
       )}
 
       <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
-        <JsonDetails title="Health" data={healthLoading ? { loading: true } : (health ?? {})} />
-        <JsonDetails title="Ready" data={readyLoading ? { loading: true } : (ready ?? {})} />
         <JsonDetails
-          title="Debug stats"
-          data={debugLoading ? { loading: true } : (debugStats ?? {})}
+          title={t('admin.balancer.cards.health', 'Health')}
+          data={healthLoading ? { loading: true } : (health ?? {})}
+          rawLabel={t('admin.balancer.rawJson', 'raw JSON')}
         />
         <JsonDetails
-          title="Node stats"
+          title={t('admin.balancer.cards.ready', 'Ready')}
+          data={readyLoading ? { loading: true } : (ready ?? {})}
+          rawLabel={t('admin.balancer.rawJson', 'raw JSON')}
+        />
+        <JsonDetails
+          title={t('admin.balancer.cards.debugStats', 'Debug stats')}
+          data={debugLoading ? { loading: true } : (debugStats ?? {})}
+          rawLabel={t('admin.balancer.rawJson', 'raw JSON')}
+        />
+        <JsonDetails
+          title={t('admin.balancer.cards.nodeStats', 'Node stats')}
           data={nodesLoading ? { loading: true } : (nodeStats ?? {})}
+          rawLabel={t('admin.balancer.rawJson', 'raw JSON')}
         />
       </div>
 
