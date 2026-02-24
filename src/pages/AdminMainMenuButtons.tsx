@@ -32,6 +32,7 @@ import {
   buildInitialOrder,
   DEFAULT_MENU_BUTTON_EDIT_FORM,
   getMainMenuButtonsTabClass,
+  getSaveLayoutButtonLabel,
   type MenuButtonEditFormValues,
   type MainMenuButtonsTab,
   countEnabledButtonsForRow,
@@ -370,9 +371,7 @@ export default function AdminMainMenuButtons() {
               onClick={() => saveLayoutMutation.mutate(orderedIds)}
               disabled={!hasPendingChanges || saveLayoutMutation.isPending}
             >
-              {saveLayoutMutation.isPending
-                ? t('admin.mainMenuButtons.savingOrder')
-                : t('admin.mainMenuButtons.saveOrder')}
+              {getSaveLayoutButtonLabel(t, saveLayoutMutation.isPending)}
             </button>
           </div>
         )}

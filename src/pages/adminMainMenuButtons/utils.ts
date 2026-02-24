@@ -498,6 +498,10 @@ export function buildMainMenuButtonsTabOptions(t: TFunction): MainMenuButtonsTab
   ];
 }
 
+export function getSaveLayoutButtonLabel(t: TFunction, isSaving: boolean): string {
+  return isSaving ? t('admin.mainMenuButtons.savingOrder') : t('admin.mainMenuButtons.saveOrder');
+}
+
 export interface RowCapacityState {
   maxPerRow: number;
   freeSlots: number;
