@@ -23,6 +23,7 @@ import { MainMenuButtonsStatsTab } from '../components/admin/MainMenuButtonsStat
 import { GripIcon, SortablePreviewButton } from './adminMainMenuButtons/SortablePreviewButton';
 import {
   buildBuckets,
+  buildEditFormState,
   buildButtonUpdatePayload,
   buildInitialOrder,
   type MenuButtonEditFormValues,
@@ -271,14 +272,7 @@ export default function AdminMainMenuButtons() {
     }
 
     setEditingId(buttonId);
-    setForm({
-      text: getButtonText(buttonId, button, lang),
-      action: button.action || '',
-      openMode: button.open_mode || 'callback',
-      webappUrl: button.webapp_url || '',
-      visibility: button.visibility,
-      enabled: button.enabled,
-    });
+    setForm(buildEditFormState(buttonId, button, lang));
     setError(null);
     setSuccess(null);
   };

@@ -285,6 +285,21 @@ export interface MenuButtonEditFormValues {
   enabled: boolean;
 }
 
+export function buildEditFormState(
+  buttonId: string,
+  button: MenuButtonConfig,
+  lang: string,
+): MenuButtonEditFormValues {
+  return {
+    text: getButtonText(buttonId, button, lang),
+    action: button.action || '',
+    openMode: button.open_mode || 'callback',
+    webappUrl: button.webapp_url || '',
+    visibility: button.visibility,
+    enabled: button.enabled,
+  };
+}
+
 export function buildButtonUpdatePayload(
   button: MenuButtonConfig,
   lang: string,
