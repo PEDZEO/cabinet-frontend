@@ -1,6 +1,8 @@
 import { arrayMove } from '@dnd-kit/sortable';
 import type {
   MenuButtonConfig,
+  MenuButtonUpdateRequest,
+  MenuButtonVisibility,
   MenuLayoutResponse,
   MenuRowConfig,
 } from '../../api/adminMenuLayout';
@@ -168,4 +170,31 @@ export function buildRowsUpdatePayload(
   }
 
   return rows;
+}
+
+export interface MenuButtonEditFormValues {
+  text: string;
+  action: string;
+  openMode: 'callback' | 'direct';
+  webappUrl: string;
+  visibility: MenuButtonVisibility;
+  enabled: boolean;
+}
+
+export function buildButtonUpdatePayload(
+  button: MenuButtonConfig,
+  lang: string,
+  form: MenuButtonEditFormValues,
+): MenuButtonUpdateRequest {
+  return {
+    text: {
+      ...button.text,
+      [lang]: form.text.trim(),
+    },
+    action: form.action.trim(),
+    open_mode: form.openMode,
+    webapp_url: form.openMode === 'direct' ? form.webappUrl.trim() || null : null,
+    visibility: form.visibility,
+    enabled: form.enabled,
+  };
 }

@@ -23,7 +23,9 @@ import { MainMenuButtonsStatsTab } from '../components/admin/MainMenuButtonsStat
 import { GripIcon, SortablePreviewButton } from './adminMainMenuButtons/SortablePreviewButton';
 import {
   buildBuckets,
+  buildButtonUpdatePayload,
   buildInitialOrder,
+  type MenuButtonEditFormValues,
   buildPreviewRows,
   buildRowDefinitions,
   buildRowsUpdatePayload,
@@ -34,14 +36,7 @@ import {
   reorderVisibleSubset,
 } from './adminMainMenuButtons/utils';
 
-interface FormState {
-  text: string;
-  action: string;
-  openMode: 'callback' | 'direct';
-  webappUrl: string;
-  visibility: MenuButtonVisibility;
-  enabled: boolean;
-}
+type FormState = MenuButtonEditFormValues;
 
 const DEFAULT_FORM: FormState = {
   text: '',
@@ -306,17 +301,7 @@ export default function AdminMainMenuButtons() {
 
     updateButtonMutation.mutate({
       buttonId: editingId,
-      payload: {
-        text: {
-          ...button.text,
-          [lang]: form.text.trim(),
-        },
-        action: form.action.trim(),
-        open_mode: form.openMode,
-        webapp_url: form.openMode === 'direct' ? form.webappUrl.trim() || null : null,
-        visibility: form.visibility,
-        enabled: form.enabled,
-      },
+      payload: buildButtonUpdatePayload(button, lang, form),
     });
 
     setEditingId(null);
