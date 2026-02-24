@@ -1322,6 +1322,21 @@
         "submit": "Add",
         "save": "Save",
         "cancel": "Cancel"
+      },
+      "globalSettings": {
+        "title": "Channel Settings",
+        "channelRequired": "Require subscription",
+        "channelRequiredDesc": "Users must subscribe to channels to use the bot",
+        "disableTrialOnUnsub": "Disable trial on unsubscribe",
+        "disableTrialOnUnsubDesc": "Revoke trial access when user unsubscribes from any channel",
+        "requiredForAll": "Required for all users",
+        "requiredForAllDesc": "Apply channel subscription check to all users, including paid"
+      },
+      "perChannel": {
+        "disableTrial": "Disable trial on leave",
+        "disableTrialDesc": "Revoke trial when user leaves this channel",
+        "disablePaid": "Disable paid on leave",
+        "disablePaidDesc": "Revoke paid access when user leaves this channel"
       }
     },
     "settings": {

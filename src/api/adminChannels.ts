@@ -8,6 +8,8 @@ export interface RequiredChannel {
   title: string | null;
   is_active: boolean;
   sort_order: number;
+  disable_trial_on_leave: boolean;
+  disable_paid_on_leave: boolean;
 }
 
 export interface ChannelListResponse {
@@ -19,6 +21,8 @@ export interface CreateChannelRequest {
   channel_id: string;
   channel_link?: string;
   title?: string;
+  disable_trial_on_leave?: boolean;
+  disable_paid_on_leave?: boolean;
 }
 
 export interface UpdateChannelRequest {
@@ -27,6 +31,8 @@ export interface UpdateChannelRequest {
   title?: string;
   is_active?: boolean;
   sort_order?: number;
+  disable_trial_on_leave?: boolean;
+  disable_paid_on_leave?: boolean;
 }
 
 export const adminChannelsApi = {

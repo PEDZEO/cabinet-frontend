@@ -1077,6 +1077,21 @@
         "submit": "添加",
         "save": "保存",
         "cancel": "取消"
+      },
+      "globalSettings": {
+        "title": "频道设置",
+        "channelRequired": "要求订阅",
+        "channelRequiredDesc": "用户必须订阅频道才能使用机器人",
+        "disableTrialOnUnsub": "取消订阅时禁用试用",
+        "disableTrialOnUnsubDesc": "用户取消订阅任何频道时撤销试用权限",
+        "requiredForAll": "对所有用户强制",
+        "requiredForAllDesc": "对所有用户（包括付费用户）检查频道订阅"
+      },
+      "perChannel": {
+        "disableTrial": "退出时禁用试用",
+        "disableTrialDesc": "用户退出此频道时撤销试用权限",
+        "disablePaid": "退出时禁用付费",
+        "disablePaidDesc": "用户退出此频道时撤销付费权限"
       }
     },
     "settings": {

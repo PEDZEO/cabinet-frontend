@@ -1025,6 +1025,21 @@
         "submit": "افزودن",
         "save": "ذخیره",
         "cancel": "لغو"
+      },
+      "globalSettings": {
+        "title": "تنظیمات کانال",
+        "channelRequired": "الزام عضویت",
+        "channelRequiredDesc": "کاربران باید در کانال‌ها عضو شوند تا از ربات استفاده کنند",
+        "disableTrialOnUnsub": "غیرفعال‌سازی آزمایشی هنگام لغو عضویت",
+        "disableTrialOnUnsubDesc": "لغو دسترسی آزمایشی هنگام لغو عضویت از هر کانال",
+        "requiredForAll": "اجباری برای همه",
+        "requiredForAllDesc": "بررسی عضویت برای همه کاربران، از جمله پولی"
+      },
+      "perChannel": {
+        "disableTrial": "غیرفعال‌سازی آزمایشی هنگام خروج",
+        "disableTrialDesc": "لغو دسترسی آزمایشی هنگام خروج از این کانال",
+        "disablePaid": "غیرفعال‌سازی پولی هنگام خروج",
+        "disablePaidDesc": "لغو دسترسی پولی هنگام خروج از این کانال"
       }
     },
     "payments": {

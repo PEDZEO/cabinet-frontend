@@ -8,7 +8,9 @@ import {
   type CreateChannelRequest,
   type UpdateChannelRequest,
 } from '../api/adminChannels';
+import { adminSettingsApi, type SettingDefinition } from '../api/adminSettings';
 import { AdminBackButton } from '../components/admin';
+import { Toggle } from '../components/admin/Toggle';
 
 // Icons
 const ChannelIcon = () => (
@@ -79,17 +81,146 @@ const LinkIcon = () => (
   </svg>
 );
 
+const SettingsIcon = () => (
+  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28z"
+    />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+  </svg>
+);
+
+// Setting toggle row for global settings
+const CHANNEL_SETTING_KEYS = [
+  'CHANNEL_IS_REQUIRED_SUB',
+  'CHANNEL_DISABLE_TRIAL_ON_UNSUBSCRIBE',
+  'CHANNEL_REQUIRED_FOR_ALL',
+] as const;
+
+type ChannelSettingKey = (typeof CHANNEL_SETTING_KEYS)[number];
+
+const SETTING_I18N_MAP: Record<ChannelSettingKey, { label: string; desc: string }> = {
+  CHANNEL_IS_REQUIRED_SUB: {
+    label: 'admin.channelSubscriptions.globalSettings.channelRequired',
+    desc: 'admin.channelSubscriptions.globalSettings.channelRequiredDesc',
+  },
+  CHANNEL_DISABLE_TRIAL_ON_UNSUBSCRIBE: {
+    label: 'admin.channelSubscriptions.globalSettings.disableTrialOnUnsub',
+    desc: 'admin.channelSubscriptions.globalSettings.disableTrialOnUnsubDesc',
+  },
+  CHANNEL_REQUIRED_FOR_ALL: {
+    label: 'admin.channelSubscriptions.globalSettings.requiredForAll',
+    desc: 'admin.channelSubscriptions.globalSettings.requiredForAllDesc',
+  },
+};
+
+function GlobalSettingsSection() {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const haptic = useHaptic();
+  const notify = useNotify();
+
+  const { data: settings, isLoading } = useQuery({
+    queryKey: ['admin-settings', 'CHANNEL'],
+    queryFn: () => adminSettingsApi.getSettings('CHANNEL'),
+  });
+
+  const updateSettingMutation = useMutation({
+    mutationFn: ({ key, value }: { key: string; value: unknown }) =>
+      adminSettingsApi.updateSetting(key, value),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-settings', 'CHANNEL'] });
+      haptic.impact('light');
+    },
+    onError: () => {
+      haptic.notification('error');
+      notify.error(t('common.error'));
+    },
+  });
+
+  const getSettingByKey = (key: string): SettingDefinition | undefined =>
+    settings?.find((s) => s.key === key);
+
+  const isSettingEnabled = (key: string): boolean => {
+    const setting = getSettingByKey(key);
+    if (!setting) return false;
+    return setting.current === true || setting.current === 'true';
+  };
+
+  const handleToggleSetting = (key: string) => {
+    const current = isSettingEnabled(key);
+    updateSettingMutation.mutate({ key, value: !current });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="rounded-xl border border-dark-700 bg-dark-800/50 p-6">
+        <div className="flex items-center gap-3">
+          <div className="animate-spin">
+            <RefreshIcon />
+          </div>
+          <span className="text-sm text-dark-400">{t('common.loading')}</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-dark-700 bg-dark-800/50 p-4">
+      <div className="mb-4 flex items-center gap-2.5">
+        <div className="text-dark-300">
+          <SettingsIcon />
+        </div>
+        <h2 className="text-sm font-semibold text-dark-100">
+          {t('admin.channelSubscriptions.globalSettings.title')}
+        </h2>
+      </div>
+
+      <div className="space-y-1">
+        {CHANNEL_SETTING_KEYS.map((key) => {
+          const setting = getSettingByKey(key);
+          const i18n = SETTING_I18N_MAP[key];
+          const enabled = isSettingEnabled(key);
+          const isUpdating = updateSettingMutation.isPending;
+          const isReadOnly = setting?.read_only ?? false;
+
+          return (
+            <div
+              key={key}
+              className="flex items-center justify-between gap-4 rounded-lg px-3 py-2.5 transition-colors hover:bg-dark-700/30"
+            >
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-dark-200">{t(i18n.label)}</p>
+                <p className="mt-0.5 text-xs text-dark-400">{t(i18n.desc)}</p>
+              </div>
+              <Toggle
+                checked={enabled}
+                onChange={() => handleToggleSetting(key)}
+                disabled={isUpdating || isReadOnly || !setting}
+              />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // Channel card component
 function ChannelCard({
   channel,
   onToggle,
   onDelete,
   onEdit,
+  onUpdate,
 }: {
   channel: RequiredChannel;
   onToggle: (id: number) => void;
   onDelete: (id: number) => void;
   onEdit: (channel: RequiredChannel) => void;
+  onUpdate: (id: number, data: UpdateChannelRequest) => void;
 }) {
   const { t } = useTranslation();
 
@@ -145,6 +276,46 @@ function ChannelCard({
               </a>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Per-channel disable toggles */}
+      <div className="mt-3 space-y-2 border-t border-dark-700/50 pt-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-medium text-dark-300">
+              {t('admin.channelSubscriptions.perChannel.disableTrial')}
+            </p>
+            <p className="text-xs text-dark-500">
+              {t('admin.channelSubscriptions.perChannel.disableTrialDesc')}
+            </p>
+          </div>
+          <Toggle
+            checked={channel.disable_trial_on_leave}
+            onChange={() =>
+              onUpdate(channel.id, {
+                disable_trial_on_leave: !channel.disable_trial_on_leave,
+              })
+            }
+          />
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-medium text-dark-300">
+              {t('admin.channelSubscriptions.perChannel.disablePaid')}
+            </p>
+            <p className="text-xs text-dark-500">
+              {t('admin.channelSubscriptions.perChannel.disablePaidDesc')}
+            </p>
+          </div>
+          <Toggle
+            checked={channel.disable_paid_on_leave}
+            onChange={() =>
+              onUpdate(channel.id, {
+                disable_paid_on_leave: !channel.disable_paid_on_leave,
+              })
+            }
+          />
         </div>
       </div>
 
@@ -545,6 +716,9 @@ export default function AdminChannelSubscriptions() {
         </div>
       </div>
 
+      {/* Global channel settings */}
+      <GlobalSettingsSection />
+
       {/* Add form */}
       {showAddForm && (
         <AddChannelForm
@@ -588,6 +762,7 @@ export default function AdminChannelSubscriptions() {
               onToggle={handleToggle}
               onDelete={handleDelete}
               onEdit={handleEdit}
+              onUpdate={handleUpdate}
             />
           ))}
         </div>
