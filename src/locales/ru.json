@@ -1025,6 +1025,8 @@
         "users": "Пользователи",
         "cpu": "CPU",
         "ram": "RAM",
+        "cpuCores": "CPU ядра",
+        "ramLoad": "RAM нагрузка",
         "totalRam": "Всего RAM",
         "connected": "Подключена",
         "disabled": "Отключена"

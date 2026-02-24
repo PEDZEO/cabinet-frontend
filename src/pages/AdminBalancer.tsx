@@ -315,6 +315,7 @@ export default function AdminBalancer() {
       return {
         nodeName,
         usersOnline: prettyValue(statRecord.usersOnline),
+        cpuCount: prettyValue(statRecord.cpuCount),
         totalRamGb: prettyValue(statRecord.totalRamGb),
         cpuLoad: prettyValue(statRecord.cpuLoad),
         ramLoad: prettyValue(statRecord.ramLoad),
@@ -1016,8 +1017,8 @@ export default function AdminBalancer() {
                 <tr className="border-b border-dark-700 text-xs uppercase text-dark-400">
                   <th className="px-2 py-2">{t('admin.balancer.table.node', 'Node')}</th>
                   <th className="px-2 py-2">{t('admin.balancer.table.users', 'Users')}</th>
-                  <th className="px-2 py-2">{t('admin.balancer.table.cpu', 'CPU')}</th>
-                  <th className="px-2 py-2">{t('admin.balancer.table.ram', 'RAM')}</th>
+                  <th className="px-2 py-2">{t('admin.balancer.table.cpuCores', 'CPU Cores')}</th>
+                  <th className="px-2 py-2">{t('admin.balancer.table.ramLoad', 'RAM Load')}</th>
                   <th className="px-2 py-2">{t('admin.balancer.table.totalRam', 'Total RAM')}</th>
                   <th className="px-2 py-2">{t('admin.balancer.table.connected', 'Connected')}</th>
                   <th className="px-2 py-2">{t('admin.balancer.table.disabled', 'Disabled')}</th>
@@ -1028,7 +1029,7 @@ export default function AdminBalancer() {
                   <tr key={row.nodeName} className="border-b border-dark-800/70">
                     <td className="px-2 py-2 font-medium text-dark-100">{row.nodeName}</td>
                     <td className="px-2 py-2">{row.usersOnline}</td>
-                    <td className="px-2 py-2">{row.cpuLoad}</td>
+                    <td className="px-2 py-2">{row.cpuCount}</td>
                     <td className="px-2 py-2">{row.ramLoad}</td>
                     <td className="px-2 py-2">{row.totalRamGb}</td>
                     <td className="px-2 py-2">{row.connected}</td>

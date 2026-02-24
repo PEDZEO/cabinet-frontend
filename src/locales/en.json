@@ -1003,6 +1003,8 @@
         "users": "Users",
         "cpu": "CPU",
         "ram": "RAM",
+        "cpuCores": "CPU cores",
+        "ramLoad": "RAM load",
         "totalRam": "Total RAM",
         "connected": "Connected",
         "disabled": "Disabled"
