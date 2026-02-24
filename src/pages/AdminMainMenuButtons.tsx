@@ -24,10 +24,11 @@ import { GripIcon, SortablePreviewButton } from './adminMainMenuButtons/Sortable
 import {
   buildBuckets,
   buildEditFormState,
-  buildVisibilityOptions,
   buildButtonUpdatePayload,
+  buildVisibilityOptions,
   buildInitialOrder,
   type MenuButtonEditFormValues,
+  countEnabledButtonsForRow,
   buildPreviewRows,
   buildRowDefinitions,
   buildRowsUpdatePayload,
@@ -124,10 +125,7 @@ export default function AdminMainMenuButtons() {
   const rowBuckets = useMemo(() => buildBuckets(orderedIds, rowLengths), [orderedIds, rowLengths]);
 
   const getEnabledCountForRow = (rowIndex: number): number =>
-    (rowBuckets[rowIndex] ?? []).reduce(
-      (count, id) => count + (buttonsById[id]?.enabled ? 1 : 0),
-      0,
-    );
+    countEnabledButtonsForRow(rowBuckets, buttonsById, rowIndex);
 
   const hasOrderChanges = useMemo(
     () => hasOrderChanged(initialOrder, orderedIds),

@@ -32,6 +32,17 @@ export function hasOrderChanged(initialOrder: string[], orderedIds: string[]): b
   return orderedIds.some((id, index) => initialOrder[index] !== id);
 }
 
+export function countEnabledButtonsForRow(
+  rowBuckets: string[][],
+  buttonsById: Record<string, MenuButtonConfig>,
+  rowIndex: number,
+): number {
+  return (rowBuckets[rowIndex] ?? []).reduce(
+    (count, id) => count + (buttonsById[id]?.enabled ? 1 : 0),
+    0,
+  );
+}
+
 export function reorderVisibleSubset(
   source: string[],
   visibleIds: string[],
