@@ -33,8 +33,26 @@ export const adminBalancerApi = {
   },
 
   getReady: async (): Promise<Record<string, unknown>> => {
-    const response = await apiClient.get('/cabinet/admin/balancer/ready');
-    return response.data;
+    try {
+      const response = await apiClient.get('/cabinet/admin/balancer/ready');
+      return response.data;
+    } catch (error) {
+      const maybeError = error as {
+        response?: {
+          status?: number;
+          data?: {
+            detail?: unknown;
+          };
+        };
+      };
+      const status = maybeError.response?.status;
+      const detail = maybeError.response?.data?.detail;
+
+      if (status === 503 && detail && typeof detail === 'object' && !Array.isArray(detail)) {
+        return detail as Record<string, unknown>;
+      }
+      throw error;
+    }
   },
 
   getDebugStats: async (): Promise<BalancerRuntimeStatsResponse> => {
