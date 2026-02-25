@@ -280,7 +280,10 @@
     "selectServers": "انتخاب سرورها",
     "selectDevices": "انتخاب دستگاه‌ها",
     "perDevice": "/ دستگاه",
-    "summary": "خلاصه",
+    "summary": {
+      "period": "دوره: {{label}}",
+      "traffic": "ترافیک: {{gb}} GB"
+    },
     "total": "جمع کل",
     "purchase": "خرید",
     "step": "مرحله {{current}} از {{total}}",
@@ -391,10 +394,6 @@
       "label": "ترافیک",
       "selectVolume": "انتخاب حجم ترافیک",
       "default": "پیش‌فرض: {{label}}"
-    },
-    "summary": {
-      "period": "دوره: {{label}}",
-      "traffic": "ترافیک: {{gb}} GB"
     },
     "confirmDeleteAllDevices": "همه دستگاه‌ها حذف شوند؟",
     "confirmDeleteDevice": "این دستگاه حذف شود؟",
@@ -795,7 +794,7 @@
       "total": "کل",
       "noData": "داده ترافیکی موجود نیست",
       "loading": "در حال بارگذاری داده‌های ترافیک...",
-      "noTariff": "\u2014",
+      "noTariff": "—",
       "search": "جستجو بر اساس نام یا نام کاربری",
       "allTariffs": "همه تعرفه‌ها",
       "nodes": "نودها",
@@ -2325,6 +2324,269 @@
       "lightness": "روشنایی",
       "quickPresets": "پیش‌تنظیم‌های سریع",
       "saturation": "اشباع"
+    },
+    "roles": {
+      "title": "نقش‌ها و مجوزها",
+      "subtitle": "مدیریت نقش‌های مدیران و مجوزهای آن‌ها",
+      "createRole": "ایجاد نقش",
+      "noRoles": "نقشی یافت نشد",
+      "systemBadge": "سیستمی",
+      "inactiveBadge": "غیرفعال",
+      "levelLabel": "سطح",
+      "usersCount_other": "{{count}} کاربر",
+      "permissionsCount_other": "{{count}} مجوز",
+      "stats": {
+        "totalRoles": "کل نقش‌ها",
+        "active": "فعال",
+        "system": "سیستمی"
+      },
+      "actions": {
+        "edit": "ویرایش",
+        "delete": "حذف"
+      },
+      "modal": {
+        "createTitle": "ایجاد نقش",
+        "editTitle": "ویرایش نقش",
+        "close": "بستن"
+      },
+      "form": {
+        "name": "نام نقش",
+        "namePlaceholder": "مثلاً مدیر محتوا",
+        "description": "توضیحات",
+        "descriptionPlaceholder": "کاربرد این نقش...",
+        "level": "سطح اولویت",
+        "levelValue": "مقدار سطح",
+        "levelHint": "سطح بالاتر = اختیارات بیشتر. کاربران فقط می‌توانند نقش‌هایی با سطح پایین‌تر از خود را مدیریت کنند.",
+        "color": "رنگ",
+        "presets": "الگوهای مجوز",
+        "permissions": "مجوزها",
+        "toggleSection": "تغییر وضعیت تمام مجوزهای {{section}}",
+        "selectedPermissions_other": "{{count}} مجوز انتخاب شده",
+        "cancel": "لغو",
+        "saving": "در حال ذخیره...",
+        "save": "ذخیره"
+      },
+      "presets": {
+        "moderator": "مدیر محتوا",
+        "marketer": "بازاریاب",
+        "support": "پشتیبانی"
+      },
+      "confirm": {
+        "title": "حذف نقش؟",
+        "text": "این نقش برای همیشه حذف خواهد شد. کاربران دارای این نقش مجوزهای آن را از دست خواهند داد.",
+        "cancel": "لغو",
+        "delete": "حذف",
+        "deleting": "در حال حذف..."
+      },
+      "errors": {
+        "loadFailed": "بارگذاری نقش‌ها ناموفق بود",
+        "createFailed": "ایجاد نقش ناموفق بود",
+        "updateFailed": "به‌روزرسانی نقش ناموفق بود",
+        "nameRequired": "نام نقش الزامی است",
+        "deleteFailed": "حذف نقش ناموفق بود"
+      }
+    },
+    "roleAssign": {
+      "title": "تخصیص نقش",
+      "subtitle": "تخصیص و مدیریت نقش‌های کاربران",
+      "assignSection": "تخصیص نقش",
+      "userLabel": "کاربر",
+      "searchPlaceholder": "جستجو بر اساس نام، نام کاربری، شناسه تلگرام یا ایمیل...",
+      "clearUser": "پاک کردن کاربر انتخاب‌شده",
+      "noUsersFound": "کاربری یافت نشد",
+      "roleLabel": "نقش",
+      "selectRole": "یک نقش انتخاب کنید...",
+      "expiresLabel": "تاریخ انقضا (اختیاری)",
+      "expiresHint": "برای تخصیص دائمی خالی بگذارید",
+      "assignButton": "تخصیص",
+      "assigning": "در حال تخصیص...",
+      "assignSuccess": "نقش با موفقیت تخصیص داده شد",
+      "currentAssignments": "تخصیص‌های فعلی",
+      "totalAssignments_other": "{{count}} تخصیص",
+      "noAssignments": "تخصیص نقشی یافت نشد",
+      "unknownUser": "کاربر ناشناخته",
+      "system": "سیستم",
+      "permanent": "دائمی",
+      "expired": "منقضی شده",
+      "revoke": "لغو",
+      "revokeAriaLabel": "لغو نقش {{role}} از {{user}}",
+      "table": {
+        "user": "کاربر",
+        "role": "نقش",
+        "assignedBy": "تخصیص‌دهنده",
+        "assignedAt": "تاریخ تخصیص",
+        "expires": "انقضا",
+        "actions": "عملیات"
+      },
+      "pagination": {
+        "showing": "{{from}}-{{to}} از {{total}}",
+        "prev": "صفحه قبل",
+        "next": "صفحه بعد"
+      },
+      "confirm": {
+        "title": "لغو نقش؟",
+        "text": "این کاربر فوراً تمام مجوزهای مرتبط با این نقش را از دست خواهد داد.",
+        "cancel": "لغو",
+        "revoke": "لغو نقش",
+        "revoking": "در حال لغو..."
+      },
+      "errors": {
+        "userRequired": "لطفاً یک کاربر انتخاب کنید",
+        "roleRequired": "لطفاً یک نقش انتخاب کنید",
+        "assignFailed": "تخصیص نقش ناموفق بود",
+        "revokeFailed": "لغو نقش ناموفق بود"
+      }
+    },
+    "policies": {
+      "title": "سیاست‌های دسترسی",
+      "subtitle": "مدیریت سیاست‌های کنترل دسترسی ABAC",
+      "createPolicy": "ایجاد سیاست",
+      "noPolicies": "سیاستی یافت نشد",
+      "inactiveBadge": "غیرفعال",
+      "effectAllow": "اجازه",
+      "effectDeny": "رد",
+      "global": "سراسری",
+      "unknownRole": "نقش ناشناخته",
+      "roleLabel": "نقش",
+      "priorityLabel": "اولویت",
+      "stats": {
+        "total": "کل سیاست‌ها",
+        "allow": "اجازه",
+        "deny": "رد",
+        "active": "فعال"
+      },
+      "actions": {
+        "edit": "ویرایش",
+        "delete": "حذف"
+      },
+      "modal": {
+        "createTitle": "ایجاد سیاست",
+        "editTitle": "ویرایش سیاست",
+        "close": "بستن"
+      },
+      "form": {
+        "name": "نام سیاست",
+        "namePlaceholder": "مثلاً مسدودسازی دسترسی شبانه",
+        "description": "توضیحات",
+        "descriptionPlaceholder": "عملکرد این سیاست...",
+        "effect": "اثر",
+        "resource": "منبع",
+        "selectResource": "یک منبع انتخاب کنید...",
+        "actions": "عملیات",
+        "role": "نقش (اختیاری)",
+        "globalOption": "سراسری (همه نقش‌ها)",
+        "roleHint": "سراسری بگذارید تا سیاست برای همه نقش‌ها اعمال شود.",
+        "priority": "اولویت",
+        "priorityHint": "سیاست‌های با اولویت بالاتر ابتدا ارزیابی می‌شوند. رد در اولویت مساوی بر اجازه غلبه می‌کند.",
+        "conditions": "شرایط",
+        "cancel": "لغو",
+        "saving": "در حال ذخیره...",
+        "save": "ذخیره"
+      },
+      "conditions": {
+        "timeRange": "بازه زمانی",
+        "timeStart": "زمان شروع",
+        "timeEnd": "زمان پایان",
+        "ipWhitelist": "لیست سفید IP",
+        "ipPlaceholder": "IP را وارد کنید و Enter بزنید...",
+        "removeIp": "حذف {{ip}}",
+        "ipCount_other": "{{count}} IP",
+        "rateLimit": "محدودیت نرخ",
+        "rateLimitValue": "مقدار محدودیت نرخ",
+        "rateValue": "{{count}}/ساعت",
+        "perHour": "عملیات در ساعت"
+      },
+      "confirm": {
+        "title": "حذف سیاست؟",
+        "text": "این سیاست برای همیشه حذف خواهد شد. قوانین کنترل دسترسی مجدداً محاسبه خواهند شد.",
+        "cancel": "لغو",
+        "delete": "حذف",
+        "deleting": "در حال حذف..."
+      },
+      "errors": {
+        "loadFailed": "بارگذاری سیاست‌ها ناموفق بود",
+        "createFailed": "ایجاد سیاست ناموفق بود",
+        "updateFailed": "به‌روزرسانی سیاست ناموفق بود",
+        "nameRequired": "نام سیاست الزامی است",
+        "resourceRequired": "لطفاً یک منبع انتخاب کنید",
+        "actionsRequired": "لطفاً حداقل یک عملیات انتخاب کنید",
+        "deleteFailed": "حذف سیاست ناموفق بود"
+      }
+    },
+    "auditLog": {
+      "title": "گزارش بازرسی",
+      "subtitle": "بررسی فعالیت سیستم و تاریخچه دسترسی",
+      "back": "بازگشت",
+      "exportCsv": "خروجی CSV",
+      "exportError": "خطا در خروجی",
+      "exporting": "در حال خروجی...",
+      "refresh": "بازخوانی",
+      "unknownUser": "کاربر ناشناخته",
+      "noEntries": "رکوردی در گزارش بازرسی یافت نشد",
+      "totalEntries_other": "{{count}} رکورد",
+      "autoRefresh": {
+        "label": "بازخوانی خودکار",
+        "tooltip": "بازخوانی خودکار هر ۳۰ ثانیه"
+      },
+      "filters": {
+        "title": "فیلترها",
+        "active": "فعال",
+        "action": "عملیات",
+        "actionPlaceholder": "جستجو بر اساس عملیات...",
+        "resource": "نوع منبع",
+        "allResources": "همه منابع",
+        "status": "وضعیت",
+        "allStatuses": "همه وضعیت‌ها",
+        "dateFrom": "از تاریخ",
+        "dateTo": "تا تاریخ",
+        "apply": "اعمال",
+        "clear": "پاک کردن"
+      },
+      "status": {
+        "success": "موفق",
+        "denied": "رد شده",
+        "error": "خطا"
+      },
+      "resourceTypes": {
+        "users": "کاربران",
+        "tickets": "تیکت‌ها",
+        "roles": "نقش‌ها",
+        "policies": "سیاست‌ها",
+        "settings": "تنظیمات",
+        "broadcasts": "پیام‌رسانی",
+        "tariffs": "تعرفه‌ها",
+        "servers": "سرورها",
+        "payments": "پرداخت‌ها",
+        "campaigns": "کمپین‌ها",
+        "promocodes": "کدهای تخفیف"
+      },
+      "details": {
+        "userAgent": "عامل کاربر",
+        "requestPath": "مسیر درخواست",
+        "ipAddress": "آدرس IP",
+        "timestamp": "زمان",
+        "before": "قبل",
+        "after": "بعد",
+        "fullDetails": "جزئیات کامل"
+      },
+      "time": {
+        "justNow": "همین الان",
+        "minutesAgo_other": "{{count}} دقیقه پیش",
+        "hoursAgo_other": "{{count}} ساعت پیش",
+        "daysAgo_other": "{{count}} روز پیش"
+      },
+      "pagination": {
+        "pageSize": "در هر صفحه:",
+        "pageOf": "{{current}} / {{total}}",
+        "first": "صفحه اول",
+        "previous": "صفحه قبل",
+        "next": "صفحه بعد",
+        "last": "صفحه آخر"
+      },
+      "errors": {
+        "loadFailed": "بارگذاری گزارش بازرسی ناموفق بود",
+        "retry": "تلاش مجدد"
+      }
     }
   },
   "adminUpdates": {
@@ -2792,269 +3054,6 @@
       "node": "گره",
       "requests": "درخواست‌ها",
       "ipHistory": "تاریخچه IP"
-    },
-    "roles": {
-      "title": "نقش‌ها و مجوزها",
-      "subtitle": "مدیریت نقش‌های مدیران و مجوزهای آن‌ها",
-      "createRole": "ایجاد نقش",
-      "noRoles": "نقشی یافت نشد",
-      "systemBadge": "سیستمی",
-      "inactiveBadge": "غیرفعال",
-      "levelLabel": "سطح",
-      "usersCount_other": "{{count}} کاربر",
-      "permissionsCount_other": "{{count}} مجوز",
-      "stats": {
-        "totalRoles": "کل نقش‌ها",
-        "active": "فعال",
-        "system": "سیستمی"
-      },
-      "actions": {
-        "edit": "ویرایش",
-        "delete": "حذف"
-      },
-      "modal": {
-        "createTitle": "ایجاد نقش",
-        "editTitle": "ویرایش نقش",
-        "close": "بستن"
-      },
-      "form": {
-        "name": "نام نقش",
-        "namePlaceholder": "مثلاً مدیر محتوا",
-        "description": "توضیحات",
-        "descriptionPlaceholder": "کاربرد این نقش...",
-        "level": "سطح اولویت",
-        "levelValue": "مقدار سطح",
-        "levelHint": "سطح بالاتر = اختیارات بیشتر. کاربران فقط می‌توانند نقش‌هایی با سطح پایین‌تر از خود را مدیریت کنند.",
-        "color": "رنگ",
-        "presets": "الگوهای مجوز",
-        "permissions": "مجوزها",
-        "toggleSection": "تغییر وضعیت تمام مجوزهای {{section}}",
-        "selectedPermissions_other": "{{count}} مجوز انتخاب شده",
-        "cancel": "لغو",
-        "saving": "در حال ذخیره...",
-        "save": "ذخیره"
-      },
-      "presets": {
-        "moderator": "مدیر محتوا",
-        "marketer": "بازاریاب",
-        "support": "پشتیبانی"
-      },
-      "confirm": {
-        "title": "حذف نقش؟",
-        "text": "این نقش برای همیشه حذف خواهد شد. کاربران دارای این نقش مجوزهای آن را از دست خواهند داد.",
-        "cancel": "لغو",
-        "delete": "حذف",
-        "deleting": "در حال حذف..."
-      },
-      "errors": {
-        "loadFailed": "بارگذاری نقش‌ها ناموفق بود",
-        "createFailed": "ایجاد نقش ناموفق بود",
-        "updateFailed": "به‌روزرسانی نقش ناموفق بود",
-        "nameRequired": "نام نقش الزامی است",
-        "deleteFailed": "حذف نقش ناموفق بود"
-      }
-    },
-    "roleAssign": {
-      "title": "تخصیص نقش",
-      "subtitle": "تخصیص و مدیریت نقش‌های کاربران",
-      "assignSection": "تخصیص نقش",
-      "userLabel": "کاربر",
-      "searchPlaceholder": "جستجو بر اساس نام، نام کاربری، شناسه تلگرام یا ایمیل...",
-      "clearUser": "پاک کردن کاربر انتخاب‌شده",
-      "noUsersFound": "کاربری یافت نشد",
-      "roleLabel": "نقش",
-      "selectRole": "یک نقش انتخاب کنید...",
-      "expiresLabel": "تاریخ انقضا (اختیاری)",
-      "expiresHint": "برای تخصیص دائمی خالی بگذارید",
-      "assignButton": "تخصیص",
-      "assigning": "در حال تخصیص...",
-      "assignSuccess": "نقش با موفقیت تخصیص داده شد",
-      "currentAssignments": "تخصیص‌های فعلی",
-      "totalAssignments_other": "{{count}} تخصیص",
-      "noAssignments": "تخصیص نقشی یافت نشد",
-      "unknownUser": "کاربر ناشناخته",
-      "system": "سیستم",
-      "permanent": "دائمی",
-      "expired": "منقضی شده",
-      "revoke": "لغو",
-      "revokeAriaLabel": "لغو نقش {{role}} از {{user}}",
-      "table": {
-        "user": "کاربر",
-        "role": "نقش",
-        "assignedBy": "تخصیص‌دهنده",
-        "assignedAt": "تاریخ تخصیص",
-        "expires": "انقضا",
-        "actions": "عملیات"
-      },
-      "pagination": {
-        "showing": "{{from}}-{{to}} از {{total}}",
-        "prev": "صفحه قبل",
-        "next": "صفحه بعد"
-      },
-      "confirm": {
-        "title": "لغو نقش؟",
-        "text": "این کاربر فوراً تمام مجوزهای مرتبط با این نقش را از دست خواهد داد.",
-        "cancel": "لغو",
-        "revoke": "لغو نقش",
-        "revoking": "در حال لغو..."
-      },
-      "errors": {
-        "userRequired": "لطفاً یک کاربر انتخاب کنید",
-        "roleRequired": "لطفاً یک نقش انتخاب کنید",
-        "assignFailed": "تخصیص نقش ناموفق بود",
-        "revokeFailed": "لغو نقش ناموفق بود"
-      }
-    },
-    "policies": {
-      "title": "سیاست‌های دسترسی",
-      "subtitle": "مدیریت سیاست‌های کنترل دسترسی ABAC",
-      "createPolicy": "ایجاد سیاست",
-      "noPolicies": "سیاستی یافت نشد",
-      "inactiveBadge": "غیرفعال",
-      "effectAllow": "اجازه",
-      "effectDeny": "رد",
-      "global": "سراسری",
-      "unknownRole": "نقش ناشناخته",
-      "roleLabel": "نقش",
-      "priorityLabel": "اولویت",
-      "stats": {
-        "total": "کل سیاست‌ها",
-        "allow": "اجازه",
-        "deny": "رد",
-        "active": "فعال"
-      },
-      "actions": {
-        "edit": "ویرایش",
-        "delete": "حذف"
-      },
-      "modal": {
-        "createTitle": "ایجاد سیاست",
-        "editTitle": "ویرایش سیاست",
-        "close": "بستن"
-      },
-      "form": {
-        "name": "نام سیاست",
-        "namePlaceholder": "مثلاً مسدودسازی دسترسی شبانه",
-        "description": "توضیحات",
-        "descriptionPlaceholder": "عملکرد این سیاست...",
-        "effect": "اثر",
-        "resource": "منبع",
-        "selectResource": "یک منبع انتخاب کنید...",
-        "actions": "عملیات",
-        "role": "نقش (اختیاری)",
-        "globalOption": "سراسری (همه نقش‌ها)",
-        "roleHint": "سراسری بگذارید تا سیاست برای همه نقش‌ها اعمال شود.",
-        "priority": "اولویت",
-        "priorityHint": "سیاست‌های با اولویت بالاتر ابتدا ارزیابی می‌شوند. رد در اولویت مساوی بر اجازه غلبه می‌کند.",
-        "conditions": "شرایط",
-        "cancel": "لغو",
-        "saving": "در حال ذخیره...",
-        "save": "ذخیره"
-      },
-      "conditions": {
-        "timeRange": "بازه زمانی",
-        "timeStart": "زمان شروع",
-        "timeEnd": "زمان پایان",
-        "ipWhitelist": "لیست سفید IP",
-        "ipPlaceholder": "IP را وارد کنید و Enter بزنید...",
-        "removeIp": "حذف {{ip}}",
-        "ipCount_other": "{{count}} IP",
-        "rateLimit": "محدودیت نرخ",
-        "rateLimitValue": "مقدار محدودیت نرخ",
-        "rateValue": "{{count}}/ساعت",
-        "perHour": "عملیات در ساعت"
-      },
-      "confirm": {
-        "title": "حذف سیاست؟",
-        "text": "این سیاست برای همیشه حذف خواهد شد. قوانین کنترل دسترسی مجدداً محاسبه خواهند شد.",
-        "cancel": "لغو",
-        "delete": "حذف",
-        "deleting": "در حال حذف..."
-      },
-      "errors": {
-        "loadFailed": "بارگذاری سیاست‌ها ناموفق بود",
-        "createFailed": "ایجاد سیاست ناموفق بود",
-        "updateFailed": "به‌روزرسانی سیاست ناموفق بود",
-        "nameRequired": "نام سیاست الزامی است",
-        "resourceRequired": "لطفاً یک منبع انتخاب کنید",
-        "actionsRequired": "لطفاً حداقل یک عملیات انتخاب کنید",
-        "deleteFailed": "حذف سیاست ناموفق بود"
-      }
-    },
-    "auditLog": {
-      "title": "گزارش بازرسی",
-      "subtitle": "بررسی فعالیت سیستم و تاریخچه دسترسی",
-      "back": "بازگشت",
-      "exportCsv": "خروجی CSV",
-      "exportError": "خطا در خروجی",
-      "exporting": "در حال خروجی...",
-      "refresh": "بازخوانی",
-      "unknownUser": "کاربر ناشناخته",
-      "noEntries": "رکوردی در گزارش بازرسی یافت نشد",
-      "totalEntries_other": "{{count}} رکورد",
-      "autoRefresh": {
-        "label": "بازخوانی خودکار",
-        "tooltip": "بازخوانی خودکار هر ۳۰ ثانیه"
-      },
-      "filters": {
-        "title": "فیلترها",
-        "active": "فعال",
-        "action": "عملیات",
-        "actionPlaceholder": "جستجو بر اساس عملیات...",
-        "resource": "نوع منبع",
-        "allResources": "همه منابع",
-        "status": "وضعیت",
-        "allStatuses": "همه وضعیت‌ها",
-        "dateFrom": "از تاریخ",
-        "dateTo": "تا تاریخ",
-        "apply": "اعمال",
-        "clear": "پاک کردن"
-      },
-      "status": {
-        "success": "موفق",
-        "denied": "رد شده",
-        "error": "خطا"
-      },
-      "resourceTypes": {
-        "users": "کاربران",
-        "tickets": "تیکت‌ها",
-        "roles": "نقش‌ها",
-        "policies": "سیاست‌ها",
-        "settings": "تنظیمات",
-        "broadcasts": "پیام‌رسانی",
-        "tariffs": "تعرفه‌ها",
-        "servers": "سرورها",
-        "payments": "پرداخت‌ها",
-        "campaigns": "کمپین‌ها",
-        "promocodes": "کدهای تخفیف"
-      },
-      "details": {
-        "userAgent": "عامل کاربر",
-        "requestPath": "مسیر درخواست",
-        "ipAddress": "آدرس IP",
-        "timestamp": "زمان",
-        "before": "قبل",
-        "after": "بعد",
-        "fullDetails": "جزئیات کامل"
-      },
-      "time": {
-        "justNow": "همین الان",
-        "minutesAgo_other": "{{count}} دقیقه پیش",
-        "hoursAgo_other": "{{count}} ساعت پیش",
-        "daysAgo_other": "{{count}} روز پیش"
-      },
-      "pagination": {
-        "pageSize": "در هر صفحه:",
-        "pageOf": "{{current}} / {{total}}",
-        "first": "صفحه اول",
-        "previous": "صفحه قبل",
-        "next": "صفحه بعد",
-        "last": "صفحه آخر"
-      },
-      "errors": {
-        "loadFailed": "بارگذاری گزارش بازرسی ناموفق بود",
-        "retry": "تلاش مجدد"
-      }
     }
   },
   "blocking": {

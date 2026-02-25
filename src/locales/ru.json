@@ -320,7 +320,10 @@
     "extraDevicesIncluded_many": "Вкл. {{count}} доп. устр.",
     "baseTariff": "Тариф",
     "perMonth": "/мес",
-    "summary": "Итого",
+    "summary": {
+      "period": "Период: {{label}}",
+      "traffic": "Трафик: {{gb}} ГБ"
+    },
     "total": "К оплате",
     "purchase": "Купить",
     "step": "Шаг {{current}} из {{total}}",
@@ -535,10 +538,6 @@
       "label": "Трафик",
       "selectVolume": "Выбрать объём трафика",
       "default": "По умолчанию: {{label}}"
-    },
-    "summary": {
-      "period": "Период: {{label}}",
-      "traffic": "Трафик: {{gb}} ГБ"
     }
   },
   "balance": {
@@ -548,7 +547,41 @@
     "topUpBalance": "Пополнение баланса",
     "enterAmount": "Введите сумму",
     "paymentMethod": "Способ оплаты",
-    "paymentMethods": "Способы оплаты",
+    "paymentMethods": {
+      "yookassa": {
+        "description": "Оплата через ЮKassa"
+      },
+      "cryptobot": {
+        "description": "Оплата криптовалютой через CryptoBot"
+      },
+      "telegram_stars": {
+        "description": "Оплата через Telegram Stars"
+      },
+      "heleket": {
+        "description": "Оплата криптовалютой через Heleket"
+      },
+      "mulenpay": {
+        "description": "Оплата через MulenPay"
+      },
+      "pal24": {
+        "description": "Оплата через PAL24"
+      },
+      "platega": {
+        "description": "Оплата через Platega"
+      },
+      "wata": {
+        "description": "Оплата через Wata"
+      },
+      "cloudpayments": {
+        "description": "Оплата банковской картой через CloudPayments"
+      },
+      "freekassa": {
+        "description": "Оплата через FreeKassa"
+      },
+      "tribute": {
+        "description": "Оплата банковской картой через Tribute"
+      }
+    },
     "transactionHistory": "История операций",
     "noTransactions": "Нет операций",
     "date": "Дата",
@@ -590,41 +623,6 @@
     "topUpToComplete": "Пополните баланс для завершения покупки",
     "missing": "Не хватает",
     "noPaymentMethods": "Способы оплаты недоступны",
-    "paymentMethods": {
-      "yookassa": {
-        "description": "Оплата через ЮKassa"
-      },
-      "cryptobot": {
-        "description": "Оплата криптовалютой через CryptoBot"
-      },
-      "telegram_stars": {
-        "description": "Оплата через Telegram Stars"
-      },
-      "heleket": {
-        "description": "Оплата криптовалютой через Heleket"
-      },
-      "mulenpay": {
-        "description": "Оплата через MulenPay"
-      },
-      "pal24": {
-        "description": "Оплата через PAL24"
-      },
-      "platega": {
-        "description": "Оплата через Platega"
-      },
-      "wata": {
-        "description": "Оплата через Wata"
-      },
-      "cloudpayments": {
-        "description": "Оплата банковской картой через CloudPayments"
-      },
-      "freekassa": {
-        "description": "Оплата через FreeKassa"
-      },
-      "tribute": {
-        "description": "Оплата банковской картой через Tribute"
-      }
-    },
     "pendingPayments": {
       "title": "Ожидающие платежи",
       "pay": "Оплатить",
@@ -937,7 +935,7 @@
       "total": "Всего",
       "noData": "Нет данных о трафике",
       "loading": "Загрузка данных о трафике...",
-      "noTariff": "\u2014",
+      "noTariff": "—",
       "search": "Поиск по имени или юзернейму",
       "allTariffs": "Все тарифы",
       "nodes": "Ноды",
@@ -2087,7 +2085,7 @@
       "name": "Название",
       "namePlaceholder": "Введите название тарифа",
       "description": "Описание",
-      "descriptionPlaceholder": "Введите описание тарифа",
+      "descriptionPlaceholder": "Краткое описание тарифа",
       "trafficLimit": "Лимит трафика",
       "trafficHint": "0 = безлимитный трафик",
       "deviceLimit": "Лимит устройств",
@@ -2155,7 +2153,6 @@
       "nameExampleDaily": "Например: Суточный",
       "nameHint": "От 2 до 50 символов",
       "descriptionLabel": "Описание",
-      "descriptionPlaceholder": "Краткое описание тарифа",
       "trafficLimitLabel": "Лимит трафика",
       "gbUnit": "ГБ",
       "trafficLimitHint": "0 = безлимитный трафик",
@@ -3082,6 +3079,287 @@
       "lightness": "Яркость",
       "quickPresets": "Быстрые пресеты",
       "saturation": "Насыщенность"
+    },
+    "roles": {
+      "title": "Роли и права",
+      "subtitle": "Управление ролями администраторов и их правами",
+      "createRole": "Создать роль",
+      "noRoles": "Роли не найдены",
+      "systemBadge": "Системная",
+      "inactiveBadge": "Неактивна",
+      "levelLabel": "Уровень",
+      "usersCount_one": "{{count}} пользователь",
+      "usersCount_few": "{{count}} пользователя",
+      "usersCount_many": "{{count}} пользователей",
+      "permissionsCount_one": "{{count}} разрешение",
+      "permissionsCount_few": "{{count}} разрешения",
+      "permissionsCount_many": "{{count}} разрешений",
+      "stats": {
+        "totalRoles": "Всего ролей",
+        "active": "Активные",
+        "system": "Системные"
+      },
+      "actions": {
+        "edit": "Редактировать",
+        "delete": "Удалить"
+      },
+      "modal": {
+        "createTitle": "Создание роли",
+        "editTitle": "Редактирование роли",
+        "close": "Закрыть"
+      },
+      "form": {
+        "name": "Название роли",
+        "namePlaceholder": "например, Модератор",
+        "description": "Описание",
+        "descriptionPlaceholder": "Для чего нужна эта роль...",
+        "level": "Уровень приоритета",
+        "levelValue": "Значение уровня",
+        "levelHint": "Чем выше уровень, тем больше полномочий. Пользователи могут управлять только ролями с уровнем ниже своего.",
+        "color": "Цвет",
+        "presets": "Шаблоны прав",
+        "permissions": "Разрешения",
+        "toggleSection": "Переключить все права {{section}}",
+        "selectedPermissions_one": "{{count}} разрешение выбрано",
+        "selectedPermissions_few": "{{count}} разрешения выбрано",
+        "selectedPermissions_many": "{{count}} разрешений выбрано",
+        "cancel": "Отмена",
+        "saving": "Сохранение...",
+        "save": "Сохранить"
+      },
+      "presets": {
+        "moderator": "Модератор",
+        "marketer": "Маркетолог",
+        "support": "Поддержка"
+      },
+      "confirm": {
+        "title": "Удалить роль?",
+        "text": "Роль будет безвозвратно удалена. Пользователи с этой ролью потеряют её права.",
+        "cancel": "Отмена",
+        "delete": "Удалить",
+        "deleting": "Удаление..."
+      },
+      "errors": {
+        "loadFailed": "Не удалось загрузить роли",
+        "createFailed": "Не удалось создать роль",
+        "updateFailed": "Не удалось обновить роль",
+        "nameRequired": "Укажите название роли",
+        "deleteFailed": "Не удалось удалить роль"
+      }
+    },
+    "roleAssign": {
+      "title": "Назначение ролей",
+      "subtitle": "Назначение и управление ролями пользователей",
+      "assignSection": "Назначить роль",
+      "userLabel": "Пользователь",
+      "searchPlaceholder": "Поиск по имени, username, Telegram ID или email...",
+      "clearUser": "Очистить выбранного пользователя",
+      "noUsersFound": "Пользователи не найдены",
+      "roleLabel": "Роль",
+      "selectRole": "Выберите роль...",
+      "expiresLabel": "Истекает (необязательно)",
+      "expiresHint": "Оставьте пустым для бессрочного назначения",
+      "assignButton": "Назначить",
+      "assigning": "Назначение...",
+      "assignSuccess": "Роль успешно назначена",
+      "currentAssignments": "Текущие назначения",
+      "totalAssignments_one": "{{count}} назначение",
+      "totalAssignments_few": "{{count}} назначения",
+      "totalAssignments_many": "{{count}} назначений",
+      "noAssignments": "Назначения ролей не найдены",
+      "unknownUser": "Неизвестный пользователь",
+      "system": "Система",
+      "permanent": "Бессрочно",
+      "expired": "истекло",
+      "revoke": "Отозвать",
+      "revokeAriaLabel": "Отозвать роль {{role}} у {{user}}",
+      "table": {
+        "user": "Пользователь",
+        "role": "Роль",
+        "assignedBy": "Назначил",
+        "assignedAt": "Дата назначения",
+        "expires": "Истекает",
+        "actions": "Действия"
+      },
+      "pagination": {
+        "showing": "{{from}}-{{to}} из {{total}}",
+        "prev": "Предыдущая страница",
+        "next": "Следующая страница"
+      },
+      "confirm": {
+        "title": "Отозвать роль?",
+        "text": "Пользователь немедленно потеряет все права, связанные с этой ролью.",
+        "cancel": "Отмена",
+        "revoke": "Отозвать",
+        "revoking": "Отзыв..."
+      },
+      "errors": {
+        "userRequired": "Выберите пользователя",
+        "roleRequired": "Выберите роль",
+        "assignFailed": "Не удалось назначить роль",
+        "revokeFailed": "Не удалось отозвать роль"
+      }
+    },
+    "policies": {
+      "title": "Политики доступа",
+      "subtitle": "Управление политиками контроля доступа ABAC",
+      "createPolicy": "Создать политику",
+      "noPolicies": "Политики не найдены",
+      "inactiveBadge": "Неактивна",
+      "effectAllow": "Разрешить",
+      "effectDeny": "Запретить",
+      "global": "Глобальная",
+      "unknownRole": "Неизвестная роль",
+      "roleLabel": "Роль",
+      "priorityLabel": "Приоритет",
+      "stats": {
+        "total": "Всего политик",
+        "allow": "Разрешающие",
+        "deny": "Запрещающие",
+        "active": "Активные"
+      },
+      "actions": {
+        "edit": "Редактировать",
+        "delete": "Удалить"
+      },
+      "modal": {
+        "createTitle": "Создание политики",
+        "editTitle": "Редактирование политики",
+        "close": "Закрыть"
+      },
+      "form": {
+        "name": "Название политики",
+        "namePlaceholder": "например, Блокировка ночного доступа",
+        "description": "Описание",
+        "descriptionPlaceholder": "Что делает эта политика...",
+        "effect": "Эффект",
+        "resource": "Ресурс",
+        "selectResource": "Выберите ресурс...",
+        "actions": "Действия",
+        "role": "Роль (необязательно)",
+        "globalOption": "Глобальная (все роли)",
+        "roleHint": "Оставьте Глобальная, чтобы политика применялась ко всем ролям.",
+        "priority": "Приоритет",
+        "priorityHint": "Политики с более высоким приоритетом проверяются первыми. Запрет перекрывает Разрешение при равном приоритете.",
+        "conditions": "Условия",
+        "cancel": "Отмена",
+        "saving": "Сохранение...",
+        "save": "Сохранить"
+      },
+      "conditions": {
+        "timeRange": "Временной диапазон",
+        "timeStart": "Время начала",
+        "timeEnd": "Время окончания",
+        "ipWhitelist": "Белый список IP",
+        "ipPlaceholder": "Введите IP и нажмите Enter...",
+        "removeIp": "Удалить {{ip}}",
+        "ipCount_one": "{{count}} IP",
+        "ipCount_few": "{{count}} IP",
+        "ipCount_many": "{{count}} IP",
+        "rateLimit": "Лимит запросов",
+        "rateLimitValue": "Значение лимита запросов",
+        "rateValue": "{{count}}/ч",
+        "perHour": "действий в час"
+      },
+      "confirm": {
+        "title": "Удалить политику?",
+        "text": "Политика будет безвозвратно удалена. Правила контроля доступа будут пересчитаны.",
+        "cancel": "Отмена",
+        "delete": "Удалить",
+        "deleting": "Удаление..."
+      },
+      "errors": {
+        "loadFailed": "Не удалось загрузить политики",
+        "createFailed": "Не удалось создать политику",
+        "updateFailed": "Не удалось обновить политику",
+        "nameRequired": "Укажите название политики",
+        "resourceRequired": "Выберите ресурс",
+        "actionsRequired": "Выберите хотя бы одно действие",
+        "deleteFailed": "Не удалось удалить политику"
+      }
+    },
+    "auditLog": {
+      "title": "Журнал аудита",
+      "subtitle": "Просмотр активности системы и истории доступа",
+      "back": "Назад",
+      "exportCsv": "Экспорт CSV",
+      "exportError": "Ошибка экспорта",
+      "exporting": "Экспорт...",
+      "refresh": "Обновить",
+      "unknownUser": "Неизвестный пользователь",
+      "noEntries": "Записи журнала аудита не найдены",
+      "totalEntries_one": "{{count}} запись",
+      "totalEntries_few": "{{count}} записи",
+      "totalEntries_many": "{{count}} записей",
+      "autoRefresh": {
+        "label": "Автообновление",
+        "tooltip": "Автообновление каждые 30 секунд"
+      },
+      "filters": {
+        "title": "Фильтры",
+        "active": "Активны",
+        "action": "Действие",
+        "actionPlaceholder": "Поиск по действию...",
+        "resource": "Тип ресурса",
+        "allResources": "Все ресурсы",
+        "status": "Статус",
+        "allStatuses": "Все статусы",
+        "dateFrom": "Дата от",
+        "dateTo": "Дата до",
+        "apply": "Применить",
+        "clear": "Сбросить"
+      },
+      "status": {
+        "success": "Успешно",
+        "denied": "Отказано",
+        "error": "Ошибка"
+      },
+      "resourceTypes": {
+        "users": "Пользователи",
+        "tickets": "Тикеты",
+        "roles": "Роли",
+        "policies": "Политики",
+        "settings": "Настройки",
+        "broadcasts": "Рассылки",
+        "tariffs": "Тарифы",
+        "servers": "Серверы",
+        "payments": "Платежи",
+        "campaigns": "Кампании",
+        "promocodes": "Промокоды"
+      },
+      "details": {
+        "userAgent": "User Agent",
+        "requestPath": "Путь запроса",
+        "ipAddress": "IP-адрес",
+        "timestamp": "Время",
+        "before": "До",
+        "after": "После",
+        "fullDetails": "Полные данные"
+      },
+      "time": {
+        "justNow": "Только что",
+        "minutesAgo_one": "{{count}} мин назад",
+        "minutesAgo_few": "{{count}} мин назад",
+        "minutesAgo_many": "{{count}} мин назад",
+        "hoursAgo_one": "{{count}} ч назад",
+        "hoursAgo_few": "{{count}} ч назад",
+        "hoursAgo_many": "{{count}} ч назад",
+        "daysAgo_one": "{{count}} день назад",
+        "daysAgo_few": "{{count}} дня назад",
+        "daysAgo_many": "{{count}} дней назад"
+      },
+      "pagination": {
+        "pageSize": "На странице:",
+        "pageOf": "{{current}} / {{total}}",
+        "first": "Первая страница",
+        "previous": "Предыдущая страница",
+        "next": "Следующая страница",
+        "last": "Последняя страница"
+      },
+      "errors": {
+        "loadFailed": "Не удалось загрузить журнал аудита",
+        "retry": "Попробовать снова"
+      }
     }
   },
   "adminUpdates": {
@@ -3481,287 +3759,6 @@
       "unhealthy": "Проблема",
       "components": "Компоненты",
       "uptime": "Аптайм"
-    },
-    "roles": {
-      "title": "Роли и права",
-      "subtitle": "Управление ролями администраторов и их правами",
-      "createRole": "Создать роль",
-      "noRoles": "Роли не найдены",
-      "systemBadge": "Системная",
-      "inactiveBadge": "Неактивна",
-      "levelLabel": "Уровень",
-      "usersCount_one": "{{count}} пользователь",
-      "usersCount_few": "{{count}} пользователя",
-      "usersCount_many": "{{count}} пользователей",
-      "permissionsCount_one": "{{count}} разрешение",
-      "permissionsCount_few": "{{count}} разрешения",
-      "permissionsCount_many": "{{count}} разрешений",
-      "stats": {
-        "totalRoles": "Всего ролей",
-        "active": "Активные",
-        "system": "Системные"
-      },
-      "actions": {
-        "edit": "Редактировать",
-        "delete": "Удалить"
-      },
-      "modal": {
-        "createTitle": "Создание роли",
-        "editTitle": "Редактирование роли",
-        "close": "Закрыть"
-      },
-      "form": {
-        "name": "Название роли",
-        "namePlaceholder": "например, Модератор",
-        "description": "Описание",
-        "descriptionPlaceholder": "Для чего нужна эта роль...",
-        "level": "Уровень приоритета",
-        "levelValue": "Значение уровня",
-        "levelHint": "Чем выше уровень, тем больше полномочий. Пользователи могут управлять только ролями с уровнем ниже своего.",
-        "color": "Цвет",
-        "presets": "Шаблоны прав",
-        "permissions": "Разрешения",
-        "toggleSection": "Переключить все права {{section}}",
-        "selectedPermissions_one": "{{count}} разрешение выбрано",
-        "selectedPermissions_few": "{{count}} разрешения выбрано",
-        "selectedPermissions_many": "{{count}} разрешений выбрано",
-        "cancel": "Отмена",
-        "saving": "Сохранение...",
-        "save": "Сохранить"
-      },
-      "presets": {
-        "moderator": "Модератор",
-        "marketer": "Маркетолог",
-        "support": "Поддержка"
-      },
-      "confirm": {
-        "title": "Удалить роль?",
-        "text": "Роль будет безвозвратно удалена. Пользователи с этой ролью потеряют её права.",
-        "cancel": "Отмена",
-        "delete": "Удалить",
-        "deleting": "Удаление..."
-      },
-      "errors": {
-        "loadFailed": "Не удалось загрузить роли",
-        "createFailed": "Не удалось создать роль",
-        "updateFailed": "Не удалось обновить роль",
-        "nameRequired": "Укажите название роли",
-        "deleteFailed": "Не удалось удалить роль"
-      }
-    },
-    "roleAssign": {
-      "title": "Назначение ролей",
-      "subtitle": "Назначение и управление ролями пользователей",
-      "assignSection": "Назначить роль",
-      "userLabel": "Пользователь",
-      "searchPlaceholder": "Поиск по имени, username, Telegram ID или email...",
-      "clearUser": "Очистить выбранного пользователя",
-      "noUsersFound": "Пользователи не найдены",
-      "roleLabel": "Роль",
-      "selectRole": "Выберите роль...",
-      "expiresLabel": "Истекает (необязательно)",
-      "expiresHint": "Оставьте пустым для бессрочного назначения",
-      "assignButton": "Назначить",
-      "assigning": "Назначение...",
-      "assignSuccess": "Роль успешно назначена",
-      "currentAssignments": "Текущие назначения",
-      "totalAssignments_one": "{{count}} назначение",
-      "totalAssignments_few": "{{count}} назначения",
-      "totalAssignments_many": "{{count}} назначений",
-      "noAssignments": "Назначения ролей не найдены",
-      "unknownUser": "Неизвестный пользователь",
-      "system": "Система",
-      "permanent": "Бессрочно",
-      "expired": "истекло",
-      "revoke": "Отозвать",
-      "revokeAriaLabel": "Отозвать роль {{role}} у {{user}}",
-      "table": {
-        "user": "Пользователь",
-        "role": "Роль",
-        "assignedBy": "Назначил",
-        "assignedAt": "Дата назначения",
-        "expires": "Истекает",
-        "actions": "Действия"
-      },
-      "pagination": {
-        "showing": "{{from}}-{{to}} из {{total}}",
-        "prev": "Предыдущая страница",
-        "next": "Следующая страница"
-      },
-      "confirm": {
-        "title": "Отозвать роль?",
-        "text": "Пользователь немедленно потеряет все права, связанные с этой ролью.",
-        "cancel": "Отмена",
-        "revoke": "Отозвать",
-        "revoking": "Отзыв..."
-      },
-      "errors": {
-        "userRequired": "Выберите пользователя",
-        "roleRequired": "Выберите роль",
-        "assignFailed": "Не удалось назначить роль",
-        "revokeFailed": "Не удалось отозвать роль"
-      }
-    },
-    "policies": {
-      "title": "Политики доступа",
-      "subtitle": "Управление политиками контроля доступа ABAC",
-      "createPolicy": "Создать политику",
-      "noPolicies": "Политики не найдены",
-      "inactiveBadge": "Неактивна",
-      "effectAllow": "Разрешить",
-      "effectDeny": "Запретить",
-      "global": "Глобальная",
-      "unknownRole": "Неизвестная роль",
-      "roleLabel": "Роль",
-      "priorityLabel": "Приоритет",
-      "stats": {
-        "total": "Всего политик",
-        "allow": "Разрешающие",
-        "deny": "Запрещающие",
-        "active": "Активные"
-      },
-      "actions": {
-        "edit": "Редактировать",
-        "delete": "Удалить"
-      },
-      "modal": {
-        "createTitle": "Создание политики",
-        "editTitle": "Редактирование политики",
-        "close": "Закрыть"
-      },
-      "form": {
-        "name": "Название политики",
-        "namePlaceholder": "например, Блокировка ночного доступа",
-        "description": "Описание",
-        "descriptionPlaceholder": "Что делает эта политика...",
-        "effect": "Эффект",
-        "resource": "Ресурс",
-        "selectResource": "Выберите ресурс...",
-        "actions": "Действия",
-        "role": "Роль (необязательно)",
-        "globalOption": "Глобальная (все роли)",
-        "roleHint": "Оставьте Глобальная, чтобы политика применялась ко всем ролям.",
-        "priority": "Приоритет",
-        "priorityHint": "Политики с более высоким приоритетом проверяются первыми. Запрет перекрывает Разрешение при равном приоритете.",
-        "conditions": "Условия",
-        "cancel": "Отмена",
-        "saving": "Сохранение...",
-        "save": "Сохранить"
-      },
-      "conditions": {
-        "timeRange": "Временной диапазон",
-        "timeStart": "Время начала",
-        "timeEnd": "Время окончания",
-        "ipWhitelist": "Белый список IP",
-        "ipPlaceholder": "Введите IP и нажмите Enter...",
-        "removeIp": "Удалить {{ip}}",
-        "ipCount_one": "{{count}} IP",
-        "ipCount_few": "{{count}} IP",
-        "ipCount_many": "{{count}} IP",
-        "rateLimit": "Лимит запросов",
-        "rateLimitValue": "Значение лимита запросов",
-        "rateValue": "{{count}}/ч",
-        "perHour": "действий в час"
-      },
-      "confirm": {
-        "title": "Удалить политику?",
-        "text": "Политика будет безвозвратно удалена. Правила контроля доступа будут пересчитаны.",
-        "cancel": "Отмена",
-        "delete": "Удалить",
-        "deleting": "Удаление..."
-      },
-      "errors": {
-        "loadFailed": "Не удалось загрузить политики",
-        "createFailed": "Не удалось создать политику",
-        "updateFailed": "Не удалось обновить политику",
-        "nameRequired": "Укажите название политики",
-        "resourceRequired": "Выберите ресурс",
-        "actionsRequired": "Выберите хотя бы одно действие",
-        "deleteFailed": "Не удалось удалить политику"
-      }
-    },
-    "auditLog": {
-      "title": "Журнал аудита",
-      "subtitle": "Просмотр активности системы и истории доступа",
-      "back": "Назад",
-      "exportCsv": "Экспорт CSV",
-      "exportError": "Ошибка экспорта",
-      "exporting": "Экспорт...",
-      "refresh": "Обновить",
-      "unknownUser": "Неизвестный пользователь",
-      "noEntries": "Записи журнала аудита не найдены",
-      "totalEntries_one": "{{count}} запись",
-      "totalEntries_few": "{{count}} записи",
-      "totalEntries_many": "{{count}} записей",
-      "autoRefresh": {
-        "label": "Автообновление",
-        "tooltip": "Автообновление каждые 30 секунд"
-      },
-      "filters": {
-        "title": "Фильтры",
-        "active": "Активны",
-        "action": "Действие",
-        "actionPlaceholder": "Поиск по действию...",
-        "resource": "Тип ресурса",
-        "allResources": "Все ресурсы",
-        "status": "Статус",
-        "allStatuses": "Все статусы",
-        "dateFrom": "Дата от",
-        "dateTo": "Дата до",
-        "apply": "Применить",
-        "clear": "Сбросить"
-      },
-      "status": {
-        "success": "Успешно",
-        "denied": "Отказано",
-        "error": "Ошибка"
-      },
-      "resourceTypes": {
-        "users": "Пользователи",
-        "tickets": "Тикеты",
-        "roles": "Роли",
-        "policies": "Политики",
-        "settings": "Настройки",
-        "broadcasts": "Рассылки",
-        "tariffs": "Тарифы",
-        "servers": "Серверы",
-        "payments": "Платежи",
-        "campaigns": "Кампании",
-        "promocodes": "Промокоды"
-      },
-      "details": {
-        "userAgent": "User Agent",
-        "requestPath": "Путь запроса",
-        "ipAddress": "IP-адрес",
-        "timestamp": "Время",
-        "before": "До",
-        "after": "После",
-        "fullDetails": "Полные данные"
-      },
-      "time": {
-        "justNow": "Только что",
-        "minutesAgo_one": "{{count}} мин назад",
-        "minutesAgo_few": "{{count}} мин назад",
-        "minutesAgo_many": "{{count}} мин назад",
-        "hoursAgo_one": "{{count}} ч назад",
-        "hoursAgo_few": "{{count}} ч назад",
-        "hoursAgo_many": "{{count}} ч назад",
-        "daysAgo_one": "{{count}} день назад",
-        "daysAgo_few": "{{count}} дня назад",
-        "daysAgo_many": "{{count}} дней назад"
-      },
-      "pagination": {
-        "pageSize": "На странице:",
-        "pageOf": "{{current}} / {{total}}",
-        "first": "Первая страница",
-        "previous": "Предыдущая страница",
-        "next": "Следующая страница",
-        "last": "Последняя страница"
-      },
-      "errors": {
-        "loadFailed": "Не удалось загрузить журнал аудита",
-        "retry": "Попробовать снова"
-      }
     }
   },
   "profile": {

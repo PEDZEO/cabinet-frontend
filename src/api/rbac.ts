@@ -60,33 +60,37 @@ export interface AccessPolicy {
   name: string;
   description: string | null;
   resource: string;
-  action: string;
+  actions: string[];
   effect: 'allow' | 'deny';
   conditions: Record<string, unknown>;
   priority: number;
+  role_id: number | null;
+  role_name: string | null;
   is_active: boolean;
+  created_by: number | null;
   created_at: string;
-  updated_at: string;
 }
 
 export interface CreatePolicyPayload {
   name: string;
   description?: string | null;
   resource: string;
-  action: string;
+  actions: string[];
   effect: 'allow' | 'deny';
   conditions?: Record<string, unknown>;
   priority?: number;
+  role_id?: number | null;
 }
 
 export interface UpdatePolicyPayload {
   name?: string;
   description?: string | null;
   resource?: string;
-  action?: string;
+  actions?: string[];
   effect?: 'allow' | 'deny';
   conditions?: Record<string, unknown>;
   priority?: number;
+  role_id?: number | null;
   is_active?: boolean;
 }
 
@@ -94,20 +98,24 @@ export interface AuditLogEntry {
   id: number;
   user_id: number;
   action: string;
-  resource: string;
+  resource_type: string | null;
   resource_id: string | null;
-  details: Record<string, unknown>;
+  details: Record<string, unknown> | null;
   ip_address: string | null;
   user_agent: string | null;
+  status: string;
+  request_method: string | null;
+  request_path: string | null;
   created_at: string;
-  user_email: string | null;
   user_first_name: string | null;
+  user_email: string | null;
 }
 
 export interface AuditLogFilters {
   user_id?: number;
   action?: string;
-  resource?: string;
+  resource_type?: string;
+  status?: string;
   date_from?: string;
   date_to?: string;
   offset?: number;

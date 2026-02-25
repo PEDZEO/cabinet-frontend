@@ -118,27 +118,6 @@ const INITIAL_FILTERS: FiltersState = {
 
 // === Utility functions ===
 
-function getStatusFromEntry(entry: AuditLogEntry): string {
-  const details = entry.details;
-  if (typeof details.status === 'string') return details.status;
-  if (typeof details.error === 'string') return 'error';
-  if (details.denied === true) return 'denied';
-  return 'success';
-}
-
-function getMethodFromEntry(entry: AuditLogEntry): string | null {
-  const details = entry.details;
-  if (typeof details.method === 'string') return details.method.toUpperCase();
-  return null;
-}
-
-function getRequestPathFromEntry(entry: AuditLogEntry): string | null {
-  const details = entry.details;
-  if (typeof details.path === 'string') return details.path;
-  if (typeof details.request_path === 'string') return details.request_path;
-  return null;
-}
-
 function formatRelativeTime(
   dateString: string,
   t: (key: string, opts?: Record<string, unknown>) => string,
@@ -216,9 +195,9 @@ interface LogEntryCardProps {
 
 function LogEntryCard({ entry, isExpanded, onToggle }: LogEntryCardProps) {
   const { t } = useTranslation();
-  const status = getStatusFromEntry(entry);
-  const method = getMethodFromEntry(entry);
-  const requestPath = getRequestPathFromEntry(entry);
+  const status = entry.status;
+  const method = entry.request_method?.toUpperCase() ?? null;
+  const requestPath = entry.request_path;
   const userName = entry.user_first_name || entry.user_email || t('admin.auditLog.unknownUser');
 
   return (
@@ -254,7 +233,7 @@ function LogEntryCard({ entry, isExpanded, onToggle }: LogEntryCardProps) {
 
         {/* Resource */}
         <div className="flex shrink-0 items-center gap-2 text-sm text-dark-400">
-          <span>{entry.resource}</span>
+          <span>{entry.resource_type}</span>
           {entry.resource_id && (
             <span className="rounded bg-dark-700 px-1.5 py-0.5 font-mono text-xs text-dark-300">
               #{entry.resource_id}
@@ -323,7 +302,7 @@ function LogEntryCard({ entry, isExpanded, onToggle }: LogEntryCardProps) {
             </div>
 
             {/* Before/after diff */}
-            {'before' in entry.details && entry.details.before != null && (
+            {entry.details && 'before' in entry.details && entry.details.before != null && (
               <div>
                 <p className="mb-1 text-xs font-medium uppercase text-dark-500">
                   {t('admin.auditLog.details.before')}
@@ -334,7 +313,7 @@ function LogEntryCard({ entry, isExpanded, onToggle }: LogEntryCardProps) {
               </div>
             )}
 
-            {'after' in entry.details && entry.details.after != null && (
+            {entry.details && 'after' in entry.details && entry.details.after != null && (
               <div>
                 <p className="mb-1 text-xs font-medium uppercase text-dark-500">
                   {t('admin.auditLog.details.after')}
@@ -347,14 +326,16 @@ function LogEntryCard({ entry, isExpanded, onToggle }: LogEntryCardProps) {
           </div>
 
           {/* Full details JSON */}
-          <div className="mt-4">
-            <p className="mb-1 text-xs font-medium uppercase text-dark-500">
-              {t('admin.auditLog.details.fullDetails')}
-            </p>
-            <pre className="max-h-60 overflow-auto rounded-lg bg-dark-900 p-3 text-xs text-dark-300">
-              {JSON.stringify(entry.details, null, 2)}
-            </pre>
-          </div>
+          {entry.details && (
+            <div className="mt-4">
+              <p className="mb-1 text-xs font-medium uppercase text-dark-500">
+                {t('admin.auditLog.details.fullDetails')}
+              </p>
+              <pre className="max-h-60 overflow-auto rounded-lg bg-dark-900 p-3 text-xs text-dark-300">
+                {JSON.stringify(entry.details, null, 2)}
+              </pre>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -397,7 +378,10 @@ export default function AdminAuditLog() {
       params.action = appliedFilters.action.trim();
     }
     if (appliedFilters.resource) {
-      params.resource = appliedFilters.resource;
+      params.resource_type = appliedFilters.resource;
+    }
+    if (appliedFilters.status) {
+      params.status = appliedFilters.status;
     }
     if (appliedFilters.dateFrom) {
       params.date_from = appliedFilters.dateFrom;
@@ -467,7 +451,7 @@ export default function AdminAuditLog() {
     try {
       const exportParams: AuditLogFilters = {};
       if (appliedFilters.action.trim()) exportParams.action = appliedFilters.action.trim();
-      if (appliedFilters.resource) exportParams.resource = appliedFilters.resource;
+      if (appliedFilters.resource) exportParams.resource_type = appliedFilters.resource;
       if (appliedFilters.dateFrom) exportParams.date_from = appliedFilters.dateFrom;
       if (appliedFilters.dateTo) exportParams.date_to = appliedFilters.dateTo;
 
@@ -495,7 +479,7 @@ export default function AdminAuditLog() {
   // Filter status entries client-side (status is derived from details, not a backend field)
   const filteredEntries = useMemo(() => {
     if (!appliedFilters.status) return entries;
-    return entries.filter((entry) => getStatusFromEntry(entry) === appliedFilters.status);
+    return entries.filter((entry) => entry.status === appliedFilters.status);
   }, [entries, appliedFilters.status]);
 
   const hasActiveFilters = useMemo(() => {

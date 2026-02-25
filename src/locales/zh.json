@@ -280,7 +280,10 @@
     "selectServers": "选择服务器",
     "selectDevices": "选择设备",
     "perDevice": "/ 设备",
-    "summary": "摘要",
+    "summary": {
+      "period": "周期：{{label}}",
+      "traffic": "流量：{{gb}} GB"
+    },
     "total": "总计",
     "purchase": "购买",
     "step": "第 {{current}} 步，共 {{total}} 步",
@@ -427,10 +430,6 @@
       "resumeBtn": "恢复",
       "title": "暂停订阅",
       "willBeCharged": "将扣费"
-    },
-    "summary": {
-      "period": "周期：{{label}}",
-      "traffic": "流量：{{gb}} GB"
     }
   },
   "balance": {
@@ -795,7 +794,7 @@
       "total": "总计",
       "noData": "无流量数据",
       "loading": "正在加载流量数据...",
-      "noTariff": "\u2014",
+      "noTariff": "—",
       "search": "按名称或用户名搜索",
       "allTariffs": "所有套餐",
       "nodes": "节点",
@@ -2324,6 +2323,269 @@
         "toPanel": "到面板",
         "toPanelDesc": "从机器人导出用户到RemnaWave"
       }
+    },
+    "roles": {
+      "title": "角色与权限",
+      "subtitle": "管理管理员角色及其权限",
+      "createRole": "创建角色",
+      "noRoles": "未找到角色",
+      "systemBadge": "系统",
+      "inactiveBadge": "未激活",
+      "levelLabel": "级别",
+      "usersCount_other": "{{count}} 个用户",
+      "permissionsCount_other": "{{count}} 个权限",
+      "stats": {
+        "totalRoles": "角色总数",
+        "active": "活跃",
+        "system": "系统"
+      },
+      "actions": {
+        "edit": "编辑",
+        "delete": "删除"
+      },
+      "modal": {
+        "createTitle": "创建角色",
+        "editTitle": "编辑角色",
+        "close": "关闭"
+      },
+      "form": {
+        "name": "角色名称",
+        "namePlaceholder": "例如：版主",
+        "description": "描述",
+        "descriptionPlaceholder": "此角色的用途...",
+        "level": "优先级",
+        "levelValue": "级别值",
+        "levelHint": "级别越高，权限越大。用户只能管理级别低于自己的角色。",
+        "color": "颜色",
+        "presets": "权限预设",
+        "permissions": "权限",
+        "toggleSection": "切换所有 {{section}} 权限",
+        "selectedPermissions_other": "已选择 {{count}} 个权限",
+        "cancel": "取消",
+        "saving": "保存中...",
+        "save": "保存"
+      },
+      "presets": {
+        "moderator": "版主",
+        "marketer": "营销员",
+        "support": "客服"
+      },
+      "confirm": {
+        "title": "删除角色？",
+        "text": "此角色将被永久删除。拥有此角色的用户将失去其权限。",
+        "cancel": "取消",
+        "delete": "删除",
+        "deleting": "删除中..."
+      },
+      "errors": {
+        "loadFailed": "加载角色失败",
+        "createFailed": "创建角色失败",
+        "updateFailed": "更新角色失败",
+        "nameRequired": "请输入角色名称",
+        "deleteFailed": "删除角色失败"
+      }
+    },
+    "roleAssign": {
+      "title": "角色分配",
+      "subtitle": "分配和管理用户角色",
+      "assignSection": "分配角色",
+      "userLabel": "用户",
+      "searchPlaceholder": "按名称、用户名、Telegram ID或邮箱搜索...",
+      "clearUser": "清除已选用户",
+      "noUsersFound": "未找到用户",
+      "roleLabel": "角色",
+      "selectRole": "选择角色...",
+      "expiresLabel": "到期时间（可选）",
+      "expiresHint": "留空表示永久分配",
+      "assignButton": "分配",
+      "assigning": "分配中...",
+      "assignSuccess": "角色分配成功",
+      "currentAssignments": "当前分配",
+      "totalAssignments_other": "共 {{count}} 个分配",
+      "noAssignments": "未找到角色分配",
+      "unknownUser": "未知用户",
+      "system": "系统",
+      "permanent": "永久",
+      "expired": "已过期",
+      "revoke": "撤销",
+      "revokeAriaLabel": "撤销 {{user}} 的角色 {{role}}",
+      "table": {
+        "user": "用户",
+        "role": "角色",
+        "assignedBy": "分配者",
+        "assignedAt": "分配时间",
+        "expires": "到期",
+        "actions": "操作"
+      },
+      "pagination": {
+        "showing": "{{from}}-{{to}} / {{total}}",
+        "prev": "上一页",
+        "next": "下一页"
+      },
+      "confirm": {
+        "title": "撤销角色？",
+        "text": "该用户将立即失去与此角色相关的所有权限。",
+        "cancel": "取消",
+        "revoke": "撤销",
+        "revoking": "撤销中..."
+      },
+      "errors": {
+        "userRequired": "请选择用户",
+        "roleRequired": "请选择角色",
+        "assignFailed": "角色分配失败",
+        "revokeFailed": "角色撤销失败"
+      }
+    },
+    "policies": {
+      "title": "访问策略",
+      "subtitle": "管理ABAC访问控制策略",
+      "createPolicy": "创建策略",
+      "noPolicies": "未找到策略",
+      "inactiveBadge": "未激活",
+      "effectAllow": "允许",
+      "effectDeny": "拒绝",
+      "global": "全局",
+      "unknownRole": "未知角色",
+      "roleLabel": "角色",
+      "priorityLabel": "优先级",
+      "stats": {
+        "total": "策略总数",
+        "allow": "允许",
+        "deny": "拒绝",
+        "active": "活跃"
+      },
+      "actions": {
+        "edit": "编辑",
+        "delete": "删除"
+      },
+      "modal": {
+        "createTitle": "创建策略",
+        "editTitle": "编辑策略",
+        "close": "关闭"
+      },
+      "form": {
+        "name": "策略名称",
+        "namePlaceholder": "例如：阻止夜间访问",
+        "description": "描述",
+        "descriptionPlaceholder": "此策略的作用...",
+        "effect": "效果",
+        "resource": "资源",
+        "selectResource": "选择资源...",
+        "actions": "操作",
+        "role": "角色（可选）",
+        "globalOption": "全局（所有角色）",
+        "roleHint": "保留全局以将策略应用于所有角色。",
+        "priority": "优先级",
+        "priorityHint": "优先级高的策略先被评估。同等优先级下，拒绝覆盖允许。",
+        "conditions": "条件",
+        "cancel": "取消",
+        "saving": "保存中...",
+        "save": "保存"
+      },
+      "conditions": {
+        "timeRange": "时间范围",
+        "timeStart": "开始时间",
+        "timeEnd": "结束时间",
+        "ipWhitelist": "IP白名单",
+        "ipPlaceholder": "输入IP并按回车...",
+        "removeIp": "移除 {{ip}}",
+        "ipCount_other": "{{count}} 个IP",
+        "rateLimit": "速率限制",
+        "rateLimitValue": "速率限制值",
+        "rateValue": "{{count}}/小时",
+        "perHour": "每小时操作数"
+      },
+      "confirm": {
+        "title": "删除策略？",
+        "text": "此策略将被永久删除。访问控制规则将被重新计算。",
+        "cancel": "取消",
+        "delete": "删除",
+        "deleting": "删除中..."
+      },
+      "errors": {
+        "loadFailed": "加载策略失败",
+        "createFailed": "创建策略失败",
+        "updateFailed": "更新策略失败",
+        "nameRequired": "请输入策略名称",
+        "resourceRequired": "请选择资源",
+        "actionsRequired": "请至少选择一个操作",
+        "deleteFailed": "删除策略失败"
+      }
+    },
+    "auditLog": {
+      "title": "审计日志",
+      "subtitle": "查看系统活动和访问历史",
+      "back": "返回",
+      "exportCsv": "导出CSV",
+      "exportError": "导出失败",
+      "exporting": "导出中...",
+      "refresh": "刷新",
+      "unknownUser": "未知用户",
+      "noEntries": "未找到审计日志条目",
+      "totalEntries_other": "{{count}} 条记录",
+      "autoRefresh": {
+        "label": "自动刷新",
+        "tooltip": "每30秒自动刷新"
+      },
+      "filters": {
+        "title": "筛选",
+        "active": "已激活",
+        "action": "操作",
+        "actionPlaceholder": "按操作搜索...",
+        "resource": "资源类型",
+        "allResources": "所有资源",
+        "status": "状态",
+        "allStatuses": "所有状态",
+        "dateFrom": "开始日期",
+        "dateTo": "结束日期",
+        "apply": "应用",
+        "clear": "清除"
+      },
+      "status": {
+        "success": "成功",
+        "denied": "拒绝",
+        "error": "错误"
+      },
+      "resourceTypes": {
+        "users": "用户",
+        "tickets": "工单",
+        "roles": "角色",
+        "policies": "策略",
+        "settings": "设置",
+        "broadcasts": "群发",
+        "tariffs": "套餐",
+        "servers": "服务器",
+        "payments": "支付",
+        "campaigns": "活动",
+        "promocodes": "促销码"
+      },
+      "details": {
+        "userAgent": "用户代理",
+        "requestPath": "请求路径",
+        "ipAddress": "IP地址",
+        "timestamp": "时间戳",
+        "before": "之前",
+        "after": "之后",
+        "fullDetails": "完整详情"
+      },
+      "time": {
+        "justNow": "刚刚",
+        "minutesAgo_other": "{{count}} 分钟前",
+        "hoursAgo_other": "{{count}} 小时前",
+        "daysAgo_other": "{{count}} 天前"
+      },
+      "pagination": {
+        "pageSize": "每页：",
+        "pageOf": "{{current}} / {{total}}",
+        "first": "第一页",
+        "previous": "上一页",
+        "next": "下一页",
+        "last": "最后一页"
+      },
+      "errors": {
+        "loadFailed": "加载审计日志失败",
+        "retry": "重试"
+      }
     }
   },
   "adminUpdates": {
@@ -2818,269 +3080,6 @@
       "node": "节点",
       "requests": "请求数",
       "ipHistory": "IP历史"
-    },
-    "roles": {
-      "title": "角色与权限",
-      "subtitle": "管理管理员角色及其权限",
-      "createRole": "创建角色",
-      "noRoles": "未找到角色",
-      "systemBadge": "系统",
-      "inactiveBadge": "未激活",
-      "levelLabel": "级别",
-      "usersCount_other": "{{count}} 个用户",
-      "permissionsCount_other": "{{count}} 个权限",
-      "stats": {
-        "totalRoles": "角色总数",
-        "active": "活跃",
-        "system": "系统"
-      },
-      "actions": {
-        "edit": "编辑",
-        "delete": "删除"
-      },
-      "modal": {
-        "createTitle": "创建角色",
-        "editTitle": "编辑角色",
-        "close": "关闭"
-      },
-      "form": {
-        "name": "角色名称",
-        "namePlaceholder": "例如：版主",
-        "description": "描述",
-        "descriptionPlaceholder": "此角色的用途...",
-        "level": "优先级",
-        "levelValue": "级别值",
-        "levelHint": "级别越高，权限越大。用户只能管理级别低于自己的角色。",
-        "color": "颜色",
-        "presets": "权限预设",
-        "permissions": "权限",
-        "toggleSection": "切换所有 {{section}} 权限",
-        "selectedPermissions_other": "已选择 {{count}} 个权限",
-        "cancel": "取消",
-        "saving": "保存中...",
-        "save": "保存"
-      },
-      "presets": {
-        "moderator": "版主",
-        "marketer": "营销员",
-        "support": "客服"
-      },
-      "confirm": {
-        "title": "删除角色？",
-        "text": "此角色将被永久删除。拥有此角色的用户将失去其权限。",
-        "cancel": "取消",
-        "delete": "删除",
-        "deleting": "删除中..."
-      },
-      "errors": {
-        "loadFailed": "加载角色失败",
-        "createFailed": "创建角色失败",
-        "updateFailed": "更新角色失败",
-        "nameRequired": "请输入角色名称",
-        "deleteFailed": "删除角色失败"
-      }
-    },
-    "roleAssign": {
-      "title": "角色分配",
-      "subtitle": "分配和管理用户角色",
-      "assignSection": "分配角色",
-      "userLabel": "用户",
-      "searchPlaceholder": "按名称、用户名、Telegram ID或邮箱搜索...",
-      "clearUser": "清除已选用户",
-      "noUsersFound": "未找到用户",
-      "roleLabel": "角色",
-      "selectRole": "选择角色...",
-      "expiresLabel": "到期时间（可选）",
-      "expiresHint": "留空表示永久分配",
-      "assignButton": "分配",
-      "assigning": "分配中...",
-      "assignSuccess": "角色分配成功",
-      "currentAssignments": "当前分配",
-      "totalAssignments_other": "共 {{count}} 个分配",
-      "noAssignments": "未找到角色分配",
-      "unknownUser": "未知用户",
-      "system": "系统",
-      "permanent": "永久",
-      "expired": "已过期",
-      "revoke": "撤销",
-      "revokeAriaLabel": "撤销 {{user}} 的角色 {{role}}",
-      "table": {
-        "user": "用户",
-        "role": "角色",
-        "assignedBy": "分配者",
-        "assignedAt": "分配时间",
-        "expires": "到期",
-        "actions": "操作"
-      },
-      "pagination": {
-        "showing": "{{from}}-{{to}} / {{total}}",
-        "prev": "上一页",
-        "next": "下一页"
-      },
-      "confirm": {
-        "title": "撤销角色？",
-        "text": "该用户将立即失去与此角色相关的所有权限。",
-        "cancel": "取消",
-        "revoke": "撤销",
-        "revoking": "撤销中..."
-      },
-      "errors": {
-        "userRequired": "请选择用户",
-        "roleRequired": "请选择角色",
-        "assignFailed": "角色分配失败",
-        "revokeFailed": "角色撤销失败"
-      }
-    },
-    "policies": {
-      "title": "访问策略",
-      "subtitle": "管理ABAC访问控制策略",
-      "createPolicy": "创建策略",
-      "noPolicies": "未找到策略",
-      "inactiveBadge": "未激活",
-      "effectAllow": "允许",
-      "effectDeny": "拒绝",
-      "global": "全局",
-      "unknownRole": "未知角色",
-      "roleLabel": "角色",
-      "priorityLabel": "优先级",
-      "stats": {
-        "total": "策略总数",
-        "allow": "允许",
-        "deny": "拒绝",
-        "active": "活跃"
-      },
-      "actions": {
-        "edit": "编辑",
-        "delete": "删除"
-      },
-      "modal": {
-        "createTitle": "创建策略",
-        "editTitle": "编辑策略",
-        "close": "关闭"
-      },
-      "form": {
-        "name": "策略名称",
-        "namePlaceholder": "例如：阻止夜间访问",
-        "description": "描述",
-        "descriptionPlaceholder": "此策略的作用...",
-        "effect": "效果",
-        "resource": "资源",
-        "selectResource": "选择资源...",
-        "actions": "操作",
-        "role": "角色（可选）",
-        "globalOption": "全局（所有角色）",
-        "roleHint": "保留全局以将策略应用于所有角色。",
-        "priority": "优先级",
-        "priorityHint": "优先级高的策略先被评估。同等优先级下，拒绝覆盖允许。",
-        "conditions": "条件",
-        "cancel": "取消",
-        "saving": "保存中...",
-        "save": "保存"
-      },
-      "conditions": {
-        "timeRange": "时间范围",
-        "timeStart": "开始时间",
-        "timeEnd": "结束时间",
-        "ipWhitelist": "IP白名单",
-        "ipPlaceholder": "输入IP并按回车...",
-        "removeIp": "移除 {{ip}}",
-        "ipCount_other": "{{count}} 个IP",
-        "rateLimit": "速率限制",
-        "rateLimitValue": "速率限制值",
-        "rateValue": "{{count}}/小时",
-        "perHour": "每小时操作数"
-      },
-      "confirm": {
-        "title": "删除策略？",
-        "text": "此策略将被永久删除。访问控制规则将被重新计算。",
-        "cancel": "取消",
-        "delete": "删除",
-        "deleting": "删除中..."
-      },
-      "errors": {
-        "loadFailed": "加载策略失败",
-        "createFailed": "创建策略失败",
-        "updateFailed": "更新策略失败",
-        "nameRequired": "请输入策略名称",
-        "resourceRequired": "请选择资源",
-        "actionsRequired": "请至少选择一个操作",
-        "deleteFailed": "删除策略失败"
-      }
-    },
-    "auditLog": {
-      "title": "审计日志",
-      "subtitle": "查看系统活动和访问历史",
-      "back": "返回",
-      "exportCsv": "导出CSV",
-      "exportError": "导出失败",
-      "exporting": "导出中...",
-      "refresh": "刷新",
-      "unknownUser": "未知用户",
-      "noEntries": "未找到审计日志条目",
-      "totalEntries_other": "{{count}} 条记录",
-      "autoRefresh": {
-        "label": "自动刷新",
-        "tooltip": "每30秒自动刷新"
-      },
-      "filters": {
-        "title": "筛选",
-        "active": "已激活",
-        "action": "操作",
-        "actionPlaceholder": "按操作搜索...",
-        "resource": "资源类型",
-        "allResources": "所有资源",
-        "status": "状态",
-        "allStatuses": "所有状态",
-        "dateFrom": "开始日期",
-        "dateTo": "结束日期",
-        "apply": "应用",
-        "clear": "清除"
-      },
-      "status": {
-        "success": "成功",
-        "denied": "拒绝",
-        "error": "错误"
-      },
-      "resourceTypes": {
-        "users": "用户",
-        "tickets": "工单",
-        "roles": "角色",
-        "policies": "策略",
-        "settings": "设置",
-        "broadcasts": "群发",
-        "tariffs": "套餐",
-        "servers": "服务器",
-        "payments": "支付",
-        "campaigns": "活动",
-        "promocodes": "促销码"
-      },
-      "details": {
-        "userAgent": "用户代理",
-        "requestPath": "请求路径",
-        "ipAddress": "IP地址",
-        "timestamp": "时间戳",
-        "before": "之前",
-        "after": "之后",
-        "fullDetails": "完整详情"
-      },
-      "time": {
-        "justNow": "刚刚",
-        "minutesAgo_other": "{{count}} 分钟前",
-        "hoursAgo_other": "{{count}} 小时前",
-        "daysAgo_other": "{{count}} 天前"
-      },
-      "pagination": {
-        "pageSize": "每页：",
-        "pageOf": "{{current}} / {{total}}",
-        "first": "第一页",
-        "previous": "上一页",
-        "next": "下一页",
-        "last": "最后一页"
-      },
-      "errors": {
-        "loadFailed": "加载审计日志失败",
-        "retry": "重试"
-      }
     }
   }
 }

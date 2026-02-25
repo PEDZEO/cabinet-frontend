@@ -299,7 +299,10 @@
     "extraDevicesIncluded_other": "Incl. {{count}} extra dev.",
     "baseTariff": "Tariff",
     "perMonth": "/mo",
-    "summary": "Summary",
+    "summary": {
+      "period": "Period: {{label}}",
+      "traffic": "Traffic: {{gb}} GB"
+    },
     "total": "Total",
     "purchase": "Purchase",
     "step": "Step {{current}} of {{total}}",
@@ -507,10 +510,6 @@
       "label": "Traffic",
       "selectVolume": "Select traffic volume",
       "default": "Default: {{label}}"
-    },
-    "summary": {
-      "period": "Period: {{label}}",
-      "traffic": "Traffic: {{gb}} GB"
     }
   },
   "balance": {
@@ -520,7 +519,41 @@
     "topUpBalance": "Top Up Balance",
     "enterAmount": "Enter amount",
     "paymentMethod": "Payment Method",
-    "paymentMethods": "Payment Methods",
+    "paymentMethods": {
+      "yookassa": {
+        "description": "Pay via YooKassa"
+      },
+      "cryptobot": {
+        "description": "Pay with cryptocurrency via CryptoBot"
+      },
+      "telegram_stars": {
+        "description": "Pay with Telegram Stars"
+      },
+      "heleket": {
+        "description": "Pay with cryptocurrency via Heleket"
+      },
+      "mulenpay": {
+        "description": "Pay via MulenPay"
+      },
+      "pal24": {
+        "description": "Pay via PAL24"
+      },
+      "platega": {
+        "description": "Pay via Platega"
+      },
+      "wata": {
+        "description": "Pay via Wata"
+      },
+      "cloudpayments": {
+        "description": "Pay with bank card via CloudPayments"
+      },
+      "freekassa": {
+        "description": "Pay via FreeKassa"
+      },
+      "tribute": {
+        "description": "Pay with bank card via Tribute"
+      }
+    },
     "transactionHistory": "Transaction History",
     "noTransactions": "No transactions",
     "date": "Date",
@@ -562,41 +595,6 @@
     "topUpToComplete": "Top up your balance to complete the purchase",
     "missing": "Missing",
     "noPaymentMethods": "No payment methods available",
-    "paymentMethods": {
-      "yookassa": {
-        "description": "Pay via YooKassa"
-      },
-      "cryptobot": {
-        "description": "Pay with cryptocurrency via CryptoBot"
-      },
-      "telegram_stars": {
-        "description": "Pay with Telegram Stars"
-      },
-      "heleket": {
-        "description": "Pay with cryptocurrency via Heleket"
-      },
-      "mulenpay": {
-        "description": "Pay via MulenPay"
-      },
-      "pal24": {
-        "description": "Pay via PAL24"
-      },
-      "platega": {
-        "description": "Pay via Platega"
-      },
-      "wata": {
-        "description": "Pay via Wata"
-      },
-      "cloudpayments": {
-        "description": "Pay with bank card via CloudPayments"
-      },
-      "freekassa": {
-        "description": "Pay via FreeKassa"
-      },
-      "tribute": {
-        "description": "Pay with bank card via Tribute"
-      }
-    },
     "pendingPayments": {
       "title": "Pending Payments",
       "pay": "Pay",
@@ -916,7 +914,7 @@
       "total": "Total",
       "noData": "No traffic data",
       "loading": "Loading traffic data...",
-      "noTariff": "\u2014",
+      "noTariff": "—",
       "search": "Search by name or username",
       "allTariffs": "All tariffs",
       "nodes": "Nodes",
@@ -1647,7 +1645,7 @@
       "periodsTabHint": "Add periods and prices for the tariff. Users will be able to choose from the added periods.",
       "addPeriodTitle": "Add period",
       "daysLabel": "Days",
-      "priceLabel": "Price (\u20bd)",
+      "priceLabel": "Price (₽)",
       "addButton": "Add",
       "noPeriodsHint": "No added periods. Add at least one period.",
       "daysShort": "d.",
@@ -1697,7 +1695,7 @@
       "dailyType": "Daily",
       "periodType": "Period-based",
       "dailyPriceLabel": "Price per day",
-      "currencyPerDay": "\u20bd/day",
+      "currencyPerDay": "₽/day",
       "dailyDeductionDesc": "Charged daily from user's balance",
       "dailyPriceRequired": "Enter a price per day greater than 0",
       "cannotSave": "Cannot save tariff:",
@@ -2535,6 +2533,278 @@
         "purchaseDiscount": "Purchase discount",
         "purchaseDiscountDesc": "Discount for new users"
       }
+    },
+    "roles": {
+      "title": "Roles & Permissions",
+      "subtitle": "Manage admin roles and their permissions",
+      "createRole": "Create Role",
+      "noRoles": "No roles found",
+      "systemBadge": "System",
+      "inactiveBadge": "Inactive",
+      "levelLabel": "Level",
+      "usersCount_one": "{{count}} user",
+      "usersCount_other": "{{count}} users",
+      "permissionsCount_one": "{{count}} permission",
+      "permissionsCount_other": "{{count}} permissions",
+      "stats": {
+        "totalRoles": "Total roles",
+        "active": "Active",
+        "system": "System"
+      },
+      "actions": {
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "modal": {
+        "createTitle": "Create Role",
+        "editTitle": "Edit Role",
+        "close": "Close"
+      },
+      "form": {
+        "name": "Role name",
+        "namePlaceholder": "e.g. Moderator",
+        "description": "Description",
+        "descriptionPlaceholder": "What this role is for...",
+        "level": "Priority level",
+        "levelValue": "Level value",
+        "levelHint": "Higher level = more authority. Users can only manage roles with a lower level than their own.",
+        "color": "Color",
+        "presets": "Permission presets",
+        "permissions": "Permissions",
+        "toggleSection": "Toggle all {{section}} permissions",
+        "selectedPermissions_one": "{{count}} permission selected",
+        "selectedPermissions_other": "{{count}} permissions selected",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "save": "Save"
+      },
+      "presets": {
+        "moderator": "Moderator",
+        "marketer": "Marketer",
+        "support": "Support"
+      },
+      "confirm": {
+        "title": "Delete role?",
+        "text": "This role will be permanently deleted. Users with this role will lose its permissions.",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "deleting": "Deleting..."
+      },
+      "errors": {
+        "loadFailed": "Failed to load roles",
+        "createFailed": "Failed to create role",
+        "updateFailed": "Failed to update role",
+        "nameRequired": "Role name is required",
+        "deleteFailed": "Failed to delete role"
+      }
+    },
+    "roleAssign": {
+      "title": "Role Assignment",
+      "subtitle": "Assign and manage user roles",
+      "assignSection": "Assign Role",
+      "userLabel": "User",
+      "searchPlaceholder": "Search by name, username, Telegram ID, or email...",
+      "clearUser": "Clear selected user",
+      "noUsersFound": "No users found",
+      "roleLabel": "Role",
+      "selectRole": "Select a role...",
+      "expiresLabel": "Expires at (optional)",
+      "expiresHint": "Leave empty for permanent assignment",
+      "assignButton": "Assign",
+      "assigning": "Assigning...",
+      "assignSuccess": "Role assigned successfully",
+      "currentAssignments": "Current Assignments",
+      "totalAssignments_one": "{{count}} assignment total",
+      "totalAssignments_other": "{{count}} assignments total",
+      "noAssignments": "No role assignments found",
+      "unknownUser": "Unknown user",
+      "system": "System",
+      "permanent": "Permanent",
+      "expired": "expired",
+      "revoke": "Revoke",
+      "revokeAriaLabel": "Revoke role {{role}} from {{user}}",
+      "table": {
+        "user": "User",
+        "role": "Role",
+        "assignedBy": "Assigned by",
+        "assignedAt": "Assigned at",
+        "expires": "Expires",
+        "actions": "Actions"
+      },
+      "pagination": {
+        "showing": "{{from}}-{{to}} of {{total}}",
+        "prev": "Previous page",
+        "next": "Next page"
+      },
+      "confirm": {
+        "title": "Revoke role?",
+        "text": "This user will immediately lose all permissions associated with this role.",
+        "cancel": "Cancel",
+        "revoke": "Revoke",
+        "revoking": "Revoking..."
+      },
+      "errors": {
+        "userRequired": "Please select a user",
+        "roleRequired": "Please select a role",
+        "assignFailed": "Failed to assign role",
+        "revokeFailed": "Failed to revoke role"
+      }
+    },
+    "policies": {
+      "title": "Access Policies",
+      "subtitle": "Manage ABAC access control policies",
+      "createPolicy": "Create Policy",
+      "noPolicies": "No policies found",
+      "inactiveBadge": "Inactive",
+      "effectAllow": "Allow",
+      "effectDeny": "Deny",
+      "global": "Global",
+      "unknownRole": "Unknown role",
+      "roleLabel": "Role",
+      "priorityLabel": "Priority",
+      "stats": {
+        "total": "Total policies",
+        "allow": "Allow",
+        "deny": "Deny",
+        "active": "Active"
+      },
+      "actions": {
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "modal": {
+        "createTitle": "Create Policy",
+        "editTitle": "Edit Policy",
+        "close": "Close"
+      },
+      "form": {
+        "name": "Policy name",
+        "namePlaceholder": "e.g. Block night access",
+        "description": "Description",
+        "descriptionPlaceholder": "What this policy does...",
+        "effect": "Effect",
+        "resource": "Resource",
+        "selectResource": "Select a resource...",
+        "actions": "Actions",
+        "role": "Role (optional)",
+        "globalOption": "Global (all roles)",
+        "roleHint": "Leave as Global to apply the policy to all roles.",
+        "priority": "Priority",
+        "priorityHint": "Higher priority policies are evaluated first. Deny overrides Allow at equal priority.",
+        "conditions": "Conditions",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "save": "Save"
+      },
+      "conditions": {
+        "timeRange": "Time range",
+        "timeStart": "Start time",
+        "timeEnd": "End time",
+        "ipWhitelist": "IP whitelist",
+        "ipPlaceholder": "Enter IP and press Enter...",
+        "removeIp": "Remove {{ip}}",
+        "ipCount_one": "{{count}} IP",
+        "ipCount_other": "{{count}} IPs",
+        "rateLimit": "Rate limit",
+        "rateLimitValue": "Rate limit value",
+        "rateValue": "{{count}}/hr",
+        "perHour": "actions per hour"
+      },
+      "confirm": {
+        "title": "Delete policy?",
+        "text": "This policy will be permanently deleted. Access control rules will be recalculated.",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "deleting": "Deleting..."
+      },
+      "errors": {
+        "loadFailed": "Failed to load policies",
+        "createFailed": "Failed to create policy",
+        "updateFailed": "Failed to update policy",
+        "nameRequired": "Policy name is required",
+        "resourceRequired": "Please select a resource",
+        "actionsRequired": "Please select at least one action",
+        "deleteFailed": "Failed to delete policy"
+      }
+    },
+    "auditLog": {
+      "title": "Audit Log",
+      "subtitle": "Review system activity and access history",
+      "back": "Back",
+      "exportCsv": "Export CSV",
+      "exportError": "Failed to export",
+      "exporting": "Exporting...",
+      "refresh": "Refresh",
+      "unknownUser": "Unknown user",
+      "noEntries": "No audit log entries found",
+      "totalEntries_one": "{{count}} entry",
+      "totalEntries_other": "{{count}} entries",
+      "autoRefresh": {
+        "label": "Auto-refresh",
+        "tooltip": "Auto-refresh every 30 seconds"
+      },
+      "filters": {
+        "title": "Filters",
+        "active": "Active",
+        "action": "Action",
+        "actionPlaceholder": "Search by action...",
+        "resource": "Resource type",
+        "allResources": "All resources",
+        "status": "Status",
+        "allStatuses": "All statuses",
+        "dateFrom": "Date from",
+        "dateTo": "Date to",
+        "apply": "Apply",
+        "clear": "Clear"
+      },
+      "status": {
+        "success": "Success",
+        "denied": "Denied",
+        "error": "Error"
+      },
+      "resourceTypes": {
+        "users": "Users",
+        "tickets": "Tickets",
+        "roles": "Roles",
+        "policies": "Policies",
+        "settings": "Settings",
+        "broadcasts": "Broadcasts",
+        "tariffs": "Tariffs",
+        "servers": "Servers",
+        "payments": "Payments",
+        "campaigns": "Campaigns",
+        "promocodes": "Promo Codes"
+      },
+      "details": {
+        "userAgent": "User Agent",
+        "requestPath": "Request Path",
+        "ipAddress": "IP Address",
+        "timestamp": "Timestamp",
+        "before": "Before",
+        "after": "After",
+        "fullDetails": "Full Details"
+      },
+      "time": {
+        "justNow": "Just now",
+        "minutesAgo_one": "{{count}} min ago",
+        "minutesAgo_other": "{{count}} min ago",
+        "hoursAgo_one": "{{count}} hr ago",
+        "hoursAgo_other": "{{count}} hrs ago",
+        "daysAgo_one": "{{count}} day ago",
+        "daysAgo_other": "{{count}} days ago"
+      },
+      "pagination": {
+        "pageSize": "Per page:",
+        "pageOf": "{{current}} / {{total}}",
+        "first": "First page",
+        "previous": "Previous page",
+        "next": "Next page",
+        "last": "Last page"
+      },
+      "errors": {
+        "loadFailed": "Failed to load audit log",
+        "retry": "Try again"
+      }
     }
   },
   "adminUpdates": {
@@ -2929,278 +3199,6 @@
       "unhealthy": "Unhealthy",
       "components": "Components",
       "uptime": "Uptime"
-    },
-    "roles": {
-      "title": "Roles & Permissions",
-      "subtitle": "Manage admin roles and their permissions",
-      "createRole": "Create Role",
-      "noRoles": "No roles found",
-      "systemBadge": "System",
-      "inactiveBadge": "Inactive",
-      "levelLabel": "Level",
-      "usersCount_one": "{{count}} user",
-      "usersCount_other": "{{count}} users",
-      "permissionsCount_one": "{{count}} permission",
-      "permissionsCount_other": "{{count}} permissions",
-      "stats": {
-        "totalRoles": "Total roles",
-        "active": "Active",
-        "system": "System"
-      },
-      "actions": {
-        "edit": "Edit",
-        "delete": "Delete"
-      },
-      "modal": {
-        "createTitle": "Create Role",
-        "editTitle": "Edit Role",
-        "close": "Close"
-      },
-      "form": {
-        "name": "Role name",
-        "namePlaceholder": "e.g. Moderator",
-        "description": "Description",
-        "descriptionPlaceholder": "What this role is for...",
-        "level": "Priority level",
-        "levelValue": "Level value",
-        "levelHint": "Higher level = more authority. Users can only manage roles with a lower level than their own.",
-        "color": "Color",
-        "presets": "Permission presets",
-        "permissions": "Permissions",
-        "toggleSection": "Toggle all {{section}} permissions",
-        "selectedPermissions_one": "{{count}} permission selected",
-        "selectedPermissions_other": "{{count}} permissions selected",
-        "cancel": "Cancel",
-        "saving": "Saving...",
-        "save": "Save"
-      },
-      "presets": {
-        "moderator": "Moderator",
-        "marketer": "Marketer",
-        "support": "Support"
-      },
-      "confirm": {
-        "title": "Delete role?",
-        "text": "This role will be permanently deleted. Users with this role will lose its permissions.",
-        "cancel": "Cancel",
-        "delete": "Delete",
-        "deleting": "Deleting..."
-      },
-      "errors": {
-        "loadFailed": "Failed to load roles",
-        "createFailed": "Failed to create role",
-        "updateFailed": "Failed to update role",
-        "nameRequired": "Role name is required",
-        "deleteFailed": "Failed to delete role"
-      }
-    },
-    "roleAssign": {
-      "title": "Role Assignment",
-      "subtitle": "Assign and manage user roles",
-      "assignSection": "Assign Role",
-      "userLabel": "User",
-      "searchPlaceholder": "Search by name, username, Telegram ID, or email...",
-      "clearUser": "Clear selected user",
-      "noUsersFound": "No users found",
-      "roleLabel": "Role",
-      "selectRole": "Select a role...",
-      "expiresLabel": "Expires at (optional)",
-      "expiresHint": "Leave empty for permanent assignment",
-      "assignButton": "Assign",
-      "assigning": "Assigning...",
-      "assignSuccess": "Role assigned successfully",
-      "currentAssignments": "Current Assignments",
-      "totalAssignments_one": "{{count}} assignment total",
-      "totalAssignments_other": "{{count}} assignments total",
-      "noAssignments": "No role assignments found",
-      "unknownUser": "Unknown user",
-      "system": "System",
-      "permanent": "Permanent",
-      "expired": "expired",
-      "revoke": "Revoke",
-      "revokeAriaLabel": "Revoke role {{role}} from {{user}}",
-      "table": {
-        "user": "User",
-        "role": "Role",
-        "assignedBy": "Assigned by",
-        "assignedAt": "Assigned at",
-        "expires": "Expires",
-        "actions": "Actions"
-      },
-      "pagination": {
-        "showing": "{{from}}-{{to}} of {{total}}",
-        "prev": "Previous page",
-        "next": "Next page"
-      },
-      "confirm": {
-        "title": "Revoke role?",
-        "text": "This user will immediately lose all permissions associated with this role.",
-        "cancel": "Cancel",
-        "revoke": "Revoke",
-        "revoking": "Revoking..."
-      },
-      "errors": {
-        "userRequired": "Please select a user",
-        "roleRequired": "Please select a role",
-        "assignFailed": "Failed to assign role",
-        "revokeFailed": "Failed to revoke role"
-      }
-    },
-    "policies": {
-      "title": "Access Policies",
-      "subtitle": "Manage ABAC access control policies",
-      "createPolicy": "Create Policy",
-      "noPolicies": "No policies found",
-      "inactiveBadge": "Inactive",
-      "effectAllow": "Allow",
-      "effectDeny": "Deny",
-      "global": "Global",
-      "unknownRole": "Unknown role",
-      "roleLabel": "Role",
-      "priorityLabel": "Priority",
-      "stats": {
-        "total": "Total policies",
-        "allow": "Allow",
-        "deny": "Deny",
-        "active": "Active"
-      },
-      "actions": {
-        "edit": "Edit",
-        "delete": "Delete"
-      },
-      "modal": {
-        "createTitle": "Create Policy",
-        "editTitle": "Edit Policy",
-        "close": "Close"
-      },
-      "form": {
-        "name": "Policy name",
-        "namePlaceholder": "e.g. Block night access",
-        "description": "Description",
-        "descriptionPlaceholder": "What this policy does...",
-        "effect": "Effect",
-        "resource": "Resource",
-        "selectResource": "Select a resource...",
-        "actions": "Actions",
-        "role": "Role (optional)",
-        "globalOption": "Global (all roles)",
-        "roleHint": "Leave as Global to apply the policy to all roles.",
-        "priority": "Priority",
-        "priorityHint": "Higher priority policies are evaluated first. Deny overrides Allow at equal priority.",
-        "conditions": "Conditions",
-        "cancel": "Cancel",
-        "saving": "Saving...",
-        "save": "Save"
-      },
-      "conditions": {
-        "timeRange": "Time range",
-        "timeStart": "Start time",
-        "timeEnd": "End time",
-        "ipWhitelist": "IP whitelist",
-        "ipPlaceholder": "Enter IP and press Enter...",
-        "removeIp": "Remove {{ip}}",
-        "ipCount_one": "{{count}} IP",
-        "ipCount_other": "{{count}} IPs",
-        "rateLimit": "Rate limit",
-        "rateLimitValue": "Rate limit value",
-        "rateValue": "{{count}}/hr",
-        "perHour": "actions per hour"
-      },
-      "confirm": {
-        "title": "Delete policy?",
-        "text": "This policy will be permanently deleted. Access control rules will be recalculated.",
-        "cancel": "Cancel",
-        "delete": "Delete",
-        "deleting": "Deleting..."
-      },
-      "errors": {
-        "loadFailed": "Failed to load policies",
-        "createFailed": "Failed to create policy",
-        "updateFailed": "Failed to update policy",
-        "nameRequired": "Policy name is required",
-        "resourceRequired": "Please select a resource",
-        "actionsRequired": "Please select at least one action",
-        "deleteFailed": "Failed to delete policy"
-      }
-    },
-    "auditLog": {
-      "title": "Audit Log",
-      "subtitle": "Review system activity and access history",
-      "back": "Back",
-      "exportCsv": "Export CSV",
-      "exportError": "Failed to export",
-      "exporting": "Exporting...",
-      "refresh": "Refresh",
-      "unknownUser": "Unknown user",
-      "noEntries": "No audit log entries found",
-      "totalEntries_one": "{{count}} entry",
-      "totalEntries_other": "{{count}} entries",
-      "autoRefresh": {
-        "label": "Auto-refresh",
-        "tooltip": "Auto-refresh every 30 seconds"
-      },
-      "filters": {
-        "title": "Filters",
-        "active": "Active",
-        "action": "Action",
-        "actionPlaceholder": "Search by action...",
-        "resource": "Resource type",
-        "allResources": "All resources",
-        "status": "Status",
-        "allStatuses": "All statuses",
-        "dateFrom": "Date from",
-        "dateTo": "Date to",
-        "apply": "Apply",
-        "clear": "Clear"
-      },
-      "status": {
-        "success": "Success",
-        "denied": "Denied",
-        "error": "Error"
-      },
-      "resourceTypes": {
-        "users": "Users",
-        "tickets": "Tickets",
-        "roles": "Roles",
-        "policies": "Policies",
-        "settings": "Settings",
-        "broadcasts": "Broadcasts",
-        "tariffs": "Tariffs",
-        "servers": "Servers",
-        "payments": "Payments",
-        "campaigns": "Campaigns",
-        "promocodes": "Promo Codes"
-      },
-      "details": {
-        "userAgent": "User Agent",
-        "requestPath": "Request Path",
-        "ipAddress": "IP Address",
-        "timestamp": "Timestamp",
-        "before": "Before",
-        "after": "After",
-        "fullDetails": "Full Details"
-      },
-      "time": {
-        "justNow": "Just now",
-        "minutesAgo_one": "{{count}} min ago",
-        "minutesAgo_other": "{{count}} min ago",
-        "hoursAgo_one": "{{count}} hr ago",
-        "hoursAgo_other": "{{count}} hrs ago",
-        "daysAgo_one": "{{count}} day ago",
-        "daysAgo_other": "{{count}} days ago"
-      },
-      "pagination": {
-        "pageSize": "Per page:",
-        "pageOf": "{{current}} / {{total}}",
-        "first": "First page",
-        "previous": "Previous page",
-        "next": "Next page",
-        "last": "Last page"
-      },
-      "errors": {
-        "loadFailed": "Failed to load audit log",
-        "retry": "Try again"
-      }
     }
   },
   "profile": {

@@ -433,14 +433,7 @@ export default function AdminPolicies() {
     // Determine the role_id from conditions if present
     const roleId = typeof policy.conditions.role_id === 'number' ? policy.conditions.role_id : null;
 
-    // Parse actions — the API stores a single `action` string which may be comma-separated or
-    // a single action.  Normalize to an array.
-    const actions = policy.action
-      ? policy.action
-          .split(',')
-          .map((a) => a.trim())
-          .filter(Boolean)
-      : [];
+    const actions = Array.isArray(policy.actions) ? policy.actions : [];
 
     setEditingPolicy(policy);
     setFormData({
@@ -511,17 +504,16 @@ export default function AdminPolicies() {
         conditionsPayload.role_id = formData.role_id;
       }
 
-      const actionString = formData.actions.join(',');
-
       if (editingPolicy) {
         const payload: UpdatePolicyPayload = {
           name: formData.name.trim(),
           description: formData.description.trim() || null,
           effect: formData.effect,
           resource: formData.resource,
-          action: actionString,
+          actions: formData.actions,
           conditions: conditionsPayload,
           priority: formData.priority,
+          role_id: formData.role_id,
         };
         updateMutation.mutate({ id: editingPolicy.id, payload });
       } else {
@@ -530,9 +522,10 @@ export default function AdminPolicies() {
           description: formData.description.trim() || null,
           effect: formData.effect,
           resource: formData.resource,
-          action: actionString,
+          actions: formData.actions,
           conditions: conditionsPayload,
           priority: formData.priority,
+          role_id: formData.role_id,
         };
         createMutation.mutate(payload);
       }
@@ -705,7 +698,9 @@ export default function AdminPolicies() {
                         {policy.resource}
                       </span>
                       <span className="text-dark-500">:</span>
-                      <span className="font-mono text-xs text-dark-300">{policy.action}</span>
+                      <span className="font-mono text-xs text-dark-300">
+                        {(policy.actions ?? []).join(', ')}
+                      </span>
                     </div>
 
                     {/* Info row */}
