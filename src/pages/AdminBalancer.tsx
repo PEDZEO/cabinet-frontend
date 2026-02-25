@@ -1216,7 +1216,15 @@ export default function AdminBalancer() {
                       updateAdvancedSetting('autoQuarantineEnabled', event.target.checked)
                     }
                   />
-                  {t('admin.balancer.groups.autoQuarantineEnabled', 'Enable auto-quarantine')}
+                  <span>
+                    {t('admin.balancer.groups.autoQuarantineEnabled', 'Enable auto-quarantine')}
+                    <span className="mt-1 block text-xs text-dark-500">
+                      {t(
+                        'admin.balancer.groups.autoQuarantineEnabledDesc',
+                        'If enabled, nodes with repeated failures are moved to quarantine automatically.',
+                      )}
+                    </span>
+                  </span>
                 </label>
                 <label className="text-xs text-dark-400">
                   {t('admin.balancer.groups.autoQuarantineFailures', 'Auto-quarantine failures')}
@@ -1236,6 +1244,12 @@ export default function AdminBalancer() {
                     }
                     className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
                   />
+                  <p className="mt-1 text-[11px] text-dark-500">
+                    {t(
+                      'admin.balancer.groups.autoQuarantineFailuresDesc',
+                      'How many failed checks in a row are required before a node is quarantined.',
+                    )}
+                  </p>
                 </label>
                 <label className="text-xs text-dark-400">
                   {t(
@@ -1258,6 +1272,12 @@ export default function AdminBalancer() {
                     }
                     className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
                   />
+                  <p className="mt-1 text-[11px] text-dark-500">
+                    {t(
+                      'admin.balancer.groups.autoQuarantineReleaseDesc',
+                      'How many successful checks are needed to release a node from quarantine.',
+                    )}
+                  </p>
                 </label>
                 <label className="text-xs text-dark-400">
                   {t('admin.balancer.groups.autoQuarantineMaxNodes', 'Auto-quarantine max nodes')}
@@ -1277,6 +1297,12 @@ export default function AdminBalancer() {
                     }
                     className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
                   />
+                  <p className="mt-1 text-[11px] text-dark-500">
+                    {t(
+                      'admin.balancer.groups.autoQuarantineMaxNodesDesc',
+                      'Safety cap for how many nodes can be quarantined automatically.',
+                    )}
+                  </p>
                 </label>
               </div>
             </details>
@@ -1300,7 +1326,15 @@ export default function AdminBalancer() {
                       updateAdvancedSetting('autoDrainEnabled', event.target.checked)
                     }
                   />
-                  {t('admin.balancer.groups.autoDrainEnabled', 'Enable auto-drain')}
+                  <span>
+                    {t('admin.balancer.groups.autoDrainEnabled', 'Enable auto-drain')}
+                    <span className="mt-1 block text-xs text-dark-500">
+                      {t(
+                        'admin.balancer.groups.autoDrainEnabledDesc',
+                        'If enabled, overloaded nodes get temporary score penalty instead of immediate quarantine.',
+                      )}
+                    </span>
+                  </span>
                 </label>
                 <label className="text-xs text-dark-400">
                   {t('admin.balancer.groups.autoDrainFailures', 'Auto-drain failures')}
@@ -1317,6 +1351,12 @@ export default function AdminBalancer() {
                     }
                     className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
                   />
+                  <p className="mt-1 text-[11px] text-dark-500">
+                    {t(
+                      'admin.balancer.groups.autoDrainFailuresDesc',
+                      'How many degraded checks in a row are needed before drain penalty is applied.',
+                    )}
+                  </p>
                 </label>
                 <label className="text-xs text-dark-400">
                   {t('admin.balancer.groups.autoDrainRelease', 'Auto-drain release successes')}
@@ -1336,6 +1376,12 @@ export default function AdminBalancer() {
                     }
                     className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
                   />
+                  <p className="mt-1 text-[11px] text-dark-500">
+                    {t(
+                      'admin.balancer.groups.autoDrainReleaseDesc',
+                      'How many stable checks are needed to remove drain penalty.',
+                    )}
+                  </p>
                 </label>
                 <label className="text-xs text-dark-400">
                   {t('admin.balancer.groups.autoDrainLoadThreshold', 'Auto-drain load threshold')}
@@ -1355,6 +1401,12 @@ export default function AdminBalancer() {
                     }
                     className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
                   />
+                  <p className="mt-1 text-[11px] text-dark-500">
+                    {t(
+                      'admin.balancer.groups.autoDrainLoadThresholdDesc',
+                      'Load value above this threshold is considered degraded for auto-drain logic.',
+                    )}
+                  </p>
                 </label>
                 <label className="text-xs text-dark-400 md:col-span-2 xl:col-span-1">
                   {t('admin.balancer.groups.autoDrainScorePenalty', 'Auto-drain score penalty')}
@@ -1374,6 +1426,12 @@ export default function AdminBalancer() {
                     }
                     className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
                   />
+                  <p className="mt-1 text-[11px] text-dark-500">
+                    {t(
+                      'admin.balancer.groups.autoDrainScorePenaltyDesc',
+                      'How much score penalty is added while a node is in auto-drain state.',
+                    )}
+                  </p>
                 </label>
               </div>
             </details>
@@ -1404,6 +1462,12 @@ export default function AdminBalancer() {
                     }
                     className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
                   />
+                  <p className="mt-1 text-[11px] text-dark-500">
+                    {t(
+                      'admin.balancer.groups.balancerLoadWeightDesc',
+                      'Weight of node load in final score. Higher value means stronger load-based balancing.',
+                    )}
+                  </p>
                 </label>
                 <label className="text-xs text-dark-400">
                   {t('admin.balancer.groups.balancerLatencyWeight', 'Score latency weight')}
@@ -1423,6 +1487,12 @@ export default function AdminBalancer() {
                     }
                     className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
                   />
+                  <p className="mt-1 text-[11px] text-dark-500">
+                    {t(
+                      'admin.balancer.groups.balancerLatencyWeightDesc',
+                      'Weight of latency in final score. Higher value favors lower-ping nodes.',
+                    )}
+                  </p>
                 </label>
                 <label className="text-xs text-dark-400">
                   {t('admin.balancer.groups.balancerMaxLatencyMs', 'Score max latency (ms)')}
@@ -1442,6 +1512,12 @@ export default function AdminBalancer() {
                     }
                     className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
                   />
+                  <p className="mt-1 text-[11px] text-dark-500">
+                    {t(
+                      'admin.balancer.groups.balancerMaxLatencyMsDesc',
+                      'Latency normalization cap in milliseconds for score calculation.',
+                    )}
+                  </p>
                 </label>
                 <label className="text-xs text-dark-400">
                   {t('admin.balancer.groups.balancerSmoothingAlpha', 'Score smoothing alpha')}
@@ -1461,6 +1537,12 @@ export default function AdminBalancer() {
                     }
                     className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
                   />
+                  <p className="mt-1 text-[11px] text-dark-500">
+                    {t(
+                      'admin.balancer.groups.balancerSmoothingAlphaDesc',
+                      'Smoothing factor for score updates. Lower value reduces short-term jitter.',
+                    )}
+                  </p>
                 </label>
                 <label className="text-xs text-dark-400">
                   {t('admin.balancer.groups.balancerHysteresisDelta', 'Score hysteresis delta')}
@@ -1480,6 +1562,12 @@ export default function AdminBalancer() {
                     }
                     className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
                   />
+                  <p className="mt-1 text-[11px] text-dark-500">
+                    {t(
+                      'admin.balancer.groups.balancerHysteresisDeltaDesc',
+                      'Minimum score improvement required before switching to another node.',
+                    )}
+                  </p>
                 </label>
               </div>
             </details>
