@@ -6,6 +6,8 @@ interface Props {
   settings: Record<string, unknown>;
 }
 
+const WAVE_COLORS = ['#38bdf8', '#818cf8', '#c084fc', '#e879f9', '#22d3ee'];
+
 export default function WavyBackground({ settings }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
@@ -15,7 +17,6 @@ export default function WavyBackground({ settings }: Props) {
   const blur = clampNumber(settings.blur, 0, 50, 10);
   const waveOpacity = clampNumber(settings.waveOpacity, 0.05, 1, 0.5);
   const backgroundFill = sanitizeColor(settings.backgroundFill, '#000000');
-  const colors = ['#38bdf8', '#818cf8', '#c084fc', '#e879f9', '#22d3ee'];
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -40,7 +41,7 @@ export default function WavyBackground({ settings }: Props) {
       for (let i = 0; i < waveCount; i++) {
         ctx.beginPath();
         ctx.lineWidth = waveWidth;
-        ctx.strokeStyle = colors[i % colors.length];
+        ctx.strokeStyle = WAVE_COLORS[i % WAVE_COLORS.length];
         ctx.globalAlpha = waveOpacity;
 
         for (let x = 0; x < canvas.width; x += 5) {

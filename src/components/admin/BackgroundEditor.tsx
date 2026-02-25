@@ -2,9 +2,9 @@ import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { brandingApi } from '@/api/branding';
+import { setCachedAnimationConfig } from '@/components/backgrounds/animationConfigCache';
 import { backgroundRegistry } from '@/components/ui/backgrounds/registry';
 import { BackgroundPreview } from '@/components/backgrounds/BackgroundPreview';
-import { setCachedAnimationConfig } from '@/components/backgrounds/BackgroundRenderer';
 import type {
   AnimationConfig,
   BackgroundType,

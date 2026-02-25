@@ -8,9 +8,14 @@ export function useAnimatedNumber(target: number, duration = 1200): number {
   const [value, setValue] = useState(0);
   const ref = useRef({ start: 0, startTime: 0, target: 0 });
   const rafRef = useRef<number>(0);
+  const currentValueRef = useRef(0);
 
   useEffect(() => {
-    ref.current.start = value;
+    currentValueRef.current = value;
+  }, [value]);
+
+  useEffect(() => {
+    ref.current.start = currentValueRef.current;
     ref.current.target = target;
     ref.current.startTime = performance.now();
 
