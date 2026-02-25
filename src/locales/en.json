@@ -1075,7 +1075,12 @@
         "groupNameRequired": "Group name is required",
         "groupNamesUnique": "Group names must be unique",
         "groupPatternsRequired": "Each group must contain at least one pattern",
-        "changesDiscarded": "Changes discarded"
+        "changesDiscarded": "Changes discarded",
+        "quarantineAdded": "Node added to quarantine",
+        "quarantineRemoved": "Node removed from quarantine",
+        "quarantineError": "Failed to update quarantine",
+        "removeQuarantine": "Remove",
+        "addQuarantine": "Quarantine"
       },
       "tokenDebug": {
         "title": "Token debug",
@@ -1155,6 +1160,7 @@
         "requestFailures": "Request failures",
         "rateLimited": "Rate limited",
         "circuitOpenTotal": "Circuit open total",
+        "quarantineFiltered": "Quarantine filtered",
         "cbFailCount": "CB fail count",
         "cbHalfOpen": "CB half-open",
         "token": "Token",
@@ -1163,7 +1169,8 @@
         "baseUrl": "Base URL",
         "timeout": "Timeout",
         "health": "Health",
-        "ready": "Ready"
+        "ready": "Ready",
+        "quarantineCount": "Quarantine nodes"
       },
       "table": {
         "node": "Node",
@@ -1175,7 +1182,9 @@
         "ramLoad": "RAM load",
         "totalRam": "Total RAM",
         "connected": "Connected",
-        "disabled": "Disabled"
+        "disabled": "Disabled",
+        "quarantine": "Quarantine",
+        "action": "Action"
       },
       "rawJson": "raw JSON"
     },
