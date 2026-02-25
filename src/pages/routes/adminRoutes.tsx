@@ -57,6 +57,12 @@ const AdminMainMenuButtons = lazy(() => import('../AdminMainMenuButtons'));
 const AdminChannelSubscriptions = lazy(() => import('../AdminChannelSubscriptions'));
 const AdminEmailTemplatePreview = lazy(() => import('../AdminEmailTemplatePreview'));
 const AdminBalancer = lazy(() => import('../AdminBalancer'));
+const AdminRoles = lazy(() => import('../AdminRoles'));
+const AdminRoleEdit = lazy(() => import('../AdminRoleEdit'));
+const AdminRoleAssign = lazy(() => import('../AdminRoleAssign'));
+const AdminPolicies = lazy(() => import('../AdminPolicies'));
+const AdminPolicyEdit = lazy(() => import('../AdminPolicyEdit'));
+const AdminAuditLog = lazy(() => import('../AdminAuditLog'));
 
 const withAdminLayout = (element: React.ReactNode) => (
   <AdminRoute>
@@ -147,4 +153,12 @@ export const adminRoutes: RouteConfig[] = [
   { path: '/admin/main-menu-buttons', element: withAdminLayout(<AdminMainMenuButtons />) },
   { path: '/admin/channel-subscriptions', element: withAdminLayout(<AdminChannelSubscriptions />) },
   { path: '/admin/balancer', element: withAdminLayout(<AdminBalancer />) },
+  { path: '/admin/roles', element: withAdminLayout(<AdminRoles />) },
+  { path: '/admin/roles/create', element: withAdminLayout(<AdminRoleEdit />) },
+  { path: '/admin/roles/:id/edit', element: withAdminLayout(<AdminRoleEdit />) },
+  { path: '/admin/roles/assign', element: withAdminLayout(<AdminRoleAssign />) },
+  { path: '/admin/policies', element: withAdminLayout(<AdminPolicies />) },
+  { path: '/admin/policies/create', element: withAdminLayout(<AdminPolicyEdit />) },
+  { path: '/admin/policies/:id/edit', element: withAdminLayout(<AdminPolicyEdit />) },
+  { path: '/admin/audit-log', element: withAdminLayout(<AdminAuditLog />) },
 ];
