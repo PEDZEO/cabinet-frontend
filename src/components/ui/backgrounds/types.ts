@@ -13,9 +13,7 @@ export type BackgroundType =
   | 'grid'
   | 'dots'
   | 'spotlight'
-  | 'noise'
   | 'ripple'
-  | 'gemini-effect'
   | 'none';
 
 export interface AnimationConfig {

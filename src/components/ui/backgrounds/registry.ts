@@ -20,9 +20,7 @@ export const backgroundComponents: Record<
   grid: lazy(() => import('./grid-background')),
   dots: lazy(() => import('./grid-background')),
   spotlight: lazy(() => import('./spotlight-bg')),
-  noise: lazy(() => import('./noise-background')),
   ripple: lazy(() => import('./background-ripple')),
-  'gemini-effect': lazy(() => import('./google-gemini-effect')),
 };
 
 // Registry of all background definitions with settings for the editor
@@ -465,25 +463,6 @@ export const backgroundRegistry: BackgroundDefinition[] = [
     ],
   },
   {
-    type: 'noise',
-    labelKey: 'admin.backgrounds.noise',
-    descriptionKey: 'admin.backgrounds.noiseDesc',
-    category: 'canvas',
-    settings: [
-      {
-        key: 'noiseOpacity',
-        label: 'admin.backgrounds.intensity',
-        type: 'number',
-        min: 0.05,
-        max: 0.5,
-        step: 0.05,
-        default: 0.15,
-      },
-      { key: 'baseColor', label: 'admin.backgrounds.bgColor', type: 'color', default: '#0a0a1a' },
-      { key: 'animated', label: 'admin.backgrounds.interactive', type: 'boolean', default: false },
-    ],
-  },
-  {
     type: 'ripple',
     labelKey: 'admin.backgrounds.ripple',
     descriptionKey: 'admin.backgrounds.rippleDesc',
@@ -512,32 +491,6 @@ export const backgroundRegistry: BackgroundDefinition[] = [
         max: 2,
         step: 0.1,
         default: 0.5,
-      },
-    ],
-  },
-  {
-    type: 'gemini-effect',
-    labelKey: 'admin.backgrounds.geminiEffect',
-    descriptionKey: 'admin.backgrounds.geminiEffectDesc',
-    category: 'canvas',
-    settings: [
-      {
-        key: 'speed',
-        label: 'admin.backgrounds.speed',
-        type: 'number',
-        min: 0.001,
-        max: 0.01,
-        step: 0.001,
-        default: 0.003,
-      },
-      {
-        key: 'lineWidth',
-        label: 'admin.backgrounds.waveWidth',
-        type: 'number',
-        min: 1,
-        max: 5,
-        step: 0.5,
-        default: 2,
       },
     ],
   },
