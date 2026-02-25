@@ -686,32 +686,49 @@ export default function AdminRoleAssign() {
 
       {/* Revoke Confirmation */}
       {revokeConfirm !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">
           <div
-            className="fixed inset-0 bg-black/60"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setRevokeConfirm(null)}
             aria-hidden="true"
           />
-          <div className="relative w-full max-w-sm rounded-xl border border-dark-700 bg-dark-800 p-6">
-            <h3 className="mb-2 text-lg font-semibold text-dark-100">
+          <div className="relative w-full rounded-t-2xl border-t border-dark-600 bg-dark-800 p-6 sm:max-w-sm sm:rounded-2xl sm:border">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-error-500/10">
+              <svg
+                className="h-6 w-6 text-error-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                />
+              </svg>
+            </div>
+            <h3 className="mb-1.5 text-center text-lg font-semibold text-dark-100">
               {t('admin.roleAssign.confirm.title')}
             </h3>
-            <p className="mb-6 text-dark-400">{t('admin.roleAssign.confirm.text')}</p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setRevokeConfirm(null)}
-                className="px-4 py-2 text-dark-300 transition-colors hover:text-dark-100"
-              >
-                {t('admin.roleAssign.confirm.cancel')}
-              </button>
+            <p className="mb-6 text-center text-sm text-dark-400">
+              {t('admin.roleAssign.confirm.text')}
+            </p>
+            <div className="flex flex-col gap-2 sm:flex-row-reverse">
               <button
                 onClick={() => revokeMutation.mutate(revokeConfirm)}
                 disabled={revokeMutation.isPending}
-                className="rounded-lg bg-error-500 px-4 py-2 text-white transition-colors hover:bg-error-600 disabled:opacity-50"
+                className="w-full rounded-xl bg-error-500 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-error-600 disabled:opacity-50"
               >
                 {revokeMutation.isPending
                   ? t('admin.roleAssign.confirm.revoking')
                   : t('admin.roleAssign.confirm.revoke')}
+              </button>
+              <button
+                onClick={() => setRevokeConfirm(null)}
+                className="w-full rounded-xl border border-dark-600 px-4 py-2.5 text-sm font-medium text-dark-300 transition-colors hover:border-dark-500 hover:text-dark-100"
+              >
+                {t('admin.roleAssign.confirm.cancel')}
               </button>
             </div>
           </div>
