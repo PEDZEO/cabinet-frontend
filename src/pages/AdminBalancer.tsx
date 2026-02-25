@@ -633,7 +633,7 @@ export default function AdminBalancer() {
   }, [excludeGroups, fastestEnabled, fastestGroupName, groupsDraft]);
 
   return (
-    <div className="animate-fade-in space-y-4 pb-24 md:pb-0">
+    <div className="animate-fade-in space-y-4 overflow-x-hidden pb-28 md:pb-0">
       <div className="flex items-center gap-3">
         <AdminBackButton to="/admin" />
         <div>
@@ -764,22 +764,22 @@ export default function AdminBalancer() {
                   'default',
                 );
               }}
-              className="rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600"
+              className="hidden rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600 md:inline-flex"
             >
               {t('common.cancel', 'Cancel')}
             </button>
             <button
               onClick={() => void saveGroups()}
               disabled={saveGroupsMutation.isPending}
-              className="rounded-lg border border-accent-500/50 bg-accent-500/20 px-3 py-2 text-sm text-accent-300 transition-colors hover:bg-accent-500/30 disabled:opacity-60"
+              className="hidden rounded-lg border border-accent-500/50 bg-accent-500/20 px-3 py-2 text-sm text-accent-300 transition-colors hover:bg-accent-500/30 disabled:opacity-60 md:inline-flex"
             >
               {t('common.save', 'Save')}
             </button>
           </div>
         </div>
 
-        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-dark-700 bg-dark-900/95 p-3 backdrop-blur md:hidden">
-          <div className="mx-auto flex max-w-lg gap-2">
+        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-dark-700 bg-dark-900/95 p-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur md:hidden">
+          <div className="mx-auto flex w-full max-w-lg gap-2">
             <button
               onClick={() => {
                 if (!groupsData) return;
@@ -795,14 +795,14 @@ export default function AdminBalancer() {
                   'default',
                 );
               }}
-              className="flex-1 rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600"
+              className="min-w-0 flex-1 rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600"
             >
               {t('common.cancel', 'Cancel')}
             </button>
             <button
               onClick={() => void saveGroups()}
               disabled={saveGroupsMutation.isPending}
-              className="flex-1 rounded-lg border border-accent-500/50 bg-accent-500/20 px-3 py-2 text-sm text-accent-300 transition-colors hover:bg-accent-500/30 disabled:opacity-60"
+              className="min-w-0 flex-1 rounded-lg border border-accent-500/50 bg-accent-500/20 px-3 py-2 text-sm text-accent-300 transition-colors hover:bg-accent-500/30 disabled:opacity-60"
             >
               {t('common.save', 'Save')}
             </button>
