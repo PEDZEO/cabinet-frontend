@@ -21,8 +21,10 @@ import VerifyEmail from './pages/VerifyEmail';
 import ResetPassword from './pages/ResetPassword';
 import OAuthCallback from './pages/OAuthCallback';
 
+// Dashboard - load eagerly (default route, LCP-critical)
+import Dashboard from './pages/Dashboard';
+
 // User pages - lazy load
-const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Subscription = lazy(() => import('./pages/Subscription'));
 const Balance = lazy(() => import('./pages/Balance'));
 const Referral = lazy(() => import('./pages/Referral'));
