@@ -1196,233 +1196,293 @@ export default function AdminBalancer() {
             )}
           </p>
 
-          <div className="mb-3 grid grid-cols-1 gap-3 md:grid-cols-2">
-            <label className="flex items-center gap-2 text-sm text-dark-200">
-              <input
-                type="checkbox"
-                checked={advancedSettings.autoQuarantineEnabled}
-                onChange={(event) =>
-                  updateAdvancedSetting('autoQuarantineEnabled', event.target.checked)
-                }
-              />
-              {t('admin.balancer.groups.autoQuarantineEnabled', 'Enable auto-quarantine')}
-            </label>
-            <label className="flex items-center gap-2 text-sm text-dark-200">
-              <input
-                type="checkbox"
-                checked={advancedSettings.autoDrainEnabled}
-                onChange={(event) =>
-                  updateAdvancedSetting('autoDrainEnabled', event.target.checked)
-                }
-              />
-              {t('admin.balancer.groups.autoDrainEnabled', 'Enable auto-drain')}
-            </label>
-          </div>
+          <div className="space-y-3">
+            <details className="rounded-lg border border-dark-700 bg-dark-900/30 p-3">
+              <summary className="cursor-pointer text-sm font-semibold text-dark-100">
+                {t('admin.balancer.groups.sectionAutoQuarantine', 'Auto-quarantine')}
+              </summary>
+              <p className="mt-2 text-xs text-dark-500">
+                {t(
+                  'admin.balancer.groups.sectionAutoQuarantineHint',
+                  'Automatically moves unstable nodes to quarantine and returns them after successful checks.',
+                )}
+              </p>
+              <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <label className="flex items-center gap-2 text-sm text-dark-200 md:col-span-2 xl:col-span-3">
+                  <input
+                    type="checkbox"
+                    checked={advancedSettings.autoQuarantineEnabled}
+                    onChange={(event) =>
+                      updateAdvancedSetting('autoQuarantineEnabled', event.target.checked)
+                    }
+                  />
+                  {t('admin.balancer.groups.autoQuarantineEnabled', 'Enable auto-quarantine')}
+                </label>
+                <label className="text-xs text-dark-400">
+                  {t('admin.balancer.groups.autoQuarantineFailures', 'Auto-quarantine failures')}
+                  <input
+                    type="number"
+                    min={1}
+                    step={1}
+                    value={advancedSettings.autoQuarantineFailures}
+                    onChange={(event) =>
+                      updateAdvancedSetting(
+                        'autoQuarantineFailures',
+                        parseNumericInput(
+                          event.target.value,
+                          advancedSettings.autoQuarantineFailures,
+                        ),
+                      )
+                    }
+                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                  />
+                </label>
+                <label className="text-xs text-dark-400">
+                  {t(
+                    'admin.balancer.groups.autoQuarantineRelease',
+                    'Auto-quarantine release successes',
+                  )}
+                  <input
+                    type="number"
+                    min={1}
+                    step={1}
+                    value={advancedSettings.autoQuarantineReleaseSuccesses}
+                    onChange={(event) =>
+                      updateAdvancedSetting(
+                        'autoQuarantineReleaseSuccesses',
+                        parseNumericInput(
+                          event.target.value,
+                          advancedSettings.autoQuarantineReleaseSuccesses,
+                        ),
+                      )
+                    }
+                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                  />
+                </label>
+                <label className="text-xs text-dark-400">
+                  {t('admin.balancer.groups.autoQuarantineMaxNodes', 'Auto-quarantine max nodes')}
+                  <input
+                    type="number"
+                    min={1}
+                    step={1}
+                    value={advancedSettings.autoQuarantineMaxNodes}
+                    onChange={(event) =>
+                      updateAdvancedSetting(
+                        'autoQuarantineMaxNodes',
+                        parseNumericInput(
+                          event.target.value,
+                          advancedSettings.autoQuarantineMaxNodes,
+                        ),
+                      )
+                    }
+                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                  />
+                </label>
+              </div>
+            </details>
 
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-            <label className="text-xs text-dark-400">
-              {t('admin.balancer.groups.autoQuarantineFailures', 'Auto-quarantine failures')}
-              <input
-                type="number"
-                min={1}
-                step={1}
-                value={advancedSettings.autoQuarantineFailures}
-                onChange={(event) =>
-                  updateAdvancedSetting(
-                    'autoQuarantineFailures',
-                    parseNumericInput(event.target.value, advancedSettings.autoQuarantineFailures),
-                  )
-                }
-                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-              />
-            </label>
-            <label className="text-xs text-dark-400">
-              {t(
-                'admin.balancer.groups.autoQuarantineRelease',
-                'Auto-quarantine release successes',
-              )}
-              <input
-                type="number"
-                min={1}
-                step={1}
-                value={advancedSettings.autoQuarantineReleaseSuccesses}
-                onChange={(event) =>
-                  updateAdvancedSetting(
-                    'autoQuarantineReleaseSuccesses',
-                    parseNumericInput(
-                      event.target.value,
-                      advancedSettings.autoQuarantineReleaseSuccesses,
-                    ),
-                  )
-                }
-                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-              />
-            </label>
-            <label className="text-xs text-dark-400">
-              {t('admin.balancer.groups.autoQuarantineMaxNodes', 'Auto-quarantine max nodes')}
-              <input
-                type="number"
-                min={1}
-                step={1}
-                value={advancedSettings.autoQuarantineMaxNodes}
-                onChange={(event) =>
-                  updateAdvancedSetting(
-                    'autoQuarantineMaxNodes',
-                    parseNumericInput(event.target.value, advancedSettings.autoQuarantineMaxNodes),
-                  )
-                }
-                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-              />
-            </label>
+            <details className="rounded-lg border border-dark-700 bg-dark-900/30 p-3">
+              <summary className="cursor-pointer text-sm font-semibold text-dark-100">
+                {t('admin.balancer.groups.sectionAutoDrain', 'Auto-drain')}
+              </summary>
+              <p className="mt-2 text-xs text-dark-500">
+                {t(
+                  'admin.balancer.groups.sectionAutoDrainHint',
+                  'Temporarily lowers node priority when load is high or health is unstable.',
+                )}
+              </p>
+              <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <label className="flex items-center gap-2 text-sm text-dark-200 md:col-span-2 xl:col-span-3">
+                  <input
+                    type="checkbox"
+                    checked={advancedSettings.autoDrainEnabled}
+                    onChange={(event) =>
+                      updateAdvancedSetting('autoDrainEnabled', event.target.checked)
+                    }
+                  />
+                  {t('admin.balancer.groups.autoDrainEnabled', 'Enable auto-drain')}
+                </label>
+                <label className="text-xs text-dark-400">
+                  {t('admin.balancer.groups.autoDrainFailures', 'Auto-drain failures')}
+                  <input
+                    type="number"
+                    min={1}
+                    step={1}
+                    value={advancedSettings.autoDrainFailures}
+                    onChange={(event) =>
+                      updateAdvancedSetting(
+                        'autoDrainFailures',
+                        parseNumericInput(event.target.value, advancedSettings.autoDrainFailures),
+                      )
+                    }
+                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                  />
+                </label>
+                <label className="text-xs text-dark-400">
+                  {t('admin.balancer.groups.autoDrainRelease', 'Auto-drain release successes')}
+                  <input
+                    type="number"
+                    min={1}
+                    step={1}
+                    value={advancedSettings.autoDrainReleaseSuccesses}
+                    onChange={(event) =>
+                      updateAdvancedSetting(
+                        'autoDrainReleaseSuccesses',
+                        parseNumericInput(
+                          event.target.value,
+                          advancedSettings.autoDrainReleaseSuccesses,
+                        ),
+                      )
+                    }
+                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                  />
+                </label>
+                <label className="text-xs text-dark-400">
+                  {t('admin.balancer.groups.autoDrainLoadThreshold', 'Auto-drain load threshold')}
+                  <input
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    value={advancedSettings.autoDrainLoadThreshold}
+                    onChange={(event) =>
+                      updateAdvancedSetting(
+                        'autoDrainLoadThreshold',
+                        parseNumericInput(
+                          event.target.value,
+                          advancedSettings.autoDrainLoadThreshold,
+                        ),
+                      )
+                    }
+                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                  />
+                </label>
+                <label className="text-xs text-dark-400 md:col-span-2 xl:col-span-1">
+                  {t('admin.balancer.groups.autoDrainScorePenalty', 'Auto-drain score penalty')}
+                  <input
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    value={advancedSettings.autoDrainScorePenalty}
+                    onChange={(event) =>
+                      updateAdvancedSetting(
+                        'autoDrainScorePenalty',
+                        parseNumericInput(
+                          event.target.value,
+                          advancedSettings.autoDrainScorePenalty,
+                        ),
+                      )
+                    }
+                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                  />
+                </label>
+              </div>
+            </details>
 
-            <label className="text-xs text-dark-400">
-              {t('admin.balancer.groups.autoDrainFailures', 'Auto-drain failures')}
-              <input
-                type="number"
-                min={1}
-                step={1}
-                value={advancedSettings.autoDrainFailures}
-                onChange={(event) =>
-                  updateAdvancedSetting(
-                    'autoDrainFailures',
-                    parseNumericInput(event.target.value, advancedSettings.autoDrainFailures),
-                  )
-                }
-                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-              />
-            </label>
-            <label className="text-xs text-dark-400">
-              {t('admin.balancer.groups.autoDrainRelease', 'Auto-drain release successes')}
-              <input
-                type="number"
-                min={1}
-                step={1}
-                value={advancedSettings.autoDrainReleaseSuccesses}
-                onChange={(event) =>
-                  updateAdvancedSetting(
-                    'autoDrainReleaseSuccesses',
-                    parseNumericInput(
-                      event.target.value,
-                      advancedSettings.autoDrainReleaseSuccesses,
-                    ),
-                  )
-                }
-                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-              />
-            </label>
-            <label className="text-xs text-dark-400">
-              {t('admin.balancer.groups.autoDrainLoadThreshold', 'Auto-drain load threshold')}
-              <input
-                type="number"
-                min={0}
-                step={0.01}
-                value={advancedSettings.autoDrainLoadThreshold}
-                onChange={(event) =>
-                  updateAdvancedSetting(
-                    'autoDrainLoadThreshold',
-                    parseNumericInput(event.target.value, advancedSettings.autoDrainLoadThreshold),
-                  )
-                }
-                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-              />
-            </label>
-            <label className="text-xs text-dark-400">
-              {t('admin.balancer.groups.autoDrainScorePenalty', 'Auto-drain score penalty')}
-              <input
-                type="number"
-                min={0}
-                step={0.01}
-                value={advancedSettings.autoDrainScorePenalty}
-                onChange={(event) =>
-                  updateAdvancedSetting(
-                    'autoDrainScorePenalty',
-                    parseNumericInput(event.target.value, advancedSettings.autoDrainScorePenalty),
-                  )
-                }
-                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-              />
-            </label>
-
-            <label className="text-xs text-dark-400">
-              {t('admin.balancer.groups.balancerLoadWeight', 'Score load weight')}
-              <input
-                type="number"
-                min={0}
-                step={0.01}
-                value={advancedSettings.balancerLoadWeight}
-                onChange={(event) =>
-                  updateAdvancedSetting(
-                    'balancerLoadWeight',
-                    parseNumericInput(event.target.value, advancedSettings.balancerLoadWeight),
-                  )
-                }
-                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-              />
-            </label>
-            <label className="text-xs text-dark-400">
-              {t('admin.balancer.groups.balancerLatencyWeight', 'Score latency weight')}
-              <input
-                type="number"
-                min={0}
-                step={0.01}
-                value={advancedSettings.balancerLatencyWeight}
-                onChange={(event) =>
-                  updateAdvancedSetting(
-                    'balancerLatencyWeight',
-                    parseNumericInput(event.target.value, advancedSettings.balancerLatencyWeight),
-                  )
-                }
-                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-              />
-            </label>
-            <label className="text-xs text-dark-400">
-              {t('admin.balancer.groups.balancerMaxLatencyMs', 'Score max latency (ms)')}
-              <input
-                type="number"
-                min={1}
-                step={1}
-                value={advancedSettings.balancerMaxLatencyMs}
-                onChange={(event) =>
-                  updateAdvancedSetting(
-                    'balancerMaxLatencyMs',
-                    parseNumericInput(event.target.value, advancedSettings.balancerMaxLatencyMs),
-                  )
-                }
-                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-              />
-            </label>
-            <label className="text-xs text-dark-400">
-              {t('admin.balancer.groups.balancerSmoothingAlpha', 'Score smoothing alpha')}
-              <input
-                type="number"
-                min={0}
-                step={0.01}
-                value={advancedSettings.balancerSmoothingAlpha}
-                onChange={(event) =>
-                  updateAdvancedSetting(
-                    'balancerSmoothingAlpha',
-                    parseNumericInput(event.target.value, advancedSettings.balancerSmoothingAlpha),
-                  )
-                }
-                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-              />
-            </label>
-            <label className="text-xs text-dark-400">
-              {t('admin.balancer.groups.balancerHysteresisDelta', 'Score hysteresis delta')}
-              <input
-                type="number"
-                min={0}
-                step={0.01}
-                value={advancedSettings.balancerHysteresisDelta}
-                onChange={(event) =>
-                  updateAdvancedSetting(
-                    'balancerHysteresisDelta',
-                    parseNumericInput(event.target.value, advancedSettings.balancerHysteresisDelta),
-                  )
-                }
-                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-              />
-            </label>
+            <details className="rounded-lg border border-dark-700 bg-dark-900/30 p-3">
+              <summary className="cursor-pointer text-sm font-semibold text-dark-100">
+                {t('admin.balancer.groups.sectionScoreModel', 'Score model')}
+              </summary>
+              <p className="mt-2 text-xs text-dark-500">
+                {t(
+                  'admin.balancer.groups.sectionScoreModelHint',
+                  'Defines how load and latency are balanced when selecting preferred nodes.',
+                )}
+              </p>
+              <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <label className="text-xs text-dark-400">
+                  {t('admin.balancer.groups.balancerLoadWeight', 'Score load weight')}
+                  <input
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    value={advancedSettings.balancerLoadWeight}
+                    onChange={(event) =>
+                      updateAdvancedSetting(
+                        'balancerLoadWeight',
+                        parseNumericInput(event.target.value, advancedSettings.balancerLoadWeight),
+                      )
+                    }
+                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                  />
+                </label>
+                <label className="text-xs text-dark-400">
+                  {t('admin.balancer.groups.balancerLatencyWeight', 'Score latency weight')}
+                  <input
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    value={advancedSettings.balancerLatencyWeight}
+                    onChange={(event) =>
+                      updateAdvancedSetting(
+                        'balancerLatencyWeight',
+                        parseNumericInput(
+                          event.target.value,
+                          advancedSettings.balancerLatencyWeight,
+                        ),
+                      )
+                    }
+                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                  />
+                </label>
+                <label className="text-xs text-dark-400">
+                  {t('admin.balancer.groups.balancerMaxLatencyMs', 'Score max latency (ms)')}
+                  <input
+                    type="number"
+                    min={1}
+                    step={1}
+                    value={advancedSettings.balancerMaxLatencyMs}
+                    onChange={(event) =>
+                      updateAdvancedSetting(
+                        'balancerMaxLatencyMs',
+                        parseNumericInput(
+                          event.target.value,
+                          advancedSettings.balancerMaxLatencyMs,
+                        ),
+                      )
+                    }
+                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                  />
+                </label>
+                <label className="text-xs text-dark-400">
+                  {t('admin.balancer.groups.balancerSmoothingAlpha', 'Score smoothing alpha')}
+                  <input
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    value={advancedSettings.balancerSmoothingAlpha}
+                    onChange={(event) =>
+                      updateAdvancedSetting(
+                        'balancerSmoothingAlpha',
+                        parseNumericInput(
+                          event.target.value,
+                          advancedSettings.balancerSmoothingAlpha,
+                        ),
+                      )
+                    }
+                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                  />
+                </label>
+                <label className="text-xs text-dark-400">
+                  {t('admin.balancer.groups.balancerHysteresisDelta', 'Score hysteresis delta')}
+                  <input
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    value={advancedSettings.balancerHysteresisDelta}
+                    onChange={(event) =>
+                      updateAdvancedSetting(
+                        'balancerHysteresisDelta',
+                        parseNumericInput(
+                          event.target.value,
+                          advancedSettings.balancerHysteresisDelta,
+                        ),
+                      )
+                    }
+                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                  />
+                </label>
+              </div>
+            </details>
           </div>
         </div>
 
