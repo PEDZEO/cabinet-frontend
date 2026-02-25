@@ -209,6 +209,16 @@ export default function AdminBalancer() {
     refetchInterval: 30_000,
   });
 
+  const {
+    data: quarantineData,
+    refetch: refetchQuarantine,
+    isLoading: quarantineLoading,
+  } = useQuery({
+    queryKey: ['admin', 'balancer', 'quarantine'],
+    queryFn: adminBalancerApi.getQuarantine,
+    refetchInterval: 30_000,
+  });
+
   useEffect(() => {
     if (!groupsData || groupsDirty) return;
     setGroupsDraft(groupsToDraft(groupsData));
@@ -226,7 +236,7 @@ export default function AdminBalancer() {
     mutationFn: adminBalancerApi.refreshGroups,
     onSuccess: async () => {
       setAlert(t('admin.balancer.actions.refreshGroupsSuccess', 'Groups updated'), 'success');
-      await Promise.all([refetchDebugStats(), refetchGroups()]);
+      await Promise.all([refetchDebugStats(), refetchGroups(), refetchQuarantine()]);
     },
     onError: () => {
       setAlert(t('admin.balancer.actions.actionError', 'Action failed'), 'error');
@@ -237,7 +247,12 @@ export default function AdminBalancer() {
     mutationFn: adminBalancerApi.refreshStats,
     onSuccess: async () => {
       setAlert(t('admin.balancer.actions.refreshStatsSuccess', 'Stats updated'), 'success');
-      await Promise.all([refetchNodeStats(), refetchDebugStats(), refetchReady()]);
+      await Promise.all([
+        refetchNodeStats(),
+        refetchDebugStats(),
+        refetchReady(),
+        refetchQuarantine(),
+      ]);
     },
     onError: () => {
       setAlert(t('admin.balancer.actions.actionError', 'Action failed'), 'error');
@@ -269,6 +284,41 @@ export default function AdminBalancer() {
     onError: () => {
       setTokenResult(null);
       setAlert(t('admin.balancer.actions.tokenError', 'Token debug failed'), 'error');
+    },
+  });
+
+  const addQuarantineMutation = useMutation({
+    mutationFn: adminBalancerApi.addQuarantine,
+    onSuccess: async () => {
+      setAlert(t('admin.balancer.actions.quarantineAdded', 'Node added to quarantine'), 'success');
+      await Promise.all([
+        refetchQuarantine(),
+        refetchNodeStats(),
+        refetchDebugStats(),
+        refetchHealth(),
+      ]);
+    },
+    onError: () => {
+      setAlert(t('admin.balancer.actions.quarantineError', 'Failed to update quarantine'), 'error');
+    },
+  });
+
+  const removeQuarantineMutation = useMutation({
+    mutationFn: adminBalancerApi.removeQuarantine,
+    onSuccess: async () => {
+      setAlert(
+        t('admin.balancer.actions.quarantineRemoved', 'Node removed from quarantine'),
+        'success',
+      );
+      await Promise.all([
+        refetchQuarantine(),
+        refetchNodeStats(),
+        refetchDebugStats(),
+        refetchHealth(),
+      ]);
+    },
+    onError: () => {
+      setAlert(t('admin.balancer.actions.quarantineError', 'Failed to update quarantine'), 'error');
     },
   });
 
@@ -308,6 +358,16 @@ export default function AdminBalancer() {
     return duplicates;
   }, [groupsDraft]);
 
+  const quarantineSet = useMemo(
+    () =>
+      new Set(
+        (quarantineData?.quarantine_nodes || [])
+          .map((name) => name.trim().toLowerCase())
+          .filter(Boolean),
+      ),
+    [quarantineData],
+  );
+
   const nodeRows = useMemo(() => {
     const source = toRecord(nodeStats);
     return Object.entries(source).map(([nodeName, stat]) => {
@@ -322,9 +382,11 @@ export default function AdminBalancer() {
         connected: prettyValue(statRecord.isConnected),
         disabled: prettyValue(statRecord.isDisabled),
         isAlias: Boolean(statRecord.isAlias),
+        quarantined:
+          Boolean(statRecord.quarantined) || quarantineSet.has(nodeName.trim().toLowerCase()),
       };
     });
-  }, [nodeStats]);
+  }, [nodeStats, quarantineSet]);
 
   const visibleNodeRows = useMemo(() => {
     const primaryRows = nodeRows.filter((row) => !row.isAlias);
@@ -375,6 +437,14 @@ export default function AdminBalancer() {
     setExcludeGroups((prev) =>
       prev.includes(groupName) ? prev.filter((value) => value !== groupName) : [...prev, groupName],
     );
+  };
+
+  const toggleNodeQuarantine = (nodeName: string, quarantined: boolean) => {
+    if (quarantined) {
+      void removeQuarantineMutation.mutateAsync(nodeName);
+      return;
+    }
+    void addQuarantineMutation.mutateAsync(nodeName);
   };
 
   const saveGroups = async () => {
@@ -455,6 +525,10 @@ export default function AdminBalancer() {
         value: prettyValue(healthRecord.cached_nodes),
       },
       {
+        label: t('admin.balancer.labels.quarantineCount', 'Quarantine nodes'),
+        value: prettyValue(healthRecord.quarantine_count),
+      },
+      {
         label: t('admin.balancer.labels.panelAuth', 'Panel auth'),
         value: prettyValue(healthRecord.panel_auth),
       },
@@ -525,6 +599,10 @@ export default function AdminBalancer() {
       {
         label: t('admin.balancer.labels.circuitOpenTotal', 'Circuit open total'),
         value: prettyValue(runtimeStats.circuit_open_total),
+      },
+      {
+        label: t('admin.balancer.labels.quarantineFiltered', 'Quarantine filtered'),
+        value: prettyValue(runtimeStats.quarantine_filtered_total),
       },
       {
         label: t('admin.balancer.labels.cbFailCount', 'CB fail count'),
@@ -640,6 +718,7 @@ export default function AdminBalancer() {
                 refetchDebugStats(),
                 refetchNodeStats(),
                 refetchGroups(),
+                refetchQuarantine(),
               ])
             }
             className="rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600"
@@ -998,6 +1077,23 @@ export default function AdminBalancer() {
           {t('admin.balancer.cards.nodeStats', 'Node stats')}
         </h3>
 
+        <div className="mb-3 rounded-lg border border-dark-700 bg-dark-900/40 p-3 text-xs text-dark-300">
+          <p>
+            {t('admin.balancer.quarantine.title', 'Quarantine')}:{' '}
+            <span className="font-semibold text-dark-100">
+              {quarantineLoading
+                ? t('common.loading', 'Loading...')
+                : (quarantineData?.quarantine_count ?? 0)}
+            </span>
+          </p>
+          <p className="mt-1 text-dark-400">
+            {t(
+              'admin.balancer.quarantine.hint',
+              'Quarantined nodes are excluded from generated groups until removed from quarantine.',
+            )}
+          </p>
+        </div>
+
         {nodesLoading ? (
           <p className="text-sm text-dark-400">{t('common.loading', 'Loading...')}</p>
         ) : visibleNodeRows.length === 0 ? (
@@ -1029,6 +1125,10 @@ export default function AdminBalancer() {
                   <th className="px-2 py-2">{t('admin.balancer.table.totalRam', 'Total RAM')}</th>
                   <th className="px-2 py-2">{t('admin.balancer.table.connected', 'Connected')}</th>
                   <th className="px-2 py-2">{t('admin.balancer.table.disabled', 'Disabled')}</th>
+                  <th className="px-2 py-2">
+                    {t('admin.balancer.table.quarantine', 'Quarantine')}
+                  </th>
+                  <th className="px-2 py-2">{t('admin.balancer.table.action', 'Action')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1042,6 +1142,34 @@ export default function AdminBalancer() {
                     <td className="px-2 py-2">{row.totalRamGb}</td>
                     <td className="px-2 py-2">{row.connected}</td>
                     <td className="px-2 py-2">{row.disabled}</td>
+                    <td className="px-2 py-2">
+                      {row.quarantined ? (
+                        <span className="rounded bg-warning-500/15 px-2 py-1 text-xs text-warning-300">
+                          {t('common.yes', 'Yes')}
+                        </span>
+                      ) : (
+                        <span className="rounded bg-success-500/15 px-2 py-1 text-xs text-success-300">
+                          {t('common.no', 'No')}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-2 py-2">
+                      <button
+                        onClick={() => toggleNodeQuarantine(row.nodeName, row.quarantined)}
+                        disabled={
+                          addQuarantineMutation.isPending || removeQuarantineMutation.isPending
+                        }
+                        className={`rounded-md border px-2 py-1 text-xs transition-colors disabled:opacity-50 ${
+                          row.quarantined
+                            ? 'border-success-500/40 bg-success-500/10 text-success-300 hover:bg-success-500/20'
+                            : 'border-warning-500/40 bg-warning-500/10 text-warning-300 hover:bg-warning-500/20'
+                        }`}
+                      >
+                        {row.quarantined
+                          ? t('admin.balancer.actions.removeQuarantine', 'Remove')
+                          : t('admin.balancer.actions.addQuarantine', 'Quarantine')}
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -1080,6 +1208,11 @@ export default function AdminBalancer() {
         <JsonDetails
           title={t('admin.balancer.cards.nodeStats', 'Node stats')}
           data={nodesLoading ? { loading: true } : (nodeStats ?? {})}
+          rawLabel={t('admin.balancer.rawJson', 'raw JSON')}
+        />
+        <JsonDetails
+          title={t('admin.balancer.quarantine.title', 'Quarantine')}
+          data={quarantineLoading ? { loading: true } : (quarantineData ?? {})}
           rawLabel={t('admin.balancer.rawJson', 'raw JSON')}
         />
       </div>

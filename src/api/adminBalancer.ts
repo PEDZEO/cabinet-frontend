@@ -20,6 +20,13 @@ export interface BalancerGroupsResponse {
   fastest_group: boolean;
   fastest_group_name?: string;
   fastest_exclude_groups: string[];
+  quarantine_nodes?: string[];
+}
+
+export interface BalancerQuarantineResponse {
+  status: string;
+  quarantine_nodes: string[];
+  quarantine_count: number;
 }
 
 export const adminBalancerApi = {
@@ -95,6 +102,23 @@ export const adminBalancerApi = {
     fastest_exclude_groups: string[];
   }): Promise<BalancerGroupsResponse> => {
     const response = await apiClient.put('/cabinet/admin/balancer/groups', payload);
+    return response.data;
+  },
+
+  getQuarantine: async (): Promise<BalancerQuarantineResponse> => {
+    const response = await apiClient.get('/cabinet/admin/balancer/quarantine');
+    return response.data;
+  },
+
+  addQuarantine: async (node: string): Promise<BalancerQuarantineResponse> => {
+    const response = await apiClient.post('/cabinet/admin/balancer/quarantine', { node });
+    return response.data;
+  },
+
+  removeQuarantine: async (node: string): Promise<BalancerQuarantineResponse> => {
+    const response = await apiClient.delete(
+      `/cabinet/admin/balancer/quarantine/${encodeURIComponent(node)}`,
+    );
     return response.data;
   },
 };
