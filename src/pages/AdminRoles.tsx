@@ -220,7 +220,7 @@ export default function AdminRoles() {
                   <PermissionGate permission="roles:edit">
                     <button
                       onClick={() => navigate(`/admin/roles/${role.id}/edit`)}
-                      disabled={role.is_system || !canManageRole(role.level)}
+                      disabled={!canManageRole(role.level)}
                       className="flex-1 rounded-lg bg-dark-700 p-2 text-dark-300 transition-colors hover:bg-dark-600 hover:text-dark-100 disabled:cursor-not-allowed disabled:opacity-40 sm:flex-none"
                       title={t('admin.roles.actions.edit')}
                     >
