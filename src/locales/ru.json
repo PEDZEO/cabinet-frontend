@@ -248,6 +248,50 @@
         "confirm": "2. Войдите другим способом и подтвердите код.",
         "sharedSubscription": "3. После успешной привязки подписка и доступ будут общими."
       }
+    },
+    "connectDevice": "Подключить устройство",
+    "daysRemaining": "Дней осталось",
+    "devicesConnected": "{{count}} подключено",
+    "devicesOfMax": "{{used}} из {{max}} подключено",
+    "devicesShort": "устр.",
+    "expired": {
+      "devices": "Устройства",
+      "expiredDate": "Истекла",
+      "paidSubtitle": "Срок действия закончился",
+      "renew": "Продлить подписку",
+      "tariffs": "Тарифы",
+      "title": "Подписка истекла",
+      "traffic": "Трафик",
+      "trialSubtitle": "Пробный период завершён",
+      "trialTitle": "Пробный период истёк"
+    },
+    "maxUsage": "макс {{amount}}",
+    "remaining": "Осталось",
+    "stats": {
+      "balance": "Баланс",
+      "earnings": "Заработок",
+      "referrals": "Рефералы",
+      "subscription": "Подписка"
+    },
+    "tariff": "Тариф",
+    "trafficUsage": "{{used}} / {{limit}} ГБ",
+    "trafficUsageTitle": "Расход трафика",
+    "trialOffer": {
+      "freeDesc": "Попробуйте наш VPN бесплатно — без обязательств",
+      "freeTitle": "Бесплатный пробный период",
+      "paidDesc": "Начните с пробной подписки",
+      "paidTitle": "Пробная подписка"
+    },
+    "unlimited": "Безлимит",
+    "usageLast14Days": "Расход за 14 дней",
+    "usedSuffix": "израсходовано",
+    "usedTraffic": "использовано {{amount}}",
+    "validUntil": "до {{date}}",
+    "zone": {
+      "critical": "Критический",
+      "danger": "Высокий",
+      "normal": "Норма",
+      "warning": "Умеренный"
     }
   },
   "subscription": {
@@ -592,6 +636,12 @@
       },
       "tribute": {
         "description": "Оплата банковской картой через Tribute"
+      },
+      "freekassa_card": {
+        "description": "Оплата картой РФ"
+      },
+      "freekassa_sbp": {
+        "description": "Оплата через СБП (QR код)"
       }
     },
     "transactionHistory": "История операций",

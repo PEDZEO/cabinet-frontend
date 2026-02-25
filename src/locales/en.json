@@ -236,6 +236,50 @@
         "confirm": "2. Sign in with another provider and confirm that code.",
         "sharedSubscription": "3. After linking, subscription and access are shared."
       }
+    },
+    "connectDevice": "Connect Device",
+    "daysRemaining": "Days left",
+    "devicesConnected": "{{count}} connected",
+    "devicesOfMax": "{{used}} of {{max}} connected",
+    "devicesShort": "dev.",
+    "expired": {
+      "devices": "Devices",
+      "expiredDate": "Expired",
+      "paidSubtitle": "Subscription has expired",
+      "renew": "Renew Subscription",
+      "tariffs": "Tariffs",
+      "title": "Subscription Expired",
+      "traffic": "Traffic",
+      "trialSubtitle": "Trial period ended",
+      "trialTitle": "Trial Expired"
+    },
+    "maxUsage": "max {{amount}}",
+    "remaining": "Remaining",
+    "stats": {
+      "balance": "Balance",
+      "earnings": "Earnings",
+      "referrals": "Referrals",
+      "subscription": "Subscription"
+    },
+    "tariff": "Tariff",
+    "trafficUsage": "{{used}} / {{limit}} GB",
+    "trafficUsageTitle": "Traffic Usage",
+    "trialOffer": {
+      "freeDesc": "Try our VPN for free — no commitment required",
+      "freeTitle": "Free Trial Available",
+      "paidDesc": "Get started with a trial subscription",
+      "paidTitle": "Trial Subscription"
+    },
+    "unlimited": "Unlimited",
+    "usageLast14Days": "Usage last 14 days",
+    "usedSuffix": "used",
+    "usedTraffic": "used {{amount}}",
+    "validUntil": "until {{date}}",
+    "zone": {
+      "critical": "Critical",
+      "danger": "High",
+      "normal": "Normal",
+      "warning": "Moderate"
     }
   },
   "subscription": {
@@ -564,6 +608,12 @@
       },
       "tribute": {
         "description": "Pay with bank card via Tribute"
+      },
+      "freekassa_card": {
+        "description": "Pay with Russian bank card"
+      },
+      "freekassa_sbp": {
+        "description": "Pay via SBP (QR code)"
       }
     },
     "transactionHistory": "Transaction History",
