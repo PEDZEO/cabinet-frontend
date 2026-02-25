@@ -61,6 +61,13 @@ export default function Dashboard() {
     enabled: !subscription && !subLoading,
   });
 
+  const { data: devicesData } = useQuery({
+    queryKey: ['devices'],
+    queryFn: subscriptionApi.getDevices,
+    enabled: !!subscription,
+    staleTime: API.BALANCE_STALE_TIME_MS,
+  });
+
   const { data: referralInfo, isLoading: refLoading } = useQuery({
     queryKey: ['referral-info'],
     queryFn: referralApi.getReferralInfo,
@@ -241,6 +248,7 @@ export default function Dashboard() {
           trafficData={trafficData}
           refreshTrafficMutation={refreshTrafficMutation}
           trafficRefreshCooldown={trafficRefreshCooldown}
+          connectedDevices={devicesData?.total ?? 0}
         />
       ) : null}
 

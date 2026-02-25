@@ -19,6 +19,7 @@ interface SubscriptionCardActiveProps {
   } | null;
   refreshTrafficMutation: UseMutationResult<unknown, unknown, void, unknown>;
   trafficRefreshCooldown: number;
+  connectedDevices: number;
 }
 
 const RefreshIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
@@ -43,6 +44,7 @@ export default function SubscriptionCardActive({
   trafficData,
   refreshTrafficMutation,
   trafficRefreshCooldown,
+  connectedDevices,
 }: SubscriptionCardActiveProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -225,7 +227,7 @@ export default function SubscriptionCardActive({
             </div>
             <div className="mt-0.5 text-[11px] text-white/30">
               {t('dashboard.devicesOfMax', {
-                used: subscription.device_limit,
+                used: connectedDevices,
                 max: subscription.device_limit,
               })}
             </div>
@@ -238,9 +240,8 @@ export default function SubscriptionCardActive({
                 key={i}
                 className="h-[7px] w-[7px] rounded-full transition-all duration-300"
                 style={{
-                  background:
-                    i < subscription.device_limit ? zone.mainHex : 'rgba(255,255,255,0.08)',
-                  boxShadow: i < subscription.device_limit ? `0 0 6px ${zone.mainHex}50` : 'none',
+                  background: i < connectedDevices ? zone.mainHex : 'rgba(255,255,255,0.08)',
+                  boxShadow: i < connectedDevices ? `0 0 6px ${zone.mainHex}50` : 'none',
                 }}
               />
             ))}
