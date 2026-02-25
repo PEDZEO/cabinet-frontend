@@ -35,7 +35,6 @@ import {
   getFlagEmoji,
   getInsufficientBalanceError,
   getStepLabel,
-  getTrafficColor,
   ReduceDevicesSection,
   ServerManagementSection,
   TariffCardsGrid,
