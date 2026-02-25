@@ -62,6 +62,22 @@ const ProfileIcon = () => (
   </svg>
 );
 
+const AccountLinkIcon = () => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M10 13a5 5 0 0 0 7.54.54l2.92-2.92a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+    <path d="M14 11a5 5 0 0 0-7.54-.54L3.54 13.4a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+  </svg>
+);
+
 const LogoutIcon = () => (
   <svg
     width="20"
@@ -108,7 +124,7 @@ export function LiteModeMenu({ isOpen, onClose, headerHeight = 64 }: LiteModeMen
           {
             to: '/account-linking',
             label: t('nav.accountLinking', 'Привязки'),
-            icon: <ProfileIcon />,
+            icon: <AccountLinkIcon />,
           },
         ]
       : []),

@@ -1,39 +1,20 @@
 import { Suspense, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { brandingApi } from '@/api/branding';
-import type { AnimationConfig, BackgroundType } from '@/components/ui/backgrounds/types';
+import {
+  getCachedAnimationConfig,
+  setCachedAnimationConfig,
+} from '@/components/backgrounds/animationConfigCache';
+import type { BackgroundType } from '@/components/ui/backgrounds/types';
 import { DEFAULT_ANIMATION_CONFIG } from '@/components/ui/backgrounds/types';
 import { backgroundComponents, prefetchBackground } from '@/components/ui/backgrounds/registry';
-
-const ANIMATION_CACHE_KEY = 'cabinet_animation_config';
-
-function getCachedConfig(): AnimationConfig | null {
-  try {
-    const cached = localStorage.getItem(ANIMATION_CACHE_KEY);
-    return cached ? JSON.parse(cached) : null;
-  } catch {
-    return null;
-  }
-}
 
 // Prefetch the background JS chunk immediately based on localStorage cache.
 // This starts the download before React even renders, so by the time
 // Suspense needs the component, the chunk is already loaded.
-const cachedConfig = getCachedConfig();
+const cachedConfig = getCachedAnimationConfig();
 if (cachedConfig?.enabled && cachedConfig.type && cachedConfig.type !== 'none') {
   prefetchBackground(cachedConfig.type);
-}
-
-function setCachedConfig(config: AnimationConfig) {
-  try {
-    localStorage.setItem(ANIMATION_CACHE_KEY, JSON.stringify(config));
-  } catch {
-    // localStorage not available
-  }
-}
-
-export function setCachedAnimationConfig(config: AnimationConfig) {
-  setCachedConfig(config);
 }
 
 function reduceMobileSettings(settings: Record<string, unknown>): Record<string, unknown> {
@@ -58,10 +39,10 @@ export function BackgroundRenderer() {
     queryKey: ['animation-config'],
     queryFn: async () => {
       const result = await brandingApi.getAnimationConfig();
-      setCachedConfig(result);
+      setCachedAnimationConfig(result);
       return result;
     },
-    initialData: getCachedConfig() ?? undefined,
+    initialData: getCachedAnimationConfig() ?? undefined,
     initialDataUpdatedAt: 0,
     staleTime: 30_000,
   });
