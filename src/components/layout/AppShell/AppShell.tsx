@@ -304,7 +304,7 @@ export function AppShell({ children }: AppShellProps) {
   return (
     <div className="min-h-screen">
       {/* Animated background */}
-      <Aurora />
+      <BackgroundRenderer />
 
       {/* Global components */}
       <WebSocketNotifications />

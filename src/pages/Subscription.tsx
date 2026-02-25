@@ -5,6 +5,12 @@ import { useLocation, useNavigate } from 'react-router';
 import { AxiosError } from 'axios';
 import { subscriptionApi } from '../api/subscription';
 import { promoApi } from '../api/promo';
+import TrafficProgressBar from '../components/dashboard/TrafficProgressBar';
+import { getTrafficZone } from '../utils/trafficZone';
+import { formatTraffic } from '../utils/formatTraffic';
+import { getGlassColors } from '../utils/glassTheme';
+import { useTheme } from '../hooks/useTheme';
+import { HoverBorderGradient } from '../components/ui/hover-border-gradient';
 import type {
   PurchaseSelection,
   PeriodOption,
@@ -69,6 +75,8 @@ function FullSubscription() {
   const location = useLocation();
   const navigate = useNavigate();
   const { formatAmount, currencySymbol } = useCurrency();
+  const { isDark } = useTheme();
+  const g = getGlassColors(isDark);
   const [copied, setCopied] = useState(false);
 
   // Purchase state (classic mode)
@@ -516,353 +524,626 @@ function FullSubscription() {
 
       {/* Current Subscription */}
       {subscription ? (
-        <div
-          className={`bento-card ${subscription.is_trial ? 'border-warning-500/30 bg-gradient-to-br from-warning-500/5 to-transparent' : ''}`}
-        >
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-dark-100">
-                {t('subscription.currentPlan')}
-              </h2>
-              {subscription.tariff_name && (
-                <div className="mt-1 text-sm text-accent-400">{subscription.tariff_name}</div>
-              )}
-            </div>
-            <span
-              className={
-                subscription.is_active
-                  ? subscription.is_trial
-                    ? 'badge-warning'
-                    : 'badge-success'
-                  : 'badge-error'
-              }
-            >
-              {subscription.is_trial
-                ? t('subscription.trialStatus')
-                : subscription.is_active
-                  ? t('subscription.active')
-                  : t('subscription.expired')}
-            </span>
-          </div>
+        (() => {
+          const usedPercent =
+            trafficData?.traffic_used_percent ?? subscription.traffic_used_percent;
+          const usedGb = trafficData?.traffic_used_gb ?? subscription.traffic_used_gb;
+          const isUnlimited =
+            (trafficData?.is_unlimited ?? false) || subscription.traffic_limit_gb === 0;
+          const zone = getTrafficZone(usedPercent);
+          const connectedDevices = devicesData?.total ?? 0;
+          const formattedDate = new Date(subscription.end_date).toLocaleDateString();
+          const daysLeft = subscription.days_left;
 
-          {/* Trial Period Info Banner */}
-          {subscription.is_trial && subscription.is_active && (
-            <div className="mb-6 rounded-xl border border-warning-500/30 bg-warning-500/10 p-4">
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-warning-500/20 text-lg">
-                  <svg
-                    className="h-5 w-5 text-warning-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={1.5}
+          return (
+            <div
+              className="relative overflow-hidden rounded-3xl backdrop-blur-xl"
+              style={{
+                background: g.cardBg,
+                border: subscription.is_trial
+                  ? '1px solid rgba(62,219,176,0.15)'
+                  : `1px solid ${g.cardBorder}`,
+                boxShadow: g.shadow,
+                padding: '28px 28px 24px',
+              }}
+            >
+              {/* Trial shimmer border */}
+              {subscription.is_trial && (
+                <div
+                  className="pointer-events-none absolute inset-[-1px] animate-trial-glow rounded-3xl"
+                  aria-hidden="true"
+                />
+              )}
+
+              {/* Background glow */}
+              <div
+                className="pointer-events-none absolute"
+                style={{
+                  top: -60,
+                  right: -60,
+                  width: 200,
+                  height: 200,
+                  borderRadius: '50%',
+                  background: `radial-gradient(circle, ${zone.mainHex}${g.glowAlpha} 0%, transparent 70%)`,
+                  transition: 'background 0.8s ease',
+                }}
+                aria-hidden="true"
+              />
+
+              {/* ─── Header ─── */}
+              <div className="mb-6 flex items-start justify-between">
+                <div>
+                  {/* Zone indicator */}
+                  <div className="mb-1 flex items-center gap-2">
+                    <div
+                      className="h-2 w-2 rounded-full"
+                      style={{
+                        background: zone.mainHex,
+                        boxShadow: `0 0 8px ${zone.mainHex}80`,
+                        transition: 'all 0.6s ease',
+                      }}
+                      aria-hidden="true"
+                    />
+                    <span
+                      className="font-mono text-[11px] font-semibold uppercase tracking-widest"
+                      style={{ color: zone.mainHex, transition: 'color 0.6s ease' }}
+                    >
+                      {isUnlimited ? t('dashboard.unlimited') : t(zone.labelKey)}
+                    </span>
+                    {subscription.is_trial && (
+                      <span
+                        className="inline-flex animate-trial-glow items-center gap-1 rounded-md px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest"
+                        style={{
+                          background:
+                            'linear-gradient(135deg, rgba(62,219,176,0.15), rgba(62,219,176,0.06))',
+                          border: '1px solid rgba(62,219,176,0.2)',
+                          color: '#3EDBB0',
+                        }}
+                      >
+                        {t('subscription.trialStatus')}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Plan name */}
+                  <h2 className="text-lg font-bold tracking-tight text-dark-50">
+                    {subscription.tariff_name || t('subscription.currentPlan')}
+                  </h2>
+                </div>
+
+                {/* Status badge */}
+                <span
+                  className="rounded-full px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider"
+                  style={{
+                    background: subscription.is_active
+                      ? `${zone.mainHex}15`
+                      : 'rgba(255,59,92,0.12)',
+                    border: subscription.is_active
+                      ? `1px solid ${zone.mainHex}30`
+                      : '1px solid rgba(255,59,92,0.25)',
+                    color: subscription.is_active ? zone.mainHex : '#FF3B5C',
+                  }}
+                >
+                  {subscription.is_trial
+                    ? t('subscription.trialStatus')
+                    : subscription.is_active
+                      ? t('subscription.active')
+                      : t('subscription.expired')}
+                </span>
+              </div>
+
+              {/* ─── Trial Info Banner ─── */}
+              {subscription.is_trial && subscription.is_active && (
+                <div
+                  className="mb-6 rounded-[14px] p-4"
+                  style={{
+                    background:
+                      'linear-gradient(135deg, rgba(62,219,176,0.08), rgba(62,219,176,0.03))',
+                    border: '1px solid rgba(62,219,176,0.12)',
+                  }}
+                >
+                  <div className="flex items-start gap-3">
+                    <div
+                      className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[10px]"
+                      style={{ background: 'rgba(62,219,176,0.12)' }}
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#3EDBB0"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm font-semibold" style={{ color: '#3EDBB0' }}>
+                        {t('subscription.trialInfo.title')}
+                      </div>
+                      <div className="mt-1 text-[12px] text-dark-50/40">
+                        {t('subscription.trialInfo.description')}
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-4">
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className="font-mono text-[12px] font-semibold"
+                            style={{ color: '#3EDBB0' }}
+                          >
+                            {subscription.days_left > 0
+                              ? t('subscription.days', { count: subscription.days_left })
+                              : `${subscription.hours_left}${t('subscription.hours')} ${subscription.minutes_left}${t('subscription.minutes')}`}
+                          </span>
+                          <span className="text-[11px] text-dark-50/30">
+                            {t('subscription.trialInfo.remaining')}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className="font-mono text-[12px] font-semibold"
+                            style={{ color: '#3EDBB0' }}
+                          >
+                            {subscription.traffic_limit_gb || '∞'} {t('common.units.gb')}
+                          </span>
+                          <span className="text-[11px] text-dark-50/30">
+                            {t('subscription.traffic')}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className="font-mono text-[12px] font-semibold"
+                            style={{ color: '#3EDBB0' }}
+                          >
+                            {subscription.device_limit}
+                          </span>
+                          <span className="text-[11px] text-dark-50/30">
+                            {t('subscription.devices')}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ─── Traffic Progress ─── */}
+              <div className="mb-6">
+                <div className="mb-2.5 flex items-center justify-between">
+                  <span className="text-[11px] font-medium uppercase tracking-wider text-dark-50/40">
+                    {t('subscription.traffic')}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-[11px] text-dark-50/30">
+                      {isUnlimited
+                        ? formatTraffic(usedGb)
+                        : `${formatTraffic(usedGb)} / ${formatTraffic(subscription.traffic_limit_gb)}`}
+                    </span>
+                    <button
+                      onClick={() => refreshTrafficMutation.mutate()}
+                      disabled={refreshTrafficMutation.isPending || trafficRefreshCooldown > 0}
+                      className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium text-dark-50/30 transition-colors hover:bg-dark-50/[0.05] hover:text-dark-50/50 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <svg
+                        className={`h-3 w-3 ${refreshTrafficMutation.isPending ? 'animate-spin' : ''}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
+                        />
+                      </svg>
+                      {trafficRefreshCooldown > 0
+                        ? `${trafficRefreshCooldown}s`
+                        : t('common.refresh')}
+                    </button>
+                  </div>
+                </div>
+                {subscription.traffic_reset_mode &&
+                  subscription.traffic_reset_mode !== 'NO_RESET' && (
+                    <div className="mb-2 text-[10px] text-dark-50/25">
+                      {t(`subscription.trafficReset.${subscription.traffic_reset_mode}`)}
+                    </div>
+                  )}
+                <TrafficProgressBar
+                  usedGb={usedGb}
+                  limitGb={subscription.traffic_limit_gb}
+                  percent={usedPercent}
+                  isUnlimited={isUnlimited}
+                  compact
+                />
+              </div>
+
+              {/* ─── Connect Device Button ─── */}
+              {subscription.subscription_url && (
+                <HoverBorderGradient
+                  as="button"
+                  accentColor={zone.mainHex}
+                  onClick={() => navigate('/connection')}
+                  className="mb-5 flex w-full items-center gap-3.5 rounded-[14px] p-3.5 text-left transition-shadow duration-300"
+                  style={{ fontFamily: 'inherit' }}
+                >
+                  <div
+                    className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[10px] transition-colors duration-500"
+                    style={{ background: `${zone.mainHex}12` }}
                   >
-                    <path
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke={zone.mainHex}
+                      strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <div className="font-medium text-warning-300">
-                    {t('subscription.trialInfo.title')}
+                      aria-hidden="true"
+                    >
+                      <rect x="2" y="3" width="20" height="14" rx="2" />
+                      <path d="M12 17v4M8 21h8" />
+                      <path d="M12 8v4M10 10h4" opacity="0.7" />
+                    </svg>
                   </div>
-                  <div className="mt-1 text-sm text-dark-400">
-                    {t('subscription.trialInfo.description')}
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-4 text-sm">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-warning-400">
-                        {subscription.days_left > 0
-                          ? t('subscription.days', { count: subscription.days_left })
-                          : `${subscription.hours_left}${t('subscription.hours')} ${subscription.minutes_left}${t('subscription.minutes')}`}
-                      </span>
-                      <span className="text-dark-500">{t('subscription.trialInfo.remaining')}</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-semibold tracking-tight text-dark-50">
+                      {t('dashboard.connectDevice')}
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-warning-400">
-                        {subscription.traffic_limit_gb || '∞'} GB
-                      </span>
-                      <span className="text-dark-500">{t('subscription.traffic')}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-warning-400">{subscription.device_limit}</span>
-                      <span className="text-dark-500">{t('subscription.devices')}</span>
+                    <div className="mt-0.5 text-[11px] text-dark-50/30">
+                      {t('dashboard.devicesOfMax', {
+                        used: connectedDevices,
+                        max: subscription.device_limit,
+                      })}
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>
-          )}
+                  <div className="flex flex-shrink-0 gap-1.5" aria-hidden="true">
+                    {Array.from({ length: subscription.device_limit }, (_, i) => (
+                      <div
+                        key={i}
+                        className="h-[7px] w-[7px] rounded-full transition-all duration-300"
+                        style={{
+                          background: i < connectedDevices ? zone.mainHex : g.textGhost,
+                          boxShadow: i < connectedDevices ? `0 0 6px ${zone.mainHex}50` : 'none',
+                        }}
+                      />
+                    ))}
+                  </div>
+                </HoverBorderGradient>
+              )}
 
-          {/* Connection Data - Top Priority */}
-          {subscription.subscription_url && (
-            <div className="mb-6 rounded-xl border border-accent-500/30 bg-accent-500/10 p-4">
-              <div className="mb-3 font-medium text-dark-100">
-                {t('subscription.connectionInfo')}
-              </div>
-
-              {/* Get Config Button */}
-              <button
-                onClick={() => navigate('/connection')}
-                className="btn-primary mb-3 flex w-full items-center justify-center gap-2 py-3"
-              >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={1.5}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
-                  />
-                </svg>
-                {t('subscription.getConfig')}
-              </button>
-
-              {/* Subscription URL - hidden when hide_subscription_link is true */}
-              {!subscription.hide_subscription_link && (
-                <div className="flex gap-2">
-                  <code className="scrollbar-hide flex-1 overflow-x-auto break-all rounded-lg border border-dark-700/50 bg-dark-900/50 px-3 py-2 text-xs text-dark-300">
+              {/* ─── Subscription URL ─── */}
+              {subscription.subscription_url && !subscription.hide_subscription_link && (
+                <div className="mb-5 flex gap-2">
+                  <code
+                    className="scrollbar-hide flex-1 overflow-x-auto break-all rounded-[10px] px-3 py-2 font-mono text-[11px] text-dark-50/30"
+                    style={{
+                      background: g.codeBg,
+                      border: `1px solid ${g.codeBorder}`,
+                    }}
+                  >
                     {subscription.subscription_url}
                   </code>
                   <button
                     onClick={copyUrl}
-                    className={`btn-secondary px-3 ${copied ? 'border-success-500/30 text-success-400' : ''}`}
+                    className="flex h-auto items-center rounded-[10px] px-3 transition-all duration-300"
+                    style={{
+                      background: copied ? 'rgba(62,219,176,0.12)' : g.innerBorder,
+                      border: copied ? '1px solid rgba(62,219,176,0.2)' : `1px solid ${g.trackBg}`,
+                      color: copied ? '#3EDBB0' : g.textMuted,
+                    }}
                     title={t('subscription.copyLink')}
                   >
                     {copied ? <CheckIcon /> : <CopyIcon />}
                   </button>
                 </div>
               )}
-            </div>
-          )}
 
-          <div className="mb-6 grid grid-cols-2 gap-6 md:grid-cols-4">
-            <div>
-              <div className="mb-1 text-sm text-dark-500">{t('subscription.daysLeft')}</div>
-              <div className="text-xl font-semibold text-dark-100">
-                {subscription.days_left > 0 ? (
-                  t('subscription.days', { count: subscription.days_left })
-                ) : subscription.hours_left > 0 ? (
-                  `${t('subscription.hours', { count: subscription.hours_left })} ${t('subscription.minutes', { count: subscription.minutes_left })}`
-                ) : subscription.minutes_left > 0 ? (
-                  t('subscription.minutes', { count: subscription.minutes_left })
-                ) : (
-                  <span className="text-error-400">{t('subscription.expired')}</span>
-                )}
-              </div>
-            </div>
-            <div>
-              <div className="mb-1 text-sm text-dark-500">{t('subscription.expiresAt')}</div>
-              <div className="text-xl font-semibold text-dark-100">
-                {new Date(subscription.end_date).toLocaleDateString()}
-              </div>
-            </div>
-            <div>
-              <div className="mb-1 flex items-center gap-2">
-                <span className="text-sm text-dark-500">{t('subscription.traffic')}</span>
-                <button
-                  onClick={() => refreshTrafficMutation.mutate()}
-                  disabled={refreshTrafficMutation.isPending || trafficRefreshCooldown > 0}
-                  className="rounded-full p-1 text-dark-400 transition-colors hover:bg-dark-700/50 hover:text-accent-400 disabled:cursor-not-allowed disabled:opacity-50"
-                  title={
-                    trafficRefreshCooldown > 0 ? `${trafficRefreshCooldown}s` : t('common.refresh')
-                  }
-                >
-                  <svg
-                    className={`h-3.5 w-3.5 ${refreshTrafficMutation.isPending ? 'animate-spin' : ''}`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                    />
-                  </svg>
-                </button>
-              </div>
-              <div className="text-xl font-semibold text-dark-100">
-                {(trafficData?.traffic_used_gb ?? subscription.traffic_used_gb).toFixed(1)} /{' '}
-                {subscription.traffic_limit_gb || '∞'} GB
-              </div>
-              {subscription.traffic_reset_mode &&
-                subscription.traffic_reset_mode !== 'NO_RESET' && (
-                  <div className="mt-0.5 text-xs text-dark-500">
-                    {t(`subscription.trafficReset.${subscription.traffic_reset_mode}`)}
-                  </div>
-                )}
-            </div>
-            <div>
-              <div className="mb-1 text-sm text-dark-500">{t('subscription.devices')}</div>
-              <div className="text-xl font-semibold text-dark-100">{subscription.device_limit}</div>
-            </div>
-          </div>
-
-          {/* Locations */}
-          {subscription.servers && subscription.servers.length > 0 && (
-            <div className="mb-6">
-              <div className="mb-2 text-sm text-dark-500">{t('subscription.locationsLabel')}</div>
-              <div className="flex flex-wrap gap-2">
-                {subscription.servers.map((server) => (
-                  <span
-                    key={server.uuid}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-dark-700/50 bg-dark-800/50 px-3 py-1.5 text-sm text-dark-200"
-                  >
-                    {server.country_code && (
-                      <span className="text-base">{getFlagEmoji(server.country_code)}</span>
-                    )}
-                    {server.name}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Traffic Usage */}
-          {subscription.traffic_limit_gb > 0 && (
-            <div className="mb-6">
-              <div className="mb-2 flex justify-between text-sm">
-                <span className="text-dark-400">{t('subscription.trafficUsed')}</span>
-                <span className="text-dark-300">
-                  {(trafficData?.traffic_used_percent ?? subscription.traffic_used_percent).toFixed(
-                    1,
-                  )}
-                  %
-                </span>
-              </div>
-              <div className="progress-bar">
+              {/* ─── Stats Row ─── */}
+              <div className="mb-5 grid grid-cols-2 gap-2.5">
+                {/* Days left */}
                 <div
-                  className={`progress-fill ${getTrafficColor(trafficData?.traffic_used_percent ?? subscription.traffic_used_percent)}`}
+                  className="rounded-[14px] p-3.5"
                   style={{
-                    width: `${Math.min(trafficData?.traffic_used_percent ?? subscription.traffic_used_percent, 100)}%`,
+                    background: daysLeft <= 3 ? 'rgba(255,184,0,0.06)' : g.innerBg,
+                    border:
+                      daysLeft <= 3
+                        ? '1px solid rgba(255,184,0,0.15)'
+                        : `1px solid ${g.innerBorder}`,
                   }}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Purchased Traffic Packages */}
-          {subscription.traffic_purchases && subscription.traffic_purchases.length > 0 && (
-            <div className="mb-6">
-              <div className="mb-3 text-sm text-dark-500">{t('subscription.purchasedTraffic')}</div>
-              <div className="space-y-3">
-                {subscription.traffic_purchases.map((purchase) => (
-                  <div
-                    key={purchase.id}
-                    className="rounded-lg border border-dark-700/50 bg-dark-800/50 p-3"
-                  >
-                    <div className="mb-2 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <svg
-                          className="h-5 w-5 text-accent-500"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={2}
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                          />
-                        </svg>
-                        <span className="text-base font-semibold text-dark-100">
-                          {purchase.traffic_gb} {t('common.units.gb')}
-                        </span>
-                      </div>
-                      <div className="flex flex-col items-end gap-1">
-                        <div className="text-sm text-dark-400">
-                          {purchase.days_remaining === 0 ? (
-                            <span className="text-orange-500">{t('subscription.expired')}</span>
-                          ) : (
-                            <span>
-                              {t('subscription.days', { count: purchase.days_remaining })}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1 text-xs text-dark-500">
-                          <svg
-                            className="h-3.5 w-3.5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                          </svg>
-                          <span>
-                            {t('subscription.trafficResetAt')}:{' '}
-                            {new Date(purchase.expires_at).toLocaleDateString(undefined, {
-                              day: '2-digit',
-                              month: '2-digit',
-                              year: 'numeric',
-                            })}
-                          </span>
-                        </div>
-                      </div>
+                >
+                  <div className="mb-1 flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-dark-50/35">
+                    <div
+                      className="flex h-6 w-6 items-center justify-center rounded-[7px]"
+                      style={{
+                        background: daysLeft <= 3 ? 'rgba(255,184,0,0.1)' : g.hoverBg,
+                      }}
+                    >
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke={daysLeft <= 3 ? '#FFB800' : g.textSecondary}
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <rect x="3" y="4" width="18" height="18" rx="2" />
+                        <path d="M16 2v4M8 2v4M3 10h18" />
+                      </svg>
                     </div>
-                    <div className="relative h-1.5 overflow-hidden rounded-full bg-dark-700">
-                      <div
-                        className="absolute inset-0 bg-gradient-to-r from-accent-500 to-accent-600 transition-all duration-300"
-                        style={{ width: `${purchase.progress_percent}%` }}
-                      />
-                    </div>
-                    <div className="mt-1 flex justify-between text-xs text-dark-500">
-                      <span>{new Date(purchase.created_at).toLocaleDateString()}</span>
-                      <span>{new Date(purchase.expires_at).toLocaleDateString()}</span>
-                    </div>
+                    {t('dashboard.remaining')}
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                  <div className="flex items-baseline gap-1">
+                    <span
+                      className="text-[22px] font-bold tracking-tight"
+                      style={{ color: daysLeft <= 3 ? '#FFB800' : g.text }}
+                    >
+                      {daysLeft > 0
+                        ? daysLeft
+                        : subscription.hours_left > 0
+                          ? `${subscription.hours_left}h`
+                          : `${subscription.minutes_left}m`}
+                    </span>
+                    <span className="text-xs font-medium text-dark-50/25">
+                      {daysLeft > 0 ? t('subscription.daysShort') : ''}
+                    </span>
+                  </div>
+                </div>
 
-          {/* Autopay Toggle - hide for daily tariffs */}
-          {!subscription.is_trial && !subscription.is_daily && (
-            <div className="flex items-center justify-between border-t border-dark-800/50 py-4">
-              <div>
-                <div className="font-medium text-dark-100">{t('subscription.autoRenewal')}</div>
-                <div className="text-sm text-dark-500">
-                  {t('subscription.daysBeforeExpiry', { count: subscription.autopay_days_before })}
+                {/* Devices */}
+                <div
+                  className="rounded-[14px] p-3.5"
+                  style={{
+                    background: g.innerBg,
+                    border: `1px solid ${g.innerBorder}`,
+                  }}
+                >
+                  <div className="mb-1 flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-dark-50/35">
+                    <div
+                      className="flex h-6 w-6 items-center justify-center rounded-[7px]"
+                      style={{ background: `${zone.mainHex}12` }}
+                    >
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke={zone.mainHex}
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <rect x="2" y="3" width="20" height="14" rx="2" />
+                        <path d="M12 17v4M8 21h8" />
+                      </svg>
+                    </div>
+                    {t('subscription.devices')}
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-[22px] font-bold tracking-tight text-dark-50">
+                      {connectedDevices}
+                    </span>
+                    <span className="text-xs font-medium text-dark-50/25">
+                      / {subscription.device_limit}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Expires */}
+                <div
+                  className="rounded-[14px] p-3.5"
+                  style={{
+                    background: g.innerBg,
+                    border: `1px solid ${g.innerBorder}`,
+                  }}
+                >
+                  <div className="mb-1 text-[10px] font-medium uppercase tracking-wider text-dark-50/35">
+                    {t('subscription.expiresAt')}
+                  </div>
+                  <div className="text-sm font-semibold tracking-tight text-dark-50">
+                    {formattedDate}
+                  </div>
+                </div>
+
+                {/* Traffic */}
+                <div
+                  className="rounded-[14px] p-3.5"
+                  style={{
+                    background: `linear-gradient(135deg, ${zone.mainHex}08, ${zone.mainHex}03)`,
+                    border: `1px solid ${zone.mainHex}12`,
+                  }}
+                >
+                  <div
+                    className="mb-1 text-[10px] font-semibold uppercase tracking-wider opacity-70"
+                    style={{ color: zone.mainHex }}
+                  >
+                    {t('subscription.traffic')}
+                  </div>
+                  <div className="text-sm font-semibold tracking-tight text-dark-50">
+                    {isUnlimited ? '∞' : `${usedPercent.toFixed(0)}%`}
+                  </div>
                 </div>
               </div>
-              <button
-                onClick={() => autopayMutation.mutate(!subscription.autopay_enabled)}
-                disabled={autopayMutation.isPending}
-                className={`relative h-6 w-12 rounded-full transition-colors ${
-                  subscription.autopay_enabled ? 'bg-accent-500' : 'bg-dark-700'
-                }`}
-              >
-                <span
-                  className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform ${
-                    subscription.autopay_enabled ? 'translate-x-6' : 'translate-x-0'
-                  }`}
-                />
-              </button>
+
+              {/* ─── Locations ─── */}
+              {subscription.servers && subscription.servers.length > 0 && (
+                <div className="mb-5">
+                  <div className="mb-2 text-[10px] font-medium uppercase tracking-wider text-dark-50/35">
+                    {t('subscription.locationsLabel')}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {subscription.servers.map((server) => (
+                      <span
+                        key={server.uuid}
+                        className="inline-flex items-center gap-1.5 rounded-[8px] px-2.5 py-1 text-[11px] font-medium text-dark-50/50"
+                        style={{
+                          background: g.innerBorder,
+                          border: `1px solid ${g.trackBg}`,
+                        }}
+                      >
+                        {server.country_code && (
+                          <span className="text-xs">{getFlagEmoji(server.country_code)}</span>
+                        )}
+                        {server.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ─── Purchased Traffic Packages ─── */}
+              {subscription.traffic_purchases && subscription.traffic_purchases.length > 0 && (
+                <div className="mb-5">
+                  <div className="mb-2 text-[10px] font-medium uppercase tracking-wider text-dark-50/35">
+                    {t('subscription.purchasedTraffic')}
+                  </div>
+                  <div className="space-y-2">
+                    {subscription.traffic_purchases.map((purchase) => (
+                      <div
+                        key={purchase.id}
+                        className="rounded-[12px] p-3"
+                        style={{
+                          background: g.innerBg,
+                          border: `1px solid ${g.innerBorder}`,
+                        }}
+                      >
+                        <div className="mb-2 flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="flex h-7 w-7 items-center justify-center rounded-[8px]"
+                              style={{ background: `${zone.mainHex}12` }}
+                            >
+                              <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke={zone.mainHex}
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                aria-hidden="true"
+                              >
+                                <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                              </svg>
+                            </div>
+                            <span className="text-sm font-semibold text-dark-50">
+                              {purchase.traffic_gb} {t('common.units.gb')}
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <div
+                              className="text-[11px] font-medium"
+                              style={{
+                                color: purchase.days_remaining === 0 ? '#FF6B35' : g.textSecondary,
+                              }}
+                            >
+                              {purchase.days_remaining === 0
+                                ? t('subscription.expired')
+                                : t('subscription.days', { count: purchase.days_remaining })}
+                            </div>
+                            <div className="mt-0.5 font-mono text-[9px] text-dark-50/20">
+                              {t('subscription.trafficResetAt')}:{' '}
+                              {new Date(purchase.expires_at).toLocaleDateString(undefined, {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                        <div
+                          className="relative h-1.5 overflow-hidden rounded-full"
+                          style={{ background: g.trackBg }}
+                        >
+                          <div
+                            className="absolute inset-0 rounded-full transition-all duration-500"
+                            style={{
+                              width: `${purchase.progress_percent}%`,
+                              background: `linear-gradient(90deg, ${zone.mainHex}, ${zone.mainHex}80)`,
+                            }}
+                          />
+                        </div>
+                        <div className="mt-1 flex justify-between font-mono text-[9px] text-dark-50/20">
+                          <span>{new Date(purchase.created_at).toLocaleDateString()}</span>
+                          <span>{new Date(purchase.expires_at).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ─── Autopay Toggle ─── */}
+              {!subscription.is_trial && !subscription.is_daily && (
+                <div
+                  className="flex items-center justify-between rounded-[14px] p-3.5"
+                  style={{
+                    background: g.innerBg,
+                    border: `1px solid ${g.innerBorder}`,
+                  }}
+                >
+                  <div>
+                    <div className="text-sm font-semibold text-dark-50">
+                      {t('subscription.autoRenewal')}
+                    </div>
+                    <div className="mt-0.5 text-[11px] text-dark-50/30">
+                      {t('subscription.daysBeforeExpiry', {
+                        count: subscription.autopay_days_before,
+                      })}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => autopayMutation.mutate(!subscription.autopay_enabled)}
+                    disabled={autopayMutation.isPending}
+                    className="relative h-7 w-[52px] rounded-full transition-all duration-300"
+                    style={{
+                      background: subscription.autopay_enabled ? zone.mainHex : g.textGhost,
+                    }}
+                  >
+                    <span
+                      className="absolute top-[3px] h-[22px] w-[22px] rounded-full bg-white transition-all duration-300"
+                      style={{
+                        left: subscription.autopay_enabled ? '26px' : '3px',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                      }}
+                    />
+                  </button>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          );
+        })()
       ) : (
-        <div className="card py-12 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-dark-800">
+        <div
+          className="relative overflow-hidden rounded-3xl py-12 text-center"
+          style={{
+            background: g.cardBg,
+            border: `1px solid ${g.cardBorder}`,
+            boxShadow: g.shadow,
+          }}
+        >
+          <div
+            className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl"
+            style={{ background: g.hoverBg }}
+          >
             <svg
-              className="h-8 w-8 text-dark-500"
-              fill="none"
+              width="32"
+              height="32"
               viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1.5}
+              fill="none"
+              stroke={g.textFaint}
+              strokeWidth="1.5"
+              aria-hidden="true"
             >
               <path
                 strokeLinecap="round"
@@ -871,19 +1152,27 @@ function FullSubscription() {
               />
             </svg>
           </div>
-          <div className="mb-4 text-dark-400">{t('subscription.noSubscription')}</div>
+          <div className="text-sm text-dark-50/30">{t('subscription.noSubscription')}</div>
         </div>
       )}
 
       {/* Daily Subscription Pause */}
       {subscription && subscription.is_daily && !subscription.is_trial && (
-        <div className="bento-card">
+        <div
+          className="relative overflow-hidden rounded-3xl"
+          style={{
+            background: g.cardBg,
+            border: `1px solid ${g.cardBorder}`,
+            boxShadow: g.shadow,
+            padding: '24px 28px',
+          }}
+        >
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-dark-100">
+              <h2 className="text-base font-bold tracking-tight text-dark-50">
                 {t('subscription.pause.title')}
               </h2>
-              <div className="mt-1 text-sm text-dark-400">
+              <div className="mt-1 text-[12px] text-dark-50/35">
                 {subscription.is_daily_paused
                   ? t('subscription.pause.paused')
                   : t('subscription.pause.active')}
@@ -892,15 +1181,20 @@ function FullSubscription() {
             <button
               onClick={() => pauseMutation.mutate()}
               disabled={pauseMutation.isPending}
-              className={`rounded-lg px-4 py-2 font-medium transition-colors ${
-                subscription.is_daily_paused
-                  ? 'bg-success-500/20 text-success-400 hover:bg-success-500/30'
-                  : 'bg-warning-500/20 text-warning-400 hover:bg-warning-500/30'
-              }`}
+              className="rounded-[10px] px-4 py-2 text-sm font-semibold transition-all duration-300"
+              style={{
+                background: subscription.is_daily_paused
+                  ? 'rgba(62,219,176,0.12)'
+                  : 'rgba(255,184,0,0.12)',
+                border: subscription.is_daily_paused
+                  ? '1px solid rgba(62,219,176,0.2)'
+                  : '1px solid rgba(255,184,0,0.2)',
+                color: subscription.is_daily_paused ? '#3EDBB0' : '#FFB800',
+              }}
             >
               {pauseMutation.isPending ? (
                 <span className="flex items-center gap-2">
-                  <span className="border-current/30 h-4 w-4 animate-spin rounded-full border-2 border-t-current" />
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                 </span>
               ) : subscription.is_daily_paused ? (
                 t('subscription.pause.resumeBtn')
@@ -927,7 +1221,14 @@ function FullSubscription() {
                 );
               }
               return (
-                <div className="mt-4 rounded-lg bg-error-500/10 px-4 py-3 text-center text-sm text-error-400">
+                <div
+                  className="mt-4 rounded-[10px] p-3 text-center text-sm"
+                  style={{
+                    background: 'rgba(255,59,92,0.08)',
+                    border: '1px solid rgba(255,59,92,0.15)',
+                    color: '#FF3B5C',
+                  }}
+                >
                   {getErrorMessage(pauseMutation.error)}
                 </div>
               );
@@ -935,19 +1236,25 @@ function FullSubscription() {
 
           {/* Paused info or Next charge progress bar */}
           {subscription.is_daily_paused ? (
-            <div className="mt-4 border-t border-dark-800/50 pt-4">
-              <div className="rounded-xl border border-warning-500/30 bg-warning-500/10 p-4">
-                <div className="flex items-start gap-3">
-                  <div className="text-xl text-warning-400">⏸️</div>
-                  <div>
-                    <div className="font-medium text-warning-300">
-                      {t('subscription.pause.pausedInfo')}
-                    </div>
-                    <div className="mt-1 text-sm text-dark-400">
-                      {t('subscription.pause.pausedDescription')}{' '}
-                      {new Date(subscription.end_date).toLocaleDateString()} (
-                      {t('subscription.pause.days', { count: subscription.days_left })})
-                    </div>
+            <div
+              className="mt-4 rounded-[12px] p-4"
+              style={{
+                background: 'rgba(255,184,0,0.06)',
+                border: '1px solid rgba(255,184,0,0.12)',
+              }}
+            >
+              <div className="flex items-start gap-3">
+                <div className="text-lg" style={{ color: '#FFB800' }}>
+                  ⏸️
+                </div>
+                <div>
+                  <div className="text-sm font-semibold" style={{ color: '#FFB800' }}>
+                    {t('subscription.pause.pausedInfo')}
+                  </div>
+                  <div className="mt-1 text-[12px] text-dark-50/35">
+                    {t('subscription.pause.pausedDescription')}{' '}
+                    {new Date(subscription.end_date).toLocaleDateString()} (
+                    {t('subscription.pause.days', { count: subscription.days_left })})
                   </div>
                 </div>
               </div>
@@ -956,12 +1263,11 @@ function FullSubscription() {
             subscription.next_daily_charge_at &&
             (() => {
               const now = new Date();
-              // Backend returns UTC datetime, ensure it's parsed as UTC
               const nextChargeStr = subscription.next_daily_charge_at.endsWith('Z')
                 ? subscription.next_daily_charge_at
                 : subscription.next_daily_charge_at + 'Z';
               const nextCharge = new Date(nextChargeStr);
-              const totalMs = 24 * 60 * 60 * 1000; // 24 hours in ms
+              const totalMs = 24 * 60 * 60 * 1000;
               const remainingMs = Math.max(0, nextCharge.getTime() - now.getTime());
               const elapsedMs = totalMs - remainingMs;
               const progress = Math.min(100, (elapsedMs / totalMs) * 100);
@@ -970,23 +1276,31 @@ function FullSubscription() {
               const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
 
               return (
-                <div className="mt-4 border-t border-dark-800/50 pt-4">
-                  <div className="mb-2 flex items-center justify-between text-sm">
-                    <span className="text-dark-400">{t('subscription.pause.nextCharge')}</span>
-                    <span className="font-medium text-dark-200">
+                <div className="mt-4">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-[11px] font-medium uppercase tracking-wider text-dark-50/35">
+                      {t('subscription.pause.nextCharge')}
+                    </span>
+                    <span className="font-mono text-[12px] font-semibold text-dark-50">
                       {hours > 0
                         ? `${hours}${t('subscription.pause.hours')} ${minutes}${t('subscription.pause.minutes')}`
                         : `${minutes}${t('subscription.pause.minutes')}`}
                     </span>
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-dark-800">
+                  <div
+                    className="relative h-2 overflow-hidden rounded-full"
+                    style={{ background: g.trackBg }}
+                  >
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-accent-500 to-accent-400 transition-all duration-300"
-                      style={{ width: `${progress}%` }}
+                      className="absolute inset-0 rounded-full transition-all duration-500"
+                      style={{
+                        width: `${progress}%`,
+                        background: 'linear-gradient(90deg, #00E5A0, #00C987)',
+                      }}
                     />
                   </div>
                   {subscription.daily_price_kopeks && (
-                    <div className="mt-2 text-center text-xs text-dark-500">
+                    <div className="mt-2 text-center text-[11px] text-dark-50/25">
                       {t('subscription.pause.willBeCharged')}:{' '}
                       {formatPrice(subscription.daily_price_kopeks)}
                     </div>
@@ -1000,8 +1314,16 @@ function FullSubscription() {
 
       {/* Additional Options (Buy Devices) */}
       {subscription && subscription.is_active && !subscription.is_trial && (
-        <div className="bento-card">
-          <h2 className="mb-4 text-lg font-semibold text-dark-100">
+        <div
+          className="relative overflow-hidden rounded-3xl"
+          style={{
+            background: g.cardBg,
+            border: `1px solid ${g.cardBorder}`,
+            boxShadow: g.shadow,
+            padding: '24px 28px',
+          }}
+        >
+          <h2 className="mb-4 text-base font-bold tracking-tight text-dark-50">
             {t('subscription.additionalOptions.title')}
           </h2>
 
@@ -1113,9 +1435,18 @@ function FullSubscription() {
 
       {/* Tariffs Section - Combined Purchase/Extend/Switch like MiniApp */}
       {isTariffsMode && tariffs.length > 0 && (
-        <div ref={tariffsCardRef} className="bento-card">
+        <div
+          ref={tariffsCardRef}
+          className="relative overflow-hidden rounded-3xl"
+          style={{
+            background: g.cardBg,
+            border: `1px solid ${g.cardBorder}`,
+            boxShadow: g.shadow,
+            padding: '24px 28px',
+          }}
+        >
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-dark-100">
+            <h2 className="text-base font-bold tracking-tight text-dark-50">
               {subscription?.is_daily && !subscription?.is_trial
                 ? t('subscription.switchTariff.title')
                 : subscription && !subscription.is_trial
@@ -1126,15 +1457,26 @@ function FullSubscription() {
 
           {/* Trial upgrade prompt */}
           {subscription?.is_trial && (
-            <div className="mb-6 rounded-xl border border-warning-500/30 bg-gradient-to-r from-warning-500/10 to-accent-500/10 p-4">
+            <div
+              className="mb-6 rounded-[14px] p-4"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255,184,0,0.08), rgba(62,219,176,0.06))',
+                border: '1px solid rgba(255,184,0,0.15)',
+              }}
+            >
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-warning-500/20">
+                <div
+                  className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[10px]"
+                  style={{ background: 'rgba(255,184,0,0.12)' }}
+                >
                   <svg
-                    className="h-5 w-5 text-warning-400"
-                    fill="none"
+                    width="16"
+                    height="16"
                     viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={1.5}
+                    fill="none"
+                    stroke="#FFB800"
+                    strokeWidth="1.5"
+                    aria-hidden="true"
                   >
                     <path
                       strokeLinecap="round"
@@ -1144,10 +1486,10 @@ function FullSubscription() {
                   </svg>
                 </div>
                 <div>
-                  <div className="font-medium text-warning-300">
+                  <div className="text-sm font-semibold" style={{ color: '#FFB800' }}>
                     {t('subscription.trialUpgrade.title')}
                   </div>
-                  <div className="mt-1 text-sm text-dark-400">
+                  <div className="mt-1 text-[12px] text-dark-50/40">
                     {t('subscription.trialUpgrade.description')}
                   </div>
                 </div>
@@ -1160,15 +1502,26 @@ function FullSubscription() {
             purchaseOptions &&
             'subscription_is_expired' in purchaseOptions &&
             purchaseOptions.subscription_is_expired && (
-              <div className="mb-6 rounded-xl border border-error-500/30 bg-gradient-to-r from-error-500/10 to-warning-500/10 p-4">
+              <div
+                className="mb-6 rounded-[14px] p-4"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(255,59,92,0.08), rgba(255,184,0,0.06))',
+                  border: '1px solid rgba(255,59,92,0.15)',
+                }}
+              >
                 <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-error-500/20">
+                  <div
+                    className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[10px]"
+                    style={{ background: 'rgba(255,59,92,0.12)' }}
+                  >
                     <svg
-                      className="h-5 w-5 text-error-400"
-                      fill="none"
+                      width="16"
+                      height="16"
                       viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={1.5}
+                      fill="none"
+                      stroke="#FF3B5C"
+                      strokeWidth="1.5"
+                      aria-hidden="true"
                     >
                       <path
                         strokeLinecap="round"
@@ -1178,10 +1531,10 @@ function FullSubscription() {
                     </svg>
                   </div>
                   <div>
-                    <div className="font-medium text-error-300">
+                    <div className="text-sm font-semibold" style={{ color: '#FF3B5C' }}>
                       {t('subscription.expiredBanner.title')}
                     </div>
-                    <div className="mt-1 text-sm text-dark-400">
+                    <div className="mt-1 text-[12px] text-dark-50/40">
                       {t('subscription.expiredBanner.selectTariff')}
                     </div>
                   </div>
@@ -1263,9 +1616,18 @@ function FullSubscription() {
 
       {/* Purchase/Extend Section - Classic Mode */}
       {classicOptions && classicOptions.periods.length > 0 && (
-        <div ref={tariffsCardRef} className="bento-card">
+        <div
+          ref={tariffsCardRef}
+          className="relative overflow-hidden rounded-3xl"
+          style={{
+            background: g.cardBg,
+            border: `1px solid ${g.cardBorder}`,
+            boxShadow: g.shadow,
+            padding: '24px 28px',
+          }}
+        >
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-dark-100">
+            <h2 className="text-base font-bold tracking-tight text-dark-50">
               {subscription && !subscription.is_trial
                 ? t('subscription.extend')
                 : t('subscription.getSubscription')}

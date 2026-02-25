@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { RemnawaveIcon, ArrowPathIcon } from '../components/icons';
+import { usePermissionStore } from '@/store/permissions';
 
 // Group header icons
 const AnalyticsGroupIcon = () => (
@@ -273,11 +274,62 @@ const ChevronRightIcon = () => (
   </svg>
 );
 
+const SecurityGroupIcon = () => (
+  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
+    />
+  </svg>
+);
+
+const ShieldIcon = () => (
+  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
+    />
+  </svg>
+);
+
+const UserPlusIcon = () => (
+  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z"
+    />
+  </svg>
+);
+
+const DocumentCheckIcon = () => (
+  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9zm3.75 11.625l-2.625 2.625-1.125-1.125"
+    />
+  </svg>
+);
+
+const ClipboardDocumentListIcon = () => (
+  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15a2.25 2.25 0 012.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z"
+    />
+  </svg>
+);
+
 interface AdminItem {
   to: string;
   icon: React.ReactNode;
   title: string;
   description: string;
+  permission: string;
 }
 
 interface AdminGroup {
@@ -323,6 +375,11 @@ function AdminCard({
 }
 
 function GroupSection({ group }: { group: AdminGroup }) {
+  const hasPermission = usePermissionStore((state) => state.hasPermission);
+  const visibleItems = group.items.filter((item) => hasPermission(item.permission));
+
+  if (visibleItems.length === 0) return null;
+
   return (
     <div className="overflow-hidden rounded-2xl border border-dark-700/50 bg-dark-900/30 backdrop-blur">
       {/* Group Header */}
@@ -335,7 +392,7 @@ function GroupSection({ group }: { group: AdminGroup }) {
 
       {/* Group Items */}
       <div className="space-y-1.5 p-2">
-        {group.items.map((item) => (
+        {visibleItems.map((item) => (
           <AdminCard key={item.to} {...item} iconBg={group.iconBg} iconColor={group.iconColor} />
         ))}
       </div>
@@ -361,18 +418,21 @@ export default function AdminPanel() {
           icon: <ChartBarIcon />,
           title: t('admin.nav.dashboard'),
           description: t('admin.panel.dashboardDesc'),
+          permission: 'stats:read',
         },
         {
           to: '/admin/payments',
           icon: <BanknotesIcon />,
           title: t('admin.nav.payments'),
           description: t('admin.panel.paymentsDesc'),
+          permission: 'payments:read',
         },
         {
           to: '/admin/traffic-usage',
           icon: <ArrowsUpDownIcon />,
           title: t('admin.nav.trafficUsage'),
           description: t('admin.panel.trafficUsageDesc'),
+          permission: 'traffic:read',
         },
       ],
     },
@@ -390,12 +450,14 @@ export default function AdminPanel() {
           icon: <UsersIcon />,
           title: t('admin.nav.users'),
           description: t('admin.panel.usersDesc'),
+          permission: 'users:read',
         },
         {
           to: '/admin/tickets',
           icon: <ChatBubbleIcon />,
           title: t('admin.nav.tickets'),
           description: t('admin.panel.ticketsDesc'),
+          permission: 'tickets:read',
         },
         {
           to: '/admin/account-linking',
@@ -408,6 +470,7 @@ export default function AdminPanel() {
           icon: <NoSymbolIcon />,
           title: t('admin.nav.banSystem'),
           description: t('admin.panel.banSystemDesc'),
+          permission: 'ban_system:read',
         },
       ],
     },
@@ -425,30 +488,35 @@ export default function AdminPanel() {
           icon: <CreditCardIcon />,
           title: t('admin.nav.tariffs'),
           description: t('admin.panel.tariffsDesc'),
+          permission: 'tariffs:read',
         },
         {
           to: '/admin/promocodes',
           icon: <TicketIcon />,
           title: t('admin.nav.promocodes'),
           description: t('admin.panel.promocodesDesc'),
+          permission: 'promocodes:read',
         },
         {
           to: '/admin/promo-groups',
           icon: <UserGroupIcon />,
           title: t('admin.nav.promoGroups'),
           description: t('admin.panel.promoGroupsDesc'),
+          permission: 'promo_groups:read',
         },
         {
           to: '/admin/promo-offers',
           icon: <GiftIcon />,
           title: t('admin.nav.promoOffers'),
           description: t('admin.panel.promoOffersDesc'),
+          permission: 'promo_offers:read',
         },
         {
           to: '/admin/payment-methods',
           icon: <BanknotesIcon />,
           title: t('admin.nav.paymentMethods'),
           description: t('admin.panel.paymentMethodsDesc'),
+          permission: 'payment_methods:read',
         },
       ],
     },
@@ -466,18 +534,21 @@ export default function AdminPanel() {
           icon: <MegaphoneIcon />,
           title: t('admin.nav.campaigns'),
           description: t('admin.panel.campaignsDesc'),
+          permission: 'campaigns:read',
         },
         {
           to: '/admin/broadcasts',
           icon: <PaperAirplaneIcon />,
           title: t('admin.nav.broadcasts'),
           description: t('admin.panel.broadcastsDesc'),
+          permission: 'broadcasts:read',
         },
         {
           to: '/admin/pinned-messages',
           icon: <PinnedMessageIcon />,
           title: t('admin.nav.pinnedMessages'),
           description: t('admin.panel.pinnedMessagesDesc'),
+          permission: 'pinned_messages:read',
         },
         {
           to: '/admin/main-menu-buttons',
@@ -490,18 +561,21 @@ export default function AdminPanel() {
           icon: <SparklesIcon />,
           title: t('admin.nav.wheel'),
           description: t('admin.panel.wheelDesc'),
+          permission: 'wheel:read',
         },
         {
           to: '/admin/partners',
           icon: <HandshakeIcon />,
           title: t('admin.nav.partners'),
           description: t('admin.panel.partnersDesc'),
+          permission: 'partners:read',
         },
         {
           to: '/admin/withdrawals',
           icon: <BanknotesIcon />,
           title: t('admin.nav.withdrawals'),
           description: t('admin.panel.withdrawalsDesc'),
+          permission: 'withdrawals:read',
         },
       ],
     },
@@ -519,30 +593,35 @@ export default function AdminPanel() {
           icon: <MegaphoneIcon />,
           title: t('admin.nav.channelSubscriptions'),
           description: t('admin.panel.channelSubscriptionsDesc'),
+          permission: 'channels:read',
         },
         {
           to: '/admin/settings',
           icon: <CogIcon />,
           title: t('admin.nav.settings'),
           description: t('admin.panel.settingsDesc'),
+          permission: 'settings:read',
         },
         {
           to: '/admin/apps',
           icon: <DevicePhoneMobileIcon />,
           title: t('admin.nav.apps'),
           description: t('admin.panel.appsDesc'),
+          permission: 'apps:read',
         },
         {
           to: '/admin/servers',
           icon: <ServerStackIcon />,
           title: t('admin.nav.servers'),
           description: t('admin.panel.serversDesc'),
+          permission: 'servers:read',
         },
         {
           to: '/admin/remnawave',
           icon: <RemnawaveIcon />,
           title: t('admin.nav.remnawave'),
           description: t('admin.panel.remnawaveDesc'),
+          permission: 'remnawave:read',
         },
         {
           to: '/admin/balancer',
@@ -555,12 +634,53 @@ export default function AdminPanel() {
           icon: <EnvelopeIcon />,
           title: t('admin.nav.emailTemplates'),
           description: t('admin.panel.emailTemplatesDesc'),
+          permission: 'email_templates:read',
         },
         {
           to: '/admin/updates',
           icon: <ArrowPathIcon className="h-5 w-5" />,
           title: t('admin.nav.updates'),
           description: t('admin.panel.updatesDesc'),
+          permission: 'updates:read',
+        },
+      ],
+    },
+    {
+      id: 'security',
+      title: t('admin.groups.security'),
+      icon: <SecurityGroupIcon />,
+      gradient: 'from-red-500/10 to-orange-500/5',
+      borderColor: 'border-red-500/20',
+      iconBg: 'bg-red-500/20',
+      iconColor: 'text-red-400',
+      items: [
+        {
+          to: '/admin/roles',
+          icon: <ShieldIcon />,
+          title: t('admin.nav.roles'),
+          description: t('admin.panel.rolesDesc'),
+          permission: 'roles:read',
+        },
+        {
+          to: '/admin/roles/assign',
+          icon: <UserPlusIcon />,
+          title: t('admin.nav.roleAssign'),
+          description: t('admin.panel.roleAssignDesc'),
+          permission: 'roles:assign',
+        },
+        {
+          to: '/admin/policies',
+          icon: <DocumentCheckIcon />,
+          title: t('admin.nav.policies'),
+          description: t('admin.panel.policiesDesc'),
+          permission: 'roles:read',
+        },
+        {
+          to: '/admin/audit-log',
+          icon: <ClipboardDocumentListIcon />,
+          title: t('admin.nav.auditLog'),
+          description: t('admin.panel.auditLogDesc'),
+          permission: 'audit_log:read',
         },
       ],
     },

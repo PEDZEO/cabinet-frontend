@@ -92,8 +92,12 @@ if (!alreadyInitialized) {
   }
 }
 
-// Preload logo from cache immediately on page load
-initLogoPreload();
+// Preload logo from cache — defer to idle time so it doesn't compete with LCP
+if ('requestIdleCallback' in window) {
+  requestIdleCallback(() => initLogoPreload());
+} else {
+  setTimeout(initLogoPreload, 100);
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {

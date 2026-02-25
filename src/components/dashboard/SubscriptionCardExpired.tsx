@@ -1,0 +1,169 @@
+import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router';
+import type { Subscription } from '../../types';
+import { useTheme } from '../../hooks/useTheme';
+import { getGlassColors } from '../../utils/glassTheme';
+
+interface SubscriptionCardExpiredProps {
+  subscription: Subscription;
+}
+
+export default function SubscriptionCardExpired({ subscription }: SubscriptionCardExpiredProps) {
+  const { t } = useTranslation();
+  const { isDark } = useTheme();
+  const g = getGlassColors(isDark);
+
+  const formattedDate = new Date(subscription.end_date).toLocaleDateString();
+
+  return (
+    <div
+      className="relative overflow-hidden rounded-3xl"
+      style={{
+        background: g.cardBg,
+        border: '1px solid rgba(255,70,70,0.12)',
+        boxShadow: g.shadow,
+        padding: '28px 28px 24px',
+      }}
+    >
+      {/* Red glow */}
+      <div
+        className="pointer-events-none absolute"
+        style={{
+          top: -60,
+          right: -60,
+          width: 200,
+          height: 200,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(255,59,92,0.08) 0%, transparent 70%)',
+        }}
+        aria-hidden="true"
+      />
+      {/* Grid pattern */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.02]"
+        style={{
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+          backgroundSize: '40px 40px',
+        }}
+        aria-hidden="true"
+      />
+
+      {/* Header */}
+      <div className="mb-5 flex items-start justify-between">
+        <div className="flex items-center gap-3">
+          {/* Clock icon */}
+          <div
+            className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[14px]"
+            style={{
+              background: 'rgba(255,59,92,0.1)',
+              border: '1px solid rgba(255,59,92,0.15)',
+            }}
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#FF3B5C"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 6v6l4 2" />
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-lg font-bold tracking-tight text-dark-50">
+              {t('dashboard.expired.title')}
+            </h2>
+            <span className="text-xs text-dark-50/35">
+              {subscription.is_trial
+                ? t('dashboard.expired.trialSubtitle')
+                : t('dashboard.expired.paidSubtitle')}
+            </span>
+          </div>
+        </div>
+
+        {/* Badge */}
+        <div
+          className="flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-semibold"
+          style={{
+            background: 'rgba(255,59,92,0.1)',
+            border: '1px solid rgba(255,59,92,0.2)',
+            color: '#FF3B5C',
+          }}
+        >
+          {subscription.is_trial && (
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden="true"
+            >
+              <path
+                d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
+          {subscription.is_trial ? t('subscription.trialStatus') : t('subscription.expired')}
+        </div>
+      </div>
+
+      {/* Expired info grid */}
+      <div
+        className="mb-5 flex justify-around rounded-[14px] text-center"
+        style={{
+          background: 'rgba(255,59,92,0.04)',
+          border: '1px solid rgba(255,59,92,0.08)',
+          padding: '16px 18px',
+        }}
+      >
+        {[
+          { label: t('dashboard.expired.traffic'), value: '0 GB' },
+          { label: t('dashboard.expired.devices'), value: '0' },
+          { label: t('dashboard.expired.expiredDate'), value: formattedDate },
+        ].map((item, i) => (
+          <div key={i}>
+            <div className="mb-1 font-mono text-[10px] font-medium uppercase tracking-wider text-dark-50/30">
+              {item.label}
+            </div>
+            <div className="text-base font-bold tracking-tight text-dark-50/50">{item.value}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Action buttons */}
+      <div className="flex gap-2.5">
+        <Link
+          to="/subscription"
+          state={{ scrollToExtend: true }}
+          className="flex flex-1 items-center justify-center rounded-[14px] py-3.5 text-[15px] font-semibold tracking-tight text-white transition-all duration-300"
+          style={{
+            background: 'linear-gradient(135deg, #FF3B5C, #FF6B35)',
+            boxShadow: '0 4px 20px rgba(255,59,92,0.2)',
+          }}
+        >
+          {t('dashboard.expired.renew')}
+        </Link>
+        <Link
+          to="/subscription"
+          className="flex items-center justify-center rounded-[14px] px-5 py-3.5 text-[15px] font-semibold tracking-tight text-dark-50/50 transition-colors duration-200"
+          style={{
+            background: g.innerBg,
+            border: `1px solid ${g.innerBorder}`,
+          }}
+        >
+          {t('dashboard.expired.tariffs')}
+        </Link>
+      </div>
+    </div>
+  );
+}

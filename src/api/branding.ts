@@ -1,4 +1,8 @@
 import apiClient from './client';
+import type { AnimationConfig } from '@/components/ui/backgrounds/types';
+import { DEFAULT_ANIMATION_CONFIG } from '@/components/ui/backgrounds/types';
+
+export type { AnimationConfig };
 
 export interface BrandingInfo {
   name: string;
@@ -206,6 +210,25 @@ export const brandingApi = {
     const response = await apiClient.patch<AnimationEnabled>('/cabinet/branding/animation', {
       enabled,
     });
+    return response.data;
+  },
+
+  // Get animation config (public, no auth required)
+  getAnimationConfig: async (): Promise<AnimationConfig> => {
+    try {
+      const response = await apiClient.get<AnimationConfig>('/cabinet/branding/animation-config');
+      return response.data;
+    } catch {
+      return DEFAULT_ANIMATION_CONFIG;
+    }
+  },
+
+  // Update animation config (admin only, partial update)
+  updateAnimationConfig: async (config: Partial<AnimationConfig>): Promise<AnimationConfig> => {
+    const response = await apiClient.patch<AnimationConfig>(
+      '/cabinet/branding/animation-config',
+      config,
+    );
     return response.data;
   },
 
