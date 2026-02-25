@@ -624,6 +624,12 @@
       "freekassa": {
         "description": "Оплата через FreeKassa"
       },
+      "freekassa_sbp": {
+        "description": "Оплата через СБП (QR код)"
+      },
+      "freekassa_card": {
+        "description": "Оплата картой РФ"
+      },
       "tribute": {
         "description": "Оплата банковской картой через Tribute"
       }

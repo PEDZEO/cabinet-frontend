@@ -596,6 +596,12 @@
       "freekassa": {
         "description": "Pay via FreeKassa"
       },
+      "freekassa_sbp": {
+        "description": "Pay via SBP (QR code)"
+      },
+      "freekassa_card": {
+        "description": "Pay with Russian bank card"
+      },
       "tribute": {
         "description": "Pay with bank card via Tribute"
       }
