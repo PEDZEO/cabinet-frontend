@@ -45,6 +45,13 @@ export default function ChannelSubscriptionScreen() {
 
   const allChannels = channelInfo?.channels ?? [];
   const channels = allChannels.filter((ch) => !ch.is_subscribed);
+  const backendMessage = channelInfo?.message?.trim() ?? '';
+  const isDefaultBackendMessage =
+    backendMessage.toLowerCase() === 'please subscribe to the required channels to continue';
+  const resolvedMessage =
+    backendMessage && !isDefaultBackendMessage
+      ? backendMessage
+      : t('blocking.channel.defaultMessage');
 
   const checkSubscription = useCallback(async () => {
     if (isCheckingRef.current) return;
@@ -85,9 +92,7 @@ export default function ChannelSubscriptionScreen() {
         <h1 className="mb-4 text-2xl font-bold text-white">{t('blocking.channel.title')}</h1>
 
         {/* Message */}
-        <p className="mb-6 text-lg text-gray-400">
-          {channelInfo?.message || t('blocking.channel.defaultMessage')}
-        </p>
+        <p className="mb-6 text-lg text-gray-400">{resolvedMessage}</p>
 
         {/* Channel list (only unsubscribed channels) */}
         {channels.length > 0 && (
