@@ -21,12 +21,47 @@ export interface BalancerGroupsResponse {
   fastest_group_name?: string;
   fastest_exclude_groups: string[];
   quarantine_nodes?: string[];
+  auto_quarantine_enabled?: boolean;
+  auto_quarantine_failures?: number;
+  auto_quarantine_release_successes?: number;
+  auto_quarantine_max_nodes?: number;
+  auto_drain_enabled?: boolean;
+  auto_drain_failures?: number;
+  auto_drain_release_successes?: number;
+  auto_drain_load_threshold?: number;
+  auto_drain_score_penalty?: number;
+  balancer_load_weight?: number;
+  balancer_latency_weight?: number;
+  balancer_max_latency_ms?: number;
+  balancer_smoothing_alpha?: number;
+  balancer_hysteresis_delta?: number;
 }
 
 export interface BalancerQuarantineResponse {
   status: string;
   quarantine_nodes: string[];
   quarantine_count: number;
+}
+
+export interface UpdateBalancerGroupsPayload {
+  groups: Record<string, string[]>;
+  fastest_group: boolean;
+  fastest_group_name?: string;
+  fastest_exclude_groups: string[];
+  auto_quarantine_enabled?: boolean;
+  auto_quarantine_failures?: number;
+  auto_quarantine_release_successes?: number;
+  auto_quarantine_max_nodes?: number;
+  auto_drain_enabled?: boolean;
+  auto_drain_failures?: number;
+  auto_drain_release_successes?: number;
+  auto_drain_load_threshold?: number;
+  auto_drain_score_penalty?: number;
+  balancer_load_weight?: number;
+  balancer_latency_weight?: number;
+  balancer_max_latency_ms?: number;
+  balancer_smoothing_alpha?: number;
+  balancer_hysteresis_delta?: number;
 }
 
 export const adminBalancerApi = {
@@ -95,12 +130,7 @@ export const adminBalancerApi = {
     return response.data;
   },
 
-  updateGroups: async (payload: {
-    groups: Record<string, string[]>;
-    fastest_group: boolean;
-    fastest_group_name?: string;
-    fastest_exclude_groups: string[];
-  }): Promise<BalancerGroupsResponse> => {
+  updateGroups: async (payload: UpdateBalancerGroupsPayload): Promise<BalancerGroupsResponse> => {
     const response = await apiClient.put('/cabinet/admin/balancer/groups', payload);
     return response.data;
   },

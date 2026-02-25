@@ -21,6 +21,40 @@ type MetricItem = {
   tone?: 'ok' | 'bad' | 'neutral';
 };
 
+type BalancerAdvancedSettings = {
+  autoQuarantineEnabled: boolean;
+  autoQuarantineFailures: number;
+  autoQuarantineReleaseSuccesses: number;
+  autoQuarantineMaxNodes: number;
+  autoDrainEnabled: boolean;
+  autoDrainFailures: number;
+  autoDrainReleaseSuccesses: number;
+  autoDrainLoadThreshold: number;
+  autoDrainScorePenalty: number;
+  balancerLoadWeight: number;
+  balancerLatencyWeight: number;
+  balancerMaxLatencyMs: number;
+  balancerSmoothingAlpha: number;
+  balancerHysteresisDelta: number;
+};
+
+const DEFAULT_ADVANCED_SETTINGS: BalancerAdvancedSettings = {
+  autoQuarantineEnabled: false,
+  autoQuarantineFailures: 3,
+  autoQuarantineReleaseSuccesses: 2,
+  autoQuarantineMaxNodes: 100,
+  autoDrainEnabled: false,
+  autoDrainFailures: 2,
+  autoDrainReleaseSuccesses: 2,
+  autoDrainLoadThreshold: 0.85,
+  autoDrainScorePenalty: 0.6,
+  balancerLoadWeight: 0.4,
+  balancerLatencyWeight: 0.6,
+  balancerMaxLatencyMs: 300,
+  balancerSmoothingAlpha: 0.35,
+  balancerHysteresisDelta: 0.08,
+};
+
 function StatusBadge({ ok, text }: { ok: boolean; text: string }) {
   return (
     <span
@@ -135,6 +169,72 @@ function prettyValue(value: unknown): string {
   return JSON.stringify(value);
 }
 
+function normalizeAdvancedSettings(
+  source?: Partial<BalancerGroupsResponse> | null,
+): BalancerAdvancedSettings {
+  const toFinite = (value: unknown, fallback: number): number =>
+    typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+
+  return {
+    autoQuarantineEnabled:
+      typeof source?.auto_quarantine_enabled === 'boolean'
+        ? source.auto_quarantine_enabled
+        : DEFAULT_ADVANCED_SETTINGS.autoQuarantineEnabled,
+    autoQuarantineFailures: toFinite(
+      source?.auto_quarantine_failures,
+      DEFAULT_ADVANCED_SETTINGS.autoQuarantineFailures,
+    ),
+    autoQuarantineReleaseSuccesses: toFinite(
+      source?.auto_quarantine_release_successes,
+      DEFAULT_ADVANCED_SETTINGS.autoQuarantineReleaseSuccesses,
+    ),
+    autoQuarantineMaxNodes: toFinite(
+      source?.auto_quarantine_max_nodes,
+      DEFAULT_ADVANCED_SETTINGS.autoQuarantineMaxNodes,
+    ),
+    autoDrainEnabled:
+      typeof source?.auto_drain_enabled === 'boolean'
+        ? source.auto_drain_enabled
+        : DEFAULT_ADVANCED_SETTINGS.autoDrainEnabled,
+    autoDrainFailures: toFinite(
+      source?.auto_drain_failures,
+      DEFAULT_ADVANCED_SETTINGS.autoDrainFailures,
+    ),
+    autoDrainReleaseSuccesses: toFinite(
+      source?.auto_drain_release_successes,
+      DEFAULT_ADVANCED_SETTINGS.autoDrainReleaseSuccesses,
+    ),
+    autoDrainLoadThreshold: toFinite(
+      source?.auto_drain_load_threshold,
+      DEFAULT_ADVANCED_SETTINGS.autoDrainLoadThreshold,
+    ),
+    autoDrainScorePenalty: toFinite(
+      source?.auto_drain_score_penalty,
+      DEFAULT_ADVANCED_SETTINGS.autoDrainScorePenalty,
+    ),
+    balancerLoadWeight: toFinite(
+      source?.balancer_load_weight,
+      DEFAULT_ADVANCED_SETTINGS.balancerLoadWeight,
+    ),
+    balancerLatencyWeight: toFinite(
+      source?.balancer_latency_weight,
+      DEFAULT_ADVANCED_SETTINGS.balancerLatencyWeight,
+    ),
+    balancerMaxLatencyMs: toFinite(
+      source?.balancer_max_latency_ms,
+      DEFAULT_ADVANCED_SETTINGS.balancerMaxLatencyMs,
+    ),
+    balancerSmoothingAlpha: toFinite(
+      source?.balancer_smoothing_alpha,
+      DEFAULT_ADVANCED_SETTINGS.balancerSmoothingAlpha,
+    ),
+    balancerHysteresisDelta: toFinite(
+      source?.balancer_hysteresis_delta,
+      DEFAULT_ADVANCED_SETTINGS.balancerHysteresisDelta,
+    ),
+  };
+}
+
 export default function AdminBalancer() {
   const { t, i18n } = useTranslation();
   const [token, setToken] = useState('');
@@ -145,6 +245,8 @@ export default function AdminBalancer() {
   const [fastestEnabled, setFastestEnabled] = useState(true);
   const [fastestGroupName, setFastestGroupName] = useState(DEFAULT_FASTEST_GROUP_NAME);
   const [excludeGroups, setExcludeGroups] = useState<string[]>([]);
+  const [advancedSettings, setAdvancedSettings] =
+    useState<BalancerAdvancedSettings>(DEFAULT_ADVANCED_SETTINGS);
   const [groupsDirty, setGroupsDirty] = useState(false);
   const [compactGroupsView, setCompactGroupsView] = useState(true);
 
@@ -225,6 +327,7 @@ export default function AdminBalancer() {
     setFastestEnabled(Boolean(groupsData.fastest_group));
     setFastestGroupName((groupsData.fastest_group_name || DEFAULT_FASTEST_GROUP_NAME).trim());
     setExcludeGroups(groupsData.fastest_exclude_groups || []);
+    setAdvancedSettings(normalizeAdvancedSettings(groupsData));
   }, [groupsData, groupsDirty]);
 
   const setAlert = (message: string, tone: AlertTone = 'default') => {
@@ -268,6 +371,7 @@ export default function AdminBalancer() {
       setFastestEnabled(Boolean(data.fastest_group));
       setFastestGroupName((data.fastest_group_name || DEFAULT_FASTEST_GROUP_NAME).trim());
       setExcludeGroups(data.fastest_exclude_groups || []);
+      setAdvancedSettings(normalizeAdvancedSettings(data));
       await refetchGroups();
     },
     onError: () => {
@@ -447,6 +551,25 @@ export default function AdminBalancer() {
     void addQuarantineMutation.mutateAsync(nodeName);
   };
 
+  const updateAdvancedSetting = <K extends keyof BalancerAdvancedSettings>(
+    key: K,
+    value: BalancerAdvancedSettings[K],
+  ) => {
+    if (typeof value === 'number' && !Number.isFinite(value)) {
+      return;
+    }
+    setGroupsDirty(true);
+    setAdvancedSettings((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  const parseNumericInput = (raw: string, fallback: number): number => {
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  };
+
   const saveGroups = async () => {
     const groups: Record<string, string[]> = {};
     const names = new Set<string>();
@@ -481,12 +604,35 @@ export default function AdminBalancer() {
     const availableNames = new Set(groupsDraft.map((item) => item.name.trim()).filter(Boolean));
     const filteredExclude = excludeGroups.filter((value) => availableNames.has(value));
     const normalizedFastestName = fastestGroupName.trim() || DEFAULT_FASTEST_GROUP_NAME;
+    const nextAdvanced = {
+      auto_quarantine_enabled: advancedSettings.autoQuarantineEnabled,
+      auto_quarantine_failures: Math.max(1, Math.round(advancedSettings.autoQuarantineFailures)),
+      auto_quarantine_release_successes: Math.max(
+        1,
+        Math.round(advancedSettings.autoQuarantineReleaseSuccesses),
+      ),
+      auto_quarantine_max_nodes: Math.max(1, Math.round(advancedSettings.autoQuarantineMaxNodes)),
+      auto_drain_enabled: advancedSettings.autoDrainEnabled,
+      auto_drain_failures: Math.max(1, Math.round(advancedSettings.autoDrainFailures)),
+      auto_drain_release_successes: Math.max(
+        1,
+        Math.round(advancedSettings.autoDrainReleaseSuccesses),
+      ),
+      auto_drain_load_threshold: Math.max(0, advancedSettings.autoDrainLoadThreshold),
+      auto_drain_score_penalty: Math.max(0, advancedSettings.autoDrainScorePenalty),
+      balancer_load_weight: Math.max(0, advancedSettings.balancerLoadWeight),
+      balancer_latency_weight: Math.max(0, advancedSettings.balancerLatencyWeight),
+      balancer_max_latency_ms: Math.max(1, Math.round(advancedSettings.balancerMaxLatencyMs)),
+      balancer_smoothing_alpha: Math.max(0, advancedSettings.balancerSmoothingAlpha),
+      balancer_hysteresis_delta: Math.max(0, advancedSettings.balancerHysteresisDelta),
+    };
 
     await saveGroupsMutation.mutateAsync({
       groups,
       fastest_group: fastestEnabled,
       fastest_group_name: normalizedFastestName,
       fastest_exclude_groups: filteredExclude,
+      ...nextAdvanced,
     });
   };
 
@@ -629,8 +775,28 @@ export default function AdminBalancer() {
       fastest_group: fastestEnabled,
       fastest_group_name: fastestGroupName.trim() || DEFAULT_FASTEST_GROUP_NAME,
       fastest_exclude_groups: excludeGroups.filter((name) => availableNames.has(name)),
+      auto_quarantine_enabled: advancedSettings.autoQuarantineEnabled,
+      auto_quarantine_failures: Math.max(1, Math.round(advancedSettings.autoQuarantineFailures)),
+      auto_quarantine_release_successes: Math.max(
+        1,
+        Math.round(advancedSettings.autoQuarantineReleaseSuccesses),
+      ),
+      auto_quarantine_max_nodes: Math.max(1, Math.round(advancedSettings.autoQuarantineMaxNodes)),
+      auto_drain_enabled: advancedSettings.autoDrainEnabled,
+      auto_drain_failures: Math.max(1, Math.round(advancedSettings.autoDrainFailures)),
+      auto_drain_release_successes: Math.max(
+        1,
+        Math.round(advancedSettings.autoDrainReleaseSuccesses),
+      ),
+      auto_drain_load_threshold: Math.max(0, advancedSettings.autoDrainLoadThreshold),
+      auto_drain_score_penalty: Math.max(0, advancedSettings.autoDrainScorePenalty),
+      balancer_load_weight: Math.max(0, advancedSettings.balancerLoadWeight),
+      balancer_latency_weight: Math.max(0, advancedSettings.balancerLatencyWeight),
+      balancer_max_latency_ms: Math.max(1, Math.round(advancedSettings.balancerMaxLatencyMs)),
+      balancer_smoothing_alpha: Math.max(0, advancedSettings.balancerSmoothingAlpha),
+      balancer_hysteresis_delta: Math.max(0, advancedSettings.balancerHysteresisDelta),
     };
-  }, [excludeGroups, fastestEnabled, fastestGroupName, groupsDraft]);
+  }, [advancedSettings, excludeGroups, fastestEnabled, fastestGroupName, groupsDraft]);
 
   return (
     <div className="animate-fade-in space-y-4 overflow-x-hidden pb-28 md:pb-0">
@@ -758,6 +924,7 @@ export default function AdminBalancer() {
                   (groupsData.fastest_group_name || DEFAULT_FASTEST_GROUP_NAME).trim(),
                 );
                 setExcludeGroups(groupsData.fastest_exclude_groups || []);
+                setAdvancedSettings(normalizeAdvancedSettings(groupsData));
                 setGroupsDirty(false);
                 setAlert(
                   t('admin.balancer.actions.changesDiscarded', 'Changes discarded'),
@@ -789,6 +956,7 @@ export default function AdminBalancer() {
                   (groupsData.fastest_group_name || DEFAULT_FASTEST_GROUP_NAME).trim(),
                 );
                 setExcludeGroups(groupsData.fastest_exclude_groups || []);
+                setAdvancedSettings(normalizeAdvancedSettings(groupsData));
                 setGroupsDirty(false);
                 setAlert(
                   t('admin.balancer.actions.changesDiscarded', 'Changes discarded'),
@@ -1014,6 +1182,247 @@ export default function AdminBalancer() {
                 </label>
               ))}
             </div>
+          </div>
+        </div>
+
+        <div className="mt-4 rounded-lg border border-dark-700 bg-dark-900/40 p-3">
+          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-dark-300">
+            {t('admin.balancer.groups.advancedTitle', 'Advanced balancer settings')}
+          </h4>
+          <p className="mb-3 text-xs text-dark-500">
+            {t(
+              'admin.balancer.groups.advancedHint',
+              'These values are sent to PUT /admin/groups together with groups config.',
+            )}
+          </p>
+
+          <div className="mb-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+            <label className="flex items-center gap-2 text-sm text-dark-200">
+              <input
+                type="checkbox"
+                checked={advancedSettings.autoQuarantineEnabled}
+                onChange={(event) =>
+                  updateAdvancedSetting('autoQuarantineEnabled', event.target.checked)
+                }
+              />
+              {t('admin.balancer.groups.autoQuarantineEnabled', 'Enable auto-quarantine')}
+            </label>
+            <label className="flex items-center gap-2 text-sm text-dark-200">
+              <input
+                type="checkbox"
+                checked={advancedSettings.autoDrainEnabled}
+                onChange={(event) =>
+                  updateAdvancedSetting('autoDrainEnabled', event.target.checked)
+                }
+              />
+              {t('admin.balancer.groups.autoDrainEnabled', 'Enable auto-drain')}
+            </label>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <label className="text-xs text-dark-400">
+              {t('admin.balancer.groups.autoQuarantineFailures', 'Auto-quarantine failures')}
+              <input
+                type="number"
+                min={1}
+                step={1}
+                value={advancedSettings.autoQuarantineFailures}
+                onChange={(event) =>
+                  updateAdvancedSetting(
+                    'autoQuarantineFailures',
+                    parseNumericInput(event.target.value, advancedSettings.autoQuarantineFailures),
+                  )
+                }
+                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+              />
+            </label>
+            <label className="text-xs text-dark-400">
+              {t(
+                'admin.balancer.groups.autoQuarantineRelease',
+                'Auto-quarantine release successes',
+              )}
+              <input
+                type="number"
+                min={1}
+                step={1}
+                value={advancedSettings.autoQuarantineReleaseSuccesses}
+                onChange={(event) =>
+                  updateAdvancedSetting(
+                    'autoQuarantineReleaseSuccesses',
+                    parseNumericInput(
+                      event.target.value,
+                      advancedSettings.autoQuarantineReleaseSuccesses,
+                    ),
+                  )
+                }
+                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+              />
+            </label>
+            <label className="text-xs text-dark-400">
+              {t('admin.balancer.groups.autoQuarantineMaxNodes', 'Auto-quarantine max nodes')}
+              <input
+                type="number"
+                min={1}
+                step={1}
+                value={advancedSettings.autoQuarantineMaxNodes}
+                onChange={(event) =>
+                  updateAdvancedSetting(
+                    'autoQuarantineMaxNodes',
+                    parseNumericInput(event.target.value, advancedSettings.autoQuarantineMaxNodes),
+                  )
+                }
+                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+              />
+            </label>
+
+            <label className="text-xs text-dark-400">
+              {t('admin.balancer.groups.autoDrainFailures', 'Auto-drain failures')}
+              <input
+                type="number"
+                min={1}
+                step={1}
+                value={advancedSettings.autoDrainFailures}
+                onChange={(event) =>
+                  updateAdvancedSetting(
+                    'autoDrainFailures',
+                    parseNumericInput(event.target.value, advancedSettings.autoDrainFailures),
+                  )
+                }
+                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+              />
+            </label>
+            <label className="text-xs text-dark-400">
+              {t('admin.balancer.groups.autoDrainRelease', 'Auto-drain release successes')}
+              <input
+                type="number"
+                min={1}
+                step={1}
+                value={advancedSettings.autoDrainReleaseSuccesses}
+                onChange={(event) =>
+                  updateAdvancedSetting(
+                    'autoDrainReleaseSuccesses',
+                    parseNumericInput(
+                      event.target.value,
+                      advancedSettings.autoDrainReleaseSuccesses,
+                    ),
+                  )
+                }
+                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+              />
+            </label>
+            <label className="text-xs text-dark-400">
+              {t('admin.balancer.groups.autoDrainLoadThreshold', 'Auto-drain load threshold')}
+              <input
+                type="number"
+                min={0}
+                step={0.01}
+                value={advancedSettings.autoDrainLoadThreshold}
+                onChange={(event) =>
+                  updateAdvancedSetting(
+                    'autoDrainLoadThreshold',
+                    parseNumericInput(event.target.value, advancedSettings.autoDrainLoadThreshold),
+                  )
+                }
+                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+              />
+            </label>
+            <label className="text-xs text-dark-400">
+              {t('admin.balancer.groups.autoDrainScorePenalty', 'Auto-drain score penalty')}
+              <input
+                type="number"
+                min={0}
+                step={0.01}
+                value={advancedSettings.autoDrainScorePenalty}
+                onChange={(event) =>
+                  updateAdvancedSetting(
+                    'autoDrainScorePenalty',
+                    parseNumericInput(event.target.value, advancedSettings.autoDrainScorePenalty),
+                  )
+                }
+                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+              />
+            </label>
+
+            <label className="text-xs text-dark-400">
+              {t('admin.balancer.groups.balancerLoadWeight', 'Score load weight')}
+              <input
+                type="number"
+                min={0}
+                step={0.01}
+                value={advancedSettings.balancerLoadWeight}
+                onChange={(event) =>
+                  updateAdvancedSetting(
+                    'balancerLoadWeight',
+                    parseNumericInput(event.target.value, advancedSettings.balancerLoadWeight),
+                  )
+                }
+                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+              />
+            </label>
+            <label className="text-xs text-dark-400">
+              {t('admin.balancer.groups.balancerLatencyWeight', 'Score latency weight')}
+              <input
+                type="number"
+                min={0}
+                step={0.01}
+                value={advancedSettings.balancerLatencyWeight}
+                onChange={(event) =>
+                  updateAdvancedSetting(
+                    'balancerLatencyWeight',
+                    parseNumericInput(event.target.value, advancedSettings.balancerLatencyWeight),
+                  )
+                }
+                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+              />
+            </label>
+            <label className="text-xs text-dark-400">
+              {t('admin.balancer.groups.balancerMaxLatencyMs', 'Score max latency (ms)')}
+              <input
+                type="number"
+                min={1}
+                step={1}
+                value={advancedSettings.balancerMaxLatencyMs}
+                onChange={(event) =>
+                  updateAdvancedSetting(
+                    'balancerMaxLatencyMs',
+                    parseNumericInput(event.target.value, advancedSettings.balancerMaxLatencyMs),
+                  )
+                }
+                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+              />
+            </label>
+            <label className="text-xs text-dark-400">
+              {t('admin.balancer.groups.balancerSmoothingAlpha', 'Score smoothing alpha')}
+              <input
+                type="number"
+                min={0}
+                step={0.01}
+                value={advancedSettings.balancerSmoothingAlpha}
+                onChange={(event) =>
+                  updateAdvancedSetting(
+                    'balancerSmoothingAlpha',
+                    parseNumericInput(event.target.value, advancedSettings.balancerSmoothingAlpha),
+                  )
+                }
+                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+              />
+            </label>
+            <label className="text-xs text-dark-400">
+              {t('admin.balancer.groups.balancerHysteresisDelta', 'Score hysteresis delta')}
+              <input
+                type="number"
+                min={0}
+                step={0.01}
+                value={advancedSettings.balancerHysteresisDelta}
+                onChange={(event) =>
+                  updateAdvancedSetting(
+                    'balancerHysteresisDelta',
+                    parseNumericInput(event.target.value, advancedSettings.balancerHysteresisDelta),
+                  )
+                }
+                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+              />
+            </label>
           </div>
         </div>
 
