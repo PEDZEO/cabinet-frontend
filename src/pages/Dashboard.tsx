@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/auth';
 import { useBlockingStore } from '../store/blocking';
@@ -11,9 +11,11 @@ import { wheelApi } from '../api/wheel';
 import { authApi } from '../api/auth';
 import Onboarding, { useOnboarding } from '../components/Onboarding';
 import PromoOffersSection from '../components/PromoOffersSection';
-import { useCurrency } from '../hooks/useCurrency';
 import { useLiteMode } from '../hooks/useLiteMode';
 import { LiteDashboard } from './LiteDashboard';
+import SubscriptionCardExpired from '../components/dashboard/SubscriptionCardExpired';
+import TrialOfferCard from '../components/dashboard/TrialOfferCard';
+import StatsGrid from '../components/dashboard/StatsGrid';
 import { API } from '../config/constants';
 
 const ChevronRightIcon = () => (
@@ -21,6 +23,39 @@ const ChevronRightIcon = () => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
   </svg>
 );
+
+const ArrowRightIcon = () => (
+  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-6-6 6 6-6 6" />
+  </svg>
+);
+
+const SparklesIcon = () => (
+  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z"
+    />
+  </svg>
+);
+
+const RefreshIcon = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M16.023 9.348h4.992V4.356m-1.5 14.294A9 9 0 1 1 21 12"
+    />
+  </svg>
+);
+
+function getTrafficColor(percent: number): string {
+  if (percent >= 90) return 'bg-error-500';
+  if (percent >= 75) return 'bg-warning-500';
+  if (percent >= 50) return 'bg-warning-400';
+  return 'bg-success-500';
+}
 
 export default function Dashboard() {
   const { isLiteMode, isLiteModeReady } = useLiteMode();
@@ -40,6 +75,7 @@ export default function Dashboard() {
 
 function FullDashboard() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const refreshUser = useAuthStore((state) => state.refreshUser);
   const queryClient = useQueryClient();
@@ -75,13 +111,6 @@ function FullDashboard() {
     queryKey: ['trial-info'],
     queryFn: subscriptionApi.getTrialInfo,
     enabled: !subscription && !subLoading,
-  });
-
-  const { data: devicesData } = useQuery({
-    queryKey: ['devices'],
-    queryFn: subscriptionApi.getDevices,
-    enabled: !!subscription,
-    staleTime: API.BALANCE_STALE_TIME_MS,
   });
 
   const { data: referralInfo, isLoading: refLoading } = useQuery({

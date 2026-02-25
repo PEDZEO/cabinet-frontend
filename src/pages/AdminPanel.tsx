@@ -464,6 +464,7 @@ export default function AdminPanel() {
           icon: <LinkIcon />,
           title: t('admin.nav.accountLinking'),
           description: t('admin.panel.accountLinkingDesc'),
+          permission: 'users:read',
         },
         {
           to: '/admin/ban-system',
@@ -555,6 +556,7 @@ export default function AdminPanel() {
           icon: <MainMenuButtonsIcon />,
           title: t('admin.nav.mainMenuButtons'),
           description: t('admin.panel.mainMenuButtonsDesc'),
+          permission: 'settings:read',
         },
         {
           to: '/admin/wheel',
@@ -628,6 +630,7 @@ export default function AdminPanel() {
           icon: <ServerStackIcon />,
           title: t('admin.nav.balancer'),
           description: t('admin.panel.balancerDesc'),
+          permission: 'remnawave:read',
         },
         {
           to: '/admin/email-templates',
