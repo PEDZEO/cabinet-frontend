@@ -481,6 +481,9 @@ export interface ReferralInfo {
   total_earnings_kopeks: number;
   total_earnings_rubles: number;
   commission_percent: number;
+  available_balance_kopeks: number;
+  available_balance_rubles: number;
+  withdrawn_kopeks: number;
 }
 
 export interface ReferralTerms {

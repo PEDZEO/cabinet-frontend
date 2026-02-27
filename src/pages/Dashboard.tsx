@@ -471,7 +471,7 @@ function FullDashboard() {
         balanceRubles={balanceData?.balance_rubles || 0}
         subscription={subscription}
         referralCount={referralInfo?.total_referrals || 0}
-        earningsRubles={referralInfo?.total_earnings_rubles || 0}
+        earningsRubles={referralInfo?.available_balance_rubles || 0}
         refLoading={refLoading}
       />
 
