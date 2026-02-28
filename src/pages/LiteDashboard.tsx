@@ -725,6 +725,8 @@ export function LiteDashboard() {
       {showOnboarding && (
         <Onboarding
           steps={onboardingSteps}
+          translationPrefix="onboarding.lite"
+          skipMissingTargets
           onComplete={handleOnboardingComplete}
           onSkip={handleOnboardingComplete}
         />

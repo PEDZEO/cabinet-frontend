@@ -13,6 +13,8 @@ interface OnboardingProps {
   steps: OnboardingStep[];
   onComplete: () => void;
   onSkip: () => void;
+  translationPrefix?: string;
+  skipMissingTargets?: boolean;
 }
 
 const STORAGE_KEY = 'onboarding_completed';
@@ -36,7 +38,13 @@ export function useOnboarding() {
   return { isCompleted, complete, reset };
 }
 
-export default function Onboarding({ steps, onComplete, onSkip }: OnboardingProps) {
+export default function Onboarding({
+  steps,
+  onComplete,
+  onSkip,
+  translationPrefix = 'onboarding',
+  skipMissingTargets = false,
+}: OnboardingProps) {
   const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(0);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
@@ -58,13 +66,22 @@ export default function Onboarding({ steps, onComplete, onSkip }: OnboardingProp
 
         // Delay visibility for smooth animation
         setTimeout(() => setIsVisible(true), 100);
+        return;
+      }
+
+      if (skipMissingTargets) {
+        if (currentStep < steps.length - 1) {
+          setCurrentStep((prev) => prev + 1);
+        } else {
+          onComplete();
+        }
       }
     };
 
     setIsVisible(false);
     const timer = setTimeout(findTarget, 300);
     return () => clearTimeout(timer);
-  }, [step.target]);
+  }, [currentStep, onComplete, skipMissingTargets, step.target, steps.length]);
 
   // Recalculate position on resize/scroll
   useEffect(() => {
@@ -207,19 +224,19 @@ export default function Onboarding({ steps, onComplete, onSkip }: OnboardingProp
             onClick={handleSkip}
             className="text-sm text-dark-500 transition-colors hover:text-dark-300"
           >
-            {t('onboarding.skip', 'Skip')}
+            {t(`${translationPrefix}.skip`, t('onboarding.skip', 'Skip'))}
           </button>
 
           <div className="flex gap-2">
             {currentStep > 0 && (
               <button onClick={handlePrev} className="btn-ghost px-3 py-1.5 text-sm">
-                {t('common.back', 'Back')}
+                {t(`${translationPrefix}.back`, t('common.back', 'Back'))}
               </button>
             )}
             <button onClick={handleNext} className="btn-primary px-4 py-1.5 text-sm">
               {currentStep === steps.length - 1
-                ? t('onboarding.finish', 'Finish')
-                : t('common.next', 'Next')}
+                ? t(`${translationPrefix}.finish`, t('onboarding.finish', 'Finish'))
+                : t(`${translationPrefix}.next`, t('common.next', 'Next'))}
             </button>
           </div>
         </div>

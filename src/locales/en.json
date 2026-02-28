@@ -3905,6 +3905,10 @@
       }
     },
     "lite": {
+      "skip": "Skip",
+      "back": "Back",
+      "next": "Next",
+      "finish": "Got it",
       "subscription": {
         "title": "Subscription",
         "description": "Your current subscription status is shown here. You can see remaining days and tariff."
