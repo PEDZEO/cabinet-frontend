@@ -74,6 +74,7 @@ export default function AdminMainMenuButtons() {
   const [activeTab, setActiveTab] = useState<MainMenuButtonsTab>('layout');
   const [selectedRowIndex, setSelectedRowIndex] = useState(0);
   const [addMenuRowIndex, setAddMenuRowIndex] = useState<number | null>(null);
+  const [highlightedRowIndex, setHighlightedRowIndex] = useState<number | null>(null);
   const [rowCapacities, setRowCapacities] = useState<number[]>([]);
   const [rowDefs, setRowDefs] = useState<Array<Pick<MenuRowConfig, 'id' | 'conditions'>>>([]);
 
@@ -317,9 +318,16 @@ export default function AdminMainMenuButtons() {
     setSuccess(null);
   };
 
-  const moveButtonToRow = (buttonId: string, targetRowIndex: number) => {
+  const highlightRow = (rowIndex: number) => {
+    setHighlightedRowIndex(rowIndex);
+    window.setTimeout(() => {
+      setHighlightedRowIndex((previous) => (previous === rowIndex ? null : previous));
+    }, 700);
+  };
+
+  const moveButtonToRow = (buttonId: string, targetRowIndex: number): boolean => {
     if (!data || rowLengths.length === 0) {
-      return;
+      return false;
     }
 
     const safeTarget = Math.min(Math.max(targetRowIndex, 0), rowLengths.length - 1);
@@ -330,26 +338,31 @@ export default function AdminMainMenuButtons() {
       rowDefaultCapacities,
       buttonId,
       targetRowIndex,
-      targetButtonsCount: getButtonsCountForRow(safeTarget),
+      targetEnabledCount: getEnabledCountForRow(safeTarget),
       maxRowSlots: MAX_ROW_SLOTS,
     });
     if (moveResult.error === 'button_not_found') {
-      return;
+      return false;
     }
     if (moveResult.error === 'row_full') {
       setError(`ROW ${moveResult.safeTarget + 1} уже заполнен`);
-      return;
+      return false;
     }
     if (!moveResult.nextOrderIds || !moveResult.nextRowLengths) {
-      return;
+      return false;
     }
 
     setOrderIds(moveResult.nextOrderIds);
     setRowLengths(moveResult.nextRowLengths);
+    highlightRow(moveResult.safeTarget);
+    return true;
   };
 
   const activateToRow = (buttonId: string, current: boolean, rowIndex: number) => {
-    moveButtonToRow(buttonId, rowIndex);
+    const moved = moveButtonToRow(buttonId, rowIndex);
+    if (!moved) {
+      return;
+    }
     toggleEnabled(buttonId, current);
     setAddMenuRowIndex(null);
   };
@@ -429,7 +442,7 @@ export default function AdminMainMenuButtons() {
           </div>
         </div>
         {activeTab === 'layout' && (
-          <div className="flex items-center gap-2">
+          <div className="flex w-full flex-wrap items-center gap-2 md:w-auto md:justify-end">
             <button onClick={() => refetch()} className="btn-secondary" disabled={isFetching}>
               {t('common.refresh')}
             </button>
@@ -451,7 +464,7 @@ export default function AdminMainMenuButtons() {
               className="btn-secondary"
               disabled={!hasPendingChanges}
             >
-              {t('common.reset')}
+              {t('common.reset', { defaultValue: 'Сбросить' })}
             </button>
             <button
               className="btn-primary"
@@ -531,6 +544,10 @@ export default function AdminMainMenuButtons() {
                               row.rowIndex === selectedRowIndex
                                 ? 'border-accent-500/60'
                                 : 'border-dark-700/50'
+                            } ${
+                              highlightedRowIndex === row.rowIndex
+                                ? 'shadow-md shadow-accent-500/20 ring-1 ring-accent-400/60'
+                                : ''
                             }`}
                             onClick={() => setSelectedRowIndex(row.rowIndex)}
                           >
@@ -802,7 +819,7 @@ export default function AdminMainMenuButtons() {
                     onClick={resetEditForm}
                     disabled={updateButtonMutation.isPending}
                   >
-                    {t('common.reset')}
+                    {t('common.reset', { defaultValue: 'Сбросить' })}
                   </button>
                   <button
                     className="btn-primary"

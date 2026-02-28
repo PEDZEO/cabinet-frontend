@@ -302,7 +302,7 @@ export interface MoveButtonToRowOptions {
   rowDefaultCapacities: number[];
   buttonId: string;
   targetRowIndex: number;
-  targetButtonsCount: number;
+  targetEnabledCount: number;
   maxRowSlots: number;
 }
 
@@ -321,7 +321,7 @@ export function moveButtonToRowState(options: MoveButtonToRowOptions): MoveButto
     rowDefaultCapacities,
     buttonId,
     targetRowIndex,
-    targetButtonsCount,
+    targetEnabledCount,
     maxRowSlots,
   } = options;
 
@@ -342,7 +342,7 @@ export function moveButtonToRowState(options: MoveButtonToRowOptions): MoveButto
     rowCapacities[safeTarget] ?? rowDefaultCapacities[safeTarget] ?? maxRowSlots,
     1,
   );
-  if (sourceRowIndex !== safeTarget && targetButtonsCount >= targetMaxPerRow) {
+  if (sourceRowIndex !== safeTarget && targetEnabledCount >= targetMaxPerRow) {
     return {
       nextOrderIds: null,
       nextRowLengths: null,
