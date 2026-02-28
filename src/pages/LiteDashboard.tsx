@@ -401,7 +401,7 @@ export function LiteDashboard() {
                       type="button"
                       onClick={() => activateTrialMutation.mutate()}
                       disabled={activateTrialMutation.isPending}
-                      className="mt-3 w-full rounded-xl border border-white/40 bg-accent-500 py-2.5 text-sm font-semibold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.25)] transition-colors hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="mt-3 w-full rounded-xl border border-white/45 bg-accent-500 py-2.5 text-sm font-semibold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.3)] ring-1 ring-white/35 transition-colors hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 disabled:cursor-not-allowed disabled:opacity-60 motion-safe:animate-pulse"
                     >
                       {activateTrialMutation.isPending
                         ? t('common.loading')
@@ -508,29 +508,7 @@ export function LiteDashboard() {
                           {t('lite.connectAvailabilityLoading')}
                         </p>
                       </>
-                    ) : shouldShowTrialConnectHint ? (
-                      <>
-                        <p className="text-sm font-semibold text-warning-300">
-                          {t('lite.connectHintTrialTitle')}
-                        </p>
-                        <p className="mt-1 text-xs text-dark-300">
-                          {t('lite.connectTrialHintAction')}
-                        </p>
-                        <div className="mt-3 flex flex-col gap-2">
-                          <button
-                            type="button"
-                            onClick={() => activateTrialMutation.mutate()}
-                            disabled={activateTrialMutation.isPending}
-                            className="w-full rounded-xl border border-white/40 bg-accent-500 py-2.5 text-sm font-semibold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.25)] transition-colors hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            {activateTrialMutation.isPending
-                              ? t('common.loading')
-                              : t('lite.activateTrial')}
-                          </button>
-                        </div>
-                        {trialError && <p className="mt-2 text-xs text-error-300">{trialError}</p>}
-                      </>
-                    ) : hasExpiredSubscription ? (
+                    ) : shouldShowTrialConnectHint ? null : hasExpiredSubscription ? (
                       <>
                         <p className="text-sm font-semibold text-warning-300">
                           {t('lite.connectHintExpiredTitle')}
