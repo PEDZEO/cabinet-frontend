@@ -281,10 +281,14 @@ export function LiteDashboard() {
   const hasNoSubscription = subscriptionResponse?.has_subscription === false && !subLoading;
   const hasActiveSubscription =
     !!subscription && subscription.is_active && !subscription.is_expired;
+  const hasExpiredSubscription = !!subscription && subscription.is_expired;
   const isTrialInfoPending = hasNoSubscription && isTrialInfoLoading;
   const showTrial = hasNoSubscription && trialInfo?.is_available;
   const shouldShowTrialConnectHint =
     hasNoSubscription && !isTrialInfoPending && !!trialInfo?.is_available;
+  const expiredOnLabel = hasExpiredSubscription
+    ? new Date(subscription.end_date).toLocaleDateString()
+    : null;
   const balance = balanceData?.balance_kopeks ?? 0;
 
   // Get device limit from tariff settings
@@ -490,29 +494,111 @@ export function LiteDashboard() {
                           {t('lite.connectAvailabilityLoading')}
                         </p>
                       </>
+                    ) : shouldShowTrialConnectHint ? (
+                      <>
+                        <p className="text-sm font-semibold text-warning-300">
+                          {t('lite.connectHintTrialTitle')}
+                        </p>
+                        <p className="mt-1 text-xs text-dark-300">
+                          {t('lite.connectHintTrialDescription')}
+                        </p>
+                        <p className="mt-2 text-2xs font-semibold uppercase tracking-[0.05em] text-dark-400">
+                          {t('lite.connectHintProgress', { current: 1, total: 3 })}
+                        </p>
+                        <ol className="mt-2 space-y-1 text-xs text-dark-200">
+                          <li>1. {t('lite.connectHintTrialStep1')}</li>
+                          <li>2. {t('lite.connectHintTrialStep2')}</li>
+                          <li>3. {t('lite.connectHintTrialStep3')}</li>
+                        </ol>
+                        <div className="mt-3 flex flex-col gap-2">
+                          <button
+                            type="button"
+                            onClick={() => activateTrialMutation.mutate()}
+                            disabled={activateTrialMutation.isPending}
+                            className="w-full rounded-xl border border-accent-400/60 bg-accent-500 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {activateTrialMutation.isPending
+                              ? t('common.loading')
+                              : t('lite.activateTrial')}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => navigate('/subscription')}
+                            className="w-full rounded-xl border border-dark-600 bg-dark-800/70 py-2.5 text-sm font-medium text-dark-100 transition-colors hover:border-dark-500 hover:bg-dark-700"
+                          >
+                            {t('lite.howToConnect')}
+                          </button>
+                        </div>
+                      </>
+                    ) : hasExpiredSubscription ? (
+                      <>
+                        <p className="text-sm font-semibold text-warning-300">
+                          {t('lite.connectHintExpiredTitle')}
+                        </p>
+                        <p className="mt-1 text-xs text-dark-300">
+                          {expiredOnLabel
+                            ? t('lite.connectHintExpiredDescriptionWithDate', {
+                                date: expiredOnLabel,
+                              })
+                            : t('lite.connectHintExpiredDescription')}
+                        </p>
+                        <p className="mt-2 text-2xs font-semibold uppercase tracking-[0.05em] text-dark-400">
+                          {t('lite.connectHintProgress', { current: 1, total: 3 })}
+                        </p>
+                        <ol className="mt-2 space-y-1 text-xs text-dark-200">
+                          <li>1. {t('lite.connectHintExpiredStep1')}</li>
+                          <li>2. {t('lite.connectHintExpiredStep2')}</li>
+                          <li>3. {t('lite.connectHintExpiredStep3')}</li>
+                        </ol>
+                        <div className="mt-3 flex flex-col gap-2">
+                          <button
+                            type="button"
+                            onClick={() => navigate('/subscription')}
+                            className="w-full rounded-xl border border-accent-400/60 bg-accent-500 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70"
+                          >
+                            {t('lite.renewSubscription')}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => navigate('/balance')}
+                            className="w-full rounded-xl border border-dark-600 bg-dark-800/70 py-2.5 text-sm font-medium text-dark-100 transition-colors hover:border-dark-500 hover:bg-dark-700"
+                          >
+                            {t('lite.topUp')}
+                          </button>
+                        </div>
+                      </>
                     ) : (
                       <>
                         <p className="text-sm font-semibold text-warning-300">
-                          {shouldShowTrialConnectHint
-                            ? t('lite.connectTrialHintTitle')
-                            : t('lite.connectLockedTitle')}
+                          {t('lite.connectLockedTitle')}
                         </p>
                         <p className="mt-1 text-xs text-dark-300">
-                          {shouldShowTrialConnectHint
-                            ? t('lite.connectTrialHintDescription')
-                            : t('lite.connectLockedDescription')}
+                          {t('lite.connectLockedDescription')}
                         </p>
-                        {shouldShowTrialConnectHint ? (
-                          <p className="mt-3 text-xs text-dark-200">
-                            {t('lite.connectTrialHintAction')}
-                          </p>
-                        ) : (
-                          <ol className="mt-3 space-y-1 text-xs text-dark-200">
-                            <li>1. {t('lite.connectLockedStepTopUp')}</li>
-                            <li>2. {t('lite.connectLockedStepTariff')}</li>
-                            <li>3. {t('lite.connectLockedStepActivate')}</li>
-                          </ol>
-                        )}
+                        <p className="mt-2 text-2xs font-semibold uppercase tracking-[0.05em] text-dark-400">
+                          {t('lite.connectHintProgress', { current: 1, total: 3 })}
+                        </p>
+                        <ol className="mt-2 space-y-1 text-xs text-dark-200">
+                          <li>1. {t('lite.connectLockedStepTopUp')}</li>
+                          <li>2. {t('lite.connectLockedStepTariff')}</li>
+                          <li>3. {t('lite.connectLockedStepActivate')}</li>
+                        </ol>
+                        <div className="mt-3 flex flex-col gap-2">
+                          <button
+                            type="button"
+                            onClick={() => navigate('/subscription')}
+                            className="w-full rounded-xl border border-accent-400/60 bg-accent-500 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70"
+                          >
+                            {t('lite.chooseTariff')}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => navigate('/balance')}
+                            className="w-full rounded-xl border border-dark-600 bg-dark-800/70 py-2.5 text-sm font-medium text-dark-100 transition-colors hover:border-dark-500 hover:bg-dark-700"
+                          >
+                            {t('lite.topUp')}
+                          </button>
+                        </div>
                       </>
                     )}
                   </div>
