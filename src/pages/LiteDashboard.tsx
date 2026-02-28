@@ -380,6 +380,36 @@ export function LiteDashboard() {
                     <p className="text-dark-300">{t('lite.noSubscription')}</p>
                   </div>
                 )}
+
+                {shouldShowTrialConnectHint && (
+                  <div className="rounded-2xl border border-warning-500/35 bg-warning-500/10 p-4">
+                    <p className="text-sm font-semibold text-warning-300">
+                      {t('lite.connectHintTrialTitle')}
+                    </p>
+                    <p className="mt-1 text-xs text-dark-300">
+                      {t('lite.connectHintTrialDescription')}
+                    </p>
+                    <p className="mt-2 text-2xs font-semibold uppercase tracking-[0.05em] text-dark-400">
+                      {t('lite.connectHintProgress', { current: 1, total: 3 })}
+                    </p>
+                    <ol className="mt-2 space-y-1 text-xs text-dark-200">
+                      <li>1. {t('lite.connectHintTrialStep1')}</li>
+                      <li>2. {t('lite.connectHintTrialStep2')}</li>
+                      <li>3. {t('lite.connectHintTrialStep3')}</li>
+                    </ol>
+                    <button
+                      type="button"
+                      onClick={() => activateTrialMutation.mutate()}
+                      disabled={activateTrialMutation.isPending}
+                      className="mt-3 w-full rounded-xl border border-white/40 bg-accent-500 py-2.5 text-sm font-semibold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.25)] transition-colors hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {activateTrialMutation.isPending
+                        ? t('common.loading')
+                        : t('lite.activateTrial')}
+                    </button>
+                    {trialError && <p className="mt-2 text-xs text-error-300">{trialError}</p>}
+                  </div>
+                )}
               </div>
 
               {!hasMergedAnotherAccount && (
@@ -484,33 +514,18 @@ export function LiteDashboard() {
                           {t('lite.connectHintTrialTitle')}
                         </p>
                         <p className="mt-1 text-xs text-dark-300">
-                          {t('lite.connectHintTrialDescription')}
+                          {t('lite.connectTrialHintAction')}
                         </p>
-                        <p className="mt-2 text-2xs font-semibold uppercase tracking-[0.05em] text-dark-400">
-                          {t('lite.connectHintProgress', { current: 1, total: 3 })}
-                        </p>
-                        <ol className="mt-2 space-y-1 text-xs text-dark-200">
-                          <li>1. {t('lite.connectHintTrialStep1')}</li>
-                          <li>2. {t('lite.connectHintTrialStep2')}</li>
-                          <li>3. {t('lite.connectHintTrialStep3')}</li>
-                        </ol>
                         <div className="mt-3 flex flex-col gap-2">
                           <button
                             type="button"
                             onClick={() => activateTrialMutation.mutate()}
                             disabled={activateTrialMutation.isPending}
-                            className="w-full rounded-xl border border-accent-400/60 bg-accent-500 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="w-full rounded-xl border border-white/40 bg-accent-500 py-2.5 text-sm font-semibold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.25)] transition-colors hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             {activateTrialMutation.isPending
                               ? t('common.loading')
                               : t('lite.activateTrial')}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => navigate('/balance')}
-                            className="w-full rounded-xl border border-dark-600 bg-dark-800/70 py-2.5 text-sm font-medium text-dark-100 transition-colors hover:border-dark-500 hover:bg-dark-700"
-                          >
-                            {t('lite.topUp')}
                           </button>
                         </div>
                         {trialError && <p className="mt-2 text-xs text-error-300">{trialError}</p>}
