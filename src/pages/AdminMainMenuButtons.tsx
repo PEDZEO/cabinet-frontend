@@ -351,6 +351,35 @@ export default function AdminMainMenuButtons() {
     setSelectedRowIndex((prev) => getSelectedRowAfterCollapse(prev, rowIndex));
   };
 
+  const resetLayoutChanges = () => {
+    if (!data) {
+      return;
+    }
+
+    const derived = buildMenuLayoutDerivedState(data);
+    setOrderIds(derived.orderIds);
+    setRowLengths(derived.rowLengths);
+    setRowCapacities(derived.rowCapacities);
+    setRowDefs(derived.rowDefs);
+    setSelectedRowIndex(0);
+    setAddMenuRowIndex(null);
+    setError(null);
+    setSuccess(null);
+  };
+
+  const resetEditForm = () => {
+    if (!editingId) {
+      return;
+    }
+    const button = buttonsById[editingId];
+    if (!button) {
+      return;
+    }
+    setForm(buildEditFormState(editingId, button, lang));
+    setError(null);
+    setSuccess(null);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -365,6 +394,14 @@ export default function AdminMainMenuButtons() {
           <div className="flex items-center gap-2">
             <button onClick={() => refetch()} className="btn-secondary" disabled={isFetching}>
               {t('common.refresh')}
+            </button>
+            <button
+              type="button"
+              onClick={resetLayoutChanges}
+              className="btn-secondary"
+              disabled={!hasPendingChanges}
+            >
+              {t('common.reset')}
             </button>
             <button
               className="btn-primary"
@@ -668,6 +705,14 @@ export default function AdminMainMenuButtons() {
                 </button>
 
                 <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={resetEditForm}
+                    disabled={updateButtonMutation.isPending}
+                  >
+                    {t('common.reset')}
+                  </button>
                   <button
                     className="btn-primary"
                     onClick={handleSaveEdit}
