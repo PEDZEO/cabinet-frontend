@@ -94,13 +94,21 @@ export function SortablePreviewButton({
         </svg>
       </button>
 
-      <button
-        type="button"
-        onClick={onEdit}
+      <span
         className={`line-clamp-2 min-w-0 flex-1 text-left text-dark-100 ${compact ? 'text-xs' : 'text-sm'}`}
         title={getButtonText(buttonId, button, lang)}
       >
         {getButtonText(buttonId, button, lang)}
+      </span>
+
+      <button
+        type="button"
+        onClick={onEdit}
+        className="rounded-md border border-dark-700/70 px-1.5 py-1 text-xs text-dark-300 hover:border-dark-500 hover:text-dark-100"
+        title="Редактировать кнопку"
+        aria-label={`Редактировать ${buttonId}`}
+      >
+        ✎
       </button>
 
       {showMoveActions && (onMovePrevRow || onMoveNextRow) && (
