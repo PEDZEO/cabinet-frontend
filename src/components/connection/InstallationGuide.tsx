@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router';
 import DOMPurify from 'dompurify';
 import type {
   AppConfig,
@@ -52,6 +53,7 @@ export default function InstallationGuide({
   onGoBack,
 }: Props) {
   const { t, i18n } = useTranslation();
+  const [searchParams] = useSearchParams();
   const { isLight } = useTheme();
 
   const detectedPlatform = useMemo(() => detectPlatform(), []);
@@ -190,9 +192,33 @@ export default function InstallationGuide({
   // Block renderer
   const blockType = appConfig.uiConfig?.installationGuidesBlockType || 'cards';
   const Renderer = RENDERERS[blockType] || CardsBlock;
+  const isTrialStepTwoGuide =
+    searchParams.get('guide') === 'trial' && searchParams.get('step') === '2';
 
   return (
     <div className="space-y-6 pb-6">
+      {isTrialStepTwoGuide && (
+        <div
+          className={`rounded-2xl border p-4 ${
+            isLight
+              ? 'border-accent-500/40 bg-accent-500/10'
+              : 'border-accent-500/35 bg-accent-500/10'
+          }`}
+        >
+          <p className="text-sm font-semibold text-accent-300">
+            {t('subscription.connection.trialStep2.title')}
+          </p>
+          <p className="mt-1 text-xs text-dark-200">
+            {t('subscription.connection.trialStep2.description')}
+          </p>
+          <ol className="mt-3 space-y-1 text-xs text-dark-200">
+            <li>1. {t('subscription.connection.trialStep2.ifNoApp')}</li>
+            <li>2. {t('subscription.connection.trialStep2.afterInstall')}</li>
+            <li>3. {t('subscription.connection.trialStep2.ifAppExists')}</li>
+          </ol>
+        </div>
+      )}
+
       {/* Header + platform dropdown */}
       <div className="flex items-center gap-3">
         {!isTelegramWebApp && (

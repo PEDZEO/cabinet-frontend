@@ -3,14 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router';
 import { subscriptionApi } from '@/api/subscription';
-import { balanceApi } from '@/api/balance';
 import { referralApi } from '@/api/referral';
 import { authApi } from '@/api/auth';
 import { useAuthStore } from '@/store/auth';
 import { useHapticFeedback } from '@/platform/hooks/useHaptic';
 import { LiteActionButton } from '@/components/lite/LiteActionButton';
 import { LiteSubscriptionCard } from '@/components/lite/LiteSubscriptionCard';
-import { LiteTrialCard } from '@/components/lite/LiteTrialCard';
 import { LiteDashboardSkeleton } from '@/components/lite/LiteDashboardSkeleton';
 import { PullToRefresh } from '@/components/lite/PullToRefresh';
 import Onboarding from '@/components/Onboarding';
@@ -172,11 +170,6 @@ export function LiteDashboard() {
     enabled: !subscriptionResponse?.has_subscription,
   });
 
-  const { data: balanceData } = useQuery({
-    queryKey: ['balance'],
-    queryFn: balanceApi.getBalance,
-  });
-
   const { data: referralInfo } = useQuery({
     queryKey: ['referral-info'],
     queryFn: referralApi.getReferralInfo,
@@ -245,7 +238,9 @@ export function LiteDashboard() {
       queryClient.invalidateQueries({ queryKey: ['subscription'] });
       queryClient.invalidateQueries({ queryKey: ['trial-info'] });
       queryClient.invalidateQueries({ queryKey: ['balance'] });
+      queryClient.invalidateQueries({ queryKey: ['appConfig'] });
       refreshUser();
+      navigate('/connection?guide=trial&step=2');
     },
     onError: (error: { response?: { data?: { detail?: string } } }) => {
       const detail = error.response?.data?.detail?.toLowerCase() ?? '';
@@ -289,7 +284,6 @@ export function LiteDashboard() {
   const expiredOnLabel = hasExpiredSubscription
     ? new Date(subscription.end_date).toLocaleDateString()
     : null;
-  const balance = balanceData?.balance_kopeks ?? 0;
 
   // Get device limit from tariff settings
   const tariffs = purchaseOptions?.sales_mode === 'tariffs' ? purchaseOptions.tariffs : [];
@@ -371,17 +365,6 @@ export function LiteDashboard() {
                   <LiteSubscriptionCard
                     subscription={subscription}
                     deviceLimit={deviceLimitFromTariff}
-                  />
-                )}
-
-                {showTrial && trialInfo && (
-                  <LiteTrialCard
-                    trialInfo={trialInfo}
-                    balance={balance}
-                    onActivate={() => activateTrialMutation.mutate()}
-                    onTopUp={() => navigate('/balance')}
-                    isLoading={activateTrialMutation.isPending}
-                    error={trialError}
                   />
                 )}
 
@@ -523,12 +506,13 @@ export function LiteDashboard() {
                           </button>
                           <button
                             type="button"
-                            onClick={() => navigate('/subscription')}
+                            onClick={() => navigate('/balance')}
                             className="w-full rounded-xl border border-dark-600 bg-dark-800/70 py-2.5 text-sm font-medium text-dark-100 transition-colors hover:border-dark-500 hover:bg-dark-700"
                           >
-                            {t('lite.howToConnect')}
+                            {t('lite.topUp')}
                           </button>
                         </div>
+                        {trialError && <p className="mt-2 text-xs text-error-300">{trialError}</p>}
                       </>
                     ) : hasExpiredSubscription ? (
                       <>

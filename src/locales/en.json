@@ -453,7 +453,14 @@
       "notConfigured": "Connection methods are not configured yet",
       "notConfiguredUser": "Connection setup is in progress. Please check back later.",
       "notConfiguredAdmin": "No connection apps have been configured. Set them up in the Apps settings.",
-      "goToApps": "Go to Apps settings"
+      "goToApps": "Go to Apps settings",
+      "trialStep2": {
+        "title": "Step 2: add subscription to app",
+        "description": "After trial activation, finish setup using the steps below.",
+        "ifNoApp": "If you don't have an app: download and install it.",
+        "afterInstall": "After installation, come back to this page.",
+        "ifAppExists": "If you already have an app: tap \"Add subscription\"."
+      }
     },
     "myDevices": "My Devices",
     "noDevices": "No connected devices",
