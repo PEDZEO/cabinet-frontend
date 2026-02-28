@@ -845,10 +845,10 @@ export function LiteSubscription() {
                           : `${tariff.traffic_limit_gb} GB`}
                       </span>
                       <span className="rounded-full border border-dark-600/80 bg-dark-900/35 px-2 py-0.5 tabular-nums">
-                        {tariff.device_limit} {t('lite.devices')}
+                        {t('lite.devices')}: {tariff.device_limit}
                       </span>
                       <span className="rounded-full border border-dark-600/80 bg-dark-900/35 px-2 py-0.5 tabular-nums">
-                        {tariff.servers_count} {t('lite.servers')}
+                        {t('lite.servers')}: {tariff.servers_count}
                       </span>
                     </div>
 
@@ -865,25 +865,21 @@ export function LiteSubscription() {
                             ? (tariff.daily_discount_percent ?? null)
                             : promo.percent;
                           return (
-                            <div className="flex flex-col gap-1 min-[360px]:flex-row min-[360px]:items-baseline min-[360px]:justify-between">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <span className="text-xl font-bold tabular-nums text-accent-400">
-                                  {formatPrice(promo.price)}
-                                </span>
-                                {promo.original && (
-                                  <span className="text-sm text-dark-500 line-through">
-                                    {formatPrice(promo.original)}
-                                  </span>
-                                )}
-                                {displayedDiscountPercent && displayedDiscountPercent > 0 && (
-                                  <span className="rounded bg-success-500/20 px-1.5 py-0.5 text-xs font-semibold text-success-400">
-                                    -{displayedDiscountPercent}%
-                                  </span>
-                                )}
-                              </div>
-                              <span className="text-sm text-dark-500 min-[360px]:text-right">
-                                /{t('lite.day')}
+                            <div className="flex flex-wrap items-baseline gap-2">
+                              <span className="text-xl font-bold tabular-nums text-accent-400">
+                                {formatPrice(promo.price)}
                               </span>
+                              <span className="text-sm text-dark-500">/{t('lite.day')}</span>
+                              {promo.original && (
+                                <span className="text-sm text-dark-500 line-through">
+                                  {formatPrice(promo.original)}
+                                </span>
+                              )}
+                              {displayedDiscountPercent && displayedDiscountPercent > 0 && (
+                                <span className="rounded bg-success-500/20 px-1.5 py-0.5 text-xs font-semibold text-success-400">
+                                  -{displayedDiscountPercent}%
+                                </span>
+                              )}
                             </div>
                           );
                         })()
@@ -900,25 +896,21 @@ export function LiteSubscription() {
                               ? (period.discount_percent ?? null)
                               : promo.percent;
                             return (
-                              <div className="flex flex-col gap-1 min-[360px]:flex-row min-[360px]:items-baseline min-[360px]:justify-between">
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <span className="text-xl font-bold tabular-nums text-accent-400">
-                                    {formatPrice(promo.price)}
-                                  </span>
-                                  {promo.original && (
-                                    <span className="text-sm text-dark-500 line-through">
-                                      {formatPrice(promo.original)}
-                                    </span>
-                                  )}
-                                  {displayedDiscountPercent && displayedDiscountPercent > 0 && (
-                                    <span className="rounded bg-success-500/20 px-1.5 py-0.5 text-xs font-semibold text-success-400">
-                                      -{displayedDiscountPercent}%
-                                    </span>
-                                  )}
-                                </div>
-                                <span className="text-sm text-dark-500 min-[360px]:text-right">
-                                  /{t('lite.month')}
+                              <div className="flex flex-wrap items-baseline gap-2">
+                                <span className="text-xl font-bold tabular-nums text-accent-400">
+                                  {formatPrice(promo.price)}
                                 </span>
+                                <span className="text-sm text-dark-500">/{t('lite.month')}</span>
+                                {promo.original && (
+                                  <span className="text-sm text-dark-500 line-through">
+                                    {formatPrice(promo.original)}
+                                  </span>
+                                )}
+                                {displayedDiscountPercent && displayedDiscountPercent > 0 && (
+                                  <span className="rounded bg-success-500/20 px-1.5 py-0.5 text-xs font-semibold text-success-400">
+                                    -{displayedDiscountPercent}%
+                                  </span>
+                                )}
                               </div>
                             );
                           })()

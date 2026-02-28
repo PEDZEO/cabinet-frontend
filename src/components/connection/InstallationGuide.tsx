@@ -201,7 +201,7 @@ export default function InstallationGuide({
       {isTrialStepTwoGuide && (
         <HoverBorderGradient
           as="div"
-          accentColor="#3b82f6"
+          accentColor="#22c55e"
           duration={3}
           className={`rounded-2xl p-4 ${isLight ? 'bg-accent-500/10' : 'bg-accent-500/10'}`}
         >
