@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router';
@@ -115,6 +115,7 @@ const ShareIcon = () => (
 
 // Lite mode onboarding hook with separate storage key
 const LITE_ONBOARDING_KEY = 'lite_onboarding_completed';
+const TRIAL_ACTIVATE_CLICK_COOLDOWN_MS = 1500;
 
 function useLiteOnboarding(userId?: number | null) {
   const storageKey = userId ? `${LITE_ONBOARDING_KEY}_${userId}` : LITE_ONBOARDING_KEY;
@@ -141,6 +142,8 @@ export function LiteDashboard() {
   const { user, refreshUser } = useAuthStore();
   const haptic = useHapticFeedback();
   const [trialError, setTrialError] = useState<string | null>(null);
+  const [isTrialActivationLocked, setIsTrialActivationLocked] = useState(false);
+  const trialActivationCooldownRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [copied, setCopied] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const { isCompleted: isOnboardingCompleted, complete: completeOnboarding } = useLiteOnboarding(
@@ -273,6 +276,28 @@ export function LiteDashboard() {
     },
   });
 
+  const handleActivateTrial = () => {
+    if (activateTrialMutation.isPending || isTrialActivationLocked) {
+      return;
+    }
+
+    setIsTrialActivationLocked(true);
+    trialActivationCooldownRef.current = setTimeout(() => {
+      setIsTrialActivationLocked(false);
+      trialActivationCooldownRef.current = null;
+    }, TRIAL_ACTIVATE_CLICK_COOLDOWN_MS);
+
+    activateTrialMutation.mutate();
+  };
+
+  useEffect(() => {
+    return () => {
+      if (trialActivationCooldownRef.current) {
+        clearTimeout(trialActivationCooldownRef.current);
+      }
+    };
+  }, []);
+
   const subscription = subscriptionResponse?.subscription ?? null;
   const hasNoSubscription = subscriptionResponse?.has_subscription === false && !subLoading;
   const hasActiveSubscription =
@@ -355,34 +380,45 @@ export function LiteDashboard() {
     <>
       <PullToRefresh onRefresh={handleRefresh} className="min-h-[calc(100vh-120px)]">
         <div
-          className="mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-6xl flex-col px-3 py-5 min-[360px]:px-4 min-[360px]:py-6 lg:px-6 xl:px-8 2xl:py-8"
+          className="mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-6xl flex-col px-3 py-4 min-[360px]:px-4 min-[360px]:py-6 lg:px-6 xl:px-8 2xl:py-8"
           style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom, 24px))' }}
         >
-          <div className="flex flex-1 flex-col gap-5 lg:grid lg:grid-cols-12 lg:items-start lg:gap-6">
-            <section className="space-y-5 lg:col-span-7 xl:col-span-8">
+          <div className="flex flex-1 flex-col gap-4 min-[360px]:gap-5 lg:grid lg:grid-cols-12 lg:items-start lg:gap-6">
+            <section className="space-y-4 min-[360px]:space-y-5 lg:col-span-7 xl:col-span-8">
               {/* Subscription status or Trial card */}
               <div data-onboarding="lite-subscription">
                 {subscription && (
-                  <LiteSubscriptionCard
-                    subscription={subscription}
-                    deviceLimit={deviceLimitFromTariff}
-                  />
+                  <div data-testid="lite-subscription-active-card">
+                    <LiteSubscriptionCard
+                      subscription={subscription}
+                      deviceLimit={deviceLimitFromTariff}
+                    />
+                  </div>
                 )}
 
                 {isTrialInfoPending && (
-                  <div className="rounded-2xl border border-dark-600 bg-dark-800/80 p-4 text-center">
+                  <div
+                    data-testid="lite-trial-loading-card"
+                    className="rounded-2xl border border-dark-600 bg-dark-800/80 p-3 text-center min-[360px]:p-4"
+                  >
                     <p className="text-dark-300">{t('lite.connectAvailabilityLoading')}</p>
                   </div>
                 )}
 
                 {hasNoSubscription && !isTrialInfoPending && !showTrial && (
-                  <div className="rounded-2xl border border-dark-600 bg-dark-800/80 p-4 text-center">
+                  <div
+                    data-testid="lite-no-subscription-card"
+                    className="rounded-2xl border border-dark-600 bg-dark-800/80 p-3 text-center min-[360px]:p-4"
+                  >
                     <p className="text-dark-300">{t('lite.noSubscription')}</p>
                   </div>
                 )}
 
                 {shouldShowTrialConnectHint && (
-                  <div className="rounded-2xl border border-warning-500/35 bg-warning-500/10 p-4">
+                  <div
+                    data-testid="lite-trial-hint-card"
+                    className="rounded-2xl border border-warning-500/35 bg-warning-500/10 p-3 min-[360px]:p-4"
+                  >
                     <p className="text-sm font-semibold text-warning-300">
                       {t('lite.connectHintTrialTitle')}
                     </p>
@@ -399,8 +435,9 @@ export function LiteDashboard() {
                     </ol>
                     <button
                       type="button"
-                      onClick={() => activateTrialMutation.mutate()}
-                      disabled={activateTrialMutation.isPending}
+                      data-testid="lite-activate-trial"
+                      onClick={handleActivateTrial}
+                      disabled={activateTrialMutation.isPending || isTrialActivationLocked}
                       className="mt-3 w-full rounded-xl border border-white/45 bg-accent-500 py-2.5 text-sm font-semibold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.3)] ring-1 ring-white/35 transition-colors hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 disabled:cursor-not-allowed disabled:opacity-60 motion-safe:animate-pulse"
                     >
                       {activateTrialMutation.isPending
@@ -431,7 +468,7 @@ export function LiteDashboard() {
 
               {/* Referral card */}
               {referralLink && (
-                <div className="from-accent-500/12 via-accent-500/6 rounded-2xl border border-accent-500/25 bg-gradient-to-br to-transparent p-4">
+                <div className="from-accent-500/12 via-accent-500/6 rounded-2xl border border-accent-500/25 bg-gradient-to-br to-transparent p-3 min-[360px]:p-4">
                   <div className="mb-3 flex items-center gap-2.5">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-500/20 text-accent-400">
                       <GiftIcon />
@@ -499,7 +536,7 @@ export function LiteDashboard() {
                       variant="primary"
                     />
                   ) : (
-                    <div className="rounded-2xl border border-warning-500/35 bg-warning-500/10 p-4">
+                    <div className="rounded-2xl border border-warning-500/35 bg-warning-500/10 p-3 min-[360px]:p-4">
                       {isTrialInfoPending ? (
                         <>
                           <p className="text-sm font-semibold text-warning-300">
@@ -510,7 +547,7 @@ export function LiteDashboard() {
                           </p>
                         </>
                       ) : shouldShowTrialConnectHint ? null : hasExpiredSubscription ? (
-                        <>
+                        <div data-testid="lite-connect-expired-hint">
                           <p className="text-sm font-semibold text-warning-300">
                             {t('lite.connectHintExpiredTitle')}
                           </p>
@@ -545,9 +582,9 @@ export function LiteDashboard() {
                               {t('lite.topUp')}
                             </button>
                           </div>
-                        </>
+                        </div>
                       ) : (
-                        <>
+                        <div data-testid="lite-connect-locked-hint">
                           <p className="text-sm font-semibold text-warning-300">
                             {t('lite.connectLockedTitle')}
                           </p>
@@ -578,7 +615,7 @@ export function LiteDashboard() {
                               {t('lite.topUp')}
                             </button>
                           </div>
-                        </>
+                        </div>
                       )}
                     </div>
                   )}
