@@ -4589,10 +4589,21 @@
     "connectLockedStepTopUp": "Пополните баланс",
     "connectLockedStepTariff": "Выберите и оплатите тариф",
     "connectLockedStepActivate": "После активации подписки откройте подключение",
+    "connectTrialHintTitle": "Для подключения активируйте триал",
+    "connectTrialHintDescription": "Кнопка подключения появится после активации пробного периода.",
+    "connectTrialHintAction": "Нажмите «Активировать пробный период» в карточке выше.",
+    "connectAvailabilityLoading": "Проверяем доступность пробного периода...",
     "activateTrial": "Активировать пробный период",
     "trialDays": "{{count}} дней бесплатно",
     "trialTraffic": "{{count}} ГБ трафика",
     "trialDevices": "{{count}} устройств",
+    "trialRequiresTopUp": "Для активации пробного периода нужно пополнить баланс",
+    "trialErrors": {
+      "insufficientBalance": "Недостаточно средств для активации пробного периода",
+      "alreadyUsed": "Пробный период уже был использован",
+      "unavailable": "Пробный период недоступен",
+      "generic": "Не удалось активировать пробный период"
+    },
     "unlimited": "Безлимит",
     "tab": {
       "tariffs": "Тарифы",

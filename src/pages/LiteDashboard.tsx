@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { subscriptionApi } from '@/api/subscription';
 import { balanceApi } from '@/api/balance';
 import { referralApi } from '@/api/referral';
@@ -118,28 +118,36 @@ const ShareIcon = () => (
 // Lite mode onboarding hook with separate storage key
 const LITE_ONBOARDING_KEY = 'lite_onboarding_completed';
 
-function useLiteOnboarding() {
+function useLiteOnboarding(userId?: number | null) {
+  const storageKey = userId ? `${LITE_ONBOARDING_KEY}_${userId}` : LITE_ONBOARDING_KEY;
   const [isCompleted, setIsCompleted] = useState(() => {
-    return localStorage.getItem(LITE_ONBOARDING_KEY) === 'true';
+    return localStorage.getItem(storageKey) === 'true';
   });
 
+  useEffect(() => {
+    setIsCompleted(localStorage.getItem(storageKey) === 'true');
+  }, [storageKey]);
+
   const complete = useCallback(() => {
-    localStorage.setItem(LITE_ONBOARDING_KEY, 'true');
+    localStorage.setItem(storageKey, 'true');
     setIsCompleted(true);
-  }, []);
+  }, [storageKey]);
 
   return { isCompleted, complete };
 }
 
 export function LiteDashboard() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, refreshUser } = useAuthStore();
   const haptic = useHapticFeedback();
   const [trialError, setTrialError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const { isCompleted: isOnboardingCompleted, complete: completeOnboarding } = useLiteOnboarding();
+  const { isCompleted: isOnboardingCompleted, complete: completeOnboarding } = useLiteOnboarding(
+    user?.id,
+  );
 
   // Pull to refresh handler
   const handleRefresh = useCallback(async () => {
@@ -158,7 +166,7 @@ export function LiteDashboard() {
     refetchOnMount: 'always',
   });
 
-  const { data: trialInfo } = useQuery({
+  const { data: trialInfo, isLoading: isTrialInfoLoading } = useQuery({
     queryKey: ['trial-info'],
     queryFn: subscriptionApi.getTrialInfo,
     enabled: !subscriptionResponse?.has_subscription,
@@ -240,7 +248,32 @@ export function LiteDashboard() {
       refreshUser();
     },
     onError: (error: { response?: { data?: { detail?: string } } }) => {
-      setTrialError(error.response?.data?.detail || t('common.error'));
+      const detail = error.response?.data?.detail?.toLowerCase() ?? '';
+
+      if (
+        detail.includes('insufficient') ||
+        detail.includes('balance') ||
+        detail.includes('fund')
+      ) {
+        setTrialError(t('lite.trialErrors.insufficientBalance'));
+        return;
+      }
+
+      if (detail.includes('already') || detail.includes('used') || detail.includes('activated')) {
+        setTrialError(t('lite.trialErrors.alreadyUsed'));
+        return;
+      }
+
+      if (
+        detail.includes('unavailable') ||
+        detail.includes('forbidden') ||
+        detail.includes('disabled')
+      ) {
+        setTrialError(t('lite.trialErrors.unavailable'));
+        return;
+      }
+
+      setTrialError(t('lite.trialErrors.generic'));
     },
   });
 
@@ -248,7 +281,10 @@ export function LiteDashboard() {
   const hasNoSubscription = subscriptionResponse?.has_subscription === false && !subLoading;
   const hasActiveSubscription =
     !!subscription && subscription.is_active && !subscription.is_expired;
+  const isTrialInfoPending = hasNoSubscription && isTrialInfoLoading;
   const showTrial = hasNoSubscription && trialInfo?.is_available;
+  const shouldShowTrialConnectHint =
+    hasNoSubscription && !isTrialInfoPending && !!trialInfo?.is_available;
   const balance = balanceData?.balance_kopeks ?? 0;
 
   // Get device limit from tariff settings
@@ -339,12 +375,19 @@ export function LiteDashboard() {
                     trialInfo={trialInfo}
                     balance={balance}
                     onActivate={() => activateTrialMutation.mutate()}
+                    onTopUp={() => navigate('/balance')}
                     isLoading={activateTrialMutation.isPending}
                     error={trialError}
                   />
                 )}
 
-                {hasNoSubscription && !showTrial && (
+                {isTrialInfoPending && (
+                  <div className="rounded-2xl border border-dark-600 bg-dark-800/80 p-4 text-center">
+                    <p className="text-dark-300">{t('lite.connectAvailabilityLoading')}</p>
+                  </div>
+                )}
+
+                {hasNoSubscription && !isTrialInfoPending && !showTrial && (
                   <div className="rounded-2xl border border-dark-600 bg-dark-800/80 p-4 text-center">
                     <p className="text-dark-300">{t('lite.noSubscription')}</p>
                   </div>
@@ -438,17 +481,40 @@ export function LiteDashboard() {
                   />
                 ) : (
                   <div className="rounded-2xl border border-warning-500/35 bg-warning-500/10 p-4">
-                    <p className="text-sm font-semibold text-warning-300">
-                      {t('lite.connectLockedTitle')}
-                    </p>
-                    <p className="mt-1 text-xs text-dark-300">
-                      {t('lite.connectLockedDescription')}
-                    </p>
-                    <ol className="mt-3 space-y-1 text-xs text-dark-200">
-                      <li>1. {t('lite.connectLockedStepTopUp')}</li>
-                      <li>2. {t('lite.connectLockedStepTariff')}</li>
-                      <li>3. {t('lite.connectLockedStepActivate')}</li>
-                    </ol>
+                    {isTrialInfoPending ? (
+                      <>
+                        <p className="text-sm font-semibold text-warning-300">
+                          {t('common.loading')}
+                        </p>
+                        <p className="mt-1 text-xs text-dark-300">
+                          {t('lite.connectAvailabilityLoading')}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm font-semibold text-warning-300">
+                          {shouldShowTrialConnectHint
+                            ? t('lite.connectTrialHintTitle')
+                            : t('lite.connectLockedTitle')}
+                        </p>
+                        <p className="mt-1 text-xs text-dark-300">
+                          {shouldShowTrialConnectHint
+                            ? t('lite.connectTrialHintDescription')
+                            : t('lite.connectLockedDescription')}
+                        </p>
+                        {shouldShowTrialConnectHint ? (
+                          <p className="mt-3 text-xs text-dark-200">
+                            {t('lite.connectTrialHintAction')}
+                          </p>
+                        ) : (
+                          <ol className="mt-3 space-y-1 text-xs text-dark-200">
+                            <li>1. {t('lite.connectLockedStepTopUp')}</li>
+                            <li>2. {t('lite.connectLockedStepTariff')}</li>
+                            <li>3. {t('lite.connectLockedStepActivate')}</li>
+                          </ol>
+                        )}
+                      </>
+                    )}
                   </div>
                 )}
               </div>

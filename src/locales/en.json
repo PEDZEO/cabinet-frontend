@@ -4025,10 +4025,21 @@
     "connectLockedStepTopUp": "Top up your balance",
     "connectLockedStepTariff": "Choose and purchase a tariff",
     "connectLockedStepActivate": "After activation, open connection",
+    "connectTrialHintTitle": "Activate trial to connect",
+    "connectTrialHintDescription": "The connect button will appear after trial activation.",
+    "connectTrialHintAction": "Tap \"Activate trial\" in the card above.",
+    "connectAvailabilityLoading": "Checking trial availability...",
     "activateTrial": "Activate trial",
     "trialDays": "{{count}} days free",
     "trialTraffic": "{{count}} GB traffic",
     "trialDevices": "{{count}} devices",
+    "trialRequiresTopUp": "Top up balance to activate trial",
+    "trialErrors": {
+      "insufficientBalance": "Insufficient balance to activate trial",
+      "alreadyUsed": "Trial has already been used",
+      "unavailable": "Trial is unavailable",
+      "generic": "Failed to activate trial"
+    },
     "unlimited": "Unlimited",
     "tab": {
       "tariffs": "Tariffs",
