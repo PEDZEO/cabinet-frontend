@@ -246,6 +246,8 @@ export function LiteDashboard() {
 
   const subscription = subscriptionResponse?.subscription ?? null;
   const hasNoSubscription = subscriptionResponse?.has_subscription === false && !subLoading;
+  const hasActiveSubscription =
+    !!subscription && subscription.is_active && !subscription.is_expired;
   const showTrial = hasNoSubscription && trialInfo?.is_available;
   const balance = balanceData?.balance_kopeks ?? 0;
 
@@ -427,12 +429,28 @@ export function LiteDashboard() {
               </p>
 
               <div data-onboarding="lite-connect">
-                <LiteActionButton
-                  to="/connection"
-                  label={t('lite.connect')}
-                  icon={<ConnectIcon />}
-                  variant="primary"
-                />
+                {hasActiveSubscription ? (
+                  <LiteActionButton
+                    to="/connection"
+                    label={t('lite.connect')}
+                    icon={<ConnectIcon />}
+                    variant="primary"
+                  />
+                ) : (
+                  <div className="rounded-2xl border border-warning-500/35 bg-warning-500/10 p-4">
+                    <p className="text-sm font-semibold text-warning-300">
+                      {t('lite.connectLockedTitle')}
+                    </p>
+                    <p className="mt-1 text-xs text-dark-300">
+                      {t('lite.connectLockedDescription')}
+                    </p>
+                    <ol className="mt-3 space-y-1 text-xs text-dark-200">
+                      <li>1. {t('lite.connectLockedStepTopUp')}</li>
+                      <li>2. {t('lite.connectLockedStepTariff')}</li>
+                      <li>3. {t('lite.connectLockedStepActivate')}</li>
+                    </ol>
+                  </div>
+                )}
               </div>
 
               <div className="rounded-2xl border border-dark-700/70 bg-dark-900/35 p-2">
