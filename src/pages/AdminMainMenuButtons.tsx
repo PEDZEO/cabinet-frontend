@@ -75,6 +75,7 @@ export default function AdminMainMenuButtons() {
   const [selectedRowIndex, setSelectedRowIndex] = useState(0);
   const [addMenuRowIndex, setAddMenuRowIndex] = useState<number | null>(null);
   const [highlightedRowIndex, setHighlightedRowIndex] = useState<number | null>(null);
+  const [optimisticActivatedIds, setOptimisticActivatedIds] = useState<string[]>([]);
   const [rowCapacities, setRowCapacities] = useState<number[]>([]);
   const [rowDefs, setRowDefs] = useState<Array<Pick<MenuRowConfig, 'id' | 'conditions'>>>([]);
 
@@ -104,15 +105,42 @@ export default function AdminMainMenuButtons() {
     setAddMenuRowIndex(null);
   }, [data]);
 
+  useEffect(() => {
+    if (optimisticActivatedIds.length === 0) {
+      return;
+    }
+    setOptimisticActivatedIds((previous) =>
+      previous.filter((buttonId) => {
+        const button = data?.buttons?.[buttonId];
+        return Boolean(button && !button.enabled);
+      }),
+    );
+  }, [data?.buttons, optimisticActivatedIds.length]);
+
   const buttonsById = useMemo(() => data?.buttons ?? {}, [data?.buttons]);
+  const effectiveButtonsById = useMemo(() => {
+    if (optimisticActivatedIds.length === 0) {
+      return buttonsById;
+    }
+    const optimisticSet = new Set(optimisticActivatedIds);
+    const next: typeof buttonsById = { ...buttonsById };
+    optimisticSet.forEach((buttonId) => {
+      const button = next[buttonId];
+      if (!button || button.enabled) {
+        return;
+      }
+      next[buttonId] = { ...button, enabled: true };
+    });
+    return next;
+  }, [buttonsById, optimisticActivatedIds]);
   const orderedIds = useMemo(
-    () => orderIds.filter((id) => Boolean(buttonsById[id])),
-    [buttonsById, orderIds],
+    () => orderIds.filter((id) => Boolean(effectiveButtonsById[id])),
+    [effectiveButtonsById, orderIds],
   );
 
   const orderedButtons = useMemo(
-    () => buildOrderedButtons(orderedIds, buttonsById),
-    [buttonsById, orderedIds],
+    () => buildOrderedButtons(orderedIds, effectiveButtonsById),
+    [effectiveButtonsById, orderedIds],
   );
   const { activeButtons, inactiveButtons } = useMemo(
     () => splitOrderedButtonsByEnabled(orderedButtons),
@@ -125,7 +153,7 @@ export default function AdminMainMenuButtons() {
   );
 
   const getEnabledCountForRow = (rowIndex: number): number =>
-    countEnabledButtonsForRow(rowBuckets, buttonsById, rowIndex);
+    countEnabledButtonsForRow(rowBuckets, effectiveButtonsById, rowIndex);
   const getButtonsCountForRow = (rowIndex: number): number => rowBuckets[rowIndex]?.length ?? 0;
 
   const hasOrderChanges = useMemo(
@@ -145,8 +173,8 @@ export default function AdminMainMenuButtons() {
   const visibilityOptions = useMemo(() => buildVisibilityOptions(t), [t]);
 
   const previewRows = useMemo(
-    () => buildPreviewRows(orderedIds, rowLengths, buttonsById, Boolean(data)),
-    [buttonsById, data, orderedIds, rowLengths],
+    () => buildPreviewRows(orderedIds, rowLengths, effectiveButtonsById, Boolean(data)),
+    [effectiveButtonsById, data, orderedIds, rowLengths],
   );
   const tabOptions = useMemo(() => buildMainMenuButtonsTabOptions(t), [t]);
 
@@ -362,6 +390,11 @@ export default function AdminMainMenuButtons() {
     const moved = moveButtonToRow(buttonId, rowIndex);
     if (!moved) {
       return;
+    }
+    if (!current) {
+      setOptimisticActivatedIds((previous) =>
+        previous.includes(buttonId) ? previous : [...previous, buttonId],
+      );
     }
     toggleEnabled(buttonId, current);
     setAddMenuRowIndex(null);
