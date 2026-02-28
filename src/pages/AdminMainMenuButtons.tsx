@@ -414,8 +414,9 @@ export default function AdminMainMenuButtons() {
   };
 
   const collapseEmptyRow = (rowIndex: number) => {
-    if (getButtonsCountForRow(rowIndex) > 0) {
-      setError('Можно удалить только пустой ряд');
+    const enabledInRow = getEnabledCountForRow(rowIndex);
+    if (enabledInRow > 0) {
+      setError('Можно удалить только ряд без видимых кнопок');
       return;
     }
 
@@ -431,9 +432,9 @@ export default function AdminMainMenuButtons() {
 
   const setRowCapacity = (rowIndex: number, value: number) => {
     const safeValue = Math.min(Math.max(value, 1), MAX_ROW_SLOTS);
-    const buttonsInRow = getButtonsCountForRow(rowIndex);
-    if (safeValue < buttonsInRow) {
-      setError(`Нельзя установить меньше ${buttonsInRow}: в ряду уже есть кнопки`);
+    const enabledInRow = getEnabledCountForRow(rowIndex);
+    if (safeValue < enabledInRow) {
+      setError(`Нельзя установить меньше ${enabledInRow}: в ряду уже есть видимые кнопки`);
       return;
     }
     setError(null);
@@ -442,6 +443,17 @@ export default function AdminMainMenuButtons() {
       next[rowIndex] = safeValue;
       return next;
     });
+  };
+
+  const decreaseRowCapacity = (rowIndex: number) => {
+    const currentCapacity = Math.max(
+      rowCapacities[rowIndex] ?? rowDefaultCapacities[rowIndex] ?? MAX_ROW_SLOTS,
+      1,
+    );
+    if (currentCapacity <= 1) {
+      return;
+    }
+    setRowCapacity(rowIndex, currentCapacity - 1);
   };
 
   const resetLayoutChanges = () => {
@@ -479,7 +491,7 @@ export default function AdminMainMenuButtons() {
   const selectedRowCapacityState = selectedRow
     ? getRowCapacityState(
         selectedRow.rowIndex,
-        selectedButtonsCount,
+        selectedEnabledCount,
         rowCapacities,
         rowDefaultCapacities,
         MAX_ROW_SLOTS,
@@ -728,6 +740,15 @@ export default function AdminMainMenuButtons() {
                     </select>
                   </label>
                   <div className="flex flex-wrap gap-2">
+                    {selectedRowCapacityState.maxPerRow > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => decreaseRowCapacity(selectedRow.rowIndex)}
+                        className="rounded-md border border-dark-600 bg-dark-900/70 px-3 py-1.5 text-xs text-dark-200 hover:border-dark-500"
+                      >
+                        - Место
+                      </button>
+                    )}
                     {selectedRowCapacityState.maxPerRow < MAX_ROW_SLOTS && (
                       <button
                         type="button"
