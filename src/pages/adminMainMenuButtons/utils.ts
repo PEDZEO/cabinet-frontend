@@ -236,7 +236,9 @@ export function buildRowsUpdatePayload(
   const rows = rowDefs.map((row, index) => ({
     id: row.id,
     max_per_row: Math.max(rowCapacities[index] ?? 1, 1),
-    conditions: row.conditions,
+    // In the simplified row editor we manage layout only.
+    // Row-level conditions are a legacy source of hidden rows and WYSIWYG mismatch.
+    conditions: {},
     buttons: [] as string[],
   }));
 
