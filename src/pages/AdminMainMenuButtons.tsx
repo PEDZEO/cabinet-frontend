@@ -12,8 +12,8 @@ import {
 } from '@dnd-kit/core';
 import {
   SortableContext,
+  rectSortingStrategy,
   sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { useTranslation } from 'react-i18next';
 import { adminMenuLayoutApi, MenuButtonVisibility, MenuRowConfig } from '../api/adminMenuLayout';
@@ -521,73 +521,60 @@ export default function AdminMainMenuButtons() {
                   >
                     <SortableContext
                       items={activeButtons.map((item) => item.id)}
-                      strategy={verticalListSortingStrategy}
+                      strategy={rectSortingStrategy}
                     >
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         {previewRows.map((row) => (
                           <div
                             key={`menu-row-${row.rowIndex}`}
-                            className={`rounded-lg border bg-dark-900/40 p-2 transition-colors ${
+                            className={`rounded-xl border bg-dark-900/40 p-3 transition-colors ${
                               row.rowIndex === selectedRowIndex
                                 ? 'border-accent-500/60'
                                 : 'border-dark-700/50'
                             }`}
                             onClick={() => setSelectedRowIndex(row.rowIndex)}
                           >
-                            <div className="mb-2 text-[11px] uppercase tracking-wide text-dark-500">
-                              Row {row.rowIndex + 1}
-                            </div>
-                            {row.items.length === 0 ? (
-                              <div className="rounded-md border border-dashed border-dark-700/70 px-3 py-2 text-xs text-dark-500">
-                                {getButtonsCountForRow(row.rowIndex) === 0
-                                  ? 'Пустой ряд'
-                                  : 'В ряду только скрытые кнопки'}
-                              </div>
-                            ) : (
-                              <div className="space-y-2">
-                                {row.items.map((item) => (
-                                  <SortablePreviewButton
-                                    key={`preview-${item.id}`}
-                                    buttonId={item.id}
-                                    button={item.config}
-                                    lang={lang}
-                                    onEdit={() => handleEdit(item.id)}
-                                    onDeactivate={() => toggleEnabled(item.id, item.config.enabled)}
-                                  />
-                                ))}
-                              </div>
-                            )}
-                            {row.rowIndex === selectedRowIndex &&
-                              (() => {
-                                const buttonsInRow = getButtonsCountForRow(row.rowIndex);
-                                const { maxPerRow, freeSlots } = getRowCapacityState(
-                                  row.rowIndex,
-                                  buttonsInRow,
-                                  rowCapacities,
-                                  rowDefaultCapacities,
-                                  MAX_ROW_SLOTS,
-                                );
-                                return (
-                                  <div className="mt-2 flex flex-wrap gap-2">
-                                    <label
-                                      className="inline-flex items-center gap-2 rounded-md border border-dark-700/60 bg-dark-900/70 px-2 py-1 text-xs text-dark-300"
-                                      onClick={(event) => event.stopPropagation()}
+                            {(() => {
+                              const buttonsInRow = getButtonsCountForRow(row.rowIndex);
+                              const enabledInRow = getEnabledCountForRow(row.rowIndex);
+                              const { maxPerRow, freeSlots } = getRowCapacityState(
+                                row.rowIndex,
+                                buttonsInRow,
+                                rowCapacities,
+                                rowDefaultCapacities,
+                                MAX_ROW_SLOTS,
+                              );
+                              return (
+                                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                                  <div className="text-[11px] uppercase tracking-wide text-dark-500">
+                                    Row {row.rowIndex + 1}
+                                  </div>
+                                  <div className="rounded-full border border-dark-700/60 bg-dark-900/70 px-2 py-0.5 text-[11px] text-dark-300">
+                                    Видимых: {enabledInRow}/{maxPerRow}
+                                  </div>
+                                  <div className="rounded-full border border-dark-700/60 bg-dark-900/70 px-2 py-0.5 text-[11px] text-dark-400">
+                                    Всего: {buttonsInRow}
+                                  </div>
+                                  <label
+                                    className="inline-flex items-center gap-2 rounded-md border border-dark-700/60 bg-dark-900/70 px-2 py-1 text-xs text-dark-300"
+                                    onClick={(event) => event.stopPropagation()}
+                                  >
+                                    <span>Мест в ROW:</span>
+                                    <select
+                                      value={maxPerRow}
+                                      onChange={(event) =>
+                                        setRowCapacity(row.rowIndex, Number(event.target.value))
+                                      }
+                                      className="rounded border border-dark-600 bg-dark-800 px-1 py-0.5 text-xs text-dark-100"
                                     >
-                                      <span>Мест в ROW:</span>
-                                      <select
-                                        value={maxPerRow}
-                                        onChange={(event) =>
-                                          setRowCapacity(row.rowIndex, Number(event.target.value))
-                                        }
-                                        className="rounded border border-dark-600 bg-dark-800 px-1 py-0.5 text-xs text-dark-100"
-                                      >
-                                        {[1, 2, 3, 4].map((option) => (
-                                          <option key={option} value={option}>
-                                            {option}
-                                          </option>
-                                        ))}
-                                      </select>
-                                    </label>
+                                      {[1, 2, 3, 4].map((option) => (
+                                        <option key={option} value={option}>
+                                          {option}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </label>
+                                  <div className="flex flex-wrap items-center gap-2">
                                     {maxPerRow < MAX_ROW_SLOTS && (
                                       <button
                                         type="button"
@@ -597,12 +584,11 @@ export default function AdminMainMenuButtons() {
                                         }}
                                         className="rounded-md border border-dark-600 bg-dark-900/70 px-3 py-1.5 text-xs text-dark-200 hover:border-dark-500"
                                       >
-                                        + Добавить место в ROW
+                                        + Место
                                       </button>
                                     )}
-                                    {Array.from({ length: freeSlots }).map((_, slotIdx) => (
+                                    {freeSlots > 0 && (
                                       <button
-                                        key={`row-${row.rowIndex}-slot-${slotIdx}`}
                                         type="button"
                                         onClick={(event) => {
                                           event.stopPropagation();
@@ -612,9 +598,9 @@ export default function AdminMainMenuButtons() {
                                         }}
                                         className="rounded-md border border-dashed border-accent-500/40 bg-accent-500/10 px-3 py-1.5 text-xs text-accent-300 hover:bg-accent-500/20"
                                       >
-                                        + Добавить
+                                        + Добавить кнопку
                                       </button>
-                                    ))}
+                                    )}
                                     {buttonsInRow === 0 && (
                                       <button
                                         type="button"
@@ -628,8 +614,34 @@ export default function AdminMainMenuButtons() {
                                       </button>
                                     )}
                                   </div>
-                                );
-                              })()}
+                                </div>
+                              );
+                            })()}
+                            {row.items.length === 0 ? (
+                              <div className="rounded-md border border-dashed border-dark-700/70 px-3 py-2 text-xs text-dark-500">
+                                {getButtonsCountForRow(row.rowIndex) === 0
+                                  ? 'Пустой ряд'
+                                  : 'В ряду только скрытые кнопки'}
+                              </div>
+                            ) : (
+                              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                                {row.items.map((item) => (
+                                  <SortablePreviewButton
+                                    key={`preview-${item.id}`}
+                                    buttonId={item.id}
+                                    button={item.config}
+                                    lang={lang}
+                                    compact
+                                    onEdit={() => handleEdit(item.id)}
+                                    onDeactivate={() => toggleEnabled(item.id, item.config.enabled)}
+                                    onMovePrevRow={() => moveButtonToRow(item.id, row.rowIndex - 1)}
+                                    onMoveNextRow={() => moveButtonToRow(item.id, row.rowIndex + 1)}
+                                    canMovePrevRow={row.rowIndex > 0}
+                                    canMoveNextRow={row.rowIndex < rowLengths.length - 1}
+                                  />
+                                ))}
+                              </div>
+                            )}
                             {addMenuRowIndex === row.rowIndex && (
                               <div
                                 className="mt-2 space-y-2 rounded-md border border-dark-700/60 bg-dark-900/70 p-2"
@@ -676,9 +688,16 @@ export default function AdminMainMenuButtons() {
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center gap-2 text-sm text-dark-500">
-              <GripIcon />
-              Перетаскивайте кнопки прямо в предпросмотре слева
+            <div className="rounded-xl border border-dark-700/60 bg-dark-900/60 p-4">
+              <div className="mb-2 flex items-center gap-2 text-sm text-dark-300">
+                <GripIcon />
+                Новый поток редактирования
+              </div>
+              <ol className="space-y-1 text-xs text-dark-400">
+                <li>1. Выберите ряд и настройте лимит кнопок.</li>
+                <li>2. Добавьте скрытые кнопки через «+ Добавить кнопку».</li>
+                <li>3. Перетаскивайте или используйте стрелки ← → на карточке кнопки.</li>
+              </ol>
             </div>
 
             {editingId && (

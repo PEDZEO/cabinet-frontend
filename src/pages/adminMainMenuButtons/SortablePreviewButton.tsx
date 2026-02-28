@@ -20,6 +20,11 @@ interface SortablePreviewButtonProps {
   lang: string;
   onEdit: () => void;
   onDeactivate: () => void;
+  onMovePrevRow?: () => void;
+  onMoveNextRow?: () => void;
+  canMovePrevRow?: boolean;
+  canMoveNextRow?: boolean;
+  compact?: boolean;
 }
 
 export function SortablePreviewButton({
@@ -28,6 +33,11 @@ export function SortablePreviewButton({
   lang,
   onEdit,
   onDeactivate,
+  onMovePrevRow,
+  onMoveNextRow,
+  canMovePrevRow = false,
+  canMoveNextRow = false,
+  compact = false,
 }: SortablePreviewButtonProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: buttonId,
@@ -48,7 +58,7 @@ export function SortablePreviewButton({
         isDragging
           ? 'border-accent-500/50 bg-dark-800 shadow-lg shadow-accent-500/20'
           : 'border-dark-700/70 bg-dark-800/70 hover:border-dark-600'
-      }`}
+      } ${compact ? 'text-xs' : ''}`}
     >
       <button
         type="button"
@@ -76,11 +86,36 @@ export function SortablePreviewButton({
       <button
         type="button"
         onClick={onEdit}
-        className="line-clamp-2 min-w-0 flex-1 text-left text-sm text-dark-100"
+        className={`line-clamp-2 min-w-0 flex-1 text-left text-dark-100 ${compact ? 'text-xs' : 'text-sm'}`}
         title={getButtonText(buttonId, button, lang)}
       >
         {getButtonText(buttonId, button, lang)}
       </button>
+
+      {(onMovePrevRow || onMoveNextRow) && (
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={onMovePrevRow}
+            disabled={!canMovePrevRow}
+            className="rounded-md border border-dark-700/70 px-1.5 py-1 text-[11px] text-dark-300 hover:border-dark-500 hover:text-dark-100 disabled:cursor-not-allowed disabled:opacity-40"
+            title="Переместить в предыдущий ряд"
+            aria-label={`Move ${buttonId} to previous row`}
+          >
+            ←
+          </button>
+          <button
+            type="button"
+            onClick={onMoveNextRow}
+            disabled={!canMoveNextRow}
+            className="rounded-md border border-dark-700/70 px-1.5 py-1 text-[11px] text-dark-300 hover:border-dark-500 hover:text-dark-100 disabled:cursor-not-allowed disabled:opacity-40"
+            title="Переместить в следующий ряд"
+            aria-label={`Move ${buttonId} to next row`}
+          >
+            →
+          </button>
+        </div>
+      )}
 
       <button
         type="button"
