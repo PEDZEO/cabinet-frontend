@@ -656,7 +656,7 @@ export default function AdminMainMenuButtons() {
                                         compact
                                         variant="bot"
                                         showMoveActions={false}
-                                        showDeactivateAction={false}
+                                        showDeactivateAction
                                         onEdit={() => handleEdit(item.id)}
                                         onDeactivate={() =>
                                           toggleEnabled(item.id, item.config.enabled)
