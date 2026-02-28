@@ -57,6 +57,7 @@ export function SortablePreviewButton({
   };
 
   const isBotVariant = variant === 'bot';
+  const compactHideLabel = compact || isBotVariant;
 
   return (
     <div
@@ -131,9 +132,11 @@ export function SortablePreviewButton({
         <button
           type="button"
           onClick={onDeactivate}
-          className="rounded-md border border-dark-700/70 px-2 py-1 text-xs text-dark-300 hover:border-dark-500 hover:text-dark-100"
+          className="rounded-md border border-dark-700/70 px-1.5 py-1 text-xs text-dark-300 hover:border-dark-500 hover:text-dark-100"
+          title="Скрыть кнопку"
+          aria-label={`Скрыть ${buttonId}`}
         >
-          Скрыть
+          {compactHideLabel ? '×' : 'Скрыть'}
         </button>
       )}
     </div>

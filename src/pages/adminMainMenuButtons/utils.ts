@@ -78,19 +78,15 @@ export function reorderVisibleSubset(
 }
 
 export function buildBuckets(ids: string[], lengths: number[]): string[][] {
+  const assignedCount = lengths.reduce((sum, count) => sum + Math.max(count, 0), 0);
+  const assignedIds = ids.slice(0, assignedCount);
   const buckets: string[][] = [];
   let pointer = 0;
   lengths.forEach((count) => {
     const safeCount = Math.max(count, 0);
-    buckets.push(ids.slice(pointer, pointer + safeCount));
+    buckets.push(assignedIds.slice(pointer, pointer + safeCount));
     pointer += safeCount;
   });
-  if (pointer < ids.length) {
-    if (buckets.length === 0) {
-      buckets.push([]);
-    }
-    buckets[buckets.length - 1] = [...buckets[buckets.length - 1], ...ids.slice(pointer)];
-  }
   return buckets;
 }
 
@@ -129,10 +125,12 @@ export function buildPreviewRows(
   }
 
   const rows: PreviewRow[] = [];
+  const assignedCount = rowLengths.reduce((sum, count) => sum + Math.max(count, 0), 0);
+  const assignedIds = orderedIds.slice(0, assignedCount);
   let pointer = 0;
 
   rowLengths.forEach((count, rowIndex) => {
-    const slice = orderedIds.slice(pointer, pointer + Math.max(count, 0));
+    const slice = assignedIds.slice(pointer, pointer + Math.max(count, 0));
     pointer += Math.max(count, 0);
     const rowItems = slice
       .map((id) => {
@@ -146,26 +144,6 @@ export function buildPreviewRows(
 
     rows.push({ rowIndex, items: rowItems });
   });
-
-  if (pointer < orderedIds.length) {
-    const tailItems = orderedIds
-      .slice(pointer)
-      .map((id) => {
-        const config = buttonsById[id];
-        if (!config || !config.enabled) {
-          return null;
-        }
-        return { id, config };
-      })
-      .filter((item): item is PreviewRowItem => item !== null);
-    if (tailItems.length > 0) {
-      const lastRowIndex = Math.max(rows.length - 1, 0);
-      if (!rows[lastRowIndex]) {
-        rows[lastRowIndex] = { rowIndex: lastRowIndex, items: [] };
-      }
-      rows[lastRowIndex].items = [...rows[lastRowIndex].items, ...tailItems];
-    }
-  }
 
   return rows;
 }
@@ -184,8 +162,8 @@ export function splitOrderedButtonsByEnabled(orderedButtons: OrderedButtonItem[]
   activeButtons: OrderedButtonItem[];
   inactiveButtons: OrderedButtonItem[];
 } {
-  const activeButtons = orderedButtons.filter((item) => item.config.enabled);
-  const inactiveButtons = orderedButtons.filter((item) => !item.config.enabled);
+  const activeButtons = orderedButtons.filter((item) => item.config?.enabled);
+  const inactiveButtons = orderedButtons.filter((item) => !item.config?.enabled);
   return { activeButtons, inactiveButtons };
 }
 
@@ -203,9 +181,17 @@ export interface MenuLayoutDerivedState {
 }
 
 export function buildMenuLayoutDerivedState(layout: MenuLayoutResponse): MenuLayoutDerivedState {
+  const rowsWithEnabledButtons = layout.rows.map((row) =>
+    row.buttons.filter((buttonId) => layout.buttons[buttonId]?.enabled),
+  );
+  const assignedEnabledIds = rowsWithEnabledButtons.flat();
+  const assignedSet = new Set(assignedEnabledIds);
+  const allOrdered = buildInitialOrder(layout);
+  const unassignedIds = allOrdered.filter((id) => !assignedSet.has(id));
+
   return {
-    orderIds: buildInitialOrder(layout),
-    rowLengths: layout.rows.map((row) => row.buttons.length),
+    orderIds: [...assignedEnabledIds, ...unassignedIds],
+    rowLengths: rowsWithEnabledButtons.map((buttons) => buttons.length),
     rowCapacities: layout.rows.map((row) => Math.max(row.max_per_row || 1, 1)),
     rowDefs: buildRowDefinitions(layout.rows),
   };
@@ -213,6 +199,7 @@ export function buildMenuLayoutDerivedState(layout: MenuLayoutResponse): MenuLay
 
 export function hasRowsConfigChanged(
   rows: MenuRowConfig[],
+  buttonsById: Record<string, MenuButtonConfig>,
   rowDefs: Array<Pick<MenuRowConfig, 'id' | 'conditions'>>,
   rowLengths: number[],
   rowCapacities: number[],
@@ -223,10 +210,14 @@ export function hasRowsConfigChanged(
   for (let index = 0; index < rows.length; index += 1) {
     const sourceRow = rows[index];
     const sourceCapacity = Math.max(sourceRow.max_per_row || 1, 1);
+    const enabledButtonsCount = sourceRow.buttons.reduce(
+      (count, buttonId) => count + (buttonsById[buttonId]?.enabled ? 1 : 0),
+      0,
+    );
     if (rowDefs[index]?.id !== sourceRow.id) {
       return true;
     }
-    if ((rowLengths[index] ?? 0) !== sourceRow.buttons.length) {
+    if ((rowLengths[index] ?? 0) !== enabledButtonsCount) {
       return true;
     }
     if (Math.max(rowCapacities[index] ?? sourceCapacity, 1) !== sourceCapacity) {
@@ -250,15 +241,13 @@ export function buildRowsUpdatePayload(
   }));
 
   let pointer = 0;
+  const assignedCount = rowLengths.reduce((sum, count) => sum + Math.max(count, 0), 0);
+  const assignedIds = ids.slice(0, assignedCount);
   rows.forEach((row, index) => {
     const count = rowLengths[index] ?? 0;
-    row.buttons = ids.slice(pointer, pointer + count);
+    row.buttons = assignedIds.slice(pointer, pointer + count);
     pointer += count;
   });
-
-  if (pointer < ids.length && rows.length > 0) {
-    rows[rows.length - 1].buttons = [...rows[rows.length - 1].buttons, ...ids.slice(pointer)];
-  }
 
   return rows;
 }
@@ -325,17 +314,11 @@ export function moveButtonToRowState(options: MoveButtonToRowOptions): MoveButto
     maxRowSlots,
   } = options;
 
-  const buckets = buildBuckets(orderedIds, rowLengths);
+  const assignedCount = rowLengths.reduce((sum, count) => sum + Math.max(count, 0), 0);
+  const assignedIds = orderedIds.slice(0, assignedCount);
+  const unassignedIds = orderedIds.slice(assignedCount);
+  const buckets = buildBuckets(assignedIds, rowLengths);
   const sourceRowIndex = findRowIndexById(buckets, buttonId);
-
-  if (sourceRowIndex === -1) {
-    return {
-      nextOrderIds: null,
-      nextRowLengths: null,
-      safeTarget: Math.max(targetRowIndex, 0),
-      error: 'button_not_found',
-    };
-  }
 
   const safeTarget = Math.min(Math.max(targetRowIndex, 0), buckets.length - 1);
   const targetMaxPerRow = Math.max(
@@ -348,6 +331,27 @@ export function moveButtonToRowState(options: MoveButtonToRowOptions): MoveButto
       nextRowLengths: null,
       safeTarget,
       error: 'row_full',
+    };
+  }
+
+  if (sourceRowIndex === -1) {
+    const unassignedIndex = unassignedIds.indexOf(buttonId);
+    if (unassignedIndex === -1) {
+      return {
+        nextOrderIds: null,
+        nextRowLengths: null,
+        safeTarget,
+        error: 'button_not_found',
+      };
+    }
+    const nextUnassigned = [...unassignedIds];
+    nextUnassigned.splice(unassignedIndex, 1);
+    buckets[safeTarget].push(buttonId);
+    return {
+      nextOrderIds: [...buckets.flat(), ...nextUnassigned],
+      nextRowLengths: buckets.map((row) => row.length),
+      safeTarget,
+      error: null,
     };
   }
 
@@ -364,7 +368,7 @@ export function moveButtonToRowState(options: MoveButtonToRowOptions): MoveButto
   buckets[safeTarget].push(buttonId);
 
   return {
-    nextOrderIds: buckets.flat(),
+    nextOrderIds: [...buckets.flat(), ...unassignedIds],
     nextRowLengths: buckets.map((row) => row.length),
     safeTarget,
     error: null,

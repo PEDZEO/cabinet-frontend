@@ -166,8 +166,14 @@ export default function AdminMainMenuButtons() {
     if (!data) {
       return false;
     }
-    return hasRowsConfigChanged(data.rows, rowDefs, rowLengths, rowCapacities);
-  }, [data, rowCapacities, rowDefs, rowLengths]);
+    return hasRowsConfigChanged(
+      data.rows,
+      effectiveButtonsById,
+      rowDefs,
+      rowLengths,
+      rowCapacities,
+    );
+  }, [data, effectiveButtonsById, rowCapacities, rowDefs, rowLengths]);
 
   const hasPendingChanges = hasPendingLayoutChanges(hasOrderChanges, hasRowsConfigChanges);
 
