@@ -13,6 +13,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { CardsBlock, TimelineBlock, AccordionBlock, MinimalBlock, BlockButtons } from './blocks';
 import type { BlockRendererProps } from './blocks';
 import { getLiteOnboardingFlowState, markLiteOnboardingStep } from '@/features/lite/onboardingFlow';
+import { useAuthStore } from '@/store/auth';
 
 const platformOrder = ['ios', 'android', 'windows', 'macos', 'linux', 'androidTV', 'appleTV'];
 
@@ -56,13 +57,18 @@ export default function InstallationGuide({
   const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
   const { isLight } = useTheme();
+  const user = useAuthStore((state) => state.user);
 
   const detectedPlatform = useMemo(() => detectPlatform(), []);
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
   const [activePlatformKey, setActivePlatformKey] = useState<string | null>(null);
   const [selectedApp, setSelectedApp] = useState<RemnawaveAppClient | null>(null);
-  const [flowState, setFlowState] = useState(() => getLiteOnboardingFlowState());
+  const [flowState, setFlowState] = useState(() => getLiteOnboardingFlowState(user?.id));
+
+  useEffect(() => {
+    setFlowState(getLiteOnboardingFlowState(user?.id));
+  }, [user?.id]);
 
   const getLocalizedText = useCallback(
     (text: LocalizedText | undefined): string => {
@@ -163,18 +169,18 @@ export default function InstallationGuide({
 
   useEffect(() => {
     if (isTrialStepTwoGuide && !flowState.connection_opened) {
-      setFlowState(markLiteOnboardingStep('connection_opened'));
+      setFlowState(markLiteOnboardingStep('connection_opened', user?.id));
     }
-  }, [flowState.connection_opened, isTrialStepTwoGuide]);
+  }, [flowState.connection_opened, isTrialStepTwoGuide, user?.id]);
 
   const handleOpenDeepLinkWithFlow = useCallback(
     (url: string) => {
       if (isTrialStepTwoGuide && !flowState.subscription_added) {
-        setFlowState(markLiteOnboardingStep('subscription_added'));
+        setFlowState(markLiteOnboardingStep('subscription_added', user?.id));
       }
       onOpenDeepLink(url);
     },
-    [flowState.subscription_added, isTrialStepTwoGuide, onOpenDeepLink],
+    [flowState.subscription_added, isTrialStepTwoGuide, onOpenDeepLink, user?.id],
   );
 
   const renderBlockButtons = useCallback(

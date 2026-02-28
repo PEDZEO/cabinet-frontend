@@ -149,12 +149,16 @@ export function LiteDashboard() {
   const [trialError, setTrialError] = useState<string | null>(null);
   const [isTrialActivationLocked, setIsTrialActivationLocked] = useState(false);
   const trialActivationCooldownRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [onboardingFlow, setOnboardingFlow] = useState(() => getLiteOnboardingFlowState());
+  const [onboardingFlow, setOnboardingFlow] = useState(() => getLiteOnboardingFlowState(user?.id));
   const [copied, setCopied] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const { isCompleted: isOnboardingCompleted, complete: completeOnboarding } = useLiteOnboarding(
     user?.id,
   );
+
+  useEffect(() => {
+    setOnboardingFlow(getLiteOnboardingFlowState(user?.id));
+  }, [user?.id]);
 
   // Pull to refresh handler
   const handleRefresh = useCallback(async () => {
@@ -249,8 +253,8 @@ export function LiteDashboard() {
     mutationFn: subscriptionApi.activateTrial,
     onSuccess: () => {
       setTrialError(null);
-      resetLiteOnboardingFlowState();
-      setOnboardingFlow(markLiteOnboardingStep('trial_activated'));
+      resetLiteOnboardingFlowState(user?.id);
+      setOnboardingFlow(markLiteOnboardingStep('trial_activated', user?.id));
       queryClient.invalidateQueries({ queryKey: ['subscription'] });
       queryClient.invalidateQueries({ queryKey: ['trial-info'] });
       queryClient.invalidateQueries({ queryKey: ['balance'] });

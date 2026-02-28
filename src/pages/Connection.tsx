@@ -66,7 +66,7 @@ export default function Connection() {
 
   const openDeepLink = useCallback(
     (deepLink: string) => {
-      markLiteOnboardingStep('subscription_added');
+      markLiteOnboardingStep('subscription_added', user?.id);
 
       let resolved = deepLink;
       if (hasTemplates(resolved)) {
@@ -86,7 +86,7 @@ export default function Connection() {
 
       window.location.href = finalUrl;
     },
-    [isTelegramWebApp, i18n.language, resolveUrl],
+    [isTelegramWebApp, i18n.language, resolveUrl, user?.id],
   );
 
   // Check if any platform has configured apps

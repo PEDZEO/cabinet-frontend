@@ -14,9 +14,13 @@ const defaultState: LiteOnboardingFlowState = {
   subscription_added: false,
 };
 
-function readFlowState(): LiteOnboardingFlowState {
+function getFlowStorageKey(userId?: number | null): string {
+  return userId ? `${LITE_ONBOARDING_FLOW_KEY}_${userId}` : LITE_ONBOARDING_FLOW_KEY;
+}
+
+function readFlowState(userId?: number | null): LiteOnboardingFlowState {
   try {
-    const raw = localStorage.getItem(LITE_ONBOARDING_FLOW_KEY);
+    const raw = localStorage.getItem(getFlowStorageKey(userId));
     if (!raw) return defaultState;
     const parsed = JSON.parse(raw) as Partial<LiteOnboardingFlowState>;
     return {
@@ -29,25 +33,28 @@ function readFlowState(): LiteOnboardingFlowState {
   }
 }
 
-function writeFlowState(state: LiteOnboardingFlowState): void {
+function writeFlowState(state: LiteOnboardingFlowState, userId?: number | null): void {
   try {
-    localStorage.setItem(LITE_ONBOARDING_FLOW_KEY, JSON.stringify(state));
+    localStorage.setItem(getFlowStorageKey(userId), JSON.stringify(state));
   } catch {
     // no-op
   }
 }
 
-export function getLiteOnboardingFlowState(): LiteOnboardingFlowState {
-  return readFlowState();
+export function getLiteOnboardingFlowState(userId?: number | null): LiteOnboardingFlowState {
+  return readFlowState(userId);
 }
 
-export function markLiteOnboardingStep(step: LiteOnboardingStep): LiteOnboardingFlowState {
-  const current = readFlowState();
+export function markLiteOnboardingStep(
+  step: LiteOnboardingStep,
+  userId?: number | null,
+): LiteOnboardingFlowState {
+  const current = readFlowState(userId);
   const next = { ...current, [step]: true };
-  writeFlowState(next);
+  writeFlowState(next, userId);
   return next;
 }
 
-export function resetLiteOnboardingFlowState(): void {
-  writeFlowState(defaultState);
+export function resetLiteOnboardingFlowState(userId?: number | null): void {
+  writeFlowState(defaultState, userId);
 }
