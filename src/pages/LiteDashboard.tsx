@@ -238,6 +238,7 @@ export function LiteDashboard() {
       queryClient.invalidateQueries({ queryKey: ['subscription'] });
       queryClient.invalidateQueries({ queryKey: ['trial-info'] });
       queryClient.invalidateQueries({ queryKey: ['balance'] });
+      queryClient.invalidateQueries({ queryKey: ['payment-methods'] });
       queryClient.invalidateQueries({ queryKey: ['appConfig'] });
       refreshUser();
       navigate('/connection?guide=trial&step=2');

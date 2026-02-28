@@ -126,6 +126,7 @@ function FullBalance() {
   const { data: paymentMethods } = useQuery({
     queryKey: ['payment-methods'],
     queryFn: balanceApi.getPaymentMethods,
+    refetchOnMount: 'always',
   });
 
   const normalizeType = (type: string) => type?.toUpperCase?.() ?? type;

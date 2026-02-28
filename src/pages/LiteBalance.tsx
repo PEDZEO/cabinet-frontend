@@ -87,6 +87,7 @@ export default function LiteBalance() {
   const { data: paymentMethods } = useQuery({
     queryKey: ['payment-methods'],
     queryFn: balanceApi.getPaymentMethods,
+    refetchOnMount: 'always',
   });
 
   const { data: transactions, isFetching: isTransactionsFetching } = useQuery<
