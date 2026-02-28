@@ -3863,6 +3863,8 @@
     "published": "Опубликовано",
     "prerelease": "Предрелиз",
     "refresh": "Проверить обновления",
+    "showDetails": "Показать описание",
+    "hideDetails": "Скрыть описание",
     "noReleases": "Нет данных о релизах"
   },
   "adminDashboard": {

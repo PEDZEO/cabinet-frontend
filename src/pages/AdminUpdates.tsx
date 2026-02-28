@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -91,6 +91,18 @@ const ExternalLinkIcon = () => (
       strokeLinejoin="round"
       d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
     />
+  </svg>
+);
+
+const ChevronIcon = ({ expanded }: { expanded: boolean }) => (
+  <svg
+    className={`h-4 w-4 transition-transform ${expanded ? 'rotate-180' : ''}`}
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={2}
+  >
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25 12 15.75 4.5 8.25" />
   </svg>
 );
 
@@ -192,6 +204,7 @@ function VersionBadge({ hasUpdate }: { hasUpdate: boolean }) {
 
 function ReleaseCard({ release }: { release: ReleaseItem }) {
   const { t } = useTranslation();
+  const [isExpanded, setIsExpanded] = useState(false);
   // Content is sanitized via DOMPurify in renderMarkdown — safe for innerHTML
   const bodyHtml = useMemo(
     () => (release.body ? renderMarkdown(release.body) : ''),
@@ -219,10 +232,24 @@ function ReleaseCard({ release }: { release: ReleaseItem }) {
         </div>
       </div>
       {bodyHtml ? (
-        <div
-          className="release-body max-h-48 overflow-auto rounded-lg bg-dark-900/50 p-3 text-xs leading-relaxed text-dark-300 [&_a]:text-accent-400 [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:text-accent-300 [&_code]:rounded [&_code]:bg-dark-700/50 [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-dark-200 [&_h2]:mb-1.5 [&_h2]:mt-2 [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:text-dark-200 first:[&_h2]:mt-0 [&_h3]:mb-1 [&_h3]:mt-2 [&_h3]:text-xs [&_h3]:font-semibold [&_h3]:text-dark-200 first:[&_h3]:mt-0 [&_h4]:mb-0.5 [&_h4]:mt-1.5 [&_h4]:text-xs [&_h4]:font-medium [&_h4]:text-dark-300 [&_li]:ml-4 [&_li]:list-disc [&_li]:py-0.5 [&_p]:my-1"
-          dangerouslySetInnerHTML={{ __html: bodyHtml }}
-        />
+        <>
+          <button
+            type="button"
+            onClick={() => setIsExpanded((prev) => !prev)}
+            className="mb-2 flex w-full items-center justify-between rounded-lg border border-dark-700/50 bg-dark-900/40 px-2.5 py-2 text-left text-xs text-dark-300 transition-colors hover:border-dark-600 hover:bg-dark-900/60"
+          >
+            <span>
+              {isExpanded ? t('adminUpdates.hideDetails') : t('adminUpdates.showDetails')}
+            </span>
+            <ChevronIcon expanded={isExpanded} />
+          </button>
+          {isExpanded && (
+            <div
+              className="release-body max-h-48 overflow-auto rounded-lg bg-dark-900/50 p-3 text-xs leading-relaxed text-dark-300 [&_a]:text-accent-400 [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:text-accent-300 [&_code]:rounded [&_code]:bg-dark-700/50 [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-dark-200 [&_h2]:mb-1.5 [&_h2]:mt-2 [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:text-dark-200 first:[&_h2]:mt-0 [&_h3]:mb-1 [&_h3]:mt-2 [&_h3]:text-xs [&_h3]:font-semibold [&_h3]:text-dark-200 first:[&_h3]:mt-0 [&_h4]:mb-0.5 [&_h4]:mt-1.5 [&_h4]:text-xs [&_h4]:font-medium [&_h4]:text-dark-300 [&_li]:ml-4 [&_li]:list-disc [&_li]:py-0.5 [&_p]:my-1"
+              dangerouslySetInnerHTML={{ __html: bodyHtml }}
+            />
+          )}
+        </>
       ) : null}
     </div>
   );

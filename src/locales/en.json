@@ -3308,6 +3308,8 @@
     "published": "Published",
     "prerelease": "Pre-release",
     "refresh": "Check for updates",
+    "showDetails": "Show details",
+    "hideDetails": "Hide details",
     "noReleases": "No release data"
   },
   "adminDashboard": {

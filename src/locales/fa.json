@@ -2860,6 +2860,8 @@
     "published": "منتشر شده",
     "prerelease": "پیش‌انتشار",
     "refresh": "بررسی به‌روزرسانی",
+    "showDetails": "نمایش توضیحات",
+    "hideDetails": "پنهان کردن توضیحات",
     "noReleases": "داده‌ای موجود نیست"
   },
   "adminDashboard": {

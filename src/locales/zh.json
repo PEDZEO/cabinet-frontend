@@ -2859,6 +2859,8 @@
     "published": "发布于",
     "prerelease": "预发布",
     "refresh": "检查更新",
+    "showDetails": "显示详情",
+    "hideDetails": "隐藏详情",
     "noReleases": "没有发布数据"
   },
   "adminDashboard": {
