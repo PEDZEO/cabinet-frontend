@@ -318,10 +318,11 @@ export function LiteDashboard() {
   const expiredOnLabel = hasExpiredSubscription
     ? new Date(subscription.end_date).toLocaleDateString()
     : null;
-  const showTrialFlow = shouldShowTrialConnectHint || onboardingFlow.trial_activated;
   const trialFlowStep1Done = onboardingFlow.trial_activated;
   const trialFlowStep2Done = onboardingFlow.connection_opened;
   const trialFlowStep3Done = onboardingFlow.subscription_added;
+  const showTrialFlow =
+    (shouldShowTrialConnectHint || onboardingFlow.trial_activated) && !trialFlowStep3Done;
 
   // Get device limit from tariff settings
   const tariffs = purchaseOptions?.sales_mode === 'tariffs' ? purchaseOptions.tariffs : [];
