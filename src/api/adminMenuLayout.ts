@@ -120,6 +120,173 @@ export interface UserClickSequencesResponse {
   total: number;
 }
 
+const FALLBACK_DEFAULT_MENU_LAYOUT: MenuLayoutUpdateRequest = {
+  rows: [
+    {
+      id: 'connect_row',
+      buttons: ['connect'],
+      max_per_row: 1,
+      conditions: { has_active_subscription: true, subscription_is_active: true },
+    },
+    {
+      id: 'subscription_row',
+      buttons: ['subscription'],
+      max_per_row: 1,
+      conditions: { has_active_subscription: true },
+    },
+    {
+      id: 'trial_buy_row',
+      buttons: ['trial', 'buy_subscription'],
+      max_per_row: 2,
+      conditions: null,
+    },
+    {
+      id: 'balance_row',
+      buttons: ['balance'],
+      max_per_row: 1,
+      conditions: null,
+    },
+    {
+      id: 'promo_referral_row',
+      buttons: ['promocode', 'referrals'],
+      max_per_row: 2,
+      conditions: null,
+    },
+    {
+      id: 'support_info_row',
+      buttons: ['support', 'info'],
+      max_per_row: 2,
+      conditions: null,
+    },
+    {
+      id: 'language_row',
+      buttons: ['language'],
+      max_per_row: 1,
+      conditions: null,
+    },
+    {
+      id: 'admin_row',
+      buttons: ['admin_panel'],
+      max_per_row: 1,
+      conditions: { is_admin: true },
+    },
+  ],
+  buttons: {
+    connect: {
+      type: 'builtin',
+      builtin_id: 'connect',
+      text: { ru: '🔗 Подключиться', en: '🔗 Connect' },
+      action: 'subscription_connect',
+      enabled: true,
+      visibility: 'subscribers',
+      conditions: { has_active_subscription: true, subscription_is_active: true },
+      dynamic_text: false,
+      open_mode: 'callback',
+      webapp_url: null,
+    },
+    subscription: {
+      type: 'builtin',
+      builtin_id: 'subscription',
+      text: { ru: '📊 Подписка', en: '📊 Subscription' },
+      action: 'menu_subscription',
+      enabled: true,
+      visibility: 'subscribers',
+      conditions: null,
+      dynamic_text: false,
+    },
+    trial: {
+      type: 'builtin',
+      builtin_id: 'trial',
+      text: { ru: '🎁 Пробный период', en: '🎁 Free trial' },
+      action: 'menu_trial',
+      enabled: true,
+      visibility: 'all',
+      conditions: { show_trial: true },
+      dynamic_text: false,
+    },
+    buy_subscription: {
+      type: 'builtin',
+      builtin_id: 'buy_subscription',
+      text: { ru: '🛒 Купить подписку', en: '🛒 Buy subscription' },
+      action: 'menu_buy',
+      enabled: true,
+      visibility: 'all',
+      conditions: { show_buy: true },
+      dynamic_text: false,
+    },
+    balance: {
+      type: 'builtin',
+      builtin_id: 'balance',
+      text: { ru: '💰 Баланс: {balance}', en: '💰 Balance: {balance}' },
+      action: 'menu_balance',
+      enabled: true,
+      visibility: 'all',
+      conditions: null,
+      dynamic_text: true,
+    },
+    promocode: {
+      type: 'builtin',
+      builtin_id: 'promocode',
+      text: { ru: '🎟️ Промокод', en: '🎟️ Promo code' },
+      action: 'menu_promocode',
+      enabled: true,
+      visibility: 'all',
+      conditions: null,
+      dynamic_text: false,
+    },
+    referrals: {
+      type: 'builtin',
+      builtin_id: 'referrals',
+      text: { ru: '👥 Рефералы', en: '👥 Referrals' },
+      action: 'menu_referrals',
+      enabled: true,
+      visibility: 'all',
+      conditions: { referral_enabled: true },
+      dynamic_text: false,
+    },
+    support: {
+      type: 'builtin',
+      builtin_id: 'support',
+      text: { ru: '💬 Поддержка', en: '💬 Support' },
+      action: 'menu_support',
+      enabled: true,
+      visibility: 'all',
+      conditions: { support_enabled: true },
+      dynamic_text: false,
+    },
+    info: {
+      type: 'builtin',
+      builtin_id: 'info',
+      text: { ru: 'ℹ️ Инфо', en: 'ℹ️ Info' },
+      action: 'menu_info',
+      enabled: true,
+      visibility: 'all',
+      conditions: null,
+      dynamic_text: false,
+    },
+    language: {
+      type: 'builtin',
+      builtin_id: 'language',
+      text: { ru: '🌐 Язык', en: '🌐 Language' },
+      action: 'menu_language',
+      enabled: true,
+      visibility: 'all',
+      conditions: null,
+      dynamic_text: false,
+    },
+    admin_panel: {
+      type: 'builtin',
+      builtin_id: 'admin_panel',
+      text: { ru: '⚙️ Админ', en: '⚙️ Admin' },
+      action: 'admin_panel',
+      enabled: true,
+      visibility: 'admins',
+      conditions: { is_admin: true },
+      dynamic_text: false,
+    },
+  },
+};
+
 export const adminMenuLayoutApi = {
   get: async (): Promise<MenuLayoutResponse> => {
     const response = await apiClient.get<MenuLayoutResponse>('/cabinet/admin/menu-layout');
@@ -134,6 +301,14 @@ export const adminMenuLayoutApi = {
   reset: async (): Promise<MenuLayoutResponse> => {
     const response = await apiClient.post<MenuLayoutResponse>('/cabinet/admin/menu-layout/reset');
     return response.data;
+  },
+
+  resetWithFallback: async (): Promise<MenuLayoutResponse> => {
+    try {
+      return await adminMenuLayoutApi.reset();
+    } catch {
+      return adminMenuLayoutApi.update(FALLBACK_DEFAULT_MENU_LAYOUT);
+    }
   },
 
   updateButton: async (

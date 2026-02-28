@@ -200,7 +200,7 @@ export default function AdminMainMenuButtons() {
   });
 
   const resetToDefaultMutation = useMutation({
-    mutationFn: adminMenuLayoutApi.reset,
+    mutationFn: adminMenuLayoutApi.resetWithFallback,
     onSuccess: (nextLayout) => {
       const derived = buildMenuLayoutDerivedState(nextLayout);
       setOrderIds(derived.orderIds);
