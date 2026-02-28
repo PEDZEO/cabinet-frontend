@@ -25,6 +25,9 @@ interface SortablePreviewButtonProps {
   canMovePrevRow?: boolean;
   canMoveNextRow?: boolean;
   compact?: boolean;
+  variant?: 'default' | 'bot';
+  showMoveActions?: boolean;
+  showDeactivateAction?: boolean;
 }
 
 export function SortablePreviewButton({
@@ -38,6 +41,9 @@ export function SortablePreviewButton({
   canMovePrevRow = false,
   canMoveNextRow = false,
   compact = false,
+  variant = 'default',
+  showMoveActions = true,
+  showDeactivateAction = true,
 }: SortablePreviewButtonProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: buttonId,
@@ -50,15 +56,19 @@ export function SortablePreviewButton({
     position: isDragging ? 'relative' : undefined,
   };
 
+  const isBotVariant = variant === 'bot';
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`group flex min-h-[40px] items-center gap-2 rounded-md border px-2 py-1.5 ${
+      className={`group flex min-h-[40px] items-center gap-2 border px-2 py-1.5 ${
         isDragging
           ? 'border-accent-500/50 bg-dark-800 shadow-lg shadow-accent-500/20'
-          : 'border-dark-700/70 bg-dark-800/70 hover:border-dark-600'
-      } ${compact ? 'text-xs' : ''}`}
+          : isBotVariant
+            ? 'border-dark-700/70 bg-dark-900/80 hover:border-dark-500'
+            : 'border-dark-700/70 bg-dark-800/70 hover:border-dark-600'
+      } ${compact ? 'text-xs' : ''} ${isBotVariant ? 'rounded-lg' : 'rounded-md'}`}
     >
       <button
         type="button"
@@ -92,7 +102,7 @@ export function SortablePreviewButton({
         {getButtonText(buttonId, button, lang)}
       </button>
 
-      {(onMovePrevRow || onMoveNextRow) && (
+      {showMoveActions && (onMovePrevRow || onMoveNextRow) && (
         <div className="flex items-center gap-1">
           <button
             type="button"
@@ -117,13 +127,15 @@ export function SortablePreviewButton({
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={onDeactivate}
-        className="rounded-md border border-dark-700/70 px-2 py-1 text-xs text-dark-300 hover:border-dark-500 hover:text-dark-100"
-      >
-        Скрыть
-      </button>
+      {showDeactivateAction && (
+        <button
+          type="button"
+          onClick={onDeactivate}
+          className="rounded-md border border-dark-700/70 px-2 py-1 text-xs text-dark-300 hover:border-dark-500 hover:text-dark-100"
+        >
+          Скрыть
+        </button>
+      )}
     </div>
   );
 }

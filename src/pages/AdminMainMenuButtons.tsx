@@ -464,6 +464,19 @@ export default function AdminMainMenuButtons() {
     setSuccess(null);
   };
 
+  const selectedRow = previewRows[selectedRowIndex] ?? null;
+  const selectedButtonsCount = selectedRow ? getButtonsCountForRow(selectedRow.rowIndex) : 0;
+  const selectedEnabledCount = selectedRow ? getEnabledCountForRow(selectedRow.rowIndex) : 0;
+  const selectedRowCapacityState = selectedRow
+    ? getRowCapacityState(
+        selectedRow.rowIndex,
+        selectedButtonsCount,
+        rowCapacities,
+        rowDefaultCapacities,
+        MAX_ROW_SLOTS,
+      )
+    : { maxPerRow: 1, freeSlots: 0 };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -587,168 +600,74 @@ export default function AdminMainMenuButtons() {
                             {(() => {
                               const buttonsInRow = getButtonsCountForRow(row.rowIndex);
                               const enabledInRow = getEnabledCountForRow(row.rowIndex);
-                              const { maxPerRow, freeSlots } = getRowCapacityState(
-                                row.rowIndex,
-                                buttonsInRow,
-                                rowCapacities,
-                                rowDefaultCapacities,
-                                MAX_ROW_SLOTS,
+                              const maxPerRow = Math.max(
+                                rowCapacities[row.rowIndex] ??
+                                  rowDefaultCapacities[row.rowIndex] ??
+                                  MAX_ROW_SLOTS,
+                                1,
                               );
+                              const visibleFreeSlots = Math.max(maxPerRow - enabledInRow, 0);
                               return (
-                                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                                  <div className="text-[11px] uppercase tracking-wide text-dark-500">
-                                    Row {row.rowIndex + 1}
+                                <>
+                                  <div className="mb-2 flex items-center justify-between gap-2 text-[11px]">
+                                    <span className="uppercase tracking-wide text-dark-500">
+                                      Row {row.rowIndex + 1}
+                                    </span>
+                                    <span className="rounded-full border border-dark-700/60 bg-dark-900/70 px-2 py-0.5 text-dark-300">
+                                      {enabledInRow}/{maxPerRow}
+                                    </span>
+                                    <span className="rounded-full border border-dark-700/60 bg-dark-900/70 px-2 py-0.5 text-dark-400">
+                                      {buttonsInRow}
+                                    </span>
                                   </div>
-                                  <div className="rounded-full border border-dark-700/60 bg-dark-900/70 px-2 py-0.5 text-[11px] text-dark-300">
-                                    Видимых: {enabledInRow}/{maxPerRow}
-                                  </div>
-                                  <div className="rounded-full border border-dark-700/60 bg-dark-900/70 px-2 py-0.5 text-[11px] text-dark-400">
-                                    Всего: {buttonsInRow}
-                                  </div>
-                                  <label
-                                    className="inline-flex items-center gap-2 rounded-md border border-dark-700/60 bg-dark-900/70 px-2 py-1 text-xs text-dark-300"
-                                    onClick={(event) => event.stopPropagation()}
+                                  <div
+                                    className="grid gap-2"
+                                    style={{
+                                      gridTemplateColumns: `repeat(${maxPerRow}, minmax(0, 1fr))`,
+                                    }}
                                   >
-                                    <span>Мест в ROW:</span>
-                                    <select
-                                      value={maxPerRow}
-                                      onChange={(event) =>
-                                        setRowCapacity(row.rowIndex, Number(event.target.value))
-                                      }
-                                      className="rounded border border-dark-600 bg-dark-800 px-1 py-0.5 text-xs text-dark-100"
-                                    >
-                                      {[1, 2, 3, 4].map((option) => (
-                                        <option key={option} value={option}>
-                                          {option}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  </label>
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    {maxPerRow < MAX_ROW_SLOTS && (
+                                    {row.items.map((item) => (
+                                      <SortablePreviewButton
+                                        key={`preview-${item.id}`}
+                                        buttonId={item.id}
+                                        button={item.config}
+                                        lang={lang}
+                                        compact
+                                        variant="bot"
+                                        showMoveActions={false}
+                                        showDeactivateAction={false}
+                                        onEdit={() => handleEdit(item.id)}
+                                        onDeactivate={() =>
+                                          toggleEnabled(item.id, item.config.enabled)
+                                        }
+                                        onMovePrevRow={() =>
+                                          moveButtonToRow(item.id, row.rowIndex - 1)
+                                        }
+                                        onMoveNextRow={() =>
+                                          moveButtonToRow(item.id, row.rowIndex + 1)
+                                        }
+                                        canMovePrevRow={row.rowIndex > 0}
+                                        canMoveNextRow={row.rowIndex < rowLengths.length - 1}
+                                      />
+                                    ))}
+                                    {Array.from({ length: visibleFreeSlots }).map((_, slotIdx) => (
                                       <button
+                                        key={`row-slot-${row.rowIndex}-${slotIdx}`}
                                         type="button"
                                         onClick={(event) => {
                                           event.stopPropagation();
-                                          expandRowCapacity(row.rowIndex);
+                                          setSelectedRowIndex(row.rowIndex);
+                                          setAddMenuRowIndex(row.rowIndex);
                                         }}
-                                        className="rounded-md border border-dark-600 bg-dark-900/70 px-3 py-1.5 text-xs text-dark-200 hover:border-dark-500"
+                                        className="flex min-h-[40px] items-center justify-center rounded-lg border border-dashed border-dark-600/70 bg-dark-900/70 px-2 py-1.5 text-xs text-dark-500 hover:border-accent-500/50 hover:text-accent-300"
                                       >
-                                        + Место
+                                        + слот
                                       </button>
-                                    )}
-                                    {freeSlots > 0 && (
-                                      <button
-                                        type="button"
-                                        onClick={(event) => {
-                                          event.stopPropagation();
-                                          setAddMenuRowIndex((prev) =>
-                                            toggleRowIndex(prev, row.rowIndex),
-                                          );
-                                        }}
-                                        className="rounded-md border border-dashed border-accent-500/40 bg-accent-500/10 px-3 py-1.5 text-xs text-accent-300 hover:bg-accent-500/20"
-                                      >
-                                        + Добавить кнопку
-                                      </button>
-                                    )}
-                                    {buttonsInRow === 0 && (
-                                      <button
-                                        type="button"
-                                        onClick={(event) => {
-                                          event.stopPropagation();
-                                          collapseEmptyRow(row.rowIndex);
-                                        }}
-                                        className="rounded-md border border-error-500/30 bg-error-500/10 px-3 py-1.5 text-xs text-error-300 hover:bg-error-500/20"
-                                      >
-                                        Удалить пустой ROW
-                                      </button>
-                                    )}
+                                    ))}
                                   </div>
-                                </div>
+                                </>
                               );
                             })()}
-                            {row.items.length === 0 ? (
-                              <div className="rounded-md border border-dashed border-dark-700/70 px-3 py-2 text-xs text-dark-500">
-                                {getButtonsCountForRow(row.rowIndex) === 0
-                                  ? 'Пустой ряд'
-                                  : 'В ряду только скрытые кнопки'}
-                              </div>
-                            ) : (
-                              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                                {row.items.map((item) => (
-                                  <SortablePreviewButton
-                                    key={`preview-${item.id}`}
-                                    buttonId={item.id}
-                                    button={item.config}
-                                    lang={lang}
-                                    compact
-                                    onEdit={() => handleEdit(item.id)}
-                                    onDeactivate={() => toggleEnabled(item.id, item.config.enabled)}
-                                    onMovePrevRow={() => moveButtonToRow(item.id, row.rowIndex - 1)}
-                                    onMoveNextRow={() => moveButtonToRow(item.id, row.rowIndex + 1)}
-                                    canMovePrevRow={row.rowIndex > 0}
-                                    canMoveNextRow={row.rowIndex < rowLengths.length - 1}
-                                  />
-                                ))}
-                                {Array.from({
-                                  length: Math.max(
-                                    (rowCapacities[row.rowIndex] ??
-                                      rowDefaultCapacities[row.rowIndex] ??
-                                      MAX_ROW_SLOTS) - getEnabledCountForRow(row.rowIndex),
-                                    0,
-                                  ),
-                                }).map((_, slotIdx) => (
-                                  <button
-                                    key={`row-slot-${row.rowIndex}-${slotIdx}`}
-                                    type="button"
-                                    onClick={(event) => {
-                                      event.stopPropagation();
-                                      setAddMenuRowIndex((prev) =>
-                                        toggleRowIndex(prev, row.rowIndex),
-                                      );
-                                    }}
-                                    className="flex min-h-[40px] items-center justify-center rounded-md border border-dashed border-accent-500/30 bg-accent-500/5 px-2 py-1.5 text-xs text-accent-300 transition hover:bg-accent-500/15"
-                                  >
-                                    + Свободное место
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                            {addMenuRowIndex === row.rowIndex && (
-                              <div
-                                className="mt-2 space-y-2 rounded-md border border-dark-700/60 bg-dark-900/70 p-2"
-                                onClick={(event) => event.stopPropagation()}
-                              >
-                                {inactiveButtons.length === 0 ? (
-                                  <div className="text-xs text-dark-500">Нет неактивных кнопок</div>
-                                ) : (
-                                  <>
-                                    <div className="text-xs text-dark-500">
-                                      Добавить в ROW {row.rowIndex + 1}
-                                    </div>
-                                    <div className="flex flex-wrap gap-2">
-                                      {inactiveButtons.map((item) => (
-                                        <button
-                                          key={`inline-add-${row.rowIndex}-${item.id}`}
-                                          type="button"
-                                          className="rounded-md border border-dark-700/70 bg-dark-800/70 px-2 py-1 text-xs text-dark-200 hover:border-accent-500/50"
-                                          onClick={() =>
-                                            activateToRow(
-                                              item.id,
-                                              item.config.enabled,
-                                              row.rowIndex,
-                                            )
-                                          }
-                                          title={getButtonText(item.id, item.config, lang)}
-                                        >
-                                          {getButtonText(item.id, item.config, lang)}
-                                        </button>
-                                      ))}
-                                    </div>
-                                  </>
-                                )}
-                              </div>
-                            )}
                           </div>
                         ))}
                       </div>
@@ -761,15 +680,106 @@ export default function AdminMainMenuButtons() {
 
           <div className="space-y-4">
             <div className="rounded-xl border border-dark-700/60 bg-dark-900/60 p-4">
-              <div className="mb-2 flex items-center gap-2 text-sm text-dark-300">
+              <div className="mb-3 flex items-center gap-2 text-sm text-dark-300">
                 <GripIcon />
-                Новый поток редактирования
+                Управление выбранным ROW
               </div>
-              <ol className="space-y-1 text-xs text-dark-400">
-                <li>1. Выберите ряд и настройте лимит кнопок.</li>
-                <li>2. Добавьте скрытые кнопки через «+ Добавить кнопку».</li>
-                <li>3. Перетаскивайте или используйте стрелки ← → на карточке кнопки.</li>
-              </ol>
+              <div className="mb-3 flex flex-wrap gap-2">
+                {previewRows.map((row) => (
+                  <button
+                    key={`row-select-${row.rowIndex}`}
+                    type="button"
+                    onClick={() => setSelectedRowIndex(row.rowIndex)}
+                    className={`rounded-md border px-2 py-1 text-xs ${
+                      row.rowIndex === selectedRowIndex
+                        ? 'border-accent-500/60 bg-accent-500/10 text-accent-300'
+                        : 'border-dark-700/70 bg-dark-800/70 text-dark-300 hover:border-dark-500'
+                    }`}
+                  >
+                    ROW {row.rowIndex + 1}
+                  </button>
+                ))}
+              </div>
+              {selectedRow ? (
+                <div className="space-y-3">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-dark-400">
+                    <span>Видимых: {selectedEnabledCount}</span>
+                    <span>Всего: {selectedButtonsCount}</span>
+                  </div>
+                  <label className="inline-flex items-center gap-2 rounded-md border border-dark-700/60 bg-dark-900/70 px-2 py-1 text-xs text-dark-300">
+                    <span>Мест в ROW:</span>
+                    <select
+                      value={selectedRowCapacityState.maxPerRow}
+                      onChange={(event) =>
+                        setRowCapacity(selectedRow.rowIndex, Number(event.target.value))
+                      }
+                      className="rounded border border-dark-600 bg-dark-800 px-1 py-0.5 text-xs text-dark-100"
+                    >
+                      {[1, 2, 3, 4].map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedRowCapacityState.maxPerRow < MAX_ROW_SLOTS && (
+                      <button
+                        type="button"
+                        onClick={() => expandRowCapacity(selectedRow.rowIndex)}
+                        className="rounded-md border border-dark-600 bg-dark-900/70 px-3 py-1.5 text-xs text-dark-200 hover:border-dark-500"
+                      >
+                        + Место
+                      </button>
+                    )}
+                    {selectedRowCapacityState.freeSlots > 0 && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setAddMenuRowIndex((prev) => toggleRowIndex(prev, selectedRow.rowIndex))
+                        }
+                        className="rounded-md border border-dashed border-accent-500/40 bg-accent-500/10 px-3 py-1.5 text-xs text-accent-300 hover:bg-accent-500/20"
+                      >
+                        + Добавить кнопку
+                      </button>
+                    )}
+                    {selectedButtonsCount === 0 && (
+                      <button
+                        type="button"
+                        onClick={() => collapseEmptyRow(selectedRow.rowIndex)}
+                        className="rounded-md border border-error-500/30 bg-error-500/10 px-3 py-1.5 text-xs text-error-300 hover:bg-error-500/20"
+                      >
+                        Удалить пустой ROW
+                      </button>
+                    )}
+                  </div>
+                  {addMenuRowIndex === selectedRow.rowIndex && (
+                    <div className="space-y-2 rounded-md border border-dark-700/60 bg-dark-900/70 p-2">
+                      {inactiveButtons.length === 0 ? (
+                        <div className="text-xs text-dark-500">Нет неактивных кнопок</div>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {inactiveButtons.map((item) => (
+                            <button
+                              key={`inline-add-selected-${selectedRow.rowIndex}-${item.id}`}
+                              type="button"
+                              className="rounded-md border border-dark-700/70 bg-dark-800/70 px-2 py-1 text-xs text-dark-200 hover:border-accent-500/50"
+                              onClick={() =>
+                                activateToRow(item.id, item.config.enabled, selectedRow.rowIndex)
+                              }
+                              title={getButtonText(item.id, item.config, lang)}
+                            >
+                              {getButtonText(item.id, item.config, lang)}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-xs text-dark-500">Выберите ROW в предпросмотре</div>
+              )}
             </div>
 
             {editingId && (
