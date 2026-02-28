@@ -176,7 +176,12 @@ export function LiteDashboard() {
   const { data: trialInfo, isLoading: isTrialInfoLoading } = useQuery({
     queryKey: ['trial-info'],
     queryFn: subscriptionApi.getTrialInfo,
-    enabled: !subscriptionResponse?.has_subscription,
+    enabled:
+      !!subscriptionResponse &&
+      !(
+        !!subscriptionResponse.subscription?.is_active &&
+        !subscriptionResponse.subscription?.is_expired
+      ),
   });
 
   const { data: referralInfo } = useQuery({
@@ -311,10 +316,10 @@ export function LiteDashboard() {
   const hasActiveSubscription =
     !!subscription && subscription.is_active && !subscription.is_expired;
   const hasExpiredSubscription = !!subscription && subscription.is_expired;
-  const isTrialInfoPending = hasNoSubscription && isTrialInfoLoading;
-  const showTrial = hasNoSubscription && trialInfo?.is_available;
-  const shouldShowTrialConnectHint =
-    hasNoSubscription && !isTrialInfoPending && !!trialInfo?.is_available;
+  const canOfferTrial = !hasActiveSubscription && !!trialInfo?.is_available;
+  const isTrialInfoPending = !hasActiveSubscription && isTrialInfoLoading;
+  const showTrial = hasNoSubscription && canOfferTrial;
+  const shouldShowTrialConnectHint = !hasActiveSubscription && !isTrialInfoPending && canOfferTrial;
   const expiredOnLabel = hasExpiredSubscription
     ? new Date(subscription.end_date).toLocaleDateString()
     : null;
@@ -322,7 +327,8 @@ export function LiteDashboard() {
   const trialFlowStep2Done = onboardingFlow.connection_opened;
   const trialFlowStep3Done = onboardingFlow.subscription_added;
   const showTrialFlow =
-    (shouldShowTrialConnectHint || onboardingFlow.trial_activated) && !trialFlowStep3Done;
+    (shouldShowTrialConnectHint || onboardingFlow.trial_activated) &&
+    !(trialFlowStep3Done && hasActiveSubscription);
 
   // Get device limit from tariff settings
   const tariffs = purchaseOptions?.sales_mode === 'tariffs' ? purchaseOptions.tariffs : [];
