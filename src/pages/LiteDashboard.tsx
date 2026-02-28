@@ -395,60 +395,6 @@ export function LiteDashboard() {
           className="mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-6xl flex-col px-3 py-4 min-[360px]:px-4 min-[360px]:py-6 lg:px-6 xl:px-8 2xl:py-8"
           style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom, 24px))' }}
         >
-          <div className="mb-3 rounded-2xl border border-dark-700/70 bg-dark-900/50 p-3 min-[360px]:mb-4 min-[360px]:p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-xs uppercase tracking-[0.08em] text-dark-400">
-                  {t('lite.quickStatus')}
-                </p>
-                <p className="truncate text-sm font-semibold text-dark-100">
-                  {hasActiveSubscription
-                    ? t('lite.statusBar.active')
-                    : shouldShowTrialConnectHint
-                      ? t('lite.statusBar.trialAvailable')
-                      : hasExpiredSubscription
-                        ? t('lite.statusBar.expired')
-                        : t('lite.statusBar.noSubscription')}
-                </p>
-                <p className="mt-0.5 text-xs text-dark-300">
-                  {hasActiveSubscription
-                    ? t('lite.statusBar.activeHint')
-                    : shouldShowTrialConnectHint
-                      ? t('lite.statusBar.trialHint')
-                      : hasExpiredSubscription
-                        ? t('lite.statusBar.expiredHint')
-                        : t('lite.statusBar.noSubscriptionHint')}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  if (hasActiveSubscription) {
-                    navigate('/connection');
-                    return;
-                  }
-                  if (shouldShowTrialConnectHint) {
-                    handleActivateTrial();
-                    return;
-                  }
-                  navigate('/subscription');
-                }}
-                disabled={activateTrialMutation.isPending || isTrialActivationLocked}
-                className="shrink-0 rounded-xl border border-accent-400/60 bg-accent-500 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {hasActiveSubscription
-                  ? t('lite.connect')
-                  : shouldShowTrialConnectHint
-                    ? activateTrialMutation.isPending
-                      ? t('common.loading')
-                      : t('lite.activateTrial')
-                    : hasExpiredSubscription
-                      ? t('lite.renewSubscription')
-                      : t('lite.chooseTariff')}
-              </button>
-            </div>
-          </div>
-
           <div className="flex flex-1 flex-col gap-4 min-[360px]:gap-5 lg:grid lg:grid-cols-12 lg:items-start lg:gap-6">
             <section className="space-y-4 min-[360px]:space-y-5 lg:col-span-7 xl:col-span-8">
               {/* Subscription status or Trial card */}
