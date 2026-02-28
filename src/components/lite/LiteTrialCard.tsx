@@ -5,6 +5,7 @@ interface LiteTrialCardProps {
   trialInfo: TrialInfo;
   balance: number;
   onActivate: () => void;
+  onTopUp?: () => void;
   isLoading: boolean;
   error?: string | null;
 }
@@ -13,6 +14,7 @@ export function LiteTrialCard({
   trialInfo,
   balance,
   onActivate,
+  onTopUp,
   isLoading,
   error,
 }: LiteTrialCardProps) {
@@ -71,7 +73,18 @@ export function LiteTrialCard({
       </button>
 
       {trialInfo.requires_payment && !canActivate && (
-        <p className="mt-2 text-center text-xs text-dark-400">{t('lite.topUp')}</p>
+        <div className="mt-2">
+          <p className="text-center text-xs text-dark-400">{t('lite.trialRequiresTopUp')}</p>
+          {onTopUp && (
+            <button
+              type="button"
+              onClick={onTopUp}
+              className="mt-2 w-full rounded-xl border border-dark-600 bg-dark-800/70 py-2 text-sm font-medium text-dark-100 transition-colors hover:border-dark-500 hover:bg-dark-700"
+            >
+              {t('lite.topUp')}
+            </button>
+          )}
+        </div>
       )}
     </div>
   );

@@ -29,6 +29,8 @@ const METHOD_LABELS: Record<string, string> = {
   platega: 'Platega',
   wata: 'WATA',
   freekassa: 'Freekassa',
+  freekassa_sbp: 'Freekassa СБП',
+  freekassa_card: 'Freekassa Карта',
   cloudpayments: 'CloudPayments',
   kassa_ai: 'Kassa AI',
 };

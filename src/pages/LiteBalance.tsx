@@ -87,6 +87,7 @@ export default function LiteBalance() {
   const { data: paymentMethods } = useQuery({
     queryKey: ['payment-methods'],
     queryFn: balanceApi.getPaymentMethods,
+    refetchOnMount: 'always',
   });
 
   const { data: transactions, isFetching: isTransactionsFetching } = useQuery<
@@ -251,20 +252,20 @@ export default function LiteBalance() {
 
       <div className="rounded-2xl border border-dark-600 bg-dark-800/80 p-4">
         <h2 className="mb-3 text-sm font-semibold text-dark-100">{t('balance.promocode.title')}</h2>
-        <div className="flex flex-col gap-2 min-[360px]:flex-row">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <input
             type="text"
             value={promocode}
             onChange={(e) => setPromocode(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handlePromocodeActivate()}
             placeholder={t('balance.promocode.placeholder')}
-            className="flex-1 rounded-xl border border-dark-600 bg-dark-700/60 px-3 py-2.5 text-sm text-dark-100 placeholder:text-dark-500 focus:border-accent-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70"
+            className="min-w-0 flex-1 rounded-xl border border-dark-600 bg-dark-700/60 px-3 py-2.5 text-sm text-dark-100 placeholder:text-dark-500 focus:border-accent-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70"
             disabled={promocodeLoading}
           />
           <button
             onClick={handlePromocodeActivate}
             disabled={!promocode.trim() || promocodeLoading}
-            className="w-full rounded-xl border border-accent-400/60 bg-accent-500 px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 disabled:cursor-not-allowed disabled:opacity-50 min-[360px]:w-auto"
+            className="w-full rounded-xl border border-accent-400/60 bg-accent-500 px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:shrink-0"
           >
             {promocodeLoading ? t('common.loading') : t('balance.promocode.activate')}
           </button>

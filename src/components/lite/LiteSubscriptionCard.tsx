@@ -166,7 +166,7 @@ export function LiteSubscriptionCard({ subscription, deviceLimit }: LiteSubscrip
         </button>
       </div>
 
-      {!isUnlimitedTraffic && (
+      {!isUnlimitedTraffic && !subscription.is_trial && (
         <div className="mt-3">
           <div className="mb-1 flex items-center justify-between text-2xs text-dark-400">
             <span>{t('lite.trafficUsage')}</span>

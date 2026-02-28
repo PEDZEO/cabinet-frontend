@@ -6,6 +6,7 @@ import { apiClient } from '../api/client';
 import { captureCampaignFromUrl, consumeCampaignSlug } from '../utils/campaign';
 import { captureReferralFromUrl, consumeReferralCode } from '../utils/referral';
 import { tokenStorage, isTokenValid, tokenRefreshManager } from '../utils/token';
+import { usePermissionStore } from './permissions';
 
 export interface TelegramWidgetData {
   id: number;
@@ -98,6 +99,7 @@ export const useAuthStore = create<AuthState>()(
           });
         }
         tokenStorage.clearTokens();
+        usePermissionStore.getState().reset();
         set({
           accessToken: null,
           refreshToken: null,
@@ -112,13 +114,20 @@ export const useAuthStore = create<AuthState>()(
           const token = tokenStorage.getAccessToken();
           if (!token || !isTokenValid(token)) {
             set({ isAdmin: false });
+            usePermissionStore.getState().reset();
             return;
           }
           // Используем apiClient для единообразной обработки ошибок
           const response = await apiClient.get<{ is_admin: boolean }>('/cabinet/auth/me/is-admin');
           set({ isAdmin: response.data.is_admin });
+          if (response.data.is_admin) {
+            await usePermissionStore.getState().fetchPermissions();
+          } else {
+            usePermissionStore.getState().reset();
+          }
         } catch {
           set({ isAdmin: false });
+          usePermissionStore.getState().reset();
         }
       },
 

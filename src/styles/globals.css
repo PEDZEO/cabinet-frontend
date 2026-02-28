@@ -1,8 +1,62 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Animated gradient border — @property enables CSS-only angle animation */
+@property --border-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.hover-border-gradient {
+  --_bg: var(--border-inner-bg, rgb(var(--color-dark-900)));
+  --_accent: var(--accent-color, rgb(var(--color-accent-400)));
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(var(--_bg), var(--_bg)) padding-box,
+    conic-gradient(
+        from var(--border-angle),
+        var(--_accent) 0%,
+        transparent 25%,
+        transparent 75%,
+        var(--_accent) 100%
+      )
+      border-box;
+  animation: border-rotate var(--border-duration, 3s) linear infinite;
+}
+
+.hover-border-gradient:hover,
+.hover-border-gradient:active {
+  box-shadow: 0 0 20px var(--accent-glow, rgba(var(--color-accent-400), 0.25));
+}
+
+.light .hover-border-gradient {
+  --_bg: var(--border-inner-bg, rgb(var(--color-champagne-100)));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hover-border-gradient {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes border-rotate {
+  to {
+    --border-angle: 360deg;
+  }
+}
+
+/* Aceternity UI background CSS variables */
+:root {
+  --blue-500: #3b82f6;
+  --indigo-300: #a5b4fc;
+  --blue-300: #93c5fd;
+  --violet-200: #ddd6fe;
+  --blue-400: #60a5fa;
+  --black: #000000;
+  --white: #ffffff;
+}
 
 @layer base {
   :root {
@@ -1442,174 +1496,6 @@ input[type='checkbox']:hover:not(:checked) {
   }
   to {
     transform: scaleX(0);
-  }
-}
-
-/* ========== ANIMATED BACKGROUND (GPU Optimized) ========== */
-.wave-bg-container {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  overflow: hidden;
-  pointer-events: none;
-  contain: strict; /* Performance: isolate repaints */
-}
-
-.wave-blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(60px);
-  opacity: 0.5;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-
-/* Smaller sizes for better performance */
-.wave-blob-1 {
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(var(--color-accent-800), 0.6) 0%, transparent 70%);
-  top: -15%;
-  left: -10%;
-  animation: wave1 20s ease-in-out infinite; /* Slower = less CPU */
-}
-
-.wave-blob-2 {
-  width: 350px;
-  height: 350px;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.6) 0%, transparent 70%);
-  bottom: -10%;
-  right: -10%;
-  animation: wave2 25s ease-in-out infinite;
-}
-
-.wave-blob-3 {
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, transparent 70%);
-  top: 40%;
-  left: 40%;
-  animation: wave3 30s ease-in-out infinite;
-}
-
-.wave-blob-4 {
-  width: 250px;
-  height: 250px;
-  background: radial-gradient(circle, rgba(236, 72, 153, 0.35) 0%, transparent 70%);
-  bottom: 25%;
-  left: 15%;
-  animation: wave4 22s ease-in-out infinite;
-}
-
-/* Simplified keyframes - fewer steps = better performance */
-@keyframes wave1 {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(8%, 12%, 0) scale(1.05);
-  }
-}
-
-@keyframes wave2 {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(-10%, -8%, 0) scale(1.08);
-  }
-}
-
-@keyframes wave3 {
-  0%,
-  100% {
-    transform: translate3d(-50%, -50%, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(-45%, -55%, 0) scale(1.1);
-  }
-}
-
-@keyframes wave4 {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(12%, -8%, 0) scale(1.12);
-  }
-}
-
-/* Light theme adjustments */
-.light .wave-blob {
-  opacity: 0.35;
-  filter: blur(80px);
-}
-
-.light .wave-blob-1 {
-  background: radial-gradient(circle, rgba(var(--color-accent-800), 0.7) 0%, transparent 70%);
-}
-
-/* Mobile: brighter and faster animations */
-@media (max-width: 768px) {
-  .wave-blob {
-    opacity: 0.7;
-    filter: blur(50px);
-  }
-
-  .wave-blob-1 {
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(var(--color-accent-800), 0.8) 0%, transparent 70%);
-    animation: wave1-mobile 12s ease-in-out infinite;
-  }
-
-  .wave-blob-2 {
-    width: 280px;
-    height: 280px;
-    background: radial-gradient(circle, rgba(59, 130, 246, 0.8) 0%, transparent 70%);
-    animation: wave2-mobile 15s ease-in-out infinite;
-  }
-
-  @keyframes wave1-mobile {
-    0%,
-    100% {
-      transform: translate3d(0, 0, 0) scale(1);
-    }
-    25% {
-      transform: translate3d(15%, 20%, 0) scale(1.1);
-    }
-    50% {
-      transform: translate3d(5%, 35%, 0) scale(1.15);
-    }
-    75% {
-      transform: translate3d(20%, 10%, 0) scale(1.05);
-    }
-  }
-
-  @keyframes wave2-mobile {
-    0%,
-    100% {
-      transform: translate3d(0, 0, 0) scale(1);
-    }
-    25% {
-      transform: translate3d(-20%, -15%, 0) scale(1.15);
-    }
-    50% {
-      transform: translate3d(-10%, -30%, 0) scale(1.1);
-    }
-    75% {
-      transform: translate3d(-25%, -5%, 0) scale(1.05);
-    }
-  }
-}
-
-/* Disable animations for reduced motion preference */
-@media (prefers-reduced-motion: reduce) {
-  .wave-blob {
-    animation: none !important;
   }
 }
 

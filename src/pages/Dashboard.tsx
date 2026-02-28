@@ -11,15 +11,22 @@ import { wheelApi } from '../api/wheel';
 import { authApi } from '../api/auth';
 import Onboarding, { useOnboarding } from '../components/Onboarding';
 import PromoOffersSection from '../components/PromoOffersSection';
-import { useCurrency } from '../hooks/useCurrency';
 import { useLiteMode } from '../hooks/useLiteMode';
 import { LiteDashboard } from './LiteDashboard';
+import SubscriptionCardExpired from '../components/dashboard/SubscriptionCardExpired';
+import TrialOfferCard from '../components/dashboard/TrialOfferCard';
+import StatsGrid from '../components/dashboard/StatsGrid';
 import { API } from '../config/constants';
 
-// Icons
+const ChevronRightIcon = () => (
+  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+  </svg>
+);
+
 const ArrowRightIcon = () => (
   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-6-6 6 6-6 6" />
   </svg>
 );
 
@@ -28,26 +35,27 @@ const SparklesIcon = () => (
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
-      d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"
+      d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z"
     />
   </svg>
 );
 
-const ChevronRightIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-  </svg>
-);
-
-const RefreshIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
+const RefreshIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
-      d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
+      d="M16.023 9.348h4.992V4.356m-1.5 14.294A9 9 0 1 1 21 12"
     />
   </svg>
 );
+
+function getTrafficColor(percent: number): string {
+  if (percent >= 90) return 'bg-error-500';
+  if (percent >= 75) return 'bg-warning-500';
+  if (percent >= 50) return 'bg-warning-400';
+  return 'bg-success-500';
+}
 
 export default function Dashboard() {
   const { isLiteMode, isLiteModeReady } = useLiteMode();
@@ -67,15 +75,14 @@ export default function Dashboard() {
 
 function FullDashboard() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const refreshUser = useAuthStore((state) => state.refreshUser);
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
-  const { formatAmount, currencySymbol, formatPositive } = useCurrency();
-  const [trialError, setTrialError] = useState<string | null>(null);
   const { isCompleted: isOnboardingCompleted, complete: completeOnboarding } = useOnboarding();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const blockingType = useBlockingStore((state) => state.blockingType);
+  const [trialError, setTrialError] = useState<string | null>(null);
 
   // Refresh user data on mount
   useEffect(() => {
@@ -98,7 +105,6 @@ function FullDashboard() {
     refetchOnMount: 'always',
   });
 
-  // Extract subscription from response (null if no subscription)
   const subscription = subscriptionResponse?.subscription ?? null;
 
   const { data: trialInfo, isLoading: trialLoading } = useQuery({
@@ -125,7 +131,7 @@ function FullDashboard() {
   const { data: wheelConfig } = useQuery({
     queryKey: ['wheel-config'],
     queryFn: wheelApi.getConfig,
-    staleTime: 60000, // 1 minute
+    staleTime: 60000,
     retry: false,
   });
 
@@ -159,7 +165,6 @@ function FullDashboard() {
         traffic_used_percent: data.traffic_used_percent,
         is_unlimited: data.is_unlimited,
       });
-      // Save last refresh timestamp to localStorage
       localStorage.setItem('traffic_refresh_ts', Date.now().toString());
       if (data.rate_limited && data.retry_after_seconds) {
         setTrafficRefreshCooldown(data.retry_after_seconds);
@@ -187,10 +192,9 @@ function FullDashboard() {
     return () => clearInterval(timer);
   }, [trafficRefreshCooldown]);
 
-  // Track if we've already triggered auto-refresh this session
+  // Auto-refresh traffic on mount (with 30s caching)
   const hasAutoRefreshed = useRef(false);
 
-  // Auto-refresh traffic on mount (with 30s caching)
   useEffect(() => {
     if (!subscription) return;
     if (hasAutoRefreshed.current) return;
@@ -212,20 +216,16 @@ function FullDashboard() {
     refreshTrafficMutation.mutate();
   }, [subscription, refreshTrafficMutation]);
 
-  // User has no subscription if API returns has_subscription: false
   const hasNoSubscription = subscriptionResponse?.has_subscription === false && !subLoading;
 
   // Show onboarding for new users after data loads
-  // Skip if a blocking screen is active (channel subscription, maintenance, etc.)
   useEffect(() => {
     if (!isOnboardingCompleted && !subLoading && !refLoading && !blockingType) {
-      // Small delay to ensure DOM is ready
       const timer = setTimeout(() => setShowOnboarding(true), 500);
       return () => clearTimeout(timer);
     }
   }, [isOnboardingCompleted, subLoading, refLoading, blockingType]);
 
-  // Define onboarding steps based on available data
   const onboardingSteps = useMemo(() => {
     type Placement = 'top' | 'bottom' | 'left' | 'right';
     const steps: Array<{
@@ -246,15 +246,8 @@ function FullDashboard() {
         description: t('onboarding.steps.balance.description'),
         placement: 'bottom',
       },
-      {
-        target: 'subscription-status',
-        title: t('onboarding.steps.subscription.title'),
-        description: t('onboarding.steps.subscription.description'),
-        placement: 'bottom',
-      },
     ];
 
-    // Add connect devices step only if subscription exists
     if (subscription?.subscription_url) {
       steps.splice(1, 0, {
         target: 'connect-devices',
@@ -270,13 +263,6 @@ function FullDashboard() {
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
     completeOnboarding();
-  };
-
-  // Calculate traffic percentage color
-  const getTrafficColor = (percent: number) => {
-    if (percent > API.TRAFFIC_CRITICAL_PERCENT) return 'bg-error-500';
-    if (percent > API.TRAFFIC_WARN_PERCENT) return 'bg-warning-500';
-    return 'bg-success-500';
   };
 
   return (
@@ -307,26 +293,19 @@ function FullDashboard() {
       {/* Subscription Status - Main Card */}
       {subLoading ? (
         <div className="bento-card">
-          <div className="mb-6 flex items-center justify-between">
-            <div className="skeleton h-6 w-24" />
+          <div className="mb-4 flex items-center justify-between">
+            <div className="skeleton h-5 w-20" />
             <div className="skeleton h-6 w-16 rounded-full" />
           </div>
-          <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-            {[...Array(4)].map((_, i) => (
-              <div key={i}>
-                <div className="skeleton mb-2 h-4 w-20" />
-                <div className="skeleton h-5 w-24" />
-              </div>
-            ))}
-          </div>
-          <div className="mt-6">
-            <div className="skeleton h-2 w-full rounded-full" />
-          </div>
-          <div className="mt-6 grid grid-cols-2 gap-3">
-            <div className="skeleton h-10 w-full rounded-xl" />
-            <div className="skeleton h-10 w-full rounded-xl" />
+          <div className="skeleton mb-3 h-10 w-32" />
+          <div className="skeleton mb-3 h-4 w-40" />
+          <div className="skeleton h-3 w-full rounded-full" />
+          <div className="mt-5">
+            <div className="skeleton h-12 w-full rounded-xl" />
           </div>
         </div>
+      ) : subscription?.is_expired ? (
+        <SubscriptionCardExpired subscription={subscription} />
       ) : subscription ? (
         <div
           className={`bento-card ${subscription.is_trial ? 'border-warning-500/30 bg-gradient-to-br from-warning-500/5 to-transparent' : ''}`}
@@ -473,208 +452,33 @@ function FullDashboard() {
         </div>
       ) : null}
 
-      {/* Promo Offers - показываем сразу после карточки подписки */}
+      {/* Trial Activation */}
+      {hasNoSubscription && !trialLoading && trialInfo?.is_available && (
+        <TrialOfferCard
+          trialInfo={trialInfo}
+          balanceKopeks={balanceData?.balance_kopeks || 0}
+          balanceRubles={balanceData?.balance_rubles || 0}
+          activateTrialMutation={activateTrialMutation}
+          trialError={trialError}
+        />
+      )}
+
+      {/* Promo Offers */}
       <PromoOffersSection />
 
       {/* Stats Grid */}
-      <div className="bento-grid">
-        {/* Balance */}
-        <Link to="/balance" className="bento-card-hover group" data-onboarding="balance">
-          <div className="mb-3 flex items-center justify-between">
-            <span className="text-sm text-dark-400">{t('balance.currentBalance')}</span>
-            <span className="text-dark-600 transition-colors group-hover:text-accent-400">
-              <ArrowRightIcon />
-            </span>
-          </div>
-          <div className="stat-value text-accent-400">
-            {formatAmount(balanceData?.balance_rubles || 0)}
-            <span className="ml-1 text-lg text-dark-400">{currencySymbol}</span>
-          </div>
-        </Link>
-
-        {/* Subscription */}
-        <Link
-          to="/subscription"
-          className="bento-card-hover group"
-          data-onboarding="subscription-status"
-        >
-          <div className="mb-3 flex items-center justify-between">
-            <span className="text-sm text-dark-400">{t('subscription.title')}</span>
-            <span className="text-dark-600 transition-colors group-hover:text-accent-400">
-              <ArrowRightIcon />
-            </span>
-          </div>
-          {subLoading ? (
-            <div className="skeleton h-8 w-24" />
-          ) : subscription ? (
-            <div className="stat-value">
-              {subscription.days_left > 0 ? (
-                <>
-                  {subscription.days_left}
-                  <span className="ml-1 text-lg text-dark-400">{t('subscription.days')}</span>
-                </>
-              ) : subscription.hours_left > 0 ? (
-                <>
-                  {subscription.hours_left}
-                  <span className="ml-1 text-lg text-dark-400">{t('subscription.hours')}</span>
-                </>
-              ) : subscription.minutes_left > 0 ? (
-                <>
-                  {subscription.minutes_left}
-                  <span className="ml-1 text-lg text-dark-400">{t('subscription.minutes')}</span>
-                </>
-              ) : (
-                <span className="text-error-400">{t('subscription.expired')}</span>
-              )}
-            </div>
-          ) : (
-            <div className="stat-value text-error-400">{t('subscription.inactive')}</div>
-          )}
-        </Link>
-
-        {/* Referrals */}
-        <Link to="/referral" className="bento-card-hover group">
-          <div className="mb-3 flex items-center justify-between">
-            <span className="text-sm text-dark-400">{t('referral.stats.totalReferrals')}</span>
-            <span className="text-dark-600 transition-colors group-hover:text-accent-400">
-              <ArrowRightIcon />
-            </span>
-          </div>
-          {refLoading ? (
-            <div className="skeleton h-8 w-16" />
-          ) : (
-            <div className="stat-value">{referralInfo?.total_referrals || 0}</div>
-          )}
-        </Link>
-
-        {/* Earnings */}
-        <Link to="/referral" className="bento-card-hover group">
-          <div className="mb-3 flex items-center justify-between">
-            <span className="text-sm text-dark-400">{t('referral.stats.totalEarnings')}</span>
-            <span className="text-dark-600 transition-colors group-hover:text-accent-400">
-              <ArrowRightIcon />
-            </span>
-          </div>
-          {refLoading ? (
-            <div className="skeleton h-8 w-20" />
-          ) : (
-            <div className="stat-value text-success-400">
-              {formatPositive(referralInfo?.total_earnings_rubles || 0)}
-            </div>
-          )}
-        </Link>
-      </div>
-
-      {/* Trial Activation */}
-      {hasNoSubscription && !trialLoading && trialInfo?.is_available && (
-        <div className="bento-card-glow border-accent-500/30 bg-gradient-to-br from-accent-500/5 to-transparent">
-          <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-accent-500/20">
-              <SparklesIcon />
-            </div>
-            <div className="flex-1">
-              <h3 className="mb-2 text-lg font-semibold text-dark-100">
-                {trialInfo.requires_payment
-                  ? t('subscription.trial.titlePaid', 'Trial Subscription')
-                  : t('subscription.trial.title', 'Free Trial')}
-              </h3>
-              <p className="mb-4 text-sm text-dark-400">
-                {t('subscription.trial.description', 'Try our VPN service for free!')}
-              </p>
-
-              <div className="mb-6 flex gap-6">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-accent-400">
-                    {trialInfo.duration_days}
-                  </div>
-                  <div className="text-xs text-dark-500">{t('subscription.trial.days')}</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-accent-400">
-                    {trialInfo.traffic_limit_gb || '∞'}
-                  </div>
-                  <div className="text-xs text-dark-500">GB</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-accent-400">{trialInfo.device_limit}</div>
-                  <div className="text-xs text-dark-500">{t('subscription.trial.devices')}</div>
-                </div>
-              </div>
-
-              {trialInfo.requires_payment && trialInfo.price_rubles > 0 && (
-                <div className="mb-4 space-y-2 rounded-xl bg-dark-800/50 p-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-dark-400">
-                      {t('subscription.trial.price', 'Activation price')}:
-                    </span>
-                    <span className="text-lg font-semibold text-accent-400">
-                      {trialInfo.price_rubles.toFixed(2)} {currencySymbol}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-dark-400">
-                      {t('balance.currentBalance', 'Your balance')}:
-                    </span>
-                    <span
-                      className={`text-lg font-semibold ${(balanceData?.balance_kopeks || 0) >= trialInfo.price_kopeks ? 'text-success-400' : 'text-warning-400'}`}
-                    >
-                      {formatAmount(balanceData?.balance_rubles || 0)} {currencySymbol}
-                    </span>
-                  </div>
-                  {(balanceData?.balance_kopeks || 0) < trialInfo.price_kopeks && (
-                    <div className="pt-1 text-xs text-warning-400">
-                      {t(
-                        'subscription.trial.insufficientBalance',
-                        'Top up your balance to activate',
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {trialError && (
-                <div className="mb-4 rounded-xl border border-error-500/30 bg-error-500/10 p-3 text-sm text-error-400">
-                  {trialError}
-                </div>
-              )}
-
-              {trialInfo.requires_payment && trialInfo.price_kopeks > 0 ? (
-                (balanceData?.balance_kopeks || 0) >= trialInfo.price_kopeks ? (
-                  <button
-                    onClick={() => activateTrialMutation.mutate()}
-                    disabled={activateTrialMutation.isPending}
-                    className="btn-primary w-full"
-                  >
-                    {activateTrialMutation.isPending
-                      ? t('common.loading', 'Loading...')
-                      : t('subscription.trial.payAndActivate', 'Pay from Balance & Activate')}
-                  </button>
-                ) : (
-                  <Link to="/balance" className="btn-primary block w-full text-center">
-                    {t('subscription.trial.topUpToActivate', 'Top Up Balance')}
-                  </Link>
-                )
-              ) : (
-                <button
-                  onClick={() => activateTrialMutation.mutate()}
-                  disabled={activateTrialMutation.isPending}
-                  className="btn-primary w-full"
-                >
-                  {activateTrialMutation.isPending
-                    ? t('common.loading', 'Loading...')
-                    : t('subscription.trial.activate', 'Activate Free Trial')}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      <StatsGrid
+        balanceRubles={balanceData?.balance_rubles || 0}
+        subscription={subscription}
+        referralCount={referralInfo?.total_referrals || 0}
+        earningsRubles={referralInfo?.total_earnings_rubles || 0}
+        refLoading={refLoading}
+      />
 
       {/* Fortune Wheel Banner */}
       {wheelConfig?.is_enabled && (
         <Link to="/wheel" className="bento-card-hover group flex items-center justify-between">
           <div className="flex items-center gap-4">
-            {/* Emoji */}
             <span className="text-3xl">🎰</span>
             <div className="min-w-0 flex-1">
               <h3 className="text-base font-semibold text-dark-100">{t('wheel.banner.title')}</h3>

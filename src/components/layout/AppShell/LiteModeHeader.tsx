@@ -169,10 +169,19 @@ export function LiteModeHeader({
     setLogoLoaded(true);
   }, []);
 
-  useEffect(() => {
+  const handleLogoError = useCallback(() => {
     setLogoShape('square');
     setLogoLoaded(false);
-  }, [logoUrl]);
+  }, []);
+
+  useEffect(() => {
+    setLogoShape('square');
+    if (hasCustomLogo && logoUrl) {
+      setLogoLoaded(isLogoPreloaded());
+      return;
+    }
+    setLogoLoaded(false);
+  }, [hasCustomLogo, logoUrl]);
 
   const isAdminPage = location.pathname.startsWith('/admin');
   const isMainPage = location.pathname === '/';
@@ -240,6 +249,7 @@ export function LiteModeHeader({
                         logoLoaded ? 'opacity-100' : 'opacity-0',
                       )}
                       onLoad={handleLogoLoad}
+                      onError={handleLogoError}
                     />
                   )}
                 </div>

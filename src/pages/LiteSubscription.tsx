@@ -629,7 +629,7 @@ export function LiteSubscription() {
   return (
     <PullToRefresh onRefresh={handleRefresh} className="min-h-screen">
       <div
-        className="mx-auto w-full max-w-md px-3 py-5 min-[360px]:px-4 min-[360px]:py-6"
+        className="mx-auto w-full max-w-5xl px-3 py-5 min-[360px]:px-4 min-[360px]:py-6 lg:px-6 xl:px-8 2xl:py-8"
         style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom, 24px))' }}
       >
         {/* Expiry warning - show when 3 days or less */}
@@ -722,7 +722,7 @@ export function LiteSubscription() {
         )}
 
         {/* Tabs */}
-        <div className="-mx-1 mb-6 overflow-x-auto px-1">
+        <div className="-mx-1 mb-6 overflow-x-auto px-1 lg:mx-0 lg:overflow-visible lg:px-0">
           <div className="flex min-w-max gap-2">
             {(['tariffs', 'devices', 'traffic'] as TabType[])
               .filter((tab) => {
@@ -787,88 +787,89 @@ export function LiteSubscription() {
                 </div>
               </div>
             )}
-            {tariffs.map((tariff) => {
-              const isSelected = selectedTariff?.id === tariff.id;
-              const isCurrent = isTariffCurrent(tariff);
-              const period = selectedPeriodDays
-                ? tariff.periods.find((p) => p.days === selectedPeriodDays) || tariff.periods[0]
-                : tariff.periods[0];
+            <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+              {tariffs.map((tariff) => {
+                const isSelected = selectedTariff?.id === tariff.id;
+                const isCurrent = isTariffCurrent(tariff);
+                const period = selectedPeriodDays
+                  ? tariff.periods.find((p) => p.days === selectedPeriodDays) || tariff.periods[0]
+                  : tariff.periods[0];
 
-              return (
-                <button
-                  key={tariff.id}
-                  onClick={() => {
-                    haptic.selectionChanged();
-                    setSelectedTariff(tariff);
-                    if (
-                      tariff.periods.length > 0 &&
-                      !tariff.periods.some((period) => period.days === selectedPeriodDays)
-                    ) {
-                      setSelectedPeriodDays(tariff.periods[0].days);
-                    }
-                  }}
-                  className={`relative w-full rounded-2xl border p-4 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 ${
-                    isSelected
-                      ? 'border-accent-400/70 bg-accent-500/10 shadow-lg shadow-accent-500/10'
-                      : isCurrent && !subscription?.is_trial
-                        ? 'border-success-500/50 bg-success-500/5 shadow-md shadow-success-500/10'
-                        : 'border-dark-700/90 bg-dark-800/55 hover:border-dark-600'
-                  }`}
-                >
-                  {isCurrent && !subscription?.is_trial && (
-                    <span className="absolute -top-2 right-3 flex items-center gap-1 rounded-full bg-success-500 px-2 py-0.5 text-xs font-medium text-white">
-                      <StarIcon />
-                      {t('lite.currentTariff')}
-                    </span>
-                  )}
-
-                  <div className="mb-2 flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-dark-100">{tariff.name}</h3>
-                    {isSelected && (!isCurrent || subscription?.is_trial) && (
-                      <span className="text-accent-400">
-                        <CheckIcon />
+                return (
+                  <button
+                    key={tariff.id}
+                    onClick={() => {
+                      haptic.selectionChanged();
+                      setSelectedTariff(tariff);
+                      if (
+                        tariff.periods.length > 0 &&
+                        !tariff.periods.some((period) => period.days === selectedPeriodDays)
+                      ) {
+                        setSelectedPeriodDays(tariff.periods[0].days);
+                      }
+                    }}
+                    className={`relative w-full rounded-2xl border p-4 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 ${
+                      isSelected
+                        ? 'border-accent-400/70 bg-accent-500/10 shadow-lg shadow-accent-500/10'
+                        : isCurrent && !subscription?.is_trial
+                          ? 'border-success-500/50 bg-success-500/5 shadow-md shadow-success-500/10'
+                          : 'border-dark-700/90 bg-dark-800/55 hover:border-dark-600'
+                    }`}
+                  >
+                    {isCurrent && !subscription?.is_trial && (
+                      <span className="absolute -top-2 right-3 flex items-center gap-1 rounded-full bg-success-500 px-2 py-0.5 text-xs font-medium text-white">
+                        <StarIcon />
+                        {t('lite.currentTariff')}
                       </span>
                     )}
-                  </div>
 
-                  {/* Tariff description */}
-                  {tariff.description && (
-                    <p className="mb-3 text-sm text-dark-400">{tariff.description}</p>
-                  )}
+                    <div className="mb-2 flex items-center justify-between">
+                      <h3 className="text-lg font-semibold text-dark-100">{tariff.name}</h3>
+                      {isSelected && (!isCurrent || subscription?.is_trial) && (
+                        <span className="text-accent-400">
+                          <CheckIcon />
+                        </span>
+                      )}
+                    </div>
 
-                  <div className="mb-3 flex flex-wrap gap-1.5 text-xs font-medium text-dark-300">
-                    <span className="rounded-full border border-dark-600/80 bg-dark-900/35 px-2 py-0.5 tabular-nums">
-                      {tariff.is_unlimited_traffic ||
-                      isUnlimitedTrafficLimit(tariff.traffic_limit_gb)
-                        ? '∞'
-                        : `${tariff.traffic_limit_gb} GB`}
-                    </span>
-                    <span className="rounded-full border border-dark-600/80 bg-dark-900/35 px-2 py-0.5 tabular-nums">
-                      {tariff.device_limit} {t('lite.devices')}
-                    </span>
-                    <span className="rounded-full border border-dark-600/80 bg-dark-900/35 px-2 py-0.5 tabular-nums">
-                      {tariff.servers_count} {t('lite.servers')}
-                    </span>
-                  </div>
+                    {/* Tariff description */}
+                    {tariff.description && (
+                      <p className="mb-3 text-sm text-dark-400">{tariff.description}</p>
+                    )}
 
-                  {/* Price display - different for daily vs period tariffs */}
-                  {tariff.is_daily || tariff.daily_price_kopeks
-                    ? (() => {
-                        const dailyPrice =
-                          tariff.daily_price_kopeks ?? tariff.price_per_day_kopeks ?? 0;
-                        const hasExistingDiscount = !!(
-                          tariff.daily_discount_percent && tariff.daily_discount_percent > 0
-                        );
-                        const promo = applyPromoDiscount(dailyPrice, hasExistingDiscount);
-                        const displayedDiscountPercent = hasExistingDiscount
-                          ? (tariff.daily_discount_percent ?? null)
-                          : promo.percent;
-                        return (
-                          <div className="flex flex-col gap-1 min-[360px]:flex-row min-[360px]:items-baseline min-[360px]:justify-between">
-                            <div className="flex flex-wrap items-center gap-2">
+                    <div className="mb-3 flex flex-wrap gap-1.5 text-xs font-medium text-dark-300">
+                      <span className="rounded-full border border-dark-600/80 bg-dark-900/35 px-2 py-0.5 tabular-nums">
+                        {tariff.is_unlimited_traffic ||
+                        isUnlimitedTrafficLimit(tariff.traffic_limit_gb)
+                          ? '∞'
+                          : `${tariff.traffic_limit_gb} GB`}
+                      </span>
+                      <span className="rounded-full border border-dark-600/80 bg-dark-900/35 px-2 py-0.5 tabular-nums">
+                        {t('lite.devices')}: {tariff.device_limit}
+                      </span>
+                      <span className="rounded-full border border-dark-600/80 bg-dark-900/35 px-2 py-0.5 tabular-nums">
+                        {t('lite.servers')}: {tariff.servers_count}
+                      </span>
+                    </div>
+
+                    {/* Price display - different for daily vs period tariffs */}
+                    {tariff.is_daily || tariff.daily_price_kopeks
+                      ? (() => {
+                          const dailyPrice =
+                            tariff.daily_price_kopeks ?? tariff.price_per_day_kopeks ?? 0;
+                          const hasExistingDiscount = !!(
+                            tariff.daily_discount_percent && tariff.daily_discount_percent > 0
+                          );
+                          const promo = applyPromoDiscount(dailyPrice, hasExistingDiscount);
+                          const displayedDiscountPercent = hasExistingDiscount
+                            ? (tariff.daily_discount_percent ?? null)
+                            : promo.percent;
+                          return (
+                            <div className="flex flex-wrap items-baseline gap-2">
                               <span className="text-xl font-bold tabular-nums text-accent-400">
                                 {formatPrice(promo.price)}
                               </span>
+                              <span className="text-sm text-dark-500">/{t('lite.day')}</span>
                               {promo.original && (
                                 <span className="text-sm text-dark-500 line-through">
                                   {formatPrice(promo.original)}
@@ -880,30 +881,26 @@ export function LiteSubscription() {
                                 </span>
                               )}
                             </div>
-                            <span className="text-sm text-dark-500 min-[360px]:text-right">
-                              /{t('lite.day')}
-                            </span>
-                          </div>
-                        );
-                      })()
-                    : period
-                      ? (() => {
-                          const hasExistingDiscount = !!(
-                            period.discount_percent && period.discount_percent > 0
                           );
-                          const promo = applyPromoDiscount(
-                            period.price_kopeks,
-                            hasExistingDiscount,
-                          );
-                          const displayedDiscountPercent = hasExistingDiscount
-                            ? (period.discount_percent ?? null)
-                            : promo.percent;
-                          return (
-                            <div className="flex flex-col gap-1 min-[360px]:flex-row min-[360px]:items-baseline min-[360px]:justify-between">
-                              <div className="flex flex-wrap items-center gap-2">
+                        })()
+                      : period
+                        ? (() => {
+                            const hasExistingDiscount = !!(
+                              period.discount_percent && period.discount_percent > 0
+                            );
+                            const promo = applyPromoDiscount(
+                              period.price_kopeks,
+                              hasExistingDiscount,
+                            );
+                            const displayedDiscountPercent = hasExistingDiscount
+                              ? (period.discount_percent ?? null)
+                              : promo.percent;
+                            return (
+                              <div className="flex flex-wrap items-baseline gap-2">
                                 <span className="text-xl font-bold tabular-nums text-accent-400">
                                   {formatPrice(promo.price)}
                                 </span>
+                                <span className="text-sm text-dark-500">/{t('lite.month')}</span>
                                 {promo.original && (
                                   <span className="text-sm text-dark-500 line-through">
                                     {formatPrice(promo.original)}
@@ -915,16 +912,13 @@ export function LiteSubscription() {
                                   </span>
                                 )}
                               </div>
-                              <span className="text-sm text-dark-500 min-[360px]:text-right">
-                                /{t('lite.month')}
-                              </span>
-                            </div>
-                          );
-                        })()
-                      : null}
-                </button>
-              );
-            })}
+                            );
+                          })()
+                        : null}
+                  </button>
+                );
+              })}
+            </div>
 
             {/* Period selector for selected tariff */}
             {selectedTariff &&
@@ -1320,7 +1314,7 @@ export function LiteSubscription() {
             {trafficPackages && trafficPackages.length > 0 && (
               <div className="space-y-2">
                 <p className="text-sm text-dark-400">{t('lite.addTraffic')}</p>
-                <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
+                <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2 lg:grid-cols-3">
                   {trafficPackages.map((pkg) => {
                     const hasExistingDiscount = !!(
                       pkg.discount_percent && pkg.discount_percent > 0

@@ -112,6 +112,8 @@ export default {
           'Roboto',
           'sans-serif',
         ],
+        display: ['Outfit', 'Manrope', 'system-ui', 'sans-serif'],
+        mono: ['IBM Plex Mono', 'ui-monospace', 'monospace'],
       },
       borderRadius: {
         bento: '24px',
@@ -164,6 +166,20 @@ export default {
         float: 'float 3s ease-in-out infinite',
         'glow-pulse': 'glowPulse 2s ease-in-out infinite',
         spotlight: 'spotlight 2s ease-in-out infinite',
+        // Aceternity UI background animations
+        aurora: 'aurora 60s linear infinite',
+        'meteor-effect': 'meteor 5s linear infinite',
+        'move-vertical': 'moveVertical 30s ease infinite',
+        'move-in-circle': 'moveInCircle 20s reverse infinite',
+        'move-in-circle-slow': 'moveInCircle 40s linear infinite',
+        'move-horizontal': 'moveHorizontal 40s ease infinite',
+        'move-in-circle-fast': 'moveInCircle 20s ease infinite',
+        'spotlight-ace': 'spotlightAce 2s ease 0.75s 1 forwards',
+        // Dashboard traffic animations
+        'traffic-shimmer': 'trafficShimmer 2s ease-in-out infinite',
+        'unlimited-flow': 'unlimitedFlow 3s ease-in-out infinite',
+        'unlimited-pulse': 'unlimitedPulse 2s ease-in-out infinite',
+        'trial-glow': 'trialGlow 3s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -212,6 +228,53 @@ export default {
             boxShadow:
               '0 0 0 8px rgba(var(--color-accent-500), 0.2), 0 0 40px rgba(var(--color-accent-500), 0.5)',
           },
+        },
+        // Aceternity UI keyframes
+        aurora: {
+          from: { backgroundPosition: '50% 50%, 50% 50%' },
+          to: { backgroundPosition: '350% 50%, 350% 50%' },
+        },
+        meteor: {
+          '0%': { transform: 'rotate(215deg) translateX(0)', opacity: '1' },
+          '70%': { opacity: '1' },
+          '100%': { transform: 'rotate(215deg) translateX(-500px)', opacity: '0' },
+        },
+        moveVertical: {
+          '0%': { transform: 'translateY(-50%)' },
+          '50%': { transform: 'translateY(50%)' },
+          '100%': { transform: 'translateY(-50%)' },
+        },
+        moveInCircle: {
+          '0%': { transform: 'rotate(0deg)' },
+          '50%': { transform: 'rotate(180deg)' },
+          '100%': { transform: 'rotate(360deg)' },
+        },
+        moveHorizontal: {
+          '0%': { transform: 'translateX(-50%) translateY(-10%)' },
+          '50%': { transform: 'translateX(50%) translateY(10%)' },
+          '100%': { transform: 'translateX(-50%) translateY(-10%)' },
+        },
+        spotlightAce: {
+          '0%': { opacity: '0', transform: 'translate(-72%, -62%) scale(0.5)' },
+          '100%': { opacity: '1', transform: 'translate(-50%, -40%) scale(1)' },
+        },
+        // Dashboard traffic keyframes
+        trafficShimmer: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(200%)' },
+        },
+        unlimitedFlow: {
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' },
+        },
+        unlimitedPulse: {
+          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+          '50%': { opacity: '0.5', transform: 'scale(0.7)' },
+        },
+        trialGlow: {
+          '0%, 100%': { boxShadow: '0 0 15px rgba(62, 219, 176, 0.06)' },
+          '50%': { boxShadow: '0 0 30px rgba(62, 219, 176, 0.12)' },
         },
       },
       transitionTimingFunction: {

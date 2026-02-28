@@ -12,199 +12,53 @@ import {
 } from '@dnd-kit/core';
 import {
   SortableContext,
-  arrayMove,
   sortableKeyboardCoordinates,
-  useSortable,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import { useTranslation } from 'react-i18next';
-import {
-  adminMenuLayoutApi,
-  MenuButtonConfig,
-  MenuButtonVisibility,
-  MenuRowConfig,
-  MenuLayoutResponse,
-} from '../api/adminMenuLayout';
+import { adminMenuLayoutApi, MenuButtonVisibility, MenuRowConfig } from '../api/adminMenuLayout';
 import { AdminBackButton } from '../components/admin';
 import { ButtonsTab } from '../components/admin/ButtonsTab';
 import { MainMenuButtonsStatsTab } from '../components/admin/MainMenuButtonsStatsTab';
+import { GripIcon, SortablePreviewButton } from './adminMainMenuButtons/SortablePreviewButton';
+import {
+  buildBuckets,
+  buildMainMenuButtonsTabOptions,
+  buildEditFormState,
+  buildMenuLayoutDerivedState,
+  buildButtonUpdatePayload,
+  buildOrderedButtons,
+  buildVisibilityOptions,
+  buildInitialOrder,
+  DEFAULT_MENU_BUTTON_EDIT_FORM,
+  getMainMenuButtonsTabClass,
+  getSaveLayoutButtonLabel,
+  type MenuButtonEditFormValues,
+  type MainMenuButtonsTab,
+  countEnabledButtonsForRow,
+  buildPreviewRows,
+  buildRowsUpdatePayload,
+  expandCapacityAtIndex,
+  findRowIndexById,
+  getButtonText,
+  getLangCode,
+  getSelectedRowAfterCollapse,
+  getRowCapacityState,
+  hasOrderChanged,
+  hasPendingLayoutChanges,
+  hasRowsConfigChanged,
+  MAX_ROW_SLOTS,
+  moveButtonToRowState,
+  removeRowAtIndexIfPossible,
+  resetMenuButtonEditState,
+  reorderVisibleSubset,
+  splitOrderedButtonsByEnabled,
+  toggleRowIndex,
+  updateMenuButtonEditFormField,
+  validateMenuButtonEditForm,
+} from './adminMainMenuButtons/utils';
 
-interface FormState {
-  text: string;
-  action: string;
-  openMode: 'callback' | 'direct';
-  webappUrl: string;
-  visibility: MenuButtonVisibility;
-  enabled: boolean;
-}
-
-const DEFAULT_FORM: FormState = {
-  text: '',
-  action: '',
-  openMode: 'callback',
-  webappUrl: '',
-  visibility: 'all',
-  enabled: true,
-};
-const MAX_ROW_SLOTS = 4;
-
-const GripIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-    />
-  </svg>
-);
-
-function getLangCode(language: string): string {
-  return language.split('-')[0] || 'ru';
-}
-
-function getButtonText(buttonId: string, button: MenuButtonConfig, lang: string): string {
-  return button.text[lang] || button.text.ru || Object.values(button.text)[0] || buttonId;
-}
-
-function buildInitialOrder(layout: MenuLayoutResponse): string[] {
-  const fromRows = layout.rows.flatMap((row) => row.buttons);
-  const known = new Set(fromRows);
-  const missing = Object.keys(layout.buttons).filter((id) => !known.has(id));
-  return [...fromRows, ...missing];
-}
-
-function reorderVisibleSubset(
-  source: string[],
-  visibleIds: string[],
-  activeId: string,
-  overId: string,
-): string[] {
-  const oldVisibleIndex = visibleIds.findIndex((id) => id === activeId);
-  const newVisibleIndex = visibleIds.findIndex((id) => id === overId);
-  if (oldVisibleIndex === -1 || newVisibleIndex === -1) {
-    return source;
-  }
-
-  const reorderedVisible = arrayMove(visibleIds, oldVisibleIndex, newVisibleIndex);
-  const visibleIdSet = new Set(visibleIds);
-  let cursor = 0;
-
-  return source.map((id) => {
-    if (!visibleIdSet.has(id)) {
-      return id;
-    }
-
-    const next = reorderedVisible[cursor];
-    cursor += 1;
-    return next;
-  });
-}
-
-function buildBuckets(ids: string[], lengths: number[]): string[][] {
-  const buckets: string[][] = [];
-  let pointer = 0;
-  lengths.forEach((count) => {
-    const safeCount = Math.max(count, 0);
-    buckets.push(ids.slice(pointer, pointer + safeCount));
-    pointer += safeCount;
-  });
-  if (pointer < ids.length) {
-    if (buckets.length === 0) {
-      buckets.push([]);
-    }
-    buckets[buckets.length - 1] = [...buckets[buckets.length - 1], ...ids.slice(pointer)];
-  }
-  return buckets;
-}
-
-function findRowIndexById(buckets: string[][], buttonId: string): number {
-  for (let idx = 0; idx < buckets.length; idx += 1) {
-    if (buckets[idx].includes(buttonId)) {
-      return idx;
-    }
-  }
-  return -1;
-}
-
-interface SortablePreviewButtonProps {
-  buttonId: string;
-  button: MenuButtonConfig;
-  lang: string;
-  onEdit: () => void;
-  onDeactivate: () => void;
-}
-
-function SortablePreviewButton({
-  buttonId,
-  button,
-  lang,
-  onEdit,
-  onDeactivate,
-}: SortablePreviewButtonProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: buttonId,
-  });
-
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    zIndex: isDragging ? 50 : undefined,
-    position: isDragging ? 'relative' : undefined,
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`group flex min-h-[40px] items-center gap-2 rounded-md border px-2 py-1.5 ${
-        isDragging
-          ? 'border-accent-500/50 bg-dark-800 shadow-lg shadow-accent-500/20'
-          : 'border-dark-700/70 bg-dark-800/70 hover:border-dark-600'
-      }`}
-    >
-      <button
-        type="button"
-        {...attributes}
-        {...listeners}
-        className="touch-none rounded-lg p-1.5 text-dark-500 transition-colors hover:bg-dark-700/50 hover:text-dark-300"
-        title="Перетащить для смены порядка"
-        aria-label={`Drag ${buttonId}`}
-      >
-        <svg
-          className="h-4 w-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-          />
-        </svg>
-      </button>
-
-      <button
-        type="button"
-        onClick={onEdit}
-        className="line-clamp-2 min-w-0 flex-1 text-left text-sm text-dark-100"
-        title={getButtonText(buttonId, button, lang)}
-      >
-        {getButtonText(buttonId, button, lang)}
-      </button>
-
-      <button
-        type="button"
-        onClick={onDeactivate}
-        className="rounded-md border border-dark-700/70 px-2 py-1 text-xs text-dark-300 hover:border-dark-500 hover:text-dark-100"
-      >
-        Скрыть
-      </button>
-    </div>
-  );
-}
+type FormState = MenuButtonEditFormValues;
 
 export default function AdminMainMenuButtons() {
   const { t, i18n } = useTranslation();
@@ -214,10 +68,10 @@ export default function AdminMainMenuButtons() {
   const [orderIds, setOrderIds] = useState<string[]>([]);
   const [rowLengths, setRowLengths] = useState<number[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<FormState>(DEFAULT_FORM);
+  const [form, setForm] = useState<FormState>(DEFAULT_MENU_BUTTON_EDIT_FORM);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'layout' | 'sections' | 'stats'>('layout');
+  const [activeTab, setActiveTab] = useState<MainMenuButtonsTab>('layout');
   const [selectedRowIndex, setSelectedRowIndex] = useState(0);
   const [addMenuRowIndex, setAddMenuRowIndex] = useState<number | null>(null);
   const [rowCapacities, setRowCapacities] = useState<number[]>([]);
@@ -240,10 +94,11 @@ export default function AdminMainMenuButtons() {
     if (!data) {
       return;
     }
-    setOrderIds(buildInitialOrder(data));
-    setRowLengths(data.rows.map((row) => row.buttons.length));
-    setRowCapacities(data.rows.map((row) => Math.max(row.max_per_row || 1, 1)));
-    setRowDefs(data.rows.map((row) => ({ id: row.id, conditions: row.conditions })));
+    const derived = buildMenuLayoutDerivedState(data);
+    setOrderIds(derived.orderIds);
+    setRowLengths(derived.rowLengths);
+    setRowCapacities(derived.rowCapacities);
+    setRowDefs(derived.rowDefs);
     setSelectedRowIndex(0);
     setAddMenuRowIndex(null);
   }, [data]);
@@ -255,120 +110,43 @@ export default function AdminMainMenuButtons() {
   );
 
   const orderedButtons = useMemo(
-    () =>
-      orderedIds.map((id) => ({
-        id,
-        config: buttonsById[id],
-      })),
+    () => buildOrderedButtons(orderedIds, buttonsById),
     [buttonsById, orderedIds],
   );
-
-  const activeButtons = useMemo(
-    () => orderedButtons.filter((item) => item.config.enabled),
-    [orderedButtons],
-  );
-
-  const inactiveButtons = useMemo(
-    () => orderedButtons.filter((item) => !item.config.enabled),
+  const { activeButtons, inactiveButtons } = useMemo(
+    () => splitOrderedButtonsByEnabled(orderedButtons),
     [orderedButtons],
   );
   const rowBuckets = useMemo(() => buildBuckets(orderedIds, rowLengths), [orderedIds, rowLengths]);
+  const rowDefaultCapacities = useMemo(
+    () => data?.rows.map((row) => row.max_per_row ?? MAX_ROW_SLOTS) ?? [],
+    [data?.rows],
+  );
 
   const getEnabledCountForRow = (rowIndex: number): number =>
-    (rowBuckets[rowIndex] ?? []).reduce(
-      (count, id) => count + (buttonsById[id]?.enabled ? 1 : 0),
-      0,
-    );
+    countEnabledButtonsForRow(rowBuckets, buttonsById, rowIndex);
 
-  const hasOrderChanges = useMemo(() => {
-    if (orderedIds.length !== initialOrder.length) {
-      return false;
-    }
-    return orderedIds.some((id, index) => initialOrder[index] !== id);
-  }, [initialOrder, orderedIds]);
+  const hasOrderChanges = useMemo(
+    () => hasOrderChanged(initialOrder, orderedIds),
+    [initialOrder, orderedIds],
+  );
 
   const hasRowsConfigChanges = useMemo(() => {
     if (!data) {
       return false;
     }
-    if (rowDefs.length !== data.rows.length || rowLengths.length !== data.rows.length) {
-      return true;
-    }
-    for (let index = 0; index < data.rows.length; index += 1) {
-      const sourceRow = data.rows[index];
-      const sourceCapacity = Math.max(sourceRow.max_per_row || 1, 1);
-      if (rowDefs[index]?.id !== sourceRow.id) {
-        return true;
-      }
-      if ((rowLengths[index] ?? 0) !== sourceRow.buttons.length) {
-        return true;
-      }
-      if (Math.max(rowCapacities[index] ?? sourceCapacity, 1) !== sourceCapacity) {
-        return true;
-      }
-    }
-    return false;
+    return hasRowsConfigChanged(data.rows, rowDefs, rowLengths, rowCapacities);
   }, [data, rowCapacities, rowDefs, rowLengths]);
 
-  const hasPendingChanges = hasOrderChanges || hasRowsConfigChanges;
+  const hasPendingChanges = hasPendingLayoutChanges(hasOrderChanges, hasRowsConfigChanges);
 
-  const visibilityOptions = useMemo(
-    () => [
-      { value: 'all' as const, label: t('admin.mainMenuButtons.visibilityAll') },
-      { value: 'admins' as const, label: t('admin.mainMenuButtons.visibilityAdmins') },
-      { value: 'subscribers' as const, label: t('admin.mainMenuButtons.visibilitySubscribers') },
-      { value: 'moderators' as const, label: 'Moderators only' },
-    ],
-    [t],
+  const visibilityOptions = useMemo(() => buildVisibilityOptions(t), [t]);
+
+  const previewRows = useMemo(
+    () => buildPreviewRows(orderedIds, rowLengths, buttonsById, Boolean(data)),
+    [buttonsById, data, orderedIds, rowLengths],
   );
-
-  const previewRows = useMemo(() => {
-    if (!data || orderedIds.length === 0) {
-      return [];
-    }
-
-    const rows: { rowIndex: number; items: { id: string; config: MenuButtonConfig }[] }[] = [];
-    let pointer = 0;
-
-    rowLengths.forEach((count, rowIndex) => {
-      const slice = orderedIds.slice(pointer, pointer + Math.max(count, 0));
-      pointer += Math.max(count, 0);
-      const rowItems = slice
-        .map((id) => {
-          const config = buttonsById[id];
-          if (!config || !config.enabled) {
-            return null;
-          }
-          return { id, config };
-        })
-        .filter((item): item is { id: string; config: MenuButtonConfig } => item !== null);
-
-      rows.push({ rowIndex, items: rowItems });
-    });
-
-    // Defensive fallback for newly added IDs not reflected in rowLengths yet.
-    if (pointer < orderedIds.length) {
-      const tailItems = orderedIds
-        .slice(pointer)
-        .map((id) => {
-          const config = buttonsById[id];
-          if (!config || !config.enabled) {
-            return null;
-          }
-          return { id, config };
-        })
-        .filter((item): item is { id: string; config: MenuButtonConfig } => item !== null);
-      if (tailItems.length > 0) {
-        const lastRowIndex = Math.max(rows.length - 1, 0);
-        if (!rows[lastRowIndex]) {
-          rows[lastRowIndex] = { rowIndex: lastRowIndex, items: [] };
-        }
-        rows[lastRowIndex].items = [...rows[lastRowIndex].items, ...tailItems];
-      }
-    }
-
-    return rows;
-  }, [buttonsById, data, orderedIds, rowLengths]);
+  const tabOptions = useMemo(() => buildMainMenuButtonsTabOptions(t), [t]);
 
   const saveLayoutMutation = useMutation({
     mutationFn: async (ids: string[]) => {
@@ -376,23 +154,7 @@ export default function AdminMainMenuButtons() {
         return;
       }
 
-      const rows = rowDefs.map((row, index) => ({
-        id: row.id,
-        max_per_row: Math.max(rowCapacities[index] ?? 1, 1),
-        conditions: row.conditions,
-        buttons: [] as string[],
-      }));
-
-      let pointer = 0;
-      rows.forEach((row, index) => {
-        const count = rowLengths[index] ?? 0;
-        row.buttons = ids.slice(pointer, pointer + count);
-        pointer += count;
-      });
-
-      if (pointer < ids.length && rows.length > 0) {
-        rows[rows.length - 1].buttons = [...rows[rows.length - 1].buttons, ...ids.slice(pointer)];
-      }
+      const rows = buildRowsUpdatePayload(ids, rowDefs, rowLengths, rowCapacities);
 
       await adminMenuLayoutApi.update({ rows });
     },
@@ -485,14 +247,7 @@ export default function AdminMainMenuButtons() {
     }
 
     setEditingId(buttonId);
-    setForm({
-      text: getButtonText(buttonId, button, lang),
-      action: button.action || '',
-      openMode: button.open_mode || 'callback',
-      webappUrl: button.webapp_url || '',
-      visibility: button.visibility,
-      enabled: button.enabled,
-    });
+    setForm(buildEditFormState(buttonId, button, lang));
     setError(null);
     setSuccess(null);
   };
@@ -507,33 +262,28 @@ export default function AdminMainMenuButtons() {
       return;
     }
 
-    if (!form.text.trim()) {
-      setError(t('admin.mainMenuButtons.textRequired'));
-      return;
-    }
-
-    if (!form.action.trim()) {
-      setError(t('admin.mainMenuButtons.actionValueRequired'));
+    const validationError = validateMenuButtonEditForm(form);
+    if (validationError) {
+      setError(t(validationError));
       return;
     }
 
     updateButtonMutation.mutate({
       buttonId: editingId,
-      payload: {
-        text: {
-          ...button.text,
-          [lang]: form.text.trim(),
-        },
-        action: form.action.trim(),
-        open_mode: form.openMode,
-        webapp_url: form.openMode === 'direct' ? form.webappUrl.trim() || null : null,
-        visibility: form.visibility,
-        enabled: form.enabled,
-      },
+      payload: buildButtonUpdatePayload(button, lang, form),
     });
 
-    setEditingId(null);
-    setForm(DEFAULT_FORM);
+    cancelEdit();
+  };
+
+  const updateFormField = <K extends keyof FormState>(field: K, value: FormState[K]) => {
+    setForm((previous) => updateMenuButtonEditFormField(previous, field, value));
+  };
+
+  const cancelEdit = () => {
+    const resetState = resetMenuButtonEditState();
+    setEditingId(resetState.editingId);
+    setForm(resetState.form);
   };
 
   const toggleEnabled = (buttonId: string, current: boolean) => {
@@ -549,33 +299,30 @@ export default function AdminMainMenuButtons() {
       return;
     }
 
-    const buckets = buildBuckets(orderedIds, rowLengths);
-    const sourceRowIndex = findRowIndexById(buckets, buttonId);
-
-    if (sourceRowIndex === -1) {
+    const safeTarget = Math.min(Math.max(targetRowIndex, 0), rowLengths.length - 1);
+    const moveResult = moveButtonToRowState({
+      orderedIds,
+      rowLengths,
+      rowCapacities,
+      rowDefaultCapacities,
+      buttonId,
+      targetRowIndex,
+      targetEnabledCount: getEnabledCountForRow(safeTarget),
+      maxRowSlots: MAX_ROW_SLOTS,
+    });
+    if (moveResult.error === 'button_not_found') {
+      return;
+    }
+    if (moveResult.error === 'row_full') {
+      setError(`ROW ${moveResult.safeTarget + 1} уже заполнен`);
+      return;
+    }
+    if (!moveResult.nextOrderIds || !moveResult.nextRowLengths) {
       return;
     }
 
-    const safeTarget = Math.min(Math.max(targetRowIndex, 0), buckets.length - 1);
-    const targetMaxPerRow = Math.max(
-      rowCapacities[safeTarget] ?? data.rows[safeTarget]?.max_per_row ?? MAX_ROW_SLOTS,
-      1,
-    );
-    const targetCurrent = getEnabledCountForRow(safeTarget);
-    if (sourceRowIndex !== safeTarget && targetCurrent >= targetMaxPerRow) {
-      setError(`ROW ${safeTarget + 1} уже заполнен`);
-      return;
-    }
-
-    const sourcePos = buckets[sourceRowIndex].indexOf(buttonId);
-    if (sourcePos === -1) {
-      return;
-    }
-    buckets[sourceRowIndex].splice(sourcePos, 1);
-    buckets[safeTarget].push(buttonId);
-
-    setOrderIds(buckets.flat());
-    setRowLengths(buckets.map((row) => row.length));
+    setOrderIds(moveResult.nextOrderIds);
+    setRowLengths(moveResult.nextRowLengths);
   };
 
   const activateToRow = (buttonId: string, current: boolean, rowIndex: number) => {
@@ -585,12 +332,7 @@ export default function AdminMainMenuButtons() {
   };
 
   const expandRowCapacity = (rowIndex: number) => {
-    setRowCapacities((prev) => {
-      const next = [...prev];
-      const current = Math.max(next[rowIndex] ?? 1, 1);
-      next[rowIndex] = Math.min(current + 1, MAX_ROW_SLOTS);
-      return next;
-    });
+    setRowCapacities((prev) => expandCapacityAtIndex(prev, rowIndex, MAX_ROW_SLOTS));
   };
 
   const collapseEmptyRow = (rowIndex: number) => {
@@ -599,37 +341,14 @@ export default function AdminMainMenuButtons() {
       return;
     }
 
-    setRowLengths((prev) => {
-      if (prev.length <= 1) {
-        return prev;
-      }
-      return prev.filter((_, idx) => idx !== rowIndex);
-    });
+    setRowLengths((prev) => removeRowAtIndexIfPossible(prev, rowIndex));
 
-    setRowCapacities((prev) => {
-      if (prev.length <= 1) {
-        return prev;
-      }
-      return prev.filter((_, idx) => idx !== rowIndex);
-    });
+    setRowCapacities((prev) => removeRowAtIndexIfPossible(prev, rowIndex));
 
-    setRowDefs((prev) => {
-      if (prev.length <= 1) {
-        return prev;
-      }
-      return prev.filter((_, idx) => idx !== rowIndex);
-    });
+    setRowDefs((prev) => removeRowAtIndexIfPossible(prev, rowIndex));
 
     setAddMenuRowIndex(null);
-    setSelectedRowIndex((prev) => {
-      if (prev === rowIndex) {
-        return Math.max(rowIndex - 1, 0);
-      }
-      if (prev > rowIndex) {
-        return prev - 1;
-      }
-      return prev;
-    });
+    setSelectedRowIndex((prev) => getSelectedRowAfterCollapse(prev, rowIndex));
   };
 
   return (
@@ -652,48 +371,23 @@ export default function AdminMainMenuButtons() {
               onClick={() => saveLayoutMutation.mutate(orderedIds)}
               disabled={!hasPendingChanges || saveLayoutMutation.isPending}
             >
-              {saveLayoutMutation.isPending
-                ? t('admin.mainMenuButtons.savingOrder')
-                : t('admin.mainMenuButtons.saveOrder')}
+              {getSaveLayoutButtonLabel(t, saveLayoutMutation.isPending)}
             </button>
           </div>
         )}
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => setActiveTab('layout')}
-          className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-            activeTab === 'layout'
-              ? 'bg-accent-500/15 text-accent-300'
-              : 'bg-dark-800 text-dark-300 hover:bg-dark-700/70'
-          }`}
-        >
-          {t('admin.mainMenuButtons.title')}
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('sections')}
-          className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-            activeTab === 'sections'
-              ? 'bg-accent-500/15 text-accent-300'
-              : 'bg-dark-800 text-dark-300 hover:bg-dark-700/70'
-          }`}
-        >
-          {t('admin.settings.menu.buttons', 'Стили кнопок')}
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('stats')}
-          className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-            activeTab === 'stats'
-              ? 'bg-accent-500/15 text-accent-300'
-              : 'bg-dark-800 text-dark-300 hover:bg-dark-700/70'
-          }`}
-        >
-          {t('admin.mainMenuButtons.statsTab')}
-        </button>
+        {tabOptions.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            onClick={() => setActiveTab(tab.key)}
+            className={getMainMenuButtonsTabClass(activeTab, tab.key)}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {activeTab === 'layout' && error && (
@@ -776,13 +470,13 @@ export default function AdminMainMenuButtons() {
                             )}
                             {row.rowIndex === selectedRowIndex &&
                               (() => {
-                                const maxPerRow = Math.max(
-                                  rowCapacities[row.rowIndex] ??
-                                    data?.rows[row.rowIndex]?.max_per_row ??
-                                    MAX_ROW_SLOTS,
-                                  1,
+                                const { maxPerRow, freeSlots } = getRowCapacityState(
+                                  row.rowIndex,
+                                  row.items.length,
+                                  rowCapacities,
+                                  rowDefaultCapacities,
+                                  MAX_ROW_SLOTS,
                                 );
-                                const freeSlots = Math.max(maxPerRow - row.items.length, 0);
                                 return (
                                   <div className="mt-2 flex flex-wrap gap-2">
                                     {maxPerRow < MAX_ROW_SLOTS && (
@@ -804,7 +498,7 @@ export default function AdminMainMenuButtons() {
                                         onClick={(event) => {
                                           event.stopPropagation();
                                           setAddMenuRowIndex((prev) =>
-                                            prev === row.rowIndex ? null : row.rowIndex,
+                                            toggleRowIndex(prev, row.rowIndex),
                                           );
                                         }}
                                         className="rounded-md border border-dashed border-accent-500/40 bg-accent-500/10 px-3 py-1.5 text-xs text-accent-300 hover:bg-accent-500/20"
@@ -890,7 +584,7 @@ export default function AdminMainMenuButtons() {
                     </span>
                     <input
                       value={form.text}
-                      onChange={(e) => setForm((prev) => ({ ...prev, text: e.target.value }))}
+                      onChange={(e) => updateFormField('text', e.target.value)}
                       className="input"
                       maxLength={64}
                     />
@@ -902,7 +596,7 @@ export default function AdminMainMenuButtons() {
                     </span>
                     <input
                       value={form.action}
-                      onChange={(e) => setForm((prev) => ({ ...prev, action: e.target.value }))}
+                      onChange={(e) => updateFormField('action', e.target.value)}
                       className="input"
                       maxLength={1024}
                     />
@@ -913,10 +607,7 @@ export default function AdminMainMenuButtons() {
                     <select
                       value={form.openMode}
                       onChange={(e) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          openMode: e.target.value as 'callback' | 'direct',
-                        }))
+                        updateFormField('openMode', e.target.value as 'callback' | 'direct')
                       }
                       className="input"
                     >
@@ -929,7 +620,7 @@ export default function AdminMainMenuButtons() {
                     <span className="text-xs text-dark-400">WebApp URL (для direct)</span>
                     <input
                       value={form.webappUrl}
-                      onChange={(e) => setForm((prev) => ({ ...prev, webappUrl: e.target.value }))}
+                      onChange={(e) => updateFormField('webappUrl', e.target.value)}
                       className="input"
                       placeholder="https://..."
                       maxLength={1024}
@@ -944,10 +635,7 @@ export default function AdminMainMenuButtons() {
                     <select
                       value={form.visibility}
                       onChange={(e) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          visibility: e.target.value as MenuButtonVisibility,
-                        }))
+                        updateFormField('visibility', e.target.value as MenuButtonVisibility)
                       }
                       className="input"
                     >
@@ -964,7 +652,7 @@ export default function AdminMainMenuButtons() {
                   type="button"
                   role="switch"
                   aria-checked={form.enabled}
-                  onClick={() => setForm((prev) => ({ ...prev, enabled: !prev.enabled }))}
+                  onClick={() => updateFormField('enabled', !form.enabled)}
                   className={`inline-flex w-fit items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition ${
                     form.enabled
                       ? 'border-success-500/50 bg-success-500/10 text-success-300'
@@ -987,13 +675,7 @@ export default function AdminMainMenuButtons() {
                   >
                     {t('common.save')}
                   </button>
-                  <button
-                    className="btn-secondary"
-                    onClick={() => {
-                      setEditingId(null);
-                      setForm(DEFAULT_FORM);
-                    }}
-                  >
+                  <button className="btn-secondary" onClick={cancelEdit}>
                     {t('common.cancel')}
                   </button>
                 </div>

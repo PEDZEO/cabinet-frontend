@@ -18,6 +18,7 @@ export default function TopUpMethodSelect() {
   const { data: paymentMethods, isLoading } = useQuery({
     queryKey: ['payment-methods'],
     queryFn: balanceApi.getPaymentMethods,
+    refetchOnMount: 'always',
   });
 
   const handleMethodClick = (methodId: string) => {

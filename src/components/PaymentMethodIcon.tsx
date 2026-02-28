@@ -115,6 +115,40 @@ export default function PaymentMethodIcon({
         </svg>
       );
 
+    case 'freekassa_sbp':
+      return (
+        <svg className={className} viewBox="0 0 40 40">
+          <circle cx="20" cy="20" r="20" fill="#00B894" />
+          <g fill="#fff" fontFamily="Arial,sans-serif" fontWeight="700">
+            <text x="20" y="20" textAnchor="middle" fontSize="9">
+              СБП
+            </text>
+            <text x="20" y="30" textAnchor="middle" fontSize="8" fontWeight="400">
+              QR
+            </text>
+          </g>
+        </svg>
+      );
+
+    case 'freekassa_card':
+      return (
+        <svg className={className} viewBox="0 0 40 40">
+          <circle cx="20" cy="20" r="20" fill="#6C5CE7" />
+          <rect
+            x="10"
+            y="14"
+            width="20"
+            height="14"
+            rx="2"
+            fill="none"
+            stroke="#fff"
+            strokeWidth="1.5"
+          />
+          <line x1="10" y1="19" x2="30" y2="19" stroke="#fff" strokeWidth="1.5" />
+          <rect x="13" y="22" width="5" height="2" rx="0.5" fill="#fff" opacity=".6" />
+        </svg>
+      );
+
     case 'cloudpayments':
       return (
         <svg className={className} viewBox="0 0 40 40">

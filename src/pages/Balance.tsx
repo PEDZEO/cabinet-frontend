@@ -126,6 +126,7 @@ function FullBalance() {
   const { data: paymentMethods } = useQuery({
     queryKey: ['payment-methods'],
     queryFn: balanceApi.getPaymentMethods,
+    refetchOnMount: 'always',
   });
 
   const normalizeType = (type: string) => type?.toUpperCase?.() ?? type;
@@ -227,20 +228,21 @@ function FullBalance() {
           <h2 className="mb-4 text-lg font-semibold text-dark-100">
             {t('balance.promocode.title')}
           </h2>
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row">
             <input
               type="text"
               value={promocode}
               onChange={(e) => setPromocode(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handlePromocodeActivate()}
               placeholder={t('balance.promocode.placeholder')}
-              className="input flex-1"
+              className="input min-w-0 flex-1"
               disabled={promocodeLoading}
             />
             <Button
               onClick={handlePromocodeActivate}
               disabled={!promocode.trim()}
               loading={promocodeLoading}
+              className="w-full sm:w-auto sm:shrink-0"
             >
               {t('balance.promocode.activate')}
             </Button>

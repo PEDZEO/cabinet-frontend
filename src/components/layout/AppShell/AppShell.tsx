@@ -21,11 +21,11 @@ import CampaignBonusNotifier from '@/components/CampaignBonusNotifier';
 import SuccessNotificationModal from '@/components/SuccessNotificationModal';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import TicketNotificationBell from '@/components/TicketNotificationBell';
+import { BackgroundRenderer } from '@/components/backgrounds/BackgroundRenderer';
 
 import { MobileBottomNav } from './MobileBottomNav';
 import { AppHeader } from './AppHeader';
 import { LiteModeHeader } from './LiteModeHeader';
-import { Aurora } from './Aurora';
 
 // Desktop nav icons
 const HomeIcon = ({ className }: { className?: string }) => (
@@ -304,7 +304,7 @@ export function AppShell({ children }: AppShellProps) {
   return (
     <div className="min-h-screen">
       {/* Animated background */}
-      <Aurora />
+      <BackgroundRenderer />
 
       {/* Global components */}
       <WebSocketNotifications />
