@@ -236,6 +236,50 @@
         "confirm": "2. Sign in with another provider and confirm that code.",
         "sharedSubscription": "3. After linking, subscription and access are shared."
       }
+    },
+    "connectDevice": "Connect Device",
+    "daysRemaining": "Days left",
+    "devicesConnected": "{{count}} connected",
+    "devicesOfMax": "{{used}} of {{max}} connected",
+    "devicesShort": "dev.",
+    "expired": {
+      "devices": "Devices",
+      "expiredDate": "Expired",
+      "paidSubtitle": "Subscription has expired",
+      "renew": "Renew Subscription",
+      "tariffs": "Tariffs",
+      "title": "Subscription Expired",
+      "traffic": "Traffic",
+      "trialSubtitle": "Trial period ended",
+      "trialTitle": "Trial Expired"
+    },
+    "maxUsage": "max {{amount}}",
+    "remaining": "Remaining",
+    "stats": {
+      "balance": "Balance",
+      "earnings": "Earnings",
+      "referrals": "Referrals",
+      "subscription": "Subscription"
+    },
+    "tariff": "Tariff",
+    "trafficUsage": "{{used}} / {{limit}} GB",
+    "trafficUsageTitle": "Traffic Usage",
+    "trialOffer": {
+      "freeDesc": "Try our VPN for free — no commitment required",
+      "freeTitle": "Free Trial Available",
+      "paidDesc": "Get started with a trial subscription",
+      "paidTitle": "Trial Subscription"
+    },
+    "unlimited": "Unlimited",
+    "usageLast14Days": "Usage last 14 days",
+    "usedSuffix": "used",
+    "usedTraffic": "used {{amount}}",
+    "validUntil": "until {{date}}",
+    "zone": {
+      "critical": "Critical",
+      "danger": "High",
+      "normal": "Normal",
+      "warning": "Moderate"
     }
   },
   "subscription": {
@@ -272,6 +316,7 @@
     "buyDevices": "Buy Devices",
     "renewalOptions": "Renewal Options",
     "days": "days",
+    "daysShort": "d.",
     "days_one": "{{count}} day",
     "days_other": "{{count}} days",
     "hours": "h",
@@ -310,7 +355,10 @@
     "extraDevicesIncluded_other": "Incl. {{count}} extra dev.",
     "baseTariff": "Tariff",
     "perMonth": "/mo",
-    "summary": "Summary",
+    "summary": {
+      "period": "Period: {{label}}",
+      "traffic": "Traffic: {{gb}} GB"
+    },
     "total": "Total",
     "purchase": "Purchase",
     "step": "Step {{current}} of {{total}}",
@@ -341,14 +389,25 @@
       "unavailable": "Trial is not available"
     },
     "pause": {
-      "paused": "Subscription paused",
-      "active": "Subscription active",
-      "pausedDescription": "No charges while paused",
-      "activeDescription": "Daily billing",
-      "resume": "Resume",
-      "pause": "Pause",
+      "title": "Subscription Pause",
+      "paused": "Paused",
+      "active": "Active",
+      "pauseBtn": "Pause",
+      "resumeBtn": "Resume",
       "pausedMessage": "Subscription paused",
-      "resumedMessage": "Subscription resumed"
+      "resumedMessage": "Subscription resumed",
+      "dailyOnly": "Pause is only available for daily tariffs",
+      "insufficientBalance": "Insufficient balance to resume subscription",
+      "pausedInfo": "Subscription paused",
+      "pausedDescription": "Charges stopped. Subscription will be active until",
+      "nextCharge": "Until next charge",
+      "willBeCharged": "Will be charged",
+      "days_one": "{{count}} day",
+      "days_few": "{{count}} days",
+      "days_many": "{{count}} days",
+      "days": "d.",
+      "hours": "h",
+      "minutes": "m"
     },
     "trialBanner": {
       "title": "Trial period active",
@@ -394,7 +453,18 @@
       "notConfigured": "Connection methods are not configured yet",
       "notConfiguredUser": "Connection setup is in progress. Please check back later.",
       "notConfiguredAdmin": "No connection apps have been configured. Set them up in the Apps settings.",
-      "goToApps": "Go to Apps settings"
+      "goToApps": "Go to Apps settings",
+      "activateTrialOnDashboard": "Activate trial on dashboard",
+      "goChooseTariff": "Choose a tariff",
+      "goTopUp": "Top up balance",
+      "trialStep2": {
+        "title": "Step 2: add subscription to app",
+        "description": "After trial activation, finish setup using the steps below.",
+        "progress": "Step {{current}} of {{total}}",
+        "ifNoApp": "If you don't have an app: download and install it.",
+        "afterInstall": "After installation, come back to this page.",
+        "ifAppExists": "If you already have an app: tap \"Add subscription\"."
+      }
     },
     "myDevices": "My Devices",
     "noDevices": "No connected devices",
@@ -407,27 +477,6 @@
     "platform": "Platform",
     "model": "Model",
     "connectedAt": "Connected",
-    "pause": {
-      "title": "Subscription Pause",
-      "paused": "Paused",
-      "active": "Active",
-      "pauseBtn": "Pause",
-      "resumeBtn": "Resume",
-      "pausedMessage": "Subscription paused",
-      "resumedMessage": "Subscription resumed",
-      "dailyOnly": "Pause is only available for daily tariffs",
-      "insufficientBalance": "Insufficient balance to resume subscription",
-      "pausedInfo": "Subscription paused",
-      "pausedDescription": "Charges stopped. Subscription will be active until",
-      "nextCharge": "Until next charge",
-      "willBeCharged": "Will be charged",
-      "days_one": "{{count}} day",
-      "days_few": "{{count}} days",
-      "days_many": "{{count}} days",
-      "days": "d.",
-      "hours": "h",
-      "minutes": "m"
-    },
     "dailyPurchase": {
       "costPerDay": "Cost per day",
       "chargedDaily": "Payment is charged daily from balance",
@@ -528,10 +577,6 @@
       "label": "Traffic",
       "selectVolume": "Select traffic volume",
       "default": "Default: {{label}}"
-    },
-    "summary": {
-      "period": "Period: {{label}}",
-      "traffic": "Traffic: {{gb}} GB"
     }
   },
   "balance": {
@@ -541,7 +586,47 @@
     "topUpBalance": "Top Up Balance",
     "enterAmount": "Enter amount",
     "paymentMethod": "Payment Method",
-    "paymentMethods": "Payment Methods",
+    "paymentMethods": {
+      "yookassa": {
+        "description": "Pay via YooKassa"
+      },
+      "cryptobot": {
+        "description": "Pay with cryptocurrency via CryptoBot"
+      },
+      "telegram_stars": {
+        "description": "Pay with Telegram Stars"
+      },
+      "heleket": {
+        "description": "Pay with cryptocurrency via Heleket"
+      },
+      "mulenpay": {
+        "description": "Pay via MulenPay"
+      },
+      "pal24": {
+        "description": "Pay via PAL24"
+      },
+      "platega": {
+        "description": "Pay via Platega"
+      },
+      "wata": {
+        "description": "Pay via Wata"
+      },
+      "cloudpayments": {
+        "description": "Pay with bank card via CloudPayments"
+      },
+      "freekassa": {
+        "description": "Pay via FreeKassa"
+      },
+      "tribute": {
+        "description": "Pay with bank card via Tribute"
+      },
+      "freekassa_card": {
+        "description": "Pay with Russian bank card"
+      },
+      "freekassa_sbp": {
+        "description": "Pay via SBP (QR code)"
+      }
+    },
     "transactionHistory": "Transaction History",
     "noTransactions": "No transactions",
     "date": "Date",
@@ -583,41 +668,6 @@
     "topUpToComplete": "Top up your balance to complete the purchase",
     "missing": "Missing",
     "noPaymentMethods": "No payment methods available",
-    "paymentMethods": {
-      "yookassa": {
-        "description": "Pay via YooKassa"
-      },
-      "cryptobot": {
-        "description": "Pay with cryptocurrency via CryptoBot"
-      },
-      "telegram_stars": {
-        "description": "Pay with Telegram Stars"
-      },
-      "heleket": {
-        "description": "Pay with cryptocurrency via Heleket"
-      },
-      "mulenpay": {
-        "description": "Pay via MulenPay"
-      },
-      "pal24": {
-        "description": "Pay via PAL24"
-      },
-      "platega": {
-        "description": "Pay via Platega"
-      },
-      "wata": {
-        "description": "Pay via Wata"
-      },
-      "cloudpayments": {
-        "description": "Pay with bank card via CloudPayments"
-      },
-      "freekassa": {
-        "description": "Pay via FreeKassa"
-      },
-      "tribute": {
-        "description": "Pay with bank card via Tribute"
-      }
-    },
     "pendingPayments": {
       "title": "Pending Payments",
       "pay": "Pay",
@@ -851,12 +901,103 @@
     }
   },
   "admin": {
+    "backgrounds": {
+      "title": "Animated Background",
+      "description": "Choose a type and configure animation settings",
+      "selectType": "Background Type",
+      "preview": "Preview",
+      "settings": "Settings",
+      "save": "Save",
+      "saved": "Saved",
+      "saving": "Saving...",
+      "enabled": "Background enabled",
+      "disabled": "Background disabled",
+      "reducedOnMobile": "Reduced mode on mobile",
+      "reducedOnMobileDesc": "Reduces particle count and disables interactivity",
+      "globalOpacity": "Opacity",
+      "globalBlur": "Blur",
+      "categoryCSS": "CSS",
+      "categoryCanvas": "Canvas",
+      "categorySVG": "SVG",
+      "aurora": "Aurora",
+      "auroraDesc": "Northern lights with smooth gradients",
+      "sparkles": "Sparkles",
+      "sparklesDesc": "Twinkling particles on the background",
+      "vortex": "Vortex",
+      "vortexDesc": "Spinning particle vortex",
+      "shootingStars": "Shooting Stars",
+      "shootingStarsDesc": "Falling stars on a starry sky",
+      "beams": "Beams",
+      "beamsDesc": "Light beams along SVG paths",
+      "beamsCollision": "Beams Collision",
+      "beamsCollisionDesc": "Exploding light beams",
+      "gradientAnimation": "Gradient Animation",
+      "gradientAnimationDesc": "Smoothly moving gradient blobs",
+      "wavy": "Wavy",
+      "wavyDesc": "Waves based on simplex noise",
+      "lines": "Lines",
+      "linesDesc": "Animated SVG waves",
+      "boxes": "Boxes",
+      "boxesDesc": "Grid of interactive blocks",
+      "meteors": "Meteors",
+      "meteorsDesc": "Flying meteors",
+      "grid": "Grid",
+      "gridDesc": "Minimalist grid pattern",
+      "dots": "Dots",
+      "dotsDesc": "Dot pattern",
+      "spotlight": "Spotlight",
+      "spotlightDesc": "Spotlight beam",
+      "noise": "Noise",
+      "noiseDesc": "Noise gradients with motion",
+      "ripple": "Ripple",
+      "rippleDesc": "Ripple wave effect",
+      "geminiEffect": "Gemini Effect",
+      "geminiEffectDesc": "SVG effect like Google Gemini",
+      "speed": "Speed",
+      "density": "Particle Density",
+      "particles": "Particle Count",
+      "count": "Count",
+      "hue": "Hue",
+      "rangeY": "Y Range",
+      "minSize": "Min Size",
+      "maxSize": "Max Size",
+      "minSpeed": "Min Speed",
+      "maxSpeed": "Max Speed",
+      "particleColor": "Particle Color",
+      "starColor": "Star Color",
+      "trailColor": "Trail Color",
+      "bgColor": "Background Color",
+      "fillColor": "Fill Color",
+      "color1": "Color 1",
+      "color2": "Color 2",
+      "color3": "Color 3",
+      "color4": "Color 4",
+      "color5": "Color 5",
+      "interactive": "Interactive (mouse)",
+      "size": "Size",
+      "radialGradient": "Radial Gradient",
+      "waveWidth": "Wave Width",
+      "blurAmount": "Blur",
+      "waveOpacity": "Wave Opacity",
+      "duration": "Duration",
+      "intensity": "Intensity",
+      "rows": "Rows",
+      "cols": "Columns",
+      "gridSize": "Grid Size",
+      "small": "Small",
+      "normal": "Normal",
+      "slow": "Slow",
+      "fast": "Fast",
+      "none": "No Background",
+      "noneDesc": "Disable animated background"
+    },
     "groups": {
       "analytics": "Analytics",
       "marketing": "Marketing",
       "system": "System",
       "tariffs": "Tariffs & Sales",
-      "users": "Users"
+      "users": "Users",
+      "security": "Security"
     },
     "nav": {
       "title": "Admin",
@@ -872,6 +1013,7 @@
       "users": "Users",
       "payments": "Payments",
       "remnawave": "RemnaWave",
+      "balancer": "Balancer",
       "emailTemplates": "Email Templates",
       "paymentMethods": "Payment Methods",
       "campaigns": "Campaigns",
@@ -885,7 +1027,11 @@
       "accountLinking": "Account Merges",
       "partners": "Partners",
       "withdrawals": "Withdrawals",
-      "channelSubscriptions": "Required Channels"
+      "channelSubscriptions": "Required Channels",
+      "roles": "Roles",
+      "roleAssign": "Role Assignment",
+      "policies": "Access Policies",
+      "auditLog": "Audit Log"
     },
     "panel": {
       "title": "Admin Panel",
@@ -902,6 +1048,7 @@
       "usersDesc": "Manage bot users",
       "paymentsDesc": "Payment verification",
       "remnawaveDesc": "Panel management and statistics",
+      "balancerDesc": "xray-balancer controls and subscription diagnostics",
       "emailTemplatesDesc": "Manage email notification templates",
       "paymentMethodsDesc": "Configure payment methods and order",
       "campaignsDesc": "Advertising campaigns",
@@ -915,7 +1062,162 @@
       "accountLinkingDesc": "Manual moderation for disputed account merges",
       "partnersDesc": "Manage partner applications and commissions",
       "withdrawalsDesc": "Review and process withdrawal requests",
-      "channelSubscriptionsDesc": "Manage required channel subscriptions"
+      "channelSubscriptionsDesc": "Manage required channel subscriptions",
+      "rolesDesc": "Manage admin roles and permissions",
+      "roleAssignDesc": "Assign and revoke user roles",
+      "policiesDesc": "Configure ABAC access policies",
+      "auditLogDesc": "Review system activity and access history"
+    },
+    "balancer": {
+      "subtitle": "Manage xray-balancer middleware from cabinet",
+      "status": {
+        "configured": "Configured",
+        "notConfigured": "Not configured"
+      },
+      "actions": {
+        "refreshGroups": "Refresh groups",
+        "refreshStats": "Refresh stats",
+        "refreshGroupsSuccess": "Groups updated",
+        "refreshStatsSuccess": "Stats updated",
+        "actionError": "Action failed",
+        "tokenError": "Token debug failed",
+        "groupsSaved": "Groups saved",
+        "groupsSaveError": "Failed to save groups",
+        "groupNameRequired": "Group name is required",
+        "groupNamesUnique": "Group names must be unique",
+        "groupPatternsRequired": "Each group must contain at least one pattern",
+        "changesDiscarded": "Changes discarded",
+        "quarantineAdded": "Node added to quarantine",
+        "quarantineRemoved": "Node removed from quarantine",
+        "quarantineError": "Failed to update quarantine",
+        "removeQuarantine": "Remove",
+        "addQuarantine": "Quarantine"
+      },
+      "tokenDebug": {
+        "title": "Token debug",
+        "placeholder": "Paste subscription token",
+        "run": "Run debug"
+      },
+      "cards": {
+        "health": "Health",
+        "ready": "Ready",
+        "debugStats": "Debug stats",
+        "nodeStats": "Node stats",
+        "tokenDebug": "Token debug result",
+        "nodeStatsEmpty": "No node stats yet.",
+        "nodeStatsHint": "Showing real nodes without inbound aliases.",
+        "nodeStatsUnitsHint": "RAM load and CPU load are user density metrics (users per GB/core), not used memory or CPU percent."
+      },
+      "groups": {
+        "title": "Groups editor",
+        "add": "Add group",
+        "groupName": "Group name",
+        "patterns": "Patterns separated by comma or new line",
+        "patternsTitle": "Patterns",
+        "patternsCount": "{{count}} items",
+        "fastestToggle": "Enable fastest group",
+        "excludeLabel": "Exclude these groups from fastest selection:",
+        "unsaved": "Unsaved groups changes",
+        "empty": "No groups configured.",
+        "groupNumber": "Group #{{index}}",
+        "moveUp": "Up",
+        "moveDown": "Down",
+        "clearSelection": "Clear selection",
+        "emptyExcludeHint": "Add at least one group to manage exclusions.",
+        "previewTitle": "Config preview",
+        "previewHint": "This is the payload for PUT /admin/groups.",
+        "loadError": "Failed to load groups. Check /admin/groups availability.",
+        "viewExpanded": "Expanded view",
+        "viewCompact": "Compact view",
+        "howTitle": "How groups work",
+        "howLine1": "Each group contains patterns for outbound tags.",
+        "howLine2": "Fastest group is an additional auto-group built from all groups except excluded ones.",
+        "howLine3": "Save sends config to /admin/groups and applies it immediately.",
+        "fastestName": "Fastest group name",
+        "excludeCounter": "Selected {{selected}} / {{total}}",
+        "advancedTitle": "Advanced balancer settings",
+        "advancedHint": "These parameters are sent with groups in PUT /admin/groups.",
+        "sectionAutoQuarantine": "Auto-quarantine",
+        "sectionAutoQuarantineHint": "Automatically moves unstable nodes to quarantine and returns them after successful checks.",
+        "sectionAutoDrain": "Auto-drain",
+        "sectionAutoDrainHint": "Temporarily lowers node priority when load is high or health is unstable.",
+        "sectionScoreModel": "Score model",
+        "sectionScoreModelHint": "Defines how load and latency are balanced when selecting preferred nodes.",
+        "autoQuarantineEnabled": "Enable auto-quarantine",
+        "autoQuarantineEnabledDesc": "If enabled, nodes with repeated failures are moved to quarantine automatically.",
+        "autoQuarantineFailures": "Failures before quarantine",
+        "autoQuarantineFailuresDesc": "How many failed checks in a row are required before a node is quarantined.",
+        "autoQuarantineRelease": "Successes to release quarantine",
+        "autoQuarantineReleaseDesc": "How many successful checks are needed to release a node from quarantine.",
+        "autoQuarantineMaxNodes": "Max quarantined nodes",
+        "autoQuarantineMaxNodesDesc": "Safety cap for how many nodes can be quarantined automatically.",
+        "autoDrainEnabled": "Enable auto-drain",
+        "autoDrainEnabledDesc": "If enabled, overloaded nodes get temporary score penalty instead of immediate quarantine.",
+        "autoDrainFailures": "Failures before drain",
+        "autoDrainFailuresDesc": "How many degraded checks in a row are needed before drain penalty is applied.",
+        "autoDrainRelease": "Successes to release drain",
+        "autoDrainReleaseDesc": "How many stable checks are needed to remove drain penalty.",
+        "autoDrainLoadThreshold": "Auto-drain load threshold",
+        "autoDrainLoadThresholdDesc": "Load value above this threshold is considered degraded for auto-drain logic.",
+        "autoDrainScorePenalty": "Auto-drain score penalty",
+        "autoDrainScorePenaltyDesc": "How much score penalty is added while a node is in auto-drain state.",
+        "balancerLoadWeight": "Score load weight",
+        "balancerLoadWeightDesc": "Weight of node load in final score. Higher value means stronger load-based balancing.",
+        "balancerLatencyWeight": "Score latency weight",
+        "balancerLatencyWeightDesc": "Weight of latency in final score. Higher value favors lower-ping nodes.",
+        "balancerMaxLatencyMs": "Score max latency (ms)",
+        "balancerMaxLatencyMsDesc": "Latency normalization cap in milliseconds for score calculation.",
+        "balancerSmoothingAlpha": "Score smoothing alpha",
+        "balancerSmoothingAlphaDesc": "Smoothing factor for score updates. Lower value reduces short-term jitter.",
+        "balancerHysteresisDelta": "Score hysteresis delta",
+        "balancerHysteresisDeltaDesc": "Minimum score improvement required before switching to another node."
+      },
+      "labels": {
+        "status": "Status",
+        "groups": "Groups",
+        "autoGroups": "Auto groups",
+        "fastestGroup": "Fastest group",
+        "nodeStats": "Node stats",
+        "cachedNodes": "Cached nodes",
+        "panelAuth": "Panel auth",
+        "subPage": "Sub page",
+        "recentUpstream": "Recent upstream",
+        "cacheTtl": "Cache TTL",
+        "cachePresent": "Cache present",
+        "circuitOpen": "Circuit open",
+        "profileMode": "Profile mode",
+        "startedAt": "Started at",
+        "requestsTotal": "Requests total",
+        "requestFailures": "Request failures",
+        "rateLimited": "Rate limited",
+        "circuitOpenTotal": "Circuit open total",
+        "quarantineFiltered": "Quarantine filtered",
+        "cbFailCount": "CB fail count",
+        "cbHalfOpen": "CB half-open",
+        "token": "Token",
+        "ok": "ok",
+        "missing": "missing",
+        "baseUrl": "Base URL",
+        "timeout": "Timeout",
+        "health": "Health",
+        "ready": "Ready",
+        "quarantineCount": "Quarantine nodes"
+      },
+      "table": {
+        "node": "Node",
+        "users": "Users",
+        "cpu": "CPU",
+        "ram": "RAM",
+        "cpuCores": "CPU cores",
+        "cpuLoad": "CPU load",
+        "ramLoad": "RAM load",
+        "totalRam": "Total RAM",
+        "connected": "Connected",
+        "disabled": "Disabled",
+        "quarantine": "Quarantine",
+        "action": "Action"
+      },
+      "rawJson": "raw JSON"
     },
     "accountLinking": {
       "title": "Manual Account Merge Requests",
@@ -962,7 +1264,7 @@
       "total": "Total",
       "noData": "No traffic data",
       "loading": "Loading traffic data...",
-      "noTariff": "\u2014",
+      "noTariff": "—",
       "search": "Search by name or username",
       "allTariffs": "All tariffs",
       "nodes": "Nodes",
@@ -1455,6 +1757,21 @@
         "submit": "Add",
         "save": "Save",
         "cancel": "Cancel"
+      },
+      "globalSettings": {
+        "title": "Channel Settings",
+        "channelRequired": "Require subscription",
+        "channelRequiredDesc": "Users must subscribe to channels to use the bot",
+        "disableTrialOnUnsub": "Disable trial on unsubscribe",
+        "disableTrialOnUnsubDesc": "Revoke trial access when user unsubscribes from any channel",
+        "requiredForAll": "Required for all users",
+        "requiredForAllDesc": "Apply channel subscription check to all users, including paid"
+      },
+      "perChannel": {
+        "disableTrial": "Disable trial on leave",
+        "disableTrialDesc": "Revoke trial when user leaves this channel",
+        "disablePaid": "Disable paid on leave",
+        "disablePaidDesc": "Revoke paid access when user leaves this channel"
       }
     },
     "settings": {
@@ -1758,7 +2075,7 @@
       "periodsTabHint": "Add periods and prices for the tariff. Users will be able to choose from the added periods.",
       "addPeriodTitle": "Add period",
       "daysLabel": "Days",
-      "priceLabel": "Price (\u20bd)",
+      "priceLabel": "Price (₽)",
       "addButton": "Add",
       "noPeriodsHint": "No added periods. Add at least one period.",
       "daysShort": "d.",
@@ -1808,7 +2125,7 @@
       "dailyType": "Daily",
       "periodType": "Period-based",
       "dailyPriceLabel": "Price per day",
-      "currencyPerDay": "\u20bd/day",
+      "currencyPerDay": "₽/day",
       "dailyDeductionDesc": "Charged daily from user's balance",
       "dailyPriceRequired": "Enter a price per day greater than 0",
       "cannotSave": "Cannot save tariff:",
@@ -2646,6 +2963,342 @@
         "purchaseDiscount": "Purchase discount",
         "purchaseDiscountDesc": "Discount for new users"
       }
+    },
+    "roles": {
+      "title": "Roles & Permissions",
+      "subtitle": "Manage admin roles and their permissions",
+      "createRole": "Create Role",
+      "noRoles": "No roles found",
+      "systemBadge": "System",
+      "inactiveBadge": "Inactive",
+      "levelLabel": "Level",
+      "usersCount_one": "{{count}} user",
+      "usersCount_other": "{{count}} users",
+      "permissionsCount_one": "{{count}} permission",
+      "permissionsCount_other": "{{count}} permissions",
+      "stats": {
+        "totalRoles": "Total roles",
+        "active": "Active",
+        "system": "System"
+      },
+      "actions": {
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "modal": {
+        "createTitle": "Create Role",
+        "editTitle": "Edit Role",
+        "close": "Close"
+      },
+      "form": {
+        "name": "Role name",
+        "namePlaceholder": "e.g. Moderator",
+        "description": "Description",
+        "descriptionPlaceholder": "What this role is for...",
+        "level": "Priority level",
+        "levelValue": "Level value",
+        "levelHint": "Higher level = more authority. Users can only manage roles with a lower level than their own.",
+        "color": "Color",
+        "presets": "Permission presets",
+        "permissions": "Permissions",
+        "permissionSections": {
+          "users": "Users",
+          "tickets": "Tickets",
+          "stats": "Statistics",
+          "broadcasts": "Broadcasts",
+          "tariffs": "Tariffs",
+          "promocodes": "Promo codes",
+          "promo_groups": "Promo groups",
+          "promo_offers": "Promo offers",
+          "campaigns": "Campaigns",
+          "partners": "Partners",
+          "withdrawals": "Withdrawals",
+          "payments": "Payments",
+          "payment_methods": "Payment methods",
+          "servers": "Servers",
+          "remnawave": "Remnawave",
+          "traffic": "Traffic",
+          "settings": "Settings",
+          "roles": "Roles",
+          "audit_log": "Audit log",
+          "channels": "Channels",
+          "ban_system": "Ban system",
+          "wheel": "Lucky wheel",
+          "apps": "Apps",
+          "email_templates": "Email templates",
+          "pinned_messages": "Pinned messages",
+          "updates": "Updates"
+        },
+        "permissionActions": {
+          "read": "Read",
+          "edit": "Edit",
+          "create": "Create",
+          "delete": "Delete",
+          "block": "Block",
+          "sync": "Sync",
+          "reply": "Reply",
+          "close": "Close",
+          "settings": "Settings",
+          "export": "Export",
+          "send": "Send",
+          "stats": "Stats",
+          "approve": "Approve",
+          "revoke": "Revoke",
+          "reject": "Reject",
+          "manage": "Manage",
+          "ban": "Ban",
+          "unban": "Unban",
+          "assign": "Assign",
+          "promo_group": "Promo group",
+          "balance": "Balance",
+          "subscription": "Subscription",
+          "send_offer": "Send offer",
+          "referral": "Referral %"
+        },
+        "toggleSection": "Toggle all {{section}} permissions",
+        "selectedPermissions_one": "{{count}} permission selected",
+        "selectedPermissions_other": "{{count}} permissions selected",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "save": "Save"
+      },
+      "presets": {
+        "moderator": "Moderator",
+        "marketer": "Marketer",
+        "support": "Support"
+      },
+      "confirm": {
+        "title": "Delete role?",
+        "text": "This role will be permanently deleted. Users with this role will lose its permissions.",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "deleting": "Deleting..."
+      },
+      "errors": {
+        "loadFailed": "Failed to load roles",
+        "createFailed": "Failed to create role",
+        "updateFailed": "Failed to update role",
+        "nameRequired": "Role name is required",
+        "deleteFailed": "Failed to delete role"
+      }
+    },
+    "roleAssign": {
+      "title": "Role Assignment",
+      "subtitle": "Assign and manage user roles",
+      "assignSection": "Assign Role",
+      "userLabel": "User",
+      "searchPlaceholder": "Search by name, username, Telegram ID, or email...",
+      "clearUser": "Clear selected user",
+      "noUsersFound": "No users found",
+      "roleLabel": "Role",
+      "selectRole": "Select a role...",
+      "expiresLabel": "Expires at (optional)",
+      "expiresHint": "Leave empty for permanent assignment",
+      "assignButton": "Assign",
+      "assigning": "Assigning...",
+      "assignSuccess": "Role assigned successfully",
+      "currentAssignments": "Current Assignments",
+      "totalAssignments_one": "{{count}} assignment total",
+      "totalAssignments_other": "{{count}} assignments total",
+      "noAssignments": "No role assignments found",
+      "unknownUser": "Unknown user",
+      "system": "System",
+      "permanent": "Permanent",
+      "expired": "expired",
+      "revoke": "Revoke",
+      "revokeAriaLabel": "Revoke role {{role}} from {{user}}",
+      "table": {
+        "user": "User",
+        "role": "Role",
+        "assignedBy": "Assigned by",
+        "assignedAt": "Assigned at",
+        "expires": "Expires",
+        "actions": "Actions"
+      },
+      "pagination": {
+        "showing": "{{from}}-{{to}} of {{total}}",
+        "prev": "Previous page",
+        "next": "Next page"
+      },
+      "confirm": {
+        "title": "Revoke role?",
+        "text": "This user will immediately lose all permissions associated with this role.",
+        "cancel": "Cancel",
+        "revoke": "Revoke",
+        "revoking": "Revoking..."
+      },
+      "errors": {
+        "userRequired": "Please select a user",
+        "roleRequired": "Please select a role",
+        "assignFailed": "Failed to assign role",
+        "revokeFailed": "Failed to revoke role"
+      }
+    },
+    "policies": {
+      "title": "Access Policies",
+      "subtitle": "Manage ABAC access control policies",
+      "createPolicy": "Create Policy",
+      "noPolicies": "No policies found",
+      "inactiveBadge": "Inactive",
+      "effectAllow": "Allow",
+      "effectDeny": "Deny",
+      "global": "Global",
+      "unknownRole": "Unknown role",
+      "roleLabel": "Role",
+      "priorityLabel": "Priority",
+      "stats": {
+        "total": "Total policies",
+        "allow": "Allow",
+        "deny": "Deny",
+        "active": "Active"
+      },
+      "actions": {
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "modal": {
+        "createTitle": "Create Policy",
+        "editTitle": "Edit Policy",
+        "close": "Close"
+      },
+      "form": {
+        "name": "Policy name",
+        "namePlaceholder": "e.g. Block night access",
+        "description": "Description",
+        "descriptionPlaceholder": "What this policy does...",
+        "effect": "Effect",
+        "resource": "Resource",
+        "selectResource": "Select a resource...",
+        "actions": "Actions",
+        "role": "Role (optional)",
+        "globalOption": "Global (all roles)",
+        "roleHint": "Leave as Global to apply the policy to all roles.",
+        "priority": "Priority",
+        "priorityHint": "Higher priority policies are evaluated first. Deny overrides Allow at equal priority.",
+        "conditions": "Conditions",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "save": "Save"
+      },
+      "conditions": {
+        "timeRange": "Time range",
+        "timeStart": "Start time",
+        "timeEnd": "End time",
+        "ipWhitelist": "IP whitelist",
+        "ipPlaceholder": "Enter IP and press Enter...",
+        "removeIp": "Remove {{ip}}",
+        "ipCount_one": "{{count}} IP",
+        "ipCount_other": "{{count}} IPs",
+        "rateLimit": "Rate limit",
+        "rateLimitValue": "Rate limit value",
+        "rateValue": "{{count}}/hr",
+        "perHour": "actions per hour",
+        "weekdays": "Days of week",
+        "day0": "Sun",
+        "day1": "Mon",
+        "day2": "Tue",
+        "day3": "Wed",
+        "day4": "Thu",
+        "day5": "Fri",
+        "day6": "Sat"
+      },
+      "confirm": {
+        "title": "Delete policy?",
+        "text": "This policy will be permanently deleted. Access control rules will be recalculated.",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "deleting": "Deleting..."
+      },
+      "errors": {
+        "loadFailed": "Failed to load policies",
+        "createFailed": "Failed to create policy",
+        "updateFailed": "Failed to update policy",
+        "nameRequired": "Policy name is required",
+        "resourceRequired": "Please select a resource",
+        "actionsRequired": "Please select at least one action",
+        "deleteFailed": "Failed to delete policy"
+      }
+    },
+    "auditLog": {
+      "title": "Audit Log",
+      "subtitle": "Review system activity and access history",
+      "back": "Back",
+      "exportCsv": "Export CSV",
+      "exportError": "Failed to export",
+      "exporting": "Exporting...",
+      "refresh": "Refresh",
+      "unknownUser": "Unknown user",
+      "noEntries": "No audit log entries found",
+      "totalEntries_one": "{{count}} entry",
+      "totalEntries_other": "{{count}} entries",
+      "autoRefresh": {
+        "label": "Auto-refresh",
+        "tooltip": "Auto-refresh every 30 seconds"
+      },
+      "filters": {
+        "title": "Filters",
+        "active": "Active",
+        "action": "Action",
+        "actionPlaceholder": "Search by action...",
+        "resource": "Resource type",
+        "allResources": "All resources",
+        "status": "Status",
+        "allStatuses": "All statuses",
+        "dateFrom": "Date from",
+        "dateTo": "Date to",
+        "apply": "Apply",
+        "clear": "Clear"
+      },
+      "status": {
+        "success": "Success",
+        "denied": "Denied",
+        "error": "Error"
+      },
+      "resourceTypes": {
+        "users": "Users",
+        "tickets": "Tickets",
+        "roles": "Roles",
+        "policies": "Policies",
+        "settings": "Settings",
+        "broadcasts": "Broadcasts",
+        "tariffs": "Tariffs",
+        "servers": "Servers",
+        "payments": "Payments",
+        "campaigns": "Campaigns",
+        "promocodes": "Promo Codes"
+      },
+      "details": {
+        "userAgent": "User Agent",
+        "requestPath": "Request Path",
+        "ipAddress": "IP Address",
+        "timestamp": "Timestamp",
+        "before": "Before",
+        "after": "After",
+        "queryParams": "Query Parameters",
+        "requestBody": "Request Body",
+        "fullDetails": "Full Details"
+      },
+      "time": {
+        "justNow": "Just now",
+        "minutesAgo_one": "{{count}} min ago",
+        "minutesAgo_other": "{{count}} min ago",
+        "hoursAgo_one": "{{count}} hr ago",
+        "hoursAgo_other": "{{count}} hrs ago",
+        "daysAgo_one": "{{count}} day ago",
+        "daysAgo_other": "{{count}} days ago"
+      },
+      "pagination": {
+        "pageSize": "Per page:",
+        "pageOf": "{{current}} / {{total}}",
+        "first": "First page",
+        "previous": "Previous page",
+        "next": "Next page",
+        "last": "Last page"
+      },
+      "errors": {
+        "loadFailed": "Failed to load audit log",
+        "retry": "Try again"
+      }
     }
   },
   "adminUpdates": {
@@ -2659,6 +3312,8 @@
     "published": "Published",
     "prerelease": "Pre-release",
     "refresh": "Check for updates",
+    "showDetails": "Show details",
+    "hideDetails": "Hide details",
     "noReleases": "No release data"
   },
   "adminDashboard": {
@@ -3370,6 +4025,17 @@
     "tariffs": "Tariffs",
     "menu": "Menu",
     "balance": "Balance",
+    "quickStatus": "Quick status",
+    "statusBar": {
+      "active": "Subscription active",
+      "activeHint": "You can connect right away.",
+      "trialAvailable": "Trial is available",
+      "trialHint": "Activate trial to unlock connection.",
+      "expired": "Subscription expired",
+      "expiredHint": "Renew subscription to connect again.",
+      "noSubscription": "No subscription yet",
+      "noSubscriptionHint": "Choose a tariff to start using VPN."
+    },
     "daysLeft": "{{count}} days",
     "daysLeft_one": "{{count}} day",
     "daysLeft_other": "{{count}} days",
@@ -3378,10 +4044,41 @@
     "subscriptionExpired": "Subscription expired",
     "subscriptionTrial": "Trial period",
     "noSubscription": "No subscription",
+    "connectLockedTitle": "Connection is unavailable",
+    "connectLockedDescription": "To unlock the connect button, activate a subscription first.",
+    "connectLockedStepTopUp": "Top up your balance",
+    "connectLockedStepTariff": "Choose and purchase a tariff",
+    "connectLockedStepActivate": "After activation, open connection",
+    "connectTrialHintTitle": "Activate trial to connect",
+    "connectTrialHintDescription": "The connect button will appear after trial activation.",
+    "connectTrialHintAction": "Tap \"Activate trial\" in the card above.",
+    "connectAvailabilityLoading": "Checking trial availability...",
+    "connectHintProgress": "Step {{current}} of {{total}}",
+    "connectHintTrialTitle": "Start with trial",
+    "connectHintTrialDescription": "Activate trial first to unlock connection. It's the fastest way to start.",
+    "connectHintTrialStep1": "Activate trial period",
+    "connectHintTrialStep2": "Open the \"Connection\" section",
+    "connectHintTrialStep3": "Install the app and paste your link",
+    "connectHintExpiredTitle": "Subscription expired",
+    "connectHintExpiredDescription": "Access is paused. Renew subscription to connect again.",
+    "connectHintExpiredDescriptionWithDate": "Subscription expired on {{date}}. Renew to connect again.",
+    "connectHintExpiredStep1": "Top up balance if needed",
+    "connectHintExpiredStep2": "Choose a tariff to renew",
+    "connectHintExpiredStep3": "After payment, open \"Connection\" again",
+    "renewSubscription": "Renew subscription",
+    "chooseTariff": "Choose tariff",
+    "howToConnect": "How to connect",
     "activateTrial": "Activate trial",
     "trialDays": "{{count}} days free",
     "trialTraffic": "{{count}} GB traffic",
     "trialDevices": "{{count}} devices",
+    "trialRequiresTopUp": "Top up balance to activate trial",
+    "trialErrors": {
+      "insufficientBalance": "Insufficient balance to activate trial",
+      "alreadyUsed": "Trial has already been used",
+      "unavailable": "Trial is unavailable",
+      "generic": "Failed to activate trial"
+    },
     "unlimited": "Unlimited",
     "tab": {
       "tariffs": "Tariffs",

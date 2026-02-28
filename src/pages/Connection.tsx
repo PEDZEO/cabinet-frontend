@@ -10,6 +10,7 @@ import { resolveTemplate, hasTemplates } from '../utils/templateEngine';
 import { useAuthStore } from '../store/auth';
 import type { AppConfig, RemnawavePlatformData } from '../types';
 import InstallationGuide from '../components/connection/InstallationGuide';
+import { markLiteOnboardingStep } from '@/features/lite/onboardingFlow';
 
 export default function Connection() {
   const { t, i18n } = useTranslation();
@@ -29,6 +30,12 @@ export default function Connection() {
   } = useQuery<AppConfig>({
     queryKey: ['appConfig'],
     queryFn: () => subscriptionApi.getAppConfig(),
+  });
+
+  const { data: trialInfo } = useQuery({
+    queryKey: ['trial-info'],
+    queryFn: subscriptionApi.getTrialInfo,
+    enabled: !!appConfig && !appConfig.hasSubscription,
   });
 
   const handleGoBack = useCallback(() => {
@@ -59,6 +66,8 @@ export default function Connection() {
 
   const openDeepLink = useCallback(
     (deepLink: string) => {
+      markLiteOnboardingStep('subscription_added');
+
       let resolved = deepLink;
       if (hasTemplates(resolved)) {
         resolved = resolveUrl(resolved);
@@ -171,8 +180,32 @@ export default function Connection() {
           {t('subscription.connection.title')}
         </h3>
         <p className="mb-4 text-dark-400">{t('subscription.connection.noSubscription')}</p>
-        <button onClick={handleGoBack} className="btn-primary px-6 py-2">
-          {t('common.close')}
+        {trialInfo?.is_available ? (
+          <button
+            onClick={() => navigate('/?focus=trial')}
+            className="btn-primary mb-2 w-full max-w-xs px-6 py-2"
+          >
+            {t('subscription.connection.activateTrialOnDashboard')}
+          </button>
+        ) : (
+          <button
+            onClick={() => navigate('/subscription')}
+            className="btn-primary mb-2 w-full max-w-xs px-6 py-2"
+          >
+            {t('subscription.connection.goChooseTariff')}
+          </button>
+        )}
+        <button
+          onClick={() => navigate('/balance')}
+          className="mb-2 w-full max-w-xs rounded-xl border border-dark-600 bg-dark-800/70 px-6 py-2 text-sm font-medium text-dark-100 transition-colors hover:border-dark-500 hover:bg-dark-700"
+        >
+          {t('subscription.connection.goTopUp')}
+        </button>
+        <button
+          onClick={() => navigate('/subscription')}
+          className="w-full max-w-xs rounded-xl border border-dark-600 bg-dark-800/70 px-6 py-2 text-sm font-medium text-dark-100 transition-colors hover:border-dark-500 hover:bg-dark-700"
+        >
+          {t('lite.tariffs')}
         </button>
       </div>
     );

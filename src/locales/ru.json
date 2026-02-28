@@ -248,6 +248,50 @@
         "confirm": "2. Войдите другим способом и подтвердите код.",
         "sharedSubscription": "3. После успешной привязки подписка и доступ будут общими."
       }
+    },
+    "connectDevice": "Подключить устройство",
+    "daysRemaining": "Дней осталось",
+    "devicesConnected": "{{count}} подключено",
+    "devicesOfMax": "{{used}} из {{max}} подключено",
+    "devicesShort": "устр.",
+    "expired": {
+      "devices": "Устройства",
+      "expiredDate": "Истекла",
+      "paidSubtitle": "Срок действия закончился",
+      "renew": "Продлить подписку",
+      "tariffs": "Тарифы",
+      "title": "Подписка истекла",
+      "traffic": "Трафик",
+      "trialSubtitle": "Пробный период завершён",
+      "trialTitle": "Пробный период истёк"
+    },
+    "maxUsage": "макс {{amount}}",
+    "remaining": "Осталось",
+    "stats": {
+      "balance": "Баланс",
+      "earnings": "Заработок",
+      "referrals": "Рефералы",
+      "subscription": "Подписка"
+    },
+    "tariff": "Тариф",
+    "trafficUsage": "{{used}} / {{limit}} ГБ",
+    "trafficUsageTitle": "Расход трафика",
+    "trialOffer": {
+      "freeDesc": "Попробуйте наш VPN бесплатно — без обязательств",
+      "freeTitle": "Бесплатный пробный период",
+      "paidDesc": "Начните с пробной подписки",
+      "paidTitle": "Пробная подписка"
+    },
+    "unlimited": "Безлимит",
+    "usageLast14Days": "Расход за 14 дней",
+    "usedSuffix": "израсходовано",
+    "usedTraffic": "использовано {{amount}}",
+    "validUntil": "до {{date}}",
+    "zone": {
+      "critical": "Критический",
+      "danger": "Высокий",
+      "normal": "Норма",
+      "warning": "Умеренный"
     }
   },
   "subscription": {
@@ -287,6 +331,7 @@
     "buyDevices": "Докупить устройства",
     "renewalOptions": "Варианты продления",
     "days": "дней",
+    "daysShort": "дн.",
     "days_one": "{{count}} день",
     "days_few": "{{count}} дня",
     "days_many": "{{count}} дней",
@@ -331,7 +376,10 @@
     "extraDevicesIncluded_many": "Вкл. {{count}} доп. устр.",
     "baseTariff": "Тариф",
     "perMonth": "/мес",
-    "summary": "Итого",
+    "summary": {
+      "period": "Период: {{label}}",
+      "traffic": "Трафик: {{gb}} ГБ"
+    },
     "total": "К оплате",
     "purchase": "Купить",
     "step": "Шаг {{current}} из {{total}}",
@@ -364,14 +412,25 @@
       "unavailable": "Пробный период недоступен"
     },
     "pause": {
-      "paused": "Подписка на паузе",
-      "active": "Подписка активна",
-      "pausedDescription": "Деньги не списываются",
-      "activeDescription": "Ежедневное списание",
-      "resume": "Возобновить",
-      "pause": "Пауза",
-      "pausedMessage": "Подписка поставлена на паузу",
-      "resumedMessage": "Подписка возобновлена"
+      "title": "Пауза подписки",
+      "paused": "На паузе",
+      "active": "Активна",
+      "pauseBtn": "Приостановить",
+      "resumeBtn": "Возобновить",
+      "pausedMessage": "Подписка приостановлена",
+      "resumedMessage": "Подписка возобновлена",
+      "dailyOnly": "Пауза доступна только для суточных тарифов",
+      "insufficientBalance": "Недостаточно средств для возобновления подписки",
+      "pausedInfo": "Подписка приостановлена",
+      "pausedDescription": "Списания остановлены. Подписка будет действовать до",
+      "nextCharge": "До следующего списания",
+      "willBeCharged": "Будет списано",
+      "days_one": "{{count}} день",
+      "days_few": "{{count}} дня",
+      "days_many": "{{count}} дней",
+      "hours": "ч",
+      "minutes": "м",
+      "days": "дн."
     },
     "trialBanner": {
       "title": "Пробный период активен",
@@ -417,7 +476,18 @@
       "notConfigured": "Способы подключения ещё не настроены",
       "notConfiguredUser": "Настройка подключения в процессе. Пожалуйста, загляните позже.",
       "notConfiguredAdmin": "Приложения для подключения не настроены. Настройте их в разделе Приложения.",
-      "goToApps": "Перейти к настройке приложений"
+      "goToApps": "Перейти к настройке приложений",
+      "activateTrialOnDashboard": "Активировать триал на главной",
+      "goChooseTariff": "Перейти к выбору тарифа",
+      "goTopUp": "Перейти к пополнению",
+      "trialStep2": {
+        "title": "Шаг 2: добавьте подписку в приложение",
+        "description": "После активации триала настройте подключение по шагам ниже.",
+        "progress": "Шаг {{current}} из {{total}}",
+        "ifNoApp": "Если приложения нет: скачайте и установите его.",
+        "afterInstall": "После установки вернитесь на эту страницу.",
+        "ifAppExists": "Если приложение уже есть: нажмите кнопку «Добавить подписку»."
+      }
     },
     "myDevices": "Мои устройства",
     "noDevices": "Нет подключенных устройств",
@@ -430,27 +500,6 @@
     "platform": "Платформа",
     "model": "Модель",
     "connectedAt": "Подключено",
-    "pause": {
-      "title": "Пауза подписки",
-      "paused": "На паузе",
-      "active": "Активна",
-      "pauseBtn": "Приостановить",
-      "resumeBtn": "Возобновить",
-      "pausedMessage": "Подписка приостановлена",
-      "resumedMessage": "Подписка возобновлена",
-      "dailyOnly": "Пауза доступна только для суточных тарифов",
-      "insufficientBalance": "Недостаточно средств для возобновления подписки",
-      "pausedInfo": "Подписка приостановлена",
-      "pausedDescription": "Списания остановлены. Подписка будет действовать до",
-      "nextCharge": "До следующего списания",
-      "willBeCharged": "Будет списано",
-      "days_one": "{{count}} день",
-      "days_few": "{{count}} дня",
-      "days_many": "{{count}} дней",
-      "hours": "ч",
-      "minutes": "м",
-      "days": "дн."
-    },
     "dailyPurchase": {
       "costPerDay": "Стоимость в день",
       "chargedDaily": "Оплата списывается ежедневно с баланса",
@@ -556,10 +605,6 @@
       "label": "Трафик",
       "selectVolume": "Выбрать объём трафика",
       "default": "По умолчанию: {{label}}"
-    },
-    "summary": {
-      "period": "Период: {{label}}",
-      "traffic": "Трафик: {{gb}} ГБ"
     }
   },
   "balance": {
@@ -569,7 +614,47 @@
     "topUpBalance": "Пополнение баланса",
     "enterAmount": "Введите сумму",
     "paymentMethod": "Способ оплаты",
-    "paymentMethods": "Способы оплаты",
+    "paymentMethods": {
+      "yookassa": {
+        "description": "Оплата через ЮKassa"
+      },
+      "cryptobot": {
+        "description": "Оплата криптовалютой через CryptoBot"
+      },
+      "telegram_stars": {
+        "description": "Оплата через Telegram Stars"
+      },
+      "heleket": {
+        "description": "Оплата криптовалютой через Heleket"
+      },
+      "mulenpay": {
+        "description": "Оплата через MulenPay"
+      },
+      "pal24": {
+        "description": "Оплата через PAL24"
+      },
+      "platega": {
+        "description": "Оплата через Platega"
+      },
+      "wata": {
+        "description": "Оплата через Wata"
+      },
+      "cloudpayments": {
+        "description": "Оплата банковской картой через CloudPayments"
+      },
+      "freekassa": {
+        "description": "Оплата через FreeKassa"
+      },
+      "tribute": {
+        "description": "Оплата банковской картой через Tribute"
+      },
+      "freekassa_card": {
+        "description": "Оплата картой РФ"
+      },
+      "freekassa_sbp": {
+        "description": "Оплата через СБП (QR код)"
+      }
+    },
     "transactionHistory": "История операций",
     "noTransactions": "Нет операций",
     "date": "Дата",
@@ -611,41 +696,6 @@
     "topUpToComplete": "Пополните баланс для завершения покупки",
     "missing": "Не хватает",
     "noPaymentMethods": "Способы оплаты недоступны",
-    "paymentMethods": {
-      "yookassa": {
-        "description": "Оплата через ЮKassa"
-      },
-      "cryptobot": {
-        "description": "Оплата криптовалютой через CryptoBot"
-      },
-      "telegram_stars": {
-        "description": "Оплата через Telegram Stars"
-      },
-      "heleket": {
-        "description": "Оплата криптовалютой через Heleket"
-      },
-      "mulenpay": {
-        "description": "Оплата через MulenPay"
-      },
-      "pal24": {
-        "description": "Оплата через PAL24"
-      },
-      "platega": {
-        "description": "Оплата через Platega"
-      },
-      "wata": {
-        "description": "Оплата через Wata"
-      },
-      "cloudpayments": {
-        "description": "Оплата банковской картой через CloudPayments"
-      },
-      "freekassa": {
-        "description": "Оплата через FreeKassa"
-      },
-      "tribute": {
-        "description": "Оплата банковской картой через Tribute"
-      }
-    },
     "pendingPayments": {
       "title": "Ожидающие платежи",
       "pay": "Оплатить",
@@ -880,6 +930,96 @@
     }
   },
   "admin": {
+    "backgrounds": {
+      "title": "Анимированный фон",
+      "description": "Выберите тип и настройте параметры анимации",
+      "selectType": "Тип фона",
+      "preview": "Предпросмотр",
+      "settings": "Настройки",
+      "save": "Сохранить",
+      "saved": "Сохранено",
+      "saving": "Сохранение...",
+      "enabled": "Фон включён",
+      "disabled": "Фон выключен",
+      "reducedOnMobile": "Облегчённый режим на мобильных",
+      "reducedOnMobileDesc": "Уменьшает количество частиц и отключает интерактивность",
+      "globalOpacity": "Прозрачность",
+      "globalBlur": "Размытие",
+      "categoryCSS": "CSS",
+      "categoryCanvas": "Canvas",
+      "categorySVG": "SVG",
+      "aurora": "Aurora",
+      "auroraDesc": "Северное сияние с плавными переливами",
+      "sparkles": "Sparkles",
+      "sparklesDesc": "Мерцающие частицы на фоне",
+      "vortex": "Vortex",
+      "vortexDesc": "Вращающийся водоворот частиц",
+      "shootingStars": "Shooting Stars",
+      "shootingStarsDesc": "Падающие звёзды на звёздном небе",
+      "beams": "Beams",
+      "beamsDesc": "Световые лучи по SVG-путям",
+      "beamsCollision": "Beams Collision",
+      "beamsCollisionDesc": "Взрывающиеся световые лучи",
+      "gradientAnimation": "Gradient Animation",
+      "gradientAnimationDesc": "Плавно движущиеся градиентные блобы",
+      "wavy": "Wavy",
+      "wavyDesc": "Волны на основе simplex noise",
+      "lines": "Lines",
+      "linesDesc": "Анимированные SVG-волны",
+      "boxes": "Boxes",
+      "boxesDesc": "Сетка интерактивных блоков",
+      "meteors": "Meteors",
+      "meteorsDesc": "Летящие метеоры",
+      "grid": "Grid",
+      "gridDesc": "Минималистичная сетка",
+      "dots": "Dots",
+      "dotsDesc": "Точечный паттерн",
+      "spotlight": "Spotlight",
+      "spotlightDesc": "Прожекторный луч",
+      "noise": "Noise",
+      "noiseDesc": "Шумовые градиенты с движением",
+      "ripple": "Ripple",
+      "rippleDesc": "Волновой эффект при клике",
+      "geminiEffect": "Gemini Effect",
+      "geminiEffectDesc": "SVG-эффект как на Google Gemini",
+      "speed": "Скорость",
+      "density": "Плотность частиц",
+      "particles": "Количество частиц",
+      "count": "Количество",
+      "hue": "Оттенок",
+      "rangeY": "Диапазон Y",
+      "minSize": "Мин. размер",
+      "maxSize": "Макс. размер",
+      "minSpeed": "Мин. скорость",
+      "maxSpeed": "Макс. скорость",
+      "particleColor": "Цвет частиц",
+      "starColor": "Цвет звёзд",
+      "trailColor": "Цвет следа",
+      "bgColor": "Цвет фона",
+      "fillColor": "Цвет заливки",
+      "color1": "Цвет 1",
+      "color2": "Цвет 2",
+      "color3": "Цвет 3",
+      "color4": "Цвет 4",
+      "color5": "Цвет 5",
+      "interactive": "Интерактивность (мышь)",
+      "size": "Размер",
+      "radialGradient": "Радиальный градиент",
+      "waveWidth": "Ширина волны",
+      "blurAmount": "Размытие",
+      "waveOpacity": "Прозрачность волн",
+      "duration": "Длительность",
+      "intensity": "Интенсивность",
+      "rows": "Строки",
+      "cols": "Столбцы",
+      "gridSize": "Размер сетки",
+      "small": "Мелкая",
+      "normal": "Обычная",
+      "slow": "Медленно",
+      "fast": "Быстро",
+      "none": "Без фона",
+      "noneDesc": "Отключить анимированный фон"
+    },
     "nav": {
       "title": "Админка",
       "dashboard": "Статистика",
@@ -894,6 +1034,7 @@
       "users": "Пользователи",
       "payments": "Платежи",
       "remnawave": "RemnaWave",
+      "balancer": "Balancer",
       "emailTemplates": "Email-шаблоны",
       "paymentMethods": "Платёжные методы",
       "campaigns": "Кампании",
@@ -907,7 +1048,11 @@
       "accountLinking": "Merge аккаунтов",
       "partners": "Партнёры",
       "withdrawals": "Выводы",
-      "channelSubscriptions": "Обязательные каналы"
+      "channelSubscriptions": "Обязательные каналы",
+      "roles": "Роли",
+      "roleAssign": "Назначение ролей",
+      "policies": "Политики доступа",
+      "auditLog": "Журнал аудита"
     },
     "panel": {
       "title": "Панель администратора",
@@ -924,6 +1069,7 @@
       "usersDesc": "Управление пользователями бота",
       "paymentsDesc": "Проверка платежей",
       "remnawaveDesc": "Управление панелью и статистика",
+      "balancerDesc": "Управление xray-balancer и диагностика подписки",
       "emailTemplatesDesc": "Шаблоны email-уведомлений",
       "paymentMethodsDesc": "Настройка и порядок платежек",
       "campaignsDesc": "Рекламные кампании",
@@ -937,7 +1083,162 @@
       "accountLinkingDesc": "Ручная модерация спорных объединений аккаунтов",
       "partnersDesc": "Управление заявками партнёров и комиссиями",
       "withdrawalsDesc": "Проверка и обработка заявок на вывод",
-      "channelSubscriptionsDesc": "Управление обязательными подписками на каналы"
+      "channelSubscriptionsDesc": "Управление обязательными подписками на каналы",
+      "rolesDesc": "Управление ролями и правами администраторов",
+      "roleAssignDesc": "Назначение и отзыв ролей пользователей",
+      "policiesDesc": "Настройка политик контроля доступа ABAC",
+      "auditLogDesc": "Просмотр активности системы и истории доступа"
+    },
+    "balancer": {
+      "subtitle": "Управление xray-balancer middleware из кабинета",
+      "status": {
+        "configured": "Настроен",
+        "notConfigured": "Не настроен"
+      },
+      "actions": {
+        "refreshGroups": "Обновить группы",
+        "refreshStats": "Обновить статистику",
+        "refreshGroupsSuccess": "Группы обновлены",
+        "refreshStatsSuccess": "Статистика обновлена",
+        "actionError": "Не удалось выполнить действие",
+        "tokenError": "Ошибка проверки токена",
+        "groupsSaved": "Группы сохранены",
+        "groupsSaveError": "Не удалось сохранить группы",
+        "groupNameRequired": "Название группы обязательно",
+        "groupNamesUnique": "Названия групп должны быть уникальными",
+        "groupPatternsRequired": "В каждой группе должен быть хотя бы один паттерн",
+        "changesDiscarded": "Изменения отменены",
+        "quarantineAdded": "Нода добавлена в карантин",
+        "quarantineRemoved": "Нода удалена из карантина",
+        "quarantineError": "Не удалось обновить карантин",
+        "removeQuarantine": "Убрать",
+        "addQuarantine": "В карантин"
+      },
+      "tokenDebug": {
+        "title": "Проверка токена",
+        "placeholder": "Вставьте токен подписки",
+        "run": "Проверить"
+      },
+      "cards": {
+        "health": "Состояние",
+        "ready": "Готовность",
+        "debugStats": "Отладочная статистика",
+        "nodeStats": "Статистика нод",
+        "tokenDebug": "Результат проверки токена",
+        "nodeStatsEmpty": "Статистика нод пока недоступна",
+        "nodeStatsHint": "Показаны только реальные ноды (без псевдонимов inbound-тегов).",
+        "nodeStatsUnitsHint": "Нагрузка RAM и CPU показывает плотность пользователей (users per GB/core), а не занятые ресурсы в процентах."
+      },
+      "groups": {
+        "title": "Редактор групп",
+        "add": "Добавить группу",
+        "groupName": "Название группы",
+        "patterns": "Паттерны через запятую или с новой строки",
+        "patternsTitle": "Паттерны",
+        "patternsCount": "{{count}} шт.",
+        "fastestToggle": "Включить группу самых быстрых",
+        "excludeLabel": "Исключить группы из авто-выбора самых быстрых:",
+        "unsaved": "Есть несохранённые изменения групп",
+        "empty": "Группы не настроены",
+        "groupNumber": "Группа #{{index}}",
+        "moveUp": "Вверх",
+        "moveDown": "Вниз",
+        "clearSelection": "Очистить выбор",
+        "emptyExcludeHint": "Добавьте хотя бы одну группу, чтобы управлять исключениями",
+        "previewTitle": "Предпросмотр конфига",
+        "previewHint": "Это payload для PUT /admin/groups.",
+        "loadError": "Не удалось загрузить группы. Проверьте доступность /admin/groups.",
+        "viewExpanded": "Развернутый вид",
+        "viewCompact": "Компактный вид",
+        "howTitle": "Как пользоваться группами",
+        "howLine1": "Каждая группа содержит шаблоны для тегов outbound.",
+        "howLine2": "Группа самых быстрых создается автоматически на основе всех групп, кроме исключенных.",
+        "howLine3": "После сохранения конфигурация отправляется в /admin/groups и применяется сразу.",
+        "fastestName": "Название группы самых быстрых",
+        "excludeCounter": "Выбрано {{selected}} / {{total}}",
+        "advancedTitle": "Расширенные настройки балансера",
+        "advancedHint": "Эти параметры отправляются вместе с группами в PUT /admin/groups.",
+        "sectionAutoQuarantine": "Авто-карантин",
+        "sectionAutoQuarantineHint": "Автоматически отправляет нестабильные ноды в карантин и возвращает их после успешных проверок.",
+        "sectionAutoDrain": "Авто-дрейн",
+        "sectionAutoDrainHint": "Временно понижает приоритет ноды при высокой нагрузке или нестабильном состоянии.",
+        "sectionScoreModel": "Модель score",
+        "sectionScoreModelHint": "Определяет баланс между нагрузкой и задержкой при выборе приоритетных нод.",
+        "autoQuarantineEnabled": "Включить авто-карантин",
+        "autoQuarantineEnabledDesc": "Если включено, ноды с повторяющимися сбоями автоматически отправляются в карантин.",
+        "autoQuarantineFailures": "Ошибок до карантина",
+        "autoQuarantineFailuresDesc": "Сколько подряд неудачных проверок нужно, чтобы отправить ноду в карантин.",
+        "autoQuarantineRelease": "Успехов до выхода из карантина",
+        "autoQuarantineReleaseDesc": "Сколько подряд успешных проверок нужно, чтобы вернуть ноду из карантина.",
+        "autoQuarantineMaxNodes": "Макс. нод в карантине",
+        "autoQuarantineMaxNodesDesc": "Защитный лимит на количество нод, которые можно автоматически отправить в карантин.",
+        "autoDrainEnabled": "Включить авто-дрейн",
+        "autoDrainEnabledDesc": "Если включено, перегруженные ноды получают временный штраф score вместо мгновенного карантина.",
+        "autoDrainFailures": "Ошибок до дрейна",
+        "autoDrainFailuresDesc": "Сколько подряд деградированных проверок нужно для включения режима дрейна.",
+        "autoDrainRelease": "Успехов до снятия дрейна",
+        "autoDrainReleaseDesc": "Сколько подряд стабильных проверок нужно, чтобы снять штраф дрейна.",
+        "autoDrainLoadThreshold": "Порог нагрузки для дрейна",
+        "autoDrainLoadThresholdDesc": "Значение load выше этого порога считается деградацией для логики auto-drain.",
+        "autoDrainScorePenalty": "Штраф score для дрейна",
+        "autoDrainScorePenaltyDesc": "Насколько увеличивается score-штраф, пока нода в состоянии auto-drain.",
+        "balancerLoadWeight": "Вес нагрузки в score",
+        "balancerLoadWeightDesc": "Вес нагрузки ноды в итоговом score. Чем выше, тем сильнее баланс по нагрузке.",
+        "balancerLatencyWeight": "Вес задержки в score",
+        "balancerLatencyWeightDesc": "Вес задержки в итоговом score. Чем выше, тем сильнее приоритет низкого ping.",
+        "balancerMaxLatencyMs": "Макс. задержка (мс) для score",
+        "balancerMaxLatencyMsDesc": "Предел нормализации задержки (в миллисекундах) при расчете score.",
+        "balancerSmoothingAlpha": "Alpha сглаживания score",
+        "balancerSmoothingAlphaDesc": "Коэффициент сглаживания score. Меньше значение — меньше реакция на кратковременный шум.",
+        "balancerHysteresisDelta": "Delta гистерезиса score",
+        "balancerHysteresisDeltaDesc": "Минимальный выигрыш по score, необходимый для переключения на другую ноду."
+      },
+      "labels": {
+        "status": "Статус",
+        "groups": "Группы",
+        "autoGroups": "Авто-группы",
+        "fastestGroup": "Группа самых быстрых",
+        "nodeStats": "Статистика нод",
+        "cachedNodes": "Нод в кэше",
+        "panelAuth": "Авторизация панели",
+        "subPage": "Страница подписки",
+        "recentUpstream": "Свежий upstream",
+        "cacheTtl": "TTL кэша",
+        "cachePresent": "Кэш доступен",
+        "circuitOpen": "Circuit breaker открыт",
+        "profileMode": "Режим профиля",
+        "startedAt": "Запущен",
+        "requestsTotal": "Запросов всего",
+        "requestFailures": "Ошибок запросов",
+        "rateLimited": "Сработало ограничение запросов",
+        "circuitOpenTotal": "Открытий circuit breaker",
+        "quarantineFiltered": "Отфильтровано карантином",
+        "cbFailCount": "Ошибок CB",
+        "cbHalfOpen": "CB half-open",
+        "token": "Токен",
+        "ok": "ok",
+        "missing": "отсутствует",
+        "baseUrl": "Base URL",
+        "timeout": "Таймаут",
+        "health": "Состояние",
+        "ready": "Готовность",
+        "quarantineCount": "Нод в карантине"
+      },
+      "table": {
+        "node": "Нода",
+        "users": "Пользователи",
+        "cpu": "CPU",
+        "ram": "RAM",
+        "cpuCores": "CPU ядра",
+        "cpuLoad": "CPU нагрузка",
+        "ramLoad": "RAM нагрузка",
+        "totalRam": "Всего RAM",
+        "connected": "Подключена",
+        "disabled": "Отключена",
+        "quarantine": "Карантин",
+        "action": "Действие"
+      },
+      "rawJson": "сырой JSON"
     },
     "accountLinking": {
       "title": "Ручные заявки на объединение аккаунтов",
@@ -984,7 +1285,7 @@
       "total": "Всего",
       "noData": "Нет данных о трафике",
       "loading": "Загрузка данных о трафике...",
-      "noTariff": "\u2014",
+      "noTariff": "—",
       "search": "Поиск по имени или юзернейму",
       "allTariffs": "Все тарифы",
       "nodes": "Ноды",
@@ -1481,6 +1782,21 @@
         "submit": "Добавить",
         "save": "Сохранить",
         "cancel": "Отмена"
+      },
+      "globalSettings": {
+        "title": "Настройки каналов",
+        "channelRequired": "Требовать подписку",
+        "channelRequiredDesc": "Пользователи должны подписаться на каналы для использования бота",
+        "disableTrialOnUnsub": "Отключать триал при отписке",
+        "disableTrialOnUnsubDesc": "Отзывать пробный доступ при отписке от любого канала",
+        "requiredForAll": "Обязательно для всех",
+        "requiredForAllDesc": "Проверять подписку для всех пользователей, включая платных"
+      },
+      "perChannel": {
+        "disableTrial": "Отключать триал при выходе",
+        "disableTrialDesc": "Отзывать пробный доступ при выходе из этого канала",
+        "disablePaid": "Отключать платный при выходе",
+        "disablePaidDesc": "Отзывать платный доступ при выходе из этого канала"
       }
     },
     "settings": {
@@ -2199,7 +2515,7 @@
       "name": "Название",
       "namePlaceholder": "Введите название тарифа",
       "description": "Описание",
-      "descriptionPlaceholder": "Введите описание тарифа",
+      "descriptionPlaceholder": "Краткое описание тарифа",
       "trafficLimit": "Лимит трафика",
       "trafficHint": "0 = безлимитный трафик",
       "deviceLimit": "Лимит устройств",
@@ -2267,7 +2583,6 @@
       "nameExampleDaily": "Например: Суточный",
       "nameHint": "От 2 до 50 символов",
       "descriptionLabel": "Описание",
-      "descriptionPlaceholder": "Краткое описание тарифа",
       "trafficLimitLabel": "Лимит трафика",
       "gbUnit": "ГБ",
       "trafficLimitHint": "0 = безлимитный трафик",
@@ -3183,7 +3498,8 @@
       "marketing": "Маркетинг",
       "system": "Система",
       "tariffs": "Тарифы и продажи",
-      "users": "Пользователи"
+      "users": "Пользователи",
+      "security": "Безопасность"
     },
     "theme": {
       "accentColor": "Акцентный цвет",
@@ -3193,6 +3509,351 @@
       "lightness": "Яркость",
       "quickPresets": "Быстрые пресеты",
       "saturation": "Насыщенность"
+    },
+    "roles": {
+      "title": "Роли и права",
+      "subtitle": "Управление ролями администраторов и их правами",
+      "createRole": "Создать роль",
+      "noRoles": "Роли не найдены",
+      "systemBadge": "Системная",
+      "inactiveBadge": "Неактивна",
+      "levelLabel": "Уровень",
+      "usersCount_one": "{{count}} пользователь",
+      "usersCount_few": "{{count}} пользователя",
+      "usersCount_many": "{{count}} пользователей",
+      "permissionsCount_one": "{{count}} разрешение",
+      "permissionsCount_few": "{{count}} разрешения",
+      "permissionsCount_many": "{{count}} разрешений",
+      "stats": {
+        "totalRoles": "Всего ролей",
+        "active": "Активные",
+        "system": "Системные"
+      },
+      "actions": {
+        "edit": "Редактировать",
+        "delete": "Удалить"
+      },
+      "modal": {
+        "createTitle": "Создание роли",
+        "editTitle": "Редактирование роли",
+        "close": "Закрыть"
+      },
+      "form": {
+        "name": "Название роли",
+        "namePlaceholder": "например, Модератор",
+        "description": "Описание",
+        "descriptionPlaceholder": "Для чего нужна эта роль...",
+        "level": "Уровень приоритета",
+        "levelValue": "Значение уровня",
+        "levelHint": "Чем выше уровень, тем больше полномочий. Пользователи могут управлять только ролями с уровнем ниже своего.",
+        "color": "Цвет",
+        "presets": "Шаблоны прав",
+        "permissions": "Разрешения",
+        "permissionSections": {
+          "users": "Пользователи",
+          "tickets": "Тикеты",
+          "stats": "Статистика",
+          "broadcasts": "Рассылки",
+          "tariffs": "Тарифы",
+          "promocodes": "Промокоды",
+          "promo_groups": "Промо-группы",
+          "promo_offers": "Промо-предложения",
+          "campaigns": "Кампании",
+          "partners": "Партнёры",
+          "withdrawals": "Выводы средств",
+          "payments": "Платежи",
+          "payment_methods": "Методы оплаты",
+          "servers": "Серверы",
+          "remnawave": "Remnawave",
+          "traffic": "Трафик",
+          "settings": "Настройки",
+          "roles": "Роли",
+          "audit_log": "Журнал аудита",
+          "channels": "Каналы",
+          "ban_system": "Система банов",
+          "wheel": "Колесо фортуны",
+          "apps": "Приложения",
+          "email_templates": "Шаблоны писем",
+          "pinned_messages": "Закреплённые сообщения",
+          "updates": "Обновления"
+        },
+        "permissionActions": {
+          "read": "Чтение",
+          "edit": "Редактирование",
+          "create": "Создание",
+          "delete": "Удаление",
+          "block": "Блокировка",
+          "sync": "Синхронизация",
+          "reply": "Ответ",
+          "close": "Закрытие",
+          "settings": "Настройки",
+          "export": "Экспорт",
+          "send": "Отправка",
+          "stats": "Статистика",
+          "approve": "Одобрение",
+          "revoke": "Отзыв",
+          "reject": "Отклонение",
+          "manage": "Управление",
+          "ban": "Бан",
+          "unban": "Разбан",
+          "assign": "Назначение",
+          "promo_group": "Промо-группа",
+          "balance": "Баланс",
+          "subscription": "Подписка",
+          "send_offer": "Промо-предложение",
+          "referral": "Реф. процент"
+        },
+        "toggleSection": "Переключить все права {{section}}",
+        "selectedPermissions_one": "{{count}} разрешение выбрано",
+        "selectedPermissions_few": "{{count}} разрешения выбрано",
+        "selectedPermissions_many": "{{count}} разрешений выбрано",
+        "cancel": "Отмена",
+        "saving": "Сохранение...",
+        "save": "Сохранить"
+      },
+      "presets": {
+        "moderator": "Модератор",
+        "marketer": "Маркетолог",
+        "support": "Поддержка"
+      },
+      "confirm": {
+        "title": "Удалить роль?",
+        "text": "Роль будет безвозвратно удалена. Пользователи с этой ролью потеряют её права.",
+        "cancel": "Отмена",
+        "delete": "Удалить",
+        "deleting": "Удаление..."
+      },
+      "errors": {
+        "loadFailed": "Не удалось загрузить роли",
+        "createFailed": "Не удалось создать роль",
+        "updateFailed": "Не удалось обновить роль",
+        "nameRequired": "Укажите название роли",
+        "deleteFailed": "Не удалось удалить роль"
+      }
+    },
+    "roleAssign": {
+      "title": "Назначение ролей",
+      "subtitle": "Назначение и управление ролями пользователей",
+      "assignSection": "Назначить роль",
+      "userLabel": "Пользователь",
+      "searchPlaceholder": "Поиск по имени, username, Telegram ID или email...",
+      "clearUser": "Очистить выбранного пользователя",
+      "noUsersFound": "Пользователи не найдены",
+      "roleLabel": "Роль",
+      "selectRole": "Выберите роль...",
+      "expiresLabel": "Истекает (необязательно)",
+      "expiresHint": "Оставьте пустым для бессрочного назначения",
+      "assignButton": "Назначить",
+      "assigning": "Назначение...",
+      "assignSuccess": "Роль успешно назначена",
+      "currentAssignments": "Текущие назначения",
+      "totalAssignments_one": "{{count}} назначение",
+      "totalAssignments_few": "{{count}} назначения",
+      "totalAssignments_many": "{{count}} назначений",
+      "noAssignments": "Назначения ролей не найдены",
+      "unknownUser": "Неизвестный пользователь",
+      "system": "Система",
+      "permanent": "Бессрочно",
+      "expired": "истекло",
+      "revoke": "Отозвать",
+      "revokeAriaLabel": "Отозвать роль {{role}} у {{user}}",
+      "table": {
+        "user": "Пользователь",
+        "role": "Роль",
+        "assignedBy": "Назначил",
+        "assignedAt": "Дата назначения",
+        "expires": "Истекает",
+        "actions": "Действия"
+      },
+      "pagination": {
+        "showing": "{{from}}-{{to}} из {{total}}",
+        "prev": "Предыдущая страница",
+        "next": "Следующая страница"
+      },
+      "confirm": {
+        "title": "Отозвать роль?",
+        "text": "Пользователь немедленно потеряет все права, связанные с этой ролью.",
+        "cancel": "Отмена",
+        "revoke": "Отозвать",
+        "revoking": "Отзыв..."
+      },
+      "errors": {
+        "userRequired": "Выберите пользователя",
+        "roleRequired": "Выберите роль",
+        "assignFailed": "Не удалось назначить роль",
+        "revokeFailed": "Не удалось отозвать роль"
+      }
+    },
+    "policies": {
+      "title": "Политики доступа",
+      "subtitle": "Управление политиками контроля доступа ABAC",
+      "createPolicy": "Создать политику",
+      "noPolicies": "Политики не найдены",
+      "inactiveBadge": "Неактивна",
+      "effectAllow": "Разрешить",
+      "effectDeny": "Запретить",
+      "global": "Глобальная",
+      "unknownRole": "Неизвестная роль",
+      "roleLabel": "Роль",
+      "priorityLabel": "Приоритет",
+      "stats": {
+        "total": "Всего политик",
+        "allow": "Разрешающие",
+        "deny": "Запрещающие",
+        "active": "Активные"
+      },
+      "actions": {
+        "edit": "Редактировать",
+        "delete": "Удалить"
+      },
+      "modal": {
+        "createTitle": "Создание политики",
+        "editTitle": "Редактирование политики",
+        "close": "Закрыть"
+      },
+      "form": {
+        "name": "Название политики",
+        "namePlaceholder": "например, Блокировка ночного доступа",
+        "description": "Описание",
+        "descriptionPlaceholder": "Что делает эта политика...",
+        "effect": "Эффект",
+        "resource": "Ресурс",
+        "selectResource": "Выберите ресурс...",
+        "actions": "Действия",
+        "role": "Роль (необязательно)",
+        "globalOption": "Глобальная (все роли)",
+        "roleHint": "Оставьте Глобальная, чтобы политика применялась ко всем ролям.",
+        "priority": "Приоритет",
+        "priorityHint": "Политики с более высоким приоритетом проверяются первыми. Запрет перекрывает Разрешение при равном приоритете.",
+        "conditions": "Условия",
+        "cancel": "Отмена",
+        "saving": "Сохранение...",
+        "save": "Сохранить"
+      },
+      "conditions": {
+        "timeRange": "Временной диапазон",
+        "timeStart": "Время начала",
+        "timeEnd": "Время окончания",
+        "ipWhitelist": "Белый список IP",
+        "ipPlaceholder": "Введите IP и нажмите Enter...",
+        "removeIp": "Удалить {{ip}}",
+        "ipCount_one": "{{count}} IP",
+        "ipCount_few": "{{count}} IP",
+        "ipCount_many": "{{count}} IP",
+        "rateLimit": "Лимит запросов",
+        "rateLimitValue": "Значение лимита запросов",
+        "rateValue": "{{count}}/ч",
+        "perHour": "действий в час",
+        "weekdays": "Дни недели",
+        "day0": "Вс",
+        "day1": "Пн",
+        "day2": "Вт",
+        "day3": "Ср",
+        "day4": "Чт",
+        "day5": "Пт",
+        "day6": "Сб"
+      },
+      "confirm": {
+        "title": "Удалить политику?",
+        "text": "Политика будет безвозвратно удалена. Правила контроля доступа будут пересчитаны.",
+        "cancel": "Отмена",
+        "delete": "Удалить",
+        "deleting": "Удаление..."
+      },
+      "errors": {
+        "loadFailed": "Не удалось загрузить политики",
+        "createFailed": "Не удалось создать политику",
+        "updateFailed": "Не удалось обновить политику",
+        "nameRequired": "Укажите название политики",
+        "resourceRequired": "Выберите ресурс",
+        "actionsRequired": "Выберите хотя бы одно действие",
+        "deleteFailed": "Не удалось удалить политику"
+      }
+    },
+    "auditLog": {
+      "title": "Журнал аудита",
+      "subtitle": "Просмотр активности системы и истории доступа",
+      "back": "Назад",
+      "exportCsv": "Экспорт CSV",
+      "exportError": "Ошибка экспорта",
+      "exporting": "Экспорт...",
+      "refresh": "Обновить",
+      "unknownUser": "Неизвестный пользователь",
+      "noEntries": "Записи журнала аудита не найдены",
+      "totalEntries_one": "{{count}} запись",
+      "totalEntries_few": "{{count}} записи",
+      "totalEntries_many": "{{count}} записей",
+      "autoRefresh": {
+        "label": "Автообновление",
+        "tooltip": "Автообновление каждые 30 секунд"
+      },
+      "filters": {
+        "title": "Фильтры",
+        "active": "Активны",
+        "action": "Действие",
+        "actionPlaceholder": "Поиск по действию...",
+        "resource": "Тип ресурса",
+        "allResources": "Все ресурсы",
+        "status": "Статус",
+        "allStatuses": "Все статусы",
+        "dateFrom": "Дата от",
+        "dateTo": "Дата до",
+        "apply": "Применить",
+        "clear": "Сбросить"
+      },
+      "status": {
+        "success": "Успешно",
+        "denied": "Отказано",
+        "error": "Ошибка"
+      },
+      "resourceTypes": {
+        "users": "Пользователи",
+        "tickets": "Тикеты",
+        "roles": "Роли",
+        "policies": "Политики",
+        "settings": "Настройки",
+        "broadcasts": "Рассылки",
+        "tariffs": "Тарифы",
+        "servers": "Серверы",
+        "payments": "Платежи",
+        "campaigns": "Кампании",
+        "promocodes": "Промокоды"
+      },
+      "details": {
+        "userAgent": "User Agent",
+        "requestPath": "Путь запроса",
+        "ipAddress": "IP-адрес",
+        "timestamp": "Время",
+        "before": "До",
+        "after": "После",
+        "queryParams": "Параметры запроса",
+        "requestBody": "Тело запроса",
+        "fullDetails": "Полные данные"
+      },
+      "time": {
+        "justNow": "Только что",
+        "minutesAgo_one": "{{count}} мин назад",
+        "minutesAgo_few": "{{count}} мин назад",
+        "minutesAgo_many": "{{count}} мин назад",
+        "hoursAgo_one": "{{count}} ч назад",
+        "hoursAgo_few": "{{count}} ч назад",
+        "hoursAgo_many": "{{count}} ч назад",
+        "daysAgo_one": "{{count}} день назад",
+        "daysAgo_few": "{{count}} дня назад",
+        "daysAgo_many": "{{count}} дней назад"
+      },
+      "pagination": {
+        "pageSize": "На странице:",
+        "pageOf": "{{current}} / {{total}}",
+        "first": "Первая страница",
+        "previous": "Предыдущая страница",
+        "next": "Следующая страница",
+        "last": "Последняя страница"
+      },
+      "errors": {
+        "loadFailed": "Не удалось загрузить журнал аудита",
+        "retry": "Попробовать снова"
+      }
     }
   },
   "adminUpdates": {
@@ -3206,6 +3867,8 @@
     "published": "Опубликовано",
     "prerelease": "Предрелиз",
     "refresh": "Проверить обновления",
+    "showDetails": "Показать описание",
+    "hideDetails": "Скрыть описание",
     "noReleases": "Нет данных о релизах"
   },
   "adminDashboard": {
@@ -3925,6 +4588,17 @@
     "tariffs": "Тарифы",
     "menu": "Меню",
     "balance": "Баланс",
+    "quickStatus": "Быстрый статус",
+    "statusBar": {
+      "active": "Подписка активна",
+      "activeHint": "Можно сразу подключаться.",
+      "trialAvailable": "Доступен пробный период",
+      "trialHint": "Активируйте триал, чтобы открыть подключение.",
+      "expired": "Подписка истекла",
+      "expiredHint": "Продлите подписку для повторного подключения.",
+      "noSubscription": "Подписки пока нет",
+      "noSubscriptionHint": "Выберите тариф, чтобы начать пользоваться VPN."
+    },
     "daysLeft": "{{count}} дн.",
     "daysLeft_one": "{{count}} день",
     "daysLeft_few": "{{count}} дня",
@@ -3934,10 +4608,41 @@
     "subscriptionExpired": "Подписка истекла",
     "subscriptionTrial": "Пробный период",
     "noSubscription": "Нет подписки",
+    "connectLockedTitle": "Подключение пока недоступно",
+    "connectLockedDescription": "Чтобы появилась кнопка подключения, сначала активируйте подписку.",
+    "connectLockedStepTopUp": "Пополните баланс",
+    "connectLockedStepTariff": "Выберите и оплатите тариф",
+    "connectLockedStepActivate": "После активации подписки откройте подключение",
+    "connectTrialHintTitle": "Для подключения активируйте триал",
+    "connectTrialHintDescription": "Кнопка подключения появится после активации пробного периода.",
+    "connectTrialHintAction": "Нажмите «Активировать пробный период» в карточке выше.",
+    "connectAvailabilityLoading": "Проверяем доступность пробного периода...",
+    "connectHintProgress": "Шаг {{current}} из {{total}}",
+    "connectHintTrialTitle": "Начните с пробного периода",
+    "connectHintTrialDescription": "Для подключения сначала активируйте триал. Это самый быстрый старт.",
+    "connectHintTrialStep1": "Активируйте пробный период",
+    "connectHintTrialStep2": "Откройте раздел «Подключение»",
+    "connectHintTrialStep3": "Установите приложение и вставьте ссылку",
+    "connectHintExpiredTitle": "Подписка истекла",
+    "connectHintExpiredDescription": "Доступ приостановлен. Продлите подписку, чтобы снова подключиться.",
+    "connectHintExpiredDescriptionWithDate": "Подписка истекла {{date}}. Продлите подписку, чтобы снова подключиться.",
+    "connectHintExpiredStep1": "Пополните баланс при необходимости",
+    "connectHintExpiredStep2": "Выберите тариф для продления",
+    "connectHintExpiredStep3": "После оплаты снова откройте «Подключение»",
+    "renewSubscription": "Продлить подписку",
+    "chooseTariff": "Выбрать тариф",
+    "howToConnect": "Как подключиться",
     "activateTrial": "Активировать пробный период",
     "trialDays": "{{count}} дней бесплатно",
     "trialTraffic": "{{count}} ГБ трафика",
     "trialDevices": "{{count}} устройств",
+    "trialRequiresTopUp": "Для активации пробного периода нужно пополнить баланс",
+    "trialErrors": {
+      "insufficientBalance": "Недостаточно средств для активации пробного периода",
+      "alreadyUsed": "Пробный период уже был использован",
+      "unavailable": "Пробный период недоступен",
+      "generic": "Не удалось активировать пробный период"
+    },
     "unlimited": "Безлимит",
     "tab": {
       "tariffs": "Тарифы",

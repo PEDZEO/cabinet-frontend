@@ -342,7 +342,18 @@
       "notConfigured": "连接方式尚未配置",
       "notConfiguredUser": "连接设置正在进行中，请稍后再来查看。",
       "notConfiguredAdmin": "尚未配置连接应用。请在应用设置中进行配置。",
-      "goToApps": "前往应用设置"
+      "goToApps": "前往应用设置",
+      "activateTrialOnDashboard": "在首页激活试用",
+      "goChooseTariff": "前往选择套餐",
+      "goTopUp": "前往充值余额",
+      "trialStep2": {
+        "title": "第2步：将订阅添加到应用",
+        "description": "激活试用后，请按以下步骤完成连接设置。",
+        "progress": "第 {{current}} / {{total}} 步",
+        "ifNoApp": "如果没有应用：请先下载并安装。",
+        "afterInstall": "安装完成后返回此页面。",
+        "ifAppExists": "如果已有应用：点击“添加订阅”。"
+      }
     },
     "additionalOptions": {
       "title": "附加选项",
@@ -2864,6 +2875,17 @@
     "tariffs": "套餐",
     "menu": "菜单",
     "balance": "余额",
+    "quickStatus": "快速状态",
+    "statusBar": {
+      "active": "订阅有效",
+      "activeHint": "现在可以直接连接。",
+      "trialAvailable": "可用试用期",
+      "trialHint": "激活试用后即可解锁连接。",
+      "expired": "订阅已过期",
+      "expiredHint": "续费后可再次连接。",
+      "noSubscription": "暂无订阅",
+      "noSubscriptionHint": "先选择套餐即可开始使用 VPN。"
+    },
     "daysLeft": "{{count}}天",
     "hoursLeft": "{{count}}小时",
     "subscriptionActive": "订阅有效",

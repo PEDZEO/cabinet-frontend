@@ -1,20 +1,23 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { subscriptionApi } from '@/api/subscription';
-import { balanceApi } from '@/api/balance';
 import { referralApi } from '@/api/referral';
 import { authApi } from '@/api/auth';
 import { useAuthStore } from '@/store/auth';
 import { useHapticFeedback } from '@/platform/hooks/useHaptic';
 import { LiteActionButton } from '@/components/lite/LiteActionButton';
 import { LiteSubscriptionCard } from '@/components/lite/LiteSubscriptionCard';
-import { LiteTrialCard } from '@/components/lite/LiteTrialCard';
 import { LiteDashboardSkeleton } from '@/components/lite/LiteDashboardSkeleton';
 import { PullToRefresh } from '@/components/lite/PullToRefresh';
 import Onboarding from '@/components/Onboarding';
 import PromoOffersSection from '@/components/PromoOffersSection';
+import {
+  getLiteOnboardingFlowState,
+  markLiteOnboardingStep,
+  resetLiteOnboardingFlowState,
+} from '@/features/lite/onboardingFlow';
 
 // Icons
 const ConnectIcon = () => (
@@ -117,29 +120,41 @@ const ShareIcon = () => (
 
 // Lite mode onboarding hook with separate storage key
 const LITE_ONBOARDING_KEY = 'lite_onboarding_completed';
+const TRIAL_ACTIVATE_CLICK_COOLDOWN_MS = 1500;
 
-function useLiteOnboarding() {
+function useLiteOnboarding(userId?: number | null) {
+  const storageKey = userId ? `${LITE_ONBOARDING_KEY}_${userId}` : LITE_ONBOARDING_KEY;
   const [isCompleted, setIsCompleted] = useState(() => {
-    return localStorage.getItem(LITE_ONBOARDING_KEY) === 'true';
+    return localStorage.getItem(storageKey) === 'true';
   });
 
+  useEffect(() => {
+    setIsCompleted(localStorage.getItem(storageKey) === 'true');
+  }, [storageKey]);
+
   const complete = useCallback(() => {
-    localStorage.setItem(LITE_ONBOARDING_KEY, 'true');
+    localStorage.setItem(storageKey, 'true');
     setIsCompleted(true);
-  }, []);
+  }, [storageKey]);
 
   return { isCompleted, complete };
 }
 
 export function LiteDashboard() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, refreshUser } = useAuthStore();
   const haptic = useHapticFeedback();
   const [trialError, setTrialError] = useState<string | null>(null);
+  const [isTrialActivationLocked, setIsTrialActivationLocked] = useState(false);
+  const trialActivationCooldownRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [onboardingFlow, setOnboardingFlow] = useState(() => getLiteOnboardingFlowState());
   const [copied, setCopied] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const { isCompleted: isOnboardingCompleted, complete: completeOnboarding } = useLiteOnboarding();
+  const { isCompleted: isOnboardingCompleted, complete: completeOnboarding } = useLiteOnboarding(
+    user?.id,
+  );
 
   // Pull to refresh handler
   const handleRefresh = useCallback(async () => {
@@ -158,15 +173,10 @@ export function LiteDashboard() {
     refetchOnMount: 'always',
   });
 
-  const { data: trialInfo } = useQuery({
+  const { data: trialInfo, isLoading: isTrialInfoLoading } = useQuery({
     queryKey: ['trial-info'],
     queryFn: subscriptionApi.getTrialInfo,
     enabled: !subscriptionResponse?.has_subscription,
-  });
-
-  const { data: balanceData } = useQuery({
-    queryKey: ['balance'],
-    queryFn: balanceApi.getBalance,
   });
 
   const { data: referralInfo } = useQuery({
@@ -234,20 +244,84 @@ export function LiteDashboard() {
     mutationFn: subscriptionApi.activateTrial,
     onSuccess: () => {
       setTrialError(null);
+      resetLiteOnboardingFlowState();
+      setOnboardingFlow(markLiteOnboardingStep('trial_activated'));
       queryClient.invalidateQueries({ queryKey: ['subscription'] });
       queryClient.invalidateQueries({ queryKey: ['trial-info'] });
       queryClient.invalidateQueries({ queryKey: ['balance'] });
+      queryClient.invalidateQueries({ queryKey: ['payment-methods'] });
+      queryClient.invalidateQueries({ queryKey: ['appConfig'] });
       refreshUser();
+      navigate('/connection?guide=trial&step=2');
     },
     onError: (error: { response?: { data?: { detail?: string } } }) => {
-      setTrialError(error.response?.data?.detail || t('common.error'));
+      const detail = error.response?.data?.detail?.toLowerCase() ?? '';
+
+      if (
+        detail.includes('insufficient') ||
+        detail.includes('balance') ||
+        detail.includes('fund')
+      ) {
+        setTrialError(t('lite.trialErrors.insufficientBalance'));
+        return;
+      }
+
+      if (detail.includes('already') || detail.includes('used') || detail.includes('activated')) {
+        setTrialError(t('lite.trialErrors.alreadyUsed'));
+        return;
+      }
+
+      if (
+        detail.includes('unavailable') ||
+        detail.includes('forbidden') ||
+        detail.includes('disabled')
+      ) {
+        setTrialError(t('lite.trialErrors.unavailable'));
+        return;
+      }
+
+      setTrialError(t('lite.trialErrors.generic'));
     },
   });
 
+  const handleActivateTrial = () => {
+    if (activateTrialMutation.isPending || isTrialActivationLocked) {
+      return;
+    }
+
+    setIsTrialActivationLocked(true);
+    trialActivationCooldownRef.current = setTimeout(() => {
+      setIsTrialActivationLocked(false);
+      trialActivationCooldownRef.current = null;
+    }, TRIAL_ACTIVATE_CLICK_COOLDOWN_MS);
+
+    activateTrialMutation.mutate();
+  };
+
+  useEffect(() => {
+    return () => {
+      if (trialActivationCooldownRef.current) {
+        clearTimeout(trialActivationCooldownRef.current);
+      }
+    };
+  }, []);
+
   const subscription = subscriptionResponse?.subscription ?? null;
   const hasNoSubscription = subscriptionResponse?.has_subscription === false && !subLoading;
+  const hasActiveSubscription =
+    !!subscription && subscription.is_active && !subscription.is_expired;
+  const hasExpiredSubscription = !!subscription && subscription.is_expired;
+  const isTrialInfoPending = hasNoSubscription && isTrialInfoLoading;
   const showTrial = hasNoSubscription && trialInfo?.is_available;
-  const balance = balanceData?.balance_kopeks ?? 0;
+  const shouldShowTrialConnectHint =
+    hasNoSubscription && !isTrialInfoPending && !!trialInfo?.is_available;
+  const expiredOnLabel = hasExpiredSubscription
+    ? new Date(subscription.end_date).toLocaleDateString()
+    : null;
+  const showTrialFlow = shouldShowTrialConnectHint || onboardingFlow.trial_activated;
+  const trialFlowStep1Done = onboardingFlow.trial_activated;
+  const trialFlowStep2Done = onboardingFlow.connection_opened;
+  const trialFlowStep3Done = onboardingFlow.subscription_added;
 
   // Get device limit from tariff settings
   const tariffs = purchaseOptions?.sales_mode === 'tariffs' ? purchaseOptions.tariffs : [];
@@ -318,148 +392,374 @@ export function LiteDashboard() {
     <>
       <PullToRefresh onRefresh={handleRefresh} className="min-h-[calc(100vh-120px)]">
         <div
-          className="mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-md flex-col px-3 py-5 min-[360px]:px-4 min-[360px]:py-6"
+          className="mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-6xl flex-col px-3 py-4 min-[360px]:px-4 min-[360px]:py-6 lg:px-6 xl:px-8 2xl:py-8"
           style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom, 24px))' }}
         >
-          {/* Subscription status or Trial card */}
-          <div className="mb-5" data-onboarding="lite-subscription">
-            {subscription && (
-              <LiteSubscriptionCard
-                subscription={subscription}
-                deviceLimit={deviceLimitFromTariff}
-              />
-            )}
-
-            {showTrial && trialInfo && (
-              <LiteTrialCard
-                trialInfo={trialInfo}
-                balance={balance}
-                onActivate={() => activateTrialMutation.mutate()}
-                isLoading={activateTrialMutation.isPending}
-                error={trialError}
-              />
-            )}
-
-            {hasNoSubscription && !showTrial && (
-              <div className="rounded-2xl border border-dark-600 bg-dark-800/80 p-4 text-center">
-                <p className="text-dark-300">{t('lite.noSubscription')}</p>
-              </div>
-            )}
-          </div>
-
-          {!hasMergedAnotherAccount && (
-            <div className="mb-5 rounded-xl border border-accent-500/20 bg-accent-500/5 px-3 py-2">
-              <div className="flex flex-col gap-1.5 min-[360px]:flex-row min-[360px]:items-center min-[360px]:justify-between min-[360px]:gap-3">
-                <p className="text-xs text-dark-300">{t('lite.accountLinking.title')}</p>
-                <Link
-                  to="/profile"
-                  className="self-start text-xs font-medium text-accent-400 transition-colors hover:text-accent-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 min-[360px]:self-auto"
-                >
-                  {t('lite.accountLinking.cta')}
-                </Link>
-              </div>
-            </div>
-          )}
-
-          {/* Promo Offers */}
-          <PromoOffersSection className="mb-5" useNowPath="/subscription" />
-
-          {/* Referral card */}
-          {referralLink && (
-            <div className="from-accent-500/12 via-accent-500/6 mb-6 rounded-2xl border border-accent-500/25 bg-gradient-to-br to-transparent p-4">
-              <div className="mb-3 flex items-center gap-2.5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-500/20 text-accent-400">
-                  <GiftIcon />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h3 className="text-sm font-semibold text-dark-50">{t('lite.referral.title')}</h3>
-                  <p className="text-xs text-dark-300">
-                    {t('lite.referral.description', {
-                      percent: referralInfo?.commission_percent || 0,
-                    })}
-                  </p>
-                </div>
-                <span className="rounded-full border border-accent-400/40 bg-accent-500/15 px-2 py-1 text-2xs font-semibold tabular-nums text-accent-300">
-                  {referralInfo?.commission_percent || 0}%
-                </span>
-              </div>
-
-              <div className="mb-3 overflow-hidden rounded-lg border border-dark-700/70 bg-dark-900/60 px-3 py-2">
-                <p className="truncate text-xs font-medium text-dark-200" title={referralLink}>
-                  {referralLinkPreview}
+          <div className="mb-3 rounded-2xl border border-dark-700/70 bg-dark-900/50 p-3 min-[360px]:mb-4 min-[360px]:p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-[0.08em] text-dark-400">
+                  {t('lite.quickStatus')}
+                </p>
+                <p className="truncate text-sm font-semibold text-dark-100">
+                  {hasActiveSubscription
+                    ? t('lite.statusBar.active')
+                    : shouldShowTrialConnectHint
+                      ? t('lite.statusBar.trialAvailable')
+                      : hasExpiredSubscription
+                        ? t('lite.statusBar.expired')
+                        : t('lite.statusBar.noSubscription')}
+                </p>
+                <p className="mt-0.5 text-xs text-dark-300">
+                  {hasActiveSubscription
+                    ? t('lite.statusBar.activeHint')
+                    : shouldShowTrialConnectHint
+                      ? t('lite.statusBar.trialHint')
+                      : hasExpiredSubscription
+                        ? t('lite.statusBar.expiredHint')
+                        : t('lite.statusBar.noSubscriptionHint')}
                 </p>
               </div>
-
-              <div className="flex gap-2 max-[360px]:flex-col">
-                <button
-                  onClick={copyReferralLink}
-                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg border py-2 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 ${
-                    copied
-                      ? 'border-success-500/40 bg-success-500/20 text-success-300'
-                      : 'border-dark-600 bg-dark-800 text-dark-200 hover:border-dark-500 hover:bg-dark-700'
-                  }`}
-                  aria-label={copied ? t('lite.referral.copied') : t('lite.referral.copy')}
-                >
-                  {copied ? <CopyCheckIcon /> : <CopyIcon />}
-                  {copied ? t('lite.referral.copied') : t('lite.referral.copy')}
-                </button>
-                <button
-                  onClick={shareReferralLink}
-                  className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-accent-400/60 bg-accent-500 py-2 text-xs font-semibold text-white transition-all hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70"
-                  aria-label={t('lite.referral.share')}
-                >
-                  <ShareIcon />
-                  {t('lite.referral.share')}
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (hasActiveSubscription) {
+                    navigate('/connection');
+                    return;
+                  }
+                  if (shouldShowTrialConnectHint) {
+                    handleActivateTrial();
+                    return;
+                  }
+                  navigate('/subscription');
+                }}
+                disabled={activateTrialMutation.isPending || isTrialActivationLocked}
+                className="shrink-0 rounded-xl border border-accent-400/60 bg-accent-500 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {hasActiveSubscription
+                  ? t('lite.connect')
+                  : shouldShowTrialConnectHint
+                    ? activateTrialMutation.isPending
+                      ? t('common.loading')
+                      : t('lite.activateTrial')
+                    : hasExpiredSubscription
+                      ? t('lite.renewSubscription')
+                      : t('lite.chooseTariff')}
+              </button>
             </div>
-          )}
+          </div>
 
-          {/* Action buttons */}
-          <div className="flex flex-1 flex-col justify-center gap-3">
-            <p className="px-1 text-xs font-semibold uppercase tracking-[0.08em] text-dark-400">
-              {t('lite.menu')}
-            </p>
+          <div className="flex flex-1 flex-col gap-4 min-[360px]:gap-5 lg:grid lg:grid-cols-12 lg:items-start lg:gap-6">
+            <section className="space-y-4 min-[360px]:space-y-5 lg:col-span-7 xl:col-span-8">
+              {/* Subscription status or Trial card */}
+              <div data-onboarding="lite-subscription">
+                {subscription && (
+                  <div data-testid="lite-subscription-active-card">
+                    <LiteSubscriptionCard
+                      subscription={subscription}
+                      deviceLimit={deviceLimitFromTariff}
+                    />
+                  </div>
+                )}
 
-            <div data-onboarding="lite-connect">
+                {isTrialInfoPending && (
+                  <div
+                    data-testid="lite-trial-loading-card"
+                    className="rounded-2xl border border-dark-600 bg-dark-800/80 p-3 text-center min-[360px]:p-4"
+                  >
+                    <p className="text-dark-300">{t('lite.connectAvailabilityLoading')}</p>
+                  </div>
+                )}
+
+                {hasNoSubscription && !isTrialInfoPending && !showTrial && (
+                  <div
+                    data-testid="lite-no-subscription-card"
+                    className="rounded-2xl border border-dark-600 bg-dark-800/80 p-3 text-center min-[360px]:p-4"
+                  >
+                    <p className="text-dark-300">{t('lite.noSubscription')}</p>
+                  </div>
+                )}
+
+                {showTrialFlow && (
+                  <div
+                    data-testid="lite-trial-hint-card"
+                    className="rounded-2xl border border-warning-500/35 bg-warning-500/10 p-3 min-[360px]:p-4"
+                  >
+                    <p className="text-sm font-semibold text-warning-300">
+                      {t('lite.connectHintTrialTitle')}
+                    </p>
+                    <p className="mt-1 text-xs text-dark-300">
+                      {t('lite.connectHintTrialDescription')}
+                    </p>
+                    <p className="mt-2 text-2xs font-semibold uppercase tracking-[0.05em] text-dark-400">
+                      {t('lite.connectHintProgress', {
+                        current: trialFlowStep3Done
+                          ? 3
+                          : trialFlowStep2Done
+                            ? 2
+                            : trialFlowStep1Done
+                              ? 1
+                              : 0,
+                        total: 3,
+                      })}
+                    </p>
+                    <ol className="mt-2 space-y-1.5 text-xs text-dark-200">
+                      <li className="flex items-start gap-2">
+                        <span
+                          className={`mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-semibold ${trialFlowStep1Done ? 'bg-success-500/20 text-success-300' : 'bg-dark-700 text-dark-300'}`}
+                        >
+                          {trialFlowStep1Done ? '✓' : '1'}
+                        </span>
+                        <span>{t('lite.connectHintTrialStep1')}</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span
+                          className={`mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-semibold ${trialFlowStep2Done ? 'bg-success-500/20 text-success-300' : 'bg-dark-700 text-dark-300'}`}
+                        >
+                          {trialFlowStep2Done ? '✓' : '2'}
+                        </span>
+                        <span>{t('lite.connectHintTrialStep2')}</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span
+                          className={`mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-semibold ${trialFlowStep3Done ? 'bg-success-500/20 text-success-300' : 'bg-dark-700 text-dark-300'}`}
+                        >
+                          {trialFlowStep3Done ? '✓' : '3'}
+                        </span>
+                        <span>{t('lite.connectHintTrialStep3')}</span>
+                      </li>
+                    </ol>
+                    {!trialFlowStep1Done && (
+                      <button
+                        type="button"
+                        data-testid="lite-activate-trial"
+                        onClick={handleActivateTrial}
+                        disabled={activateTrialMutation.isPending || isTrialActivationLocked}
+                        className="mt-3 w-full rounded-xl border border-white/45 bg-accent-500 py-2.5 text-sm font-semibold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.3)] ring-1 ring-white/35 transition-colors hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 disabled:cursor-not-allowed disabled:opacity-60 motion-safe:animate-pulse"
+                      >
+                        {activateTrialMutation.isPending
+                          ? t('common.loading')
+                          : t('lite.activateTrial')}
+                      </button>
+                    )}
+                    {trialFlowStep1Done && !trialFlowStep3Done && (
+                      <button
+                        type="button"
+                        onClick={() => navigate('/connection?guide=trial&step=2')}
+                        className="mt-3 w-full rounded-xl border border-accent-400/60 bg-accent-500 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70"
+                      >
+                        {t('lite.connect')}
+                      </button>
+                    )}
+                    {trialError && <p className="mt-2 text-xs text-error-300">{trialError}</p>}
+                  </div>
+                )}
+              </div>
+
+              {!hasMergedAnotherAccount && (
+                <div className="rounded-xl border border-accent-500/20 bg-accent-500/5 px-3 py-2">
+                  <div className="flex flex-col gap-1.5 min-[360px]:flex-row min-[360px]:items-center min-[360px]:justify-between min-[360px]:gap-3">
+                    <p className="text-xs text-dark-300">{t('lite.accountLinking.title')}</p>
+                    <Link
+                      to="/profile"
+                      className="self-start text-xs font-medium text-accent-400 transition-colors hover:text-accent-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 min-[360px]:self-auto"
+                    >
+                      {t('lite.accountLinking.cta')}
+                    </Link>
+                  </div>
+                </div>
+              )}
+
+              {/* Promo Offers */}
+              <PromoOffersSection useNowPath="/subscription" />
+
+              {/* Referral card */}
+              {referralLink && (
+                <div className="from-accent-500/12 via-accent-500/6 rounded-2xl border border-accent-500/25 bg-gradient-to-br to-transparent p-3 min-[360px]:p-4">
+                  <div className="mb-3 flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-500/20 text-accent-400">
+                      <GiftIcon />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-sm font-semibold text-dark-50">
+                        {t('lite.referral.title')}
+                      </h3>
+                      <p className="text-xs text-dark-300">
+                        {t('lite.referral.description', {
+                          percent: referralInfo?.commission_percent || 0,
+                        })}
+                      </p>
+                    </div>
+                    <span className="rounded-full border border-accent-400/40 bg-accent-500/15 px-2 py-1 text-2xs font-semibold tabular-nums text-accent-300">
+                      {referralInfo?.commission_percent || 0}%
+                    </span>
+                  </div>
+
+                  <div className="mb-3 overflow-hidden rounded-lg border border-dark-700/70 bg-dark-900/60 px-3 py-2">
+                    <p className="truncate text-xs font-medium text-dark-200" title={referralLink}>
+                      {referralLinkPreview}
+                    </p>
+                  </div>
+
+                  <div className="flex gap-2 max-[360px]:flex-col">
+                    <button
+                      onClick={copyReferralLink}
+                      className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg border py-2 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 ${
+                        copied
+                          ? 'border-success-500/40 bg-success-500/20 text-success-300'
+                          : 'border-dark-600 bg-dark-800 text-dark-200 hover:border-dark-500 hover:bg-dark-700'
+                      }`}
+                      aria-label={copied ? t('lite.referral.copied') : t('lite.referral.copy')}
+                    >
+                      {copied ? <CopyCheckIcon /> : <CopyIcon />}
+                      {copied ? t('lite.referral.copied') : t('lite.referral.copy')}
+                    </button>
+                    <button
+                      onClick={shareReferralLink}
+                      className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-accent-400/60 bg-accent-500 py-2 text-xs font-semibold text-white transition-all hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70"
+                      aria-label={t('lite.referral.share')}
+                    >
+                      <ShareIcon />
+                      {t('lite.referral.share')}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </section>
+
+            {/* Action buttons */}
+            <aside className="flex flex-col gap-3 lg:sticky lg:top-6 lg:col-span-5 xl:col-span-4">
+              <p className="px-1 text-xs font-semibold uppercase tracking-[0.08em] text-dark-400">
+                {t('lite.menu')}
+              </p>
+
+              {!(shouldShowTrialConnectHint && !hasActiveSubscription) && (
+                <div data-onboarding="lite-connect">
+                  {hasActiveSubscription ? (
+                    <LiteActionButton
+                      to="/connection"
+                      label={t('lite.connect')}
+                      icon={<ConnectIcon />}
+                      variant="primary"
+                    />
+                  ) : (
+                    <div className="rounded-2xl border border-warning-500/35 bg-warning-500/10 p-3 min-[360px]:p-4">
+                      {isTrialInfoPending ? (
+                        <>
+                          <p className="text-sm font-semibold text-warning-300">
+                            {t('common.loading')}
+                          </p>
+                          <p className="mt-1 text-xs text-dark-300">
+                            {t('lite.connectAvailabilityLoading')}
+                          </p>
+                        </>
+                      ) : shouldShowTrialConnectHint ? null : hasExpiredSubscription ? (
+                        <div data-testid="lite-connect-expired-hint">
+                          <p className="text-sm font-semibold text-warning-300">
+                            {t('lite.connectHintExpiredTitle')}
+                          </p>
+                          <p className="mt-1 text-xs text-dark-300">
+                            {expiredOnLabel
+                              ? t('lite.connectHintExpiredDescriptionWithDate', {
+                                  date: expiredOnLabel,
+                                })
+                              : t('lite.connectHintExpiredDescription')}
+                          </p>
+                          <p className="mt-2 text-2xs font-semibold uppercase tracking-[0.05em] text-dark-400">
+                            {t('lite.connectHintProgress', { current: 1, total: 3 })}
+                          </p>
+                          <ol className="mt-2 space-y-1 text-xs text-dark-200">
+                            <li>1. {t('lite.connectHintExpiredStep1')}</li>
+                            <li>2. {t('lite.connectHintExpiredStep2')}</li>
+                            <li>3. {t('lite.connectHintExpiredStep3')}</li>
+                          </ol>
+                          <div className="mt-3 flex flex-col gap-2">
+                            <button
+                              type="button"
+                              onClick={() => navigate('/subscription')}
+                              className="w-full rounded-xl border border-accent-400/60 bg-accent-500 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70"
+                            >
+                              {t('lite.renewSubscription')}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => navigate('/balance')}
+                              className="w-full rounded-xl border border-dark-600 bg-dark-800/70 py-2.5 text-sm font-medium text-dark-100 transition-colors hover:border-dark-500 hover:bg-dark-700"
+                            >
+                              {t('lite.topUp')}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div data-testid="lite-connect-locked-hint">
+                          <p className="text-sm font-semibold text-warning-300">
+                            {t('lite.connectLockedTitle')}
+                          </p>
+                          <p className="mt-1 text-xs text-dark-300">
+                            {t('lite.connectLockedDescription')}
+                          </p>
+                          <p className="mt-2 text-2xs font-semibold uppercase tracking-[0.05em] text-dark-400">
+                            {t('lite.connectHintProgress', { current: 1, total: 3 })}
+                          </p>
+                          <ol className="mt-2 space-y-1 text-xs text-dark-200">
+                            <li>1. {t('lite.connectLockedStepTopUp')}</li>
+                            <li>2. {t('lite.connectLockedStepTariff')}</li>
+                            <li>3. {t('lite.connectLockedStepActivate')}</li>
+                          </ol>
+                          <div className="mt-3 flex flex-col gap-2">
+                            <button
+                              type="button"
+                              onClick={() => navigate('/subscription')}
+                              className="w-full rounded-xl border border-accent-400/60 bg-accent-500 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70"
+                            >
+                              {t('lite.chooseTariff')}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => navigate('/balance')}
+                              className="w-full rounded-xl border border-dark-600 bg-dark-800/70 py-2.5 text-sm font-medium text-dark-100 transition-colors hover:border-dark-500 hover:bg-dark-700"
+                            >
+                              {t('lite.topUp')}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="rounded-2xl border border-dark-700/70 bg-dark-900/35 p-2">
+                <div className="flex flex-col gap-2">
+                  <div data-onboarding="lite-topup">
+                    <LiteActionButton
+                      to="/balance"
+                      label={t('lite.topUp')}
+                      icon={<WalletIcon />}
+                      size="compact"
+                    />
+                  </div>
+
+                  <div data-onboarding="lite-tariffs">
+                    <LiteActionButton
+                      to="/subscription"
+                      label={t('lite.tariffs')}
+                      icon={<TariffIcon />}
+                      size="compact"
+                    />
+                  </div>
+                </div>
+              </div>
+
               <LiteActionButton
-                to="/connection"
-                label={t('lite.connect')}
-                icon={<ConnectIcon />}
-                variant="primary"
+                to="/support"
+                label={t('lite.support')}
+                icon={<SupportIcon />}
+                variant="ghost"
+                size="compact"
+                className="border border-transparent"
               />
-            </div>
-
-            <div className="rounded-2xl border border-dark-700/70 bg-dark-900/35 p-2">
-              <div className="flex flex-col gap-2">
-                <div data-onboarding="lite-topup">
-                  <LiteActionButton
-                    to="/balance"
-                    label={t('lite.topUp')}
-                    icon={<WalletIcon />}
-                    size="compact"
-                  />
-                </div>
-
-                <div data-onboarding="lite-tariffs">
-                  <LiteActionButton
-                    to="/subscription"
-                    label={t('lite.tariffs')}
-                    icon={<TariffIcon />}
-                    size="compact"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <LiteActionButton
-              to="/support"
-              label={t('lite.support')}
-              icon={<SupportIcon />}
-              variant="ghost"
-              size="compact"
-              className="border border-transparent"
-            />
+            </aside>
           </div>
         </div>
       </PullToRefresh>

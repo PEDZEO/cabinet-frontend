@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router';
 import DOMPurify from 'dompurify';
 import type {
   AppConfig,
@@ -11,6 +12,7 @@ import type {
 import { useTheme } from '@/hooks/useTheme';
 import { CardsBlock, TimelineBlock, AccordionBlock, MinimalBlock, BlockButtons } from './blocks';
 import type { BlockRendererProps } from './blocks';
+import { getLiteOnboardingFlowState, markLiteOnboardingStep } from '@/features/lite/onboardingFlow';
 
 const platformOrder = ['ios', 'android', 'windows', 'macos', 'linux', 'androidTV', 'appleTV'];
 
@@ -52,6 +54,7 @@ export default function InstallationGuide({
   onGoBack,
 }: Props) {
   const { t, i18n } = useTranslation();
+  const [searchParams] = useSearchParams();
   const { isLight } = useTheme();
 
   const detectedPlatform = useMemo(() => detectPlatform(), []);
@@ -59,14 +62,13 @@ export default function InstallationGuide({
 
   const [activePlatformKey, setActivePlatformKey] = useState<string | null>(null);
   const [selectedApp, setSelectedApp] = useState<RemnawaveAppClient | null>(null);
-
-  // --- Helpers ---
+  const [flowState, setFlowState] = useState(() => getLiteOnboardingFlowState());
 
   const getLocalizedText = useCallback(
     (text: LocalizedText | undefined): string => {
       if (!text) return '';
       const lang = i18n.language || 'en';
-      return text[lang] || text['en'] || text['ru'] || Object.values(text)[0] || '';
+      return text[lang] || text.en || text.ru || Object.values(text)[0] || '';
     },
     [i18n.language],
   );
@@ -94,8 +96,6 @@ export default function InstallationGuide({
     [appConfig.svgLibrary],
   );
 
-  // --- Available platforms ---
-
   const availablePlatforms = useMemo(() => {
     if (!appConfig.platforms) return [];
     const available = platformOrder.filter((key) => {
@@ -107,8 +107,6 @@ export default function InstallationGuide({
     }
     return available;
   }, [appConfig.platforms, detectedPlatform]);
-
-  // --- Auto-select platform & app ---
 
   useEffect(() => {
     if (selectedApp || !availablePlatforms.length) return;
@@ -122,44 +120,12 @@ export default function InstallationGuide({
     }
   }, [appConfig.platforms, availablePlatforms, selectedApp]);
 
-  // --- Button renderer (delegates to BlockButtons component) ---
-
-  const renderBlockButtons = useCallback(
-    (buttons: RemnawaveButtonClient[] | undefined, variant: 'light' | 'subtle') => (
-      <BlockButtons
-        buttons={buttons}
-        variant={variant}
-        isLight={isLight}
-        subscriptionUrl={appConfig.subscriptionUrl}
-        hideLink={appConfig.hideLink}
-        deepLink={selectedApp?.deepLink}
-        getLocalizedText={getLocalizedText}
-        getBaseTranslation={getBaseTranslation}
-        getSvgHtml={getSvgHtml}
-        onOpenDeepLink={onOpenDeepLink}
-      />
-    ),
-    [
-      appConfig.subscriptionUrl,
-      appConfig.hideLink,
-      selectedApp?.deepLink,
-      isLight,
-      getLocalizedText,
-      getBaseTranslation,
-      getSvgHtml,
-      onOpenDeepLink,
-    ],
-  );
-
-  // --- Current platform data ---
-
   const currentPlatformKey = activePlatformKey || availablePlatforms[0];
   const currentPlatformData = currentPlatformKey
     ? (appConfig.platforms[currentPlatformKey] as RemnawavePlatformData | undefined)
     : undefined;
   const currentPlatformApps = currentPlatformData?.apps || [];
 
-  // Platform display name
   const getPlatformDisplayName = useCallback(
     (key: string): string => {
       const data = appConfig.platforms[key] as RemnawavePlatformData | undefined;
@@ -181,19 +147,110 @@ export default function InstallationGuide({
       };
       return fallback[key] || key;
     },
-    [appConfig.platforms, appConfig.platformNames, getLocalizedText],
+    [appConfig.platformNames, appConfig.platforms, getLocalizedText],
   );
 
-  // Platform SVG icon for dropdown
   const currentPlatformSvg = getSvgHtml(currentPlatformData?.svgIconKey);
 
-  // Block renderer
   const blockType = appConfig.uiConfig?.installationGuidesBlockType || 'cards';
   const Renderer = RENDERERS[blockType] || CardsBlock;
+  const isTrialStepTwoGuide =
+    searchParams.get('guide') === 'trial' && searchParams.get('step') === '2';
+
+  const trialStep1Done = flowState.trial_activated;
+  const trialStep2Done = flowState.connection_opened;
+  const trialStep3Done = flowState.subscription_added;
+
+  useEffect(() => {
+    if (isTrialStepTwoGuide && !flowState.connection_opened) {
+      setFlowState(markLiteOnboardingStep('connection_opened'));
+    }
+  }, [flowState.connection_opened, isTrialStepTwoGuide]);
+
+  const handleOpenDeepLinkWithFlow = useCallback(
+    (url: string) => {
+      if (isTrialStepTwoGuide && !flowState.subscription_added) {
+        setFlowState(markLiteOnboardingStep('subscription_added'));
+      }
+      onOpenDeepLink(url);
+    },
+    [flowState.subscription_added, isTrialStepTwoGuide, onOpenDeepLink],
+  );
+
+  const renderBlockButtons = useCallback(
+    (buttons: RemnawaveButtonClient[] | undefined, variant: 'light' | 'subtle') => (
+      <BlockButtons
+        buttons={buttons}
+        variant={variant}
+        isLight={isLight}
+        subscriptionUrl={appConfig.subscriptionUrl}
+        hideLink={appConfig.hideLink}
+        deepLink={selectedApp?.deepLink}
+        getLocalizedText={getLocalizedText}
+        getBaseTranslation={getBaseTranslation}
+        getSvgHtml={getSvgHtml}
+        onOpenDeepLink={handleOpenDeepLinkWithFlow}
+      />
+    ),
+    [
+      appConfig.hideLink,
+      appConfig.subscriptionUrl,
+      selectedApp?.deepLink,
+      getLocalizedText,
+      getBaseTranslation,
+      getSvgHtml,
+      handleOpenDeepLinkWithFlow,
+      isLight,
+    ],
+  );
 
   return (
     <div className="space-y-6 pb-6">
-      {/* Header + platform dropdown */}
+      {isTrialStepTwoGuide && (
+        <div
+          className={`rounded-2xl border border-success-500/55 p-4 shadow-[0_0_0_1px_rgba(34,197,94,0.25)] motion-safe:animate-pulse ${isLight ? 'bg-accent-500/10' : 'bg-accent-500/10'}`}
+        >
+          <p className="text-sm font-semibold text-accent-300">
+            {t('subscription.connection.trialStep2.title')}
+          </p>
+          <p className="mt-1 text-xs text-dark-200">
+            {t('subscription.connection.trialStep2.description')}
+          </p>
+          <p className="mt-2 text-2xs font-semibold uppercase tracking-[0.05em] text-dark-300">
+            {t('subscription.connection.trialStep2.progress', {
+              current: trialStep3Done ? 3 : trialStep2Done ? 2 : trialStep1Done ? 1 : 0,
+              total: 3,
+            })}
+          </p>
+          <ol className="mt-3 space-y-1.5 text-xs text-dark-200">
+            <li className="flex items-start gap-2">
+              <span
+                className={`mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-semibold ${trialStep1Done ? 'bg-success-500/20 text-success-300' : 'bg-dark-700 text-dark-300'}`}
+              >
+                {trialStep1Done ? '✓' : '1'}
+              </span>
+              <span>{t('subscription.connection.trialStep2.ifNoApp')}</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span
+                className={`mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-semibold ${trialStep2Done ? 'bg-success-500/20 text-success-300' : 'bg-dark-700 text-dark-300'}`}
+              >
+                {trialStep2Done ? '✓' : '2'}
+              </span>
+              <span>{t('subscription.connection.trialStep2.afterInstall')}</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span
+                className={`mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-semibold ${trialStep3Done ? 'bg-success-500/20 text-success-300' : 'bg-dark-700 text-dark-300'}`}
+              >
+                {trialStep3Done ? '✓' : '3'}
+              </span>
+              <span>{t('subscription.connection.trialStep2.ifAppExists')}</span>
+            </li>
+          </ol>
+        </div>
+      )}
+
       <div className="flex items-center gap-3">
         {!isTelegramWebApp && (
           <button
@@ -252,7 +309,6 @@ export default function InstallationGuide({
         )}
       </div>
 
-      {/* App chips */}
       {currentPlatformApps.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {currentPlatformApps.map((app, idx) => {
@@ -286,7 +342,6 @@ export default function InstallationGuide({
         </div>
       )}
 
-      {/* Tutorial button */}
       {appConfig.baseSettings?.isShowTutorialButton && appConfig.baseSettings?.tutorialUrl && (
         <a
           href={appConfig.baseSettings.tutorialUrl}
@@ -311,7 +366,6 @@ export default function InstallationGuide({
         </a>
       )}
 
-      {/* Blocks */}
       {selectedApp && (
         <Renderer
           blocks={selectedApp.blocks}
