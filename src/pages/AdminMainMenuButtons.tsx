@@ -125,6 +125,7 @@ export default function AdminMainMenuButtons() {
 
   const getEnabledCountForRow = (rowIndex: number): number =>
     countEnabledButtonsForRow(rowBuckets, buttonsById, rowIndex);
+  const getButtonsCountForRow = (rowIndex: number): number => rowBuckets[rowIndex]?.length ?? 0;
 
   const hasOrderChanges = useMemo(
     () => hasOrderChanged(initialOrder, orderedIds),
@@ -329,7 +330,7 @@ export default function AdminMainMenuButtons() {
       rowDefaultCapacities,
       buttonId,
       targetRowIndex,
-      targetEnabledCount: getEnabledCountForRow(safeTarget),
+      targetButtonsCount: getButtonsCountForRow(safeTarget),
       maxRowSlots: MAX_ROW_SLOTS,
     });
     if (moveResult.error === 'button_not_found') {
@@ -358,7 +359,7 @@ export default function AdminMainMenuButtons() {
   };
 
   const collapseEmptyRow = (rowIndex: number) => {
-    if (getEnabledCountForRow(rowIndex) > 0) {
+    if (getButtonsCountForRow(rowIndex) > 0) {
       setError('Можно удалить только пустой ряд');
       return;
     }
@@ -371,6 +372,21 @@ export default function AdminMainMenuButtons() {
 
     setAddMenuRowIndex(null);
     setSelectedRowIndex((prev) => getSelectedRowAfterCollapse(prev, rowIndex));
+  };
+
+  const setRowCapacity = (rowIndex: number, value: number) => {
+    const safeValue = Math.min(Math.max(value, 1), MAX_ROW_SLOTS);
+    const buttonsInRow = getButtonsCountForRow(rowIndex);
+    if (safeValue < buttonsInRow) {
+      setError(`Нельзя установить меньше ${buttonsInRow}: в ряду уже есть кнопки`);
+      return;
+    }
+    setError(null);
+    setRowCapacities((prev) => {
+      const next = [...prev];
+      next[rowIndex] = safeValue;
+      return next;
+    });
   };
 
   const resetLayoutChanges = () => {
@@ -523,7 +539,9 @@ export default function AdminMainMenuButtons() {
                             </div>
                             {row.items.length === 0 ? (
                               <div className="rounded-md border border-dashed border-dark-700/70 px-3 py-2 text-xs text-dark-500">
-                                Пустой ряд
+                                {getButtonsCountForRow(row.rowIndex) === 0
+                                  ? 'Пустой ряд'
+                                  : 'В ряду только скрытые кнопки'}
                               </div>
                             ) : (
                               <div className="space-y-2">
@@ -541,15 +559,35 @@ export default function AdminMainMenuButtons() {
                             )}
                             {row.rowIndex === selectedRowIndex &&
                               (() => {
+                                const buttonsInRow = getButtonsCountForRow(row.rowIndex);
                                 const { maxPerRow, freeSlots } = getRowCapacityState(
                                   row.rowIndex,
-                                  row.items.length,
+                                  buttonsInRow,
                                   rowCapacities,
                                   rowDefaultCapacities,
                                   MAX_ROW_SLOTS,
                                 );
                                 return (
                                   <div className="mt-2 flex flex-wrap gap-2">
+                                    <label
+                                      className="inline-flex items-center gap-2 rounded-md border border-dark-700/60 bg-dark-900/70 px-2 py-1 text-xs text-dark-300"
+                                      onClick={(event) => event.stopPropagation()}
+                                    >
+                                      <span>Мест в ROW:</span>
+                                      <select
+                                        value={maxPerRow}
+                                        onChange={(event) =>
+                                          setRowCapacity(row.rowIndex, Number(event.target.value))
+                                        }
+                                        className="rounded border border-dark-600 bg-dark-800 px-1 py-0.5 text-xs text-dark-100"
+                                      >
+                                        {[1, 2, 3, 4].map((option) => (
+                                          <option key={option} value={option}>
+                                            {option}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    </label>
                                     {maxPerRow < MAX_ROW_SLOTS && (
                                       <button
                                         type="button"
@@ -577,7 +615,7 @@ export default function AdminMainMenuButtons() {
                                         + Добавить
                                       </button>
                                     ))}
-                                    {row.items.length === 0 && (
+                                    {buttonsInRow === 0 && (
                                       <button
                                         type="button"
                                         onClick={(event) => {
