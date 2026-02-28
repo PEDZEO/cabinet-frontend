@@ -21,6 +21,7 @@ import { AdminBackButton } from '../components/admin';
 import { ButtonsTab } from '../components/admin/ButtonsTab';
 import { MainMenuButtonsStatsTab } from '../components/admin/MainMenuButtonsStatsTab';
 import { GripIcon, SortablePreviewButton } from './adminMainMenuButtons/SortablePreviewButton';
+import { KeyboardSlotDrop } from './adminMainMenuButtons/KeyboardSlotDrop';
 import {
   buildBuckets,
   buildMainMenuButtonsTabOptions,
@@ -245,6 +246,14 @@ export default function AdminMainMenuButtons() {
 
     const activeId = String(active.id);
     const overId = String(over.id);
+    if (overId.startsWith('row-slot-')) {
+      const parts = overId.split('-');
+      const targetRowIndex = Number(parts[2] ?? '-1');
+      if (Number.isFinite(targetRowIndex) && targetRowIndex >= 0) {
+        moveButtonToRow(activeId, targetRowIndex);
+      }
+      return;
+    }
     const sourceRowIndex = findRowIndexById(rowBuckets, activeId);
     const targetRowIndex = findRowIndexById(rowBuckets, overId);
 
@@ -651,18 +660,14 @@ export default function AdminMainMenuButtons() {
                                       />
                                     ))}
                                     {Array.from({ length: visibleFreeSlots }).map((_, slotIdx) => (
-                                      <button
+                                      <KeyboardSlotDrop
                                         key={`row-slot-${row.rowIndex}-${slotIdx}`}
-                                        type="button"
-                                        onClick={(event) => {
-                                          event.stopPropagation();
+                                        slotId={`row-slot-${row.rowIndex}-${slotIdx}`}
+                                        onClick={() => {
                                           setSelectedRowIndex(row.rowIndex);
                                           setAddMenuRowIndex(row.rowIndex);
                                         }}
-                                        className="flex min-h-[40px] items-center justify-center rounded-lg border border-dashed border-dark-600/70 bg-dark-900/70 px-2 py-1.5 text-xs text-dark-500 hover:border-accent-500/50 hover:text-accent-300"
-                                      >
-                                        + слот
-                                      </button>
+                                      />
                                     ))}
                                   </div>
                                 </>
