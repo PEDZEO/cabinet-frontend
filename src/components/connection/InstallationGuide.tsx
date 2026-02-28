@@ -12,6 +12,7 @@ import type {
 import { useTheme } from '@/hooks/useTheme';
 import { CardsBlock, TimelineBlock, AccordionBlock, MinimalBlock, BlockButtons } from './blocks';
 import type { BlockRendererProps } from './blocks';
+import { HoverBorderGradient } from '@/components/ui/hover-border-gradient';
 
 const platformOrder = ['ios', 'android', 'windows', 'macos', 'linux', 'androidTV', 'appleTV'];
 
@@ -198,12 +199,11 @@ export default function InstallationGuide({
   return (
     <div className="space-y-6 pb-6">
       {isTrialStepTwoGuide && (
-        <div
-          className={`rounded-2xl border p-4 ${
-            isLight
-              ? 'border-accent-500/40 bg-accent-500/10'
-              : 'border-accent-500/35 bg-accent-500/10'
-          }`}
+        <HoverBorderGradient
+          as="div"
+          accentColor="#3b82f6"
+          duration={3}
+          className={`rounded-2xl p-4 ${isLight ? 'bg-accent-500/10' : 'bg-accent-500/10'}`}
         >
           <p className="text-sm font-semibold text-accent-300">
             {t('subscription.connection.trialStep2.title')}
@@ -216,7 +216,7 @@ export default function InstallationGuide({
             <li>2. {t('subscription.connection.trialStep2.afterInstall')}</li>
             <li>3. {t('subscription.connection.trialStep2.ifAppExists')}</li>
           </ol>
-        </div>
+        </HoverBorderGradient>
       )}
 
       {/* Header + platform dropdown */}
