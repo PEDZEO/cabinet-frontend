@@ -4622,7 +4622,7 @@
     "connectHintTrialDescription": "Для подключения сначала активируйте триал. Это самый быстрый старт.",
     "connectHintTrialStep1": "Активируйте пробный период",
     "connectHintTrialStep2": "Откройте раздел «Подключение»",
-    "connectHintTrialStep3": "Установите приложение и вставьте ссылку",
+    "connectHintTrialStep3": "Установите приложение и добавьте подписку",
     "connectHintExpiredTitle": "Подписка истекла",
     "connectHintExpiredDescription": "Доступ приостановлен. Продлите подписку, чтобы снова подключиться.",
     "connectHintExpiredDescriptionWithDate": "Подписка истекла {{date}}. Продлите подписку, чтобы снова подключиться.",
