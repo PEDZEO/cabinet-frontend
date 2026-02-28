@@ -168,6 +168,28 @@ export default function AdminMainMenuButtons() {
     },
   });
 
+  const resetToDefaultMutation = useMutation({
+    mutationFn: adminMenuLayoutApi.reset,
+    onSuccess: (nextLayout) => {
+      const derived = buildMenuLayoutDerivedState(nextLayout);
+      setOrderIds(derived.orderIds);
+      setRowLengths(derived.rowLengths);
+      setRowCapacities(derived.rowCapacities);
+      setRowDefs(derived.rowDefs);
+      setSelectedRowIndex(0);
+      setAddMenuRowIndex(null);
+      setEditingId(null);
+      setForm(DEFAULT_MENU_BUTTON_EDIT_FORM);
+      setError(null);
+      setSuccess(t('admin.mainMenuButtons.resetToDefaultSuccess'));
+      queryClient.setQueryData(['admin', 'menu-layout'], nextLayout);
+      queryClient.invalidateQueries({ queryKey: ['admin', 'menu-layout'] });
+    },
+    onError: () => {
+      setError(t('admin.mainMenuButtons.resetToDefaultError'));
+    },
+  });
+
   const updateButtonMutation = useMutation({
     mutationFn: ({
       buttonId,
@@ -394,6 +416,18 @@ export default function AdminMainMenuButtons() {
           <div className="flex items-center gap-2">
             <button onClick={() => refetch()} className="btn-secondary" disabled={isFetching}>
               {t('common.refresh')}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm(t('admin.mainMenuButtons.resetToDefaultConfirm'))) {
+                  resetToDefaultMutation.mutate();
+                }
+              }}
+              className="btn-secondary"
+              disabled={resetToDefaultMutation.isPending}
+            >
+              {t('admin.mainMenuButtons.resetToDefault')}
             </button>
             <button
               type="button"

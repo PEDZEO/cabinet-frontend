@@ -131,6 +131,11 @@ export const adminMenuLayoutApi = {
     return response.data;
   },
 
+  reset: async (): Promise<MenuLayoutResponse> => {
+    const response = await apiClient.post<MenuLayoutResponse>('/cabinet/admin/menu-layout/reset');
+    return response.data;
+  },
+
   updateButton: async (
     buttonId: string,
     payload: MenuButtonUpdateRequest,
