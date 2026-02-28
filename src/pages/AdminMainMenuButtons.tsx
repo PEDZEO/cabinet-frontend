@@ -657,6 +657,28 @@ export default function AdminMainMenuButtons() {
                                     canMoveNextRow={row.rowIndex < rowLengths.length - 1}
                                   />
                                 ))}
+                                {Array.from({
+                                  length: Math.max(
+                                    (rowCapacities[row.rowIndex] ??
+                                      rowDefaultCapacities[row.rowIndex] ??
+                                      MAX_ROW_SLOTS) - getEnabledCountForRow(row.rowIndex),
+                                    0,
+                                  ),
+                                }).map((_, slotIdx) => (
+                                  <button
+                                    key={`row-slot-${row.rowIndex}-${slotIdx}`}
+                                    type="button"
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      setAddMenuRowIndex((prev) =>
+                                        toggleRowIndex(prev, row.rowIndex),
+                                      );
+                                    }}
+                                    className="flex min-h-[40px] items-center justify-center rounded-md border border-dashed border-accent-500/30 bg-accent-500/5 px-2 py-1.5 text-xs text-accent-300 transition hover:bg-accent-500/15"
+                                  >
+                                    + Свободное место
+                                  </button>
+                                ))}
                               </div>
                             )}
                             {addMenuRowIndex === row.rowIndex && (
