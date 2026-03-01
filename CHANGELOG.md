@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.7.0](https://github.com/PEDZEO/cabinet-frontend/compare/v1.6.0...v1.7.0) (2026-03-01)
+
+
+### Features
+
+* **lite:** add dedicated onboarding behavior and labels ([7126088](https://github.com/PEDZEO/cabinet-frontend/commit/712608819cfdb062a2f17f327d09de8af43cf8eb))
+* **lite:** improve trial onboarding flow and no-subscription guidance ([3a92500](https://github.com/PEDZEO/cabinet-frontend/commit/3a92500eb2e14e076b974be8d7f3cc28af920320))
+* **menu-editor:** add reset actions for layout and button form ([89eb17a](https://github.com/PEDZEO/cabinet-frontend/commit/89eb17ab281a70fcd427201e4be5d02256fe78fb))
+* **menu-editor:** redesign row layout flow and row navigation ([fcabf24](https://github.com/PEDZEO/cabinet-frontend/commit/fcabf24ef47d851bd3204747926d4fe34bb1a9be))
+* **updates:** collapse release details by default ([ea26abf](https://github.com/PEDZEO/cabinet-frontend/commit/ea26abf4831ac0539c10b6706b00726777be5cd5))
+
+
+### Bug Fixes
+
+* **lite:** hide trial hint after onboarding completion ([2ae57e7](https://github.com/PEDZEO/cabinet-frontend/commit/2ae57e7abe5e8d19d283040daf7509c726a2ea41))
+* **lite:** scope onboarding flow state per user ([a37e2c5](https://github.com/PEDZEO/cabinet-frontend/commit/a37e2c5b0b054d7588892765d7ddef4ffcf960c5))
+* **lite:** show trial activation block for inactive subscriptions ([b5aabf6](https://github.com/PEDZEO/cabinet-frontend/commit/b5aabf6cc5c06aa66780b064e16951c7190092ec))
+* **lite:** update trial step text to add subscription ([f5edd5e](https://github.com/PEDZEO/cabinet-frontend/commit/f5edd5e2e37da14d765dc93fdd648b5eb45f5413))
+* **menu-editor:** add droppable slot targets for row keyboard ([71ea74e](https://github.com/PEDZEO/cabinet-frontend/commit/71ea74e31d9c0d126ffb731bc07dc112bef42ba8))
+* **menu-editor:** align row capacity checks and mobile controls ([273beef](https://github.com/PEDZEO/cabinet-frontend/commit/273beefbd4ac2c0d2193049d913ed12b7005f6be))
+* **menu-editor:** avoid accidental edit open on row tap ([577c7e3](https://github.com/PEDZEO/cabinet-frontend/commit/577c7e3066fc78dc1645db7d560abf9a70274a17))
+* **menu-editor:** clear row-level conditions on save ([dfefb8d](https://github.com/PEDZEO/cabinet-frontend/commit/dfefb8d3649fc95da9633ae08721d642d6d002be))
+* **menu-editor:** fallback to default payload when reset endpoint fails ([f0012fe](https://github.com/PEDZEO/cabinet-frontend/commit/f0012fecdacf4803a130aeb76ba23eac81853fb4))
+* **menu-editor:** improve row capacity control and empty row deletion ([d979650](https://github.com/PEDZEO/cabinet-frontend/commit/d9796506162a03d9e509d92b0c2c77e7e2e3b69e))
+* **menu-editor:** isolate hidden buttons from row layout ([aa9ffde](https://github.com/PEDZEO/cabinet-frontend/commit/aa9ffde3a4d94c5f35905d5347cf4f1948430303))
+* **menu-editor:** make row capacity and deletion match visible buttons ([52f1f7f](https://github.com/PEDZEO/cabinet-frontend/commit/52f1f7f873433c15fb41533b59d6777bf2f420e2))
+* **menu-editor:** prevent compact row button overlap ([0f5b21c](https://github.com/PEDZEO/cabinet-frontend/commit/0f5b21cc1ced894c73ae8e90a4a82cdc052f4065))
+* **menu-editor:** render activated buttons optimistically in target row ([b037c69](https://github.com/PEDZEO/cabinet-frontend/commit/b037c69c7b797788130c9d85b54496ceba621ca5))
+* **menu-editor:** restore hide action for active preview buttons ([8601790](https://github.com/PEDZEO/cabinet-frontend/commit/8601790a113f1297301033b8b3571244698889fd))
+* **menu-editor:** show free slots to clarify row append behavior ([a18c208](https://github.com/PEDZEO/cabinet-frontend/commit/a18c2086e8c514df7899b0f1912117da413ac64a))
+* **menu-layout:** add server reset-to-default action for menu buttons ([d31bf4b](https://github.com/PEDZEO/cabinet-frontend/commit/d31bf4b05b8a9b93fdf8a7b247e8e4747727e2bc))
+
 ## [1.6.0](https://github.com/PEDZEO/cabinet-frontend/compare/v1.5.0...v1.6.0) (2026-02-28)
 
 
