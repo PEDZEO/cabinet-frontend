@@ -303,21 +303,6 @@
       "activate": "激活免费试用",
       "unavailable": "试用不可用"
     },
-    "pause": {
-      "active": "活跃",
-      "days": "天",
-      "hours": "时",
-      "insufficientBalance": "余额不足，无法恢复订阅",
-      "minutes": "分",
-      "nextCharge": "距下次扣费",
-      "pauseBtn": "暂停",
-      "paused": "已暂停",
-      "pausedDescription": "扣费已停止。订阅有效期至",
-      "pausedInfo": "订阅已暂停",
-      "resumeBtn": "恢复",
-      "title": "暂停订阅",
-      "willBeCharged": "将扣费"
-    },
     "connection": {
       "title": "连接VPN",
       "selectDevice": "选择您的设备",
@@ -343,19 +328,9 @@
       "notConfiguredUser": "连接设置正在进行中，请稍后再来查看。",
       "notConfiguredAdmin": "尚未配置连接应用。请在应用设置中进行配置。",
       "goToApps": "前往应用设置",
-      "activateTrialOnDashboard": "在首页激活试用",
-      "goChooseTariff": "前往选择套餐",
-      "goTopUp": "前往充值余额",
       "qrTitle": "订阅二维码",
-      "qrScanHint": "扫码连接",
-      "trialStep2": {
-        "title": "第2步：将订阅添加到应用",
-        "description": "激活试用后，请按以下步骤完成连接设置。",
-        "progress": "第 {{current}} / {{total}} 步",
-        "ifNoApp": "如果没有应用：请先下载并安装。",
-        "afterInstall": "安装完成后返回此页面。",
-        "ifAppExists": "如果已有应用：点击“添加订阅”。"
-      }
+      "qrScanHint": "使用相机扫描以连接",
+      "qrButton": "二维码"
     },
     "additionalOptions": {
       "title": "附加选项",
@@ -443,6 +418,21 @@
       "chargedDaily": "每天从余额中扣费",
       "costPerDay": "每天费用",
       "pausedOnLowBalance": "余额不足时订阅将暂停"
+    },
+    "pause": {
+      "active": "活跃",
+      "days": "天",
+      "hours": "时",
+      "insufficientBalance": "余额不足，无法恢复订阅",
+      "minutes": "分",
+      "nextCharge": "距下次扣费",
+      "pauseBtn": "暂停",
+      "paused": "已暂停",
+      "pausedDescription": "扣费已停止。订阅有效期至",
+      "pausedInfo": "订阅已暂停",
+      "resumeBtn": "恢复",
+      "title": "暂停订阅",
+      "willBeCharged": "将扣费"
     }
   },
   "balance": {
@@ -546,6 +536,8 @@
     },
     "yourReferrals": "您的推荐",
     "noReferrals": "暂无推荐。分享链接邀请好友！",
+    "anonymousUser": "用户 #{{id}}",
+    "anonymousReferral": "推荐人",
     "user": "用户",
     "joined": "加入时间",
     "hasPaid": "已付款",
@@ -593,6 +585,28 @@
         "subscriptionDesc": "{{days}} 天免费订阅",
         "tariff": "奖励套餐",
         "tariffDesc": "免费套餐方案"
+      },
+      "stats": {
+        "registrations": "注册",
+        "referrals": "推荐",
+        "earnings": "收入",
+        "conversionRate": "转化率",
+        "today": "今天",
+        "week": "本周",
+        "month": "本月",
+        "showDetails": "详情",
+        "hideDetails": "收起",
+        "vsLastWeek": "对比上周",
+        "topReferrals": "热门推荐",
+        "noData": "暂无数据",
+        "dailyChart": "30天趋势",
+        "periodComparison": "周期对比",
+        "noReferrals": "暂无推荐",
+        "paid": "已付款",
+        "pending": "待处理",
+        "active": "活跃",
+        "referralsCount": "推荐数",
+        "earningsAmount": "收入"
       },
       "fields": {
         "companyName": "公司名称",
@@ -841,7 +855,6 @@
       "promocodes": "促销码",
       "promoGroups": "折扣组",
       "remnawave": "RemnaWave",
-      "balancer": "Balancer",
       "users": "用户",
       "trafficUsage": "流量使用",
       "updates": "更新",
@@ -852,7 +865,8 @@
       "roles": "角色",
       "roleAssign": "角色分配",
       "policies": "访问策略",
-      "auditLog": "审计日志"
+      "auditLog": "审计日志",
+      "salesStats": "销售统计"
     },
     "panel": {
       "title": "管理面板",
@@ -874,7 +888,6 @@
       "promocodesDesc": "管理促销码",
       "promoGroupsDesc": "用户折扣组",
       "remnawaveDesc": "面板管理和统计",
-      "balancerDesc": "xray-balancer 控制与订阅诊断",
       "usersDesc": "管理机器人用户",
       "trafficUsageDesc": "按节点统计用户流量",
       "updatesDesc": "机器人和面板版本",
@@ -885,109 +898,84 @@
       "rolesDesc": "管理管理员角色和权限",
       "roleAssignDesc": "分配和撤销用户角色",
       "policiesDesc": "配置ABAC访问控制策略",
-      "auditLogDesc": "查看系统活动和访问历史"
+      "auditLogDesc": "查看系统活动和访问历史",
+      "salesStatsDesc": "销售分析与趋势"
     },
-    "balancer": {
-      "subtitle": "在控制台中管理 xray-balancer",
-      "status": {
-        "configured": "已配置",
-        "notConfigured": "未配置"
+    "salesStats": {
+      "title": "销售统计",
+      "subtitle": "收入、试用、订阅和续订",
+      "period": {
+        "week": "7天",
+        "month": "30天",
+        "quarter": "90天",
+        "all": "全部",
+        "custom": "自定义"
       },
-      "actions": {
-        "refreshGroups": "刷新分组",
-        "refreshStats": "刷新统计",
-        "refreshGroupsSuccess": "分组已更新",
-        "refreshStatsSuccess": "统计已更新",
-        "actionError": "操作失败",
-        "tokenError": "Token 调试失败",
-        "groupsSaved": "分组已保存",
-        "groupsSaveError": "保存分组失败",
-        "groupNameRequired": "组名不能为空",
-        "groupNamesUnique": "组名必须唯一",
-        "groupPatternsRequired": "每个分组至少需要一个 pattern",
-        "changesDiscarded": "更改已撤销"
+      "tabs": {
+        "trials": "试用",
+        "sales": "销售",
+        "renewals": "续订",
+        "addons": "附加服务",
+        "deposits": "充值"
       },
-      "tokenDebug": {
-        "title": "Token 调试",
-        "placeholder": "粘贴订阅 token",
-        "run": "开始调试"
+      "summary": {
+        "revenue": "收入",
+        "activeSubs": "活跃订阅",
+        "activeTrials": "活跃试用",
+        "newTrials": "新试用",
+        "conversion": "转化率",
+        "renewals": "续订",
+        "addonRevenue": "附加服务收入"
       },
-      "cards": {
-        "health": "Health",
-        "ready": "Ready",
-        "debugStats": "Debug stats",
-        "nodeStats": "Node stats",
-        "tokenDebug": "Token 调试结果",
-        "nodeStatsEmpty": "暂无节点统计数据",
-        "nodeStatsHint": "仅显示真实节点（已隐藏 inbound 别名）。"
+      "trials": {
+        "total": "试用总数",
+        "totalRegistrations": "注册数",
+        "trialsIssued": "已发放试用",
+        "conversion": "转化率",
+        "avgDuration": "平均时长",
+        "byProvider": "按注册来源",
+        "dailyChart": "每日注册与试用",
+        "registrations": "注册"
       },
-      "groups": {
-        "title": "分组编辑器",
-        "add": "新增分组",
-        "groupName": "分组名称",
-        "patterns": "使用逗号或换行分隔 pattern",
-        "patternsTitle": "Patterns",
-        "patternsCount": "{{count}} 项",
-        "fastestToggle": "启用 fastest group",
-        "excludeLabel": "将这些分组排除在 fastest 选择之外：",
-        "unsaved": "分组有未保存的更改",
-        "empty": "尚未配置分组",
-        "groupNumber": "分组 #{{index}}",
-        "moveUp": "上移",
-        "moveDown": "下移",
-        "clearSelection": "清空选择",
-        "emptyExcludeHint": "至少添加一个分组后才能设置排除项",
-        "previewTitle": "配置预览",
-        "previewHint": "这是发送到 PUT /admin/groups 的 payload。",
-        "loadError": "加载分组失败，请检查 /admin/groups 可用性。",
-        "viewExpanded": "展开视图",
-        "viewCompact": "紧凑视图",
-        "howTitle": "分组使用说明",
-        "howLine1": "每个分组包含用于匹配 outbound 标签的 pattern。",
-        "howLine2": "Fastest group 是额外的自动分组，会基于所有未排除分组生成。",
-        "howLine3": "保存后会发送到 /admin/groups 并立即生效。",
-        "fastestName": "Fastest 分组名称",
-        "excludeCounter": "已选择 {{selected}} / {{total}}"
+      "sales": {
+        "totalSales": "总销售",
+        "avgOrder": "平均订单",
+        "topTariff": "热门套餐",
+        "byTariff": "按套餐",
+        "byPeriod": "按订阅周期",
+        "dailyChart": "每日销售",
+        "dailyByTariff": "每日按套餐销售",
+        "subscriptions": "订阅"
       },
-      "labels": {
-        "status": "状态",
-        "groups": "分组",
-        "autoGroups": "自动分组",
-        "fastestGroup": "Fastest group",
-        "nodeStats": "节点统计",
-        "cachedNodes": "缓存节点数",
-        "panelAuth": "Panel auth",
-        "subPage": "Sub page",
-        "recentUpstream": "最近 upstream",
-        "cacheTtl": "Cache TTL",
-        "cachePresent": "缓存可用",
-        "circuitOpen": "Circuit open",
-        "profileMode": "配置档模式",
-        "startedAt": "启动时间",
-        "requestsTotal": "请求总数",
-        "requestFailures": "失败请求",
-        "rateLimited": "限流次数",
-        "circuitOpenTotal": "Circuit open total",
-        "cbFailCount": "CB fail count",
-        "cbHalfOpen": "CB half-open",
-        "token": "Token",
-        "ok": "ok",
-        "missing": "缺失",
-        "baseUrl": "Base URL",
-        "timeout": "Timeout",
-        "health": "Health",
-        "ready": "Ready"
+      "renewals": {
+        "total": "续订总数",
+        "rate": "续订率",
+        "revenue": "收入",
+        "comparison": "期间对比",
+        "currentPeriod": "当前期间",
+        "previousPeriod": "上一期间",
+        "dailyChart": "每日续订",
+        "renewals": "续订"
       },
-      "table": {
-        "node": "节点",
-        "users": "用户",
-        "cpu": "CPU",
-        "ram": "RAM",
-        "totalRam": "总 RAM",
-        "connected": "已连接",
-        "disabled": "已禁用"
+      "addons": {
+        "totalPurchases": "购买总数",
+        "totalGb": "总流量",
+        "revenue": "收入",
+        "devicePurchases": "设备购买",
+        "deviceRevenue": "设备收入",
+        "byPackage": "按套餐大小",
+        "dailyChart": "每日购买",
+        "purchases": "购买"
       },
-      "rawJson": "raw JSON"
+      "deposits": {
+        "totalDeposits": "充值总数",
+        "totalAmount": "总金额",
+        "avgDeposit": "平均充值",
+        "byMethod": "按支付方式",
+        "dailyChart": "每日充值",
+        "revenue": "收入"
+      },
+      "loadError": "加载统计失败"
     },
     "trafficUsage": {
       "title": "流量使用",
@@ -1381,8 +1369,6 @@
       "favoritesHint": "点击星标将设置添加到这里",
       "interfaceOptions": "界面选项",
       "lightTheme": "亮色主题",
-      "liteMode": "精简模式",
-      "liteModeDesc": "三个按钮的简化界面",
       "logoAndName": "标志和名称",
       "notSpecified": "未指定",
       "projectName": "项目名称",
@@ -1785,7 +1771,15 @@
         "users": "用户",
         "noUsers": "没有注册用户",
         "paid": "已付费",
-        "hasSub": "有订阅"
+        "hasSub": "有订阅",
+        "dailyChart": "30天趋势",
+        "chartRegistrations": "注册",
+        "chartRevenue": "收入",
+        "totalDeposits": "总充值",
+        "totalSpending": "订阅支出",
+        "periodComparison": "期间比较",
+        "vsLastWeek": "与上周对比",
+        "topRegistrations": "热门注册"
       },
       "users": {
         "title": "活动用户",
@@ -1835,7 +1829,8 @@
         "approved": "已批准",
         "rejected": "已拒绝",
         "completed": "已完成",
-        "cancelled": "已取消"
+        "cancelled": "已取消",
+        "unknown": "未知"
       },
       "detail": {
         "title": "提现详情",
@@ -2577,7 +2572,6 @@
           "users": "用户",
           "tickets": "工单",
           "stats": "统计",
-          "sales_stats": "销售统计",
           "broadcasts": "广播",
           "tariffs": "套餐",
           "promocodes": "促销码",
@@ -2878,8 +2872,6 @@
     "published": "发布于",
     "prerelease": "预发布",
     "refresh": "检查更新",
-    "showDetails": "显示详情",
-    "hideDetails": "隐藏详情",
     "noReleases": "没有发布数据"
   },
   "adminDashboard": {
@@ -3038,67 +3030,6 @@
       "promoOffers": "促销活动",
       "promoOffersDesc": "接收特别优惠和折扣",
       "unavailable": "通知设置不可用"
-    },
-    "linking": {
-      "title": "Linked login methods",
-      "description": "Link Telegram, Yandex and VK to one account so subscription stays shared.",
-      "none": "No linked login methods",
-      "generateCode": "Generate link code",
-      "enterCode": "Enter link code",
-      "preview": "Preview",
-      "confirm": "Link",
-      "previewSource": "Will be linked to account",
-      "codeGenerated": "Link code created",
-      "linked": "Accounts were linked successfully",
-      "manualHint": "Automatic merge is not possible. Send request to support for manual merge.",
-      "manualComment": "Describe which account should stay primary and why",
-      "sendManual": "Send to support",
-      "manualSent": "Manual merge request sent. Ticket",
-      "unlink": {
-        "button": "Unlink",
-        "confirmText": "Confirm unlink for login method: {{provider}}. Active sessions will be rotated for security.",
-        "confirm": "Confirm unlink",
-        "codeSent": "Confirmation code was sent to Telegram",
-        "otpPlaceholder": "Enter code from Telegram",
-        "success": "Login method {{provider}} was unlinked",
-        "reasons": {
-          "lastIdentity": "Cannot unlink the last login method",
-          "currentProvider": "Cannot unlink current login provider. Sign in with another method first",
-          "cooldownActive": "Temporary cooldown is active. Try again later",
-          "notLinked": "This login method is already not linked",
-          "providerNotSupported": "This login method does not support unlink",
-          "telegramRequired": "Telegram account is required for unlink confirmation",
-          "generic": "Unlink is not available"
-        },
-        "errors": {
-          "otpResendCooldown": "Code already sent. Please wait about a minute before retrying",
-          "otpRateLimited": "Too many code requests. Please try again later",
-          "requestInvalid": "Unlink confirmation request expired. Start unlink again",
-          "requestMismatch": "Unlink request does not match current account",
-          "storageError": "Failed to create unlink request. Please try again later",
-          "otpInvalid": "Invalid confirmation code",
-          "otpAttemptsExceeded": "Too many code attempts. Request unlink again",
-          "otpDeliveryFailed": "Failed to send code to Telegram. Please try again later"
-        }
-      },
-      "manualStatus": {
-        "title": "Latest disputed merge request",
-        "pending": "Request is under review",
-        "approved": "Request approved",
-        "rejected": "Request rejected",
-        "comment": "Comment",
-        "updatedAt": "Updated",
-        "openSupport": "Open support"
-      },
-      "errors": {
-        "invalidCode": "Code is invalid or expired",
-        "sameAccount": "Cannot link account to itself",
-        "tooManyAttempts": "Too many attempts. Please try again later",
-        "identityConflict": "Identity conflict. Manual review is required",
-        "inactiveAccount": "One of the accounts is inactive",
-        "manualRequired": "Both accounts contain data. Manual support merge is required.",
-        "supportDisabled": "Support tickets are disabled"
-      }
     }
   },
   "theme": {
@@ -3422,101 +3353,6 @@
       "node": "节点",
       "requests": "请求数",
       "ipHistory": "IP历史"
-    }
-  },
-  "lite": {
-    "connect": "连接",
-    "topUp": "充值余额",
-    "tariffs": "套餐",
-    "menu": "菜单",
-    "balance": "余额",
-    "quickStatus": "快速状态",
-    "statusBar": {
-      "active": "订阅有效",
-      "activeHint": "现在可以直接连接。",
-      "trialAvailable": "可用试用期",
-      "trialHint": "激活试用后即可解锁连接。",
-      "expired": "订阅已过期",
-      "expiredHint": "续费后可再次连接。",
-      "noSubscription": "暂无订阅",
-      "noSubscriptionHint": "先选择套餐即可开始使用 VPN。"
-    },
-    "daysLeft": "{{count}}天",
-    "hoursLeft": "{{count}}小时",
-    "subscriptionActive": "订阅有效",
-    "subscriptionExpired": "订阅已过期",
-    "subscriptionTrial": "试用期",
-    "noSubscription": "无订阅",
-    "activateTrial": "激活试用",
-    "trialDays": "{{count}}天免费",
-    "trialTraffic": "{{count}} GB流量",
-    "trialDevices": "{{count}}台设备",
-    "unlimited": "无限",
-    "tab": {
-      "tariffs": "套餐",
-      "devices": "设备",
-      "traffic": "流量"
-    },
-    "currentTariff": "当前",
-    "devices": "设备",
-    "servers": "服务器",
-    "month": "月",
-    "day": "天",
-    "selectPeriod": "选择时长",
-    "changeTariff": "更改套餐",
-    "buyTariff": "购买套餐",
-    "devicesTotal": "台设备",
-    "devicesDescription": "最大连接设备数",
-    "addDevices": "添加设备",
-    "total": "总计",
-    "buyDevices": "购买设备",
-    "devicesNotAvailable": "无法购买设备",
-    "deviceLimit": "设备: {{current}} / {{max}}",
-    "canAddDevices": "还可添加 {{count}} 台设备",
-    "maxDevicesReached": "已达到套餐最大设备数",
-    "trafficDescription": "本期已用流量",
-    "trafficUsage": "流量使用情况",
-    "trafficUsed": "已用",
-    "trafficRemaining": "剩余",
-    "trafficTotal": "总计 (GB)",
-    "trafficPercent": "已使用 {{percent}}%",
-    "addTraffic": "添加流量",
-    "buyTraffic": "购买流量",
-    "trafficNotAvailable": "流量包不可用",
-    "topUpBalance": "充值余额",
-    "insufficientBalance": "余额不足，还差 {{amount}}",
-    "insufficientBalanceGeneric": "余额不足",
-    "support": "客服",
-    "copyLink": "复制链接",
-    "tariffSwitched": "已从「{{oldTariff}}」切换到「{{newTariff}}」",
-    "tariffSwitchedWithDeviceReset": "已从「{{oldTariff}}」切换到「{{newTariff}}」。设备已重置",
-    "alreadyOnTariff": "您已在此套餐",
-    "connectedDevices": "已连接设备",
-    "deleteAll": "删除全部",
-    "deleteDevice": "删除设备",
-    "deviceDeleted": "设备已删除",
-    "allDevicesDeleted": "所有设备已删除",
-    "noConnectedDevices": "暂无连接设备",
-    "unknownDevice": "未知设备",
-    "reduceDevices": "减少设备数量",
-    "connectedDevicesCount": "当前已连接: {{count}} 个设备",
-    "canReduceDevices": "最多可减少 {{count}} 个设备",
-    "newDeviceLimit": "新限制",
-    "reduceDevicesButton": "减少设备",
-    "devicesReduced": "设备数量已减少",
-    "promoPlaceholder": "优惠码",
-    "promoApply": "应用",
-    "promoActivated": "优惠码已激活",
-    "promoError": "优惠码激活失败",
-    "expiryWarningTitle": "订阅即将到期",
-    "expiryWarningDescription": "还剩 {{count}} 天。续费以保持访问权限。",
-    "referral": {
-      "title": "邀请好友",
-      "description": "每笔支付赚取{{percent}}%",
-      "copy": "复制",
-      "copied": "已复制",
-      "share": "分享",
-      "shareText": "快来加入！注册即可获得奖励。我已在使用并获得{{percent}}%佣金。"
     }
   }
 }

@@ -7,7 +7,7 @@ import { SALES_STATS } from '../../constants/salesStats';
 import { StatCard } from '../data-display/StatCard';
 
 import { DonutChart } from './DonutChart';
-import { SimpleAreaChart } from './SimpleAreaChart';
+import { DualAreaChart } from './DualAreaChart';
 
 interface TrialsTabProps {
   params: SalesStatsParams;
@@ -51,14 +51,19 @@ export function TrialsTab({ params }: TrialsTabProps) {
     color: SALES_STATS.PROVIDER_COLORS[item.provider as keyof typeof SALES_STATS.PROVIDER_COLORS],
   }));
 
-  const areaData = data.daily.map((item) => ({
+  const dualData = data.daily.map((item) => ({
     date: item.date,
-    value: item.count,
+    series1: item.registrations,
+    series2: item.trials,
   }));
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <StatCard
+          label={t('admin.salesStats.trials.totalRegistrations')}
+          value={data.total_registrations}
+        />
         <StatCard label={t('admin.salesStats.trials.total')} value={data.total_trials} />
         <StatCard
           label={t('admin.salesStats.trials.conversion')}
@@ -73,12 +78,12 @@ export function TrialsTab({ params }: TrialsTabProps) {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <DonutChart data={pieData} title={t('admin.salesStats.trials.byProvider')} />
-        <SimpleAreaChart
-          data={areaData}
+        <DualAreaChart
+          data={dualData}
           title={t('admin.salesStats.trials.dailyChart')}
           chartId="trials-daily"
-          valueLabel={t('admin.salesStats.trials.registrations')}
-          color={SALES_STATS.PROVIDER_COLORS.telegram}
+          series1Label={t('admin.salesStats.trials.totalRegistrations')}
+          series2Label={t('admin.salesStats.trials.trialsIssued')}
         />
       </div>
     </div>

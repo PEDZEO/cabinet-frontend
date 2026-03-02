@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
@@ -8,6 +9,7 @@ import { useCurrency } from '../../hooks/useCurrency';
 import { StatCard } from '../data-display/StatCard';
 
 import { DonutChart } from './DonutChart';
+import { MultiSeriesAreaChart } from './MultiSeriesAreaChart';
 import { SimpleAreaChart } from './SimpleAreaChart';
 import { SimpleBarChart } from './SimpleBarChart';
 
@@ -24,6 +26,13 @@ export function SalesTab({ params }: SalesTabProps) {
     queryFn: () => salesStatsApi.getSales(params),
     staleTime: SALES_STATS.STALE_TIME,
   });
+
+  const dailyByTariffData = useMemo(
+    () =>
+      data?.daily_by_tariff.map((i) => ({ date: i.date, key: i.tariff_name, value: i.count })) ??
+      [],
+    [data?.daily_by_tariff],
+  );
 
   if (isLoading) {
     return (
@@ -76,6 +85,13 @@ export function SalesTab({ params }: SalesTabProps) {
         title={t('admin.salesStats.sales.dailyChart')}
         chartId="sales-daily"
         valueLabel={t('admin.salesStats.summary.revenue')}
+      />
+
+      <MultiSeriesAreaChart
+        data={dailyByTariffData}
+        title={t('admin.salesStats.sales.dailyByTariff')}
+        chartId="sales-daily-by-tariff"
+        valueLabel={t('admin.salesStats.sales.subscriptions')}
       />
     </div>
   );

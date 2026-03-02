@@ -29,11 +29,13 @@ export interface ProviderBreakdownItem {
 
 export interface DailyTrialItem {
   date: string;
-  count: number;
+  registrations: number;
+  trials: number;
 }
 
 export interface TrialsStats {
   total_trials: number;
+  total_registrations: number;
   conversion_rate: number;
   avg_trial_duration_days: number;
   by_provider: ProviderBreakdownItem[];
@@ -59,6 +61,12 @@ export interface DailySalesItem {
   revenue_kopeks: number;
 }
 
+export interface DailyTariffSalesItem {
+  date: string;
+  tariff_name: string;
+  count: number;
+}
+
 export interface SalesStats {
   total_sales: number;
   total_revenue_kopeks: number;
@@ -67,6 +75,7 @@ export interface SalesStats {
   by_tariff: SalesByTariffItem[];
   by_period: SalesByPeriodItem[];
   daily: DailySalesItem[];
+  daily_by_tariff: DailyTariffSalesItem[];
 }
 
 // ============ Renewals ============
@@ -114,6 +123,8 @@ export interface AddonsStats {
   total_purchases: number;
   total_gb_purchased: number;
   addon_revenue_kopeks: number;
+  device_purchases: number;
+  device_revenue_kopeks: number;
   by_package: AddonByPackageItem[];
   daily: DailyAddonItem[];
 }

@@ -50,7 +50,7 @@ export function AddonsTab({ params }: AddonsTabProps) {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         <StatCard
           label={t('admin.salesStats.addons.totalPurchases')}
           value={data.total_purchases}
@@ -62,6 +62,15 @@ export function AddonsTab({ params }: AddonsTabProps) {
         <StatCard
           label={t('admin.salesStats.addons.revenue')}
           value={formatWithCurrency(data.addon_revenue_kopeks / SALES_STATS.KOPEKS_DIVISOR)}
+          valueClassName="text-success-400"
+        />
+        <StatCard
+          label={t('admin.salesStats.addons.devicePurchases')}
+          value={data.device_purchases}
+        />
+        <StatCard
+          label={t('admin.salesStats.addons.deviceRevenue')}
+          value={formatWithCurrency(data.device_revenue_kopeks / SALES_STATS.KOPEKS_DIVISOR)}
           valueClassName="text-success-400"
         />
       </div>
