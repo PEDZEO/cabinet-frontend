@@ -6,7 +6,7 @@ import { AxiosError } from 'axios';
 import { subscriptionApi } from '../api/subscription';
 import { promoApi } from '../api/promo';
 import TrafficProgressBar from '../components/dashboard/TrafficProgressBar';
-import { getTrafficZone } from '../utils/trafficZone';
+import { useTrafficZone } from '../hooks/useTrafficZone';
 import { formatTraffic } from '../utils/formatTraffic';
 import { getGlassColors } from '../utils/glassTheme';
 import { useTheme } from '../hooks/useTheme';
@@ -652,6 +652,8 @@ function FullSubscription() {
     tariffPurchaseMutation.error,
     tariffPurchaseMutation.isError,
   ]);
+  const usedPercent = trafficData?.traffic_used_percent ?? subscription?.traffic_used_percent ?? 0;
+  const zone = useTrafficZone(usedPercent);
 
   if (isLoading || optionsLoading) {
     return (
@@ -668,12 +670,9 @@ function FullSubscription() {
       {/* Current Subscription */}
       {subscription ? (
         (() => {
-          const usedPercent =
-            trafficData?.traffic_used_percent ?? subscription.traffic_used_percent;
           const usedGb = trafficData?.traffic_used_gb ?? subscription.traffic_used_gb;
           const isUnlimited =
             (trafficData?.is_unlimited ?? false) || subscription.traffic_limit_gb === 0;
-          const zone = getTrafficZone(usedPercent);
           const connectedDevices = devicesData?.total ?? 0;
 
           return (
@@ -1325,7 +1324,8 @@ function FullSubscription() {
                       className="absolute inset-0 rounded-full transition-[width] duration-500"
                       style={{
                         width: `${progress}%`,
-                        background: 'linear-gradient(90deg, #00E5A0, #00C987)',
+                        background:
+                          'linear-gradient(90deg, rgb(var(--color-accent-500)), rgb(var(--color-accent-400)))',
                       }}
                     />
                   </div>

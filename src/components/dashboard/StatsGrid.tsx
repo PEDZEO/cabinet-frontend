@@ -1,10 +1,9 @@
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import type { Subscription } from '../../types';
 import { useCurrency } from '../../hooks/useCurrency';
 import { useTheme } from '../../hooks/useTheme';
-import { getTrafficZone } from '../../utils/trafficZone';
+import { useTrafficZone } from '../../hooks/useTrafficZone';
 import { getGlassColors } from '../../utils/glassTheme';
 
 interface StatsGridProps {
@@ -46,10 +45,7 @@ export default function StatsGrid({
   const { isDark } = useTheme();
   const g = getGlassColors(isDark);
 
-  const zone = useMemo(
-    () => getTrafficZone(subscription?.traffic_used_percent ?? 0),
-    [subscription?.traffic_used_percent],
-  );
+  const zone = useTrafficZone(subscription?.traffic_used_percent ?? 0);
 
   const cards = [
     {

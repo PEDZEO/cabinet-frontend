@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { Link } from 'react-router';
@@ -7,7 +6,7 @@ import TrafficProgressBar from './TrafficProgressBar';
 import Sparkline from './Sparkline';
 import { useAnimatedNumber } from '../../hooks/useAnimatedNumber';
 import { useTheme } from '../../hooks/useTheme';
-import { getTrafficZone } from '../../utils/trafficZone';
+import { useTrafficZone } from '../../hooks/useTrafficZone';
 import { formatTraffic } from '../../utils/formatTraffic';
 import { getGlassColors } from '../../utils/glassTheme';
 import { HoverBorderGradient } from '../ui/hover-border-gradient';
@@ -57,7 +56,7 @@ export default function SubscriptionCardActive({
   const usedPercent = trafficData?.traffic_used_percent ?? subscription.traffic_used_percent;
   const usedGb = trafficData?.traffic_used_gb ?? subscription.traffic_used_gb;
   const isUnlimited = trafficData?.is_unlimited ?? subscription.traffic_limit_gb === 0;
-  const zone = useMemo(() => getTrafficZone(usedPercent), [usedPercent]);
+  const zone = useTrafficZone(usedPercent);
   const animatedPercent = useAnimatedNumber(usedPercent);
 
   const formattedDate = new Date(subscription.end_date).toLocaleDateString();

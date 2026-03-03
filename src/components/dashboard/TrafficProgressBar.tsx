@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getTrafficZone } from '../../utils/trafficZone';
+import { useTrafficZone } from '../../hooks/useTrafficZone';
 import { formatTraffic } from '../../utils/formatTraffic';
 import { useTheme } from '../../hooks/useTheme';
 import { getGlassColors } from '../../utils/glassTheme';
@@ -25,17 +25,20 @@ export default function TrafficProgressBar({
   const { t } = useTranslation();
   const { isDark } = useTheme();
   const g = getGlassColors(isDark);
-  const zone = useMemo(() => getTrafficZone(percent), [percent]);
+  const zone = useTrafficZone(percent);
+  // Gradient always starts from the accent color (normal zone)
+  const startHex = zone.colors.accent || '#3b82f6';
   const clampedPercent = Math.min(percent, 100);
   const barHeight = compact ? 8 : 14;
 
   // Multi-segment gradient matching prototype
   const fillGradient = useMemo(() => {
-    if (percent < 50) return `linear-gradient(90deg, #00C987, ${zone.mainHex})`;
-    if (percent < 75) return `linear-gradient(90deg, #00C987, #FFB800, ${zone.mainHex})`;
-    if (percent < 90) return `linear-gradient(90deg, #00C987, #FFB800, #FF6B35, ${zone.mainHex})`;
-    return 'linear-gradient(90deg, #00C987, #FFB800, #FF6B35, #FF3B5C)';
-  }, [percent, zone.mainHex]);
+    if (percent < 50) return `linear-gradient(90deg, ${startHex}, ${zone.mainHex})`;
+    if (percent < 75) return `linear-gradient(90deg, ${startHex}, #FFB800, ${zone.mainHex})`;
+    if (percent < 90)
+      return `linear-gradient(90deg, ${startHex}, #FFB800, #FF6B35, ${zone.mainHex})`;
+    return `linear-gradient(90deg, ${startHex}, #FFB800, #FF6B35, #FF3B5C)`;
+  }, [percent, zone.mainHex, startHex]);
 
   if (isUnlimited) {
     return (

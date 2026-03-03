@@ -159,13 +159,13 @@ export default function SuccessNotificationModal() {
   let title = data.title;
   const message = data.message;
   let icon = <CheckCircleIcon />;
-  let gradientClass = 'from-success-500 to-emerald-600';
+  let gradientClass = 'from-success-500 to-success-600';
 
   if (!title) {
     if (isBalanceTopup) {
       title = t('successNotification.balanceTopup.title', 'Balance topped up!');
       icon = <WalletIcon />;
-      gradientClass = 'from-success-500 to-emerald-600';
+      gradientClass = 'from-success-500 to-success-600';
     } else if (data.type === 'subscription_activated') {
       title = t('successNotification.subscriptionActivated.title', 'Subscription activated!');
       icon = <RocketIcon />;
@@ -185,7 +185,7 @@ export default function SuccessNotificationModal() {
     } else if (data.type === 'traffic_purchased') {
       title = t('successNotification.trafficPurchased.title', 'Traffic added!');
       icon = <TrafficIcon />;
-      gradientClass = 'from-emerald-500 to-teal-600';
+      gradientClass = 'from-success-500 to-success-600';
     }
   }
 
@@ -278,7 +278,7 @@ export default function SuccessNotificationModal() {
               <span className="text-dark-400">
                 {t('successNotification.trafficAdded', 'Traffic added')}
               </span>
-              <span className="text-lg font-bold text-emerald-400">+{data.trafficGbAdded} GB</span>
+              <span className="text-lg font-bold text-success-400">+{data.trafficGbAdded} GB</span>
             </div>
           )}
 
@@ -334,7 +334,7 @@ export default function SuccessNotificationModal() {
             {isBalanceTopup && (
               <button
                 onClick={handleGoToBalance}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-success-500 to-emerald-600 py-3.5 font-bold text-white shadow-lg shadow-success-500/25 transition-all hover:from-success-400 hover:to-emerald-500 active:from-success-600 active:to-emerald-700"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-success-500 to-success-600 py-3.5 font-bold text-white shadow-lg shadow-success-500/25 transition-all hover:from-success-400 hover:to-success-500 active:from-success-600 active:to-success-700"
               >
                 <WalletIcon />
                 <span>{t('successNotification.goToBalance', 'Go to Balance')}</span>
@@ -354,7 +354,7 @@ export default function SuccessNotificationModal() {
             {isTrafficPurchased && (
               <button
                 onClick={handleGoToSubscription}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 py-3.5 font-bold text-white shadow-lg shadow-emerald-500/25 transition-all hover:from-emerald-400 hover:to-teal-500 active:from-emerald-600 active:to-teal-700"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-success-500 to-success-600 py-3.5 font-bold text-white shadow-lg shadow-success-500/25 transition-all hover:from-success-400 hover:to-success-500 active:from-success-600 active:to-success-700"
               >
                 <TrafficIcon />
                 <span>{t('successNotification.goToSubscription', 'Go to Subscription')}</span>
