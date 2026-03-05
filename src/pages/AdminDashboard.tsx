@@ -1062,12 +1062,17 @@ export default function AdminDashboard() {
                     className="border-b border-dark-700/50 transition-colors hover:bg-dark-800/50"
                   >
                     <td className="px-2 py-3">
-                      <div className="text-sm font-medium text-dark-100">
-                        {payment.display_name}
-                      </div>
-                      {payment.username && (
-                        <div className="text-xs text-dark-500">@{payment.username}</div>
-                      )}
+                      <button
+                        onClick={() => navigate(`/admin/users/${payment.user_id}`)}
+                        className="text-left transition-colors hover:opacity-80"
+                      >
+                        <div className="text-sm font-medium text-dark-100 underline decoration-dark-600 underline-offset-2 hover:decoration-dark-400">
+                          {payment.display_name}
+                        </div>
+                        {payment.username && (
+                          <div className="text-xs text-dark-500">@{payment.username}</div>
+                        )}
+                      </button>
                     </td>
                     <td className="px-2 py-3">
                       <span
@@ -1119,9 +1124,12 @@ export default function AdminDashboard() {
                     >
                       {payment.type_display}
                     </span>
-                    <span className="truncate text-sm font-medium text-dark-100">
+                    <button
+                      onClick={() => navigate(`/admin/users/${payment.user_id}`)}
+                      className="truncate text-sm font-medium text-dark-100 underline decoration-dark-600 underline-offset-2 transition-colors hover:decoration-dark-400"
+                    >
                       {payment.display_name}
-                    </span>
+                    </button>
                   </div>
                   <span className="ml-2 whitespace-nowrap text-sm font-semibold text-dark-100">
                     {formatAmount(payment.amount_rubles)} {currencySymbol}
