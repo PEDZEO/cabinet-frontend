@@ -195,8 +195,8 @@ function VersionBadge({ hasUpdate }: { hasUpdate: boolean }) {
   }
 
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-xs font-medium text-emerald-400">
-      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+    <span className="inline-flex items-center gap-1 rounded-full bg-success-500/20 px-2.5 py-0.5 text-xs font-medium text-success-400">
+      <span className="h-1.5 w-1.5 rounded-full bg-success-400" />
       {t('adminUpdates.upToDate')}
     </span>
   );

@@ -444,7 +444,7 @@ export default function AdminPolicyEdit() {
                   onClick={() => setFormData((prev) => ({ ...prev, effect: 'allow' }))}
                   className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
                     formData.effect === 'allow'
-                      ? 'border-green-500/50 bg-green-500/10 text-green-400'
+                      ? 'border-success-500/50 bg-success-500/10 text-success-400'
                       : 'border-dark-600 bg-dark-900 text-dark-400 hover:border-dark-500'
                   }`}
                 >

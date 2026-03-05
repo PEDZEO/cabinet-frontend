@@ -86,7 +86,7 @@ export default function VerifyEmail() {
 
         {status === 'success' && (
           <div>
-            <div className="mb-4 text-5xl text-green-500 sm:text-6xl">✓</div>
+            <div className="mb-4 text-5xl text-success-500 sm:text-6xl">✓</div>
             <h2 className="text-lg font-semibold text-gray-900 sm:text-xl">
               {t('emailVerification.success')}
             </h2>

@@ -93,7 +93,7 @@ function ChannelBadge({ channel }: { channel?: BroadcastChannel }) {
   }
 
   return (
-    <span className="flex items-center gap-1 rounded-full bg-green-500/20 px-2 py-0.5 text-xs text-green-400">
+    <span className="flex items-center gap-1 rounded-full bg-success-500/20 px-2 py-0.5 text-xs text-success-400">
       <TelegramIcon />
       <span className="mx-0.5">+</span>
       <EmailIcon />

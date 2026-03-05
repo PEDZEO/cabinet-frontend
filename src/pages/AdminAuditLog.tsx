@@ -184,7 +184,7 @@ interface StatusBadgeProps {
 
 function StatusBadge({ status, label }: StatusBadgeProps) {
   const colorMap: Record<string, string> = {
-    success: 'bg-green-500/20 text-green-400',
+    success: 'bg-success-500/20 text-success-400',
     denied: 'bg-red-500/20 text-red-400',
     error: 'bg-amber-500/20 text-amber-400',
   };
@@ -205,7 +205,7 @@ interface MethodBadgeProps {
 function MethodBadge({ method }: MethodBadgeProps) {
   const colorMap: Record<string, string> = {
     GET: 'bg-blue-500/20 text-blue-400',
-    POST: 'bg-green-500/20 text-green-400',
+    POST: 'bg-success-500/20 text-success-400',
     PUT: 'bg-amber-500/20 text-amber-400',
     PATCH: 'bg-amber-500/20 text-amber-400',
     DELETE: 'bg-red-500/20 text-red-400',

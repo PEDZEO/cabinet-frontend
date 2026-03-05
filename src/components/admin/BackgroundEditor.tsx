@@ -365,7 +365,7 @@ export function BackgroundEditor() {
           className={cn(
             'w-full rounded-xl py-3 text-sm font-medium transition-colors',
             saveStatus === 'saved'
-              ? 'bg-green-500/20 text-green-400'
+              ? 'bg-success-500/20 text-success-400'
               : 'bg-accent-500 text-white hover:bg-accent-600 disabled:opacity-50',
           )}
         >

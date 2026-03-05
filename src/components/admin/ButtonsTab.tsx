@@ -17,7 +17,7 @@ type StyleValue = 'primary' | 'success' | 'danger' | 'default';
 const STYLE_OPTIONS: { value: StyleValue; colorClass: string }[] = [
   { value: 'default', colorClass: 'bg-dark-500' },
   { value: 'primary', colorClass: 'bg-blue-500' },
-  { value: 'success', colorClass: 'bg-green-500' },
+  { value: 'success', colorClass: 'bg-success-500' },
   { value: 'danger', colorClass: 'bg-red-500' },
 ];
 
@@ -222,7 +222,7 @@ export function ButtonsTab() {
                       cfg.style === 'default'
                         ? 'bg-dark-600 text-dark-300'
                         : cfg.style === 'success'
-                          ? 'bg-green-500 text-white'
+                          ? 'bg-success-500 text-white'
                           : cfg.style === 'danger'
                             ? 'bg-red-500 text-white'
                             : 'bg-blue-500 text-white'
