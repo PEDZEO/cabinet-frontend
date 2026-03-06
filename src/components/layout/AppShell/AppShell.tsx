@@ -495,7 +495,8 @@ export function AppShell({ children }: AppShellProps) {
       {/* Main content */}
       <main
         className={cn(
-          'mx-auto max-w-6xl px-4 pb-28 lg:px-6 lg:pb-8',
+          'mx-auto max-w-6xl px-4 lg:px-6 lg:pb-8',
+          isLiteMode ? 'pb-[calc(8rem+env(safe-area-inset-bottom,0px))]' : 'pb-28',
           isLiteMainPage ? 'pt-0 sm:pt-1' : isLiteMode ? 'pt-2 sm:pt-3' : 'pt-6',
         )}
       >

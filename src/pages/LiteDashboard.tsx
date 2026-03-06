@@ -353,57 +353,55 @@ export function LiteDashboard() {
   return (
     <>
       <PullToRefresh onRefresh={handleRefresh} className="min-h-[calc(100vh-120px)]">
-        <div
-          className="mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-6xl flex-col px-3 py-4 min-[360px]:px-4 min-[360px]:py-6 lg:px-6 xl:px-8 2xl:py-8"
-          style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom, 24px))' }}
-        >
+        <div className="mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-6xl flex-col px-3 py-4 pb-[calc(7rem+env(safe-area-inset-bottom,0px))] min-[360px]:px-4 min-[360px]:py-6 lg:px-6 lg:pb-10 xl:px-8 2xl:py-8">
           <div className="flex flex-1 flex-col gap-5 min-[360px]:gap-6">
             <section className="space-y-5 min-[360px]:space-y-6">
               {/* Subscription status or Trial card */}
               <motion.div
                 layout
                 transition={{ layout: CARD_LAYOUT_SPRING }}
+                className="space-y-4 min-[360px]:space-y-5"
                 data-onboarding="lite-subscription"
               >
-                <AnimatePresence mode="popLayout" initial={false}>
-                  {subscription && (
-                    <motion.div
-                      key="subscription-card"
-                      layout
-                      transition={{ layout: CARD_LAYOUT_SPRING }}
-                      data-testid="lite-subscription-active-card"
-                    >
-                      <LiteSubscriptionCard
-                        subscription={subscription}
-                        deviceLimit={deviceLimitFromTariff}
-                      />
-                    </motion.div>
-                  )}
+                {subscription && (
+                  <motion.div
+                    key="subscription-card"
+                    layout
+                    transition={{ layout: CARD_LAYOUT_SPRING }}
+                    data-testid="lite-subscription-active-card"
+                  >
+                    <LiteSubscriptionCard
+                      subscription={subscription}
+                      deviceLimit={deviceLimitFromTariff}
+                    />
+                  </motion.div>
+                )}
 
-                  {isTrialInfoPending && (
-                    <motion.div
-                      key="trial-loading-card"
-                      layout
-                      transition={{ layout: CARD_LAYOUT_SPRING }}
-                      data-testid="lite-trial-loading-card"
-                      className="rounded-2xl border border-dark-600 bg-dark-800/80 p-3 text-center min-[360px]:p-4"
-                    >
-                      <p className="text-dark-300">{t('lite.connectAvailabilityLoading')}</p>
-                    </motion.div>
-                  )}
+                {isTrialInfoPending && (
+                  <motion.div
+                    key="trial-loading-card"
+                    layout
+                    transition={{ layout: CARD_LAYOUT_SPRING }}
+                    data-testid="lite-trial-loading-card"
+                    className="rounded-2xl border border-dark-600 bg-dark-800/80 p-3 text-center min-[360px]:p-4"
+                  >
+                    <p className="text-dark-300">{t('lite.connectAvailabilityLoading')}</p>
+                  </motion.div>
+                )}
 
-                  {hasNoSubscription && !isTrialInfoPending && !showTrial && (
-                    <motion.div
-                      key="no-subscription-card"
-                      layout
-                      transition={{ layout: CARD_LAYOUT_SPRING }}
-                      data-testid="lite-no-subscription-card"
-                      className="rounded-2xl border border-dark-600 bg-dark-800/80 p-3 text-center min-[360px]:p-4"
-                    >
-                      <p className="text-dark-300">{t('lite.noSubscription')}</p>
-                    </motion.div>
-                  )}
+                {hasNoSubscription && !isTrialInfoPending && !showTrial && (
+                  <motion.div
+                    key="no-subscription-card"
+                    layout
+                    transition={{ layout: CARD_LAYOUT_SPRING }}
+                    data-testid="lite-no-subscription-card"
+                    className="rounded-2xl border border-dark-600 bg-dark-800/80 p-3 text-center min-[360px]:p-4"
+                  >
+                    <p className="text-dark-300">{t('lite.noSubscription')}</p>
+                  </motion.div>
+                )}
 
+                <AnimatePresence mode="sync" initial={false}>
                   {showTrialFlow &&
                     (showIncompleteTrialSetupHint ? (
                       <motion.div
