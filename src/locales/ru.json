@@ -30,7 +30,8 @@
     "units": {
       "gb": "ГБ",
       "perGb": "/ГБ"
-    }
+    },
+    "reset": "Сбросить"
   },
   "nav": {
     "dashboard": "Главная",
@@ -253,7 +254,6 @@
     "usedTraffic": "использовано {{amount}}",
     "usedSuffix": "израсходовано",
     "unlimited": "Безлимит",
-    "unlimitedTraffic": "Безлимитный трафик",
     "tariff": "Тариф",
     "validUntil": "до {{date}}",
     "remaining": "Осталось",
@@ -1064,7 +1064,9 @@
       "roleAssign": "Назначение ролей",
       "policies": "Политики доступа",
       "auditLog": "Журнал аудита",
-      "salesStats": "Статистика продаж"
+      "salesStats": "Статистика продаж",
+      "mainMenuButtons": "Кнопки меню",
+      "accountLinking": "Merge аккаунтов"
     },
     "panel": {
       "title": "Панель администратора",
@@ -1097,7 +1099,9 @@
       "roleAssignDesc": "Назначение и отзыв ролей пользователей",
       "policiesDesc": "Настройка политик контроля доступа ABAC",
       "auditLogDesc": "Просмотр активности системы и истории доступа",
-      "salesStatsDesc": "Аналитика продаж и тренды"
+      "salesStatsDesc": "Аналитика продаж и тренды",
+      "mainMenuButtonsDesc": "Настройка дополнительных кнопок главного меню",
+      "accountLinkingDesc": "Ручная модерация спорных объединений аккаунтов"
     },
     "salesStats": {
       "title": "Статистика продаж",
@@ -3691,6 +3695,118 @@
       "errors": {
         "loadFailed": "Не удалось загрузить журнал аудита",
         "retry": "Попробовать снова"
+      }
+    },
+    "mainMenuButtons": {
+      "title": "Кнопки главного меню",
+      "subtitle": "Создание и управление дополнительными кнопками в меню бота",
+      "createButton": "Добавить кнопку",
+      "editButton": "Редактирование кнопки",
+      "listTitle": "Кнопки",
+      "empty": "Кнопки не настроены",
+      "total": "Всего: {{count}}",
+      "textLabel": "Текст кнопки",
+      "textPlaceholder": "Например: Открыть мини-приложение",
+      "actionTypeLabel": "Тип действия",
+      "actionTypeUrl": "Открыть URL",
+      "actionTypeMiniApp": "Открыть мини-приложение",
+      "actionValueLabel": "URL действия",
+      "visibilityLabel": "Видимость",
+      "visibilityAll": "Для всех пользователей",
+      "visibilityAdmins": "Только для админов",
+      "visibilitySubscribers": "Только для подписчиков",
+      "displayOrderLabel": "Порядок отображения",
+      "isActiveLabel": "Кнопка активна",
+      "textRequired": "Укажите текст кнопки",
+      "actionValueRequired": "Укажите URL действия",
+      "actionValueInvalid": "URL должен начинаться с http:// или https://",
+      "displayOrderInvalid": "Порядок отображения должен быть числом",
+      "saveError": "Не удалось сохранить кнопку",
+      "deleteError": "Не удалось удалить кнопку",
+      "deleteConfirm": "Удалить эту кнопку?",
+      "saved": "Кнопка сохранена",
+      "deleted": "Кнопка удалена",
+      "saveOrder": "Сохранить порядок",
+      "savingOrder": "Сохраняем порядок...",
+      "orderSaved": "Порядок сохранён",
+      "orderSaveError": "Не удалось сохранить порядок",
+      "resetToDefault": "Сброс к дефолту",
+      "resetToDefaultConfirm": "Сбросить кнопки меню к конфигурации по умолчанию?",
+      "resetToDefaultSuccess": "Кнопки меню восстановлены по умолчанию",
+      "resetToDefaultError": "Не удалось сбросить меню к дефолту",
+      "previewTitle": "Предпросмотр меню",
+      "previewHint": "Кнопки отображаются в том же порядке, что и в меню бота",
+      "dragHint": "Перетаскивайте за хэндл, чтобы менять порядок кнопок",
+      "dragHandle": "Хэндл перетаскивания",
+      "moveUp": "Переместить вверх",
+      "moveDown": "Переместить вниз",
+      "activeListTitle": "Активные кнопки",
+      "inactiveListTitle": "Неактивные кнопки",
+      "activate": "Включить",
+      "deactivate": "Выключить",
+      "statsTab": "Статистика",
+      "stats": {
+        "period": "Период",
+        "days": "дн.",
+        "allButtons": "Все кнопки",
+        "selectButton": "Выбрать кнопку",
+        "totalClicks": "Всего кликов",
+        "buttonsTracked": "Кнопок с логами",
+        "periodRange": "Интервал",
+        "byButton": "Статистика по кнопкам",
+        "buttonId": "ID кнопки",
+        "total": "Всего",
+        "today": "Сегодня",
+        "week": "7 дней",
+        "month": "30 дней",
+        "uniqueUsers": "Уникальные пользователи",
+        "lastClick": "Последний клик",
+        "byType": "По типам кнопок",
+        "byHour": "По часам",
+        "byWeekday": "По дням недели",
+        "topUsers": "Топ пользователей",
+        "periodComparison": "Сравнение периодов",
+        "currentDays": "Текущий период (дни)",
+        "previousDays": "Предыдущий период (дни)",
+        "currentPeriod": "Текущий период",
+        "previousPeriod": "Предыдущий период",
+        "changePercent": "Изменение, %",
+        "trend": "Тренд",
+        "userSequence": "Последовательность кликов пользователя",
+        "userIdPlaceholder": "ID пользователя",
+        "enterUserId": "Введите ID пользователя для просмотра последовательности",
+        "selectedButton": "Выбранная кнопка",
+        "noData": "Нет данных за выбранный период"
+      }
+    },
+    "accountLinking": {
+      "title": "Ручные заявки на объединение аккаунтов",
+      "subtitle": "Проверка спорных заявок и решение администратора",
+      "total": "Всего",
+      "requester": "Заявитель",
+      "source": "Аккаунт по коду",
+      "userComment": "Комментарий пользователя",
+      "adminComment": "Комментарий администратора",
+      "empty": "Заявок не найдено",
+      "primaryRequired": "Укажите ID основного аккаунта",
+      "resolveTitle": "Решение по заявке",
+      "resolveHint": "Участники: текущий #{{current}}, источник #{{source}}",
+      "primaryPlaceholder": "ID аккаунта, который остается основным",
+      "commentPlaceholder": "Комментарий для аудита и пользователя",
+      "filters": {
+        "pending": "На рассмотрении",
+        "approved": "Одобрено",
+        "rejected": "Отклонено",
+        "all": "Все"
+      },
+      "decision": {
+        "pending": "Ожидает решения",
+        "approve": "Одобрено",
+        "reject": "Отклонено"
+      },
+      "actions": {
+        "approve": "Одобрить объединение",
+        "reject": "Отклонить запрос"
       }
     }
   },

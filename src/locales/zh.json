@@ -30,7 +30,8 @@
     "units": {
       "gb": "GB",
       "perGb": "/GB"
-    }
+    },
+    "reset": "重置"
   },
   "nav": {
     "dashboard": "首页",
@@ -866,7 +867,9 @@
       "roleAssign": "角色分配",
       "policies": "访问策略",
       "auditLog": "审计日志",
-      "salesStats": "销售统计"
+      "salesStats": "销售统计",
+      "mainMenuButtons": "Main Menu Buttons",
+      "accountLinking": "Account Merges"
     },
     "panel": {
       "title": "管理面板",
@@ -899,7 +902,9 @@
       "roleAssignDesc": "分配和撤销用户角色",
       "policiesDesc": "配置ABAC访问控制策略",
       "auditLogDesc": "查看系统活动和访问历史",
-      "salesStatsDesc": "销售分析与趋势"
+      "salesStatsDesc": "销售分析与趋势",
+      "mainMenuButtonsDesc": "Configure custom main menu buttons",
+      "accountLinkingDesc": "Manual moderation for disputed account merges"
     },
     "salesStats": {
       "title": "销售统计",
@@ -2861,6 +2866,118 @@
       "errors": {
         "loadFailed": "加载审计日志失败",
         "retry": "重试"
+      }
+    },
+    "mainMenuButtons": {
+      "title": "Main Menu Buttons",
+      "subtitle": "Create and manage extra buttons shown in the bot main menu",
+      "createButton": "Add button",
+      "editButton": "Edit button",
+      "listTitle": "Buttons",
+      "empty": "No buttons configured",
+      "total": "Total: {{count}}",
+      "textLabel": "Button text",
+      "textPlaceholder": "For example: Open mini app",
+      "actionTypeLabel": "Action type",
+      "actionTypeUrl": "Open URL",
+      "actionTypeMiniApp": "Open mini app",
+      "actionValueLabel": "Action URL",
+      "visibilityLabel": "Visibility",
+      "visibilityAll": "All users",
+      "visibilityAdmins": "Admins only",
+      "visibilitySubscribers": "Subscribers only",
+      "displayOrderLabel": "Display order",
+      "isActiveLabel": "Button is active",
+      "textRequired": "Button text is required",
+      "actionValueRequired": "Action URL is required",
+      "actionValueInvalid": "Action URL must start with http:// or https://",
+      "displayOrderInvalid": "Display order must be a valid number",
+      "saveError": "Failed to save button",
+      "deleteError": "Failed to delete button",
+      "deleteConfirm": "Delete this button?",
+      "saved": "Button saved",
+      "deleted": "Button deleted",
+      "saveOrder": "Save order",
+      "savingOrder": "Saving order...",
+      "orderSaved": "Order saved",
+      "orderSaveError": "Failed to save order",
+      "resetToDefault": "Reset to default",
+      "resetToDefaultConfirm": "Reset menu buttons to the default configuration?",
+      "resetToDefaultSuccess": "Menu buttons were restored to default",
+      "resetToDefaultError": "Failed to reset menu to default",
+      "previewTitle": "Menu preview",
+      "previewHint": "Buttons are shown in the same order as in bot menu",
+      "dragHint": "Drag by handle to reorder buttons",
+      "dragHandle": "Drag handle",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "activeListTitle": "Active buttons",
+      "inactiveListTitle": "Inactive buttons",
+      "activate": "Enable",
+      "deactivate": "Disable",
+      "statsTab": "Statistics",
+      "stats": {
+        "period": "Period",
+        "days": "days",
+        "allButtons": "All buttons",
+        "selectButton": "Select button",
+        "totalClicks": "Total clicks",
+        "buttonsTracked": "Buttons tracked",
+        "periodRange": "Period range",
+        "byButton": "Stats by button",
+        "buttonId": "Button ID",
+        "total": "Total",
+        "today": "Today",
+        "week": "7 days",
+        "month": "30 days",
+        "uniqueUsers": "Unique users",
+        "lastClick": "Last click",
+        "byType": "By button type",
+        "byHour": "By hour",
+        "byWeekday": "By weekday",
+        "topUsers": "Top users",
+        "periodComparison": "Period comparison",
+        "currentDays": "Current period (days)",
+        "previousDays": "Previous period (days)",
+        "currentPeriod": "Current period",
+        "previousPeriod": "Previous period",
+        "changePercent": "Change, %",
+        "trend": "Trend",
+        "userSequence": "User click sequence",
+        "userIdPlaceholder": "User ID",
+        "enterUserId": "Enter user ID to load click sequence",
+        "selectedButton": "Selected button",
+        "noData": "No data for selected period"
+      }
+    },
+    "accountLinking": {
+      "title": "Manual Account Merge Requests",
+      "subtitle": "Review disputed requests and record admin decisions",
+      "total": "Total",
+      "requester": "Requester",
+      "source": "Account by code",
+      "userComment": "User comment",
+      "adminComment": "Admin comment",
+      "empty": "No merge requests found",
+      "primaryRequired": "Primary account ID is required",
+      "resolveTitle": "Resolve request",
+      "resolveHint": "Participants: current #{{current}}, source #{{source}}",
+      "primaryPlaceholder": "Account ID to keep as primary",
+      "commentPlaceholder": "Comment for audit and user context",
+      "filters": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "all": "All"
+      },
+      "decision": {
+        "pending": "Waiting for decision",
+        "approve": "Approved",
+        "reject": "Rejected"
+      },
+      "actions": {
+        "approve": "Approve merge",
+        "reject": "Reject request"
       }
     }
   },
