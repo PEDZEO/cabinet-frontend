@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
+import { useEffect } from 'react';
 import { subscriptionApi } from '@/api/subscription';
 import { useAuthStore } from '@/store/auth';
 
@@ -136,8 +137,20 @@ export function UltimaDashboard() {
     return formatted;
   })();
 
+  useEffect(() => {
+    const prevBody = document.body.style.overflow;
+    const prevHtml = document.documentElement.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = prevBody;
+      document.documentElement.style.overflow = prevHtml;
+    };
+  }, []);
+
   return (
-    <div className="relative min-h-[100dvh] overflow-hidden bg-[radial-gradient(circle_at_76%_58%,rgba(16,185,129,0.34),rgba(4,17,26,0.98)_58%)] px-4 pb-[calc(20px+env(safe-area-inset-bottom,0px))] pt-2 sm:px-6">
+    <div className="relative h-[100dvh] overflow-hidden bg-[radial-gradient(circle_at_76%_58%,rgba(16,185,129,0.34),rgba(4,17,26,0.98)_58%)] pb-[calc(20px+env(safe-area-inset-bottom,0px))] pt-2">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-1/2 top-[46%] h-[560px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/10" />
         <div className="absolute left-1/2 top-[46%] h-[430px] w-[430px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/10" />
@@ -146,9 +159,9 @@ export function UltimaDashboard() {
           <motion.div
             key={delay}
             className="absolute left-1/2 top-[46%] h-[560px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/20"
-            initial={{ scale: 0.14, opacity: 0 }}
-            animate={{ scale: 1, opacity: [0, 0.24, 0] }}
-            transition={{ duration: 5.1, repeat: Infinity, ease: 'linear', delay }}
+            initial={{ scale: 0.1, opacity: 0 }}
+            animate={{ scale: 1.06, opacity: [0, 0.52, 0] }}
+            transition={{ duration: 4.4, repeat: Infinity, ease: 'easeOut', delay }}
           />
         ))}
       </div>
@@ -164,7 +177,7 @@ export function UltimaDashboard() {
         </button>
       )}
 
-      <div className="relative z-10 mx-auto flex min-h-[calc(100dvh-26px)] w-full max-w-md flex-col">
+      <div className="relative z-10 mx-auto flex h-[calc(100dvh-26px)] w-full flex-col px-4 sm:px-6">
         <section className="pt-[24vh]">
           <div className="mx-auto mb-[18vh] flex h-24 w-24 items-center justify-center rounded-full bg-black/15">
             <ShieldIcon />

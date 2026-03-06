@@ -508,8 +508,15 @@ export function AppShell({ children }: AppShellProps) {
       <main
         className={cn(
           'mx-auto max-w-6xl px-4 lg:px-6 lg:pb-8',
-          isCompactMode ? 'pb-8' : 'pb-28',
-          isCompactMainPage ? 'pt-0 sm:pt-1' : isCompactMode ? 'pt-2 sm:pt-3' : 'pt-6',
+          isUltimaMode && 'max-w-none px-0 lg:px-0',
+          isUltimaMode ? 'pb-0' : isCompactMode ? 'pb-8' : 'pb-28',
+          isUltimaMode
+            ? 'pt-0'
+            : isCompactMainPage
+              ? 'pt-0 sm:pt-1'
+              : isCompactMode
+                ? 'pt-2 sm:pt-3'
+                : 'pt-6',
         )}
       >
         {isLiteModeReady && isUltimaModeReady && isCompactMode ? (
