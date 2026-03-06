@@ -80,7 +80,7 @@ export function LiteMobileBottomNav({ isKeyboardOpen }: LiteMobileBottomNavProps
     { path: '/', label: t('nav.dashboard'), icon: HomeIcon },
     { path: '/connection', label: t('lite.connect', 'Подключение'), icon: ConnectIcon },
     { path: '/balance', label: t('nav.balance'), icon: BalanceIcon },
-    { path: '/subscription', label: t('nav.subscription'), icon: TariffIcon },
+    { path: '/subscription', label: t('lite.tariffs', 'Тарифы'), icon: TariffIcon },
     { path: '/support', label: t('nav.support'), icon: SupportIcon },
   ];
 

@@ -7,7 +7,6 @@ import { referralApi } from '@/api/referral';
 import { authApi } from '@/api/auth';
 import { useAuthStore } from '@/store/auth';
 import { useHapticFeedback } from '@/platform/hooks/useHaptic';
-import { LiteActionButton } from '@/components/lite/LiteActionButton';
 import { LiteSubscriptionCard } from '@/components/lite/LiteSubscriptionCard';
 import { LiteDashboardSkeleton } from '@/components/lite/LiteDashboardSkeleton';
 import { PullToRefresh } from '@/components/lite/PullToRefresh';
@@ -18,72 +17,6 @@ import {
   markLiteOnboardingStep,
   resetLiteOnboardingFlowState,
 } from '@/features/lite/onboardingFlow';
-
-// Icons
-const ConnectIcon = () => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-  </svg>
-);
-
-const WalletIcon = () => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
-    <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
-    <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
-  </svg>
-);
-
-const TariffIcon = () => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <rect x="3" y="3" width="18" height="18" rx="2" />
-    <path d="M3 9h18" />
-    <path d="M9 21V9" />
-  </svg>
-);
-
-const SupportIcon = () => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
-  </svg>
-);
 
 const GiftIcon = () => (
   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -337,14 +270,10 @@ export function LiteDashboard() {
   const hasNoSubscription = subscriptionResponse?.has_subscription === false && !subLoading;
   const hasActiveSubscription =
     !!subscription && subscription.is_active && !subscription.is_expired;
-  const hasExpiredSubscription = !!subscription && subscription.is_expired;
   const canOfferTrial = !hasActiveSubscription && !!trialInfo?.is_available;
   const isTrialInfoPending = !hasActiveSubscription && isTrialInfoLoading;
   const showTrial = hasNoSubscription && canOfferTrial;
   const shouldShowTrialConnectHint = !hasActiveSubscription && !isTrialInfoPending && canOfferTrial;
-  const expiredOnLabel = hasExpiredSubscription
-    ? new Date(subscription.end_date).toLocaleDateString()
-    : null;
   const trialFlowStep1Done = onboardingFlow.trial_activated;
   const trialFlowStep2Done = onboardingFlow.connection_opened;
   const trialFlowStep3Done = onboardingFlow.subscription_added;
@@ -426,8 +355,8 @@ export function LiteDashboard() {
           className="mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-6xl flex-col px-3 py-4 min-[360px]:px-4 min-[360px]:py-6 lg:px-6 xl:px-8 2xl:py-8"
           style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom, 24px))' }}
         >
-          <div className="flex flex-1 flex-col gap-4 min-[360px]:gap-5 lg:grid lg:grid-cols-12 lg:items-start lg:gap-6">
-            <section className="space-y-4 min-[360px]:space-y-5 lg:col-span-7 xl:col-span-8">
+          <div className="flex flex-1 flex-col gap-4 min-[360px]:gap-5">
+            <section className="space-y-4 min-[360px]:space-y-5">
               {/* Subscription status or Trial card */}
               <div data-onboarding="lite-subscription">
                 {subscription && (
@@ -626,140 +555,6 @@ export function LiteDashboard() {
                 </div>
               )}
             </section>
-
-            {/* Action buttons */}
-            <aside className="flex flex-col gap-3 lg:sticky lg:top-6 lg:col-span-5 xl:col-span-4">
-              <p className="px-1 text-xs font-semibold uppercase tracking-[0.08em] text-dark-400">
-                {t('lite.menu')}
-              </p>
-
-              {!(shouldShowTrialConnectHint && !hasActiveSubscription) && (
-                <div data-onboarding="lite-connect">
-                  {hasActiveSubscription ? (
-                    <LiteActionButton
-                      to="/connection"
-                      label={t('lite.connect')}
-                      icon={<ConnectIcon />}
-                      variant="primary"
-                    />
-                  ) : (
-                    <div className="rounded-2xl border border-warning-500/35 bg-warning-500/10 p-3 min-[360px]:p-4">
-                      {isTrialInfoPending ? (
-                        <>
-                          <p className="text-sm font-semibold text-warning-300">
-                            {t('common.loading')}
-                          </p>
-                          <p className="mt-1 text-xs text-dark-300">
-                            {t('lite.connectAvailabilityLoading')}
-                          </p>
-                        </>
-                      ) : shouldShowTrialConnectHint ? null : hasExpiredSubscription ? (
-                        <div data-testid="lite-connect-expired-hint">
-                          <p className="text-sm font-semibold text-warning-300">
-                            {t('lite.connectHintExpiredTitle')}
-                          </p>
-                          <p className="mt-1 text-xs text-dark-300">
-                            {expiredOnLabel
-                              ? t('lite.connectHintExpiredDescriptionWithDate', {
-                                  date: expiredOnLabel,
-                                })
-                              : t('lite.connectHintExpiredDescription')}
-                          </p>
-                          <p className="mt-2 text-2xs font-semibold uppercase tracking-[0.05em] text-dark-400">
-                            {t('lite.connectHintProgress', { current: 1, total: 3 })}
-                          </p>
-                          <ol className="mt-2 space-y-1 text-xs text-dark-200">
-                            <li>1. {t('lite.connectHintExpiredStep1')}</li>
-                            <li>2. {t('lite.connectHintExpiredStep2')}</li>
-                            <li>3. {t('lite.connectHintExpiredStep3')}</li>
-                          </ol>
-                          <div className="mt-3 flex flex-col gap-2">
-                            <button
-                              type="button"
-                              onClick={() => navigate('/subscription')}
-                              className="w-full rounded-xl border border-accent-400/60 bg-accent-500 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70"
-                            >
-                              {t('lite.renewSubscription')}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => navigate('/balance')}
-                              className="w-full rounded-xl border border-dark-600 bg-dark-800/70 py-2.5 text-sm font-medium text-dark-100 transition-colors hover:border-dark-500 hover:bg-dark-700"
-                            >
-                              {t('lite.topUp')}
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div data-testid="lite-connect-locked-hint">
-                          <p className="text-sm font-semibold text-warning-300">
-                            {t('lite.connectLockedTitle')}
-                          </p>
-                          <p className="mt-1 text-xs text-dark-300">
-                            {t('lite.connectLockedDescription')}
-                          </p>
-                          <p className="mt-2 text-2xs font-semibold uppercase tracking-[0.05em] text-dark-400">
-                            {t('lite.connectHintProgress', { current: 1, total: 3 })}
-                          </p>
-                          <ol className="mt-2 space-y-1 text-xs text-dark-200">
-                            <li>1. {t('lite.connectLockedStepTopUp')}</li>
-                            <li>2. {t('lite.connectLockedStepTariff')}</li>
-                            <li>3. {t('lite.connectLockedStepActivate')}</li>
-                          </ol>
-                          <div className="mt-3 flex flex-col gap-2">
-                            <button
-                              type="button"
-                              onClick={() => navigate('/subscription')}
-                              className="w-full rounded-xl border border-accent-400/60 bg-accent-500 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70"
-                            >
-                              {t('lite.chooseTariff')}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => navigate('/balance')}
-                              className="w-full rounded-xl border border-dark-600 bg-dark-800/70 py-2.5 text-sm font-medium text-dark-100 transition-colors hover:border-dark-500 hover:bg-dark-700"
-                            >
-                              {t('lite.topUp')}
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="rounded-2xl border border-dark-700/70 bg-dark-900/35 p-2">
-                <div className="flex flex-col gap-2">
-                  <div data-onboarding="lite-topup">
-                    <LiteActionButton
-                      to="/balance"
-                      label={t('lite.topUp')}
-                      icon={<WalletIcon />}
-                      size="compact"
-                    />
-                  </div>
-
-                  <div data-onboarding="lite-tariffs">
-                    <LiteActionButton
-                      to="/subscription"
-                      label={t('lite.tariffs')}
-                      icon={<TariffIcon />}
-                      size="compact"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <LiteActionButton
-                to="/support"
-                label={t('lite.support')}
-                icon={<SupportIcon />}
-                variant="ghost"
-                size="compact"
-                className="border border-transparent"
-              />
-            </aside>
           </div>
         </div>
       </PullToRefresh>
