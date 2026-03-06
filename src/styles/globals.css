@@ -51,6 +51,25 @@
   }
 }
 
+@keyframes ultima-ring-wave {
+  0% {
+    transform: translate(-50%, -50%) scale(0.08);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.48;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.08);
+    opacity: 0;
+  }
+}
+
+.ultima-ring-wave {
+  animation: ultima-ring-wave 4.4s ease-out infinite;
+  will-change: transform, opacity;
+}
+
 /* Aceternity UI background CSS variables */
 :root {
   --blue-500: #3b82f6;
