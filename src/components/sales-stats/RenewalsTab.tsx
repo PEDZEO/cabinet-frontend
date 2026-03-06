@@ -5,14 +5,19 @@ import type { SalesStatsParams } from '../../api/adminSalesStats';
 import { salesStatsApi } from '../../api/adminSalesStats';
 import { SALES_STATS } from '../../constants/salesStats';
 import { useCurrency } from '../../hooks/useCurrency';
-import { StatCard } from '../stats';
-import { TREND_STYLES } from '../stats/constants';
+import { StatCard } from '../data-display/StatCard';
 
 import { SimpleAreaChart } from './SimpleAreaChart';
 
 interface RenewalsTabProps {
   params: SalesStatsParams;
 }
+
+const TREND_STYLES = {
+  up: { className: 'text-success-400', arrow: '↑' },
+  down: { className: 'text-error-400', arrow: '↓' },
+  stable: { className: 'text-dark-400', arrow: '→' },
+} as const;
 
 export function RenewalsTab({ params }: RenewalsTabProps) {
   const { t } = useTranslation();

@@ -1,18 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
 
 import { SALES_STATS } from '../../constants/salesStats';
-import { useChartColors } from '../../hooks/useChartColors';
 
 interface SimpleBarChartProps {
   data: { name: string; value: number; color?: string }[];
@@ -21,11 +10,6 @@ interface SimpleBarChartProps {
   valueFormatter?: (value: number) => string;
 }
 
-const BAR_CHART_MARGIN = {
-  ...SALES_STATS.CHART.MARGIN,
-  bottom: 40,
-};
-
 export function SimpleBarChart({
   data,
   title,
@@ -33,9 +17,7 @@ export function SimpleBarChart({
   valueFormatter,
 }: SimpleBarChartProps) {
   const { t } = useTranslation();
-  const colors = useChartColors();
-
-  const adjustedHeight = useMemo(() => height + 35, [height]);
+  const maxValue = useMemo(() => Math.max(...data.map((item) => item.value), 0), [data]);
 
   if (data.length === 0) {
     return (
@@ -51,47 +33,29 @@ export function SimpleBarChart({
   return (
     <div className="bento-card">
       <h4 className="mb-3 text-sm font-semibold text-dark-200">{title}</h4>
-      <ResponsiveContainer width="100%" height={adjustedHeight}>
-        <BarChart data={data} margin={BAR_CHART_MARGIN}>
-          <CartesianGrid strokeDasharray={SALES_STATS.GRID_DASH} stroke={colors.grid} />
-          <XAxis
-            dataKey="name"
-            tick={{ fill: colors.tick, fontSize: SALES_STATS.AXIS.TICK_FONT_SIZE }}
-            tickLine={false}
-            angle={-30}
-            textAnchor="end"
-            height={60}
-            interval={0}
-          />
-          <YAxis
-            tick={{ fill: colors.tick, fontSize: SALES_STATS.AXIS.TICK_FONT_SIZE }}
-            tickLine={false}
-            axisLine={false}
-            width={SALES_STATS.AXIS.WIDTH}
-            allowDecimals={false}
-          />
-          <Tooltip
-            contentStyle={{
-              backgroundColor: colors.tooltipBg,
-              border: `1px solid ${colors.tooltipBorder}`,
-              borderRadius: SALES_STATS.TOOLTIP.BORDER_RADIUS,
-              fontSize: SALES_STATS.TOOLTIP.FONT_SIZE,
-            }}
-            labelStyle={{ color: colors.label }}
-            formatter={(value: number | undefined) => [
-              valueFormatter ? valueFormatter(value ?? 0) : (value ?? 0),
-            ]}
-          />
-          <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-            {data.map((entry, index) => (
-              <Cell
-                key={entry.name}
-                fill={entry.color || SALES_STATS.BAR_COLORS[index % SALES_STATS.BAR_COLORS.length]}
-              />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+      <div className="space-y-2" style={{ minHeight: height }}>
+        {data.map((entry, index) => {
+          const widthPercent = maxValue > 0 ? Math.max((entry.value / maxValue) * 100, 2) : 0;
+          const barColor =
+            entry.color || SALES_STATS.BAR_COLORS[index % SALES_STATS.BAR_COLORS.length];
+          return (
+            <div key={entry.name} className="space-y-1">
+              <div className="flex items-center justify-between gap-3 text-xs">
+                <span className="truncate text-dark-300">{entry.name}</span>
+                <span className="shrink-0 text-dark-400">
+                  {valueFormatter ? valueFormatter(entry.value) : entry.value}
+                </span>
+              </div>
+              <div className="h-2.5 rounded-full bg-dark-800/60">
+                <div
+                  className="h-full rounded-full transition-all duration-300"
+                  style={{ width: `${widthPercent}%`, backgroundColor: barColor }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

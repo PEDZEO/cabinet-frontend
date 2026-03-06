@@ -7,6 +7,7 @@ import { slideUp, slideUpTransition } from '@/components/motion/transitions';
 export interface StatCardProps extends Omit<CardProps, 'children'> {
   label: string;
   value: ReactNode;
+  valueClassName?: string;
   icon?: ReactNode;
   change?: {
     value: number;
@@ -18,7 +19,17 @@ export interface StatCardProps extends Omit<CardProps, 'children'> {
 
 export const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
   (
-    { label, value, icon, change, trend = 'neutral', loading = false, className, ...props },
+    {
+      label,
+      value,
+      valueClassName,
+      icon,
+      change,
+      trend = 'neutral',
+      loading = false,
+      className,
+      ...props
+    },
     ref,
   ) => {
     const trendColors = {
@@ -45,7 +56,7 @@ export const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
               <div className="mt-2 h-8 w-24 animate-pulse rounded bg-dark-800" />
             ) : (
               <motion.p
-                className="mt-1 text-2xl font-bold text-dark-100 sm:text-3xl"
+                className={cn('mt-1 text-2xl font-bold text-dark-100 sm:text-3xl', valueClassName)}
                 variants={slideUp}
                 initial="initial"
                 animate="animate"

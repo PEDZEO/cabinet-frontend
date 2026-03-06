@@ -7,7 +7,7 @@ import { salesStatsApi } from '../api/adminSalesStats';
 import { SALES_STATS } from '../constants/salesStats';
 import { useCurrency } from '../hooks/useCurrency';
 import { AdminBackButton } from '../components/admin/AdminBackButton';
-import { StatCard } from '../components/stats';
+import { StatCard } from '../components/data-display/StatCard';
 import {
   AddonsTab,
   DepositsTab,

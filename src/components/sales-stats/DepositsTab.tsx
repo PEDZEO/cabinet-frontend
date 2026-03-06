@@ -5,7 +5,7 @@ import type { SalesStatsParams } from '../../api/adminSalesStats';
 import { salesStatsApi } from '../../api/adminSalesStats';
 import { SALES_STATS } from '../../constants/salesStats';
 import { useCurrency } from '../../hooks/useCurrency';
-import { StatCard } from '../stats';
+import { StatCard } from '../data-display/StatCard';
 
 import { SimpleAreaChart } from './SimpleAreaChart';
 import { SimpleBarChart } from './SimpleBarChart';

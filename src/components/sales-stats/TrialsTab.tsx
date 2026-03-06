@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { SalesStatsParams } from '../../api/adminSalesStats';
 import { salesStatsApi } from '../../api/adminSalesStats';
 import { SALES_STATS } from '../../constants/salesStats';
-import { StatCard } from '../stats';
+import { StatCard } from '../data-display/StatCard';
 
 import { DonutChart } from './DonutChart';
 import { SimpleAreaChart } from './SimpleAreaChart';
