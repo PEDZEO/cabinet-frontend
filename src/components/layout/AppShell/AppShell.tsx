@@ -211,6 +211,8 @@ export function AppShell({ children }: AppShellProps) {
   const { isLiteMode, isLiteModeReady } = useLiteMode();
   const { isUltimaMode, isUltimaModeReady } = useUltimaMode();
   const isCompactMode = isLiteMode || isUltimaMode;
+  const hasLiteHeader = isLiteMode;
+  const hasRegularHeader = !isCompactMode;
   const isCompactMainPage = isCompactMode && location.pathname === '/';
   const [desktopLogoLoaded, setDesktopLogoLoaded] = useState(() => isLogoPreloaded());
   const [desktopLogoShape, setDesktopLogoShape] = useState<'square' | 'wide' | 'tall'>('square');
@@ -317,14 +319,13 @@ export function AppShell({ children }: AppShellProps) {
       <CampaignBonusNotifier />
       <SuccessNotificationModal />
 
-      {/* Compact Mode Header (Lite + Ultima) */}
-      {isLiteModeReady && isUltimaModeReady && isCompactMode && (
+      {/* Lite Mode Header */}
+      {isLiteModeReady && isUltimaModeReady && hasLiteHeader && (
         <LiteModeHeader
           isFullscreen={isMobileFullscreen}
           safeAreaInset={safeAreaInset}
           contentSafeAreaInset={contentSafeAreaInset}
           telegramPlatform={platform}
-          variant={isUltimaMode ? 'ultima' : 'lite'}
         />
       )}
 
@@ -469,7 +470,7 @@ export function AppShell({ children }: AppShellProps) {
       </header>
 
       {/* Mobile Header (hidden in Lite Mode, wait for mode to be determined) */}
-      {isLiteModeReady && isUltimaModeReady && !isCompactMode && (
+      {isLiteModeReady && isUltimaModeReady && hasRegularHeader && (
         <AppHeader
           mobileMenuOpen={mobileMenuOpen}
           setMobileMenuOpen={setMobileMenuOpen}
@@ -492,7 +493,15 @@ export function AppShell({ children }: AppShellProps) {
       {/* Mobile spacer */}
       <div
         className="lg:hidden"
-        style={{ height: isCompactMainPage ? Math.max(headerHeight - 10, 0) : headerHeight }}
+        style={{
+          height: hasLiteHeader
+            ? isCompactMainPage
+              ? Math.max(headerHeight - 10, 0)
+              : headerHeight
+            : hasRegularHeader
+              ? headerHeight
+              : 6,
+        }}
       />
 
       {/* Main content */}

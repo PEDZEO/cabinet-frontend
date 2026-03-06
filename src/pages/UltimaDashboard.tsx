@@ -51,25 +51,25 @@ const PhoneIcon = () => (
   </svg>
 );
 
-const HomeIcon = () => (
+const GridIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
-    <path
-      d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-8.5Z"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    />
+    <rect x="4" y="4" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
+    <rect x="13" y="4" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
+    <rect x="4" y="13" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
+    <rect x="13" y="13" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
   </svg>
 );
 
-const LinkIcon = () => (
+const GearIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
     <path
-      d="M10.8 13.2 9 15a3 3 0 1 1-4.2-4.2l2.6-2.6a3 3 0 0 1 4.2 0M13.2 10.8 15 9a3 3 0 1 1 4.2 4.2l-2.6 2.6a3 3 0 0 1-4.2 0"
+      d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
       stroke="currentColor"
-      strokeWidth="1.8"
+      strokeWidth="1.4"
       strokeLinecap="round"
+      strokeLinejoin="round"
     />
-    <path d="m8.8 15.2 6.4-6.4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    <circle cx="12" cy="12" r="2.6" stroke="currentColor" strokeWidth="1.4" />
   </svg>
 );
 
@@ -110,24 +110,28 @@ export function UltimaDashboard() {
     if (!subscription?.end_date) return t('subscription.notActive');
     const date = new Date(subscription.end_date);
     if (Number.isNaN(date.getTime())) return t('subscription.notActive');
-    return date.toLocaleDateString(i18n.language || 'ru-RU', {
+    const formatted = date.toLocaleDateString(i18n.language || 'ru-RU', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
     });
+    if ((i18n.language || '').toLowerCase().startsWith('ru')) {
+      return `до ${formatted.replace(' г.', '')}`;
+    }
+    return formatted;
   })();
 
   return (
-    <div className="relative min-h-[calc(100dvh-130px)] overflow-hidden rounded-3xl border border-emerald-600/20 bg-[radial-gradient(circle_at_70%_50%,rgba(16,185,129,0.25),rgba(4,17,26,0.96)_55%)] p-4 sm:p-6">
+    <div className="relative min-h-[calc(100dvh-28px)] overflow-hidden rounded-3xl border border-emerald-600/20 bg-[radial-gradient(circle_at_70%_50%,rgba(16,185,129,0.25),rgba(4,17,26,0.96)_55%)] p-4 sm:p-6">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-1/2 top-[34%] h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/10" />
         <div className="absolute left-1/2 top-[34%] h-[320px] w-[320px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/10" />
         <div className="absolute left-1/2 top-[34%] h-[220px] w-[220px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/10" />
       </div>
 
-      <div className="relative z-10 mx-auto flex min-h-[calc(100dvh-165px)] w-full max-w-md flex-col justify-between">
-        <section className="pt-12">
-          <div className="mx-auto mb-24 flex h-24 w-24 items-center justify-center rounded-full bg-black/15">
+      <div className="relative z-10 mx-auto flex min-h-[calc(100dvh-70px)] w-full max-w-md flex-col justify-between">
+        <section className="pt-16">
+          <div className="mx-auto mb-28 flex h-24 w-24 items-center justify-center rounded-full bg-black/15">
             <ShieldIcon />
           </div>
 
@@ -148,7 +152,7 @@ export function UltimaDashboard() {
           >
             <span className="flex items-center gap-2">
               <GlobeIcon />
-              {t('lite.buyTariff')}
+              {t('lite.buySubscription', { defaultValue: 'Купить подписку' })}
             </span>
             <span className="text-white/90">от 199 ₽</span>
           </button>
@@ -168,20 +172,20 @@ export function UltimaDashboard() {
           </button>
         </section>
 
-        <nav className="mb-1 grid grid-cols-4 gap-2 rounded-2xl border border-white/10 bg-emerald-900/40 p-2 text-white/80 backdrop-blur">
+        <nav className="mb-2 grid grid-cols-4 gap-2 rounded-2xl border border-white/10 bg-emerald-900/40 p-2 text-white/80 backdrop-blur">
           <button
             type="button"
             className="rounded-xl bg-emerald-500 p-3 text-white"
             onClick={() => navigate('/')}
           >
-            <HomeIcon />
+            <GridIcon />
           </button>
           <button
             type="button"
             className="rounded-xl p-3 hover:bg-white/5"
             onClick={() => navigate('/connection')}
           >
-            <LinkIcon />
+            <GearIcon />
           </button>
           <button
             type="button"
