@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 import { subscriptionApi } from '@/api/subscription';
 import { useAuthStore } from '@/store/auth';
 
@@ -138,9 +139,18 @@ export function UltimaDashboard() {
   return (
     <div className="relative min-h-[100dvh] overflow-hidden bg-[radial-gradient(circle_at_76%_58%,rgba(16,185,129,0.34),rgba(4,17,26,0.98)_58%)] px-4 pb-[calc(20px+env(safe-area-inset-bottom,0px))] pt-2 sm:px-6">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-[44%] h-[560px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/10" />
-        <div className="absolute left-1/2 top-[44%] h-[430px] w-[430px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/10" />
-        <div className="absolute left-1/2 top-[44%] h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/10" />
+        <div className="absolute left-1/2 top-[46%] h-[560px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/10" />
+        <div className="absolute left-1/2 top-[46%] h-[430px] w-[430px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/10" />
+        <div className="absolute left-1/2 top-[46%] h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/10" />
+        {[0, 1.7, 3.4].map((delay) => (
+          <motion.div
+            key={delay}
+            className="absolute left-1/2 top-[46%] h-[560px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/20"
+            initial={{ scale: 0.14, opacity: 0 }}
+            animate={{ scale: 1, opacity: [0, 0.24, 0] }}
+            transition={{ duration: 5.1, repeat: Infinity, ease: 'linear', delay }}
+          />
+        ))}
       </div>
 
       {isAdmin && (
@@ -155,7 +165,7 @@ export function UltimaDashboard() {
       )}
 
       <div className="relative z-10 mx-auto flex min-h-[calc(100dvh-26px)] w-full max-w-md flex-col">
-        <section className="pt-[22vh]">
+        <section className="pt-[24vh]">
           <div className="mx-auto mb-[18vh] flex h-24 w-24 items-center justify-center rounded-full bg-black/15">
             <ShieldIcon />
           </div>
