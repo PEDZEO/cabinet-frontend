@@ -17,7 +17,6 @@ const Info = lazy(() => import('../Info'));
 const Wheel = lazy(() => import('../Wheel'));
 const Connection = lazy(() => import('../Connection'));
 const ConnectionQR = lazy(() => import('../ConnectionQR'));
-const LiteTrialOnboarding = lazy(() => import('../LiteTrialOnboarding'));
 const TopUpMethodSelect = lazy(() => import('../TopUpMethodSelect'));
 const TopUpAmount = lazy(() => import('../TopUpAmount'));
 const ReferralPartnerApply = lazy(() => import('../ReferralPartnerApply'));
@@ -200,16 +199,6 @@ export const protectedRoutes: RouteConfig[] = [
       <ProtectedRoute>
         <LazyPage>
           <Connection />
-        </LazyPage>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/lite/trial-onboarding',
-    element: (
-      <ProtectedRoute>
-        <LazyPage>
-          <LiteTrialOnboarding />
         </LazyPage>
       </ProtectedRoute>
     ),

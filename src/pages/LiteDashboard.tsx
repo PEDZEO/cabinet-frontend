@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router';
 import { subscriptionApi } from '@/api/subscription';
 import { referralApi } from '@/api/referral';
@@ -13,7 +13,11 @@ import { LiteDashboardSkeleton } from '@/components/lite/LiteDashboardSkeleton';
 import { PullToRefresh } from '@/components/lite/PullToRefresh';
 import Onboarding from '@/components/Onboarding';
 import PromoOffersSection from '@/components/PromoOffersSection';
-import { getLiteOnboardingFlowState } from '@/features/lite/onboardingFlow';
+import {
+  getLiteOnboardingFlowState,
+  markLiteOnboardingStep,
+  resetLiteOnboardingFlowState,
+} from '@/features/lite/onboardingFlow';
 
 // Icons
 const ConnectIcon = () => (
@@ -116,6 +120,7 @@ const ShareIcon = () => (
 
 // Lite mode onboarding hook with separate storage key
 const LITE_ONBOARDING_KEY = 'lite_onboarding_completed';
+const TRIAL_ACTIVATE_CLICK_COOLDOWN_MS = 1500;
 
 function useLiteOnboarding(userId?: number | null) {
   const storageKey = userId ? `${LITE_ONBOARDING_KEY}_${userId}` : LITE_ONBOARDING_KEY;
@@ -139,8 +144,11 @@ export function LiteDashboard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { user } = useAuthStore();
+  const { user, refreshUser } = useAuthStore();
   const haptic = useHapticFeedback();
+  const [trialError, setTrialError] = useState<string | null>(null);
+  const [isTrialActivationLocked, setIsTrialActivationLocked] = useState(false);
+  const trialActivationCooldownRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [onboardingFlow, setOnboardingFlow] = useState(() => getLiteOnboardingFlowState(user?.id));
   const [copied, setCopied] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -240,6 +248,73 @@ export function LiteDashboard() {
     window.open(telegramUrl, '_blank', 'noopener,noreferrer');
   };
 
+  // Mutations
+  const activateTrialMutation = useMutation({
+    mutationFn: subscriptionApi.activateTrial,
+    onSuccess: () => {
+      setTrialError(null);
+      resetLiteOnboardingFlowState(user?.id);
+      setOnboardingFlow(markLiteOnboardingStep('trial_activated', user?.id));
+      queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      queryClient.invalidateQueries({ queryKey: ['trial-info'] });
+      queryClient.invalidateQueries({ queryKey: ['balance'] });
+      queryClient.invalidateQueries({ queryKey: ['payment-methods'] });
+      queryClient.invalidateQueries({ queryKey: ['appConfig'] });
+      refreshUser();
+      navigate('/connection?guide=trial&step=2');
+    },
+    onError: (error: { response?: { data?: { detail?: string } } }) => {
+      const detail = error.response?.data?.detail?.toLowerCase() ?? '';
+
+      if (
+        detail.includes('insufficient') ||
+        detail.includes('balance') ||
+        detail.includes('fund')
+      ) {
+        setTrialError(t('lite.trialErrors.insufficientBalance'));
+        return;
+      }
+
+      if (detail.includes('already') || detail.includes('used') || detail.includes('activated')) {
+        setTrialError(t('lite.trialErrors.alreadyUsed'));
+        return;
+      }
+
+      if (
+        detail.includes('unavailable') ||
+        detail.includes('forbidden') ||
+        detail.includes('disabled')
+      ) {
+        setTrialError(t('lite.trialErrors.unavailable'));
+        return;
+      }
+
+      setTrialError(t('lite.trialErrors.generic'));
+    },
+  });
+
+  const handleActivateTrial = () => {
+    if (activateTrialMutation.isPending || isTrialActivationLocked) {
+      return;
+    }
+
+    setIsTrialActivationLocked(true);
+    trialActivationCooldownRef.current = setTimeout(() => {
+      setIsTrialActivationLocked(false);
+      trialActivationCooldownRef.current = null;
+    }, TRIAL_ACTIVATE_CLICK_COOLDOWN_MS);
+
+    activateTrialMutation.mutate();
+  };
+
+  useEffect(() => {
+    return () => {
+      if (trialActivationCooldownRef.current) {
+        clearTimeout(trialActivationCooldownRef.current);
+      }
+    };
+  }, []);
+
   const subscription = subscriptionResponse?.subscription ?? null;
   const hasNoSubscription = subscriptionResponse?.has_subscription === false && !subLoading;
   const hasActiveSubscription =
@@ -252,8 +327,12 @@ export function LiteDashboard() {
   const expiredOnLabel = hasExpiredSubscription
     ? new Date(subscription.end_date).toLocaleDateString()
     : null;
-  const showTrialOnboardingEntry =
-    !hasActiveSubscription && (shouldShowTrialConnectHint || onboardingFlow.trial_activated);
+  const trialFlowStep1Done = onboardingFlow.trial_activated;
+  const trialFlowStep2Done = onboardingFlow.connection_opened;
+  const trialFlowStep3Done = onboardingFlow.subscription_added;
+  const showTrialFlow =
+    (shouldShowTrialConnectHint || onboardingFlow.trial_activated) &&
+    !(trialFlowStep3Done && hasActiveSubscription);
 
   // Get device limit from tariff settings
   const tariffs = purchaseOptions?.sales_mode === 'tariffs' ? purchaseOptions.tariffs : [];
@@ -358,27 +437,78 @@ export function LiteDashboard() {
                   </div>
                 )}
 
-                {showTrialOnboardingEntry && (
+                {showTrialFlow && (
                   <div
-                    data-testid="lite-trial-onboarding-entry"
+                    data-testid="lite-trial-hint-card"
                     className="rounded-2xl border border-warning-500/35 bg-warning-500/10 p-3 min-[360px]:p-4"
                   >
                     <p className="text-sm font-semibold text-warning-300">
-                      {t('lite.connectHintTrialTitle', 'Начните с пробного периода')}
+                      {t('lite.connectHintTrialTitle')}
                     </p>
                     <p className="mt-1 text-xs text-dark-300">
-                      {t(
-                        'lite.trialOnboarding.entryDescription',
-                        'Откройте пошаговую настройку: активация триала, установка приложения и добавление подписки.',
-                      )}
+                      {t('lite.connectHintTrialDescription')}
                     </p>
-                    <button
-                      type="button"
-                      onClick={() => navigate('/lite/trial-onboarding')}
-                      className="mt-3 w-full rounded-xl border border-white/45 bg-accent-500 py-2.5 text-sm font-semibold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.3)] ring-1 ring-white/35 transition-colors hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70"
-                    >
-                      {t('lite.trialOnboarding.open', 'Открыть пошаговую настройку')}
-                    </button>
+                    <p className="mt-2 text-2xs font-semibold uppercase tracking-[0.05em] text-dark-400">
+                      {t('lite.connectHintProgress', {
+                        current: trialFlowStep3Done
+                          ? 3
+                          : trialFlowStep2Done
+                            ? 2
+                            : trialFlowStep1Done
+                              ? 1
+                              : 0,
+                        total: 3,
+                      })}
+                    </p>
+                    <ol className="mt-2 space-y-1.5 text-xs text-dark-200">
+                      <li className="flex items-start gap-2">
+                        <span
+                          className={`mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-semibold ${trialFlowStep1Done ? 'bg-success-500/20 text-success-300' : 'bg-dark-700 text-dark-300'}`}
+                        >
+                          {trialFlowStep1Done ? '✓' : '1'}
+                        </span>
+                        <span>{t('lite.connectHintTrialStep1')}</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span
+                          className={`mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-semibold ${trialFlowStep2Done ? 'bg-success-500/20 text-success-300' : 'bg-dark-700 text-dark-300'}`}
+                        >
+                          {trialFlowStep2Done ? '✓' : '2'}
+                        </span>
+                        <span>{t('lite.connectHintTrialStep2')}</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span
+                          className={`mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-semibold ${trialFlowStep3Done ? 'bg-success-500/20 text-success-300' : 'bg-dark-700 text-dark-300'}`}
+                        >
+                          {trialFlowStep3Done ? '✓' : '3'}
+                        </span>
+                        <span>{t('lite.connectHintTrialStep3')}</span>
+                      </li>
+                    </ol>
+                    {!trialFlowStep1Done && (
+                      <button
+                        type="button"
+                        data-testid="lite-activate-trial"
+                        onClick={handleActivateTrial}
+                        disabled={activateTrialMutation.isPending || isTrialActivationLocked}
+                        className="mt-3 w-full rounded-xl border border-white/45 bg-accent-500 py-2.5 text-sm font-semibold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.3)] ring-1 ring-white/35 transition-colors hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70 disabled:cursor-not-allowed disabled:opacity-60 motion-safe:animate-pulse"
+                      >
+                        {activateTrialMutation.isPending
+                          ? t('common.loading')
+                          : t('lite.activateTrial')}
+                      </button>
+                    )}
+                    {trialFlowStep1Done && !trialFlowStep3Done && (
+                      <button
+                        type="button"
+                        onClick={() => navigate('/connection?guide=trial&step=2')}
+                        className="mt-3 w-full rounded-xl border border-accent-400/60 bg-accent-500 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/70"
+                      >
+                        {t('lite.connect')}
+                      </button>
+                    )}
+                    {trialError && <p className="mt-2 text-xs text-error-300">{trialError}</p>}
                   </div>
                 )}
               </div>
