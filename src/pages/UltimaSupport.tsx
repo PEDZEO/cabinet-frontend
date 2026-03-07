@@ -191,12 +191,12 @@ export function UltimaSupport() {
   return (
     <div className="ultima-shell ultima-flat-frames">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(95%_70%_at_50%_45%,rgba(33,208,154,0.14),rgba(7,20,46,0.02)_62%,rgba(7,20,46,0)_100%)]" />
-      <div className="ultima-shell-inner">
+      <div className="ultima-shell-inner lg:max-w-[560px]">
         <header className="mb-4">
-          <h1 className="text-[56px] font-semibold leading-[0.9] tracking-[-0.01em] text-white">
+          <h1 className="text-[42px] font-semibold leading-[0.92] tracking-[-0.01em] text-white sm:text-[50px] lg:text-[46px]">
             {t('support.title')}
           </h1>
-          <p className="mt-1.5 text-[18px] leading-tight text-white/60">
+          <p className="mt-1.5 text-[16px] leading-tight text-white/60">
             {ticketsDisabled
               ? t('support.contactSupport', {
                   username: supportConfig?.support_username || '@support',
@@ -271,8 +271,8 @@ export function UltimaSupport() {
               </button>
             </div>
 
-            <div className="grid min-h-0 flex-1 grid-cols-1 gap-3">
-              <div className="bg-emerald-950/26 max-h-[30vh] space-y-2 overflow-y-auto rounded-2xl p-2 pr-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+            <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[240px_minmax(0,1fr)]">
+              <div className="bg-emerald-950/26 max-h-[30vh] space-y-2 overflow-y-auto rounded-2xl p-2 pr-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] lg:max-h-none">
                 {ticketsLoading ? (
                   <p className="px-2 py-1 text-[13px] text-white/70">{t('common.loading')}</p>
                 ) : tickets?.items?.length ? (
@@ -315,7 +315,7 @@ export function UltimaSupport() {
                 )}
               </div>
 
-              <div className="bg-emerald-950/26 min-h-0 flex-1 rounded-2xl p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+              <div className="bg-emerald-950/26 min-h-0 flex-1 rounded-2xl p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] lg:min-h-[340px]">
                 {selectedTicketId && ticketDetail ? (
                   <div className="flex h-full min-h-0 flex-col gap-3">
                     <div className="flex items-center justify-between gap-2">
@@ -328,7 +328,7 @@ export function UltimaSupport() {
                         {getStatusMeta(ticketDetail.status).label}
                       </span>
                     </div>
-                    <div className="max-h-[24vh] space-y-2 overflow-y-auto pr-1">
+                    <div className="max-h-[24vh] space-y-2 overflow-y-auto pr-1 lg:max-h-[36vh]">
                       {ticketLoading ? (
                         <p className="text-[12px] text-white/60">{t('common.loading')}</p>
                       ) : (

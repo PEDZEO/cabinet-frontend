@@ -288,13 +288,13 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
 
   return (
     <div className="ultima-shell">
-      <div className="ultima-shell-inner">
+      <div className="ultima-shell-inner lg:max-w-[520px]">
         <section className="flex min-h-0 flex-1 flex-col">
-          <div key={step} className="ultima-step-enter pt-2 text-center">
-            <h1 className="text-[46px] font-semibold leading-[0.96] text-white sm:text-[50px]">
+          <div key={step} className="ultima-step-enter pt-2 text-center lg:pt-1">
+            <h1 className="text-[42px] font-semibold leading-[0.96] text-white sm:text-[46px]">
               {title}
             </h1>
-            <p className="mx-auto mt-2 max-w-[330px] text-[18px] leading-[1.2] text-white/70">
+            <p className="mx-auto mt-2 max-w-[360px] text-[17px] leading-[1.2] text-white/70">
               {subtitle}
             </p>
             <div className="mx-auto mt-4 flex w-fit items-center gap-2">
@@ -319,7 +319,7 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
             </div>
           </div>
 
-          <div className="relative mt-10 flex flex-1 items-center justify-center">
+          <div className="relative mt-7 flex flex-1 items-center justify-center lg:mt-5">
             <div className="border-emerald-200/22 pointer-events-none absolute h-[360px] w-[360px] rounded-full border" />
             <div className="pointer-events-none absolute h-[270px] w-[270px] rounded-full border border-emerald-200/20" />
             <div className="pointer-events-none absolute h-[188px] w-[188px] rounded-full border border-emerald-300/65" />
@@ -349,7 +349,7 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
                 style={{ transition: 'stroke-dashoffset 420ms ease, stroke 240ms ease' }}
               />
             </svg>
-            <div className="bg-black/8 relative flex h-[132px] w-[132px] items-center justify-center rounded-full">
+            <div className="bg-black/8 relative flex h-[124px] w-[124px] items-center justify-center rounded-full">
               {icon}
               {step === 3 && showReturnConfetti && (
                 <div className="pointer-events-none absolute inset-[-160px] overflow-visible">
@@ -392,7 +392,7 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
             <button
               type="button"
               onClick={openInstall}
-              className="border-[#66ebc9]/42 mb-3 flex w-full items-center justify-center gap-2 rounded-full border bg-[#14cf9a] px-5 py-3 text-[16px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(7,146,108,0.2)]"
+              className="border-[#66ebc9]/42 mb-3 flex w-full items-center justify-center gap-2 rounded-full border bg-[#14cf9a] px-5 py-2.5 text-[16px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(7,146,108,0.2)]"
             >
               <span aria-hidden>⟳</span>
               {t('subscription.connection.installApp', { defaultValue: 'Установить приложение' })}
@@ -402,7 +402,7 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
             <button
               type="button"
               onClick={openAddSubscription}
-              className="border-[#66ebc9]/42 mb-3 flex w-full items-center justify-center gap-2 rounded-full border bg-[#14cf9a] px-5 py-3 text-[16px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(7,146,108,0.2)]"
+              className="border-[#66ebc9]/42 mb-3 flex w-full items-center justify-center gap-2 rounded-full border bg-[#14cf9a] px-5 py-2.5 text-[16px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(7,146,108,0.2)]"
             >
               <span aria-hidden>◌</span>
               {t('subscription.connection.addSubscription', { defaultValue: 'Добавить подписку' })}
@@ -412,7 +412,7 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
             <button
               type="button"
               onClick={finishFlow}
-              className="border-[#66ebc9]/42 mb-3 flex w-full items-center justify-center rounded-full border bg-[#14cf9a] px-5 py-3 text-[16px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(7,146,108,0.2)]"
+              className="border-[#66ebc9]/42 mb-3 flex w-full items-center justify-center rounded-full border bg-[#14cf9a] px-5 py-2.5 text-[16px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(7,146,108,0.2)]"
             >
               {t('subscription.connection.finishSetup', { defaultValue: 'Завершить настройку' })}
             </button>
@@ -422,7 +422,7 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
             <button
               type="button"
               onClick={advanceStep}
-              className="mb-3 flex w-full items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-3 text-[16px] font-medium text-white/95"
+              className="mb-3 flex w-full items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-2.5 text-[16px] font-medium text-white/95"
             >
               {t('subscription.connection.nextStep', { defaultValue: 'Следующий шаг' })}
               <span aria-hidden className="text-white/70">
@@ -438,7 +438,7 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
       {step === 1 && showInfo && (
         <>
           <div className="bg-black/52 absolute inset-0 z-[18]" />
-          <div className="ultima-step-enter border-white/24 absolute inset-x-4 bottom-[252px] z-20 rounded-[24px] border bg-[#05070B] p-4 text-white shadow-[0_26px_56px_rgba(0,0,0,0.72)] backdrop-blur-xl">
+          <div className="ultima-step-enter border-white/24 absolute inset-x-4 bottom-[252px] z-20 rounded-[24px] border bg-[#05070B] p-4 text-white shadow-[0_26px_56px_rgba(0,0,0,0.72)] backdrop-blur-xl lg:bottom-44 lg:left-1/2 lg:right-auto lg:w-[480px] lg:-translate-x-1/2">
             <div className="mb-2 flex items-start justify-between gap-3">
               <h3 className="text-[24px] font-semibold leading-[1.06] text-white/95">
                 {t('subscription.connection.importantInfo', {
