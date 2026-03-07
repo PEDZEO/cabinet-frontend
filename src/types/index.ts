@@ -342,6 +342,7 @@ export interface Tariff {
   is_unlimited_traffic: boolean;
   device_limit: number;
   base_device_limit?: number;
+  max_device_limit?: number;
   extra_devices_count: number;
   servers_count: number;
   servers: TariffServer[];
@@ -470,6 +471,7 @@ export interface PaymentMethod {
   max_amount_kopeks: number;
   is_available: boolean;
   options?: PaymentMethodOption[] | null;
+  is_default_for_subscription?: boolean;
 }
 
 // Referral types
@@ -686,6 +688,7 @@ export interface PaymentMethodConfig {
   promo_group_filter_mode: 'all' | 'selected';
   allowed_promo_group_ids: number[];
   is_provider_configured: boolean;
+  is_default_for_subscription?: boolean;
   created_at: string | null;
   updated_at: string | null;
 }

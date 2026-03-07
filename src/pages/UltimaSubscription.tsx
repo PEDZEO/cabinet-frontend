@@ -2,9 +2,10 @@ import { type MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
+import { balanceApi } from '@/api/balance';
 import { subscriptionApi } from '@/api/subscription';
 import { useCurrency } from '@/hooks/useCurrency';
-import type { Tariff, TariffPeriod } from '@/types';
+import type { PaymentMethod, Tariff, TariffPeriod } from '@/types';
 
 const Dot = ({ active = false }: { active?: boolean }) => (
   <span
@@ -32,6 +33,15 @@ export function UltimaSubscription() {
     queryKey: ['purchase-options'],
     queryFn: subscriptionApi.getPurchaseOptions,
     refetchOnMount: 'always',
+  });
+  const { data: devicePriceMeta } = useQuery({
+    queryKey: ['device-price', 'ultima-max'],
+    queryFn: () => subscriptionApi.getDevicePrice(1),
+    retry: false,
+  });
+  const { data: paymentMethods } = useQuery({
+    queryKey: ['payment-methods'],
+    queryFn: balanceApi.getPaymentMethods,
   });
 
   const tariffs = useMemo(() => {
@@ -73,19 +83,21 @@ export function UltimaSubscription() {
     if (!tariffs.length) return availableDeviceLimits.length ? availableDeviceLimits : [1];
     const withMaxLimit = (tariff: Tariff) => tariff as Tariff & { max_device_limit?: number };
 
-    const minBase = Math.max(
+    const minBaseFromTariffs = Math.max(
       1,
       Math.min(...tariffs.map((tariff) => tariff.base_device_limit ?? tariff.device_limit ?? 1)),
     );
+    const minBase = Math.max(1, devicePriceMeta?.current_device_limit ?? minBaseFromTariffs);
     const maxLimit = Math.max(
       minBase,
+      devicePriceMeta?.max_device_limit ?? minBase,
       ...tariffs.map(
         (tariff) => withMaxLimit(tariff).max_device_limit ?? tariff.device_limit ?? minBase,
       ),
     );
     const fullRange = Array.from({ length: maxLimit - minBase + 1 }, (_, i) => minBase + i);
     return fullRange.length ? fullRange : availableDeviceLimits;
-  }, [tariffs, availableDeviceLimits]);
+  }, [tariffs, availableDeviceLimits, devicePriceMeta]);
 
   const closestDeviceIndex = useMemo(() => {
     if (!deviceLimits.length) return 0;
@@ -196,6 +208,14 @@ export function UltimaSubscription() {
   }, [displayPeriods, selectedPeriodDays]);
 
   const selectedTariffIdForPurchase = selectedPeriod?.tariffId ?? selectedTariff?.id ?? null;
+  const defaultPaymentMethod = useMemo(() => {
+    if (!paymentMethods?.length) return null;
+    const available = paymentMethods.filter((method) => method.is_available);
+    if (!available.length) return null;
+    return (
+      available.find((method: PaymentMethod) => method.is_default_for_subscription) ?? available[0]
+    );
+  }, [paymentMethods]);
 
   const purchaseMutation = useMutation({
     mutationFn: async () => {
@@ -230,6 +250,20 @@ export function UltimaSubscription() {
     const rubles = kopeks / 100;
     const value = Number.isInteger(rubles) ? String(rubles) : rubles.toFixed(2);
     return `${value} ${currencySymbol}`;
+  };
+  const canPayFromBalance = (purchaseOptions?.balance_kopeks ?? 0) >= selectedPeriod.price_kopeks;
+  const openTopUpForSubscription = () => {
+    if (!defaultPaymentMethod) {
+      navigate('/balance/top-up');
+      return;
+    }
+    const params = new URLSearchParams({
+      amount: String(selectedPeriod.price_kopeks / 100),
+      returnTo: '/subscription',
+      autostart: '1',
+      autoopen: '1',
+    });
+    navigate(`/balance/top-up/${defaultPaymentMethod.id}?${params.toString()}`);
   };
 
   const periodLabel = (period: TariffPeriod) => {
@@ -372,7 +406,13 @@ export function UltimaSubscription() {
           {error && <p className="mb-3 text-center text-[18px] text-red-300">{error}</p>}
           <button
             type="button"
-            onClick={() => purchaseMutation.mutate()}
+            onClick={() => {
+              if (!canPayFromBalance) {
+                openTopUpForSubscription();
+                return;
+              }
+              purchaseMutation.mutate();
+            }}
             disabled={purchaseMutation.isPending}
             className="flex w-full items-center justify-between rounded-full border border-[#52ecc6]/40 bg-[#12cd97] px-6 py-4 text-[20px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_8px_20px_rgba(10,123,94,0.28)]"
           >

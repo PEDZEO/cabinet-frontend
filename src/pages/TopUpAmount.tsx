@@ -95,6 +95,10 @@ export default function TopUpAmount() {
   const initialAmountRubles = searchParams.get('amount')
     ? parseFloat(searchParams.get('amount')!)
     : undefined;
+  const autoStartPayment = searchParams.get('autostart') === '1';
+  const autoOpenPayment = searchParams.get('autoopen') !== '0';
+  const autoStartedRef = useRef(false);
+  const handleSubmitRef = useRef<() => void>(() => {});
 
   // Get method from cached payment-methods query
   const cachedMethods = queryClient.getQueryData<PaymentMethod[]>(['payment-methods']);
@@ -181,6 +185,18 @@ export default function TopUpAmount() {
     },
   });
 
+  const handleOpenPayment = useCallback(
+    (url: string) => {
+      if (!url) return;
+      if (url.includes('t.me/')) {
+        openTelegramLink(url);
+      } else {
+        openLink(url);
+      }
+    },
+    [openLink, openTelegramLink],
+  );
+
   const topUpMutation = useMutation<
     {
       payment_id: string;
@@ -202,6 +218,9 @@ export default function TopUpAmount() {
       const redirectUrl = data.payment_url || data.invoice_url;
       if (redirectUrl) {
         setPaymentUrl(redirectUrl);
+        if (autoOpenPayment) {
+          handleOpenPayment(redirectUrl);
+        }
       }
     },
     onError: (err: unknown) => {
@@ -223,21 +242,13 @@ export default function TopUpAmount() {
     return () => clearTimeout(timer);
   }, []);
 
-  if (!method) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
-      </div>
-    );
-  }
-
-  const hasOptions = method.options && method.options.length > 0;
-  const minRubles = method.min_amount_kopeks / 100;
-  const maxRubles = method.max_amount_kopeks / 100;
-  const methodKey = method.id.toLowerCase().replace(/-/g, '_');
+  const hasOptions = Boolean(method?.options && method.options.length > 0);
+  const minRubles = (method?.min_amount_kopeks ?? 0) / 100;
+  const maxRubles = (method?.max_amount_kopeks ?? 0) / 100;
+  const methodKey = (method?.id ?? '').toLowerCase().replace(/-/g, '_');
   const isStarsMethod = methodKey.includes('stars');
   const methodName =
-    t(`balance.paymentMethods.${methodKey}.name`, { defaultValue: '' }) || method.name;
+    t(`balance.paymentMethods.${methodKey}.name`, { defaultValue: '' }) || method?.name || '';
 
   const handleSubmit = () => {
     setError(null);
@@ -272,6 +283,7 @@ export default function TopUpAmount() {
       topUpMutation.mutate(amountKopeks);
     }
   };
+  handleSubmitRef.current = handleSubmit;
 
   const quickAmounts = [100, 300, 500, 1000].filter((a) => a >= minRubles && a <= maxRubles);
   const currencyDecimals = targetCurrency === 'IRR' || targetCurrency === 'RUB' ? 0 : 2;
@@ -281,13 +293,9 @@ export default function TopUpAmount() {
       : convertAmount(rub).toFixed(currencyDecimals);
   const isPending = topUpMutation.isPending || starsPaymentMutation.isPending;
 
-  const handleOpenPayment = () => {
+  const handleOpenPaymentClick = () => {
     if (!paymentUrl) return;
-    if (paymentUrl.includes('t.me/')) {
-      openTelegramLink(paymentUrl);
-    } else {
-      openLink(paymentUrl);
-    }
+    handleOpenPayment(paymentUrl);
   };
 
   const handleCopyUrl = async () => {
@@ -300,6 +308,22 @@ export default function TopUpAmount() {
       console.warn('Failed to copy:', e);
     }
   };
+
+  useEffect(() => {
+    if (!autoStartPayment || autoStartedRef.current) return;
+    if (isPending || paymentUrl) return;
+    if (!amount || Number.isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) return;
+    autoStartedRef.current = true;
+    handleSubmitRef.current();
+  }, [autoStartPayment, amount, isPending, paymentUrl]);
+
+  if (!method) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -489,7 +513,7 @@ export default function TopUpAmount() {
 
           <button
             type="button"
-            onClick={handleOpenPayment}
+            onClick={handleOpenPaymentClick}
             className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-success-500 font-bold text-white transition-colors hover:bg-success-400 active:bg-success-600"
           >
             <ExternalLinkIcon />

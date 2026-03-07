@@ -34,6 +34,7 @@ const METHOD_LABELS: Record<string, string> = {
   cloudpayments: 'CloudPayments',
   kassa_ai: 'Kassa AI',
 };
+const DEFAULT_SUBSCRIPTION_PAYMENT_KEY = '__default_subscription_payment__';
 
 const CheckIcon = () => (
   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -82,6 +83,7 @@ export default function AdminPaymentMethodEdit() {
   const [firstTopupFilter, setFirstTopupFilter] = useState<'any' | 'yes' | 'no'>('any');
   const [promoGroupFilterMode, setPromoGroupFilterMode] = useState<'all' | 'selected'>('all');
   const [selectedPromoGroupIds, setSelectedPromoGroupIds] = useState<number[]>([]);
+  const [isDefaultForSubscription, setIsDefaultForSubscription] = useState(false);
 
   // Initialize state when config loads
   useEffect(() => {
@@ -95,6 +97,9 @@ export default function AdminPaymentMethodEdit() {
       setFirstTopupFilter(config.first_topup_filter);
       setPromoGroupFilterMode(config.promo_group_filter_mode);
       setSelectedPromoGroupIds(config.allowed_promo_group_ids);
+      setIsDefaultForSubscription(
+        Boolean(config.sub_options?.[DEFAULT_SUBSCRIPTION_PAYMENT_KEY] ?? false),
+      );
     }
   }, [config]);
 
@@ -126,9 +131,10 @@ export default function AdminPaymentMethodEdit() {
     }
 
     // Sub-options
-    if (config.available_sub_options) {
-      data.sub_options = subOptions;
-    }
+    data.sub_options = {
+      ...(subOptions || {}),
+      [DEFAULT_SUBSCRIPTION_PAYMENT_KEY]: isDefaultForSubscription,
+    };
 
     // Amounts
     if (minAmount !== '') {
@@ -226,6 +232,36 @@ export default function AdminPaymentMethodEdit() {
             <span
               className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-transform ${
                 isEnabled ? 'left-6' : 'left-1'
+              }`}
+            />
+          </button>
+        </div>
+
+        {/* Default payment method for subscription top-up redirect */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-sm font-medium text-dark-200">
+              {t(
+                'admin.paymentMethods.defaultForSubscription',
+                'Открывать первым для оплаты подписки',
+              )}
+            </div>
+            <div className="mt-0.5 text-xs text-dark-500">
+              {t(
+                'admin.paymentMethods.defaultForSubscriptionHint',
+                'При нехватке баланса переход на оплату подписки будет открывать этот метод сразу.',
+              )}
+            </div>
+          </div>
+          <button
+            onClick={() => setIsDefaultForSubscription(!isDefaultForSubscription)}
+            className={`relative h-6 w-11 rounded-full transition-colors ${
+              isDefaultForSubscription ? 'bg-accent-500' : 'bg-dark-600'
+            }`}
+          >
+            <span
+              className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-transform ${
+                isDefaultForSubscription ? 'left-6' : 'left-1'
               }`}
             />
           </button>
