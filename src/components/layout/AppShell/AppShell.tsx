@@ -558,7 +558,11 @@ export function AppShell({ children }: AppShellProps) {
                 : 'pt-6',
         )}
       >
-        {isLiteModeReady && isUltimaModeReady && isCompactMode && !isUltimaSceneRoute ? (
+        {isLiteModeReady &&
+        isUltimaModeReady &&
+        isLiteMode &&
+        !isUltimaMode &&
+        !isUltimaSceneRoute ? (
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={location.pathname}
