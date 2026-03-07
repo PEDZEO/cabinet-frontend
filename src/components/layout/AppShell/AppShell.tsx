@@ -30,6 +30,8 @@ import { MobileBottomNav } from './MobileBottomNav';
 import { AppHeader } from './AppHeader';
 import { LiteModeHeader } from './LiteModeHeader';
 
+const ULTIMA_RING_DURATION_SEC = 18;
+
 // Desktop nav icons
 const HomeIcon = ({ className }: { className?: string }) => (
   <svg
@@ -213,7 +215,7 @@ export function AppShell({ children }: AppShellProps) {
   const isCompactMode = isLiteMode || isUltimaMode;
   const isUltimaSceneRoute =
     isUltimaMode && ['/', '/subscription', '/connection'].includes(location.pathname);
-  const ultimaWavePhaseShiftSecRef = useRef(-((Date.now() / 1000) % 9.6));
+  const ultimaWavePhaseShiftSecRef = useRef(-((Date.now() / 1000) % ULTIMA_RING_DURATION_SEC));
   const hasLiteHeader = isLiteMode;
   const hasRegularHeader = !isCompactMode;
   const isCompactMainPage = isCompactMode && location.pathname === '/';
@@ -348,11 +350,13 @@ export function AppShell({ children }: AppShellProps) {
       {/* Animated background (disabled for Ultima mode) */}
       {(!isUltimaModeReady || !isUltimaMode) && <BackgroundRenderer />}
       {isUltimaModeReady && isUltimaSceneRoute && (
-        <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[radial-gradient(circle_at_76%_58%,rgba(16,185,129,0.34),rgba(4,17,26,0.98)_58%)]">
-          {[0, 1.15, 2.3, 3.45, 4.6, 5.75, 6.9, 8.05, 9.2, 10.35].map((delay) => (
+        <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[radial-gradient(circle_at_74%_58%,rgba(23,200,145,0.26),rgba(4,16,25,0.98)_56%)]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_84%,rgba(15,168,132,0.22),transparent_52%),radial-gradient(circle_at_84%_18%,rgba(124,255,218,0.1),transparent_48%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(160deg,rgba(2,13,22,0.6)_0%,rgba(7,42,41,0.28)_44%,rgba(3,17,27,0.74)_100%)]" />
+          {[0, 1.8, 3.6, 5.4, 7.2, 9, 10.8, 12.6, 14.4].map((delay) => (
             <div
               key={delay}
-              className="ultima-ring-wave absolute left-1/2 top-[36%] h-[160vmax] w-[160vmax] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/45"
+              className="ultima-ring-wave absolute left-1/2 top-1/2 h-[170vmax] w-[170vmax] -translate-x-1/2 -translate-y-1/2 transform-gpu rounded-full border border-emerald-200/50"
               style={{ animationDelay: `${ultimaWavePhaseShiftSecRef.current + delay}s` }}
             />
           ))}
