@@ -67,30 +67,66 @@ export function UltimaAgreement() {
   });
 
   const htmlContent = useMemo(() => formatContent(data?.content ?? ''), [data?.content]);
+  const updatedAtLabel = useMemo(() => {
+    if (!data?.updated_at) return null;
+    const date = new Date(data.updated_at);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toLocaleDateString(i18n.language || 'ru', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  }, [data, i18n.language]);
 
   return (
     <div className="relative h-[100dvh] overflow-hidden bg-transparent px-4 pb-[calc(14px+env(safe-area-inset-bottom,0px))] pt-4">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(95%_70%_at_50%_45%,rgba(33,208,154,0.14),rgba(7,20,46,0.02)_62%,rgba(7,20,46,0)_100%)]" />
       <div className="relative z-10 mx-auto flex h-full min-h-0 max-w-md flex-col">
-        <header className="mb-4">
-          <h1 className="text-[56px] font-semibold leading-[0.9] tracking-[-0.01em] text-white">
+        <section className="mb-3 rounded-[28px] border border-emerald-200/10 bg-[linear-gradient(180deg,rgba(69,186,142,0.18),rgba(18,79,64,0.3))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md">
+          <div className="border-white/12 bg-white/6 flex h-11 w-11 items-center justify-center rounded-2xl border text-white/80">
+            <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6">
+              <path
+                d="M8 3.5h7l4 4v12A1.5 1.5 0 0 1 17.5 21h-9A1.5 1.5 0 0 1 7 19.5v-14A1.5 1.5 0 0 1 8.5 4"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path d="M15 3.5V8h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              <path
+                d="m9.8 14.1 1.8 1.8 3.2-3.2"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+          <h1 className="mt-3 text-[39px] font-semibold leading-[0.92] tracking-[-0.015em] text-white">
             {t('profile.termsTitle', { defaultValue: 'Пользовательское соглашение' })}
           </h1>
-          <p className="mt-1.5 text-[18px] leading-tight text-white/60">
-            {t('profile.termsDescription', { defaultValue: 'Соглашения и правила сервиса' })}
+          <p className="text-white/52 mt-1.5 text-[14px]">
+            {updatedAtLabel
+              ? t('common.updatedAtDate', {
+                  defaultValue: `Обновлено ${updatedAtLabel}`,
+                  date: updatedAtLabel,
+                })
+              : t('profile.termsDescription', {
+                  defaultValue: 'Соглашения и правила сервиса',
+                })}
           </p>
-        </header>
+        </section>
 
-        <section className="border-emerald-200/12 bg-emerald-950/22 min-h-0 flex-1 overflow-hidden rounded-3xl border backdrop-blur-md">
+        <section className="min-h-0 flex-1 overflow-hidden rounded-3xl">
           {isLoading ? (
             <div className="flex h-full items-center justify-center">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-300/35 border-t-transparent" />
             </div>
           ) : (
-            <div className="text-white/88 h-full overflow-y-auto px-4 py-4 text-[14px] leading-6">
+            <div className="text-white/87 h-full overflow-y-auto px-1 pb-1 text-[14px] leading-[1.6]">
               {htmlContent ? (
                 <div
-                  className="prose prose-invert max-w-none [&_a]:text-[#52ecc6] [&_a]:underline"
+                  className="prose prose-invert max-w-none [&_a]:text-[#5de8c3] [&_a]:underline [&_h1]:mb-3 [&_h1]:text-[34px] [&_h1]:font-semibold [&_h1]:leading-[1] [&_h2]:mb-2 [&_h2]:mt-6 [&_h2]:text-[34px] [&_h2]:font-semibold [&_h2]:leading-[1] [&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-[34px] [&_h3]:font-semibold [&_h3]:leading-[1] [&_li]:mb-1 [&_p]:mb-3 [&_strong]:font-semibold"
                   dangerouslySetInnerHTML={{ __html: htmlContent }}
                 />
               ) : (
@@ -102,7 +138,7 @@ export function UltimaAgreement() {
           )}
         </section>
 
-        <div className="mt-3">
+        <div className="mt-2.5">
           <UltimaBottomNav active="profile" onProfileClick={() => navigate('/profile')} />
         </div>
       </div>

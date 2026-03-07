@@ -62,15 +62,16 @@ export function UltimaBottomNav({
 
   const getButtonClassName = (isActive: boolean) =>
     isActive
-      ? 'rounded-full border border-[#59f0c9]/35 bg-[#14cf9a] p-3 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]'
-      : 'rounded-full p-3 text-white/85 hover:bg-white/10';
+      ? 'flex h-11 items-center justify-center rounded-[16px] border border-[#7af4d4]/35 bg-[#1bd29f] text-white shadow-[0_8px_20px_rgba(20,209,157,0.32),inset_0_1px_0_rgba(255,255,255,0.24)] transition-transform active:scale-[0.98]'
+      : 'flex h-11 items-center justify-center rounded-[16px] text-white/78 transition hover:bg-white/8 active:scale-[0.98]';
 
   return (
-    <nav className="border-white/14 grid grid-cols-4 gap-2 rounded-full border bg-emerald-900/45 p-2 text-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur">
+    <nav className="border-white/12 grid grid-cols-4 gap-1.5 rounded-[22px] border bg-[linear-gradient(180deg,rgba(24,92,76,0.76),rgba(10,48,40,0.92))] p-1.5 text-white/80 shadow-[0_14px_34px_rgba(3,9,18,0.45),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-xl">
       <button
         type="button"
         className={getButtonClassName(active === 'home')}
         onClick={onHomeClick ?? (() => navigate('/'))}
+        aria-label="ultima-nav-home"
       >
         <GridIcon />
       </button>
@@ -78,6 +79,7 @@ export function UltimaBottomNav({
         type="button"
         className={getButtonClassName(active === 'connection')}
         onClick={onConnectionClick ?? (() => navigate('/connection'))}
+        aria-label="ultima-nav-connection"
       >
         <GearIcon />
       </button>
@@ -85,6 +87,7 @@ export function UltimaBottomNav({
         type="button"
         className={getButtonClassName(active === 'profile')}
         onClick={onProfileClick ?? (() => navigate('/profile'))}
+        aria-label="ultima-nav-profile"
       >
         <ProfileIcon />
       </button>
@@ -92,6 +95,7 @@ export function UltimaBottomNav({
         type="button"
         className={getButtonClassName(active === 'support')}
         onClick={onSupportClick ?? (() => navigate('/support'))}
+        aria-label="ultima-nav-support"
       >
         <SupportIcon />
       </button>
