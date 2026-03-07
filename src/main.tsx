@@ -108,18 +108,36 @@ const queryClient = new QueryClient({
   },
 });
 
+const isTranslationReady = () =>
+  i18n.isInitialized &&
+  i18n.hasLoadedNamespace('translation') &&
+  i18n.t('common.loading') !== 'common.loading';
+
 const ensureI18nReady = async () => {
-  if (i18n.isInitialized) return;
+  if (isTranslationReady()) return;
+
   await new Promise<void>((resolve) => {
-    const onInitialized = () => {
-      i18n.off('initialized', onInitialized);
+    const finish = () => {
+      if (!isTranslationReady()) return;
+      cleanup();
       resolve();
     };
-    i18n.on('initialized', onInitialized);
+
+    const cleanup = () => {
+      i18n.off('initialized', finish);
+      i18n.off('loaded', finish);
+      i18n.off('languageChanged', finish);
+    };
+
+    i18n.on('initialized', finish);
+    i18n.on('loaded', finish);
+    i18n.on('languageChanged', finish);
+    finish();
+
     window.setTimeout(() => {
-      i18n.off('initialized', onInitialized);
+      cleanup();
       resolve();
-    }, 1500);
+    }, 5000);
   });
 };
 
