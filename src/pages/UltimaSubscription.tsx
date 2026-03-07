@@ -319,16 +319,16 @@ export function UltimaSubscription() {
   return (
     <div className="relative h-[100dvh] overflow-hidden bg-[radial-gradient(circle_at_76%_58%,rgba(16,185,129,0.34),rgba(4,17,26,0.98)_58%)] px-4 pb-[calc(14px+env(safe-area-inset-bottom,0px))] pt-4">
       <div className="pointer-events-none absolute inset-0">
-        {[0, 0.95, 1.9, 2.85, 3.8, 4.75].map((delay) => (
+        {[0, 1.2, 2.4, 3.6, 4.8, 6, 7.2].map((delay) => (
           <div
             key={delay}
-            className="ultima-ring-wave absolute left-1/2 top-[36%] h-[140vmax] w-[140vmax] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/35"
+            className="ultima-ring-wave absolute left-1/2 top-[36%] h-[150vmax] w-[150vmax] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/35"
             style={{ animationDelay: `${delay}s` }}
           />
         ))}
       </div>
 
-      <div className="relative z-10 mx-auto flex h-full max-w-md flex-col">
+      <div className="ultima-content-enter relative z-10 mx-auto flex h-full max-w-md flex-col">
         <header className="mb-3">
           <h1 className="text-[42px] font-semibold leading-[0.95] text-white">Покупка подписки</h1>
           <p className="mt-2 text-[16px] leading-tight text-white/75">

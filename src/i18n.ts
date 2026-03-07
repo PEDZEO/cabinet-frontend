@@ -35,6 +35,8 @@ i18n
     react: {
       useSuspense: false,
     },
+    // Initialize synchronously with bundled resources to avoid first-paint i18n key flicker.
+    initImmediate: false,
   });
 
 export default i18n;
