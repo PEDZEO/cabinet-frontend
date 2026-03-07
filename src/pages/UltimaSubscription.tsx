@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { type MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
@@ -26,6 +26,7 @@ export function UltimaSubscription() {
   const [selectedPeriodDays, setSelectedPeriodDays] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const didInitDevice = useRef(false);
+  const deviceTrackRef = useRef<HTMLDivElement | null>(null);
 
   const { data: purchaseOptions, isLoading } = useQuery({
     queryKey: ['purchase-options'],
@@ -38,20 +39,35 @@ export function UltimaSubscription() {
     return purchaseOptions.tariffs.filter((tariff) => tariff.is_available);
   }, [purchaseOptions]);
 
-  const tariffsByDevice = useMemo(() => {
-    const map = new Map<number, Tariff[]>();
+  type DisplayPeriod = TariffPeriod & { tariffId: number; deviceLimit: number };
+
+  const periodsByDevice = useMemo(() => {
+    const map = new Map<number, DisplayPeriod[]>();
     tariffs.forEach((tariff) => {
-      const limit = Math.max(1, tariff.device_limit);
-      const list = map.get(limit) ?? [];
-      list.push(tariff);
-      map.set(limit, list);
+      const baseDeviceLimit = Math.max(1, tariff.base_device_limit ?? tariff.device_limit ?? 1);
+      const tariffExtraFallback = Math.max(
+        0,
+        (tariff.device_limit ?? baseDeviceLimit) - baseDeviceLimit,
+      );
+      tariff.periods
+        .filter((period) => period.days > 0)
+        .forEach((period) => {
+          const extraDevices = Math.max(
+            0,
+            period.extra_devices_count ?? tariff.extra_devices_count ?? tariffExtraFallback,
+          );
+          const deviceLimit = baseDeviceLimit + extraDevices;
+          const list = map.get(deviceLimit) ?? [];
+          list.push({ ...period, tariffId: tariff.id, deviceLimit });
+          map.set(deviceLimit, list);
+        });
     });
     return map;
   }, [tariffs]);
 
   const deviceLimits = useMemo(() => {
-    return [...tariffsByDevice.keys()].sort((a, b) => a - b);
-  }, [tariffsByDevice]);
+    return [...periodsByDevice.keys()].sort((a, b) => a - b);
+  }, [periodsByDevice]);
 
   const closestDeviceIndex = useMemo(() => {
     if (!deviceLimits.length) return 0;
@@ -88,42 +104,43 @@ export function UltimaSubscription() {
   const selectedDeviceLimit =
     deviceLimits[Math.min(selectedDeviceIndex, Math.max(0, deviceLimits.length - 1))] ?? 1;
 
-  const selectedTariffs = useMemo(() => {
-    if (!tariffs.length) return null;
-    const exact = tariffsByDevice.get(selectedDeviceLimit);
-    if (exact?.length) return exact;
-    const nearestLimit =
-      [...deviceLimits].sort(
-        (a, b) => Math.abs(a - selectedDeviceLimit) - Math.abs(b - selectedDeviceLimit),
-      )[0] ?? selectedDeviceLimit;
-    return tariffsByDevice.get(nearestLimit) ?? null;
-  }, [tariffs, tariffsByDevice, deviceLimits, selectedDeviceLimit]);
-
-  const selectedTariff = useMemo(() => {
-    if (!selectedTariffs?.length) return null;
-    return selectedTariffs.find((tariff) => tariff.is_current) ?? selectedTariffs[0];
-  }, [selectedTariffs]);
-
-  type DisplayPeriod = TariffPeriod & { tariffId: number };
+  const handleDeviceTrackClick = (event: MouseEvent<HTMLDivElement>) => {
+    if (!deviceTrackRef.current || deviceLimits.length <= 1) return;
+    const rect = deviceTrackRef.current.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const ratio = Math.min(1, Math.max(0, x / rect.width));
+    const index = Math.round(ratio * (deviceLimits.length - 1));
+    setSelectedDeviceIndex(index);
+  };
 
   const allPeriodsForDevice = useMemo(() => {
-    if (!selectedTariffs?.length) return [] as DisplayPeriod[];
+    if (!deviceLimits.length) return [] as DisplayPeriod[];
+    const exact = periodsByDevice.get(selectedDeviceLimit) ?? [];
+    const source =
+      exact.length > 0
+        ? exact
+        : (periodsByDevice.get(
+            [...deviceLimits].sort(
+              (a, b) => Math.abs(a - selectedDeviceLimit) - Math.abs(b - selectedDeviceLimit),
+            )[0] ?? selectedDeviceLimit,
+          ) ?? []);
+
     const bestByDays = new Map<number, DisplayPeriod>();
-    selectedTariffs.forEach((tariff) => {
-      tariff.periods
-        .filter((period) => period.days > 0)
-        .forEach((period) => {
-          const candidate: DisplayPeriod = { ...period, tariffId: tariff.id };
-          const existing = bestByDays.get(period.days);
-          if (!existing || candidate.price_kopeks < existing.price_kopeks) {
-            bestByDays.set(period.days, candidate);
-          }
-        });
+    source.forEach((period) => {
+      const existing = bestByDays.get(period.days);
+      if (!existing || period.price_kopeks < existing.price_kopeks) {
+        bestByDays.set(period.days, period);
+      }
     });
     return [...bestByDays.values()].sort(
       (a, b) => a.months - b.months || a.days - b.days || a.price_kopeks - b.price_kopeks,
     );
-  }, [selectedTariffs]);
+  }, [periodsByDevice, deviceLimits, selectedDeviceLimit]);
+
+  const selectedTariff = useMemo(() => {
+    if (!tariffs.length) return null;
+    return tariffs.find((tariff) => tariff.is_current) ?? tariffs[0];
+  }, [tariffs]);
 
   const displayPeriods = useMemo(() => {
     if (!allPeriodsForDevice.length) return [] as DisplayPeriod[];
@@ -176,7 +193,7 @@ export function UltimaSubscription() {
     );
   }, [displayPeriods, selectedPeriodDays]);
 
-  const selectedTariffIdForPurchase = selectedPeriod?.tariffId ?? selectedTariff?.id ?? null;
+  const selectedTariffIdForPurchase = selectedPeriod?.tariffId ?? null;
 
   const purchaseMutation = useMutation({
     mutationFn: async () => {
@@ -244,7 +261,24 @@ export function UltimaSubscription() {
           </div>
 
           <div className="rounded-2xl bg-black/15 p-3">
-            <div className="mb-2 h-1 w-full rounded-full bg-white/20" />
+            <div
+              ref={deviceTrackRef}
+              role="button"
+              tabIndex={0}
+              aria-label="devices-slider"
+              onClick={handleDeviceTrackClick}
+              onKeyDown={(event) => {
+                if (event.key === 'ArrowLeft') {
+                  event.preventDefault();
+                  setSelectedDeviceIndex((prev) => Math.max(0, prev - 1));
+                }
+                if (event.key === 'ArrowRight') {
+                  event.preventDefault();
+                  setSelectedDeviceIndex((prev) => Math.min(deviceLimits.length - 1, prev + 1));
+                }
+              }}
+              className="mb-2 h-1 w-full cursor-pointer rounded-full bg-white/20"
+            />
             <div className="flex items-center justify-between px-2">
               {deviceLimits.map((_, index) => (
                 <button
@@ -258,16 +292,6 @@ export function UltimaSubscription() {
                 </button>
               ))}
             </div>
-            <input
-              type="range"
-              min={0}
-              max={Math.max(0, deviceLimits.length - 1)}
-              step={1}
-              value={selectedDeviceIndex}
-              onChange={(event) => setSelectedDeviceIndex(Number(event.target.value))}
-              className="mt-3 h-1 w-full cursor-pointer appearance-none rounded-full bg-transparent accent-emerald-400"
-              aria-label="devices-slider"
-            />
           </div>
         </section>
 
