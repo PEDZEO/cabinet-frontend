@@ -213,6 +213,9 @@ export function AppShell({ children }: AppShellProps) {
   const { isLiteMode, isLiteModeReady } = useLiteMode();
   const { isUltimaMode, isUltimaModeReady } = useUltimaMode();
   const isCompactMode = isLiteMode || isUltimaMode;
+  const isUltimaAnimatedRoute =
+    isUltimaMode &&
+    ['/', '/subscription', '/connection', '/profile', '/support'].includes(location.pathname);
   const isUltimaSceneRoute =
     isUltimaMode && ['/', '/subscription', '/connection'].includes(location.pathname);
   const ultimaWavePhaseShiftSecRef = useRef(-((Date.now() / 1000) % ULTIMA_RING_DURATION_SEC));
@@ -349,7 +352,7 @@ export function AppShell({ children }: AppShellProps) {
     <div className="min-h-screen">
       {/* Animated background (disabled for Ultima mode) */}
       {(!isUltimaModeReady || !isUltimaMode) && <BackgroundRenderer />}
-      {isUltimaModeReady && isUltimaSceneRoute && (
+      {isUltimaModeReady && isUltimaAnimatedRoute && (
         <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[radial-gradient(circle_at_74%_58%,rgba(23,200,145,0.26),rgba(4,16,25,0.98)_56%)]">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_84%,rgba(15,168,132,0.22),transparent_52%),radial-gradient(circle_at_84%_18%,rgba(124,255,218,0.1),transparent_48%)]" />
           <div className="absolute inset-0 bg-[linear-gradient(160deg,rgba(2,13,22,0.6)_0%,rgba(7,42,41,0.28)_44%,rgba(3,17,27,0.74)_100%)]" />

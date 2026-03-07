@@ -109,9 +109,9 @@ function MenuItem({ item, onClick }: { item: SectionItem; onClick: () => void })
     <button
       type="button"
       onClick={onClick}
-      className="bg-emerald-950/28 flex w-full items-center gap-3 rounded-2xl border border-emerald-200/10 px-3 py-2 text-left transition hover:border-emerald-200/20"
+      className="bg-emerald-950/24 flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition hover:bg-emerald-900/30"
     >
-      <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-emerald-100/10 bg-emerald-900/45 text-white/85">
+      <div className="bg-emerald-900/42 flex h-8 w-8 items-center justify-center rounded-xl text-white/85">
         {item.icon}
       </div>
       <div className="min-w-0">
@@ -406,12 +406,12 @@ export function UltimaProfile() {
     <div className="relative h-[100dvh] overflow-hidden bg-transparent px-4 pb-[calc(14px+env(safe-area-inset-bottom,0px))] pt-4">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(95%_70%_at_50%_45%,rgba(33,208,154,0.14),rgba(7,20,46,0.02)_62%,rgba(7,20,46,0)_100%)]" />
       <div className="relative z-10 mx-auto flex h-full min-h-0 max-w-md flex-col">
-        <section className="border-emerald-200/12 mb-3 flex items-center gap-3 rounded-3xl border bg-[rgba(12,45,42,0.18)] px-3 py-2.5 backdrop-blur-md">
+        <section className="mb-3 flex items-center gap-3 rounded-3xl bg-[rgba(12,45,42,0.2)] px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md">
           {telegramPhotoUrl ? (
             <img
               src={telegramPhotoUrl}
               alt="telegram-avatar"
-              className="h-10 w-10 rounded-full border border-white/30 object-cover shadow-[0_6px_12px_rgba(0,0,0,0.22)]"
+              className="h-10 w-10 rounded-full object-cover shadow-[0_6px_12px_rgba(0,0,0,0.22)]"
               loading="lazy"
             />
           ) : (
@@ -424,7 +424,7 @@ export function UltimaProfile() {
           </div>
           <button
             type="button"
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-emerald-100/10 bg-emerald-900/45 text-white/70"
+            className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-900/45 text-white/70"
             onClick={() => void copyText(String(user?.telegram_id ?? user?.id ?? ''), setIdCopied)}
             aria-label="copy-user-id"
           >
@@ -434,7 +434,7 @@ export function UltimaProfile() {
         </section>
 
         <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
-          <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
+          <section className="rounded-3xl bg-[rgba(12,45,42,0.2)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md">
             <p className="text-white/68 mb-2 text-[14px]">
               {t('profile.profileSettings', { defaultValue: 'Настройки профиля' })}
             </p>
@@ -445,7 +445,7 @@ export function UltimaProfile() {
             </div>
           </section>
 
-          <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
+          <section className="rounded-3xl bg-[rgba(12,45,42,0.2)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md">
             <p className="text-white/68 mb-2 text-[14px]">
               {t('nav.support', { defaultValue: 'Поддержка' })}
             </p>
@@ -458,22 +458,22 @@ export function UltimaProfile() {
         </div>
 
         <section className="pt-3">
-          <div className="border-white/18 mb-3 flex items-center gap-3 rounded-2xl border bg-white/95 px-4 py-3 text-slate-900 shadow-[0_4px_16px_rgba(0,0,0,0.16)]">
+          <div className="mb-3 flex items-center gap-3 rounded-2xl bg-[rgba(12,45,42,0.25)] px-4 py-3 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md">
             <div className="min-w-0 flex-1">
               <p className="truncate text-[13px]">{subscriptionLink || '-'}</p>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-white/65">
                 {t('profile.subscriptionLink', { defaultValue: 'Ваша ссылка на подписку' })}
               </p>
             </div>
             <button
               type="button"
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-300 text-slate-600"
+              className="bg-emerald-900/42 flex h-8 w-8 items-center justify-center rounded-lg text-white/75"
               onClick={() => void copyText(subscriptionLink, setLinkCopied)}
               aria-label="copy-subscription-link"
             >
               <CopyIcon />
             </button>
-            {linkCopied ? <span className="text-xs text-emerald-600">OK</span> : null}
+            {linkCopied ? <span className="text-xs text-emerald-200">OK</span> : null}
           </div>
 
           <UltimaBottomNav active="profile" onSupportClick={openSupportFast} />
