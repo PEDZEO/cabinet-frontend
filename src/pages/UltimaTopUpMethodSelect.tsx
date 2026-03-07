@@ -1,7 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { balanceApi } from '@/api/balance';
 import { useCurrency } from '@/hooks/useCurrency';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
@@ -75,7 +75,12 @@ export function UltimaTopUpMethodSelect() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const queryClient = useQueryClient();
   const { formatAmount, currencySymbol } = useCurrency();
+  const [promocode, setPromocode] = useState('');
+  const [promocodeLoading, setPromocodeLoading] = useState(false);
+  const [promocodeError, setPromocodeError] = useState<string | null>(null);
+  const [promocodeSuccess, setPromocodeSuccess] = useState<string | null>(null);
 
   const { data: paymentMethods, isLoading } = useQuery({
     queryKey: ['payment-methods'],
@@ -92,6 +97,44 @@ export function UltimaTopUpMethodSelect() {
     if (returnTo) params.set('returnTo', returnTo);
     const qs = params.toString();
     navigate(`/balance/top-up/${methodId}${qs ? `?${qs}` : ''}`);
+  };
+
+  const handlePromocodeActivate = async () => {
+    const code = promocode.trim();
+    if (!code || promocodeLoading) return;
+
+    setPromocodeLoading(true);
+    setPromocodeError(null);
+    setPromocodeSuccess(null);
+
+    try {
+      const result = await balanceApi.activatePromocode(code);
+      if (result.success) {
+        setPromocodeSuccess(result.bonus_description || t('balance.promocode.success'));
+        setPromocode('');
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['balance'] }),
+          queryClient.invalidateQueries({ queryKey: ['transactions'] }),
+          queryClient.invalidateQueries({ queryKey: ['subscription'] }),
+        ]);
+      }
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { data?: { detail?: string } } };
+      const errorDetail = axiosError.response?.data?.detail || 'server_error';
+      const normalized = errorDetail.toLowerCase();
+      const errorKey = normalized.includes('not found')
+        ? 'not_found'
+        : normalized.includes('expired')
+          ? 'expired'
+          : normalized.includes('fully used')
+            ? 'used'
+            : normalized.includes('already used')
+              ? 'already_used_by_user'
+              : 'server_error';
+      setPromocodeError(t(`balance.promocode.errors.${errorKey}`));
+    } finally {
+      setPromocodeLoading(false);
+    }
   };
 
   return (
@@ -173,6 +216,39 @@ export function UltimaTopUpMethodSelect() {
               })}
             </div>
           )}
+        </section>
+
+        <section className="mt-2 rounded-2xl border border-emerald-200/10 bg-emerald-950/20 px-3 py-2.5">
+          <p className="text-white/68 mb-2 text-[12px]">{t('balance.promocode.title')}</p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={promocode}
+              onChange={(e) => setPromocode(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  void handlePromocodeActivate();
+                }
+              }}
+              placeholder={t('balance.promocode.placeholder')}
+              disabled={promocodeLoading}
+              className="border-emerald-200/12 h-10 min-w-0 flex-1 rounded-xl border bg-emerald-950/35 px-3 text-[13px] text-white placeholder:text-white/35 focus:border-emerald-200/30 focus:outline-none disabled:opacity-60"
+            />
+            <button
+              type="button"
+              onClick={() => void handlePromocodeActivate()}
+              disabled={promocodeLoading || !promocode.trim()}
+              className="h-10 shrink-0 rounded-xl border border-sky-200/30 bg-sky-500/85 px-3 text-[12px] font-medium text-white transition hover:bg-sky-400/90 disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              {promocodeLoading ? t('common.loading') : t('balance.promocode.activate')}
+            </button>
+          </div>
+          {promocodeError ? (
+            <p className="mt-2 text-[12px] text-rose-200">{promocodeError}</p>
+          ) : null}
+          {promocodeSuccess ? (
+            <p className="mt-2 text-[12px] text-emerald-200">{promocodeSuccess}</p>
+          ) : null}
         </section>
 
         <section className="mt-2 rounded-2xl border border-emerald-200/10 bg-emerald-950/20 px-3 py-2.5">

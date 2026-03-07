@@ -8,10 +8,12 @@ import { useAuthStore } from '../store/auth';
 import { balanceApi } from '../api/balance';
 import { useCurrency } from '../hooks/useCurrency';
 import { useLiteMode } from '../hooks/useLiteMode';
+import { useUltimaMode } from '../hooks/useUltimaMode';
 import { API } from '../config/constants';
 import { useToast } from '../components/Toast';
 import type { PaginatedResponse, Transaction } from '../types';
 import LiteBalance from './LiteBalance';
+import { UltimaBalanceHistory } from './UltimaBalanceHistory';
 
 import { Card } from '@/components/data-display/Card';
 import { Button } from '@/components/primitives/Button';
@@ -42,9 +44,14 @@ const WalletIcon = ({ className = 'h-8 w-8' }: { className?: string }) => (
 
 export default function Balance() {
   const { isLiteMode, isLiteModeReady } = useLiteMode();
+  const { isUltimaMode, isUltimaModeReady } = useUltimaMode();
 
-  if (!isLiteModeReady) {
+  if (!isLiteModeReady || !isUltimaModeReady) {
     return null;
+  }
+
+  if (isUltimaMode) {
+    return <UltimaBalanceHistory />;
   }
 
   if (isLiteMode) {
