@@ -369,6 +369,10 @@ export function safeRedirectToLogin(): void {
 
   // Проверяем, что мы на том же origin
   if (typeof window !== 'undefined') {
+    // Prevent hard-refresh loop when we are already on the login page.
+    if (window.location.pathname === loginPath) {
+      return;
+    }
     // Сохраняем текущий URL для возврата после логина
     saveReturnUrl();
     // Используем только относительный путь для безопасности
