@@ -16,6 +16,7 @@ import { WebSocketProvider } from './providers/WebSocketProvider';
 import { ToastProvider } from './components/Toast';
 import { TooltipProvider } from './components/primitives/Tooltip';
 import { isInTelegramWebApp } from './hooks/useTelegramSDK';
+import { getCachedUltimaMode } from './hooks/useUltimaMode';
 
 const TWEMOJI_OPTIONS = { className: 'twemoji', folder: 'svg', ext: '.svg' } as const;
 
@@ -37,7 +38,8 @@ function ScrollToTop() {
  * Shows back button on non-root routes, hides on root.
  */
 /** Pages reachable from bottom nav — treat as top-level (no back button). */
-const BOTTOM_NAV_PATHS = ['/', '/connection', '/balance', '/referral', '/support', '/wheel'];
+const DEFAULT_TOP_LEVEL_PATHS = ['/', '/connection', '/balance', '/referral', '/support', '/wheel'];
+const ULTIMA_TOP_LEVEL_PATHS = ['/', '/connection', '/profile', '/support'];
 
 function TelegramBackButton() {
   const location = useLocation();
@@ -46,7 +48,9 @@ function TelegramBackButton() {
   navigateRef.current = navigate;
 
   useEffect(() => {
-    const isTopLevel = location.pathname === '' || BOTTOM_NAV_PATHS.includes(location.pathname);
+    const isUltimaMode = getCachedUltimaMode() === true;
+    const topLevelPaths = isUltimaMode ? ULTIMA_TOP_LEVEL_PATHS : DEFAULT_TOP_LEVEL_PATHS;
+    const isTopLevel = location.pathname === '' || topLevelPaths.includes(location.pathname);
     try {
       if (isTopLevel) {
         hideBackButton();

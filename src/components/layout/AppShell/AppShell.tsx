@@ -335,6 +335,11 @@ export function AppShell({ children }: AppShellProps) {
     void import('@/pages/Subscription');
     void import('@/pages/Support');
     void import('@/pages/Connection');
+    void import('@/pages/Profile');
+    void import('@/pages/Referral');
+    void import('@/pages/Balance');
+    void import('@/pages/TopUpMethodSelect');
+    void import('@/pages/TopUpAmount');
   }, [isUltimaMode]);
 
   return (

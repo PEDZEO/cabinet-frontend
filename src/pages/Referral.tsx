@@ -7,6 +7,8 @@ import { brandingApi } from '../api/branding';
 import { partnerApi } from '../api/partners';
 import { withdrawalApi } from '../api/withdrawals';
 import { useCurrency } from '../hooks/useCurrency';
+import { useUltimaMode } from '@/hooks/useUltimaMode';
+import { UltimaReferral } from './UltimaReferral';
 
 const LinkIcon = () => (
   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -87,7 +89,7 @@ function getWithdrawalStatusBadge(status: string): string {
   }
 }
 
-export default function Referral() {
+function ReferralContent() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { formatAmount, currencySymbol, formatPositive, formatWithCurrency } = useCurrency();
@@ -767,4 +769,14 @@ export default function Referral() {
       )}
     </div>
   );
+}
+
+export default function Referral() {
+  const { isUltimaMode } = useUltimaMode();
+
+  if (isUltimaMode) {
+    return <UltimaReferral />;
+  }
+
+  return <ReferralContent />;
 }
