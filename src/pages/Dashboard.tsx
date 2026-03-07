@@ -60,13 +60,8 @@ function getTrafficColor(percent: number): string {
 }
 
 export default function Dashboard() {
-  const { isLiteMode, isLiteModeReady } = useLiteMode();
-  const { isUltimaMode, isUltimaModeReady } = useUltimaMode();
-
-  // Wait for mode flags to be determined (for new users)
-  if (!isLiteModeReady || !isUltimaModeReady) {
-    return null;
-  }
+  const { isLiteMode } = useLiteMode();
+  const { isUltimaMode } = useUltimaMode();
 
   if (isUltimaMode) {
     return <UltimaDashboard />;

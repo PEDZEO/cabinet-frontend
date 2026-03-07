@@ -198,13 +198,8 @@ const CountdownTimer = memo(function CountdownTimer({
 });
 
 export default function Subscription() {
-  const { isLiteMode, isLiteModeReady } = useLiteMode();
-  const { isUltimaMode, isUltimaModeReady } = useUltimaMode();
-
-  // Wait for lite mode to be determined (for new users)
-  if (!isLiteModeReady || !isUltimaModeReady) {
-    return null;
-  }
+  const { isLiteMode } = useLiteMode();
+  const { isUltimaMode } = useUltimaMode();
 
   if (isUltimaMode) {
     return <UltimaSubscription />;

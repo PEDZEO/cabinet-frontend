@@ -153,6 +153,7 @@ export function UltimaDashboard() {
     const minTariff = Math.min(...periods.map((period) => period.price_kopeks));
     return `от ${Math.round(minTariff / 100)} ${currencySymbol}`;
   }, [purchaseOptions, currencySymbol]);
+  const wavePhaseShiftSec = useMemo(() => -((Date.now() / 1000) % 9.6), []);
 
   const expiryLabel = (() => {
     if (!subscription?.end_date) return t('subscription.notActive');
@@ -193,7 +194,7 @@ export function UltimaDashboard() {
           <div
             key={delay}
             className="ultima-ring-wave absolute left-1/2 top-[36%] h-[150vmax] w-[150vmax] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/35"
-            style={{ animationDelay: `${delay}s` }}
+            style={{ animationDelay: `${wavePhaseShiftSec + delay}s` }}
           />
         ))}
       </div>

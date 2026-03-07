@@ -24,7 +24,7 @@ import { AppWithNavigator } from './AppWithNavigator';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { initLogoPreload } from './api/branding';
 import { getCachedFullscreenEnabled, isTelegramMobile } from './hooks/useTelegramSDK';
-import './i18n';
+import i18n from './i18n';
 import './styles/globals.css';
 
 // HMR guard — prevent double init when Vite hot-reloads the module
@@ -108,12 +108,31 @@ const queryClient = new QueryClient({
   },
 });
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <ErrorBoundary level="app">
-      <QueryClientProvider client={queryClient}>
-        <AppWithNavigator />
-      </QueryClientProvider>
-    </ErrorBoundary>
-  </React.StrictMode>,
-);
+const ensureI18nReady = async () => {
+  if (i18n.isInitialized) return;
+  await new Promise<void>((resolve) => {
+    const onInitialized = () => {
+      i18n.off('initialized', onInitialized);
+      resolve();
+    };
+    i18n.on('initialized', onInitialized);
+    window.setTimeout(() => {
+      i18n.off('initialized', onInitialized);
+      resolve();
+    }, 1500);
+  });
+};
+
+const renderApp = () => {
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+      <ErrorBoundary level="app">
+        <QueryClientProvider client={queryClient}>
+          <AppWithNavigator />
+        </QueryClientProvider>
+      </ErrorBoundary>
+    </React.StrictMode>,
+  );
+};
+
+void ensureI18nReady().finally(renderApp);
