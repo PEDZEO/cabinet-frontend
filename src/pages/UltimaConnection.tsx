@@ -13,6 +13,7 @@ type UltimaConnectionProps = {
 };
 
 const ULTIMA_CONNECTION_STATE_KEY = 'ultima_connection_flow_v1';
+const ULTIMA_CONNECTION_PENDING_STEP3_KEY = 'ultima_connection_pending_step3_v1';
 
 const BackIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6">
@@ -171,6 +172,7 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
   const [step, setStep] = useState<Step>(1);
   const [showInfo, setShowInfo] = useState(true);
   const [burst, setBurst] = useState(0);
+  const [showReturnConfetti, setShowReturnConfetti] = useState(false);
   const [isFinishing, setIsFinishing] = useState(false);
 
   const setupUrls = useMemo(
@@ -190,6 +192,32 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
       setStep(1);
       setShowInfo(true);
     }
+  }, [user?.id]);
+
+  useEffect(() => {
+    const pendingKey = `${ULTIMA_CONNECTION_PENDING_STEP3_KEY}:${user?.id ?? 'guest'}`;
+
+    const applyPendingReturn = () => {
+      try {
+        const pending = localStorage.getItem(pendingKey) === '1';
+        if (!pending) return;
+        localStorage.removeItem(pendingKey);
+        setStep(3);
+        setShowReturnConfetti(true);
+        setBurst((prev) => prev + 1);
+        window.setTimeout(() => setShowReturnConfetti(false), 1700);
+      } catch {
+        // ignore localStorage errors
+      }
+    };
+
+    applyPendingReturn();
+    window.addEventListener('focus', applyPendingReturn);
+    document.addEventListener('visibilitychange', applyPendingReturn);
+    return () => {
+      window.removeEventListener('focus', applyPendingReturn);
+      document.removeEventListener('visibilitychange', applyPendingReturn);
+    };
   }, [user?.id]);
 
   useEffect(() => {
@@ -245,8 +273,12 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
       return;
     }
     if (step === 2) {
+      try {
+        localStorage.setItem(`${ULTIMA_CONNECTION_PENDING_STEP3_KEY}:${user?.id ?? 'guest'}`, '1');
+      } catch {
+        // ignore localStorage errors
+      }
       openAddSubscription();
-      setStep(3);
       return;
     }
     setStep(1);
@@ -338,7 +370,7 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
             </svg>
             <div className="bg-black/8 relative flex h-[132px] w-[132px] items-center justify-center rounded-full">
               {icon}
-              {step === 3 && isFinishing && (
+              {step === 3 && showReturnConfetti && (
                 <div className="pointer-events-none absolute inset-0 overflow-visible">
                   {Array.from({ length: 96 }).map((_, index) => {
                     const angle = (index * 360) / 96;
@@ -394,20 +426,18 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
             </button>
           )}
 
-          <button
-            type="button"
-            onClick={advanceStep}
-            className="mb-3 flex w-full items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-4 text-[18px] font-medium text-white/95"
-          >
-            {step === 2
-              ? t('subscription.connection.nextStepAddNow', {
-                  defaultValue: 'Следующий шаг (добавить подписку)',
-                })
-              : t('subscription.connection.nextStep', { defaultValue: 'Следующий шаг' })}
-            <span aria-hidden className="text-white/70">
-              →
-            </span>
-          </button>
+          {step !== 3 && (
+            <button
+              type="button"
+              onClick={advanceStep}
+              className="mb-3 flex w-full items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-4 text-[18px] font-medium text-white/95"
+            >
+              {t('subscription.connection.nextStep', { defaultValue: 'Следующий шаг' })}
+              <span aria-hidden className="text-white/70">
+                →
+              </span>
+            </button>
+          )}
 
           <UltimaBottomNav active="connection" />
         </section>
