@@ -228,6 +228,58 @@
   border-color: transparent !important;
 }
 
+.ultima-shell {
+  position: relative;
+  height: 100svh;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: transparent;
+  padding-inline: clamp(12px, 3vw, 16px);
+  padding-top: clamp(12px, 2.2vh, 16px);
+  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+}
+
+.ultima-shell-inner {
+  position: relative;
+  z-index: 10;
+  margin-inline: auto;
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+  max-width: 420px;
+  flex-direction: column;
+}
+
+@media (max-height: 760px) {
+  .ultima-shell {
+    padding-top: 10px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .ultima-bottom-nav {
+    gap: 4px;
+    border-radius: 18px;
+    padding: 4px;
+  }
+
+  .ultima-bottom-nav [data-ultima-nav-btn='1'] {
+    height: 40px;
+    border-radius: 14px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .ultima-shell {
+    padding-top: 18px;
+    padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .ultima-shell-inner {
+    max-width: 430px;
+  }
+}
+
 /* Aceternity UI background CSS variables */
 :root {
   --blue-500: #3b82f6;

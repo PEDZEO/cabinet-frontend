@@ -608,12 +608,12 @@ export function UltimaSubscription() {
   }, []);
 
   if (isLoading) {
-    return <div className="h-[100dvh] w-full bg-transparent" />;
+    return <div className="h-[100svh] min-h-[100dvh] w-full bg-transparent" />;
   }
 
   if (!selectedTariff || !selectedPeriod) {
     return (
-      <div className="flex h-[100dvh] items-center justify-center text-dark-200">
+      <div className="flex h-[100svh] min-h-[100dvh] items-center justify-center text-dark-200">
         {t('subscription.noTariffsAvailable', { defaultValue: 'Тарифы недоступны' })}
       </div>
     );
@@ -751,7 +751,7 @@ export function UltimaSubscription() {
         isNarrowWidth ? 'px-3' : 'px-4'
       } pb-[calc(16px+env(safe-area-inset-bottom,0px))] ${isUltraCompactHeight ? 'pt-3' : 'pt-4'}`}
     >
-      <div className="relative z-10 mx-auto flex h-full min-h-0 w-full max-w-md flex-col">
+      <div className="ultima-shell-inner">
         <header className={isUltraCompactHeight ? 'mb-2' : 'mb-3'}>
           <h1
             className={`font-semibold leading-[0.95] text-white ${

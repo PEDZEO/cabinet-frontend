@@ -287,8 +287,8 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
   };
 
   return (
-    <div className="relative h-[100dvh] overflow-hidden bg-transparent px-4 pb-[calc(14px+env(safe-area-inset-bottom,0px))] pt-4">
-      <div className="relative z-10 mx-auto flex h-full min-h-0 max-w-md flex-col">
+    <div className="ultima-shell">
+      <div className="ultima-shell-inner">
         <section className="flex min-h-0 flex-1 flex-col">
           <div key={step} className="ultima-step-enter pt-2 text-center">
             <h1 className="text-[46px] font-semibold leading-[0.96] text-white sm:text-[50px]">

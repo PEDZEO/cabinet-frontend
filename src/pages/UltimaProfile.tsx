@@ -403,9 +403,9 @@ export function UltimaProfile() {
   };
 
   return (
-    <div className="ultima-flat-frames relative h-[100dvh] overflow-hidden bg-transparent px-4 pb-[calc(14px+env(safe-area-inset-bottom,0px))] pt-4">
+    <div className="ultima-shell ultima-flat-frames">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(95%_70%_at_50%_45%,rgba(33,208,154,0.14),rgba(7,20,46,0.02)_62%,rgba(7,20,46,0)_100%)]" />
-      <div className="relative z-10 mx-auto flex h-full min-h-0 max-w-md flex-col">
+      <div className="ultima-shell-inner">
         <section className="mb-3 flex items-center gap-3 rounded-3xl bg-[rgba(12,45,42,0.2)] px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md">
           {telegramPhotoUrl ? (
             <img
