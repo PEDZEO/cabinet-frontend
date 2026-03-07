@@ -17,6 +17,7 @@ function App() {
       void import('./pages/TopUpMethodSelect');
       void import('./pages/Connection');
       void import('./pages/Balance');
+      void import('./pages/Support');
     };
 
     // Start critical route prefetch immediately to avoid first navigation hitch in Ultima flow.

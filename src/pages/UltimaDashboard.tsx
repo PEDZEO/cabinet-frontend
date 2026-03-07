@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo } from 'react';
 import { balanceApi } from '@/api/balance';
+import { infoApi } from '@/api/info';
 import { subscriptionApi } from '@/api/subscription';
+import { ticketsApi } from '@/api/tickets';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useAuthStore } from '@/store/auth';
 
@@ -177,6 +179,19 @@ export function UltimaDashboard() {
     void import('./Subscription');
   }, []);
 
+  const openSupport = () => {
+    void import('./Support');
+    void queryClient.prefetchQuery({
+      queryKey: ['support-config'],
+      queryFn: infoApi.getSupportConfig,
+    });
+    void queryClient.prefetchQuery({
+      queryKey: ['tickets'],
+      queryFn: () => ticketsApi.getTickets({ per_page: 20 }),
+    });
+    navigate('/support');
+  };
+
   return (
     <div className="relative h-[100dvh] overflow-hidden bg-transparent pb-[calc(20px+env(safe-area-inset-bottom,0px))] pt-2">
       {isAdmin && (
@@ -276,7 +291,7 @@ export function UltimaDashboard() {
             <button
               type="button"
               className="rounded-full p-3 hover:bg-white/5"
-              onClick={() => navigate('/support')}
+              onClick={openSupport}
             >
               <SupportIcon />
             </button>
