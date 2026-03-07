@@ -224,7 +224,7 @@ export function UltimaDashboard() {
         <section className="mt-auto">
           <button
             type="button"
-            onClick={async () => {
+            onClick={() => {
               void queryClient.prefetchQuery({
                 queryKey: ['purchase-options'],
                 queryFn: subscriptionApi.getPurchaseOptions,
@@ -237,7 +237,7 @@ export function UltimaDashboard() {
                 queryKey: ['device-price', 'ultima-max'],
                 queryFn: () => subscriptionApi.getDevicePrice(1),
               });
-              await import('./Subscription');
+              void import('./Subscription');
               navigate('/subscription');
             }}
             className="mb-3 flex w-full items-center justify-between rounded-full border border-[#4ceac2]/45 bg-[#14cf9a] px-5 py-4 text-[18px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_6px_16px_rgba(7,146,108,0.24)] transition hover:bg-[#16d8a1]"

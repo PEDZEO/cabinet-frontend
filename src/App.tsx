@@ -11,12 +11,16 @@ function App() {
 
   useEffect(() => {
     const prefetch = () => {
+      void import('./pages/Dashboard');
       void import('./pages/Subscription');
       void import('./pages/TopUpAmount');
       void import('./pages/TopUpMethodSelect');
       void import('./pages/Connection');
       void import('./pages/Balance');
     };
+
+    // Start critical route prefetch immediately to avoid first navigation hitch in Ultima flow.
+    prefetch();
 
     const idle = window.requestIdleCallback?.(() => prefetch(), { timeout: 1800 });
     if (idle) {
