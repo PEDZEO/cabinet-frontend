@@ -278,8 +278,8 @@ export function UltimaDashboard() {
     return (
       <div className="relative h-[100dvh] overflow-hidden bg-transparent pb-[calc(20px+env(safe-area-inset-bottom,0px))] pt-2">
         <div className="relative z-10 mx-auto flex h-[calc(100dvh-26px)] w-full flex-col px-4 sm:px-6">
-          <section className="pt-[30vh]">
-            <div className="mx-auto mb-[12vh] flex h-24 w-24 items-center justify-center rounded-full bg-black/15">
+          <section className="pt-[clamp(96px,24vh,30vh)]">
+            <div className="mx-auto mb-[clamp(40px,8vh,12vh)] flex h-24 w-24 items-center justify-center rounded-full bg-black/15">
               <ShieldIcon />
             </div>
             <div className="mb-5 h-16 animate-pulse rounded-2xl bg-white/10" />
@@ -308,12 +308,12 @@ export function UltimaDashboard() {
       )}
 
       <div className="relative z-10 mx-auto flex h-full min-h-0 w-full max-w-md flex-col">
-        <section className="pt-[30vh]">
+        <section className="pt-[clamp(96px,24vh,30vh)]">
           <button
             type="button"
             aria-label={t('nav.dashboard')}
             onPointerDown={handleShieldTap}
-            className="relative mx-auto mb-[12vh] flex h-24 w-24 items-center justify-center rounded-full bg-black/15 focus-visible:outline-none"
+            className="relative mx-auto mb-[clamp(40px,8vh,12vh)] flex h-24 w-24 items-center justify-center rounded-full bg-black/15 focus-visible:outline-none"
             style={{ WebkitTapHighlightColor: 'transparent' }}
           >
             <span aria-hidden className="pointer-events-none absolute inset-0 overflow-visible">
