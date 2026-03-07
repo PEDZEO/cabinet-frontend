@@ -1,4 +1,4 @@
-import { type MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { type MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router';
@@ -8,6 +8,35 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { useCloseOnSuccessNotification } from '@/store/successNotification';
 import { usePlatform } from '@/platform';
 import type { PaymentMethod, Tariff, TariffPeriod } from '@/types';
+
+const ULTIMA_PENDING_PURCHASE_KEY = 'ultima_pending_purchase_v1';
+
+type PendingUltimaPurchase = {
+  tariffId: number;
+  periodDays: number;
+  deviceLimit?: number;
+  createdAt: number;
+};
+
+const readPendingUltimaPurchase = (): PendingUltimaPurchase | null => {
+  try {
+    const raw = localStorage.getItem(ULTIMA_PENDING_PURCHASE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as PendingUltimaPurchase;
+    if (!parsed.tariffId || !parsed.periodDays) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+};
+
+const writePendingUltimaPurchase = (purchase: PendingUltimaPurchase): void => {
+  localStorage.setItem(ULTIMA_PENDING_PURCHASE_KEY, JSON.stringify(purchase));
+};
+
+const clearPendingUltimaPurchase = (): void => {
+  localStorage.removeItem(ULTIMA_PENDING_PURCHASE_KEY);
+};
 
 export function UltimaSubscription() {
   const { t } = useTranslation();
@@ -21,9 +50,11 @@ export function UltimaSubscription() {
   const [selectedPeriodDays, setSelectedPeriodDays] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [awaitingPaymentCompletion, setAwaitingPaymentCompletion] = useState(false);
+  const [isFinalizingPending, setIsFinalizingPending] = useState(false);
   const didInitDevice = useRef(false);
   const deviceTrackRef = useRef<HTMLDivElement | null>(null);
   const autoPurchaseAttemptRef = useRef<string | null>(null);
+  const finalizeInProgressRef = useRef(false);
 
   const { data: purchaseOptions, isLoading } = useQuery({
     queryKey: ['purchase-options'],
@@ -246,6 +277,8 @@ export function UltimaSubscription() {
       return subscriptionApi.purchaseTariff(tariffId, periodDays, undefined, params?.deviceLimit);
     },
     onSuccess: async () => {
+      clearPendingUltimaPurchase();
+      setAwaitingPaymentCompletion(false);
       setError(null);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['subscription'] }),
@@ -278,6 +311,8 @@ export function UltimaSubscription() {
     onSuccess: (payment) => {
       const redirectUrl = payment.payment_url;
       if (!redirectUrl) {
+        clearPendingUltimaPurchase();
+        setAwaitingPaymentCompletion(false);
         setError(t('balance.errors.noPaymentLink'));
         return;
       }
@@ -289,22 +324,136 @@ export function UltimaSubscription() {
       }
     },
     onError: (err: { response?: { data?: { detail?: string } } }) => {
+      clearPendingUltimaPurchase();
       setAwaitingPaymentCompletion(false);
       setError(err.response?.data?.detail || t('common.error'));
     },
   });
 
+  const extractMissingAmountKopeks = (err: unknown): number | null => {
+    const error = err as {
+      response?: {
+        data?: {
+          detail?:
+            | string
+            | {
+                missing_amount?: number;
+                required?: number;
+                balance?: number;
+              };
+          missing_amount?: number;
+          required?: number;
+          balance?: number;
+        };
+      };
+    };
+    const data = error.response?.data;
+    const detail = data?.detail;
+
+    if (detail && typeof detail === 'object') {
+      if (typeof detail.missing_amount === 'number') return detail.missing_amount;
+      if (typeof detail.required === 'number' && typeof detail.balance === 'number') {
+        return Math.max(0, detail.required - detail.balance);
+      }
+    }
+
+    if (typeof data?.missing_amount === 'number') return data.missing_amount;
+    if (typeof data?.required === 'number' && typeof data?.balance === 'number') {
+      return Math.max(0, data.required - data.balance);
+    }
+
+    return null;
+  };
+
+  const isInsufficientBalanceError = (err: unknown): boolean => {
+    const error = err as {
+      response?: {
+        status?: number;
+        data?: {
+          detail?: string | { code?: string };
+          code?: string;
+        };
+      };
+    };
+    if (error.response?.status === 402) return true;
+    const detail = error.response?.data?.detail;
+    if (detail && typeof detail === 'object') {
+      return detail.code === 'insufficient_balance' || detail.code === 'insufficient_funds';
+    }
+    const code = error.response?.data?.code;
+    return code === 'insufficient_balance' || code === 'insufficient_funds';
+  };
+
+  const finalizePendingPurchase = useCallback(
+    async (source: 'mount' | 'focus' | 'success_event') => {
+      const pending = readPendingUltimaPurchase();
+      if (!pending) return;
+      if (finalizeInProgressRef.current || purchaseMutation.isPending) return;
+
+      finalizeInProgressRef.current = true;
+      setIsFinalizingPending(true);
+      try {
+        await subscriptionApi.purchaseTariff(
+          pending.tariffId,
+          pending.periodDays,
+          undefined,
+          pending.deviceLimit,
+        );
+        clearPendingUltimaPurchase();
+        setAwaitingPaymentCompletion(false);
+        setError(null);
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['subscription'] }),
+          queryClient.invalidateQueries({ queryKey: ['purchase-options'] }),
+          queryClient.invalidateQueries({ queryKey: ['balance'] }),
+        ]);
+        navigate('/');
+      } catch (rawErr) {
+        const err = rawErr as {
+          response?: { status?: number; data?: { detail?: unknown; message?: unknown } };
+        };
+        if (!isInsufficientBalanceError(err) && source === 'success_event') {
+          const detail = err.response?.data?.detail;
+          const message = err.response?.data?.message;
+          const resolvedMessage =
+            typeof detail === 'string' ? detail : typeof message === 'string' ? message : null;
+          if (resolvedMessage) setError(resolvedMessage);
+        }
+      } finally {
+        finalizeInProgressRef.current = false;
+        setIsFinalizingPending(false);
+      }
+    },
+    [navigate, purchaseMutation.isPending, queryClient],
+  );
+
   useCloseOnSuccessNotification(() => {
-    if (!awaitingPaymentCompletion || purchaseMutation.isPending) return;
-    if (!selectedTariffIdForPurchase || !selectedPeriod) return;
-    setError(null);
-    setAwaitingPaymentCompletion(false);
-    purchaseMutation.mutate({
-      tariffId: selectedTariffIdForPurchase,
-      periodDays: selectedPeriod.days,
-      deviceLimit: selectedDeviceLimit,
-    });
+    if (!awaitingPaymentCompletion) return;
+    void finalizePendingPurchase('success_event');
   });
+
+  useEffect(() => {
+    const pending = readPendingUltimaPurchase();
+    if (!pending) return;
+    setAwaitingPaymentCompletion(true);
+    void finalizePendingPurchase('mount');
+
+    const onFocus = () => {
+      void finalizePendingPurchase('focus');
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        void finalizePendingPurchase('focus');
+      }
+    };
+
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [finalizePendingPurchase]);
 
   useEffect(() => {
     if (!autoPurchaseKey) return;
@@ -352,21 +501,81 @@ export function UltimaSubscription() {
 
   const openTopUpForSubscription = async () => {
     setError(null);
-    if (createPaymentMutation.isPending) return;
+    if (createPaymentMutation.isPending || purchaseMutation.isPending || isFinalizingPending)
+      return;
+    if (!selectedTariffIdForPurchase || !selectedPeriod) return;
+    let insufficientBalanceError: {
+      response?: {
+        status?: number;
+        data?: {
+          detail?:
+            | string
+            | { missing_amount?: number; required?: number; balance?: number; message?: string };
+          missing_amount?: number;
+          required?: number;
+          balance?: number;
+          message?: string;
+        };
+      };
+    } | null = null;
+
+    try {
+      await purchaseMutation.mutateAsync({
+        tariffId: selectedTariffIdForPurchase,
+        periodDays: selectedPeriod.days,
+        deviceLimit: selectedDeviceLimit,
+      });
+      return;
+    } catch (rawErr) {
+      const err = rawErr as {
+        response?: {
+          status?: number;
+          data?: { detail?: string | { message?: string }; message?: string };
+        };
+      };
+      if (!isInsufficientBalanceError(err)) {
+        const detail = err.response?.data?.detail;
+        const message = err.response?.data?.message;
+        const resolvedMessage =
+          typeof detail === 'string' ? detail : typeof message === 'string' ? message : null;
+        if (resolvedMessage) setError(resolvedMessage);
+        return;
+      }
+      insufficientBalanceError = err;
+    }
+
+    const pendingPurchase: PendingUltimaPurchase = {
+      tariffId: selectedTariffIdForPurchase,
+      periodDays: selectedPeriod.days,
+      deviceLimit: selectedDeviceLimit,
+      createdAt: Date.now(),
+    };
+    writePendingUltimaPurchase(pendingPurchase);
+    setAwaitingPaymentCompletion(true);
+
     let method = defaultPaymentMethod;
     if (!method) {
       const methods = await balanceApi.getPaymentMethods();
       const available = methods.filter((entry) => entry.is_available);
       method = available.find((entry) => entry.is_default_for_subscription) ?? available[0] ?? null;
       if (!method) {
+        clearPendingUltimaPurchase();
+        setAwaitingPaymentCompletion(false);
         setError(t('balance.errors.selectMethod'));
         return;
       }
       queryClient.setQueryData(['payment-methods'], methods);
     }
+    const missingAmount = insufficientBalanceError
+      ? extractMissingAmountKopeks(insufficientBalanceError)
+      : null;
+    const topupAmountKopeks =
+      typeof missingAmount === 'number' && missingAmount > 0
+        ? Math.max(1, Math.ceil(missingAmount))
+        : selectedPriceKopeks;
     const selectedOptionId = method.options?.find((option) => option.id)?.id;
     createPaymentMutation.mutate({
-      amountKopeks: selectedPriceKopeks,
+      amountKopeks: topupAmountKopeks,
       paymentMethodId: method.id,
       paymentOptionId: selectedOptionId,
     });
@@ -536,7 +745,9 @@ export function UltimaSubscription() {
             onClick={() => {
               void openTopUpForSubscription();
             }}
-            disabled={purchaseMutation.isPending || createPaymentMutation.isPending}
+            disabled={
+              purchaseMutation.isPending || createPaymentMutation.isPending || isFinalizingPending
+            }
             className="flex w-full items-center justify-between rounded-full border border-[#52ecc6]/40 bg-[#12cd97] px-6 py-4 text-[20px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_8px_20px_rgba(10,123,94,0.28)]"
           >
             <span>Оплатить подписку</span>
