@@ -1,7 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useEffect } from 'react';
+import { balanceApi } from '@/api/balance';
 import { subscriptionApi } from '@/api/subscription';
 import { useAuthStore } from '@/store/auth';
 
@@ -108,6 +109,7 @@ const AdminIcon = () => (
 
 export function UltimaDashboard() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { t, i18n } = useTranslation();
   const isAdmin = useAuthStore((state) => state.isAdmin);
 
@@ -196,7 +198,23 @@ export function UltimaDashboard() {
         <section className="mt-auto">
           <button
             type="button"
-            onClick={() => navigate('/subscription')}
+            onClick={async () => {
+              await Promise.all([
+                queryClient.prefetchQuery({
+                  queryKey: ['purchase-options'],
+                  queryFn: subscriptionApi.getPurchaseOptions,
+                }),
+                queryClient.prefetchQuery({
+                  queryKey: ['payment-methods'],
+                  queryFn: balanceApi.getPaymentMethods,
+                }),
+                queryClient.prefetchQuery({
+                  queryKey: ['device-price', 'ultima-max'],
+                  queryFn: () => subscriptionApi.getDevicePrice(1),
+                }),
+              ]);
+              navigate('/subscription');
+            }}
             className="mb-3 flex w-full items-center justify-between rounded-full border border-[#4ceac2]/45 bg-[#14cf9a] px-5 py-4 text-[18px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_6px_16px_rgba(7,146,108,0.24)] transition hover:bg-[#16d8a1]"
           >
             <span className="flex items-center gap-2">

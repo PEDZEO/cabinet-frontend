@@ -1,25 +1,16 @@
 import { type MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { balanceApi } from '@/api/balance';
 import { subscriptionApi } from '@/api/subscription';
 import { useCurrency } from '@/hooks/useCurrency';
 import type { PaymentMethod, Tariff, TariffPeriod } from '@/types';
 
-const Dot = ({ active = false }: { active?: boolean }) => (
-  <span
-    className={
-      active
-        ? 'h-5 w-5 rounded-full border-2 border-emerald-400'
-        : 'h-2 w-2 rounded-full bg-white/35'
-    }
-  />
-);
-
 export function UltimaSubscription() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const { currencySymbol } = useCurrency();
 
@@ -28,6 +19,7 @@ export function UltimaSubscription() {
   const [error, setError] = useState<string | null>(null);
   const didInitDevice = useRef(false);
   const deviceTrackRef = useRef<HTMLDivElement | null>(null);
+  const autoPurchaseAttemptRef = useRef<string | null>(null);
 
   const { data: purchaseOptions, isLoading } = useQuery({
     queryKey: ['purchase-options'],
@@ -208,6 +200,14 @@ export function UltimaSubscription() {
   }, [displayPeriods, selectedPeriodDays]);
 
   const selectedTariffIdForPurchase = selectedPeriod?.tariffId ?? selectedTariff?.id ?? null;
+  const autoTariffId = Number(searchParams.get('autoTariffId'));
+  const autoPeriodDays = Number(searchParams.get('autoPeriodDays'));
+  const autoDeviceLimit = Number(searchParams.get('autoDeviceLimit'));
+  const hasAutoPurchaseParams = Number.isFinite(autoTariffId) && Number.isFinite(autoPeriodDays);
+  const autoPurchaseKey = hasAutoPurchaseParams
+    ? `${autoTariffId}:${autoPeriodDays}:${Number.isFinite(autoDeviceLimit) ? autoDeviceLimit : 0}`
+    : null;
+
   const defaultPaymentMethod = useMemo(() => {
     if (!paymentMethods?.length) return null;
     const available = paymentMethods.filter((method) => method.is_available);
@@ -218,9 +218,11 @@ export function UltimaSubscription() {
   }, [paymentMethods]);
 
   const purchaseMutation = useMutation({
-    mutationFn: async () => {
-      if (!selectedTariffIdForPurchase || !selectedPeriod) throw new Error('No tariff selected');
-      return subscriptionApi.purchaseTariff(selectedTariffIdForPurchase, selectedPeriod.days);
+    mutationFn: async (params?: { tariffId: number; periodDays: number; deviceLimit?: number }) => {
+      const tariffId = params?.tariffId ?? selectedTariffIdForPurchase;
+      const periodDays = params?.periodDays ?? selectedPeriod?.days;
+      if (!tariffId || !periodDays) throw new Error('No tariff selected');
+      return subscriptionApi.purchaseTariff(tariffId, periodDays, undefined, params?.deviceLimit);
     },
     onSuccess: async () => {
       setError(null);
@@ -235,6 +237,19 @@ export function UltimaSubscription() {
       setError(err.response?.data?.detail || err.response?.data?.message || t('common.error'));
     },
   });
+
+  useEffect(() => {
+    if (!autoPurchaseKey) return;
+    if (purchaseMutation.isPending) return;
+    if (autoPurchaseAttemptRef.current === autoPurchaseKey) return;
+    autoPurchaseAttemptRef.current = autoPurchaseKey;
+    setError(null);
+    purchaseMutation.mutate({
+      tariffId: autoTariffId,
+      periodDays: autoPeriodDays,
+      deviceLimit: Number.isFinite(autoDeviceLimit) ? autoDeviceLimit : undefined,
+    });
+  }, [autoPurchaseKey, autoTariffId, autoPeriodDays, autoDeviceLimit, purchaseMutation]);
 
   if (isLoading) return <div className="h-[100dvh] w-full bg-[#08201f]" />;
 
@@ -251,15 +266,29 @@ export function UltimaSubscription() {
     const value = Number.isInteger(rubles) ? String(rubles) : rubles.toFixed(2);
     return `${value} ${currencySymbol}`;
   };
-  const canPayFromBalance = (purchaseOptions?.balance_kopeks ?? 0) >= selectedPeriod.price_kopeks;
+
+  const baseDeviceLimit = Math.max(
+    1,
+    selectedTariff.base_device_limit ?? selectedTariff.device_limit ?? 1,
+  );
+  const extraDevicePricePerMonth = Math.max(0, selectedTariff.device_price_kopeks ?? 0);
+  const calculatePeriodPrice = (period: DisplayPeriod): number => {
+    const months = Math.max(1, period.months);
+    const selectedExtraDevices = Math.max(0, selectedDeviceLimit - baseDeviceLimit);
+    const baseTariffPrice = period.base_tariff_price_kopeks ?? period.price_kopeks;
+    return baseTariffPrice + selectedExtraDevices * extraDevicePricePerMonth * months;
+  };
+  const selectedPriceKopeks = calculatePeriodPrice(selectedPeriod);
+
   const openTopUpForSubscription = () => {
     if (!defaultPaymentMethod) {
       navigate('/balance/top-up');
       return;
     }
+    const returnTo = `/subscription?autoTariffId=${selectedTariffIdForPurchase}&autoPeriodDays=${selectedPeriod.days}&autoDeviceLimit=${selectedDeviceLimit}`;
     const params = new URLSearchParams({
-      amount: String(selectedPeriod.price_kopeks / 100),
-      returnTo: '/subscription',
+      amount: String(selectedPriceKopeks / 100),
+      returnTo,
       autostart: '1',
       autoopen: '1',
     });
@@ -267,11 +296,10 @@ export function UltimaSubscription() {
   };
 
   const periodLabel = (period: TariffPeriod) => {
-    if (period.months === 1) return '1 месяц';
-    if (period.months === 3) return '3 месяца';
-    if (period.months === 6) return '6 месяцев';
-    if (period.months === 12) return '1 год';
-    if (period.months > 0) return `${period.months} мес`;
+    if (period.days === 30) return '1 месяц';
+    if (period.days === 90) return '3 месяца';
+    if (period.days === 180) return '6 месяцев';
+    if (period.days === 365) return '1 год';
     return `${period.days} дней`;
   };
 
@@ -313,11 +341,12 @@ export function UltimaSubscription() {
                   setSelectedDeviceIndex((prev) => Math.min(deviceLimits.length - 1, prev + 1));
                 }
               }}
-              className="relative mb-3"
+              className="relative"
             >
-              <div className="relative h-2 w-full rounded-full bg-white/20">
+              <div className="relative h-8 w-full">
+                <div className="absolute left-0 right-0 top-1/2 h-2 -translate-y-1/2 rounded-full bg-white/20" />
                 <div
-                  className="h-full rounded-full bg-emerald-400/80 transition-all duration-200"
+                  className="absolute left-0 top-1/2 h-2 -translate-y-1/2 rounded-full bg-emerald-400/80 transition-all duration-200"
                   style={{
                     width:
                       deviceLimits.length > 1
@@ -326,7 +355,7 @@ export function UltimaSubscription() {
                   }}
                 />
                 <span
-                  className="absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-2 border-emerald-300 bg-[#06261f] shadow-[0_0_10px_rgba(52,211,153,0.6)] transition-all duration-200"
+                  className="absolute top-1/2 z-20 h-4 w-4 -translate-y-1/2 rounded-full border-2 border-emerald-300 bg-[#06261f] shadow-[0_0_10px_rgba(52,211,153,0.6)] transition-all duration-200"
                   style={{
                     left:
                       deviceLimits.length > 1
@@ -334,30 +363,45 @@ export function UltimaSubscription() {
                         : '0px',
                   }}
                 />
+                <input
+                  type="range"
+                  min={0}
+                  max={Math.max(0, deviceLimits.length - 1)}
+                  step={1}
+                  value={selectedDeviceIndex}
+                  onChange={(event) => setSelectedDeviceIndex(Number(event.target.value))}
+                  className="absolute inset-0 z-10 h-8 w-full cursor-pointer opacity-0"
+                  aria-label="devices-slider-input"
+                />
+                {deviceLimits.map((limit, index) => {
+                  const left =
+                    deviceLimits.length > 1
+                      ? `${(index / (deviceLimits.length - 1)) * 100}%`
+                      : '0%';
+                  const active = index === selectedDeviceIndex;
+                  return (
+                    <button
+                      key={limit}
+                      type="button"
+                      aria-label={`devices-${limit}`}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        setSelectedDeviceIndex(index);
+                      }}
+                      className="absolute top-1/2 z-30 -translate-x-1/2 -translate-y-1/2"
+                      style={{ left }}
+                    >
+                      <span
+                        className={`block h-2.5 w-2.5 rounded-full transition ${
+                          active
+                            ? 'bg-emerald-200 shadow-[0_0_8px_rgba(52,211,153,0.7)]'
+                            : 'bg-white/40'
+                        }`}
+                      />
+                    </button>
+                  );
+                })}
               </div>
-              <input
-                type="range"
-                min={0}
-                max={Math.max(0, deviceLimits.length - 1)}
-                step={1}
-                value={selectedDeviceIndex}
-                onChange={(event) => setSelectedDeviceIndex(Number(event.target.value))}
-                className="absolute inset-0 z-10 h-4 w-full cursor-pointer opacity-0"
-                aria-label="devices-slider-input"
-              />
-            </div>
-            <div className="flex items-center justify-between px-1">
-              {deviceLimits.map((_, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  aria-label={`devices-${index + 1}`}
-                  onClick={() => setSelectedDeviceIndex(index)}
-                  className="inline-flex"
-                >
-                  <Dot active={index === selectedDeviceIndex} />
-                </button>
-              ))}
             </div>
             <div className="mt-2 flex items-center justify-between text-[11px] text-white/55">
               <span>{deviceLimits[0]}</span>
@@ -387,7 +431,7 @@ export function UltimaSubscription() {
                   {active && <span className="text-emerald-300">★</span>}
                 </div>
                 <p className="text-[32px] font-semibold leading-none text-white">
-                  {formatPrice(period.price_kopeks)}
+                  {formatPrice(calculatePeriodPrice(period))}
                 </p>
                 {period.original_price_kopeks &&
                 period.original_price_kopeks > period.price_kopeks ? (
@@ -407,18 +451,14 @@ export function UltimaSubscription() {
           <button
             type="button"
             onClick={() => {
-              if (!canPayFromBalance) {
-                openTopUpForSubscription();
-                return;
-              }
-              purchaseMutation.mutate();
+              openTopUpForSubscription();
             }}
             disabled={purchaseMutation.isPending}
             className="flex w-full items-center justify-between rounded-full border border-[#52ecc6]/40 bg-[#12cd97] px-6 py-4 text-[20px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_8px_20px_rgba(10,123,94,0.28)]"
           >
             <span>Оплатить подписку</span>
             <span className="flex items-center gap-2 text-white/95">
-              {formatPrice(selectedPeriod.price_kopeks)}
+              {formatPrice(selectedPriceKopeks)}
               {selectedPeriod.original_price_kopeks &&
               selectedPeriod.original_price_kopeks > selectedPeriod.price_kopeks ? (
                 <span className="text-[15px] text-white/55 line-through">

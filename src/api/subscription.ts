@@ -206,6 +206,7 @@ export const subscriptionApi = {
     tariffId: number,
     periodDays: number,
     trafficGb?: number,
+    deviceLimit?: number,
   ): Promise<{
     success: boolean;
     message: string;
@@ -219,6 +220,7 @@ export const subscriptionApi = {
       tariff_id: tariffId,
       period_days: periodDays,
       traffic_gb: trafficGb,
+      device_limit: deviceLimit,
     });
     return response.data;
   },
