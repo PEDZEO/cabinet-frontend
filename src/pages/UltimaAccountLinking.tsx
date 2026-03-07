@@ -361,24 +361,24 @@ export default function UltimaAccountLinking() {
         </header>
 
         <div className="ultima-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
-          <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
+          <section className="border-emerald-200/12 mb-1 rounded-[28px] border bg-[linear-gradient(180deg,rgba(69,186,142,0.16),rgba(18,79,64,0.28))] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md">
             <div className="flex items-start gap-3">
-              <div className="rounded-linear bg-accent-500/20 p-2 text-accent-300">
+              <div className="border-white/12 bg-white/8 flex h-10 w-10 items-center justify-center rounded-2xl border text-white/85">
                 <LinkIcon />
               </div>
               <div className="flex-1">
-                <h1 className="text-2xl font-bold text-dark-50">Привязка аккаунтов</h1>
-                <p className="mt-1 text-sm text-dark-400">
+                <h1 className="text-2xl font-semibold text-white">Привязка аккаунтов</h1>
+                <p className="text-white/62 mt-1 text-sm">
                   Единая страница для безопасной привязки и смены Telegram, Yandex и VK.
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                  <span className="rounded-linear border border-dark-700/70 bg-dark-800/60 px-2 py-1 text-dark-300">
+                  <span className="border-white/12 bg-white/6 rounded-xl border px-2 py-1 text-white/70">
                     1. Введите код с другого аккаунта
                   </span>
-                  <span className="rounded-linear border border-dark-700/70 bg-dark-800/60 px-2 py-1 text-dark-300">
+                  <span className="border-white/12 bg-white/6 rounded-xl border px-2 py-1 text-white/70">
                     2. Проверьте, что найден нужный аккаунт
                   </span>
-                  <span className="rounded-linear border border-dark-700/70 bg-dark-800/60 px-2 py-1 text-dark-300">
+                  <span className="border-white/12 bg-white/6 rounded-xl border px-2 py-1 text-white/70">
                     3. Подтвердите привязку или отправьте в поддержку
                   </span>
                 </div>
@@ -388,13 +388,13 @@ export default function UltimaAccountLinking() {
                   </Button>
                   <Link
                     to="/profile"
-                    className="inline-flex text-xs text-accent-400 hover:text-accent-300"
+                    className="inline-flex text-xs text-[#56e8c2] hover:text-[#7af3d7]"
                   >
                     Вернуться в профиль
                   </Link>
                 </div>
                 {showTips && (
-                  <div className="mt-3 rounded-linear border border-dark-700/70 bg-dark-800/50 p-3 text-xs text-dark-300">
+                  <div className="border-white/12 bg-white/6 text-white/72 mt-3 rounded-2xl border p-3 text-xs">
                     <p>
                       Код нужно брать на втором аккаунте: нажмите там "Сгенерировать код", затем
                       введите его здесь.
@@ -417,15 +417,15 @@ export default function UltimaAccountLinking() {
             </div>
           </section>
 
-          <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
-            <h2 className="mb-4 text-lg font-semibold text-dark-100">Связанные способы входа</h2>
+          <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.2)] p-3 backdrop-blur-md">
+            <h2 className="mb-4 text-lg font-semibold text-white/95">Связанные способы входа</h2>
 
             <div className="mb-4 flex flex-wrap gap-2">
               {linkedIdentities.length > 0 ? (
                 linkedIdentities.map((identity) => (
                   <div
                     key={`${identity.provider}-${identity.provider_user_id_masked}`}
-                    className="flex items-center gap-2 rounded-linear border border-dark-700/80 bg-dark-800/70 px-3 py-1 text-xs text-dark-200"
+                    className="border-white/12 bg-white/6 text-white/82 flex items-center gap-2 rounded-xl border px-3 py-1 text-xs"
                   >
                     <span>
                       {identity.provider}: {identity.provider_user_id_masked}
@@ -434,7 +434,7 @@ export default function UltimaAccountLinking() {
                       type="button"
                       onClick={() => requestUnlinkMutation.mutate(identity.provider)}
                       disabled={!identity.can_unlink || requestUnlinkMutation.isPending}
-                      className="rounded border border-error-500/40 px-2 py-0.5 text-[10px] text-error-300 transition-colors hover:bg-error-500/10 disabled:cursor-not-allowed disabled:border-dark-600 disabled:text-dark-500"
+                      className="rounded border border-error-500/40 px-2 py-0.5 text-[10px] text-error-300 transition-colors hover:bg-error-500/10 disabled:cursor-not-allowed disabled:border-white/10 disabled:text-white/40"
                       title={identity.can_unlink ? undefined : getIdentityBlockedDetails(identity)}
                     >
                       {t('profile.linking.unlink.button', 'Отвязать')}
@@ -442,15 +442,15 @@ export default function UltimaAccountLinking() {
                   </div>
                 ))
               ) : (
-                <span className="text-sm text-dark-500">
+                <span className="text-sm text-white/55">
                   {t('profile.linking.none', 'Нет привязанных способов входа')}
                 </span>
               )}
             </div>
 
             {telegramRelink && (
-              <div className="mb-4 rounded-linear border border-dark-700/80 bg-dark-800/60 p-3">
-                <p className="text-sm font-medium text-dark-100">Статус смены Telegram</p>
+              <div className="border-white/12 bg-white/6 mb-4 rounded-2xl border p-3">
+                <p className="text-white/92 text-sm font-medium">Статус смены Telegram</p>
                 {linkedIdentities.length <= 1 && (
                   <p className="mt-1 text-xs text-warning-300">
                     Важно: если привязан только Telegram, сменить его не получится. Сначала
@@ -475,14 +475,14 @@ export default function UltimaAccountLinking() {
                   </p>
                 )}
                 {telegramIdentity && (
-                  <p className="mt-2 text-xs text-dark-400">
+                  <p className="text-white/62 mt-2 text-xs">
                     Текущий Telegram: {telegramIdentity.provider_user_id_masked}
                   </p>
                 )}
               </div>
             )}
 
-            <div className="space-y-3 border-t border-dark-800/50 pt-4">
+            <div className="space-y-3 border-t border-white/10 pt-4">
               <div className="flex flex-wrap items-center gap-3">
                 <Button
                   onClick={() => createLinkCodeMutation.mutate()}
@@ -491,7 +491,7 @@ export default function UltimaAccountLinking() {
                   Сгенерировать код привязки
                 </Button>
                 {activeLinkCode && (
-                  <span className="rounded-linear border border-accent-500/40 bg-accent-500/10 px-3 py-2 font-mono text-sm text-accent-300">
+                  <span className="bg-[#1bd29f]/12 rounded-xl border border-[#59f0c9]/35 px-3 py-2 font-mono text-sm text-[#8ff8de]">
                     {activeLinkCode}
                   </span>
                 )}
@@ -511,10 +511,10 @@ export default function UltimaAccountLinking() {
                   }
                 }}
                 placeholder="Введите код привязки"
-                className="input w-full"
+                className="border-white/12 bg-white/6 w-full rounded-2xl border px-3 py-2.5 text-white placeholder:text-white/45 focus:border-[#59f0c9]/45 focus:outline-none"
               />
 
-              <div className="rounded-linear border border-dark-700/70 bg-dark-800/40 px-3 py-2 text-xs text-dark-300">
+              <div className="border-white/12 bg-white/6 text-white/72 rounded-2xl border px-3 py-2 text-xs">
                 {linkFlowStep === 'idle' &&
                   'Шаг 1 из 3: вставьте код со второго аккаунта и нажмите "Проверить".'}
                 {linkFlowStep === 'preview' &&
@@ -527,7 +527,7 @@ export default function UltimaAccountLinking() {
                   'Готово. Привязка завершена. При необходимости можно создать новый код.'}
               </div>
 
-              <div className="sticky bottom-3 z-20 rounded-linear border border-dark-700/80 bg-dark-900/90 p-2 backdrop-blur">
+              <div className="border-white/12 sticky bottom-3 z-20 rounded-2xl border bg-[rgba(7,18,33,0.82)] p-2 backdrop-blur-xl">
                 <div className="flex flex-wrap gap-2">
                   <Button
                     variant="secondary"
@@ -562,18 +562,16 @@ export default function UltimaAccountLinking() {
               </div>
 
               {linkPreview && (
-                <div className="rounded-linear border border-dark-700/80 bg-dark-800/60 p-3">
-                  <p className="mb-2 text-sm text-dark-300">
+                <div className="border-white/12 bg-white/6 rounded-2xl border p-3">
+                  <p className="text-white/74 mb-2 text-sm">
                     Будет привязан к аккаунту #{' '}
-                    <span className="font-semibold text-dark-100">
-                      {linkPreview.source_user_id}
-                    </span>
+                    <span className="font-semibold text-white">{linkPreview.source_user_id}</span>
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {Object.entries(linkPreview.source_identity_hints).map(([provider, value]) => (
                       <span
                         key={`${provider}-${value}`}
-                        className="rounded-linear border border-dark-700/80 bg-dark-800/70 px-2 py-1 text-xs text-dark-200"
+                        className="border-white/12 bg-white/6 text-white/82 rounded-xl border px-2 py-1 text-xs"
                       >
                         {provider}: {value}
                       </span>
@@ -597,7 +595,7 @@ export default function UltimaAccountLinking() {
                   <textarea
                     value={manualMergeComment}
                     onChange={(e) => setManualMergeComment(e.target.value)}
-                    className="input mb-3 min-h-[88px] w-full"
+                    className="border-white/12 bg-white/6 mb-3 min-h-[88px] w-full rounded-2xl border px-3 py-2.5 text-white placeholder:text-white/45 focus:border-[#59f0c9]/45 focus:outline-none"
                     placeholder="Опишите, какой аккаунт основной и почему нужно объединение"
                     maxLength={1000}
                   />
@@ -656,7 +654,7 @@ export default function UltimaAccountLinking() {
                       'profile.linking.unlink.otpPlaceholder',
                       'Введите код подтверждения',
                     )}
-                    className="input mt-3 w-full text-center tracking-[0.4em]"
+                    className="border-white/12 bg-white/6 mt-3 w-full rounded-2xl border px-3 py-2.5 text-center tracking-[0.4em] text-white placeholder:text-white/45 focus:border-[#59f0c9]/45 focus:outline-none"
                   />
                 </div>
               )}
@@ -674,11 +672,11 @@ export default function UltimaAccountLinking() {
               )}
 
               {latestManualMerge && (
-                <div className="rounded-linear border border-dark-700/80 bg-dark-800/60 p-3">
-                  <div className="mb-1 text-sm font-medium text-dark-100">
+                <div className="border-white/12 bg-white/6 rounded-2xl border p-3">
+                  <div className="text-white/92 mb-1 text-sm font-medium">
                     Последний спорный merge-запрос #{latestManualMerge.ticket_id}
                   </div>
-                  <div className="text-sm text-dark-300">
+                  <div className="text-sm text-white/75">
                     {latestManualMerge.decision === 'approve'
                       ? 'Запрос одобрен'
                       : latestManualMerge.decision === 'reject'
@@ -686,16 +684,16 @@ export default function UltimaAccountLinking() {
                         : 'Запрос на рассмотрении'}
                   </div>
                   {latestManualMerge.resolution_comment && (
-                    <div className="mt-2 text-xs text-dark-400">
+                    <div className="text-white/62 mt-2 text-xs">
                       Комментарий: {latestManualMerge.resolution_comment}
                     </div>
                   )}
-                  <div className="mt-1 text-xs text-dark-500">
+                  <div className="text-white/52 mt-1 text-xs">
                     Обновлено {new Date(latestManualMerge.updated_at).toLocaleString()}
                   </div>
                   <Link
                     to="/support"
-                    className="mt-2 inline-flex items-center gap-1 text-xs text-accent-400 transition-colors hover:text-accent-300"
+                    className="mt-2 inline-flex items-center gap-1 text-xs text-[#56e8c2] transition-colors hover:text-[#7af3d7]"
                   >
                     Открыть поддержку
                   </Link>
