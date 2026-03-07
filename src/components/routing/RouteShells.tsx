@@ -2,7 +2,12 @@ import { Suspense } from 'react';
 import { Navigate, useLocation } from 'react-router';
 import Layout from '../layout/Layout';
 import PageLoader from '../common/PageLoader';
-import { BlacklistedScreen, ChannelSubscriptionScreen, MaintenanceScreen } from '../blocking';
+import {
+  BlacklistedScreen,
+  ChannelSubscriptionScreen,
+  MaintenanceScreen,
+  UltimaChannelSubscriptionScreen,
+} from '../blocking';
 import { useAuthStore } from '../../store/auth';
 import { useBlockingStore } from '../../store/blocking';
 import { saveReturnUrl } from '../../utils/token';
@@ -75,7 +80,11 @@ export function BlockingOverlay() {
   }
 
   if (blockingType === 'channel_subscription') {
-    return <ChannelSubscriptionScreen />;
+    return getCachedUltimaMode() ? (
+      <UltimaChannelSubscriptionScreen />
+    ) : (
+      <ChannelSubscriptionScreen />
+    );
   }
 
   if (blockingType === 'blacklisted') {

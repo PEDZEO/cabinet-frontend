@@ -1,4 +1,7 @@
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import PageLoader from '@/components/common/PageLoader';
+import { useTranslation } from 'react-i18next';
+import { useUltimaMode } from '@/hooks/useUltimaMode';
 import {
   LoginBranding,
   LoginCheckEmailCard,
@@ -8,7 +11,28 @@ import {
   useLoginPage,
 } from '@/features/auth/login';
 
+function UltimaLogoShield() {
+  return (
+    <svg viewBox="0 0 64 64" fill="none" className="h-12 w-12 text-white">
+      <path
+        d="M32 6.5c7 6 15.8 9 24 9v17.2c0 13.8-9.5 22.4-24 24.8-14.5-2.4-24-11-24-24.8V15.5c8.2 0 17-3 24-9Z"
+        stroke="currentColor"
+        strokeWidth="3.4"
+        strokeLinejoin="round"
+      />
+      <path
+        d="m22.5 33 6.2 6.2L42 25.8"
+        stroke="currentColor"
+        strokeWidth="3.4"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export default function Login() {
+  const { t } = useTranslation();
+  const { isUltimaMode, isUltimaModeReady } = useUltimaMode();
   const {
     safeTop,
     safeBottom,
@@ -56,6 +80,128 @@ export default function Login() {
     handleEmailSubmit,
     handleShowForgotPassword,
   } = useLoginPage();
+
+  if (!isUltimaModeReady) {
+    return <PageLoader variant="ultima" />;
+  }
+
+  if (isUltimaMode) {
+    return (
+      <div
+        className="relative min-h-[100dvh] overflow-hidden bg-[#041225]"
+        style={{
+          paddingTop:
+            safeTop > 0 ? `${safeTop + 16}px` : 'calc(1rem + env(safe-area-inset-top, 0px))',
+          paddingBottom:
+            safeBottom > 0
+              ? `${safeBottom + 16}px`
+              : 'calc(1rem + env(safe-area-inset-bottom, 0px))',
+        }}
+      >
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(95%_70%_at_50%_45%,rgba(33,208,154,0.16),rgba(7,20,46,0.02)_62%,rgba(7,20,46,0)_100%)]" />
+        {[0, 2.8, 5.6].map((delay) => (
+          <div
+            key={delay}
+            className="ultima-ring-wave absolute left-1/2 top-[36%] h-[150vmax] w-[150vmax] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/35"
+            style={{ animationDelay: `${delay}s` }}
+          />
+        ))}
+
+        <div
+          className="fixed right-3 z-50"
+          style={{
+            top: safeTop > 0 ? `${safeTop + 12}px` : 'calc(12px + env(safe-area-inset-top, 0px))',
+          }}
+        >
+          <LanguageSwitcher />
+        </div>
+
+        <div className="relative z-10 mx-auto flex w-full max-w-md flex-col px-4">
+          <header className="mb-4 flex flex-col items-center pt-8 text-center">
+            <div className="mb-3 flex h-20 w-20 items-center justify-center rounded-[28px] border border-emerald-200/20 bg-emerald-400/10">
+              <UltimaLogoShield />
+            </div>
+            <h1 className="text-[34px] font-semibold leading-none tracking-[-0.01em] text-white">
+              {appName}
+            </h1>
+            <p className="text-white/62 mt-2 text-[14px]">
+              {t('auth.loginToAccount', { defaultValue: 'Войдите в аккаунт для продолжения' })}
+            </p>
+          </header>
+
+          {registeredEmail ? (
+            <div className="rounded-[28px] border border-emerald-200/15 bg-[rgba(10,40,44,0.36)] p-4 backdrop-blur-md">
+              <LoginCheckEmailCard email={registeredEmail} onBackToLogin={handleBackToLogin} />
+            </div>
+          ) : (
+            <div className="rounded-[28px] border border-emerald-200/15 bg-[rgba(10,40,44,0.36)] p-4 backdrop-blur-md">
+              {error && (
+                <div className="bg-rose-500/12 mb-4 rounded-xl border border-rose-300/35 px-4 py-2.5 text-sm text-rose-100">
+                  {error}
+                </div>
+              )}
+
+              <div className="bg-emerald-950/26 rounded-2xl border border-emerald-200/10 p-3">
+                <LoginTelegramSection
+                  isLoading={isLoading}
+                  isTelegramWebApp={isTelegramWebApp}
+                  hasError={Boolean(error)}
+                  botUsername={botUsername}
+                  referralCode={referralCode || undefined}
+                  onRetryTelegramAuth={handleRetryTelegramAuth}
+                />
+              </div>
+
+              <div className="bg-emerald-950/26 mt-3 rounded-2xl border border-emerald-200/10 p-3">
+                <LoginOAuthSection
+                  isLoading={isOAuthProvidersLoading}
+                  providers={oauthProviders}
+                  oauthLoading={oauthLoading}
+                  onOAuthLogin={handleOAuthLogin}
+                />
+              </div>
+
+              <div className="bg-emerald-950/26 mt-3 rounded-2xl border border-emerald-200/10 p-3">
+                <LoginEmailAuthSection
+                  isEmailAuthLoading={isEmailAuthLoading}
+                  isEmailAuthEnabled={isEmailAuthEnabled}
+                  showEmailForm={showEmailForm}
+                  onToggleEmailForm={handleToggleEmailForm}
+                  showForgotPassword={showForgotPassword}
+                  forgotPasswordSent={forgotPasswordSent}
+                  forgotPasswordEmail={forgotPasswordEmail}
+                  onForgotPasswordEmailChange={setForgotPasswordEmail}
+                  forgotPasswordError={forgotPasswordError}
+                  forgotPasswordLoading={forgotPasswordLoading}
+                  onForgotPasswordSubmit={handleForgotPassword}
+                  onCloseForgotPassword={closeForgotPasswordModal}
+                  authMode={authMode}
+                  onAuthModeChange={setAuthMode}
+                  onEmailSubmit={handleEmailSubmit}
+                  firstName={firstName}
+                  onFirstNameChange={setFirstName}
+                  email={email}
+                  onEmailChange={setEmail}
+                  password={password}
+                  onPasswordChange={setPassword}
+                  confirmPassword={confirmPassword}
+                  onConfirmPasswordChange={setConfirmPassword}
+                  isLoading={isLoading}
+                  onShowForgotPassword={handleShowForgotPassword}
+                />
+              </div>
+            </div>
+          )}
+
+          <p className="mt-4 text-center text-[11px] text-white/45">
+            {t('auth.secureLoginHint', {
+              defaultValue: 'Безопасный вход через Telegram, OAuth или email.',
+            })}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
