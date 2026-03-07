@@ -22,6 +22,7 @@ import type {
 import InsufficientBalancePrompt from '../components/InsufficientBalancePrompt';
 import { useCurrency } from '../hooks/useCurrency';
 import { useCloseOnSuccessNotification } from '../store/successNotification';
+import { useHaptic } from '@/platform';
 import {
   buildPurchaseSteps,
   BuyDevicesSection,
@@ -218,6 +219,7 @@ function FullSubscription() {
   const queryClient = useQueryClient();
   const location = useLocation();
   const navigate = useNavigate();
+  const haptic = useHaptic();
   const { formatAmount, currencySymbol } = useCurrency();
   const { isDark } = useTheme();
   const g = getGlassColors(isDark);
@@ -616,11 +618,12 @@ function FullSubscription() {
 
   const handleSelectTariff = useCallback(
     (tariff: Tariff) => {
+      haptic.impact('light');
       setSelectedTariff(tariff);
       setSelectedTariffPeriod(tariff.periods[0] || null);
       setShowTariffPurchase(true);
     },
-    [setSelectedTariff, setSelectedTariffPeriod, setShowTariffPurchase],
+    [haptic, setSelectedTariff, setSelectedTariffPeriod, setShowTariffPurchase],
   );
 
   const handleCloseTariffPurchase = useCallback(() => {

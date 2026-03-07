@@ -6,7 +6,7 @@ import { balanceApi } from '@/api/balance';
 import { subscriptionApi } from '@/api/subscription';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useCloseOnSuccessNotification } from '@/store/successNotification';
-import { usePlatform } from '@/platform';
+import { useHaptic, usePlatform } from '@/platform';
 import type { PaymentMethod, Tariff, TariffPeriod } from '@/types';
 
 const ULTIMA_PENDING_PURCHASE_KEY = 'ultima_pending_purchase_v1';
@@ -99,6 +99,7 @@ export function UltimaSubscription() {
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const { currencySymbol } = useCurrency();
+  const haptic = useHaptic();
   const { openLink, openTelegramLink } = usePlatform();
 
   const [selectedDeviceIndex, setSelectedDeviceIndex] = useState(0);
@@ -818,6 +819,7 @@ export function UltimaSubscription() {
                 key={period.days}
                 type="button"
                 onClick={() => {
+                  haptic.impact('light');
                   setSelectedPeriodDays(period.days);
                 }}
                 className={`h-full min-h-[176px] rounded-3xl border p-4 text-left transition-colors ${
