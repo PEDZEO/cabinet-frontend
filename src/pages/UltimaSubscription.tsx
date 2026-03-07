@@ -442,7 +442,7 @@ export function UltimaSubscription() {
           </div>
         </section>
 
-        <section className="grid grid-cols-2 gap-3">
+        <section className="grid auto-rows-fr grid-cols-2 gap-3">
           {displayPeriods.map((period) => {
             const active = period.days === selectedPeriod.days;
             return (
@@ -452,27 +452,33 @@ export function UltimaSubscription() {
                 onClick={() => {
                   setSelectedPeriodDays(period.days);
                 }}
-                className={`rounded-3xl border p-4 text-left transition ${
+                className={`h-full min-h-[176px] rounded-3xl border p-4 text-left transition-colors ${
                   active
-                    ? 'scale-[0.985] border-emerald-400 bg-[#0a2522] shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_0_0_1px_rgba(16,185,129,0.25)]'
-                    : 'border-white/12 bg-black/20 hover:-translate-y-0.5 hover:border-white/25'
+                    ? 'border-emerald-400 bg-[#0a2522] shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_0_0_1px_rgba(16,185,129,0.25)]'
+                    : 'border-white/12 bg-black/20 hover:border-white/25'
                 }`}
               >
                 <div className="mb-4 flex items-center justify-between">
                   <span className="text-[19px] font-medium text-white">{periodLabel(period)}</span>
-                  {active && <span className="text-emerald-300">★</span>}
+                  <span className={`text-emerald-300 ${active ? 'opacity-100' : 'opacity-0'}`}>
+                    ★
+                  </span>
                 </div>
                 <p className="text-[32px] font-semibold leading-none text-white">
                   {formatPrice(calculatePeriodPrice(period))}
                 </p>
-                {period.original_price_kopeks &&
-                period.original_price_kopeks > period.price_kopeks ? (
-                  <p className="mt-1 text-[13px] text-white/70">
-                    {period.price_per_month_kopeks > 0
-                      ? `${formatPrice(period.price_per_month_kopeks)} / мес`
-                      : ''}
-                  </p>
-                ) : null}
+                <p
+                  className={`mt-1 text-[13px] ${
+                    period.original_price_kopeks &&
+                    period.original_price_kopeks > period.price_kopeks
+                      ? 'text-white/70'
+                      : 'invisible'
+                  }`}
+                >
+                  {period.price_per_month_kopeks > 0
+                    ? `${formatPrice(period.price_per_month_kopeks)} / мес`
+                    : '0'}
+                </p>
               </button>
             );
           })}
