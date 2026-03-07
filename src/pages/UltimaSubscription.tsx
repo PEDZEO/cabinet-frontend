@@ -144,30 +144,14 @@ export function UltimaSubscription() {
 
   const displayPeriods = useMemo(() => {
     if (!allPeriodsForDevice.length) return [] as DisplayPeriod[];
-    const all = allPeriodsForDevice;
-
-    const pick = (months: number): DisplayPeriod | null => {
-      const exact = all.find((period) => period.months === months);
-      if (exact) return exact;
-      const targetDays = months * 30;
-      return (
-        [...all].sort((a, b) => Math.abs(a.days - targetDays) - Math.abs(b.days - targetDays))[0] ??
-        null
-      );
-    };
-
-    const usedDays = new Set<number>();
-    const picked: DisplayPeriod[] = [];
-
-    [1, 3, 6, 12].forEach((months) => {
-      const period = pick(months);
-      if (!period || usedDays.has(period.days)) return;
-      usedDays.add(period.days);
-      picked.push(period);
+    const bestByDays = new Map<number, DisplayPeriod>();
+    allPeriodsForDevice.forEach((period) => {
+      const existing = bestByDays.get(period.days);
+      if (!existing || period.price_kopeks < existing.price_kopeks) {
+        bestByDays.set(period.days, period);
+      }
     });
-
-    if (picked.length) return picked;
-    return [...all].sort((a, b) => a.days - b.days).slice(0, 4);
+    return [...bestByDays.values()].sort((a, b) => a.days - b.days);
   }, [allPeriodsForDevice]);
 
   const selectedPeriod = useMemo(() => {
@@ -193,7 +177,7 @@ export function UltimaSubscription() {
     );
   }, [displayPeriods, selectedPeriodDays]);
 
-  const selectedTariffIdForPurchase = selectedPeriod?.tariffId ?? null;
+  const selectedTariffIdForPurchase = selectedPeriod?.tariffId ?? selectedTariff?.id ?? null;
 
   const purchaseMutation = useMutation({
     mutationFn: async () => {
@@ -277,9 +261,28 @@ export function UltimaSubscription() {
                   setSelectedDeviceIndex((prev) => Math.min(deviceLimits.length - 1, prev + 1));
                 }
               }}
-              className="mb-2 h-1 w-full cursor-pointer rounded-full bg-white/20"
-            />
-            <div className="flex items-center justify-between px-2">
+              className="relative mb-3 h-2 w-full cursor-pointer rounded-full bg-white/20"
+            >
+              <div
+                className="h-full rounded-full bg-emerald-400/80"
+                style={{
+                  width:
+                    deviceLimits.length > 1
+                      ? `${(selectedDeviceIndex / (deviceLimits.length - 1)) * 100}%`
+                      : '0%',
+                }}
+              />
+              <span
+                className="absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-2 border-emerald-300 bg-[#06261f] shadow-[0_0_10px_rgba(52,211,153,0.6)]"
+                style={{
+                  left:
+                    deviceLimits.length > 1
+                      ? `calc(${(selectedDeviceIndex / (deviceLimits.length - 1)) * 100}% - 8px)`
+                      : '0px',
+                }}
+              />
+            </div>
+            <div className="flex items-center justify-between px-1">
               {deviceLimits.map((_, index) => (
                 <button
                   key={index}
