@@ -118,6 +118,12 @@ export function UltimaSubscription() {
     refetchOnMount: true,
     placeholderData: (previousData) => previousData,
   });
+  const { data: subscriptionResponse } = useQuery({
+    queryKey: ['subscription'],
+    queryFn: subscriptionApi.getSubscription,
+    staleTime: 15000,
+    placeholderData: (previousData) => previousData,
+  });
   const { data: devicePriceMeta } = useQuery({
     queryKey: ['device-price', 'ultima-max'],
     queryFn: () => subscriptionApi.getDevicePrice(1),
@@ -187,12 +193,19 @@ export function UltimaSubscription() {
   const deviceLimits = useMemo(() => {
     if (!tariffs.length) return availableDeviceLimits.length ? availableDeviceLimits : [1];
     const withMaxLimit = (tariff: Tariff) => tariff as Tariff & { max_device_limit?: number };
+    const currentSubscriptionLimit = Math.max(
+      1,
+      subscriptionResponse?.subscription?.device_limit ?? 1,
+    );
 
     const minBaseFromTariffs = Math.max(
       1,
       Math.min(...tariffs.map((tariff) => tariff.base_device_limit ?? tariff.device_limit ?? 1)),
     );
-    const minBase = Math.max(1, devicePriceMeta?.current_device_limit ?? minBaseFromTariffs);
+    const minBase = Math.max(
+      currentSubscriptionLimit,
+      devicePriceMeta?.current_device_limit ?? minBaseFromTariffs,
+    );
     const maxLimit = Math.max(
       minBase,
       devicePriceMeta?.max_device_limit ?? minBase,
@@ -202,10 +215,20 @@ export function UltimaSubscription() {
     );
     const fullRange = Array.from({ length: maxLimit - minBase + 1 }, (_, i) => minBase + i);
     return fullRange.length ? fullRange : availableDeviceLimits;
-  }, [tariffs, availableDeviceLimits, devicePriceMeta]);
+  }, [
+    tariffs,
+    availableDeviceLimits,
+    devicePriceMeta,
+    subscriptionResponse?.subscription?.device_limit,
+  ]);
 
   const closestDeviceIndex = useMemo(() => {
     if (!deviceLimits.length) return 0;
+    const subscriptionLimit = subscriptionResponse?.subscription?.device_limit;
+    if (typeof subscriptionLimit === 'number' && subscriptionLimit > 0) {
+      const exactSubscriptionMatch = deviceLimits.findIndex((value) => value === subscriptionLimit);
+      if (exactSubscriptionMatch >= 0) return exactSubscriptionMatch;
+    }
     const current = tariffs.find((tariff) => tariff.is_current) ?? tariffs[0];
     if (!current) return 0;
     const currentLimit = Math.max(1, current.device_limit);
@@ -221,7 +244,7 @@ export function UltimaSubscription() {
       }
     });
     return best;
-  }, [tariffs, deviceLimits]);
+  }, [tariffs, deviceLimits, subscriptionResponse?.subscription?.device_limit]);
 
   useEffect(() => {
     if (!deviceLimits.length) {
