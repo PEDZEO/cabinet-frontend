@@ -128,6 +128,35 @@ export function UltimaSupport() {
     };
   }, [supportConfig, t, openLink, openTelegramLink]);
 
+  const formatDate = (iso: string) => new Date(iso).toLocaleDateString();
+  const formatDateTime = (iso: string) =>
+    new Date(iso).toLocaleString(undefined, {
+      day: '2-digit',
+      month: '2-digit',
+      year: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+  const getStatusMeta = (status: string) => {
+    if (status === 'closed') {
+      return {
+        label: t('support.statusClosed', { defaultValue: 'Закрыт' }),
+        classes: 'border-white/20 bg-white/10 text-white/80',
+      };
+    }
+    if (status === 'answered') {
+      return {
+        label: t('support.statusAnswered', { defaultValue: 'Ответ админа' }),
+        classes: 'border-emerald-300/40 bg-emerald-400/15 text-emerald-100',
+      };
+    }
+    return {
+      label: t('support.statusOpen', { defaultValue: 'Открыт' }),
+      classes: 'border-sky-300/35 bg-sky-400/15 text-sky-100',
+    };
+  };
+
   if (configLoading) {
     return <div className="h-[100dvh] w-full bg-transparent" />;
   }
@@ -229,12 +258,25 @@ export function UltimaSupport() {
                           : 'border-[#7beacc]/14 hover:border-[#8ef1d5]/28 bg-emerald-950/35'
                       }`}
                     >
-                      <p className="truncate text-sm font-medium leading-5 text-white">
-                        {ticket.title}
-                      </p>
-                      <p className="mt-1 text-xs text-white/60">
-                        {new Date(ticket.updated_at).toLocaleDateString()}
-                      </p>
+                      <div className="mb-1.5 flex items-start justify-between gap-2">
+                        <p className="truncate text-sm font-medium leading-5 text-white">
+                          {ticket.title}
+                        </p>
+                        <span
+                          className={`inline-flex shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium ${getStatusMeta(ticket.status).classes}`}
+                        >
+                          {getStatusMeta(ticket.status).label}
+                        </span>
+                      </div>
+                      {ticket.last_message?.message_text ? (
+                        <p className="truncate text-xs text-white/65">
+                          {ticket.last_message.is_from_admin
+                            ? `${t('support.supportTeam', { defaultValue: 'Администратор' })}: `
+                            : `${t('support.you', { defaultValue: 'Вы' })}: `}
+                          {ticket.last_message.message_text}
+                        </p>
+                      ) : null}
+                      <p className="mt-1 text-xs text-white/50">{formatDate(ticket.updated_at)}</p>
                     </button>
                   ))
                 ) : (
@@ -245,7 +287,16 @@ export function UltimaSupport() {
               <div className="border-[#7beacc]/16 bg-emerald-950/28 min-h-0 flex-1 rounded-2xl border p-3">
                 {selectedTicketId && ticketDetail ? (
                   <div className="flex h-full min-h-0 flex-col gap-3">
-                    <p className="text-sm font-medium text-white">{selectedTicket?.title}</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="truncate text-sm font-medium text-white">
+                        {selectedTicket?.title}
+                      </p>
+                      <span
+                        className={`inline-flex shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium ${getStatusMeta(ticketDetail.status).classes}`}
+                      >
+                        {getStatusMeta(ticketDetail.status).label}
+                      </span>
+                    </div>
                     <div className="max-h-[24vh] space-y-2 overflow-y-auto pr-1">
                       {ticketLoading ? (
                         <p className="text-xs text-white/60">{t('common.loading')}</p>
@@ -259,7 +310,17 @@ export function UltimaSupport() {
                                 : 'border-[#8cefd2]/16 bg-emerald-950/38 border text-white'
                             }`}
                           >
-                            {msg.message_text}
+                            <div className="mb-1 flex items-center justify-between gap-2">
+                              <span className="text-[11px] font-medium text-white/70">
+                                {msg.is_from_admin
+                                  ? t('support.supportTeam', { defaultValue: 'Администратор' })
+                                  : t('support.you', { defaultValue: 'Вы' })}
+                              </span>
+                              <span className="text-[10px] text-white/50">
+                                {formatDateTime(msg.created_at)}
+                              </span>
+                            </div>
+                            <p>{msg.message_text}</p>
                           </div>
                         ))
                       )}
