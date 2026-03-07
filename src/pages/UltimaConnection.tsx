@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/store/auth';
 import type { AppConfig, LocalizedText, RemnawaveAppClient } from '@/types';
@@ -351,21 +352,32 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
             <div className="bg-black/8 relative flex h-[132px] w-[132px] items-center justify-center rounded-full">
               {icon}
               {step === 3 && showReturnConfetti && (
-                <div className="pointer-events-none absolute inset-0 overflow-visible">
-                  {Array.from({ length: 180 }).map((_, index) => {
-                    const angle = (index * 360) / 180;
-                    const distance = 95 + ((index * 17) % 210);
+                <div className="pointer-events-none absolute inset-[-160px] overflow-visible">
+                  {Array.from({ length: 260 }).map((_, index) => {
+                    const angle = (index * 137.5) % 360;
+                    const distance = 140 + ((index * 23) % 420);
                     const hue = (index * 37) % 360;
+                    const spin = 150 + ((index * 61) % 410);
+                    const duration = 1400 + ((index * 37) % 900);
+                    const width = 4 + ((index * 5) % 4);
+                    const height = 9 + ((index * 7) % 7);
+                    const delay = ((index * 11) % 260) / 1000;
+                    const confettiStyle = {
+                      background: `hsl(${hue} 95% 62%)`,
+                      width: `${width}px`,
+                      height: `${height}px`,
+                      animationDelay: `${delay}s`,
+                      opacity: 0,
+                      '--angle': `${angle}deg`,
+                      '--distance': `${distance}px`,
+                      '--spin': `${spin}deg`,
+                      '--duration': `${duration}ms`,
+                    } as CSSProperties;
                     return (
                       <span
                         key={`${burst}-${index}`}
-                        className="absolute left-1/2 top-1/2 h-2.5 w-1.5 rounded-sm"
-                        style={{
-                          background: `hsl(${hue} 95% 62%)`,
-                          transform: `translate(-50%, -50%) rotate(${angle}deg) translateY(-${distance}px)`,
-                          animation: 'ultima-confetti-fall 1650ms ease-out forwards',
-                          opacity: 0,
-                        }}
+                        className="ultima-confetti-chip absolute left-1/2 top-1/2 rounded-sm"
+                        style={confettiStyle}
                       />
                     );
                   })}
@@ -424,36 +436,41 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
       </div>
 
       {step === 1 && showInfo && (
-        <div className="ultima-step-enter border-white/18 bg-black/94 absolute inset-x-4 bottom-[236px] z-20 rounded-[24px] border p-4 text-white shadow-[0_22px_46px_rgba(0,0,0,0.52)] backdrop-blur-xl">
-          <div className="mb-2 flex items-start justify-between gap-3">
-            <h3 className="text-[24px] font-semibold leading-[1.06]">
-              {t('subscription.connection.importantInfo', { defaultValue: 'Важная информация' })}
-            </h3>
+        <>
+          <div className="bg-black/52 absolute inset-0 z-[18]" />
+          <div className="ultima-step-enter border-white/24 absolute inset-x-4 bottom-[252px] z-20 rounded-[24px] border bg-[#05070B] p-4 text-white shadow-[0_26px_56px_rgba(0,0,0,0.72)] backdrop-blur-xl">
+            <div className="mb-2 flex items-start justify-between gap-3">
+              <h3 className="text-[24px] font-semibold leading-[1.06] text-white/95">
+                {t('subscription.connection.importantInfo', {
+                  defaultValue: 'Важная информация',
+                })}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowInfo(false)}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-white/90"
+                aria-label="close-info-modal"
+              >
+                ×
+              </button>
+            </div>
+            <p className="text-white/92 text-[15px] leading-[1.28]">
+              {t('subscription.connection.importantInfoDesc', {
+                defaultValue:
+                  'После установки приложения Happ, обязательно вернитесь на этот экран и нажмите «Следующий шаг», чтобы добавить конфигурацию в приложение.',
+              })}
+            </p>
             <button
               type="button"
               onClick={() => setShowInfo(false)}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 text-white/70"
-              aria-label="close-info-modal"
+              className="border-white/26 bg-white/14 mt-4 flex w-full items-center justify-center rounded-full border px-5 py-2.5 text-[15px] font-medium text-white"
             >
-              ×
+              {t('subscription.connection.gotIt', {
+                defaultValue: 'Все понятно',
+              })}
             </button>
           </div>
-          <p className="text-[15px] leading-[1.24] text-white/95">
-            {t('subscription.connection.importantInfoDesc', {
-              defaultValue:
-                'После установки приложения Happ, обязательно вернитесь на этот экран и нажмите «Следующий шаг», чтобы добавить конфигурацию в приложение.',
-            })}
-          </p>
-          <button
-            type="button"
-            onClick={() => setShowInfo(false)}
-            className="border-white/22 bg-white/12 mt-4 flex w-full items-center justify-center rounded-full border px-5 py-2.5 text-[15px] font-medium text-white/95"
-          >
-            {t('subscription.connection.gotIt', {
-              defaultValue: 'Все понятно',
-            })}
-          </button>
-        </div>
+        </>
       )}
     </div>
   );
