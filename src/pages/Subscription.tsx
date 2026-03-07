@@ -51,7 +51,9 @@ import {
 
 // Import lite mode hook and component
 import { useLiteMode } from '../hooks/useLiteMode';
+import { useUltimaMode } from '../hooks/useUltimaMode';
 import { LiteSubscription } from './LiteSubscription';
+import { UltimaSubscription } from './UltimaSubscription';
 
 /** Isolated countdown so 1s interval doesn't re-render the whole page */
 const CountdownTimer = memo(function CountdownTimer({
@@ -197,10 +199,15 @@ const CountdownTimer = memo(function CountdownTimer({
 
 export default function Subscription() {
   const { isLiteMode, isLiteModeReady } = useLiteMode();
+  const { isUltimaMode, isUltimaModeReady } = useUltimaMode();
 
   // Wait for lite mode to be determined (for new users)
-  if (!isLiteModeReady) {
+  if (!isLiteModeReady || !isUltimaModeReady) {
     return null;
+  }
+
+  if (isUltimaMode) {
+    return <UltimaSubscription />;
   }
 
   // Render Lite Subscription if lite mode is enabled
