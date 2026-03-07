@@ -5,6 +5,8 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { balanceApi } from '@/api/balance';
 import { subscriptionApi } from '@/api/subscription';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useCloseOnSuccessNotification } from '@/store/successNotification';
+import { usePlatform } from '@/platform';
 import type { PaymentMethod, Tariff, TariffPeriod } from '@/types';
 
 export function UltimaSubscription() {
@@ -13,10 +15,12 @@ export function UltimaSubscription() {
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const { currencySymbol } = useCurrency();
+  const { openLink, openTelegramLink } = usePlatform();
 
   const [selectedDeviceIndex, setSelectedDeviceIndex] = useState(0);
   const [selectedPeriodDays, setSelectedPeriodDays] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [awaitingPaymentCompletion, setAwaitingPaymentCompletion] = useState(false);
   const didInitDevice = useRef(false);
   const deviceTrackRef = useRef<HTMLDivElement | null>(null);
   const autoPurchaseAttemptRef = useRef<string | null>(null);
@@ -260,6 +264,48 @@ export function UltimaSubscription() {
     },
   });
 
+  const createPaymentMutation = useMutation({
+    mutationFn: async (payload: {
+      amountKopeks: number;
+      paymentMethodId: string;
+      paymentOptionId?: string;
+    }) =>
+      balanceApi.createTopUp(
+        payload.amountKopeks,
+        payload.paymentMethodId,
+        payload.paymentOptionId,
+      ),
+    onSuccess: (payment) => {
+      const redirectUrl = payment.payment_url;
+      if (!redirectUrl) {
+        setError(t('balance.errors.noPaymentLink'));
+        return;
+      }
+      setAwaitingPaymentCompletion(true);
+      if (redirectUrl.includes('t.me/')) {
+        openTelegramLink(redirectUrl);
+      } else {
+        openLink(redirectUrl);
+      }
+    },
+    onError: (err: { response?: { data?: { detail?: string } } }) => {
+      setAwaitingPaymentCompletion(false);
+      setError(err.response?.data?.detail || t('common.error'));
+    },
+  });
+
+  useCloseOnSuccessNotification(() => {
+    if (!awaitingPaymentCompletion || purchaseMutation.isPending) return;
+    if (!selectedTariffIdForPurchase || !selectedPeriod) return;
+    setError(null);
+    setAwaitingPaymentCompletion(false);
+    purchaseMutation.mutate({
+      tariffId: selectedTariffIdForPurchase,
+      periodDays: selectedPeriod.days,
+      deviceLimit: selectedDeviceLimit,
+    });
+  });
+
   useEffect(() => {
     if (!autoPurchaseKey) return;
     if (purchaseMutation.isPending) return;
@@ -306,6 +352,7 @@ export function UltimaSubscription() {
 
   const openTopUpForSubscription = async () => {
     setError(null);
+    if (createPaymentMutation.isPending) return;
     let method = defaultPaymentMethod;
     if (!method) {
       const methods = await balanceApi.getPaymentMethods();
@@ -317,14 +364,12 @@ export function UltimaSubscription() {
       }
       queryClient.setQueryData(['payment-methods'], methods);
     }
-    const returnTo = `/subscription?autoTariffId=${selectedTariffIdForPurchase}&autoPeriodDays=${selectedPeriod.days}&autoDeviceLimit=${selectedDeviceLimit}`;
-    const params = new URLSearchParams({
-      amount: String(selectedPriceKopeks / 100),
-      returnTo,
-      autostart: '1',
-      autoopen: '1',
+    const selectedOptionId = method.options?.find((option) => option.id)?.id;
+    createPaymentMutation.mutate({
+      amountKopeks: selectedPriceKopeks,
+      paymentMethodId: method.id,
+      paymentOptionId: selectedOptionId,
     });
-    navigate(`/balance/top-up/${method.id}?${params.toString()}`);
   };
 
   const periodLabel = (period: TariffPeriod) => {
@@ -491,7 +536,7 @@ export function UltimaSubscription() {
             onClick={() => {
               void openTopUpForSubscription();
             }}
-            disabled={purchaseMutation.isPending}
+            disabled={purchaseMutation.isPending || createPaymentMutation.isPending}
             className="flex w-full items-center justify-between rounded-full border border-[#52ecc6]/40 bg-[#12cd97] px-6 py-4 text-[20px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_8px_20px_rgba(10,123,94,0.28)]"
           >
             <span>Оплатить подписку</span>
