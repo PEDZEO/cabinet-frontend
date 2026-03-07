@@ -892,14 +892,14 @@ export function UltimaSubscription() {
             disabled={
               purchaseMutation.isPending || createPaymentMutation.isPending || isFinalizingPending
             }
-            className="flex w-full items-center justify-between rounded-full border border-[#52ecc6]/40 bg-[#12cd97] px-6 py-4 text-[20px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_8px_20px_rgba(10,123,94,0.28)]"
+            className="border-[#66ebc9]/42 flex w-full items-center justify-between rounded-full border bg-[#14cf9a] px-5 py-3 text-[16px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(7,146,108,0.2)] transition hover:bg-[#16d8a1] disabled:cursor-not-allowed disabled:opacity-75"
           >
             <span>Оплатить подписку</span>
             <span className="flex items-center gap-2 text-white/95">
               {formatPrice(payableAmountKopeks)}
               {selectedPeriod.original_price_kopeks &&
               selectedPeriod.original_price_kopeks > selectedPeriod.price_kopeks ? (
-                <span className="text-[15px] text-white/55 line-through">
+                <span className="text-[13px] text-white/60 line-through">
                   {formatPrice(selectedPeriod.original_price_kopeks)}
                 </span>
               ) : null}

@@ -12,6 +12,8 @@ import { useHaptic } from '@/platform';
 import { useAuthStore } from '@/store/auth';
 import { warmUltimaStartup } from '@/features/ultima/warmup';
 
+const ULTIMA_CONNECTION_STATE_KEY = 'ultima_connection_flow_v1';
+
 const ShieldIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-16 w-16 text-white/95">
     <path
@@ -86,10 +88,12 @@ export function UltimaDashboard() {
   const { currencySymbol } = useCurrency();
   const haptic = useHaptic();
   const isAdmin = useAuthStore((state) => state.isAdmin);
+  const user = useAuthStore((state) => state.user);
   const rippleIdRef = useRef(0);
   const warmedLanguagesRef = useRef<Set<string>>(new Set());
   const trialAutoActivationAttemptedRef = useRef(false);
   const [shieldRipples, setShieldRipples] = useState<ShieldRipple[]>([]);
+  const [connectionStep, setConnectionStep] = useState<1 | 2 | 3>(1);
 
   const {
     data: subscriptionResponse,
@@ -214,6 +218,27 @@ export function UltimaDashboard() {
     void warmUltimaStartup(queryClient, { language });
   }, [i18n.language, queryClient]);
 
+  useEffect(() => {
+    const key = `${ULTIMA_CONNECTION_STATE_KEY}:${user?.id ?? 'guest'}`;
+    const readStep = () => {
+      try {
+        const raw = localStorage.getItem(key);
+        const parsed = raw ? Number(raw) : 1;
+        setConnectionStep(parsed === 3 ? 3 : parsed === 2 ? 2 : 1);
+      } catch {
+        setConnectionStep(1);
+      }
+    };
+
+    readStep();
+    window.addEventListener('focus', readStep);
+    document.addEventListener('visibilitychange', readStep);
+    return () => {
+      window.removeEventListener('focus', readStep);
+      document.removeEventListener('visibilitychange', readStep);
+    };
+  }, [user?.id]);
+
   const handleShieldTap = useCallback(
     (event: PointerEvent<HTMLButtonElement>) => {
       haptic.impact('light');
@@ -322,6 +347,26 @@ export function UltimaDashboard() {
         </section>
 
         <section className="mt-auto pb-1">
+          {connectionStep === 2 && (
+            <div className="mb-3 rounded-3xl border border-amber-300/30 bg-black/30 p-4 backdrop-blur">
+              <p className="text-[18px] font-semibold leading-tight text-amber-100">
+                {t('ultima.setupNotFinishedTitle', { defaultValue: 'Установка не завершена' })}
+              </p>
+              <p className="mt-1 text-sm leading-snug text-amber-100/85">
+                {t('ultima.setupNotFinishedDesc', {
+                  defaultValue: 'Вернитесь к настройке и завершите подключение VPN.',
+                })}
+              </p>
+              <button
+                type="button"
+                onClick={() => navigate('/connection')}
+                className="border-[#66ebc9]/42 mt-3 flex w-full items-center justify-center rounded-full border bg-[#14cf9a] px-5 py-3 text-[16px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(7,146,108,0.2)] transition hover:bg-[#16d8a1]"
+              >
+                {t('ultima.finishSetup', { defaultValue: 'Завершить установку' })}
+              </button>
+            </div>
+          )}
+
           <button
             type="button"
             onClick={() => {
