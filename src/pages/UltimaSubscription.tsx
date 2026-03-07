@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
@@ -25,6 +25,7 @@ export function UltimaSubscription() {
   const [selectedDeviceIndex, setSelectedDeviceIndex] = useState(0);
   const [selectedPeriodDays, setSelectedPeriodDays] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const didInitDevice = useRef(false);
 
   const { data: purchaseOptions, isLoading } = useQuery({
     queryKey: ['purchase-options'],
@@ -37,38 +38,98 @@ export function UltimaSubscription() {
     return purchaseOptions.tariffs.filter((tariff) => tariff.is_available);
   }, [purchaseOptions]);
 
-  const deviceLimits = useMemo(() => {
-    return [...new Set(tariffs.map((tariff) => Math.max(1, tariff.device_limit)))].sort(
-      (a, b) => a - b,
-    );
+  const tariffsByDevice = useMemo(() => {
+    const map = new Map<number, Tariff[]>();
+    tariffs.forEach((tariff) => {
+      const limit = Math.max(1, tariff.device_limit);
+      const list = map.get(limit) ?? [];
+      list.push(tariff);
+      map.set(limit, list);
+    });
+    return map;
   }, [tariffs]);
 
-  useEffect(() => {
-    if (!tariffs.length || !deviceLimits.length) return;
+  const deviceLimits = useMemo(() => {
+    return [...tariffsByDevice.keys()].sort((a, b) => a - b);
+  }, [tariffsByDevice]);
+
+  const closestDeviceIndex = useMemo(() => {
+    if (!deviceLimits.length) return 0;
     const current = tariffs.find((tariff) => tariff.is_current) ?? tariffs[0];
-    const idx = deviceLimits.findIndex((value) => value === current.device_limit);
-    setSelectedDeviceIndex(idx >= 0 ? idx : 0);
+    if (!current) return 0;
+    const currentLimit = Math.max(1, current.device_limit);
+    const exact = deviceLimits.findIndex((value) => value === currentLimit);
+    if (exact >= 0) return exact;
+    let best = 0;
+    let bestDistance = Infinity;
+    deviceLimits.forEach((limit, index) => {
+      const distance = Math.abs(limit - currentLimit);
+      if (distance < bestDistance) {
+        best = index;
+        bestDistance = distance;
+      }
+    });
+    return best;
   }, [tariffs, deviceLimits]);
+
+  useEffect(() => {
+    if (!deviceLimits.length) {
+      setSelectedDeviceIndex(0);
+      return;
+    }
+    if (!didInitDevice.current) {
+      didInitDevice.current = true;
+      setSelectedDeviceIndex(closestDeviceIndex);
+      return;
+    }
+    setSelectedDeviceIndex((prev) => Math.min(Math.max(0, prev), deviceLimits.length - 1));
+  }, [deviceLimits, closestDeviceIndex]);
 
   const selectedDeviceLimit =
     deviceLimits[Math.min(selectedDeviceIndex, Math.max(0, deviceLimits.length - 1))] ?? 1;
 
-  const selectedTariff = useMemo(() => {
+  const selectedTariffs = useMemo(() => {
     if (!tariffs.length) return null;
-    const exact = tariffs.find((tariff) => tariff.device_limit === selectedDeviceLimit);
-    if (exact) return exact;
-    return [...tariffs].sort(
-      (a, b) =>
-        Math.abs(a.device_limit - selectedDeviceLimit) -
-        Math.abs(b.device_limit - selectedDeviceLimit),
-    )[0];
-  }, [tariffs, selectedDeviceLimit]);
+    const exact = tariffsByDevice.get(selectedDeviceLimit);
+    if (exact?.length) return exact;
+    const nearestLimit =
+      [...deviceLimits].sort(
+        (a, b) => Math.abs(a - selectedDeviceLimit) - Math.abs(b - selectedDeviceLimit),
+      )[0] ?? selectedDeviceLimit;
+    return tariffsByDevice.get(nearestLimit) ?? null;
+  }, [tariffs, tariffsByDevice, deviceLimits, selectedDeviceLimit]);
+
+  const selectedTariff = useMemo(() => {
+    if (!selectedTariffs?.length) return null;
+    return selectedTariffs.find((tariff) => tariff.is_current) ?? selectedTariffs[0];
+  }, [selectedTariffs]);
+
+  type DisplayPeriod = TariffPeriod & { tariffId: number };
+
+  const allPeriodsForDevice = useMemo(() => {
+    if (!selectedTariffs?.length) return [] as DisplayPeriod[];
+    const bestByDays = new Map<number, DisplayPeriod>();
+    selectedTariffs.forEach((tariff) => {
+      tariff.periods
+        .filter((period) => period.days > 0)
+        .forEach((period) => {
+          const candidate: DisplayPeriod = { ...period, tariffId: tariff.id };
+          const existing = bestByDays.get(period.days);
+          if (!existing || candidate.price_kopeks < existing.price_kopeks) {
+            bestByDays.set(period.days, candidate);
+          }
+        });
+    });
+    return [...bestByDays.values()].sort(
+      (a, b) => a.months - b.months || a.days - b.days || a.price_kopeks - b.price_kopeks,
+    );
+  }, [selectedTariffs]);
 
   const displayPeriods = useMemo(() => {
-    if (!selectedTariff?.periods?.length) return [] as TariffPeriod[];
-    const all = selectedTariff.periods.filter((p) => p.days > 0);
+    if (!allPeriodsForDevice.length) return [] as DisplayPeriod[];
+    const all = allPeriodsForDevice;
 
-    const pick = (months: number): TariffPeriod | null => {
+    const pick = (months: number): DisplayPeriod | null => {
       const exact = all.find((period) => period.months === months);
       if (exact) return exact;
       const targetDays = months * 30;
@@ -79,7 +140,7 @@ export function UltimaSubscription() {
     };
 
     const usedDays = new Set<number>();
-    const picked: TariffPeriod[] = [];
+    const picked: DisplayPeriod[] = [];
 
     [1, 3, 6, 12].forEach((months) => {
       const period = pick(months);
@@ -90,7 +151,7 @@ export function UltimaSubscription() {
 
     if (picked.length) return picked;
     return [...all].sort((a, b) => a.days - b.days).slice(0, 4);
-  }, [selectedTariff]);
+  }, [allPeriodsForDevice]);
 
   const selectedPeriod = useMemo(() => {
     if (!displayPeriods.length) return null;
@@ -102,10 +163,25 @@ export function UltimaSubscription() {
     return displayPeriods.find((period) => period.months === 6) ?? displayPeriods[0];
   }, [displayPeriods, selectedPeriodDays]);
 
+  useEffect(() => {
+    if (!displayPeriods.length) {
+      setSelectedPeriodDays(null);
+      return;
+    }
+    if (selectedPeriodDays && displayPeriods.some((period) => period.days === selectedPeriodDays)) {
+      return;
+    }
+    setSelectedPeriodDays(
+      displayPeriods.find((period) => period.months === 6)?.days ?? displayPeriods[0].days,
+    );
+  }, [displayPeriods, selectedPeriodDays]);
+
+  const selectedTariffIdForPurchase = selectedPeriod?.tariffId ?? selectedTariff?.id ?? null;
+
   const purchaseMutation = useMutation({
     mutationFn: async () => {
-      if (!selectedTariff || !selectedPeriod) throw new Error('No tariff selected');
-      return subscriptionApi.purchaseTariff(selectedTariff.id, selectedPeriod.days);
+      if (!selectedTariffIdForPurchase || !selectedPeriod) throw new Error('No tariff selected');
+      return subscriptionApi.purchaseTariff(selectedTariffIdForPurchase, selectedPeriod.days);
     },
     onSuccess: async () => {
       setError(null);
@@ -218,11 +294,14 @@ export function UltimaSubscription() {
                 <p className="text-[42px] font-semibold leading-none text-white">
                   {formatPrice(period.price_kopeks)}
                 </p>
-                <p className="mt-1 text-[14px] text-white/70">
-                  {period.price_per_month_kopeks > 0
-                    ? `${formatPrice(period.price_per_month_kopeks)} / мес`
-                    : ''}
-                </p>
+                {period.original_price_kopeks &&
+                period.original_price_kopeks > period.price_kopeks ? (
+                  <p className="mt-1 text-[14px] text-white/70">
+                    {period.price_per_month_kopeks > 0
+                      ? `${formatPrice(period.price_per_month_kopeks)} / мес`
+                      : ''}
+                  </p>
+                ) : null}
               </button>
             );
           })}
@@ -239,7 +318,8 @@ export function UltimaSubscription() {
             <span>Оплатить подписку</span>
             <span className="flex items-center gap-2 text-white/95">
               {formatPrice(selectedPeriod.price_kopeks)}
-              {selectedPeriod.original_price_kopeks ? (
+              {selectedPeriod.original_price_kopeks &&
+              selectedPeriod.original_price_kopeks > selectedPeriod.price_kopeks ? (
                 <span className="text-[15px] text-white/55 line-through">
                   {formatPrice(selectedPeriod.original_price_kopeks)}
                 </span>
