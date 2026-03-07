@@ -38,6 +38,61 @@ const clearPendingUltimaPurchase = (): void => {
   localStorage.removeItem(ULTIMA_PENDING_PURCHASE_KEY);
 };
 
+const resolveApiErrorMessage = (
+  err: unknown,
+  fallback: string,
+): { message: string; missingAmountKopeks?: number } => {
+  const error = err as {
+    response?: {
+      data?: {
+        detail?:
+          | string
+          | {
+              message?: string;
+              code?: string;
+              missing_amount?: number;
+              required?: number;
+              balance?: number;
+            };
+        message?: string;
+        missing_amount?: number;
+        required?: number;
+        balance?: number;
+      };
+    };
+    message?: string;
+  };
+
+  const data = error.response?.data;
+  const detail = data?.detail;
+  if (typeof detail === 'string') return { message: detail };
+  if (detail && typeof detail === 'object') {
+    const missingAmount =
+      typeof detail.missing_amount === 'number'
+        ? detail.missing_amount
+        : typeof detail.required === 'number' && typeof detail.balance === 'number'
+          ? Math.max(0, detail.required - detail.balance)
+          : undefined;
+    if (typeof detail.message === 'string' && detail.message.trim().length > 0) {
+      return { message: detail.message, missingAmountKopeks: missingAmount };
+    }
+    if (typeof missingAmount === 'number' && missingAmount > 0) {
+      return {
+        message: `${fallback}: ${Math.ceil(missingAmount / 100)} ₽`,
+        missingAmountKopeks: missingAmount,
+      };
+    }
+  }
+
+  if (typeof data?.message === 'string' && data.message.trim().length > 0) {
+    return { message: data.message };
+  }
+  if (typeof error.message === 'string' && error.message.trim().length > 0) {
+    return { message: error.message };
+  }
+  return { message: fallback };
+};
+
 export function UltimaSubscription() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -323,10 +378,10 @@ export function UltimaSubscription() {
         openLink(redirectUrl);
       }
     },
-    onError: (err: { response?: { data?: { detail?: string } } }) => {
+    onError: (err: unknown) => {
       clearPendingUltimaPurchase();
       setAwaitingPaymentCompletion(false);
-      setError(err.response?.data?.detail || t('common.error'));
+      setError(resolveApiErrorMessage(err, t('common.error')).message);
     },
   });
 
@@ -554,25 +609,37 @@ export function UltimaSubscription() {
     setAwaitingPaymentCompletion(true);
 
     let method = defaultPaymentMethod;
-    if (!method) {
-      const methods = await balanceApi.getPaymentMethods();
-      const available = methods.filter((entry) => entry.is_available);
-      method = available.find((entry) => entry.is_default_for_subscription) ?? available[0] ?? null;
+    try {
       if (!method) {
-        clearPendingUltimaPurchase();
-        setAwaitingPaymentCompletion(false);
-        setError(t('balance.errors.selectMethod'));
-        return;
+        const methods = await balanceApi.getPaymentMethods();
+        const available = methods.filter((entry) => entry.is_available);
+        method =
+          available.find((entry) => entry.is_default_for_subscription) ?? available[0] ?? null;
+        if (!method) {
+          clearPendingUltimaPurchase();
+          setAwaitingPaymentCompletion(false);
+          setError(t('balance.errors.selectMethod'));
+          return;
+        }
+        queryClient.setQueryData(['payment-methods'], methods);
       }
-      queryClient.setQueryData(['payment-methods'], methods);
+    } catch (err) {
+      clearPendingUltimaPurchase();
+      setAwaitingPaymentCompletion(false);
+      setError(resolveApiErrorMessage(err, t('common.error')).message);
+      return;
     }
     const missingAmount = insufficientBalanceError
       ? extractMissingAmountKopeks(insufficientBalanceError)
       : null;
-    const topupAmountKopeks =
+    const topupAmountKopeksBase =
       typeof missingAmount === 'number' && missingAmount > 0
         ? Math.max(1, Math.ceil(missingAmount))
         : selectedPriceKopeks;
+    const topupAmountKopeks = Math.min(
+      Math.max(topupAmountKopeksBase, method.min_amount_kopeks ?? 1),
+      method.max_amount_kopeks ?? Number.MAX_SAFE_INTEGER,
+    );
     const selectedOptionId = method.options?.find((option) => option.id)?.id;
     createPaymentMutation.mutate({
       amountKopeks: topupAmountKopeks,
