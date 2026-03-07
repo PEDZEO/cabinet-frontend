@@ -153,13 +153,10 @@ export function UltimaDashboard() {
   return (
     <div className="relative h-[100dvh] overflow-hidden bg-[radial-gradient(circle_at_76%_58%,rgba(16,185,129,0.34),rgba(4,17,26,0.98)_58%)] pb-[calc(20px+env(safe-area-inset-bottom,0px))] pt-2">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-[45%] h-[560px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/10" />
-        <div className="absolute left-1/2 top-[45%] h-[430px] w-[430px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/10" />
-        <div className="absolute left-1/2 top-[45%] h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/10" />
-        {[0, 1.7, 3.4].map((delay) => (
+        {[0, 1.45, 2.9].map((delay) => (
           <div
             key={delay}
-            className="ultima-ring-wave absolute left-1/2 top-[45%] h-[560px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/40"
+            className="ultima-ring-wave absolute left-1/2 top-[36%] h-[140vmax] w-[140vmax] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/35"
             style={{ animationDelay: `${delay}s` }}
           />
         ))}
@@ -177,8 +174,8 @@ export function UltimaDashboard() {
       )}
 
       <div className="relative z-10 mx-auto flex h-[calc(100dvh-26px)] w-full flex-col px-4 sm:px-6">
-        <section className="pt-[38vh]">
-          <div className="mx-auto mb-[10vh] flex h-24 w-24 items-center justify-center rounded-full bg-black/15">
+        <section className="pt-[30vh]">
+          <div className="mx-auto mb-[7vh] flex h-24 w-24 items-center justify-center rounded-full bg-black/15">
             <ShieldIcon />
           </div>
 

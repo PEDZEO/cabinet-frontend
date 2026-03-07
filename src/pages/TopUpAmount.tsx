@@ -100,9 +100,12 @@ export default function TopUpAmount() {
   const autoStartedRef = useRef(false);
   const handleSubmitRef = useRef<() => void>(() => {});
 
-  // Get method from cached payment-methods query
+  // Get method from cached payment-methods query (preferred, instant)
   const cachedMethods = queryClient.getQueryData<PaymentMethod[]>(['payment-methods']);
-  const method = cachedMethods?.find((m) => m.id === methodId);
+  const [resolvedMethods, setResolvedMethods] = useState<PaymentMethod[] | null>(
+    cachedMethods ?? null,
+  );
+  const method = (resolvedMethods ?? cachedMethods)?.find((m) => m.id === methodId);
 
   const handleNavigateBack = useCallback(() => {
     navigate(-1);
@@ -144,18 +147,39 @@ export default function TopUpAmount() {
   const [copied, setCopied] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
 
-  // If method not found in cache, redirect to method selection
+  // Fallback: if cache is empty on direct deep-link, load methods from API to avoid modal redirect.
   useEffect(() => {
-    if (cachedMethods && !method) {
-      const params = new URLSearchParams();
-      const amount = searchParams.get('amount');
-      const rt = searchParams.get('returnTo');
-      if (amount) params.set('amount', amount);
-      if (rt) params.set('returnTo', rt);
-      const qs = params.toString();
-      navigate(`/balance/top-up${qs ? `?${qs}` : ''}`, { replace: true });
-    }
-  }, [cachedMethods, method, navigate, searchParams]);
+    let cancelled = false;
+    if (resolvedMethods || cachedMethods) return;
+    balanceApi
+      .getPaymentMethods()
+      .then((methods) => {
+        if (cancelled) return;
+        setResolvedMethods(methods);
+        queryClient.setQueryData(['payment-methods'], methods);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setResolvedMethods([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [cachedMethods, resolvedMethods, queryClient]);
+
+  // Redirect to method selection only if methods are loaded and requested method truly absent
+  useEffect(() => {
+    const methods = resolvedMethods ?? cachedMethods;
+    if (!methods) return;
+    if (!methodId || methods.some((m) => m.id === methodId)) return;
+    const params = new URLSearchParams();
+    const amount = searchParams.get('amount');
+    const rt = searchParams.get('returnTo');
+    if (amount) params.set('amount', amount);
+    if (rt) params.set('returnTo', rt);
+    const qs = params.toString();
+    navigate(`/balance/top-up${qs ? `?${qs}` : ''}`, { replace: true });
+  }, [cachedMethods, resolvedMethods, methodId, navigate, searchParams]);
 
   const starsPaymentMutation = useMutation({
     mutationFn: (amountKopeks: number) => balanceApi.createStarsInvoice(amountKopeks),

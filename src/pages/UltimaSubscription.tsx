@@ -280,10 +280,18 @@ export function UltimaSubscription() {
   };
   const selectedPriceKopeks = calculatePeriodPrice(selectedPeriod);
 
-  const openTopUpForSubscription = () => {
-    if (!defaultPaymentMethod) {
-      navigate('/balance/top-up');
-      return;
+  const openTopUpForSubscription = async () => {
+    setError(null);
+    let method = defaultPaymentMethod;
+    if (!method) {
+      const methods = await balanceApi.getPaymentMethods();
+      const available = methods.filter((entry) => entry.is_available);
+      method = available.find((entry) => entry.is_default_for_subscription) ?? available[0] ?? null;
+      if (!method) {
+        setError(t('balance.errors.selectMethod'));
+        return;
+      }
+      queryClient.setQueryData(['payment-methods'], methods);
     }
     const returnTo = `/subscription?autoTariffId=${selectedTariffIdForPurchase}&autoPeriodDays=${selectedPeriod.days}&autoDeviceLimit=${selectedDeviceLimit}`;
     const params = new URLSearchParams({
@@ -292,7 +300,7 @@ export function UltimaSubscription() {
       autostart: '1',
       autoopen: '1',
     });
-    navigate(`/balance/top-up/${defaultPaymentMethod.id}?${params.toString()}`);
+    navigate(`/balance/top-up/${method.id}?${params.toString()}`);
   };
 
   const periodLabel = (period: TariffPeriod) => {
@@ -304,8 +312,18 @@ export function UltimaSubscription() {
   };
 
   return (
-    <div className="relative h-[100dvh] overflow-hidden bg-[radial-gradient(circle_at_78%_50%,rgba(19,176,132,0.35),rgba(5,20,22,0.98)_58%)] px-4 pb-[calc(14px+env(safe-area-inset-bottom,0px))] pt-4">
-      <div className="mx-auto flex h-full max-w-md flex-col">
+    <div className="relative h-[100dvh] overflow-hidden bg-[radial-gradient(circle_at_76%_58%,rgba(16,185,129,0.34),rgba(4,17,26,0.98)_58%)] px-4 pb-[calc(14px+env(safe-area-inset-bottom,0px))] pt-4">
+      <div className="pointer-events-none absolute inset-0">
+        {[0, 1.45, 2.9].map((delay) => (
+          <div
+            key={delay}
+            className="ultima-ring-wave absolute left-1/2 top-[36%] h-[140vmax] w-[140vmax] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/35"
+            style={{ animationDelay: `${delay}s` }}
+          />
+        ))}
+      </div>
+
+      <div className="relative z-10 mx-auto flex h-full max-w-md flex-col">
         <header className="mb-3">
           <h1 className="text-[42px] font-semibold leading-[0.95] text-white">Покупка подписки</h1>
           <p className="mt-2 text-[16px] leading-tight text-white/75">
@@ -451,7 +469,7 @@ export function UltimaSubscription() {
           <button
             type="button"
             onClick={() => {
-              openTopUpForSubscription();
+              void openTopUpForSubscription();
             }}
             disabled={purchaseMutation.isPending}
             className="flex w-full items-center justify-between rounded-full border border-[#52ecc6]/40 bg-[#12cd97] px-6 py-4 text-[20px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_8px_20px_rgba(10,123,94,0.28)]"
