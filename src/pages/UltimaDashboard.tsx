@@ -313,15 +313,15 @@ export function UltimaDashboard() {
         <section
           className={
             hasSetupReminder
-              ? 'pt-[clamp(74px,16vh,160px)]'
-              : 'pb-[clamp(14px,2.8vh,24px)] pt-[clamp(86px,19vh,198px)]'
+              ? 'pt-[clamp(74px,16vh,160px)] lg:pt-20'
+              : 'pb-[clamp(14px,2.8vh,24px)] pt-[clamp(86px,19vh,198px)] lg:pb-5 lg:pt-24'
           }
         >
           <button
             type="button"
             aria-label={t('nav.dashboard')}
             onPointerDown={handleShieldTap}
-            className="relative mx-auto mb-[clamp(24px,5vh,56px)] flex h-24 w-24 items-center justify-center rounded-full bg-black/15 focus-visible:outline-none"
+            className="relative mx-auto mb-[clamp(24px,5vh,56px)] flex h-24 w-24 items-center justify-center rounded-full bg-black/15 focus-visible:outline-none lg:mb-8"
             style={{ WebkitTapHighlightColor: 'transparent' }}
           >
             <span aria-hidden className="pointer-events-none absolute inset-0 overflow-visible">
@@ -342,10 +342,10 @@ export function UltimaDashboard() {
           </button>
 
           <div
-            className={`${hasSetupReminder ? 'mb-5' : 'mb-3'} flex items-center justify-between text-white`}
+            className={`${hasSetupReminder ? 'mb-5 lg:mb-4' : 'mb-3 lg:mb-2'} flex items-center justify-between text-white`}
           >
             <div>
-              <p className="text-[32px] font-semibold leading-none tracking-[-0.02em] sm:text-[36px]">
+              <p className="text-[32px] font-semibold leading-none tracking-[-0.02em] sm:text-[36px] lg:text-[34px]">
                 {expiryLabel}
               </p>
               <p className="mt-2 text-base text-emerald-300/90">online</p>
@@ -376,7 +376,7 @@ export function UltimaDashboard() {
           )}
         </section>
 
-        <section className="mt-auto pb-1">
+        <section className="mt-auto pb-1 lg:mt-8 lg:pb-2">
           <button
             type="button"
             onClick={() => {
