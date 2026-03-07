@@ -274,6 +274,8 @@ export function UltimaDashboard() {
     navigate('/support');
   };
 
+  const hasSetupReminder = connectionStep === 2;
+
   if (!isI18nReady || !isSubscriptionReady || shouldHoldForAutoTrial) {
     return (
       <div className="relative h-[100dvh] overflow-hidden bg-transparent pb-[calc(20px+env(safe-area-inset-bottom,0px))] pt-2">
@@ -308,7 +310,13 @@ export function UltimaDashboard() {
       )}
 
       <div className="relative z-10 mx-auto flex h-full min-h-0 w-full max-w-md flex-col">
-        <section className="pt-[clamp(96px,24vh,30vh)]">
+        <section
+          className={
+            hasSetupReminder
+              ? 'pt-[clamp(96px,24vh,30vh)]'
+              : 'pb-[clamp(14px,2.8vh,24px)] pt-[clamp(110px,27vh,33vh)]'
+          }
+        >
           <button
             type="button"
             aria-label={t('nav.dashboard')}
@@ -333,7 +341,9 @@ export function UltimaDashboard() {
             <ShieldIcon />
           </button>
 
-          <div className="mb-5 flex items-center justify-between text-white">
+          <div
+            className={`${hasSetupReminder ? 'mb-5' : 'mb-3'} flex items-center justify-between text-white`}
+          >
             <div>
               <p className="text-[32px] font-semibold leading-none tracking-[-0.02em] sm:text-[36px]">
                 {expiryLabel}
@@ -345,7 +355,7 @@ export function UltimaDashboard() {
             </span>
           </div>
 
-          {connectionStep === 2 && (
+          {hasSetupReminder && (
             <div className="bg-black/24 mb-4 rounded-2xl border border-amber-300/30 p-3.5 backdrop-blur">
               <p className="text-[16px] font-semibold leading-tight text-amber-100">
                 {t('ultima.setupNotFinishedTitle', { defaultValue: 'Установка не завершена' })}
