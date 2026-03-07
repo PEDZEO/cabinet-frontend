@@ -18,6 +18,63 @@ const OpenIcon = () => (
   </svg>
 );
 
+const CopyIcon = () => (
+  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <rect x="9" y="9" width="11" height="11" rx="2" />
+    <path d="M5 15V6a2 2 0 0 1 2-2h9" />
+  </svg>
+);
+
+const CheckIcon = () => (
+  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="m5 13 4 4L19 7" />
+  </svg>
+);
+
+const MethodIcon = ({ methodId }: { methodId: string }) => {
+  const id = methodId.toLowerCase();
+  if (id.includes('stars')) {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
+        <path
+          d="m12 2.8 2.6 5.3 5.8.84-4.2 4.1 1 5.8L12 16.2 6.8 18.8l1-5.8-4.2-4.1 5.8-.84L12 2.8Z"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  }
+  if (id.includes('crypto') || id.includes('usdt') || id.includes('ton')) {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
+        <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.8" />
+        <path
+          d="M9 9.8h4a1.8 1.8 0 0 1 0 3.6H9V9.8Zm0 3.6h4.4a1.8 1.8 0 0 1 0 3.6H9v-3.6Z"
+          stroke="currentColor"
+          strokeWidth="1.6"
+        />
+        <path d="M11 8v8M13 8v8" stroke="currentColor" strokeWidth="1.4" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
+      <rect
+        x="3.5"
+        y="6.5"
+        width="17"
+        height="11"
+        rx="2.5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path d="M3.5 10h17" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M7.5 14h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+};
+
 export function UltimaTopUpAmount() {
   const { t } = useTranslation();
   const { methodId } = useParams<{ methodId: string }>();
@@ -53,6 +110,7 @@ export function UltimaTopUpAmount() {
   );
   const [error, setError] = useState<string | null>(null);
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const minRub = (method?.min_amount_kopeks ?? 0) / 100;
   const maxRub = (method?.max_amount_kopeks ?? 0) / 100;
@@ -115,6 +173,13 @@ export function UltimaTopUpAmount() {
     inputRef.current?.focus();
   };
 
+  const handleCopyUrl = async () => {
+    if (!paymentUrl) return;
+    await navigator.clipboard.writeText(paymentUrl);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1200);
+  };
+
   const methodName = useMemo(() => {
     if (!method) return '';
     const key = method.id.toLowerCase().replace(/-/g, '_');
@@ -130,7 +195,7 @@ export function UltimaTopUpAmount() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(95%_70%_at_50%_45%,rgba(33,208,154,0.14),rgba(7,20,46,0.02)_62%,rgba(7,20,46,0)_100%)]" />
       <div className="relative z-10 mx-auto flex h-full min-h-0 max-w-md flex-col">
         <header className="mb-3">
-          <h1 className="text-[42px] font-semibold leading-[0.9] tracking-[-0.01em] text-white">
+          <h1 className="text-[36px] font-semibold leading-[0.9] tracking-[-0.01em] text-white">
             {methodName}
           </h1>
           <p className="text-white/62 mt-1.5 text-[13px] leading-tight">
@@ -145,6 +210,18 @@ export function UltimaTopUpAmount() {
         </header>
 
         <section className="border-emerald-200/12 min-h-0 flex-1 overflow-y-auto rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
+          <div className="mb-3 flex items-center gap-3 rounded-2xl border border-emerald-200/10 bg-emerald-950/30 px-3 py-2.5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-200/15 bg-emerald-900/45 text-emerald-100">
+              <MethodIcon methodId={method.id} />
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-[15px] font-medium text-white/95">{methodName}</p>
+              <p className="text-[11px] text-white/55">
+                {formatAmount(minRub, 0)} - {formatAmount(maxRub, 0)} {currencySymbol}
+              </p>
+            </div>
+          </div>
+
           {method.options && method.options.length > 0 ? (
             <div className="mb-3 grid grid-cols-2 gap-2">
               {method.options.map((option) => (
@@ -154,7 +231,7 @@ export function UltimaTopUpAmount() {
                   onClick={() => setSelectedOption(option.id)}
                   className={`rounded-xl border px-3 py-2 text-left text-sm ${
                     selectedOption === option.id
-                      ? 'bg-emerald-500/12 border-emerald-300/40 text-white'
+                      ? 'bg-emerald-500/12 border-emerald-300/45 text-white'
                       : 'border-emerald-200/10 bg-emerald-950/30 text-white/75'
                   }`}
                 >
@@ -166,7 +243,7 @@ export function UltimaTopUpAmount() {
 
           <div className="text-white/62 mb-2 text-[12px]">{t('balance.enterAmount')}</div>
           <div className="flex gap-2">
-            <div className="relative flex-1 rounded-2xl border border-emerald-200/10 bg-emerald-950/30">
+            <div className="border-emerald-200/12 relative flex-1 rounded-2xl border bg-emerald-950/35">
               <input
                 ref={inputRef}
                 type="number"
@@ -184,7 +261,7 @@ export function UltimaTopUpAmount() {
               type="button"
               onClick={handleCreatePayment}
               disabled={topUpMutation.isPending}
-              className="rounded-2xl border border-[#52ecc6]/40 bg-[#12cd97] px-4 text-sm font-medium text-white disabled:opacity-60"
+              className="rounded-2xl border border-[#52ecc6]/40 bg-[#12cd97] px-4 text-sm font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] disabled:opacity-60"
             >
               {t('balance.topUp')}
             </button>
@@ -196,7 +273,14 @@ export function UltimaTopUpAmount() {
                 <button
                   key={value}
                   type="button"
-                  className="rounded-xl border border-emerald-200/10 bg-emerald-950/30 px-2 py-2 text-[13px] text-white/85"
+                  className={`rounded-xl border px-2 py-2 text-[13px] transition ${
+                    amount ===
+                    (targetCurrency === 'RUB' || targetCurrency === 'IRR'
+                      ? String(Math.round(convertAmount(value)))
+                      : convertAmount(value).toFixed(2))
+                      ? 'bg-emerald-500/12 border-emerald-300/45 text-white'
+                      : 'border-emerald-200/10 bg-emerald-950/30 text-white/85 hover:border-emerald-200/25'
+                  }`}
                   onClick={() => handleQuick(value)}
                 >
                   {formatAmount(value, 0)}
@@ -213,7 +297,9 @@ export function UltimaTopUpAmount() {
 
           {paymentUrl ? (
             <div className="mt-3 rounded-2xl border border-emerald-300/30 bg-emerald-500/10 p-3">
-              <p className="text-[13px] text-emerald-100">{t('balance.paymentReady')}</p>
+              <p className="text-[13px] font-medium text-emerald-100">
+                {t('balance.paymentReady')}
+              </p>
               <button
                 type="button"
                 onClick={() => openPayment(paymentUrl)}
@@ -222,8 +308,29 @@ export function UltimaTopUpAmount() {
                 <OpenIcon />
                 {t('balance.openPaymentPage')}
               </button>
+              <div className="mt-2 flex items-center gap-2">
+                <div className="min-w-0 flex-1 rounded-lg border border-emerald-200/10 bg-emerald-950/30 px-2.5 py-2">
+                  <p className="truncate text-[11px] text-white/55">{paymentUrl}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void handleCopyUrl()}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-emerald-200/15 bg-emerald-900/40 text-white/80"
+                >
+                  {copied ? <CheckIcon /> : <CopyIcon />}
+                </button>
+              </div>
             </div>
           ) : null}
+        </section>
+
+        <section className="mt-2 rounded-2xl border border-emerald-200/10 bg-emerald-950/20 px-3 py-2.5">
+          <p className="text-white/58 text-[11px] leading-snug">
+            {t('balance.ultimaBalanceNotice', {
+              defaultValue:
+                'После пополнения сумма попадает на баланс и затем списывается в оплату подписки.',
+            })}
+          </p>
         </section>
 
         <section className="pt-3">

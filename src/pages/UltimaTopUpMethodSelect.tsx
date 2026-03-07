@@ -1,10 +1,75 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import type { ReactNode } from 'react';
 import { balanceApi } from '@/api/balance';
 import { useCurrency } from '@/hooks/useCurrency';
-import PaymentMethodIcon from '@/components/PaymentMethodIcon';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+
+const CardIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
+    <rect x="3.5" y="6.5" width="17" height="11" rx="2.5" stroke="currentColor" strokeWidth="1.8" />
+    <path d="M3.5 10h17" stroke="currentColor" strokeWidth="1.8" />
+    <path d="M7.5 14h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+  </svg>
+);
+
+const CryptoIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
+    <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.8" />
+    <path
+      d="M9 9.8h4a1.8 1.8 0 0 1 0 3.6H9V9.8Zm0 3.6h4.4a1.8 1.8 0 0 1 0 3.6H9v-3.6Z"
+      stroke="currentColor"
+      strokeWidth="1.6"
+    />
+    <path d="M11 8v8M13 8v8" stroke="currentColor" strokeWidth="1.4" />
+  </svg>
+);
+
+const StarsIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
+    <path
+      d="m12 2.8 2.6 5.3 5.8.84-4.2 4.1 1 5.8L12 16.2 6.8 18.8l1-5.8-4.2-4.1 5.8-.84L12 2.8Z"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const ArrowIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
+    <path d="M9 5.5 15 12l-6 6.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+  </svg>
+);
+
+const getMethodVisual = (
+  methodId: string,
+): {
+  icon: ReactNode;
+  iconBoxClassName: string;
+} => {
+  const id = methodId.toLowerCase();
+  if (id.includes('stars')) {
+    return {
+      icon: <StarsIcon />,
+      iconBoxClassName:
+        'text-amber-200 border-amber-200/25 bg-gradient-to-br from-amber-400/30 to-orange-500/30',
+    };
+  }
+  if (id.includes('crypto') || id.includes('usdt') || id.includes('ton')) {
+    return {
+      icon: <CryptoIcon />,
+      iconBoxClassName:
+        'text-cyan-200 border-cyan-200/25 bg-gradient-to-br from-cyan-400/25 to-emerald-500/25',
+    };
+  }
+  return {
+    icon: <CardIcon />,
+    iconBoxClassName:
+      'text-sky-200 border-sky-200/25 bg-gradient-to-br from-sky-400/25 to-indigo-500/25',
+  };
+};
 
 export function UltimaTopUpMethodSelect() {
   const { t } = useTranslation();
@@ -58,6 +123,7 @@ export function UltimaTopUpMethodSelect() {
             <div className="space-y-2">
               {paymentMethods.map((method) => {
                 const methodKey = method.id.toLowerCase().replace(/-/g, '_');
+                const visual = getMethodVisual(method.id);
                 const translatedName = t(`balance.paymentMethods.${methodKey}.name`, {
                   defaultValue: '',
                 });
@@ -71,30 +137,51 @@ export function UltimaTopUpMethodSelect() {
                     type="button"
                     disabled={!method.is_available}
                     onClick={() => handleMethodClick(method.id)}
-                    className="bg-emerald-950/28 flex w-full items-start gap-3 rounded-2xl border border-emerald-200/10 px-3 py-2.5 text-left transition enabled:hover:border-emerald-200/20 disabled:cursor-not-allowed disabled:opacity-45"
+                    className="group flex w-full items-start gap-3 rounded-2xl border border-emerald-200/10 bg-emerald-950/30 px-3 py-3 text-left transition enabled:hover:border-emerald-200/25 enabled:hover:bg-emerald-900/25 disabled:cursor-not-allowed disabled:opacity-45"
                   >
-                    <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-emerald-100/10 bg-emerald-900/45 text-white/85">
-                      <PaymentMethodIcon method={methodKey} className="h-4 w-4" />
+                    <div
+                      className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${visual.iconBoxClassName}`}
+                    >
+                      {visual.icon}
                     </div>
-                    <div className="min-w-0">
-                      <p className="truncate text-[15px] leading-tight text-white/95">
-                        {translatedName || method.name}
-                      </p>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="truncate text-[15px] font-medium leading-tight text-white/95">
+                          {translatedName || method.name}
+                        </p>
+                        <span className="mt-0.5 shrink-0 text-white/55 transition group-hover:translate-x-0.5 group-hover:text-white/80">
+                          <ArrowIcon />
+                        </span>
+                      </div>
                       {(translatedDesc || method.description) && (
-                        <p className="mt-0.5 text-[12px] text-white/55">
+                        <p className="text-white/58 mt-1 line-clamp-2 text-[12px]">
                           {translatedDesc || method.description}
                         </p>
                       )}
-                      <p className="mt-1 text-[11px] text-white/45">
-                        {formatAmount(method.min_amount_kopeks / 100, 0)} -{' '}
-                        {formatAmount(method.max_amount_kopeks / 100, 0)} {currencySymbol}
-                      </p>
+                      <div className="mt-2 flex items-center gap-1.5">
+                        <span className="rounded-full border border-emerald-200/15 bg-emerald-900/45 px-2 py-0.5 text-[10px] text-white/60">
+                          {t('balance.amount', { defaultValue: 'Сумма' })}
+                        </span>
+                        <span className="text-[11px] text-white/55">
+                          {formatAmount(method.min_amount_kopeks / 100, 0)} -{' '}
+                          {formatAmount(method.max_amount_kopeks / 100, 0)} {currencySymbol}
+                        </span>
+                      </div>
                     </div>
                   </button>
                 );
               })}
             </div>
           )}
+        </section>
+
+        <section className="mt-2 rounded-2xl border border-emerald-200/10 bg-emerald-950/20 px-3 py-2.5">
+          <p className="text-white/58 text-[11px] leading-snug">
+            {t('balance.ultimaBalanceNotice', {
+              defaultValue:
+                'Деньги зачисляются на баланс, а затем автоматически учитываются в оплате подписки.',
+            })}
+          </p>
         </section>
 
         <section className="pt-3">
