@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 import { balanceApi } from '@/api/balance';
 import { infoApi } from '@/api/info';
 import { subscriptionApi } from '@/api/subscription';
@@ -70,12 +70,21 @@ const AdminIcon = () => (
   </svg>
 );
 
+type TapRipple = {
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+};
+
 export function UltimaDashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { t, i18n } = useTranslation();
   const { currencySymbol } = useCurrency();
   const isAdmin = useAuthStore((state) => state.isAdmin);
+  const rippleIdRef = useRef(0);
+  const [tapRipples, setTapRipples] = useState<TapRipple[]>([]);
 
   const {
     data: subscriptionResponse,
@@ -145,6 +154,31 @@ export function UltimaDashboard() {
     void import('./Subscription');
   }, []);
 
+  const handleTopAreaTap = useCallback((event: PointerEvent<HTMLElement>) => {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const y = event.clientY - rect.top;
+    if (y > rect.height * 0.62) {
+      return;
+    }
+
+    const id = rippleIdRef.current++;
+    const x = event.clientX - rect.left;
+    const size = Math.max(160, rect.width * 0.55);
+    setTapRipples((previous) => [...previous, { id, x, y, size }]);
+
+    window.setTimeout(() => {
+      setTapRipples((previous) => previous.filter((ripple) => ripple.id !== id));
+    }, 900);
+  }, []);
+
   const openSupport = () => {
     void import('./Support');
     void queryClient.prefetchQuery({
@@ -192,7 +226,30 @@ export function UltimaDashboard() {
       )}
 
       <div className="relative z-10 mx-auto flex h-[calc(100dvh-26px)] w-full flex-col px-4 sm:px-6">
-        <section className="pt-[30vh]">
+        <section className="relative pt-[30vh]" onPointerDown={handleTopAreaTap}>
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 h-[62%] overflow-hidden"
+          >
+            {tapRipples.map((ripple) => (
+              <div key={ripple.id} className="absolute inset-0">
+                {[0, 120, 240].map((delayMs) => (
+                  <span
+                    key={delayMs}
+                    className="ultima-tap-ring absolute -translate-x-1/2 -translate-y-1/2"
+                    style={{
+                      left: ripple.x,
+                      top: ripple.y,
+                      width: ripple.size,
+                      height: ripple.size,
+                      animationDelay: `${delayMs}ms`,
+                    }}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+
           <div className="mx-auto mb-[12vh] flex h-24 w-24 items-center justify-center rounded-full bg-black/15">
             <ShieldIcon />
           </div>
