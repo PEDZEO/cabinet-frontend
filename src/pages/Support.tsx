@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { ticketsApi } from '../api/tickets';
 import { infoApi } from '../api/info';
+import { useUltimaMode } from '../hooks/useUltimaMode';
 import { useAuthStore } from '../store/auth';
 import { logger } from '../utils/logger';
 import { checkRateLimit, getRateLimitResetTime, RATE_LIMIT_KEYS } from '../utils/rateLimit';
@@ -12,6 +13,7 @@ import { Card } from '@/components/data-display/Card';
 import { Button } from '@/components/primitives/Button';
 import { staggerContainer, staggerItem } from '@/components/motion/transitions';
 import { usePlatform } from '@/platform';
+import { UltimaSupport } from './UltimaSupport';
 
 const log = logger.createLogger('Support');
 
@@ -153,7 +155,7 @@ function MessageMedia({ message, t }: { message: TicketMessage; t: (key: string)
   );
 }
 
-export default function Support() {
+function SupportContent() {
   log.debug('Component loaded');
 
   const { t } = useTranslation();
@@ -825,4 +827,14 @@ export default function Support() {
       </motion.div>
     </motion.div>
   );
+}
+
+export default function Support() {
+  const { isUltimaMode } = useUltimaMode();
+
+  if (isUltimaMode) {
+    return <UltimaSupport />;
+  }
+
+  return <SupportContent />;
 }
