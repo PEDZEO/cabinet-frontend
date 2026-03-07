@@ -6,24 +6,22 @@ import Support from '../Support';
 import Profile from '../Profile';
 import TopUpMethodSelect from '../TopUpMethodSelect';
 import TopUpAmount from '../TopUpAmount';
+import Balance from '../Balance';
+import Referral from '../Referral';
+import AccountLinking from '../AccountLinking';
+import Connection from '../Connection';
+import { UltimaAgreement } from '../UltimaAgreement';
 
 const Dashboard = lazy(() => import('../Dashboard'));
 const Subscription = lazy(() => import('../Subscription'));
 const SubscriptionPurchase = lazy(() => import('../SubscriptionPurchase'));
-const Balance = lazy(() => import('../Balance'));
-const Referral = lazy(() => import('../Referral'));
-const AccountLinking = lazy(() => import('../AccountLinking'));
 const Contests = lazy(() => import('../Contests'));
 const Polls = lazy(() => import('../Polls'));
 const Info = lazy(() => import('../Info'));
 const Wheel = lazy(() => import('../Wheel'));
-const Connection = lazy(() => import('../Connection'));
 const ConnectionQR = lazy(() => import('../ConnectionQR'));
 const ReferralPartnerApply = lazy(() => import('../ReferralPartnerApply'));
 const ReferralWithdrawalRequest = lazy(() => import('../ReferralWithdrawalRequest'));
-const UltimaAgreement = lazy(() =>
-  import('../UltimaAgreement').then((module) => ({ default: module.UltimaAgreement })),
-);
 
 export const protectedRoutes: RouteConfig[] = [
   {
@@ -60,9 +58,7 @@ export const protectedRoutes: RouteConfig[] = [
     path: '/balance',
     element: (
       <ProtectedRoute>
-        <LazyPage>
-          <Balance />
-        </LazyPage>
+        <Balance />
       </ProtectedRoute>
     ),
   },
@@ -86,9 +82,7 @@ export const protectedRoutes: RouteConfig[] = [
     path: '/referral',
     element: (
       <ProtectedRoute>
-        <LazyPage>
-          <Referral />
-        </LazyPage>
+        <Referral />
       </ProtectedRoute>
     ),
   },
@@ -132,9 +126,7 @@ export const protectedRoutes: RouteConfig[] = [
     path: '/account-linking',
     element: (
       <ProtectedRoute>
-        <LazyPage>
-          <AccountLinking />
-        </LazyPage>
+        <AccountLinking />
       </ProtectedRoute>
     ),
   },
@@ -172,9 +164,7 @@ export const protectedRoutes: RouteConfig[] = [
     path: '/ultima/agreement',
     element: (
       <ProtectedRoute>
-        <LazyPage>
-          <UltimaAgreement />
-        </LazyPage>
+        <UltimaAgreement />
       </ProtectedRoute>
     ),
   },
@@ -202,9 +192,7 @@ export const protectedRoutes: RouteConfig[] = [
     path: '/connection',
     element: (
       <ProtectedRoute>
-        <LazyPage>
-          <Connection />
-        </LazyPage>
+        <Connection />
       </ProtectedRoute>
     ),
   },
