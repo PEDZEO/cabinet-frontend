@@ -14,6 +14,7 @@ import { ultimaAgreementApi } from '@/api/ultimaAgreement';
 import { withdrawalApi } from '@/api/withdrawals';
 import { useAuthStore } from '@/store/auth';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+import { warmUltimaStartup } from '@/features/ultima/warmup';
 
 const CopyIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
@@ -215,88 +216,7 @@ export function UltimaProfile() {
   };
 
   useEffect(() => {
-    // Warm profile-related routes to eliminate first-open loading flashes in Ultima mode.
-    void import('./Balance');
-    void import('./TopUpMethodSelect');
-    void import('./Referral');
-    void import('./AccountLinking');
-    void import('./Connection');
-    void import('./Support');
-    void import('./UltimaAgreement');
-
-    void queryClient.prefetchQuery({
-      queryKey: ['payment-methods'],
-      queryFn: balanceApi.getPaymentMethods,
-      staleTime: 60000,
-    });
-    void queryClient.prefetchQuery({
-      queryKey: ['balance'],
-      queryFn: balanceApi.getBalance,
-      staleTime: 15000,
-    });
-    void queryClient.prefetchQuery({
-      queryKey: ['transactions', 1, 'ultima'],
-      queryFn: () => balanceApi.getTransactions({ page: 1, per_page: 20 }),
-      staleTime: 15000,
-    });
-
-    void queryClient.prefetchQuery({
-      queryKey: ['referral-info'],
-      queryFn: referralApi.getReferralInfo,
-      staleTime: 15000,
-    });
-    void queryClient.prefetchQuery({
-      queryKey: ['referral-terms'],
-      queryFn: referralApi.getReferralTerms,
-      staleTime: 15000,
-    });
-    void queryClient.prefetchQuery({
-      queryKey: ['referral-list'],
-      queryFn: () => referralApi.getReferralList({ per_page: 20 }),
-      staleTime: 15000,
-    });
-    void queryClient.prefetchQuery({
-      queryKey: ['referral-earnings'],
-      queryFn: () => referralApi.getReferralEarnings({ per_page: 20 }),
-      staleTime: 15000,
-    });
-    void queryClient.prefetchQuery({
-      queryKey: ['branding'],
-      queryFn: brandingApi.getBranding,
-      staleTime: 60000,
-    });
-    void queryClient.prefetchQuery({
-      queryKey: ['partner-status'],
-      queryFn: partnerApi.getStatus,
-      staleTime: 30000,
-    });
-
-    void queryClient.prefetchQuery({
-      queryKey: ['linked-identities'],
-      queryFn: authApi.getLinkedIdentities,
-      staleTime: 15000,
-    });
-    void queryClient.prefetchQuery({
-      queryKey: ['latest-manual-merge-request'],
-      queryFn: authApi.getLatestManualMergeRequest,
-      staleTime: 15000,
-    });
-
-    void queryClient.prefetchQuery({
-      queryKey: ['support-config'],
-      queryFn: infoApi.getSupportConfig,
-      staleTime: 60000,
-    });
-    void queryClient.prefetchQuery({
-      queryKey: ['tickets'],
-      queryFn: () => ticketsApi.getTickets({ per_page: 20 }),
-      staleTime: 15000,
-    });
-    void queryClient.prefetchQuery({
-      queryKey: ['ultima-agreement', i18n.language],
-      queryFn: () => ultimaAgreementApi.getAgreement(i18n.language || 'ru'),
-      staleTime: 60000,
-    });
+    void warmUltimaStartup(queryClient, { language: i18n.language || 'ru' });
   }, [i18n.language, queryClient]);
 
   const openPathFast = useCallback(

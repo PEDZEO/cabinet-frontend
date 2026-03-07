@@ -10,6 +10,7 @@ import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useHaptic } from '@/platform';
 import { useAuthStore } from '@/store/auth';
+import { warmUltimaStartup } from '@/features/ultima/warmup';
 
 const ShieldIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-16 w-16 text-white/95">
@@ -86,6 +87,7 @@ export function UltimaDashboard() {
   const haptic = useHaptic();
   const isAdmin = useAuthStore((state) => state.isAdmin);
   const rippleIdRef = useRef(0);
+  const warmedLanguagesRef = useRef<Set<string>>(new Set());
   const [shieldRipples, setShieldRipples] = useState<ShieldRipple[]>([]);
 
   const {
@@ -155,6 +157,15 @@ export function UltimaDashboard() {
     // Warm subscription route chunk so dashboard -> purchase transition stays seamless.
     void import('./Subscription');
   }, []);
+
+  useEffect(() => {
+    const language = i18n.language || 'ru';
+    if (warmedLanguagesRef.current.has(language)) {
+      return;
+    }
+    warmedLanguagesRef.current.add(language);
+    void warmUltimaStartup(queryClient, { language });
+  }, [i18n.language, queryClient]);
 
   const handleShieldTap = useCallback(
     (event: PointerEvent<HTMLButtonElement>) => {
