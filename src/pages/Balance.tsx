@@ -102,6 +102,7 @@ function FullBalance() {
       refreshUser();
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      queryClient.invalidateQueries({ queryKey: ['purchase-options'] });
 
       showToast({
         type: 'success',
@@ -188,6 +189,7 @@ function FullBalance() {
         await refetchBalance();
         await refreshUser();
         queryClient.invalidateQueries({ queryKey: ['transactions'] });
+        queryClient.invalidateQueries({ queryKey: ['purchase-options'] });
       }
     } catch (error: unknown) {
       const axiosError = error as { response?: { data?: { detail?: string } } };

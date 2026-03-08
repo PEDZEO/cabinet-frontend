@@ -121,6 +121,8 @@ export default function PromoOffersSection({
       queryClient.invalidateQueries({ queryKey: ['promo-offers'] });
       queryClient.invalidateQueries({ queryKey: ['active-discount'] });
       queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      queryClient.invalidateQueries({ queryKey: ['purchase-options'] });
+      queryClient.invalidateQueries({ queryKey: ['balance'] });
       setSuccessMessage(result.message);
       setClaimingId(null);
       setTimeout(() => setSuccessMessage(null), 5000);

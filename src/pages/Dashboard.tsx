@@ -153,6 +153,7 @@ function FullDashboard() {
       queryClient.invalidateQueries({ queryKey: ['subscription'] });
       queryClient.invalidateQueries({ queryKey: ['trial-info'] });
       queryClient.invalidateQueries({ queryKey: ['balance'] });
+      queryClient.invalidateQueries({ queryKey: ['purchase-options'] });
       refreshUser();
     },
     onError: (error: { response?: { data?: { detail?: string } } }) => {
