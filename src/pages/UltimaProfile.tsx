@@ -438,7 +438,7 @@ export function UltimaProfile() {
             <p className="text-white/68 mb-2 text-[14px]">
               {t('profile.profileSettings', { defaultValue: 'Настройки профиля' })}
             </p>
-            <div className="space-y-2">
+            <div className="ultima-stagger-list space-y-2">
               {profileItems.map((item) => (
                 <MenuItem key={item.key} item={item} onClick={() => openPathFast(item.path)} />
               ))}
@@ -449,7 +449,7 @@ export function UltimaProfile() {
             <p className="text-white/68 mb-2 text-[14px]">
               {t('nav.support', { defaultValue: 'Поддержка' })}
             </p>
-            <div className="space-y-2">
+            <div className="ultima-stagger-list space-y-2">
               {supportItems.map((item) => (
                 <MenuItem key={item.key} item={item} onClick={() => openPathFast(item.path)} />
               ))}
