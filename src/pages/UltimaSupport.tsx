@@ -162,14 +162,16 @@ export function UltimaSupport() {
       key={ticket.id}
       type="button"
       onClick={() => setSelectedTicketId(ticket.id)}
-      className={`w-full rounded-2xl px-3 py-2 text-left transition ${
+      className={`w-full rounded-2xl px-3 py-2 text-left transition lg:px-3.5 lg:py-2.5 ${
         selectedTicketId === ticket.id
           ? 'bg-emerald-500/12 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
           : 'bg-emerald-950/36 hover:bg-emerald-900/30'
       }`}
     >
       <div className="mb-1.5 flex items-start justify-between gap-2">
-        <p className="truncate text-[14px] font-medium leading-5 text-white/95">{ticket.title}</p>
+        <p className="line-clamp-2 text-[14px] font-medium leading-5 text-white/95 lg:text-[15px]">
+          {ticket.title}
+        </p>
         <span
           className={`inline-flex shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${getStatusMeta(ticket.status).classes}`}
         >
@@ -191,7 +193,7 @@ export function UltimaSupport() {
   return (
     <div className="ultima-shell ultima-flat-frames">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(95%_70%_at_50%_45%,rgba(33,208,154,0.14),rgba(7,20,46,0.02)_62%,rgba(7,20,46,0)_100%)]" />
-      <div className="ultima-shell-inner lg:max-w-[560px]">
+      <div className="ultima-shell-inner lg:max-w-[980px]">
         <header className="mb-4">
           <h1 className="text-[clamp(34px,9vw,46px)] font-semibold leading-[0.92] tracking-[-0.01em] text-white">
             {t('support.title')}
@@ -259,7 +261,7 @@ export function UltimaSupport() {
             </div>
           </section>
         ) : (
-          <section className="flex min-h-0 flex-1 flex-col gap-3 rounded-3xl bg-[rgba(12,45,42,0.2)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md">
+          <section className="flex min-h-0 flex-1 flex-col gap-3 rounded-3xl bg-[rgba(12,45,42,0.2)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md lg:rounded-[28px] lg:p-5">
             <div className="flex items-center justify-between">
               <p className="text-[13px] leading-none text-white/70">{t('support.yourTickets')}</p>
               <button
@@ -271,8 +273,8 @@ export function UltimaSupport() {
               </button>
             </div>
 
-            <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[240px_minmax(0,1fr)]">
-              <div className="bg-emerald-950/26 max-h-[30vh] space-y-2 overflow-y-auto rounded-2xl p-2 pr-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] lg:max-h-none">
+            <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[330px_minmax(0,1fr)] lg:gap-4">
+              <div className="bg-emerald-950/26 max-h-[30vh] space-y-2 overflow-y-auto rounded-2xl p-2 pr-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] lg:max-h-none lg:min-h-[470px] lg:p-3 lg:pr-2">
                 {ticketsLoading ? (
                   <p className="px-2 py-1 text-[13px] text-white/70">{t('common.loading')}</p>
                 ) : tickets?.items?.length ? (
@@ -315,11 +317,11 @@ export function UltimaSupport() {
                 )}
               </div>
 
-              <div className="bg-emerald-950/26 min-h-0 flex-1 rounded-2xl p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] lg:min-h-[340px]">
+              <div className="bg-emerald-950/26 min-h-0 flex-1 rounded-2xl p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] lg:min-h-[470px] lg:p-4">
                 {selectedTicketId && ticketDetail ? (
                   <div className="flex h-full min-h-0 flex-col gap-3">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="truncate text-[14px] font-medium text-white/95">
+                      <p className="truncate text-[14px] font-medium text-white/95 lg:text-[16px]">
                         {selectedTicket?.title}
                       </p>
                       <span
@@ -328,14 +330,14 @@ export function UltimaSupport() {
                         {getStatusMeta(ticketDetail.status).label}
                       </span>
                     </div>
-                    <div className="max-h-[24vh] space-y-2 overflow-y-auto pr-1 lg:max-h-[36vh]">
+                    <div className="max-h-[24vh] space-y-2 overflow-y-auto pr-1 lg:max-h-[52vh] lg:space-y-2.5">
                       {ticketLoading ? (
                         <p className="text-[12px] text-white/60">{t('common.loading')}</p>
                       ) : (
                         ticketDetail.messages.map((msg) => (
                           <div
                             key={msg.id}
-                            className={`rounded-xl px-3 py-2 text-sm ${
+                            className={`rounded-xl px-3 py-2 text-sm lg:px-3.5 lg:py-2.5 ${
                               msg.is_from_admin
                                 ? 'bg-emerald-500/10 text-emerald-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
                                 : 'bg-emerald-950/35 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]'
@@ -358,19 +360,19 @@ export function UltimaSupport() {
                     </div>
 
                     {ticketDetail.status !== 'closed' && !ticketDetail.is_reply_blocked && (
-                      <div className="mt-auto flex gap-2">
+                      <div className="mt-auto flex gap-2 lg:gap-2.5">
                         <input
                           value={replyMessage}
                           onChange={(event) => setReplyMessage(event.target.value)}
                           placeholder={t('support.replyPlaceholder')}
-                          className="w-full rounded-xl bg-emerald-950/35 px-3 py-2 text-sm text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] placeholder:text-emerald-100/35"
+                          className="w-full rounded-xl bg-emerald-950/35 px-3 py-2 text-sm text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] placeholder:text-emerald-100/35 lg:h-11 lg:text-[14px]"
                           maxLength={4000}
                         />
                         <button
                           type="button"
                           onClick={() => replyMutation.mutate()}
                           disabled={replyMutation.isPending || !replyMessage.trim()}
-                          className="rounded-xl border border-[#52ecc6]/40 bg-[#12cd97] px-3 text-white disabled:opacity-60"
+                          className="rounded-xl border border-[#52ecc6]/40 bg-[#12cd97] px-3 text-white disabled:opacity-60 lg:h-11 lg:px-4"
                           aria-label="send-reply"
                         >
                           <SendIcon />
