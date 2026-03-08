@@ -262,6 +262,10 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
     }
   };
 
+  const openToggleVpn = () => {
+    onOpenDeepLink('happ://toggle');
+  };
+
   const advanceStep = () => {
     if (step === 1) {
       setStep(2);
@@ -350,7 +354,20 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
               />
             </svg>
             <div className="bg-black/8 relative flex h-[124px] w-[124px] items-center justify-center rounded-full">
-              {icon}
+              {step === 3 ? (
+                <button
+                  type="button"
+                  onClick={openToggleVpn}
+                  className="group relative z-10 inline-flex h-[110px] w-[110px] items-center justify-center rounded-full transition-transform duration-200 hover:scale-[1.02] active:scale-[0.97]"
+                  aria-label={t('subscription.connection.toggleVpnInApp', {
+                    defaultValue: 'Переключить VPN в приложении',
+                  })}
+                >
+                  {icon}
+                </button>
+              ) : (
+                icon
+              )}
               {step === 3 && showReturnConfetti && (
                 <div className="pointer-events-none absolute inset-[-160px] overflow-visible">
                   {Array.from({ length: 260 }).map((_, index) => {
