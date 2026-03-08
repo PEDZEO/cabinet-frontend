@@ -457,7 +457,7 @@ export function UltimaProfile() {
           </section>
         </div>
 
-        <section className="pt-3">
+        <section>
           <div className="mb-3 flex items-center gap-3 rounded-2xl bg-[rgba(12,45,42,0.25)] px-4 py-3 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md">
             <div className="min-w-0 flex-1">
               <p className="truncate text-[13px]">{subscriptionLink || '-'}</p>
@@ -476,7 +476,9 @@ export function UltimaProfile() {
             {linkCopied ? <span className="text-xs text-emerald-200">OK</span> : null}
           </div>
 
-          <UltimaBottomNav active="profile" onSupportClick={openSupportFast} />
+          <div className="ultima-nav-dock">
+            <UltimaBottomNav active="profile" onSupportClick={openSupportFast} />
+          </div>
         </section>
       </div>
     </div>

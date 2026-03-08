@@ -1004,7 +1004,7 @@ export function UltimaSubscription() {
               ) : null}
             </span>
           </button>
-          <div className={isUltraCompactHeight ? 'mt-2' : 'mt-3'}>
+          <div className="ultima-nav-dock">
             <UltimaBottomNav active="home" />
           </div>
         </div>

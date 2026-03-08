@@ -203,9 +203,9 @@ export function UltimaBalanceHistory() {
           </div>
         </section>
 
-        <section className="pt-3">
+        <div className="ultima-nav-dock">
           <UltimaBottomNav active="profile" />
-        </section>
+        </div>
       </div>
     </div>
   );

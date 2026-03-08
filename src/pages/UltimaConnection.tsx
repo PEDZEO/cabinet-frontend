@@ -387,7 +387,7 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
           </div>
         </section>
 
-        <section className="pb-1">
+        <section className="pb-0">
           {step === 1 && (
             <button
               type="button"
@@ -422,7 +422,7 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
             <button
               type="button"
               onClick={advanceStep}
-              className="mb-3 flex w-full items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-2.5 text-[16px] font-medium text-white/95"
+              className="border-emerald-200/22 mb-3 flex w-full items-center justify-center gap-2 rounded-full border bg-[rgba(12,45,42,0.34)] px-5 py-2.5 text-[16px] font-medium text-white/95 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] backdrop-blur-md transition hover:bg-[rgba(16,58,52,0.42)]"
             >
               {t('subscription.connection.nextStep', { defaultValue: 'Следующий шаг' })}
               <span aria-hidden className="text-white/70">
@@ -431,7 +431,9 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
             </button>
           )}
 
-          <UltimaBottomNav active="connection" />
+          <div className="ultima-nav-dock">
+            <UltimaBottomNav active="connection" />
+          </div>
         </section>
       </div>
 
@@ -463,7 +465,7 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
             <button
               type="button"
               onClick={() => setShowInfo(false)}
-              className="border-white/26 bg-white/14 mt-4 flex w-full items-center justify-center rounded-full border px-5 py-2.5 text-[15px] font-medium text-white"
+              className="border-emerald-200/22 mt-4 flex w-full items-center justify-center rounded-full border bg-[rgba(12,45,42,0.34)] px-5 py-2.5 text-[15px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] backdrop-blur-md"
             >
               {t('subscription.connection.gotIt', {
                 defaultValue: 'Все понятно',

@@ -703,9 +703,9 @@ export default function UltimaAccountLinking() {
           </section>
         </div>
 
-        <section className="pt-3">
+        <div className="ultima-nav-dock">
           <UltimaBottomNav active="profile" />
-        </section>
+        </div>
       </div>
     </div>
   );

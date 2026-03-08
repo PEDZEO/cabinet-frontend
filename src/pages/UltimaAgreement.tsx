@@ -138,7 +138,7 @@ export function UltimaAgreement() {
           )}
         </section>
 
-        <div className="mt-2.5">
+        <div className="ultima-nav-dock">
           <UltimaBottomNav active="profile" onProfileClick={() => navigate('/profile')} />
         </div>
       </div>

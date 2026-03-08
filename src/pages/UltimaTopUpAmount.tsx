@@ -333,9 +333,9 @@ export function UltimaTopUpAmount() {
           </p>
         </section>
 
-        <section className="pt-3">
+        <div className="ultima-nav-dock">
           <UltimaBottomNav active="profile" />
-        </section>
+        </div>
       </div>
     </div>
   );

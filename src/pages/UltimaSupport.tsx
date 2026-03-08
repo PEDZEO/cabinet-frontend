@@ -390,9 +390,9 @@ export function UltimaSupport() {
           </section>
         )}
 
-        <section className="mt-auto pt-4">
+        <div className="ultima-nav-dock">
           <UltimaBottomNav active="support" onProfileClick={openProfileFast} />
-        </section>
+        </div>
       </div>
     </div>
   );

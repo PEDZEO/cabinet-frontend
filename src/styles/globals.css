@@ -251,6 +251,12 @@
   flex-direction: column;
 }
 
+.ultima-nav-dock {
+  margin-top: auto;
+  padding-top: 12px;
+  padding-bottom: 2px;
+}
+
 @media (max-height: 760px) {
   .ultima-shell {
     padding-top: 10px;
@@ -284,6 +290,11 @@
     height: min(860px, calc(100svh - 36px - env(safe-area-inset-bottom, 0px)));
     min-height: 620px;
     max-height: calc(100svh - 24px - env(safe-area-inset-bottom, 0px));
+  }
+
+  .ultima-nav-dock {
+    padding-top: 10px;
+    padding-bottom: 3px;
   }
 }
 

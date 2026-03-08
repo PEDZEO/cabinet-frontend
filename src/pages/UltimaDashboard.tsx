@@ -407,18 +407,20 @@ export function UltimaDashboard() {
           <button
             type="button"
             onClick={() => navigate('/connection')}
-            className="mb-4 flex w-full items-center justify-between rounded-full border border-white/80 bg-white px-5 py-3 text-[16px] font-medium text-slate-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_4px_12px_rgba(0,0,0,0.16)] transition hover:bg-white/95"
+            className="mb-4 flex w-full items-center justify-between rounded-full border border-emerald-200/25 bg-[rgba(12,45,42,0.36)] px-5 py-3 text-[16px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_24px_rgba(3,14,24,0.32)] backdrop-blur-md transition hover:bg-[rgba(16,58,52,0.44)]"
           >
             <span className="flex items-center gap-2">
               <SetupIcon />
               {t('lite.connectAndSetup', { defaultValue: 'Установка и настройка' })}
             </span>
-            <span className="text-slate-500">
+            <span className="text-white/70">
               <PhoneIcon />
             </span>
           </button>
 
-          <UltimaBottomNav active="home" onSupportClick={openSupport} />
+          <div className="ultima-nav-dock">
+            <UltimaBottomNav active="home" onSupportClick={openSupport} />
+          </div>
         </section>
       </div>
     </div>
