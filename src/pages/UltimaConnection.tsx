@@ -438,7 +438,7 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
       {step === 1 && showInfo && (
         <>
           <div className="bg-black/52 absolute inset-0 z-[18]" />
-          <div className="ultima-step-enter border-white/24 absolute inset-x-4 bottom-[252px] z-20 rounded-[24px] border bg-[#05070B] p-4 text-white shadow-[0_26px_56px_rgba(0,0,0,0.72)] backdrop-blur-xl lg:bottom-44 lg:left-1/2 lg:right-auto lg:w-[480px] lg:-translate-x-1/2">
+          <div className="ultima-step-enter border-white/24 absolute inset-x-4 bottom-[252px] z-20 rounded-[24px] border bg-[#05070B] p-4 text-white shadow-[0_26px_56px_rgba(0,0,0,0.72)] backdrop-blur-xl lg:inset-x-auto lg:bottom-auto lg:left-1/2 lg:top-24 lg:w-[500px] lg:-translate-x-1/2">
             <div className="mb-2 flex items-start justify-between gap-3">
               <h3 className="text-[24px] font-semibold leading-[1.06] text-white/95">
                 {t('subscription.connection.importantInfo', {
