@@ -301,6 +301,15 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
             <p className="mx-auto mt-2 max-w-[360px] text-[17px] leading-[1.2] text-white/70">
               {subtitle}
             </p>
+            {step === 3 && (
+              <div className="mx-auto mt-3 w-full max-w-[360px] rounded-2xl border border-emerald-200/35 bg-[linear-gradient(120deg,rgba(26,164,133,0.22),rgba(10,36,31,0.45))] px-4 py-2.5 shadow-[0_10px_26px_rgba(5,18,15,0.35),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-md">
+                <p className="text-[13px] font-medium leading-[1.25] text-emerald-50/95">
+                  {t('subscription.connection.tapCheckHint', {
+                    defaultValue: 'Можно нажать и здесь: галочка в центре тоже переключает VPN.',
+                  })}
+                </p>
+              </div>
+            )}
             <div className="mx-auto mt-4 flex w-fit items-center gap-2">
               {[1, 2, 3].map((index) => {
                 const done = step > index;
