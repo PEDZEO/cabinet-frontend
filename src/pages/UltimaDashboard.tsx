@@ -342,11 +342,11 @@ export function UltimaDashboard() {
           </button>
 
           {hasSetupReminder && (
-            <div className="bg-black/24 mb-4 mt-auto rounded-2xl border border-amber-300/30 p-3.5 backdrop-blur lg:mt-0">
-              <p className="text-[16px] font-semibold leading-tight text-amber-100">
+            <div className="border-emerald-200/24 mb-4 mt-auto rounded-2xl border bg-[rgba(12,45,42,0.38)] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_24px_rgba(3,14,24,0.28)] backdrop-blur-md lg:mt-0">
+              <p className="text-[16px] font-semibold leading-tight text-white/95">
                 {t('ultima.setupNotFinishedTitle', { defaultValue: 'Установка не завершена' })}
               </p>
-              <p className="mt-1 text-[13px] leading-snug text-amber-100/85">
+              <p className="mt-1 text-[13px] leading-snug text-white/75">
                 {t('ultima.setupNotFinishedDesc', {
                   defaultValue: 'Вернитесь к настройке и завершите подключение VPN.',
                 })}
@@ -354,16 +354,14 @@ export function UltimaDashboard() {
               <button
                 type="button"
                 onClick={() => navigate('/connection')}
-                className="border-[#66ebc9]/42 mt-2.5 flex w-full items-center justify-center rounded-full border bg-[#14cf9a] px-4 py-2.5 text-[15px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(7,146,108,0.2)] transition hover:bg-[#16d8a1]"
+                className="border-[#66ebc9]/42 mt-2.5 flex w-full items-center justify-center rounded-full border bg-[#14cf9a] px-4 py-2.5 text-[15px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_6px_14px_rgba(7,146,108,0.24)] transition hover:bg-[#16d8a1]"
               >
                 {t('ultima.finishSetup', { defaultValue: 'Завершить установку' })}
               </button>
             </div>
           )}
 
-          <div
-            className={`${hasSetupReminder ? 'mb-5 lg:mb-4' : 'mb-3 mt-auto lg:mb-2 lg:mt-0'} flex items-center justify-between text-white`}
-          >
+          <div className="mb-3 mt-auto flex items-center justify-between text-white lg:mb-2 lg:mt-0">
             <div>
               <p className="text-[32px] font-semibold leading-none tracking-[-0.02em] sm:text-[36px] lg:text-[34px]">
                 {expiryLabel}
