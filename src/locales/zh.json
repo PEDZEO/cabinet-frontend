@@ -2137,6 +2137,7 @@
       "form": {
         "name": "组名称",
         "namePlaceholder": "VIP客户",
+        "nameRequired": "请输入组名称",
         "categoryDiscounts": "分类折扣",
         "periodDiscounts": "期间折扣",
         "add": "添加",

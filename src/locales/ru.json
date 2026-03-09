@@ -3034,6 +3034,7 @@
       "form": {
         "name": "Название группы",
         "namePlaceholder": "VIP клиенты",
+        "nameRequired": "Введите название группы",
         "categoryDiscounts": "Скидки по категориям",
         "periodDiscounts": "Скидки по периодам",
         "add": "Добавить",

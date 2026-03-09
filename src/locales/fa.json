@@ -2138,6 +2138,7 @@
       "form": {
         "name": "نام گروه",
         "namePlaceholder": "مشتریان VIP",
+        "nameRequired": "نام گروه را وارد کنید",
         "categoryDiscounts": "تخفیف‌های دسته‌بندی",
         "periodDiscounts": "تخفیف‌های دوره‌ای",
         "add": "افزودن",

@@ -2513,6 +2513,7 @@
       "form": {
         "name": "Group name",
         "namePlaceholder": "VIP customers",
+        "nameRequired": "Enter group name",
         "categoryDiscounts": "Category discounts",
         "periodDiscounts": "Period discounts",
         "add": "Add",
