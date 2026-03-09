@@ -358,9 +358,9 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
           </div>
 
           <div className="relative mt-7 flex flex-1 items-center justify-center lg:mt-5">
-            <div className="border-emerald-200/22 pointer-events-none absolute h-[360px] w-[360px] rounded-full border" />
-            <div className="pointer-events-none absolute h-[270px] w-[270px] rounded-full border border-emerald-200/20" />
-            <div className="pointer-events-none absolute h-[188px] w-[188px] rounded-full border border-emerald-300/65" />
+            <div className="ultima-step-ring border-emerald-200/22 pointer-events-none absolute h-[360px] w-[360px] rounded-full border" />
+            <div className="ultima-step-ring ultima-step-ring-delay-1 pointer-events-none absolute h-[270px] w-[270px] rounded-full border border-emerald-200/20" />
+            <div className="ultima-step-ring ultima-step-ring-delay-2 pointer-events-none absolute h-[188px] w-[188px] rounded-full border border-emerald-300/65" />
             <svg
               viewBox="0 0 240 240"
               className="pointer-events-none absolute h-[220px] w-[220px] -rotate-90"
@@ -384,7 +384,10 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
                 strokeLinecap="round"
                 strokeDasharray={ringCircumference}
                 strokeDashoffset={ringOffset}
-                style={{ transition: 'stroke-dashoffset 420ms ease, stroke 240ms ease' }}
+                style={{
+                  transition:
+                    'stroke-dashoffset 880ms cubic-bezier(0.22,0.88,0.24,1), stroke 380ms ease',
+                }}
               />
             </svg>
             <div className="bg-black/8 relative flex h-[124px] w-[124px] items-center justify-center rounded-full">
@@ -395,6 +398,17 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
                   className="group relative z-10 inline-flex h-[110px] w-[110px] items-center justify-center rounded-full transition-transform duration-200 hover:scale-[1.02] active:scale-[0.97]"
                   aria-label={t('subscription.connection.toggleVpnInApp', {
                     defaultValue: 'Переключить VPN в приложении',
+                  })}
+                >
+                  {icon}
+                </button>
+              ) : step === 2 ? (
+                <button
+                  type="button"
+                  onClick={openAddSubscription}
+                  className="group relative z-10 inline-flex h-[110px] w-[110px] items-center justify-center rounded-full transition-transform duration-200 hover:scale-[1.02] active:scale-[0.97]"
+                  aria-label={t('subscription.connection.addSubscription', {
+                    defaultValue: 'Добавить подписку',
                   })}
                 >
                   {icon}
