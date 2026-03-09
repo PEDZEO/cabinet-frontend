@@ -2524,6 +2524,7 @@
         "rub": "rub.",
         "autoAssignHint": "0 = don't auto-assign",
         "applyToAddons": "Apply to additional services",
+        "isDefault": "Default group",
         "cancel": "Cancel",
         "saving": "Saving...",
         "save": "Save"

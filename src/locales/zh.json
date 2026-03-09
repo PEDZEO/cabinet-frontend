@@ -2148,6 +2148,7 @@
         "rub": "卢布",
         "autoAssignHint": "0 = 不自动分配",
         "applyToAddons": "应用于附加服务",
+        "isDefault": "默认组",
         "cancel": "取消",
         "saving": "保存中...",
         "save": "保存"
