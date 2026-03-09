@@ -89,17 +89,21 @@ apiClient.interceptors.request.use(async (config: InternalAxiosRequestConfig) =>
   if (!isAuthEndpoint(config.url)) {
     let token = tokenStorage.getAccessToken();
 
-    // Проверяем срок действия токена перед запросом
     if (token && isTokenExpired(token)) {
-      // Используем централизованный менеджер для refresh
+      // Access token expired — try refresh
       const newToken = await tokenRefreshManager.refreshAccessToken();
       if (newToken) {
         token = newToken;
       } else {
-        // Refresh не удался - редирект на логин
         tokenStorage.clearTokens();
         safeRedirectToLogin();
         return config;
+      }
+    } else if (!token && tokenStorage.getRefreshToken()) {
+      // No access token (e.g. tab reopen) but refresh token exists — restore session
+      const newToken = await tokenRefreshManager.refreshAccessToken();
+      if (newToken) {
+        token = newToken;
       }
     }
 
