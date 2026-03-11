@@ -655,7 +655,6 @@ export function UltimaSubscription() {
   const isCompactHeight = viewportHeight < 780;
   const isUltraCompactHeight = viewportHeight < 700;
   const isNarrowWidth = viewportWidth < 390;
-  const isDesktopWidth = viewportWidth >= 1024;
 
   const openTopUpForSubscription = async () => {
     setError(null);
@@ -762,286 +761,276 @@ export function UltimaSubscription() {
   return (
     <div
       className={`relative h-[100svh] min-h-[100dvh] overflow-hidden bg-transparent ${
-        isDesktopWidth ? 'px-8' : isNarrowWidth ? 'px-3' : 'px-4'
-      } pb-[calc(16px+env(safe-area-inset-bottom,0px))] ${isDesktopWidth ? 'pt-8' : isUltraCompactHeight ? 'pt-3' : 'pt-4'}`}
+        isNarrowWidth ? 'px-3' : 'px-4'
+      } pb-[calc(16px+env(safe-area-inset-bottom,0px))] ${isUltraCompactHeight ? 'pt-3' : 'pt-4'}`}
     >
       <div className="ultima-shell-inner">
-        <div className={`mx-auto w-full ${isDesktopWidth ? 'max-w-[880px]' : 'max-w-[360px]'}`}>
-          <header className={isUltraCompactHeight ? 'mb-2' : 'mb-3'}>
-            <h1
-              className={`font-semibold leading-[0.95] text-white ${
-                isUltraCompactHeight
-                  ? 'text-[32px]'
-                  : isNarrowWidth
-                    ? 'text-[clamp(30px,8vw,36px)]'
-                    : 'text-[clamp(32px,8.4vw,40px)]'
-              }`}
-            >
-              Покупка подписки
-            </h1>
-            <p
-              className={`leading-tight text-white/75 ${
-                isUltraCompactHeight
-                  ? 'mt-1 text-[12px]'
-                  : isNarrowWidth
-                    ? 'mt-1 text-[13px]'
-                    : 'mt-1.5 text-[clamp(13px,3.8vw,15px)]'
-              }`}
-            >
-              Подключайте больше устройств и пользуйтесь сервисом вместе с друзьями и близкими
-            </p>
-          </header>
-
-          <section
-            className={`mx-auto w-full ${
-              isDesktopWidth ? 'max-w-[760px]' : 'max-w-[336px]'
-            } rounded-3xl border border-white/10 bg-white/5 backdrop-blur ${
-              isUltraCompactHeight ? 'mb-2 p-2.5' : 'mb-3 p-2.5'
+        <header className={isUltraCompactHeight ? 'mb-2' : 'mb-3'}>
+          <h1
+            className={`font-semibold leading-[0.95] text-white ${
+              isUltraCompactHeight
+                ? 'text-[32px]'
+                : isNarrowWidth
+                  ? 'text-[clamp(30px,8vw,36px)]'
+                  : 'text-[clamp(32px,8.4vw,40px)]'
             }`}
           >
-            <div className={`flex items-center gap-3 ${isUltraCompactHeight ? 'mb-2' : 'mb-3'}`}>
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/90">
-                {selectedDeviceLimit}
-              </span>
-              <div>
-                <p
-                  className={`${
-                    isUltraCompactHeight
-                      ? 'text-[19px]'
-                      : isNarrowWidth
-                        ? 'text-[20px]'
-                        : 'text-[22px]'
-                  } font-medium leading-none text-white`}
-                >
-                  Устройство
-                </p>
-                <p
-                  className={`${isUltraCompactHeight ? 'mt-0.5 text-[13px]' : 'mt-1 text-[14px]'} text-white/70`}
-                >
-                  Одновременно в подписке
-                </p>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-emerald-200/10 bg-[linear-gradient(180deg,rgba(10,49,43,0.42)_0%,rgba(8,25,29,0.46)_100%)] p-2">
-              <div
-                ref={deviceTrackRef}
-                role="button"
-                tabIndex={0}
-                aria-label="devices-slider"
-                onClick={handleDeviceTrackClick}
-                onKeyDown={(event) => {
-                  if (event.key === 'ArrowLeft') {
-                    event.preventDefault();
-                    applyDeviceIndex(selectedDeviceIndex - 1);
-                  }
-                  if (event.key === 'ArrowRight') {
-                    event.preventDefault();
-                    applyDeviceIndex(selectedDeviceIndex + 1);
-                  }
-                }}
-                className="relative"
-              >
-                <div className="relative h-9 w-full">
-                  <div className="absolute left-0 right-0 top-1/2 h-[8px] -translate-y-1/2 rounded-full border border-emerald-200/15 bg-white/10 shadow-[inset_0_1px_4px_rgba(0,0,0,0.25)]" />
-                  <div
-                    className="absolute left-0 top-1/2 h-[8px] -translate-y-1/2 rounded-full bg-[linear-gradient(90deg,rgba(45,212,191,0.9)_0%,rgba(16,185,129,0.95)_100%)] shadow-[0_0_14px_rgba(45,212,191,0.42)]"
-                    style={{
-                      width: `${sliderProgressPercent}%`,
-                      boxShadow: `0 0 ${12 + sliderProgressPercent * 0.13}px rgba(45,212,191,${Math.min(0.72, sliderVisualPower)})`,
-                    }}
-                  />
-                  <div
-                    className="ultima-slider-glow pointer-events-none absolute left-0 top-1/2 h-[8px] -translate-y-1/2 rounded-full bg-[linear-gradient(90deg,rgba(162,255,233,0)_0%,rgba(162,255,233,0.65)_45%,rgba(162,255,233,0)_100%)]"
-                    style={{
-                      width: `${Math.max(18, sliderProgressPercent)}%`,
-                      filter: `blur(${2 + sliderProgressPercent * 0.02}px)`,
-                      opacity: Math.min(0.78, 0.26 + sliderProgressPercent / 170),
-                    }}
-                  />
-                  <span
-                    className="absolute top-1/2 z-20 h-5 w-5 -translate-y-1/2 rounded-full border border-emerald-100/70 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.75),rgba(45,212,191,0.9)_45%,rgba(6,38,31,0.95)_100%)] shadow-[0_0_16px_rgba(52,211,153,0.55)]"
-                    style={{
-                      left: `calc(${sliderProgressPercent}% - 10px + ${
-                        selectedDeviceIndex === 0
-                          ? '4px'
-                          : selectedDeviceIndex === deviceLimits.length - 1
-                            ? '-4px'
-                            : '0px'
-                      })`,
-                      transform: `translateY(-50%) scale(${1 + sliderProgressPercent / 500})`,
-                      boxShadow: `0 0 ${16 + sliderProgressPercent * 0.16}px rgba(52,211,153,${Math.min(0.86, 0.44 + sliderProgressPercent / 220)})`,
-                    }}
-                  />
-                  <input
-                    type="range"
-                    min={0}
-                    max={Math.max(0, deviceLimits.length - 1)}
-                    step={1}
-                    value={selectedDeviceIndex}
-                    onChange={(event) => applyDeviceIndex(Number(event.target.value))}
-                    className="absolute inset-0 z-10 h-9 w-full cursor-pointer opacity-0"
-                    aria-label="devices-slider-input"
-                  />
-                  {deviceLimits.map((limit, index) => {
-                    const left =
-                      deviceLimits.length > 1
-                        ? `${(index / (deviceLimits.length - 1)) * 100}%`
-                        : '0%';
-                    const active = index === selectedDeviceIndex;
-                    return (
-                      <button
-                        key={limit}
-                        type="button"
-                        aria-label={`devices-${limit}`}
-                        onClick={(event) => {
-                          event.preventDefault();
-                          applyDeviceIndex(index);
-                        }}
-                        className="absolute top-1/2 z-30 -translate-x-1/2 -translate-y-1/2"
-                        style={{
-                          left: `calc(${left} + ${
-                            index === 0 ? '4px' : index === deviceLimits.length - 1 ? '-4px' : '0px'
-                          })`,
-                        }}
-                      >
-                        <span
-                          className={`block rounded-full transition ${
-                            active ? 'bg-emerald-200' : 'bg-white/30'
-                          }`}
-                          style={{
-                            width: active ? 10 : 8,
-                            height: active ? 10 : 8,
-                            boxShadow: active
-                              ? `0 0 ${10 + sliderProgressPercent * 0.1}px rgba(52,211,153,${Math.min(0.92, 0.54 + sliderProgressPercent / 170)})`
-                              : 'none',
-                          }}
-                        />
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section
-            className={`ultima-scrollbar min-h-0 flex-1 overflow-y-auto ${
-              isUltraCompactHeight ? 'pb-0' : 'pb-1'
-            } ${isDesktopWidth ? 'mx-auto w-full max-w-[760px]' : ''}`}
+            Покупка подписки
+          </h1>
+          <p
+            className={`leading-tight text-white/75 ${
+              isUltraCompactHeight
+                ? 'mt-1 text-[12px]'
+                : isNarrowWidth
+                  ? 'mt-1 text-[13px]'
+                  : 'mt-1.5 text-[clamp(13px,3.8vw,15px)]'
+            }`}
           >
+            Подключайте больше устройств и пользуйтесь сервисом вместе с друзьями и близкими
+          </p>
+        </header>
+
+        <section
+          className={`mx-auto w-full max-w-[336px] rounded-3xl border border-white/10 bg-white/5 backdrop-blur ${
+            isUltraCompactHeight ? 'mb-2 p-2.5' : 'mb-3 p-2.5'
+          }`}
+        >
+          <div className={`flex items-center gap-3 ${isUltraCompactHeight ? 'mb-2' : 'mb-3'}`}>
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/90">
+              {selectedDeviceLimit}
+            </span>
+            <div>
+              <p
+                className={`${
+                  isUltraCompactHeight
+                    ? 'text-[19px]'
+                    : isNarrowWidth
+                      ? 'text-[20px]'
+                      : 'text-[22px]'
+                } font-medium leading-none text-white`}
+              >
+                Устройство
+              </p>
+              <p
+                className={`${isUltraCompactHeight ? 'mt-0.5 text-[13px]' : 'mt-1 text-[14px]'} text-white/70`}
+              >
+                Одновременно в подписке
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-emerald-200/10 bg-[linear-gradient(180deg,rgba(10,49,43,0.42)_0%,rgba(8,25,29,0.46)_100%)] p-2">
             <div
-              className={`grid auto-rows-fr grid-cols-2 ${isCompactHeight ? 'gap-2.5' : 'gap-3'}`}
+              ref={deviceTrackRef}
+              role="button"
+              tabIndex={0}
+              aria-label="devices-slider"
+              onClick={handleDeviceTrackClick}
+              onKeyDown={(event) => {
+                if (event.key === 'ArrowLeft') {
+                  event.preventDefault();
+                  applyDeviceIndex(selectedDeviceIndex - 1);
+                }
+                if (event.key === 'ArrowRight') {
+                  event.preventDefault();
+                  applyDeviceIndex(selectedDeviceIndex + 1);
+                }
+              }}
+              className="relative"
             >
-              {displayPeriods.map((period) => {
-                const active = period.days === selectedPeriod.days;
-                return (
-                  <button
-                    key={period.days}
-                    type="button"
-                    onClick={() => {
-                      haptic.impact('light');
-                      setSelectedPeriodDays(period.days);
-                    }}
-                    className={`h-full rounded-3xl border text-left transition-colors ${
-                      isUltraCompactHeight
-                        ? 'min-h-[128px] p-2.5'
-                        : isNarrowWidth
-                          ? 'min-h-[136px] p-3'
-                          : isCompactHeight
-                            ? 'min-h-[144px] p-3'
-                            : 'min-h-[152px] p-3.5'
-                    } ${
-                      active
-                        ? 'border-emerald-400 bg-[#0a2522] shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_0_0_1px_rgba(16,185,129,0.25)]'
-                        : 'border-white/12 bg-black/20 hover:border-white/25'
-                    }`}
-                  >
-                    <div
-                      className={`${isUltraCompactHeight ? 'mb-2' : 'mb-3'} flex items-center justify-between`}
+              <div className="relative h-9 w-full">
+                <div className="absolute left-0 right-0 top-1/2 h-[8px] -translate-y-1/2 rounded-full border border-emerald-200/15 bg-white/10 shadow-[inset_0_1px_4px_rgba(0,0,0,0.25)]" />
+                <div
+                  className="absolute left-0 top-1/2 h-[8px] -translate-y-1/2 rounded-full bg-[linear-gradient(90deg,rgba(45,212,191,0.9)_0%,rgba(16,185,129,0.95)_100%)] shadow-[0_0_14px_rgba(45,212,191,0.42)]"
+                  style={{
+                    width: `${sliderProgressPercent}%`,
+                    boxShadow: `0 0 ${12 + sliderProgressPercent * 0.13}px rgba(45,212,191,${Math.min(0.72, sliderVisualPower)})`,
+                  }}
+                />
+                <div
+                  className="ultima-slider-glow pointer-events-none absolute left-0 top-1/2 h-[8px] -translate-y-1/2 rounded-full bg-[linear-gradient(90deg,rgba(162,255,233,0)_0%,rgba(162,255,233,0.65)_45%,rgba(162,255,233,0)_100%)]"
+                  style={{
+                    width: `${Math.max(18, sliderProgressPercent)}%`,
+                    filter: `blur(${2 + sliderProgressPercent * 0.02}px)`,
+                    opacity: Math.min(0.78, 0.26 + sliderProgressPercent / 170),
+                  }}
+                />
+                <span
+                  className="absolute top-1/2 z-20 h-5 w-5 -translate-y-1/2 rounded-full border border-emerald-100/70 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.75),rgba(45,212,191,0.9)_45%,rgba(6,38,31,0.95)_100%)] shadow-[0_0_16px_rgba(52,211,153,0.55)]"
+                  style={{
+                    left: `calc(${sliderProgressPercent}% - 10px + ${
+                      selectedDeviceIndex === 0
+                        ? '4px'
+                        : selectedDeviceIndex === deviceLimits.length - 1
+                          ? '-4px'
+                          : '0px'
+                    })`,
+                    transform: `translateY(-50%) scale(${1 + sliderProgressPercent / 500})`,
+                    boxShadow: `0 0 ${16 + sliderProgressPercent * 0.16}px rgba(52,211,153,${Math.min(0.86, 0.44 + sliderProgressPercent / 220)})`,
+                  }}
+                />
+                <input
+                  type="range"
+                  min={0}
+                  max={Math.max(0, deviceLimits.length - 1)}
+                  step={1}
+                  value={selectedDeviceIndex}
+                  onChange={(event) => applyDeviceIndex(Number(event.target.value))}
+                  className="absolute inset-0 z-10 h-9 w-full cursor-pointer opacity-0"
+                  aria-label="devices-slider-input"
+                />
+                {deviceLimits.map((limit, index) => {
+                  const left =
+                    deviceLimits.length > 1
+                      ? `${(index / (deviceLimits.length - 1)) * 100}%`
+                      : '0%';
+                  const active = index === selectedDeviceIndex;
+                  return (
+                    <button
+                      key={limit}
+                      type="button"
+                      aria-label={`devices-${limit}`}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        applyDeviceIndex(index);
+                      }}
+                      className="absolute top-1/2 z-30 -translate-x-1/2 -translate-y-1/2"
+                      style={{
+                        left: `calc(${left} + ${
+                          index === 0 ? '4px' : index === deviceLimits.length - 1 ? '-4px' : '0px'
+                        })`,
+                      }}
                     >
                       <span
-                        className={`font-medium text-white ${
-                          isUltraCompactHeight
-                            ? 'text-[15px]'
-                            : isNarrowWidth
-                              ? 'text-[17px]'
-                              : 'text-[clamp(16px,4.4vw,19px)]'
+                        className={`block rounded-full transition ${
+                          active ? 'bg-emerald-200' : 'bg-white/30'
                         }`}
-                      >
-                        {periodLabel(period)}
-                      </span>
-                      {period.days === bestDealPeriodDays ? (
-                        <span className="rounded-full border border-emerald-200/45 bg-emerald-300/25 px-2 py-[1px] text-[11px] font-semibold text-emerald-100">
-                          Выгодно
-                        </span>
-                      ) : (
-                        <span
-                          className={`text-emerald-300 ${active ? 'opacity-100' : 'opacity-0'}`}
-                        >
-                          ★
-                        </span>
-                      )}
-                    </div>
-                    <p
-                      className={`font-semibold leading-none text-white ${
-                        isUltraCompactHeight
-                          ? 'text-[26px]'
-                          : isNarrowWidth
-                            ? 'text-[28px]'
-                            : 'text-[clamp(28px,8.6vw,32px)]'
-                      }`}
-                    >
-                      {formatPrice(calculatePeriodPrice(period))}
-                    </p>
-                    <p
-                      className={`mt-1 text-[12px] ${
-                        period.original_price_kopeks &&
-                        period.original_price_kopeks > period.price_kopeks
-                          ? 'text-white/70'
-                          : 'invisible'
-                      }`}
-                    >
-                      {period.price_per_month_kopeks > 0
-                        ? `${formatPrice(period.price_per_month_kopeks)} / мес`
-                        : '0'}
-                    </p>
-                  </button>
-                );
-              })}
+                        style={{
+                          width: active ? 10 : 8,
+                          height: active ? 10 : 8,
+                          boxShadow: active
+                            ? `0 0 ${10 + sliderProgressPercent * 0.1}px rgba(52,211,153,${Math.min(0.92, 0.54 + sliderProgressPercent / 170)})`
+                            : 'none',
+                        }}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </section>
+          </div>
+        </section>
 
-          <div
-            className={`${isUltraCompactHeight ? 'pt-2' : 'pt-3'} ${isDesktopWidth ? 'mx-auto w-full max-w-[760px]' : ''}`}
+        <section
+          className={`ultima-scrollbar min-h-0 flex-1 overflow-y-auto ${
+            isUltraCompactHeight ? 'pb-0' : 'pb-1'
+          }`}
+        >
+          <div className={`grid auto-rows-fr grid-cols-2 ${isCompactHeight ? 'gap-2.5' : 'gap-3'}`}>
+            {displayPeriods.map((period) => {
+              const active = period.days === selectedPeriod.days;
+              return (
+                <button
+                  key={period.days}
+                  type="button"
+                  onClick={() => {
+                    haptic.impact('light');
+                    setSelectedPeriodDays(period.days);
+                  }}
+                  className={`h-full rounded-3xl border text-left transition-colors ${
+                    isUltraCompactHeight
+                      ? 'min-h-[128px] p-2.5'
+                      : isNarrowWidth
+                        ? 'min-h-[136px] p-3'
+                        : isCompactHeight
+                          ? 'min-h-[144px] p-3'
+                          : 'min-h-[152px] p-3.5'
+                  } ${
+                    active
+                      ? 'border-emerald-400 bg-[#0a2522] shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_0_0_1px_rgba(16,185,129,0.25)]'
+                      : 'border-white/12 bg-black/20 hover:border-white/25'
+                  }`}
+                >
+                  <div
+                    className={`${isUltraCompactHeight ? 'mb-2' : 'mb-3'} flex items-center justify-between`}
+                  >
+                    <span
+                      className={`font-medium text-white ${
+                        isUltraCompactHeight
+                          ? 'text-[15px]'
+                          : isNarrowWidth
+                            ? 'text-[17px]'
+                            : 'text-[clamp(16px,4.4vw,19px)]'
+                      }`}
+                    >
+                      {periodLabel(period)}
+                    </span>
+                    {period.days === bestDealPeriodDays ? (
+                      <span className="rounded-full border border-emerald-200/45 bg-emerald-300/25 px-2 py-[1px] text-[11px] font-semibold text-emerald-100">
+                        Выгодно
+                      </span>
+                    ) : (
+                      <span className={`text-emerald-300 ${active ? 'opacity-100' : 'opacity-0'}`}>
+                        ★
+                      </span>
+                    )}
+                  </div>
+                  <p
+                    className={`font-semibold leading-none text-white ${
+                      isUltraCompactHeight
+                        ? 'text-[26px]'
+                        : isNarrowWidth
+                          ? 'text-[28px]'
+                          : 'text-[clamp(28px,8.6vw,32px)]'
+                    }`}
+                  >
+                    {formatPrice(calculatePeriodPrice(period))}
+                  </p>
+                  <p
+                    className={`mt-1 text-[12px] ${
+                      period.original_price_kopeks &&
+                      period.original_price_kopeks > period.price_kopeks
+                        ? 'text-white/70'
+                        : 'invisible'
+                    }`}
+                  >
+                    {period.price_per_month_kopeks > 0
+                      ? `${formatPrice(period.price_per_month_kopeks)} / мес`
+                      : '0'}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <div className={isUltraCompactHeight ? 'pt-2' : 'pt-3'}>
+          {error && <p className="mb-2.5 text-center text-[16px] text-red-300">{error}</p>}
+          <button
+            type="button"
+            onClick={() => {
+              void openTopUpForSubscription();
+            }}
+            disabled={
+              purchaseMutation.isPending || createPaymentMutation.isPending || isFinalizingPending
+            }
+            className={`border-[#66ebc9]/42 flex w-full items-center justify-between rounded-full border bg-[#14cf9a] px-5 ${
+              isUltraCompactHeight ? 'py-2.5 text-[15px]' : 'py-3 text-[16px]'
+            } font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(7,146,108,0.2)] transition hover:bg-[#16d8a1] disabled:cursor-not-allowed disabled:opacity-75`}
           >
-            {error && <p className="mb-2.5 text-center text-[16px] text-red-300">{error}</p>}
-            <button
-              type="button"
-              onClick={() => {
-                void openTopUpForSubscription();
-              }}
-              disabled={
-                purchaseMutation.isPending || createPaymentMutation.isPending || isFinalizingPending
-              }
-              className={`border-[#66ebc9]/42 flex w-full items-center justify-between rounded-full border bg-[#14cf9a] px-5 ${
-                isUltraCompactHeight ? 'py-2.5 text-[15px]' : 'py-3 text-[16px]'
-              } font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(7,146,108,0.2)] transition hover:bg-[#16d8a1] disabled:cursor-not-allowed disabled:opacity-75`}
-            >
-              <span>Оплатить подписку</span>
-              <span className="flex items-center gap-2 text-white/95">
-                {formatPrice(payableAmountKopeks)}
-                {selectedPeriod.original_price_kopeks &&
-                selectedPeriod.original_price_kopeks > selectedPeriod.price_kopeks ? (
-                  <span className="text-[13px] text-white/60 line-through">
-                    {formatPrice(selectedPeriod.original_price_kopeks)}
-                  </span>
-                ) : null}
-              </span>
-            </button>
-            <div className="ultima-nav-dock">
-              <UltimaBottomNav active="home" />
-            </div>
+            <span>Оплатить подписку</span>
+            <span className="flex items-center gap-2 text-white/95">
+              {formatPrice(payableAmountKopeks)}
+              {selectedPeriod.original_price_kopeks &&
+              selectedPeriod.original_price_kopeks > selectedPeriod.price_kopeks ? (
+                <span className="text-[13px] text-white/60 line-through">
+                  {formatPrice(selectedPeriod.original_price_kopeks)}
+                </span>
+              ) : null}
+            </span>
+          </button>
+          <div className="ultima-nav-dock">
+            <UltimaBottomNav active="home" />
           </div>
         </div>
       </div>

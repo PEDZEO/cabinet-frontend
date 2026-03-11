@@ -358,8 +358,8 @@ export function UltimaDashboard() {
         </button>
       )}
 
-      <div className="ultima-shell-inner lg:grid lg:grid-cols-[minmax(0,1fr)_420px] lg:gap-8">
-        <section className="flex min-h-0 flex-1 flex-col pb-[clamp(14px,2.8vh,24px)] pt-[clamp(86px,19vh,198px)] lg:pb-8 lg:pr-4 lg:pt-16">
+      <div className="ultima-shell-inner">
+        <section className="flex min-h-0 flex-1 flex-col pb-[clamp(14px,2.8vh,24px)] pt-[clamp(86px,19vh,198px)] lg:pb-3 lg:pt-16">
           <button
             type="button"
             aria-label={t('nav.dashboard')}
@@ -426,7 +426,7 @@ export function UltimaDashboard() {
           />
         </section>
 
-        <section className="mt-auto pb-0 lg:ml-auto lg:mt-auto lg:w-full lg:max-w-[420px] lg:pb-2">
+        <section className="mt-auto pb-0 lg:mt-5 lg:pb-0">
           <button
             type="button"
             onClick={() => {
