@@ -340,17 +340,14 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
   };
 
   return (
-    <div className="ultima-shell ultima-connection-page">
+    <div className="ultima-shell">
       <div className="ultima-shell-inner lg:max-w-[980px]">
         <section className="flex min-h-0 flex-1 flex-col">
-          <div
-            key={step}
-            className="ultima-connection-head ultima-step-enter pt-2 text-center lg:pt-1"
-          >
-            <h1 className="ultima-connection-title text-[42px] font-semibold leading-[0.96] text-white sm:text-[46px]">
+          <div key={step} className="ultima-step-enter pt-2 text-center lg:pt-1">
+            <h1 className="text-[42px] font-semibold leading-[0.96] text-white sm:text-[46px]">
               {title}
             </h1>
-            <p className="ultima-connection-subtitle mx-auto mt-2 max-w-[360px] text-[17px] leading-[1.2] text-white/70">
+            <p className="mx-auto mt-2 max-w-[360px] text-[17px] leading-[1.2] text-white/70">
               {subtitle}
             </p>
             {step === 3 && (
@@ -390,13 +387,13 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
             </div>
           </div>
 
-          <div className="ultima-connection-center relative mt-7 flex flex-1 items-center justify-center lg:mt-5">
-            <div className="ultima-step-ring ultima-connection-ring-xl border-emerald-200/22 pointer-events-none absolute h-[360px] w-[360px] rounded-full border" />
-            <div className="ultima-step-ring ultima-step-ring-delay-1 ultima-connection-ring-lg pointer-events-none absolute h-[270px] w-[270px] rounded-full border border-emerald-200/20" />
-            <div className="ultima-step-ring ultima-step-ring-delay-2 ultima-connection-ring-md pointer-events-none absolute h-[188px] w-[188px] rounded-full border border-emerald-300/65" />
+          <div className="relative mt-7 flex flex-1 items-center justify-center lg:mt-5">
+            <div className="ultima-step-ring border-emerald-200/22 pointer-events-none absolute h-[360px] w-[360px] rounded-full border" />
+            <div className="ultima-step-ring ultima-step-ring-delay-1 pointer-events-none absolute h-[270px] w-[270px] rounded-full border border-emerald-200/20" />
+            <div className="ultima-step-ring ultima-step-ring-delay-2 pointer-events-none absolute h-[188px] w-[188px] rounded-full border border-emerald-300/65" />
             <svg
               viewBox="0 0 240 240"
-              className="ultima-connection-progress pointer-events-none absolute h-[220px] w-[220px] -rotate-90"
+              className="pointer-events-none absolute h-[220px] w-[220px] -rotate-90"
               aria-hidden
             >
               <circle
@@ -423,7 +420,7 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
                 }}
               />
             </svg>
-            <div className="ultima-connection-core bg-black/8 relative flex h-[124px] w-[124px] items-center justify-center rounded-full">
+            <div className="bg-black/8 relative flex h-[124px] w-[124px] items-center justify-center rounded-full">
               {step === 3 ? (
                 <button
                   type="button"
@@ -496,7 +493,7 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
           </div>
         </section>
 
-        <section className="ultima-connection-actions pb-0">
+        <section className="pb-0">
           {step === 1 && (
             <button
               type="button"

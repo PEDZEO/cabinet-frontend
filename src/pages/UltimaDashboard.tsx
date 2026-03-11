@@ -346,7 +346,7 @@ export function UltimaDashboard() {
   }
 
   return (
-    <div className="ultima-shell ultima-dashboard-page">
+    <div className="ultima-shell">
       {isAdmin && (
         <button
           type="button"
@@ -359,12 +359,12 @@ export function UltimaDashboard() {
       )}
 
       <div className="ultima-shell-inner lg:grid lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-6 xl:grid-cols-[minmax(0,1fr)_420px] xl:gap-8">
-        <section className="ultima-dashboard-left flex min-h-0 flex-1 flex-col pb-[clamp(14px,2.8vh,24px)] pt-[clamp(86px,19vh,198px)] lg:pb-6 lg:pr-4 lg:pt-8 xl:pb-8 xl:pt-14">
+        <section className="flex min-h-0 flex-1 flex-col pb-[clamp(14px,2.8vh,24px)] pt-[clamp(86px,19vh,198px)] lg:pb-6 lg:pr-4 lg:pt-8 xl:pb-8 xl:pt-14">
           <button
             type="button"
             aria-label={t('nav.dashboard')}
             onPointerDown={handleShieldTap}
-            className="ultima-dashboard-shield relative mx-auto mb-[clamp(24px,5vh,56px)] flex h-24 w-24 items-center justify-center rounded-full bg-black/15 focus-visible:outline-none lg:mb-5 xl:mb-8"
+            className="relative mx-auto mb-[clamp(24px,5vh,56px)] flex h-24 w-24 items-center justify-center rounded-full bg-black/15 focus-visible:outline-none lg:mb-5 xl:mb-8"
             style={{ WebkitTapHighlightColor: 'transparent' }}
           >
             <span aria-hidden className="pointer-events-none absolute inset-0 overflow-visible">
@@ -404,7 +404,7 @@ export function UltimaDashboard() {
             </div>
           )}
 
-          <div className="ultima-dashboard-expiry mb-3 mt-auto flex items-center justify-between text-white lg:mb-2 lg:mt-0">
+          <div className="mb-3 mt-auto flex items-center justify-between text-white lg:mb-2 lg:mt-0">
             <div>
               <p className="text-[32px] font-semibold leading-none tracking-[-0.02em] sm:text-[36px] lg:text-[34px]">
                 {expiryLabel}
@@ -426,7 +426,7 @@ export function UltimaDashboard() {
           />
         </section>
 
-        <section className="ultima-dashboard-actions mt-auto pb-0 lg:ml-auto lg:mt-0 lg:w-full lg:max-w-[420px] lg:self-end lg:pb-1">
+        <section className="mt-auto pb-0 lg:ml-auto lg:mt-0 lg:w-full lg:max-w-[420px] lg:self-end lg:pb-1">
           <button
             type="button"
             onClick={() => {
