@@ -380,16 +380,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding-top: 18px;
-    padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    padding-top: 22px;
+    padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px));
   }
 
   .ultima-shell-inner {
-    width: min(100%, 430px);
-    max-width: 430px;
-    height: min(860px, calc(100svh - 36px - env(safe-area-inset-bottom, 0px)));
-    min-height: 620px;
-    max-height: calc(100svh - 24px - env(safe-area-inset-bottom, 0px));
+    width: min(100%, 1120px);
+    max-width: 1120px;
+    height: min(900px, calc(100svh - 42px - env(safe-area-inset-bottom, 0px)));
+    min-height: 700px;
+    max-height: calc(100svh - 28px - env(safe-area-inset-bottom, 0px));
   }
 
   .ultima-nav-dock {
