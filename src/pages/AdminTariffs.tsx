@@ -107,6 +107,7 @@ const SaveIcon = () => (
 
 const TRIAL_DURATION_KEY = 'TRIAL_DURATION_DAYS';
 const TRIAL_TRAFFIC_KEY = 'TRIAL_TRAFFIC_LIMIT_GB';
+const TRIAL_DEVICES_KEY = 'TRIAL_DEVICE_LIMIT';
 
 const toIntValue = (value: unknown, fallback: number): number => {
   const parsed =
@@ -272,6 +273,7 @@ export default function AdminTariffs() {
   const [orderChanged, setOrderChanged] = useState(false);
   const [trialDaysInput, setTrialDaysInput] = useState<string>('');
   const [trialTrafficInput, setTrialTrafficInput] = useState<string>('');
+  const [trialDevicesInput, setTrialDevicesInput] = useState<string>('');
 
   // Queries
   const { data: tariffsData, isLoading } = useQuery({
@@ -286,14 +288,16 @@ export default function AdminTariffs() {
   } = useQuery({
     queryKey: ['admin-trial-settings-inline'],
     queryFn: async () => {
-      const [durationSetting, trafficSetting] = await Promise.all([
+      const [durationSetting, trafficSetting, devicesSetting] = await Promise.all([
         adminSettingsApi.getSetting(TRIAL_DURATION_KEY),
         adminSettingsApi.getSetting(TRIAL_TRAFFIC_KEY),
+        adminSettingsApi.getSetting(TRIAL_DEVICES_KEY),
       ]);
 
       return {
         duration: toIntValue(durationSetting.current, 0),
         traffic: toIntValue(trafficSetting.current, 0),
+        devices: toIntValue(devicesSetting.current, 1),
       };
     },
     retry: false,
@@ -310,6 +314,7 @@ export default function AdminTariffs() {
     if (!trialSettings) return;
     setTrialDaysInput(String(trialSettings.duration));
     setTrialTrafficInput(String(trialSettings.traffic));
+    setTrialDevicesInput(String(trialSettings.devices));
   }, [trialSettings]);
 
   // Save order mutation
@@ -370,10 +375,19 @@ export default function AdminTariffs() {
     },
   });
   const saveTrialSettingsMutation = useMutation({
-    mutationFn: async ({ days, traffic }: { days: number; traffic: number }) => {
+    mutationFn: async ({
+      days,
+      traffic,
+      devices,
+    }: {
+      days: number;
+      traffic: number;
+      devices: number;
+    }) => {
       await Promise.all([
         adminSettingsApi.updateSetting(TRIAL_DURATION_KEY, days),
         adminSettingsApi.updateSetting(TRIAL_TRAFFIC_KEY, traffic),
+        adminSettingsApi.updateSetting(TRIAL_DEVICES_KEY, devices),
       ]);
     },
     onSuccess: () => {
@@ -417,14 +431,19 @@ export default function AdminTariffs() {
   const trialTariff = localTariffs.find((tariff) => tariff.is_trial_available) || null;
   const trialDays = Number.parseInt(trialDaysInput, 10);
   const trialTraffic = Number.parseInt(trialTrafficInput, 10);
+  const trialDevices = Number.parseInt(trialDevicesInput, 10);
   const trialFormValid =
     Number.isFinite(trialDays) &&
     Number.isFinite(trialTraffic) &&
+    Number.isFinite(trialDevices) &&
     trialDays >= 0 &&
-    trialTraffic >= 0;
+    trialTraffic >= 0 &&
+    trialDevices >= 1;
   const trialFormDirty =
     trialSettings !== undefined &&
-    (trialSettings.duration !== trialDays || trialSettings.traffic !== trialTraffic);
+    (trialSettings.duration !== trialDays ||
+      trialSettings.traffic !== trialTraffic ||
+      trialSettings.devices !== trialDevices);
   const trialSettingsForbidden =
     trialSettingsError instanceof AxiosError && trialSettingsError.response?.status === 403;
 
@@ -433,6 +452,7 @@ export default function AdminTariffs() {
     saveTrialSettingsMutation.mutate({
       days: trialDays,
       traffic: trialTraffic,
+      devices: trialDevices,
     });
   };
 
@@ -481,7 +501,7 @@ export default function AdminTariffs() {
       </div>
 
       {!trialSettingsForbidden && (
-        <div className="mb-5 rounded-xl border border-dark-700 bg-dark-800/70 p-4">
+        <div className="mb-5 overflow-hidden rounded-xl border border-dark-700 bg-dark-800/70 p-4">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <div>
               <h2 className="text-base font-semibold text-dark-100">
@@ -518,7 +538,7 @@ export default function AdminTariffs() {
             </p>
           ) : (
             <div className="space-y-3">
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-3">
                 <label className="space-y-1.5">
                   <span className="text-xs font-medium uppercase tracking-wide text-dark-300">
                     {t('admin.tariffs.trialQuickDays', { defaultValue: 'Дней триала' })}
@@ -544,6 +564,21 @@ export default function AdminTariffs() {
                     step={1}
                     value={trialTrafficInput}
                     onChange={(event) => setTrialTrafficInput(event.target.value)}
+                    className="w-full rounded-lg border border-dark-600 bg-dark-900 px-3 py-2 text-sm text-dark-100 outline-none transition focus:border-accent-500"
+                  />
+                </label>
+                <label className="space-y-1.5">
+                  <span className="text-xs font-medium uppercase tracking-wide text-dark-300">
+                    {t('admin.tariffs.trialQuickDevices', {
+                      defaultValue: 'Устройств триала',
+                    })}
+                  </span>
+                  <input
+                    type="number"
+                    min={1}
+                    step={1}
+                    value={trialDevicesInput}
+                    onChange={(event) => setTrialDevicesInput(event.target.value)}
                     className="w-full rounded-lg border border-dark-600 bg-dark-900 px-3 py-2 text-sm text-dark-100 outline-none transition focus:border-accent-500"
                   />
                 </label>
@@ -575,7 +610,7 @@ export default function AdminTariffs() {
                 {!trialFormValid && (
                   <span className="text-xs text-error-400">
                     {t('admin.tariffs.trialQuickValidation', {
-                      defaultValue: 'Введите корректные значения (0 и выше)',
+                      defaultValue: 'Введите корректные значения: дни/трафик от 0, устройства от 1',
                     })}
                   </span>
                 )}
