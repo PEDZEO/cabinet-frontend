@@ -398,6 +398,106 @@
   }
 }
 
+@media (min-width: 1024px) and (max-height: 960px) {
+  .ultima-shell {
+    padding-top: 12px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .ultima-shell-inner {
+    height: calc(100svh - 18px - env(safe-area-inset-bottom, 0px));
+    max-height: calc(100svh - 12px - env(safe-area-inset-bottom, 0px));
+  }
+
+  .ultima-nav-dock {
+    padding-top: 8px;
+    padding-bottom: 1px;
+  }
+
+  .ultima-bottom-nav {
+    border-radius: 19px;
+    padding: 4px;
+    gap: 4px;
+  }
+
+  .ultima-bottom-nav [data-ultima-nav-btn='1'] {
+    height: 40px;
+    border-radius: 13px;
+  }
+
+  .ultima-dashboard-page .ultima-dashboard-left {
+    padding-top: 30px;
+    padding-bottom: 10px;
+  }
+
+  .ultima-dashboard-page .ultima-dashboard-shield {
+    height: 86px;
+    width: 86px;
+    margin-bottom: 12px;
+  }
+
+  .ultima-dashboard-page .ultima-dashboard-expiry p:first-child {
+    font-size: 34px;
+  }
+
+  .ultima-dashboard-page .ultima-dashboard-actions > button {
+    margin-bottom: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .ultima-connection-page .ultima-connection-title {
+    font-size: 44px;
+    line-height: 0.98;
+  }
+
+  .ultima-connection-page .ultima-connection-subtitle {
+    margin-top: 8px;
+    font-size: 16px;
+  }
+
+  .ultima-connection-page .ultima-connection-center {
+    margin-top: 12px;
+  }
+
+  .ultima-connection-page .ultima-connection-ring-xl {
+    height: 320px;
+    width: 320px;
+  }
+
+  .ultima-connection-page .ultima-connection-ring-lg {
+    height: 238px;
+    width: 238px;
+  }
+
+  .ultima-connection-page .ultima-connection-ring-md {
+    height: 166px;
+    width: 166px;
+  }
+
+  .ultima-connection-page .ultima-connection-progress {
+    height: 198px;
+    width: 198px;
+  }
+
+  .ultima-connection-page .ultima-connection-core {
+    height: 110px;
+    width: 110px;
+  }
+
+  .ultima-connection-page .ultima-connection-core > button {
+    height: 100px;
+    width: 100px;
+  }
+
+  .ultima-connection-page .ultima-connection-actions > button {
+    margin-bottom: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-size: 15px;
+  }
+}
+
 @media (min-width: 1024px) and (max-height: 820px) {
   .ultima-shell {
     padding-top: 10px;
