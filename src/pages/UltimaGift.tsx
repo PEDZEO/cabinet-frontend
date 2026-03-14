@@ -292,8 +292,6 @@ export function UltimaGift() {
   };
 
   const onRenewFromHistory = (gift: SentGift) => {
-    if (createGiftMutation.isPending) return;
-
     const resolved = resolveGiftTariffAndPeriod(gift);
     if (!resolved) {
       setError('Для этого подарка продление недоступно: тариф или период не найдены.');
@@ -303,46 +301,11 @@ export function UltimaGift() {
 
     setGiftTariffId(resolved.tariffId);
     setGiftPeriodDays(resolved.periodDays);
-
-    const targetTariff = giftTariffOptions.find((item) => item.id === resolved.tariffId);
-    const targetPeriod = targetTariff?.periods.find(
-      (period) => period.days === resolved.periodDays,
-    );
-    if (!targetPeriod) {
-      setError('Не удалось определить цену для продления подарка.');
-      setSuccess(null);
-      return;
-    }
-
-    const targetMissingKopeks = Math.max(0, targetPeriod.price_kopeks - currentBalanceKopeks);
-    const selectedMethodMinKopeks = selectedGatewayMethod?.min_amount_kopeks ?? 0;
-    const targetTopupKopeks =
-      targetMissingKopeks > 0 ? Math.max(targetMissingKopeks, selectedMethodMinKopeks) : 0;
-    const targetRequiresGatewayPayment = targetMissingKopeks > 0;
-    if (targetRequiresGatewayPayment && !giftPaymentMethod) {
-      setError('Для продления выберите платежный метод.');
-      setSuccess(null);
-      return;
-    }
-
     setError(null);
-    setSuccess('Создаем продление подарка...');
-
-    createGiftMutation.mutate(
-      {
-        tariff_id: resolved.tariffId,
-        period_days: resolved.periodDays,
-        payment_mode: targetRequiresGatewayPayment ? 'gateway' : 'balance',
-        payment_method: targetRequiresGatewayPayment ? (giftPaymentMethod ?? undefined) : undefined,
-        payment_option: targetRequiresGatewayPayment ? (giftPaymentOption ?? undefined) : undefined,
-        topup_amount_kopeks: targetRequiresGatewayPayment ? targetTopupKopeks : undefined,
-      },
-      {
-        onError: () => {
-          formAnchorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        },
-      },
+    setSuccess(
+      'Параметры подарка подставлены. Нажмите «Сгенерировать подарочный код» или «Оплатить и создать код».',
     );
+    formAnchorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   return (
@@ -576,7 +539,7 @@ export function UltimaGift() {
                                 onClick={() => onRenewFromHistory(gift)}
                                 className="rounded-lg border border-emerald-200/25 bg-emerald-400/85 px-2 py-1 text-[11px] font-medium text-slate-950"
                               >
-                                Продлить подарок
+                                Повторить подарок
                               </button>
                             </div>
                           </div>
