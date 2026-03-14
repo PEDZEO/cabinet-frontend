@@ -102,6 +102,22 @@ export default function AdminUltimaSettings() {
     () => (allSettings ?? []).filter((setting) => isUltimaSetting(setting)),
     [allSettings],
   );
+  const groupedUltimaSettings = useMemo(() => {
+    const groups = new Map<string, { label: string; items: SettingDefinition[] }>();
+    for (const setting of ultimaSettings) {
+      const key = setting.category.key || 'OTHER';
+      const label = setting.category.label || key;
+      const group = groups.get(key);
+      if (group) {
+        group.items.push(setting);
+        continue;
+      }
+      groups.set(key, { label, items: [setting] });
+    }
+    return Array.from(groups.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, value]) => ({ key, ...value }));
+  }, [ultimaSettings]);
 
   return (
     <div className="animate-fade-in space-y-6">
@@ -123,46 +139,54 @@ export default function AdminUltimaSettings() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <Link
-          to="/admin/ultima-settings/start-message"
-          className="group rounded-2xl border border-dark-700/50 bg-dark-800/40 p-4 transition-colors hover:border-violet-400/40 hover:bg-dark-800/70"
-        >
-          <div className="mb-2 flex items-center gap-2 text-violet-300">
-            <StartMessageIcon />
-            <span className="text-sm font-medium">
-              {t('admin.ultimaSettings.startMessageTitle', {
-                defaultValue: 'Сообщение после /start',
-              })}
+      <div className="rounded-2xl border border-dark-700/50 bg-dark-800/30 p-4">
+        <h2 className="mb-3 text-base font-semibold text-dark-100">
+          {t('admin.ultimaSettings.pages', { defaultValue: 'Страницы Ultima' })}
+        </h2>
+        <div className="space-y-2">
+          <Link
+            to="/admin/ultima-settings/start-message"
+            className="group flex items-start gap-3 rounded-xl border border-dark-700/50 bg-dark-800/40 px-4 py-3 transition-colors hover:border-violet-400/40 hover:bg-dark-800/70"
+          >
+            <span className="mt-0.5 text-violet-300">
+              <StartMessageIcon />
             </span>
-          </div>
-          <p className="text-sm text-dark-400">
-            {t('admin.ultimaSettings.startMessageDesc', {
-              defaultValue:
-                'Отдельная настройка текста и кнопки стартового сообщения Ultima в боте.',
-            })}
-          </p>
-        </Link>
-
-        <Link
-          to="/admin/ultima-settings/agreement"
-          className="group rounded-2xl border border-dark-700/50 bg-dark-800/40 p-4 transition-colors hover:border-violet-400/40 hover:bg-dark-800/70"
-        >
-          <div className="mb-2 flex items-center gap-2 text-violet-300">
-            <DocIcon />
-            <span className="text-sm font-medium">
-              {t('admin.ultimaSettings.agreementTitle', {
-                defaultValue: 'Пользовательское соглашение',
-              })}
+            <span className="min-w-0">
+              <span className="block text-sm font-medium text-dark-100">
+                {t('admin.ultimaSettings.startMessageTitle', {
+                  defaultValue: 'Сообщение после /start',
+                })}
+              </span>
+              <span className="block text-xs text-dark-400">
+                {t('admin.ultimaSettings.startMessageDesc', {
+                  defaultValue:
+                    'Отдельная настройка текста и кнопки стартового сообщения Ultima в боте.',
+                })}
+              </span>
             </span>
-          </div>
-          <p className="text-sm text-dark-400">
-            {t('admin.ultimaSettings.agreementDesc', {
-              defaultValue:
-                'Отдельная страница редактирования текста соглашения для режима Ultima.',
-            })}
-          </p>
-        </Link>
+          </Link>
+          <Link
+            to="/admin/ultima-settings/agreement"
+            className="group flex items-start gap-3 rounded-xl border border-dark-700/50 bg-dark-800/40 px-4 py-3 transition-colors hover:border-violet-400/40 hover:bg-dark-800/70"
+          >
+            <span className="mt-0.5 text-violet-300">
+              <DocIcon />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-medium text-dark-100">
+                {t('admin.ultimaSettings.agreementTitle', {
+                  defaultValue: 'Пользовательское соглашение',
+                })}
+              </span>
+              <span className="block text-xs text-dark-400">
+                {t('admin.ultimaSettings.agreementDesc', {
+                  defaultValue:
+                    'Отдельная страница редактирования текста соглашения для режима Ultima.',
+                })}
+              </span>
+            </span>
+          </Link>
+        </div>
       </div>
 
       <div className="rounded-2xl border border-dark-700/50 bg-dark-800/30 p-4">
@@ -179,18 +203,32 @@ export default function AdminUltimaSettings() {
             })}
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            {ultimaSettings.map((setting) => (
-              <SettingRow
-                key={setting.key}
-                setting={setting}
-                isFavorite={false}
-                onToggleFavorite={() => {}}
-                onUpdate={(value) => updateSettingMutation.mutate({ key: setting.key, value })}
-                onReset={() => resetSettingMutation.mutate(setting.key)}
-                isUpdating={updateSettingMutation.isPending}
-                isResetting={resetSettingMutation.isPending}
-              />
+          <div className="space-y-4">
+            {groupedUltimaSettings.map((group) => (
+              <section
+                key={group.key}
+                className="rounded-xl border border-dark-700/40 bg-dark-800/25 p-3"
+              >
+                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-dark-300">
+                  {group.label}
+                </h3>
+                <div className="space-y-3">
+                  {group.items.map((setting) => (
+                    <SettingRow
+                      key={setting.key}
+                      setting={setting}
+                      isFavorite={false}
+                      onToggleFavorite={() => {}}
+                      onUpdate={(value) =>
+                        updateSettingMutation.mutate({ key: setting.key, value })
+                      }
+                      onReset={() => resetSettingMutation.mutate(setting.key)}
+                      isUpdating={updateSettingMutation.isPending}
+                      isResetting={resetSettingMutation.isPending}
+                    />
+                  ))}
+                </div>
+              </section>
             ))}
           </div>
         )}
