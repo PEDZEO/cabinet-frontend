@@ -79,11 +79,6 @@ export default function AdminMainMenuButtons() {
   const [optimisticActivatedIds, setOptimisticActivatedIds] = useState<string[]>([]);
   const [rowCapacities, setRowCapacities] = useState<number[]>([]);
   const [rowDefs, setRowDefs] = useState<Array<Pick<MenuRowConfig, 'id' | 'conditions'>>>([]);
-  const [ultimaMessageText, setUltimaMessageText] = useState('');
-  const [ultimaButtonText, setUltimaButtonText] = useState('');
-  const [ultimaButtonUrl, setUltimaButtonUrl] = useState('');
-  const [ultimaError, setUltimaError] = useState<string | null>(null);
-  const [ultimaSuccess, setUltimaSuccess] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
@@ -95,11 +90,6 @@ export default function AdminMainMenuButtons() {
     queryKey: ['admin', 'menu-layout'],
     queryFn: adminMenuLayoutApi.get,
   });
-  const { data: ultimaStartConfig, isLoading: ultimaStartLoading } = useQuery({
-    queryKey: ['admin', 'menu-layout', 'ultima-start'],
-    queryFn: adminMenuLayoutApi.getUltimaStartConfig,
-  });
-
   const initialOrder = useMemo(() => (data ? buildInitialOrder(data) : []), [data]);
 
   useEffect(() => {
@@ -114,15 +104,6 @@ export default function AdminMainMenuButtons() {
     setSelectedRowIndex(0);
     setAddMenuRowIndex(null);
   }, [data]);
-
-  useEffect(() => {
-    if (!ultimaStartConfig) {
-      return;
-    }
-    setUltimaMessageText(ultimaStartConfig.message_text || '');
-    setUltimaButtonText(ultimaStartConfig.button_text || '');
-    setUltimaButtonUrl(ultimaStartConfig.button_url || '');
-  }, [ultimaStartConfig]);
 
   useEffect(() => {
     if (optimisticActivatedIds.length === 0) {
@@ -262,37 +243,6 @@ export default function AdminMainMenuButtons() {
       setError(t('admin.mainMenuButtons.saveError'));
     },
   });
-  const updateUltimaStartMutation = useMutation({
-    mutationFn: adminMenuLayoutApi.updateUltimaStartConfig,
-    onSuccess: () => {
-      setUltimaError(null);
-      setUltimaSuccess(t('admin.mainMenuButtons.ultimaStartSaved'));
-      queryClient.invalidateQueries({ queryKey: ['admin', 'menu-layout', 'ultima-start'] });
-    },
-    onError: () => {
-      setUltimaSuccess(null);
-      setUltimaError(t('admin.mainMenuButtons.ultimaStartSaveError'));
-    },
-  });
-
-  const handleSaveUltimaStart = () => {
-    const nextMessageText = ultimaMessageText.trim();
-    const nextButtonText = ultimaButtonText.trim();
-    const nextButtonUrl = ultimaButtonUrl.trim();
-
-    if (!nextMessageText || !nextButtonText) {
-      setUltimaSuccess(null);
-      setUltimaError(t('admin.mainMenuButtons.ultimaStartValidationError'));
-      return;
-    }
-
-    setUltimaError(null);
-    updateUltimaStartMutation.mutate({
-      message_text: nextMessageText,
-      button_text: nextButtonText,
-      button_url: nextButtonUrl,
-    });
-  };
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) {
@@ -622,95 +572,6 @@ export default function AdminMainMenuButtons() {
           {success}
         </div>
       )}
-      {activeTab === 'layout' && (
-        <div className="card space-y-3 p-4">
-          <h2 className="text-sm font-semibold text-dark-200">
-            {t('admin.mainMenuButtons.ultimaStartTitle')}
-          </h2>
-          <p className="text-xs text-dark-400">{t('admin.mainMenuButtons.ultimaStartSubtitle')}</p>
-
-          {ultimaError && (
-            <div className="rounded-lg border border-error-500/30 bg-error-500/10 px-3 py-2 text-sm text-error-300">
-              {ultimaError}
-            </div>
-          )}
-          {ultimaSuccess && (
-            <div className="rounded-lg border border-success-500/30 bg-success-500/10 px-3 py-2 text-sm text-success-300">
-              {ultimaSuccess}
-            </div>
-          )}
-
-          <label className="space-y-1">
-            <span className="text-xs text-dark-400">
-              {t('admin.mainMenuButtons.ultimaStartMessageLabel')}
-            </span>
-            <textarea
-              value={ultimaMessageText}
-              onChange={(event) => setUltimaMessageText(event.target.value)}
-              className="input min-h-[180px] resize-y"
-              maxLength={4096}
-              disabled={ultimaStartLoading || updateUltimaStartMutation.isPending}
-            />
-          </label>
-
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <label className="space-y-1">
-              <span className="text-xs text-dark-400">
-                {t('admin.mainMenuButtons.ultimaStartButtonTextLabel')}
-              </span>
-              <input
-                value={ultimaButtonText}
-                onChange={(event) => setUltimaButtonText(event.target.value)}
-                className="input"
-                maxLength={64}
-                disabled={ultimaStartLoading || updateUltimaStartMutation.isPending}
-              />
-            </label>
-            <label className="space-y-1">
-              <span className="text-xs text-dark-400">
-                {t('admin.mainMenuButtons.ultimaStartButtonUrlLabel')}
-              </span>
-              <input
-                value={ultimaButtonUrl}
-                onChange={(event) => setUltimaButtonUrl(event.target.value)}
-                className="input"
-                maxLength={1024}
-                placeholder="https://..."
-                disabled={ultimaStartLoading || updateUltimaStartMutation.isPending}
-              />
-            </label>
-          </div>
-
-          <div className="flex gap-2">
-            <button
-              type="button"
-              className="btn-secondary"
-              onClick={() => {
-                if (!ultimaStartConfig) {
-                  return;
-                }
-                setUltimaMessageText(ultimaStartConfig.message_text || '');
-                setUltimaButtonText(ultimaStartConfig.button_text || '');
-                setUltimaButtonUrl(ultimaStartConfig.button_url || '');
-                setUltimaError(null);
-                setUltimaSuccess(null);
-              }}
-              disabled={ultimaStartLoading || updateUltimaStartMutation.isPending}
-            >
-              {t('common.reset', { defaultValue: 'Сбросить' })}
-            </button>
-            <button
-              type="button"
-              className="btn-primary"
-              onClick={handleSaveUltimaStart}
-              disabled={ultimaStartLoading || updateUltimaStartMutation.isPending}
-            >
-              {t('common.save')}
-            </button>
-          </div>
-        </div>
-      )}
-
       {activeTab === 'sections' ? (
         <ButtonsTab />
       ) : activeTab === 'stats' ? (

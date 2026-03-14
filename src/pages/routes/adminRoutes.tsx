@@ -66,6 +66,7 @@ const AdminPolicyEdit = lazy(() => import('../AdminPolicyEdit'));
 const AdminAuditLog = lazy(() => import('../AdminAuditLog'));
 const AdminUltimaSettings = lazy(() => import('../AdminUltimaSettings'));
 const AdminUltimaAgreement = lazy(() => import('../AdminUltimaAgreement'));
+const AdminUltimaStartMessage = lazy(() => import('../AdminUltimaStartMessage'));
 
 const withAdminLayout = (element: React.ReactNode) => (
   <AdminRoute>
@@ -83,6 +84,10 @@ export const adminRoutes: RouteConfig[] = [
   {
     path: '/admin/ultima-settings/agreement',
     element: withAdminLayout(<AdminUltimaAgreement />),
+  },
+  {
+    path: '/admin/ultima-settings/start-message',
+    element: withAdminLayout(<AdminUltimaStartMessage />),
   },
   { path: '/admin/apps', element: withAdminLayout(<AdminApps />) },
   { path: '/admin/wheel', element: withAdminLayout(<AdminWheel />) },

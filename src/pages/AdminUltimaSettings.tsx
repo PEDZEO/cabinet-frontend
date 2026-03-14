@@ -17,7 +17,7 @@ const UltimaIcon = () => (
   </svg>
 );
 
-const ButtonsIcon = () => (
+const StartMessageIcon = () => (
   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
     <rect x="4" y="4" width="16" height="5" rx="1.5" />
     <rect x="4" y="15" width="10" height="5" rx="1.5" />
@@ -37,16 +37,41 @@ const DocIcon = () => (
   </svg>
 );
 
+const ULTIMA_EXCLUDED_KEYS = new Set([
+  'ULTIMA_START_BOT_CONFIG',
+  'CABINET_ULTIMA_AGREEMENT_CONTENT',
+  'CABINET_ULTIMA_MODE_ENABLED',
+]);
+
+const ULTIMA_INLINE_MINIAPP_KEYS = new Set([
+  'MINIAPP_TICKETS_ENABLED',
+  'MINIAPP_SUPPORT_TYPE',
+  'MINIAPP_SUPPORT_URL',
+  'MINIAPP_PURCHASE_URL',
+]);
+
 function isUltimaSetting(setting: SettingDefinition): boolean {
+  const key = setting.key.toUpperCase();
+  const category = setting.category.key.toUpperCase();
   const text = `${setting.key} ${setting.name ?? ''}`.toLowerCase();
-  const category = setting.category.key.toLowerCase();
-  return (
-    /ultima|happ|miniapp/.test(text) ||
-    category === 'miniapp' ||
-    category === 'happ' ||
-    category.includes('miniapp') ||
-    category.includes('happ')
-  );
+
+  if (ULTIMA_EXCLUDED_KEYS.has(key)) {
+    return false;
+  }
+
+  if (key.startsWith('ULTIMA_') || key.startsWith('CABINET_ULTIMA_')) {
+    return true;
+  }
+
+  if (key.startsWith('HAPP_') || key === 'CONNECT_BUTTON_HAPP_DOWNLOAD_ENABLED') {
+    return true;
+  }
+
+  if (ULTIMA_INLINE_MINIAPP_KEYS.has(key)) {
+    return true;
+  }
+
+  return /ultima|happ/.test(text) || category === 'HAPP';
 }
 
 export default function AdminUltimaSettings() {
@@ -92,7 +117,7 @@ export default function AdminUltimaSettings() {
           <p className="text-sm text-dark-400">
             {t('admin.ultimaSettings.subtitle', {
               defaultValue:
-                'Отдельный раздел для режима Ultima: кнопки, соглашение и профильные параметры.',
+                'Отдельный раздел для режима Ultima: стартовое сообщение, соглашение и профильные параметры.',
             })}
           </p>
         </div>
@@ -100,19 +125,21 @@ export default function AdminUltimaSettings() {
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <Link
-          to="/admin/main-menu-buttons"
+          to="/admin/ultima-settings/start-message"
           className="group rounded-2xl border border-dark-700/50 bg-dark-800/40 p-4 transition-colors hover:border-violet-400/40 hover:bg-dark-800/70"
         >
           <div className="mb-2 flex items-center gap-2 text-violet-300">
-            <ButtonsIcon />
+            <StartMessageIcon />
             <span className="text-sm font-medium">
-              {t('admin.nav.mainMenuButtons', { defaultValue: 'Кнопки меню' })}
+              {t('admin.ultimaSettings.startMessageTitle', {
+                defaultValue: 'Сообщение после /start',
+              })}
             </span>
           </div>
           <p className="text-sm text-dark-400">
-            {t('admin.ultimaSettings.buttonsDesc', {
+            {t('admin.ultimaSettings.startMessageDesc', {
               defaultValue:
-                'Редактор кнопок и порядка главного меню для режима Ultima и старта бота.',
+                'Отдельная настройка текста и кнопки стартового сообщения Ultima в боте.',
             })}
           </p>
         </Link>
