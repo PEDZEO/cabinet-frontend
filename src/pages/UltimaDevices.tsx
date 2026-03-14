@@ -104,6 +104,19 @@ export function UltimaDevices() {
     return t('common.error', { defaultValue: 'Ошибка' });
   };
 
+  const getReductionReasonText = (reason?: string) => {
+    const normalized = reason?.toLowerCase() ?? '';
+    if (!normalized) return 'Сейчас уменьшить количество устройств нельзя.';
+    if (normalized.includes('trial')) return 'Для пробного периода уменьшение недоступно.';
+    if (normalized.includes('minimum device limit')) {
+      return 'Нельзя уменьшить ниже минимального лимита вашего тарифа.';
+    }
+    if (normalized.includes('must be less than current')) {
+      return 'Новый лимит должен быть меньше текущего.';
+    }
+    return reason ?? 'Сейчас уменьшить количество устройств нельзя.';
+  };
+
   const invalidateDevicesData = async () => {
     await Promise.allSettled([
       queryClient.invalidateQueries({ queryKey: ['subscription'] }),
@@ -196,7 +209,7 @@ export function UltimaDevices() {
       <div className="ultima-shell-inner">
         <header className="mb-3">
           <h1 className="text-[clamp(34px,9.5vw,44px)] font-semibold leading-[0.9] tracking-[-0.01em] text-white">
-            {t('lite.devices', { defaultValue: 'Устройства' })}
+            Устройства
           </h1>
           <p className="text-white/62 mt-1.5 text-[14px] leading-tight">
             {t('lite.devicesDescription', {
@@ -354,9 +367,7 @@ export function UltimaDevices() {
               </section>
 
               <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
-                <p className="mb-2 text-[14px] text-white/90">
-                  {t('lite.reduceDevices', { defaultValue: 'Уменьшить лимит устройств' })}
-                </p>
+                <p className="mb-2 text-[14px] text-white/90">Уменьшить количество устройств</p>
                 {canReduce ? (
                   <>
                     <div className="mb-2 flex items-center gap-2">
@@ -391,15 +402,12 @@ export function UltimaDevices() {
                         isBusy || reduceLimit >= currentLimit || reduceLimit < minReduceLimit
                       }
                     >
-                      {t('lite.reduceDevicesButton', { defaultValue: 'Применить лимит' })}
+                      Применить
                     </button>
                   </>
                 ) : (
                   <p className="text-[12px] text-white/55">
-                    {reductionInfo?.reason ||
-                      t('lite.reduceDevicesUnavailable', {
-                        defaultValue: 'Сейчас уменьшить лимит устройств нельзя.',
-                      })}
+                    {getReductionReasonText(reductionInfo?.reason)}
                   </p>
                 )}
               </section>

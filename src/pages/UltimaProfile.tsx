@@ -189,7 +189,7 @@ export function UltimaProfile() {
     },
     {
       key: 'devices',
-      title: t('lite.devices', { defaultValue: 'Устройства' }),
+      title: 'Устройства',
       subtitle: t('profile.devicesDescription', {
         defaultValue: 'Удаление устройств и изменение лимита',
       }),
