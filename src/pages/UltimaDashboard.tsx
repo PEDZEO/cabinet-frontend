@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 import { balanceApi } from '@/api/balance';
-import { brandingApi } from '@/api/branding';
+import { brandingApi, getCachedUltimaThemeConfig } from '@/api/branding';
 import { infoApi } from '@/api/info';
 import { promoApi } from '@/api/promo';
 import { subscriptionApi } from '@/api/subscription';
@@ -84,6 +84,8 @@ type ShieldRipple = {
   size: number;
 };
 
+const loadedHomeLogoUrls = new Set<string>();
+
 export function UltimaDashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -132,9 +134,13 @@ export function UltimaDashboard() {
   const { data: ultimaThemeConfig } = useQuery({
     queryKey: ['ultima-theme-config'],
     queryFn: brandingApi.getUltimaThemeConfig,
+    initialData: getCachedUltimaThemeConfig() ?? undefined,
     staleTime: 60000,
     placeholderData: (previousData) => previousData,
   });
+  const [isHomeLogoReady, setIsHomeLogoReady] = useState<boolean>(() =>
+    Boolean(logoUrl && loadedHomeLogoUrls.has(logoUrl)),
+  );
 
   const subscription = subscriptionResponse?.subscription ?? null;
   const hasAnySubscription = subscriptionResponse?.has_subscription === true;
@@ -408,6 +414,14 @@ export function UltimaDashboard() {
     ultimaThemeConfig?.homeUseBrandLogo && hasCustomLogo && logoUrl,
   );
 
+  useEffect(() => {
+    if (!logoUrl) {
+      setIsHomeLogoReady(false);
+      return;
+    }
+    setIsHomeLogoReady(loadedHomeLogoUrls.has(logoUrl));
+  }, [logoUrl]);
+
   if (!isI18nReady || !isSubscriptionReady || shouldHoldForAutoTrial) {
     return (
       <div className="ultima-shell pb-[calc(20px+env(safe-area-inset-bottom,0px))] pt-2">
@@ -477,10 +491,22 @@ export function UltimaDashboard() {
                 <img
                   src={logoUrl ?? undefined}
                   alt="project-logo"
-                  className="h-full w-full rounded-full object-contain"
-                  loading="lazy"
-                  decoding="async"
+                  className={`h-full w-full rounded-full object-contain transition-opacity duration-150 ${isHomeLogoReady ? 'opacity-100' : 'opacity-0'}`}
+                  loading="eager"
+                  decoding="sync"
+                  onLoad={() => {
+                    if (!logoUrl) {
+                      return;
+                    }
+                    loadedHomeLogoUrls.add(logoUrl);
+                    setIsHomeLogoReady(true);
+                  }}
                 />
+                {!isHomeLogoReady && (
+                  <span className="absolute inset-0 grid place-items-center">
+                    <ShieldIcon />
+                  </span>
+                )}
               </span>
             ) : (
               <ShieldIcon />
