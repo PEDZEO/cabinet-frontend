@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { giftApi } from '@/api/gift';
+import { subscriptionApi } from '@/api/subscription';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { usePlatform } from '@/platform/hooks/usePlatform';
 
@@ -24,12 +25,31 @@ export function UltimaGift() {
   const [generatedGiftCode, setGeneratedGiftCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [historyExpanded, setHistoryExpanded] = useState(true);
+  const formAnchorRef = useRef<HTMLDivElement | null>(null);
 
   const { data: giftConfig } = useQuery({
     queryKey: ['gift-config'],
     queryFn: giftApi.getConfig,
     staleTime: 0,
     refetchOnMount: 'always',
+  });
+  const { data: sentGifts = [] } = useQuery({
+    queryKey: ['gift-sent'],
+    queryFn: giftApi.getSentGifts,
+    staleTime: 15000,
+    enabled: !!giftConfig?.is_enabled,
+  });
+  const { data: receivedGifts = [] } = useQuery({
+    queryKey: ['gift-received'],
+    queryFn: giftApi.getReceivedGifts,
+    staleTime: 15000,
+    enabled: !!giftConfig?.is_enabled,
+  });
+  const { data: subscriptionResponse } = useQuery({
+    queryKey: ['subscription'],
+    queryFn: subscriptionApi.getSubscription,
+    staleTime: 15000,
   });
 
   const giftTariffOptions = useMemo(() => giftConfig?.tariffs ?? [], [giftConfig?.tariffs]);
@@ -155,6 +175,9 @@ export function UltimaGift() {
       void Promise.all([
         queryClient.invalidateQueries({ queryKey: ['balance'] }),
         queryClient.invalidateQueries({ queryKey: ['transactions'] }),
+        queryClient.invalidateQueries({ queryKey: ['gift-sent'] }),
+        queryClient.invalidateQueries({ queryKey: ['gift-received'] }),
+        queryClient.invalidateQueries({ queryKey: ['subscription'] }),
       ]);
       return;
     }
@@ -212,6 +235,7 @@ export function UltimaGift() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['balance'] }),
         queryClient.invalidateQueries({ queryKey: ['transactions'] }),
+        queryClient.invalidateQueries({ queryKey: ['gift-sent'] }),
       ]);
     },
     onError: (rawError: unknown) => {
@@ -233,6 +257,48 @@ export function UltimaGift() {
     createGiftMutation.mutate();
   };
 
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'delivered':
+        return { text: 'Активирован', cls: 'bg-emerald-500/20 text-emerald-200' };
+      case 'pending_activation':
+      case 'paid':
+        return { text: 'Ожидает активации', cls: 'bg-sky-500/20 text-sky-100' };
+      case 'pending':
+        return { text: 'Ожидает оплаты', cls: 'bg-amber-500/20 text-amber-200' };
+      case 'failed':
+      case 'expired':
+        return { text: 'Неактивен', cls: 'bg-rose-500/20 text-rose-200' };
+      default:
+        return { text: status, cls: 'bg-white/10 text-white/70' };
+    }
+  };
+
+  const onRenewFromHistory = (tariffName: string | null, periodDays: number) => {
+    if (!tariffName) {
+      setError('Не удалось определить тариф для продления');
+      return;
+    }
+
+    const tariff = giftTariffOptions.find((item) => item.name === tariffName);
+    if (!tariff) {
+      setError('Тариф из истории недоступен для подарка');
+      return;
+    }
+
+    const hasPeriod = tariff.periods.some((period) => period.days === periodDays);
+    if (!hasPeriod) {
+      setError('Период из истории недоступен для этого тарифа');
+      return;
+    }
+
+    setGiftTariffId(tariff.id);
+    setGiftPeriodDays(periodDays);
+    setError(null);
+    setSuccess(`Подготовлено продление: ${tariff.name} • ${periodDays} дн.`);
+    formAnchorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   return (
     <div className="ultima-shell ultima-flat-frames">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(95%_70%_at_50%_45%,rgba(33,208,154,0.14),rgba(7,20,46,0.02)_62%,rgba(7,20,46,0)_100%)]" />
@@ -250,6 +316,7 @@ export function UltimaGift() {
         </header>
 
         <section className="border-emerald-200/12 min-h-0 flex-1 overflow-y-auto rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
+          <div ref={formAnchorRef} />
           {!giftConfig?.is_enabled ? (
             <div className="rounded-xl border border-amber-300/20 bg-amber-500/10 px-3 py-2.5">
               <p className="text-[12px] leading-snug text-amber-100">
@@ -409,6 +476,104 @@ export function UltimaGift() {
               ) : null}
             </>
           )}
+
+          {giftConfig?.is_enabled ? (
+            <div className="mt-3 rounded-2xl border border-emerald-200/10 bg-emerald-950/20 p-3">
+              <button
+                type="button"
+                onClick={() => setHistoryExpanded((prev) => !prev)}
+                className="flex w-full items-center justify-between text-left"
+              >
+                <p className="text-[13px] font-medium text-white/90">История подарков</p>
+                <span className="text-[11px] text-white/60">
+                  {historyExpanded ? 'Свернуть' : 'Развернуть'}
+                </span>
+              </button>
+
+              {historyExpanded ? (
+                <div className="mt-2 space-y-2">
+                  <div className="rounded-xl border border-white/10 bg-white/5 px-2.5 py-2">
+                    <p className="text-[11px] text-white/60">
+                      Текущий остаток подписки:{' '}
+                      <span className="text-white/85">
+                        {subscriptionResponse?.subscription?.days_left ?? 0} дн.
+                      </span>
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-[12px] text-white/70">Отправленные</p>
+                    {sentGifts.length === 0 ? (
+                      <p className="text-[11px] text-white/45">Подарков пока нет</p>
+                    ) : (
+                      sentGifts.slice(0, 20).map((gift) => {
+                        const status = getStatusLabel(gift.status);
+                        return (
+                          <div
+                            key={`sent-${gift.token}`}
+                            className="rounded-xl border border-white/10 bg-white/5 px-2.5 py-2"
+                          >
+                            <div className="mb-1 flex items-center justify-between gap-2">
+                              <p className="truncate text-[12px] text-white/90">
+                                {gift.tariff_name ?? 'Тариф'} • {gift.period_days} дн.
+                              </p>
+                              <span className={`rounded px-2 py-0.5 text-[10px] ${status.cls}`}>
+                                {status.text}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-white/55">
+                              Код: GIFT-{gift.token}
+                              {gift.activated_by_username ? ` • ${gift.activated_by_username}` : ''}
+                            </p>
+                            <div className="mt-1 flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  onRenewFromHistory(gift.tariff_name, gift.period_days)
+                                }
+                                className="rounded-lg border border-emerald-200/25 bg-emerald-400/85 px-2 py-1 text-[11px] font-medium text-slate-950"
+                              >
+                                Продлить
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-[12px] text-white/70">Полученные</p>
+                    {receivedGifts.length === 0 ? (
+                      <p className="text-[11px] text-white/45">Полученных подарков нет</p>
+                    ) : (
+                      receivedGifts.slice(0, 20).map((gift) => {
+                        const status = getStatusLabel(gift.status);
+                        return (
+                          <div
+                            key={`recv-${gift.token}`}
+                            className="rounded-xl border border-white/10 bg-white/5 px-2.5 py-2"
+                          >
+                            <div className="mb-1 flex items-center justify-between gap-2">
+                              <p className="truncate text-[12px] text-white/90">
+                                {gift.tariff_name ?? 'Тариф'} • {gift.period_days} дн.
+                              </p>
+                              <span className={`rounded px-2 py-0.5 text-[10px] ${status.cls}`}>
+                                {status.text}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-white/55">
+                              От: {gift.sender_display ?? '—'} • Добавлено: +{gift.period_days} дн.
+                            </p>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
 
           {error ? <p className="mt-2 text-[12px] text-rose-200">{error}</p> : null}
           {success ? <p className="mt-2 text-[12px] text-emerald-200">{success}</p> : null}
