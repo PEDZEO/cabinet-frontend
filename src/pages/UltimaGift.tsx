@@ -7,6 +7,8 @@ import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { usePlatform } from '@/platform/hooks/usePlatform';
 
 const PENDING_GIFT_TOKEN_KEY = 'ultima_pending_gift_token';
+const PENDING_GIFT_TOKEN_TS_KEY = 'ultima_pending_gift_token_ts';
+const PENDING_GIFT_TOKEN_TTL_MS = 15 * 60 * 1000;
 
 export function UltimaGift() {
   const { t } = useTranslation();
@@ -26,7 +28,8 @@ export function UltimaGift() {
   const { data: giftConfig } = useQuery({
     queryKey: ['gift-config'],
     queryFn: giftApi.getConfig,
-    staleTime: 15000,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
   const giftTariffOptions = useMemo(() => giftConfig?.tariffs ?? [], [giftConfig?.tariffs]);
@@ -97,11 +100,22 @@ export function UltimaGift() {
 
   useEffect(() => {
     const tokenFromUrl = searchParams.get('giftToken');
-    const tokenFromStorage = localStorage.getItem(PENDING_GIFT_TOKEN_KEY);
-    const token = tokenFromUrl || tokenFromStorage;
+    const tokenFromStorage = sessionStorage.getItem(PENDING_GIFT_TOKEN_KEY);
+    const tokenTsRaw = sessionStorage.getItem(PENDING_GIFT_TOKEN_TS_KEY);
+    const tokenTs = tokenTsRaw ? Number(tokenTsRaw) : 0;
+    const isStorageTokenFresh =
+      Number.isFinite(tokenTs) && tokenTs > 0 && Date.now() - tokenTs < PENDING_GIFT_TOKEN_TTL_MS;
+    const token = tokenFromUrl || (isStorageTokenFresh ? tokenFromStorage : null);
+
+    if (!tokenFromUrl && tokenFromStorage && !isStorageTokenFresh) {
+      sessionStorage.removeItem(PENDING_GIFT_TOKEN_KEY);
+      sessionStorage.removeItem(PENDING_GIFT_TOKEN_TS_KEY);
+    }
+
     if (!token) return;
     setPendingGiftToken((prev) => prev ?? token);
-    localStorage.setItem(PENDING_GIFT_TOKEN_KEY, token);
+    sessionStorage.setItem(PENDING_GIFT_TOKEN_KEY, token);
+    sessionStorage.setItem(PENDING_GIFT_TOKEN_TS_KEY, String(Date.now()));
   }, [searchParams]);
 
   const giftStatusQuery = useQuery({
@@ -131,7 +145,8 @@ export function UltimaGift() {
       );
       setError(null);
       setPendingGiftToken(null);
-      localStorage.removeItem(PENDING_GIFT_TOKEN_KEY);
+      sessionStorage.removeItem(PENDING_GIFT_TOKEN_KEY);
+      sessionStorage.removeItem(PENDING_GIFT_TOKEN_TS_KEY);
       if (searchParams.get('giftToken')) {
         const next = new URLSearchParams(searchParams);
         next.delete('giftToken');
@@ -141,6 +156,13 @@ export function UltimaGift() {
         queryClient.invalidateQueries({ queryKey: ['balance'] }),
         queryClient.invalidateQueries({ queryKey: ['transactions'] }),
       ]);
+      return;
+    }
+
+    if (statusData.status === 'failed' || statusData.status === 'expired') {
+      setPendingGiftToken(null);
+      sessionStorage.removeItem(PENDING_GIFT_TOKEN_KEY);
+      sessionStorage.removeItem(PENDING_GIFT_TOKEN_TS_KEY);
     }
   }, [giftStatusQuery.data, pendingGiftToken, queryClient, searchParams, setSearchParams, t]);
 
@@ -166,7 +188,8 @@ export function UltimaGift() {
       setError(null);
       if (result.payment_url) {
         setPendingGiftToken(result.purchase_token);
-        localStorage.setItem(PENDING_GIFT_TOKEN_KEY, result.purchase_token);
+        sessionStorage.setItem(PENDING_GIFT_TOKEN_KEY, result.purchase_token);
+        sessionStorage.setItem(PENDING_GIFT_TOKEN_TS_KEY, String(Date.now()));
         setSuccess(
           t('balance.promocode.giftPaymentCreated', {
             defaultValue: 'Ссылка на оплату открыта. После оплаты код появится автоматически.',
