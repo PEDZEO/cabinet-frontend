@@ -487,6 +487,7 @@ export default function UltimaAccountLinking() {
                 <Button
                   onClick={() => createLinkCodeMutation.mutate()}
                   loading={createLinkCodeMutation.isPending}
+                  className="rounded-full border border-emerald-200/25 bg-[rgba(22,207,161,0.92)] px-4 py-2.5 text-[14px] font-medium text-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.32)] transition hover:bg-[rgba(39,220,176,0.96)]"
                 >
                   Сгенерировать код привязки
                 </Button>

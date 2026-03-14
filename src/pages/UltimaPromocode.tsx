@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { balanceApi } from '@/api/balance';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+import { getPromocodeErrorKey } from '@/utils/promocodeErrors';
 
 type GiftActivationNotice = {
   senderDisplay: string | null;
@@ -56,20 +57,7 @@ export function UltimaPromocode() {
       ]);
     },
     onError: (rawError: unknown) => {
-      const axiosError = rawError as { response?: { data?: { detail?: string } } };
-      const detail = (axiosError.response?.data?.detail || 'server_error').toLowerCase();
-      const key = detail.includes('not found')
-        ? 'not_found'
-        : detail.includes('expired')
-          ? 'expired'
-          : detail.includes('fully used')
-            ? 'used'
-            : detail.includes('already used') ||
-                detail.includes('already activated') ||
-                detail.includes('cannot be activated') ||
-                detail.includes('own gift')
-              ? 'already_used_by_user'
-              : 'server_error';
+      const key = getPromocodeErrorKey(rawError);
       setSuccess(null);
       setError(t(`balance.promocode.errors.${key}`));
     },

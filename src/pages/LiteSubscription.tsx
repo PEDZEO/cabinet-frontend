@@ -11,6 +11,7 @@ import { useLocation } from 'react-router';
 import type { Tariff, TrafficPackage } from '@/types';
 import { PullToRefresh } from '@/components/lite/PullToRefresh';
 import { LiteSubscriptionSkeleton } from '@/components/lite/LiteSubscriptionSkeleton';
+import { getPromocodeErrorKey } from '@/utils/promocodeErrors';
 
 // Icons
 const CheckIcon = () => (
@@ -514,8 +515,8 @@ export function LiteSubscription() {
         };
       };
     }) => {
-      const detail = err.response?.data?.detail;
-      setError(typeof detail === 'string' ? detail : t('lite.promoError'));
+      const errorKey = getPromocodeErrorKey(err);
+      setError(t(`balance.promocode.errors.${errorKey}`));
       setSuccess(null);
       haptic.error();
     },

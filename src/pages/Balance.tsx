@@ -15,6 +15,7 @@ import type { PaginatedResponse, Transaction } from '../types';
 import LiteBalance from './LiteBalance';
 import { UltimaBalanceHistory } from './UltimaBalanceHistory';
 import { formatTransactionDescription } from '@/utils/transactionDescription';
+import { getPromocodeErrorKey } from '@/utils/promocodeErrors';
 
 import { Card } from '@/components/data-display/Card';
 import { Button } from '@/components/primitives/Button';
@@ -199,20 +200,7 @@ function FullBalance() {
         queryClient.invalidateQueries({ queryKey: ['purchase-options'] });
       }
     } catch (error: unknown) {
-      const axiosError = error as { response?: { data?: { detail?: string } } };
-      const errorDetail = axiosError.response?.data?.detail || 'server_error';
-      const errorKey = errorDetail.toLowerCase().includes('not found')
-        ? 'not_found'
-        : errorDetail.toLowerCase().includes('expired')
-          ? 'expired'
-          : errorDetail.toLowerCase().includes('fully used')
-            ? 'used'
-            : errorDetail.toLowerCase().includes('already used') ||
-                errorDetail.toLowerCase().includes('already activated') ||
-                errorDetail.toLowerCase().includes('cannot be activated') ||
-                errorDetail.toLowerCase().includes('own gift')
-              ? 'already_used_by_user'
-              : 'server_error';
+      const errorKey = getPromocodeErrorKey(error);
       setPromocodeError(t(`balance.promocode.errors.${errorKey}`));
     } finally {
       setPromocodeLoading(false);

@@ -9,6 +9,7 @@ import { useCurrency } from '../hooks/useCurrency';
 import { API } from '../config/constants';
 import { useToast } from '../components/Toast';
 import type { PaginatedResponse, Transaction } from '../types';
+import { getPromocodeErrorKey } from '../utils/promocodeErrors';
 
 const ArrowRightIcon = () => (
   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -197,20 +198,7 @@ export default function LiteBalance() {
         });
       }
     } catch (error: unknown) {
-      const axiosError = error as { response?: { data?: { detail?: string } } };
-      const errorDetail = axiosError.response?.data?.detail || 'server_error';
-      const errorKey = errorDetail.toLowerCase().includes('not found')
-        ? 'not_found'
-        : errorDetail.toLowerCase().includes('expired')
-          ? 'expired'
-          : errorDetail.toLowerCase().includes('fully used')
-            ? 'used'
-            : errorDetail.toLowerCase().includes('already used') ||
-                errorDetail.toLowerCase().includes('already activated') ||
-                errorDetail.toLowerCase().includes('cannot be activated') ||
-                errorDetail.toLowerCase().includes('own gift')
-              ? 'already_used_by_user'
-              : 'server_error';
+      const errorKey = getPromocodeErrorKey(error);
       setPromocodeError(t(`balance.promocode.errors.${errorKey}`));
     } finally {
       setPromocodeLoading(false);
