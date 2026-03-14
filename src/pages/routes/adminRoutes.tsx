@@ -67,6 +67,7 @@ const AdminAuditLog = lazy(() => import('../AdminAuditLog'));
 const AdminUltimaSettings = lazy(() => import('../AdminUltimaSettings'));
 const AdminUltimaAgreement = lazy(() => import('../AdminUltimaAgreement'));
 const AdminUltimaStartMessage = lazy(() => import('../AdminUltimaStartMessage'));
+const AdminUltimaCategorySettings = lazy(() => import('../AdminUltimaCategorySettings'));
 
 const withAdminLayout = (element: React.ReactNode) => (
   <AdminRoute>
@@ -88,6 +89,10 @@ export const adminRoutes: RouteConfig[] = [
   {
     path: '/admin/ultima-settings/start-message',
     element: withAdminLayout(<AdminUltimaStartMessage />),
+  },
+  {
+    path: '/admin/ultima-settings/params/:categoryKey',
+    element: withAdminLayout(<AdminUltimaCategorySettings />),
   },
   { path: '/admin/apps', element: withAdminLayout(<AdminApps />) },
   { path: '/admin/wheel', element: withAdminLayout(<AdminWheel />) },

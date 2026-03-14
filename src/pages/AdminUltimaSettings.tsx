@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { adminSettingsApi, type SettingDefinition } from '@/api/adminSettings';
+import { useQuery } from '@tanstack/react-query';
+import { adminSettingsApi } from '@/api/adminSettings';
 import { AdminBackButton } from '@/components/admin';
-import { SettingRow } from '@/components/admin/SettingRow';
+import { groupUltimaSettings, isUltimaSetting } from './adminUltimaSettings/utils';
 
 const UltimaIcon = () => (
   <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -37,87 +37,22 @@ const DocIcon = () => (
   </svg>
 );
 
-const ULTIMA_EXCLUDED_KEYS = new Set([
-  'ULTIMA_START_BOT_CONFIG',
-  'CABINET_ULTIMA_AGREEMENT_CONTENT',
-  'CABINET_ULTIMA_MODE_ENABLED',
-]);
-
-const ULTIMA_INLINE_MINIAPP_KEYS = new Set([
-  'MINIAPP_TICKETS_ENABLED',
-  'MINIAPP_SUPPORT_TYPE',
-  'MINIAPP_SUPPORT_URL',
-  'MINIAPP_PURCHASE_URL',
-]);
-
-function isUltimaSetting(setting: SettingDefinition): boolean {
-  const key = setting.key.toUpperCase();
-  const category = setting.category.key.toUpperCase();
-  const text = `${setting.key} ${setting.name ?? ''}`.toLowerCase();
-
-  if (ULTIMA_EXCLUDED_KEYS.has(key)) {
-    return false;
-  }
-
-  if (key.startsWith('ULTIMA_') || key.startsWith('CABINET_ULTIMA_')) {
-    return true;
-  }
-
-  if (key.startsWith('HAPP_') || key === 'CONNECT_BUTTON_HAPP_DOWNLOAD_ENABLED') {
-    return true;
-  }
-
-  if (ULTIMA_INLINE_MINIAPP_KEYS.has(key)) {
-    return true;
-  }
-
-  return /ultima|happ/.test(text) || category === 'HAPP';
-}
-
 export default function AdminUltimaSettings() {
   const { t } = useTranslation();
-  const queryClient = useQueryClient();
 
   const { data: allSettings, isLoading } = useQuery({
     queryKey: ['admin-settings'],
     queryFn: () => adminSettingsApi.getSettings(),
   });
 
-  const updateSettingMutation = useMutation({
-    mutationFn: ({ key, value }: { key: string; value: string }) =>
-      adminSettingsApi.updateSetting(key, value),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-settings'] });
-    },
-  });
-
-  const resetSettingMutation = useMutation({
-    mutationFn: (key: string) => adminSettingsApi.resetSetting(key),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-settings'] });
-    },
-  });
-
   const ultimaSettings = useMemo(
     () => (allSettings ?? []).filter((setting) => isUltimaSetting(setting)),
     [allSettings],
   );
-  const groupedUltimaSettings = useMemo(() => {
-    const groups = new Map<string, { label: string; items: SettingDefinition[] }>();
-    for (const setting of ultimaSettings) {
-      const key = setting.category.key || 'OTHER';
-      const label = setting.category.label || key;
-      const group = groups.get(key);
-      if (group) {
-        group.items.push(setting);
-        continue;
-      }
-      groups.set(key, { label, items: [setting] });
-    }
-    return Array.from(groups.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([key, value]) => ({ key, ...value }));
-  }, [ultimaSettings]);
+  const groupedUltimaSettings = useMemo(
+    () => groupUltimaSettings(ultimaSettings),
+    [ultimaSettings],
+  );
 
   return (
     <div className="animate-fade-in space-y-6">
@@ -203,32 +138,28 @@ export default function AdminUltimaSettings() {
             })}
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-2">
             {groupedUltimaSettings.map((group) => (
-              <section
+              <Link
                 key={group.key}
-                className="rounded-xl border border-dark-700/40 bg-dark-800/25 p-3"
+                to={`/admin/ultima-settings/params/${encodeURIComponent(group.key)}`}
+                className="group flex items-center justify-between gap-3 rounded-xl border border-dark-700/50 bg-dark-800/40 px-4 py-3 transition-colors hover:border-violet-400/40 hover:bg-dark-800/70"
               >
-                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-dark-300">
-                  {group.label}
-                </h3>
-                <div className="space-y-3">
-                  {group.items.map((setting) => (
-                    <SettingRow
-                      key={setting.key}
-                      setting={setting}
-                      isFavorite={false}
-                      onToggleFavorite={() => {}}
-                      onUpdate={(value) =>
-                        updateSettingMutation.mutate({ key: setting.key, value })
-                      }
-                      onReset={() => resetSettingMutation.mutate(setting.key)}
-                      isUpdating={updateSettingMutation.isPending}
-                      isResetting={resetSettingMutation.isPending}
-                    />
-                  ))}
-                </div>
-              </section>
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-medium text-dark-100">
+                    {group.label}
+                  </span>
+                  <span className="block text-xs text-dark-400">
+                    {t('admin.ultimaSettings.paramsCount', {
+                      defaultValue: '{{count}} параметров',
+                      count: group.items.length,
+                    })}
+                  </span>
+                </span>
+                <span className="shrink-0 text-dark-400 transition-colors group-hover:text-violet-300">
+                  →
+                </span>
+              </Link>
             ))}
           </div>
         )}
