@@ -95,6 +95,7 @@ export interface PendingGift {
 
 export interface SentGift {
   token: string;
+  tariff_id: number | null;
   tariff_name: string | null;
   period_days: number;
   device_limit: number;
@@ -170,9 +171,10 @@ export const giftApi = {
     return data;
   },
 
-  extendSentGift: async (token: string): Promise<ExtendGiftResponse> => {
+  extendSentGift: async (token: string, periodDays?: number): Promise<ExtendGiftResponse> => {
     const { data } = await apiClient.post<ExtendGiftResponse>(
       `/cabinet/gift/sent/${encodeURIComponent(token)}/extend`,
+      periodDays ? { period_days: periodDays } : {},
     );
     return data;
   },

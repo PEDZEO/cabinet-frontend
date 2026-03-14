@@ -14,6 +14,7 @@ const PENDING_GIFT_EXTEND_KEY = 'ultima_pending_gift_extend_v1';
 
 type PendingGiftExtend = {
   token: string;
+  periodDays: number;
   requiredAmountKopeks: number;
   createdAt: number;
 };
@@ -34,7 +35,8 @@ export function UltimaGift() {
   const [pendingGiftExtend, setPendingGiftExtend] = useState<PendingGiftExtend | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [historyExpanded, setHistoryExpanded] = useState(true);
+  const [historyExpanded, setHistoryExpanded] = useState(false);
+  const [giftExtendPeriods, setGiftExtendPeriods] = useState<Record<string, number>>({});
   const formAnchorRef = useRef<HTMLDivElement | null>(null);
 
   const { data: giftConfig } = useQuery({
@@ -84,6 +86,9 @@ export function UltimaGift() {
     () => gatewayMethods.find((method) => method.method_id === giftPaymentMethod) ?? null,
     [giftPaymentMethod, gatewayMethods],
   );
+  const tariffPeriodsById = useMemo(() => {
+    return new Map(giftTariffOptions.map((tariff) => [tariff.id, tariff.periods] as const));
+  }, [giftTariffOptions]);
   const currentBalanceKopeks = balanceData?.balance_kopeks ?? giftConfig?.balance_kopeks ?? 0;
   const selectedGiftPriceKopeks = selectedGiftPeriod?.price_kopeks ?? 0;
   const missingAmountKopeks = Math.max(0, selectedGiftPriceKopeks - currentBalanceKopeks);
@@ -154,6 +159,7 @@ export function UltimaGift() {
       if (!raw) return;
       const parsed = JSON.parse(raw) as PendingGiftExtend;
       if (!parsed?.token || !Number.isFinite(parsed?.requiredAmountKopeks)) return;
+      if (!Number.isFinite(parsed?.periodDays) || (parsed?.periodDays ?? 0) <= 0) return;
       setPendingGiftExtend(parsed);
     } catch {
       // ignore malformed persisted state
@@ -167,6 +173,21 @@ export function UltimaGift() {
     }
     localStorage.setItem(PENDING_GIFT_EXTEND_KEY, JSON.stringify(pendingGiftExtend));
   }, [pendingGiftExtend]);
+
+  useEffect(() => {
+    if (!sentGifts.length) return;
+    setGiftExtendPeriods((prev) => {
+      const next = { ...prev };
+      let hasChanges = false;
+      sentGifts.forEach((gift) => {
+        if (next[gift.token] == null) {
+          next[gift.token] = gift.period_days;
+          hasChanges = true;
+        }
+      });
+      return hasChanges ? next : prev;
+    });
+  }, [sentGifts]);
 
   const giftStatusQuery = useQuery({
     queryKey: ['gift-status-inline', pendingGiftToken],
@@ -307,8 +328,11 @@ export function UltimaGift() {
   };
 
   const extendGiftMutation = useMutation({
-    mutationFn: async (payload: { giftToken: string; source: 'manual' | 'auto' }) =>
-      giftApi.extendSentGift(payload.giftToken),
+    mutationFn: async (payload: {
+      giftToken: string;
+      periodDays: number;
+      source: 'manual' | 'auto';
+    }) => giftApi.extendSentGift(payload.giftToken, payload.periodDays),
     onMutate: ({ giftToken }) => {
       setExtendingToken(giftToken);
       setError(null);
@@ -378,6 +402,7 @@ export function UltimaGift() {
           );
           setPendingGiftExtend({
             token: payload.giftToken,
+            periodDays: payload.periodDays,
             requiredAmountKopeks: requiredAmount,
             createdAt: Date.now(),
           });
@@ -411,12 +436,17 @@ export function UltimaGift() {
     if (!pendingGiftExtend) return;
     if (extendingToken) return;
     if ((balanceData?.balance_kopeks ?? 0) < pendingGiftExtend.requiredAmountKopeks) return;
-    extendGiftMutation.mutate({ giftToken: pendingGiftExtend.token, source: 'auto' });
+    extendGiftMutation.mutate({
+      giftToken: pendingGiftExtend.token,
+      periodDays: pendingGiftExtend.periodDays,
+      source: 'auto',
+    });
   }, [balanceData?.balance_kopeks, extendGiftMutation, extendingToken, pendingGiftExtend]);
 
   const onRenewFromHistory = (gift: SentGift) => {
     if (extendGiftMutation.isPending) return;
-    extendGiftMutation.mutate({ giftToken: gift.token, source: 'manual' });
+    const periodDays = giftExtendPeriods[gift.token] ?? gift.period_days;
+    extendGiftMutation.mutate({ giftToken: gift.token, periodDays, source: 'manual' });
   };
 
   return (
@@ -645,6 +675,28 @@ export function UltimaGift() {
                               {gift.period_days} дн.
                             </p>
                             <div className="mt-1 flex items-center gap-2">
+                              <select
+                                value={giftExtendPeriods[gift.token] ?? gift.period_days}
+                                onChange={(event) => {
+                                  const next = Number(event.target.value);
+                                  if (!Number.isFinite(next)) return;
+                                  setGiftExtendPeriods((prev) => ({ ...prev, [gift.token]: next }));
+                                }}
+                                className="h-8 min-w-0 rounded-lg border border-white/15 bg-white/10 px-2 text-[11px] text-white"
+                              >
+                                {(gift.tariff_id != null
+                                  ? tariffPeriodsById.get(gift.tariff_id)
+                                  : undefined
+                                )?.map((period) => (
+                                  <option key={`${gift.token}-${period.days}`} value={period.days}>
+                                    {period.days} {t('gift.days', { defaultValue: 'дн.' })}
+                                  </option>
+                                )) ?? (
+                                  <option value={gift.period_days}>
+                                    {gift.period_days} {t('gift.days', { defaultValue: 'дн.' })}
+                                  </option>
+                                )}
+                              </select>
                               <button
                                 type="button"
                                 onClick={() => onRenewFromHistory(gift)}
