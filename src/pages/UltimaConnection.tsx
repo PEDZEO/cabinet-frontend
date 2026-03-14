@@ -258,6 +258,7 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
       : step === 2
         ? t('subscription.connection.stepSubscriptionTitle', { defaultValue: 'Подписка' })
         : t('subscription.connection.stepDoneTitle', { defaultValue: 'Готово!' });
+  const isDoneStep = step === 3;
 
   const subtitle =
     step === 1
@@ -273,8 +274,12 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
           });
 
   const icon = step === 1 ? <DownloadIcon /> : step === 2 ? <PlusIcon /> : <CheckIcon />;
+  const isFinalStep = step === 3;
   const progressRatio = step === 1 ? 0.34 : step === 2 ? 0.67 : 1;
   const stepProgressPercent = step === 1 ? 0 : step === 2 ? 50 : 100;
+  const ringSizes = isFinalStep
+    ? { outer: 320, middle: 238, inner: 168, progress: 198, center: 112, button: 98 }
+    : { outer: 360, middle: 270, inner: 188, progress: 220, center: 124, button: 110 };
   const ringRadius = 90;
   const ringCircumference = 2 * Math.PI * ringRadius;
   const ringOffset = ringCircumference * (1 - progressRatio);
@@ -344,15 +349,25 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
       <div className="ultima-shell-inner lg:max-w-[520px]">
         <section className="flex min-h-0 flex-1 flex-col">
           <div key={step} className="ultima-step-enter pt-2 text-center lg:pt-1">
-            <h1 className="text-[42px] font-semibold leading-[0.96] text-white sm:text-[46px]">
+            <h1
+              className={`font-semibold leading-[0.96] text-white ${
+                isDoneStep ? 'text-[34px] sm:text-[38px]' : 'text-[42px] sm:text-[46px]'
+              }`}
+            >
               {title}
             </h1>
-            <p className="mx-auto mt-2 max-w-[360px] text-[17px] leading-[1.2] text-white/70">
+            <p
+              className={`mx-auto mt-2 leading-[1.2] ${
+                isDoneStep
+                  ? 'text-white/72 max-w-[300px] text-[14px] sm:max-w-[332px] sm:text-[15px]'
+                  : 'max-w-[360px] text-[17px] text-white/70'
+              }`}
+            >
               {subtitle}
             </p>
             {step === 3 && (
-              <div className="mx-auto mt-1.5 w-full max-w-[372px] rounded-2xl border border-emerald-100/50 bg-[linear-gradient(120deg,rgba(31,194,156,0.34),rgba(7,24,21,0.76))] px-4 py-2.5 shadow-[0_12px_30px_rgba(5,18,15,0.42),inset_0_1px_0_rgba(255,255,255,0.22)] backdrop-blur-md">
-                <p className="text-[13px] font-semibold leading-[1.25] text-white">
+              <div className="border-emerald-200/28 mx-auto mt-2 w-full max-w-[332px] rounded-2xl border bg-[linear-gradient(130deg,rgba(28,171,142,0.30),rgba(8,27,24,0.58))] px-3.5 py-2 shadow-[0_10px_24px_rgba(4,16,14,0.35),inset_0_1px_0_rgba(255,255,255,0.16)] backdrop-blur-md">
+                <p className="text-[12px] font-medium leading-[1.22] text-emerald-50/95">
                   {t('subscription.connection.tapCheckHint', {
                     defaultValue: 'Можно нажать и здесь: галочка в центре тоже переключает VPN.',
                   })}
@@ -387,13 +402,25 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
             </div>
           </div>
 
-          <div className="relative mt-7 flex flex-1 items-center justify-center lg:mt-5">
-            <div className="ultima-step-ring border-emerald-200/22 pointer-events-none absolute h-[360px] w-[360px] rounded-full border" />
-            <div className="ultima-step-ring ultima-step-ring-delay-1 pointer-events-none absolute h-[270px] w-[270px] rounded-full border border-emerald-200/20" />
-            <div className="ultima-step-ring ultima-step-ring-delay-2 pointer-events-none absolute h-[188px] w-[188px] rounded-full border border-emerald-300/65" />
+          <div
+            className={`relative mt-7 flex flex-1 items-center justify-center lg:mt-5 ${isFinalStep ? 'mb-2' : ''}`}
+          >
+            <div
+              className="ultima-step-ring border-emerald-200/22 pointer-events-none absolute rounded-full border"
+              style={{ width: ringSizes.outer, height: ringSizes.outer }}
+            />
+            <div
+              className="ultima-step-ring ultima-step-ring-delay-1 pointer-events-none absolute rounded-full border border-emerald-200/20"
+              style={{ width: ringSizes.middle, height: ringSizes.middle }}
+            />
+            <div
+              className="ultima-step-ring ultima-step-ring-delay-2 pointer-events-none absolute rounded-full border border-emerald-300/65"
+              style={{ width: ringSizes.inner, height: ringSizes.inner }}
+            />
             <svg
               viewBox="0 0 240 240"
-              className="pointer-events-none absolute h-[220px] w-[220px] -rotate-90"
+              className="pointer-events-none absolute -rotate-90"
+              style={{ width: ringSizes.progress, height: ringSizes.progress }}
               aria-hidden
             >
               <circle
@@ -420,12 +447,16 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
                 }}
               />
             </svg>
-            <div className="bg-black/8 relative flex h-[124px] w-[124px] items-center justify-center rounded-full">
+            <div
+              className="bg-black/8 relative flex items-center justify-center rounded-full"
+              style={{ width: ringSizes.center, height: ringSizes.center }}
+            >
               {step === 3 ? (
                 <button
                   type="button"
                   onClick={openToggleVpn}
-                  className="group relative z-10 inline-flex h-[110px] w-[110px] items-center justify-center rounded-full transition-transform duration-200 hover:scale-[1.02] active:scale-[0.97]"
+                  className="group relative z-10 inline-flex items-center justify-center rounded-full transition-transform duration-200 hover:scale-[1.02] active:scale-[0.97]"
+                  style={{ width: ringSizes.button, height: ringSizes.button }}
                   aria-label={t('subscription.connection.toggleVpnInApp', {
                     defaultValue: 'Переключить VPN в приложении',
                   })}
@@ -436,7 +467,8 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
                 <button
                   type="button"
                   onClick={startAddSubscriptionFlow}
-                  className="group relative z-10 inline-flex h-[110px] w-[110px] items-center justify-center rounded-full transition-transform duration-200 hover:scale-[1.02] active:scale-[0.97]"
+                  className="group relative z-10 inline-flex items-center justify-center rounded-full transition-transform duration-200 hover:scale-[1.02] active:scale-[0.97]"
+                  style={{ width: ringSizes.button, height: ringSizes.button }}
                   aria-label={t('subscription.connection.addSubscription', {
                     defaultValue: 'Добавить подписку',
                   })}
@@ -447,7 +479,8 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
                 <button
                   type="button"
                   onClick={startInstallFlow}
-                  className="group relative z-10 inline-flex h-[110px] w-[110px] items-center justify-center rounded-full transition-transform duration-200 hover:scale-[1.02] active:scale-[0.97]"
+                  className="group relative z-10 inline-flex items-center justify-center rounded-full transition-transform duration-200 hover:scale-[1.02] active:scale-[0.97]"
+                  style={{ width: ringSizes.button, height: ringSizes.button }}
                   aria-label={t('subscription.connection.installApp', {
                     defaultValue: 'Установить приложение',
                   })}
@@ -493,7 +526,7 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
           </div>
         </section>
 
-        <section className="pb-0">
+        <section className={`${isFinalStep ? 'pt-1' : ''} pb-0`}>
           {step === 1 && (
             <button
               type="button"
