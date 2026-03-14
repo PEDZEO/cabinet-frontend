@@ -11,6 +11,7 @@ import Referral from '../Referral';
 import AccountLinking from '../AccountLinking';
 import Connection from '../Connection';
 import { UltimaAgreement } from '../UltimaAgreement';
+import { UltimaGift } from '../UltimaGift';
 import { UltimaPromocode } from '../UltimaPromocode';
 
 const Dashboard = lazy(() => import('../Dashboard'));
@@ -158,6 +159,14 @@ export const protectedRoutes: RouteConfig[] = [
     element: (
       <ProtectedRoute>
         <UltimaPromocode />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/ultima/gift',
+    element: (
+      <ProtectedRoute>
+        <UltimaGift />
       </ProtectedRoute>
     ),
   },
