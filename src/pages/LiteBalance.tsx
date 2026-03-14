@@ -206,7 +206,9 @@ export default function LiteBalance() {
           : errorDetail.toLowerCase().includes('fully used')
             ? 'used'
             : errorDetail.toLowerCase().includes('already used') ||
-                errorDetail.toLowerCase().includes('already activated')
+                errorDetail.toLowerCase().includes('already activated') ||
+                errorDetail.toLowerCase().includes('cannot be activated') ||
+                errorDetail.toLowerCase().includes('own gift')
               ? 'already_used_by_user'
               : 'server_error';
       setPromocodeError(t(`balance.promocode.errors.${errorKey}`));

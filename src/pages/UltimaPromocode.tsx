@@ -64,7 +64,10 @@ export function UltimaPromocode() {
           ? 'expired'
           : detail.includes('fully used')
             ? 'used'
-            : detail.includes('already used') || detail.includes('already activated')
+            : detail.includes('already used') ||
+                detail.includes('already activated') ||
+                detail.includes('cannot be activated') ||
+                detail.includes('own gift')
               ? 'already_used_by_user'
               : 'server_error';
       setSuccess(null);

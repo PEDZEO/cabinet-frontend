@@ -203,6 +203,25 @@ export function UltimaGift() {
     },
   });
 
+  const copyGiftCode = async (token: string) => {
+    const code = `GIFT-${token}`;
+    try {
+      await navigator.clipboard.writeText(code);
+      setSuccess(
+        t('balance.promocode.giftCodeCopied', {
+          defaultValue: `Промокод скопирован: ${code}`,
+        }),
+      );
+      setError(null);
+    } catch {
+      setError(
+        t('errors.copyFailed', {
+          defaultValue: 'Не удалось скопировать промокод',
+        }),
+      );
+    }
+  };
+
   useEffect(() => {
     const statusData = giftStatusQuery.data;
     if (!statusData || !pendingGiftToken) return;
@@ -667,10 +686,15 @@ export function UltimaGift() {
                               </span>
                             </div>
                             <p className="text-[11px] text-white/55">
-                              Код: GIFT-{gift.token}
-                              {gift.activated_by_username
-                                ? ` • ${gift.activated_by_username}`
-                                : ''}{' '}
+                              Код:{' '}
+                              <button
+                                type="button"
+                                onClick={() => void copyGiftCode(gift.token)}
+                                className="inline text-left font-medium text-emerald-200 underline decoration-dotted underline-offset-2 transition hover:text-emerald-100"
+                              >
+                                GIFT-{gift.token}
+                              </button>
+                              {gift.activated_by_username ? ` • ${gift.activated_by_username}` : ''}{' '}
                               •{' +'}
                               {gift.period_days} дн.
                             </p>

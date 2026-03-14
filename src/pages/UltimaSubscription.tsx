@@ -750,11 +750,22 @@ export function UltimaSubscription() {
     });
   };
 
+  const formatMonthWord = (months: number) => {
+    const mod10 = months % 10;
+    const mod100 = months % 100;
+    if (mod10 === 1 && mod100 !== 11) return 'месяц';
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 'месяца';
+    return 'месяцев';
+  };
+
   const periodLabel = (period: TariffPeriod) => {
-    if (period.days === 30) return '1 месяц';
-    if (period.days === 90) return '3 месяца';
-    if (period.days === 180) return '6 месяцев';
     if (period.days === 365) return '1 год';
+    if (period.days > 0 && period.days % 30 === 0) {
+      const months = period.days / 30;
+      if (months >= 1 && months <= 12) {
+        return `${months} ${formatMonthWord(months)}`;
+      }
+    }
     return `${period.days} дней`;
   };
 
@@ -986,17 +997,13 @@ export function UltimaSubscription() {
                   >
                     {formatPrice(calculatePeriodPrice(period))}
                   </p>
-                  <p
-                    className={`mt-1 text-[12px] ${
-                      period.original_price_kopeks &&
-                      period.original_price_kopeks > period.price_kopeks
-                        ? 'text-white/70'
-                        : 'invisible'
-                    }`}
-                  >
-                    {period.price_per_month_kopeks > 0
-                      ? `${formatPrice(period.price_per_month_kopeks)} / мес`
-                      : '0'}
+                  <p className="mt-1 text-[12px] text-white/70">
+                    {`${formatPrice(
+                      Math.max(
+                        1,
+                        Math.round((calculatePeriodPrice(period) / Math.max(1, period.days)) * 30),
+                      ),
+                    )} / мес`}
                   </p>
                 </button>
               );
