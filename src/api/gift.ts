@@ -122,6 +122,16 @@ export interface ActivateGiftResponse {
   period_days: number | null;
 }
 
+export interface ExtendGiftResponse {
+  status: 'extended';
+  token: string;
+  added_days: number;
+  total_period_days: number;
+  charged_amount_kopeks: number;
+  charged_amount_label: string;
+  recipient_username: string | null;
+}
+
 // API
 
 export const giftApi = {
@@ -157,6 +167,13 @@ export const giftApi = {
 
   activateGiftCode: async (code: string): Promise<ActivateGiftResponse> => {
     const { data } = await apiClient.post<ActivateGiftResponse>('/cabinet/gift/activate', { code });
+    return data;
+  },
+
+  extendSentGift: async (token: string): Promise<ExtendGiftResponse> => {
+    const { data } = await apiClient.post<ExtendGiftResponse>(
+      `/cabinet/gift/sent/${encodeURIComponent(token)}/extend`,
+    );
     return data;
   },
 };

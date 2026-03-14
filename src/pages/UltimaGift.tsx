@@ -22,6 +22,7 @@ export function UltimaGift() {
   const [giftPaymentOption, setGiftPaymentOption] = useState<string | null>(null);
   const [pendingGiftToken, setPendingGiftToken] = useState<string | null>(null);
   const [generatedGiftCode, setGeneratedGiftCode] = useState<string | null>(null);
+  const [extendingToken, setExtendingToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [historyExpanded, setHistoryExpanded] = useState(true);
@@ -270,42 +271,38 @@ export function UltimaGift() {
     }
   };
 
-  const resolveGiftTariffAndPeriod = (gift: SentGift) => {
-    const normalizedGiftName = (gift.tariff_name ?? '').trim().toLowerCase();
-    const byName = giftTariffOptions.find(
-      (item) => item.name.trim().toLowerCase() === normalizedGiftName,
-    );
-    const byNameAndPeriod =
-      byName && byName.periods.some((period) => period.days === gift.period_days) ? byName : null;
-
-    if (byNameAndPeriod) {
-      return { tariffId: byNameAndPeriod.id, periodDays: gift.period_days };
-    }
-
-    for (const tariff of giftTariffOptions) {
-      if (tariff.periods.some((period) => period.days === gift.period_days)) {
-        return { tariffId: tariff.id, periodDays: gift.period_days };
-      }
-    }
-
-    return null;
-  };
+  const extendGiftMutation = useMutation({
+    mutationFn: async (giftToken: string) => giftApi.extendSentGift(giftToken),
+    onMutate: (giftToken: string) => {
+      setExtendingToken(giftToken);
+      setError(null);
+      setSuccess(null);
+    },
+    onSuccess: async (result) => {
+      setExtendingToken(null);
+      setSuccess(
+        `Подарок продлен: +${result.added_days} дн. • Списано ${result.charged_amount_label}${
+          result.recipient_username ? ` • Получатель: ${result.recipient_username}` : ''
+        }`,
+      );
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['balance'] }),
+        queryClient.invalidateQueries({ queryKey: ['transactions'] }),
+        queryClient.invalidateQueries({ queryKey: ['gift-sent'] }),
+        queryClient.invalidateQueries({ queryKey: ['gift-received'] }),
+      ]);
+    },
+    onError: (rawError: unknown) => {
+      setExtendingToken(null);
+      const axiosError = rawError as { response?: { data?: { detail?: string } } };
+      const detail = axiosError.response?.data?.detail;
+      setError(detail || 'Не удалось продлить подарок');
+    },
+  });
 
   const onRenewFromHistory = (gift: SentGift) => {
-    const resolved = resolveGiftTariffAndPeriod(gift);
-    if (!resolved) {
-      setError('Для этого подарка продление недоступно: тариф или период не найдены.');
-      setSuccess(null);
-      return;
-    }
-
-    setGiftTariffId(resolved.tariffId);
-    setGiftPeriodDays(resolved.periodDays);
-    setError(null);
-    setSuccess(
-      'Параметры подарка подставлены. Нажмите «Сгенерировать подарочный код» или «Оплатить и создать код».',
-    );
-    formAnchorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (extendGiftMutation.isPending) return;
+    extendGiftMutation.mutate(gift.token);
   };
 
   return (
@@ -537,9 +534,12 @@ export function UltimaGift() {
                               <button
                                 type="button"
                                 onClick={() => onRenewFromHistory(gift)}
-                                className="rounded-lg border border-emerald-200/25 bg-emerald-400/85 px-2 py-1 text-[11px] font-medium text-slate-950"
+                                disabled={extendGiftMutation.isPending}
+                                className="rounded-lg border border-emerald-200/25 bg-emerald-400/85 px-2 py-1 text-[11px] font-medium text-slate-950 disabled:cursor-not-allowed disabled:opacity-55"
                               >
-                                Повторить подарок
+                                {extendGiftMutation.isPending && extendingToken === gift.token
+                                  ? 'Продлеваем...'
+                                  : 'Продлить подарок'}
                               </button>
                             </div>
                           </div>
