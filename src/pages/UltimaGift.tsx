@@ -2,8 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { giftApi } from '@/api/gift';
-import { subscriptionApi } from '@/api/subscription';
+import { type GiftPurchaseRequest, giftApi, type SentGift } from '@/api/gift';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { usePlatform } from '@/platform/hooks/usePlatform';
 
@@ -34,6 +33,7 @@ export function UltimaGift() {
     staleTime: 0,
     refetchOnMount: 'always',
   });
+  const isGiftConfigLoaded = giftConfig !== undefined;
   const { data: sentGifts = [] } = useQuery({
     queryKey: ['gift-sent'],
     queryFn: giftApi.getSentGifts,
@@ -46,12 +46,6 @@ export function UltimaGift() {
     staleTime: 15000,
     enabled: !!giftConfig?.is_enabled,
   });
-  const { data: subscriptionResponse } = useQuery({
-    queryKey: ['subscription'],
-    queryFn: subscriptionApi.getSubscription,
-    staleTime: 15000,
-  });
-
   const giftTariffOptions = useMemo(() => giftConfig?.tariffs ?? [], [giftConfig?.tariffs]);
   const gatewayMethods = useMemo(
     () => giftConfig?.payment_methods ?? [],
@@ -190,23 +184,7 @@ export function UltimaGift() {
   }, [giftStatusQuery.data, pendingGiftToken, queryClient, searchParams, setSearchParams, t]);
 
   const createGiftMutation = useMutation({
-    mutationFn: async () => {
-      if (!giftTariffId || !giftPeriodDays) {
-        throw new Error('Gift tariff is not selected');
-      }
-      if (requiresGatewayPayment && !giftPaymentMethod) {
-        throw new Error('Payment method is not selected');
-      }
-
-      return giftApi.createPurchase({
-        tariff_id: giftTariffId,
-        period_days: giftPeriodDays,
-        payment_mode: requiresGatewayPayment ? 'gateway' : 'balance',
-        payment_method: requiresGatewayPayment ? (giftPaymentMethod ?? undefined) : undefined,
-        payment_option: requiresGatewayPayment ? (giftPaymentOption ?? undefined) : undefined,
-        topup_amount_kopeks: requiresGatewayPayment ? topupAmountKopeks : undefined,
-      });
-    },
+    mutationFn: async (request: GiftPurchaseRequest) => giftApi.createPurchase(request),
     onSuccess: async (result) => {
       setError(null);
       if (result.payment_url) {
@@ -253,8 +231,26 @@ export function UltimaGift() {
 
   const onCreateGift = () => {
     if (createGiftMutation.isPending) return;
+    if (!giftTariffId || !giftPeriodDays) {
+      setError('Тариф и период не выбраны');
+      setSuccess(null);
+      return;
+    }
+    if (requiresGatewayPayment && !giftPaymentMethod) {
+      setError('Выберите платежный метод');
+      setSuccess(null);
+      return;
+    }
+
     setGeneratedGiftCode(null);
-    createGiftMutation.mutate();
+    createGiftMutation.mutate({
+      tariff_id: giftTariffId,
+      period_days: giftPeriodDays,
+      payment_mode: requiresGatewayPayment ? 'gateway' : 'balance',
+      payment_method: requiresGatewayPayment ? (giftPaymentMethod ?? undefined) : undefined,
+      payment_option: requiresGatewayPayment ? (giftPaymentOption ?? undefined) : undefined,
+      topup_amount_kopeks: requiresGatewayPayment ? topupAmountKopeks : undefined,
+    });
   };
 
   const getStatusLabel = (status: string) => {
@@ -274,29 +270,79 @@ export function UltimaGift() {
     }
   };
 
-  const onRenewFromHistory = (tariffName: string | null, periodDays: number) => {
-    if (!tariffName) {
-      setError('Не удалось определить тариф для продления');
+  const resolveGiftTariffAndPeriod = (gift: SentGift) => {
+    const normalizedGiftName = (gift.tariff_name ?? '').trim().toLowerCase();
+    const byName = giftTariffOptions.find(
+      (item) => item.name.trim().toLowerCase() === normalizedGiftName,
+    );
+    const byNameAndPeriod =
+      byName && byName.periods.some((period) => period.days === gift.period_days) ? byName : null;
+
+    if (byNameAndPeriod) {
+      return { tariffId: byNameAndPeriod.id, periodDays: gift.period_days };
+    }
+
+    for (const tariff of giftTariffOptions) {
+      if (tariff.periods.some((period) => period.days === gift.period_days)) {
+        return { tariffId: tariff.id, periodDays: gift.period_days };
+      }
+    }
+
+    return null;
+  };
+
+  const onRenewFromHistory = (gift: SentGift) => {
+    if (createGiftMutation.isPending) return;
+
+    const resolved = resolveGiftTariffAndPeriod(gift);
+    if (!resolved) {
+      setError('Для этого подарка продление недоступно: тариф или период не найдены.');
+      setSuccess(null);
       return;
     }
 
-    const tariff = giftTariffOptions.find((item) => item.name === tariffName);
-    if (!tariff) {
-      setError('Тариф из истории недоступен для подарка');
+    setGiftTariffId(resolved.tariffId);
+    setGiftPeriodDays(resolved.periodDays);
+
+    const targetTariff = giftTariffOptions.find((item) => item.id === resolved.tariffId);
+    const targetPeriod = targetTariff?.periods.find(
+      (period) => period.days === resolved.periodDays,
+    );
+    if (!targetPeriod) {
+      setError('Не удалось определить цену для продления подарка.');
+      setSuccess(null);
       return;
     }
 
-    const hasPeriod = tariff.periods.some((period) => period.days === periodDays);
-    if (!hasPeriod) {
-      setError('Период из истории недоступен для этого тарифа');
+    const targetMissingKopeks = Math.max(0, targetPeriod.price_kopeks - currentBalanceKopeks);
+    const selectedMethodMinKopeks = selectedGatewayMethod?.min_amount_kopeks ?? 0;
+    const targetTopupKopeks =
+      targetMissingKopeks > 0 ? Math.max(targetMissingKopeks, selectedMethodMinKopeks) : 0;
+    const targetRequiresGatewayPayment = targetMissingKopeks > 0;
+    if (targetRequiresGatewayPayment && !giftPaymentMethod) {
+      setError('Для продления выберите платежный метод.');
+      setSuccess(null);
       return;
     }
 
-    setGiftTariffId(tariff.id);
-    setGiftPeriodDays(periodDays);
     setError(null);
-    setSuccess(`Подготовлено продление: ${tariff.name} • ${periodDays} дн.`);
-    formAnchorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setSuccess('Создаем продление подарка...');
+
+    createGiftMutation.mutate(
+      {
+        tariff_id: resolved.tariffId,
+        period_days: resolved.periodDays,
+        payment_mode: targetRequiresGatewayPayment ? 'gateway' : 'balance',
+        payment_method: targetRequiresGatewayPayment ? (giftPaymentMethod ?? undefined) : undefined,
+        payment_option: targetRequiresGatewayPayment ? (giftPaymentOption ?? undefined) : undefined,
+        topup_amount_kopeks: targetRequiresGatewayPayment ? targetTopupKopeks : undefined,
+      },
+      {
+        onError: () => {
+          formAnchorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        },
+      },
+    );
   };
 
   return (
@@ -317,7 +363,11 @@ export function UltimaGift() {
 
         <section className="border-emerald-200/12 min-h-0 flex-1 overflow-y-auto rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
           <div ref={formAnchorRef} />
-          {!giftConfig?.is_enabled ? (
+          {!isGiftConfigLoaded ? (
+            <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2.5">
+              <p className="text-[12px] leading-snug text-white/70">{t('common.loading')}</p>
+            </div>
+          ) : giftConfig?.is_enabled === false ? (
             <div className="rounded-xl border border-amber-300/20 bg-amber-500/10 px-3 py-2.5">
               <p className="text-[12px] leading-snug text-amber-100">
                 {t('gift.disabled', {
@@ -492,15 +542,6 @@ export function UltimaGift() {
 
               {historyExpanded ? (
                 <div className="mt-2 space-y-2">
-                  <div className="rounded-xl border border-white/10 bg-white/5 px-2.5 py-2">
-                    <p className="text-[11px] text-white/60">
-                      Текущий остаток подписки:{' '}
-                      <span className="text-white/85">
-                        {subscriptionResponse?.subscription?.days_left ?? 0} дн.
-                      </span>
-                    </p>
-                  </div>
-
                   <div className="space-y-2">
                     <p className="text-[12px] text-white/70">Отправленные</p>
                     {sentGifts.length === 0 ? (
@@ -523,17 +564,19 @@ export function UltimaGift() {
                             </div>
                             <p className="text-[11px] text-white/55">
                               Код: GIFT-{gift.token}
-                              {gift.activated_by_username ? ` • ${gift.activated_by_username}` : ''}
+                              {gift.activated_by_username
+                                ? ` • ${gift.activated_by_username}`
+                                : ''}{' '}
+                              •{' +'}
+                              {gift.period_days} дн.
                             </p>
                             <div className="mt-1 flex items-center gap-2">
                               <button
                                 type="button"
-                                onClick={() =>
-                                  onRenewFromHistory(gift.tariff_name, gift.period_days)
-                                }
+                                onClick={() => onRenewFromHistory(gift)}
                                 className="rounded-lg border border-emerald-200/25 bg-emerald-400/85 px-2 py-1 text-[11px] font-medium text-slate-950"
                               >
-                                Продлить
+                                Продлить подарок
                               </button>
                             </div>
                           </div>

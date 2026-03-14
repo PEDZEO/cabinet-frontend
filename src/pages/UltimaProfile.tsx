@@ -372,9 +372,23 @@ export function UltimaProfile() {
       } else if (path === '/ultima/gift') {
         tasks.push(import('./UltimaGift'));
         tasks.push(
-          queryClient.prefetchQuery({
+          queryClient.fetchQuery({
             queryKey: ['gift-config'],
             queryFn: giftApi.getConfig,
+            staleTime: 0,
+          }),
+        );
+        tasks.push(
+          queryClient.prefetchQuery({
+            queryKey: ['gift-sent'],
+            queryFn: giftApi.getSentGifts,
+            staleTime: 15000,
+          }),
+        );
+        tasks.push(
+          queryClient.prefetchQuery({
+            queryKey: ['gift-received'],
+            queryFn: giftApi.getReceivedGifts,
             staleTime: 15000,
           }),
         );
