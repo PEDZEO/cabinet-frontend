@@ -11,6 +11,7 @@ import { referralApi } from '@/api/referral';
 import { brandingApi } from '@/api/branding';
 import { partnerApi } from '@/api/partners';
 import { authApi } from '@/api/auth';
+import { giftApi } from '@/api/gift';
 import { ultimaAgreementApi } from '@/api/ultimaAgreement';
 import { withdrawalApi } from '@/api/withdrawals';
 import { useAuthStore } from '@/store/auth';
@@ -74,13 +75,6 @@ const AccessIcon = () => (
       strokeWidth="1.8"
     />
     <path d="m9.3 12.3 1.8 1.8 3.5-3.5" stroke="currentColor" strokeWidth="1.8" />
-  </svg>
-);
-
-const DeviceIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
-    <rect x="4" y="5" width="16" height="11" rx="2" stroke="currentColor" strokeWidth="1.8" />
-    <path d="M9 19h6M12 16v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
   </svg>
 );
 
@@ -223,17 +217,6 @@ export function UltimaProfile() {
 
   const supportItems: SectionItem[] = [
     {
-      key: 'connect',
-      title: t('profile.connectOtherDeviceTitle', {
-        defaultValue: 'Установка на другом устройстве',
-      }),
-      subtitle: t('profile.connectOtherDeviceDescription', {
-        defaultValue: 'Подробная инструкция для установки',
-      }),
-      path: '/connection',
-      icon: <DeviceIcon />,
-    },
-    {
       key: 'support',
       title: t('profile.supportContactTitle', { defaultValue: 'Связаться с поддержкой' }),
       subtitle: t('profile.supportContactDescription', { defaultValue: 'Решение проблем онлайн' }),
@@ -365,6 +348,13 @@ export function UltimaProfile() {
         );
       } else if (path === '/promocode') {
         tasks.push(import('./UltimaPromocode'));
+        tasks.push(
+          queryClient.prefetchQuery({
+            queryKey: ['gift-config'],
+            queryFn: giftApi.getConfig,
+            staleTime: 15000,
+          }),
+        );
       } else if (path === '/support') {
         tasks.push(import('./Support'));
         tasks.push(

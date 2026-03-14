@@ -53,6 +53,8 @@ export interface GiftPurchaseRequest {
   gift_message?: string;
   payment_mode: 'balance' | 'gateway';
   payment_method?: string;
+  payment_option?: string;
+  topup_amount_kopeks?: number;
 }
 
 export interface GiftPurchaseResponse {
