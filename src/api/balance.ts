@@ -76,6 +76,7 @@ export const balanceApi = {
     activated_gift?: boolean;
     gift_tariff_name?: string | null;
     gift_period_days?: number | null;
+    gift_sender_display?: string | null;
   }> => {
     const response = await apiClient.post('/cabinet/promocode/activate', { code });
     return response.data;

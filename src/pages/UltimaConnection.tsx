@@ -175,6 +175,11 @@ export function UltimaConnection({
   const [showReturnConfetti, setShowReturnConfetti] = useState(false);
   const [showFinishSuccess, setShowFinishSuccess] = useState(false);
   const stepInitRef = useRef(false);
+  const centerActionRef = useRef<HTMLDivElement | null>(null);
+  const [successWaveOrigin, setSuccessWaveOrigin] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
 
   const setupUrls = useMemo(
     () => findSetupUrls(appConfig, i18n.language || 'ru'),
@@ -341,6 +346,18 @@ export function UltimaConnection({
   };
 
   const finishFlow = () => {
+    const centerRect = centerActionRef.current?.getBoundingClientRect();
+    if (centerRect) {
+      setSuccessWaveOrigin({
+        x: centerRect.left + centerRect.width / 2,
+        y: centerRect.top + centerRect.height / 2,
+      });
+    } else {
+      setSuccessWaveOrigin({
+        x: window.innerWidth / 2,
+        y: window.innerHeight / 2,
+      });
+    }
     setShowFinishSuccess(true);
     setBurst((prev) => prev + 1);
     haptic.notification('success');
@@ -456,6 +473,7 @@ export function UltimaConnection({
               />
             </svg>
             <div
+              ref={centerActionRef}
               className="bg-black/8 relative flex items-center justify-center rounded-full"
               style={{ width: ringSizes.center, height: ringSizes.center }}
             >
@@ -632,8 +650,15 @@ export function UltimaConnection({
         </>
       )}
       {showFinishSuccess && (
-        <div className="pointer-events-none absolute inset-0 z-40 flex items-center justify-center pb-[12vh]">
-          <div className="ultima-success-wave absolute h-[54vmax] w-[54vmax] rounded-full border border-emerald-200/40" />
+        <div className="pointer-events-none absolute inset-0 z-40">
+          <div
+            className="ultima-success-wave absolute h-[54vmax] w-[54vmax] rounded-full border border-emerald-200/40"
+            style={{
+              left: successWaveOrigin.x,
+              top: successWaveOrigin.y,
+              transform: 'translate(-50%, -50%)',
+            }}
+          />
         </div>
       )}
     </div>

@@ -4,6 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { balanceApi } from '@/api/balance';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 
+type GiftActivationNotice = {
+  senderDisplay: string | null;
+  tariffName: string | null;
+  periodDays: number | null;
+};
+
 export function UltimaPromocode() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -11,6 +17,9 @@ export function UltimaPromocode() {
   const [promocode, setPromocode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [giftActivationNotice, setGiftActivationNotice] = useState<GiftActivationNotice | null>(
+    null,
+  );
 
   const activateMutation = useMutation({
     mutationFn: async (code: string) => balanceApi.activatePromocode(code),
@@ -18,6 +27,11 @@ export function UltimaPromocode() {
       if (!result.success) return;
       setError(null);
       if (result.activated_gift) {
+        setGiftActivationNotice({
+          senderDisplay: result.gift_sender_display ?? null,
+          tariffName: result.gift_tariff_name ?? null,
+          periodDays: result.gift_period_days ?? null,
+        });
         const giftLabel =
           result.gift_tariff_name && result.gift_period_days
             ? `${result.gift_tariff_name} • ${result.gift_period_days} ${t('gift.days', { defaultValue: 'дн.' })}`
@@ -63,6 +77,7 @@ export function UltimaPromocode() {
     if (!code || activateMutation.isPending) return;
     setError(null);
     setSuccess(null);
+    setGiftActivationNotice(null);
     activateMutation.mutate(code);
   };
 
@@ -127,6 +142,67 @@ export function UltimaPromocode() {
           <UltimaBottomNav active="profile" />
         </div>
       </div>
+
+      {giftActivationNotice && (
+        <>
+          <div className="bg-black/52 absolute inset-0 z-[18]" />
+          <div className="ultima-step-enter border-white/24 absolute inset-x-4 bottom-[252px] z-20 rounded-[24px] border bg-[#05070B] p-4 text-white shadow-[0_26px_56px_rgba(0,0,0,0.72)] backdrop-blur-xl lg:inset-x-auto lg:bottom-auto lg:left-1/2 lg:top-24 lg:w-[500px] lg:-translate-x-1/2">
+            <div className="mb-2 flex items-start justify-between gap-3">
+              <h3 className="text-[24px] font-semibold leading-[1.06] text-white/95">
+                {t('balance.promocode.giftNoticeTitle', { defaultValue: 'Подарок активирован' })}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setGiftActivationNotice(null)}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-white/90"
+                aria-label="close-gift-activation-modal"
+              >
+                ×
+              </button>
+            </div>
+            <p className="text-white/88 text-[14px] leading-[1.28]">
+              {t('balance.promocode.giftNoticeDesc', {
+                defaultValue:
+                  'Подарочная подписка успешно активирована. Данные подарка уже применены к вашему аккаунту.',
+              })}
+            </p>
+            <div className="text-white/92 mt-3 space-y-2 text-[14px]">
+              <p>
+                <span className="text-white/65">
+                  {t('balance.promocode.giftSender', { defaultValue: 'Отправитель:' })}
+                </span>{' '}
+                {giftActivationNotice.senderDisplay ??
+                  t('common.notSpecified', { defaultValue: 'Не указан' })}
+              </p>
+              <p>
+                <span className="text-white/65">
+                  {t('balance.promocode.giftPeriod', { defaultValue: 'Срок подарка:' })}
+                </span>{' '}
+                {giftActivationNotice.periodDays != null
+                  ? `${giftActivationNotice.periodDays} ${t('gift.days', { defaultValue: 'дн.' })}`
+                  : t('common.notSpecified', { defaultValue: 'Не указан' })}
+              </p>
+              {giftActivationNotice.tariffName ? (
+                <p>
+                  <span className="text-white/65">
+                    {t('balance.promocode.giftTariff', { defaultValue: 'Тариф:' })}
+                  </span>{' '}
+                  {giftActivationNotice.tariffName}
+                </p>
+              ) : null}
+            </div>
+            <button
+              type="button"
+              onClick={() => setGiftActivationNotice(null)}
+              className="border-emerald-200/22 mt-4 flex w-full items-center justify-center rounded-full border bg-[rgba(12,45,42,0.34)] px-5 py-2.5 text-[15px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] backdrop-blur-md"
+            >
+              {t('subscription.connection.gotIt', {
+                defaultValue: 'Все понятно',
+              })}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
