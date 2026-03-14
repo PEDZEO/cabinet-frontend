@@ -13,6 +13,7 @@ type UltimaConnectionProps = {
   appConfig: AppConfig;
   onOpenDeepLink: (url: string) => void;
   onGoBack: () => void;
+  onRefreshAppConfig?: () => void;
 };
 
 const ULTIMA_CONNECTION_STATE_KEY = 'ultima_connection_flow_v1';
@@ -158,7 +159,12 @@ const findSetupUrls = (
   return { installUrl: resolvedInstall, addSubscriptionUrl: resolvedAdd };
 };
 
-export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: UltimaConnectionProps) {
+export function UltimaConnection({
+  appConfig,
+  onOpenDeepLink,
+  onGoBack,
+  onRefreshAppConfig,
+}: UltimaConnectionProps) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const haptic = useHaptic();
@@ -209,6 +215,7 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
         if (pending) {
           localStorage.removeItem(pendingKey);
           localStorage.removeItem(pendingGlobalKey);
+          onRefreshAppConfig?.();
           setStep(3);
           setShowReturnConfetti(true);
           setBurst((prev) => prev + 1);
@@ -218,6 +225,7 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
         if (pendingStep2) {
           localStorage.removeItem(pendingStep2Key);
           localStorage.removeItem(pendingStep2GlobalKey);
+          onRefreshAppConfig?.();
           setStep(2);
           return;
         }
@@ -233,7 +241,7 @@ export function UltimaConnection({ appConfig, onOpenDeepLink, onGoBack }: Ultima
       window.removeEventListener('focus', applyPendingReturn);
       document.removeEventListener('visibilitychange', applyPendingReturn);
     };
-  }, [user?.id]);
+  }, [onRefreshAppConfig, user?.id]);
 
   useEffect(() => {
     const key = `${ULTIMA_CONNECTION_STATE_KEY}:${user?.id ?? 'guest'}`;

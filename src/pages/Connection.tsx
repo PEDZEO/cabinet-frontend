@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useMemo, useRef } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { openLink as sdkOpenLink } from '@telegram-apps/sdk-react';
 import { subscriptionApi } from '../api/subscription';
 import { useTelegramSDK } from '../hooks/useTelegramSDK';
@@ -22,6 +22,7 @@ export default function Connection() {
   const { isTelegramWebApp } = useTelegramSDK();
   const { isUltimaMode } = useUltimaMode();
   const { impact: hapticImpact } = useHaptic();
+  const queryClient = useQueryClient();
 
   const hapticRef = useRef(hapticImpact);
   hapticRef.current = hapticImpact;
@@ -30,9 +31,13 @@ export default function Connection() {
     data: appConfig,
     isLoading,
     error,
+    refetch: refetchAppConfig,
   } = useQuery<AppConfig>({
     queryKey: ['appConfig'],
     queryFn: () => subscriptionApi.getAppConfig(),
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 
   const { data: trialInfo } = useQuery({
@@ -53,6 +58,21 @@ export default function Connection() {
       },
     });
   }, [navigate, appConfig?.subscriptionUrl, appConfig?.hideLink]);
+
+  useEffect(() => {
+    const refresh = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+      void queryClient.invalidateQueries({ queryKey: ['appConfig'] });
+      void refetchAppConfig();
+    };
+
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', refresh);
+    return () => {
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', refresh);
+    };
+  }, [queryClient, refetchAppConfig]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -190,6 +210,10 @@ export default function Connection() {
         appConfig={appConfig}
         onOpenDeepLink={openDeepLink}
         onGoBack={handleGoBack}
+        onRefreshAppConfig={() => {
+          void queryClient.invalidateQueries({ queryKey: ['appConfig'] });
+          void refetchAppConfig();
+        }}
       />
     );
   }

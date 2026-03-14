@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { balanceApi } from '@/api/balance';
 import { type GiftPurchaseRequest, giftApi, type SentGift } from '@/api/gift';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { usePlatform } from '@/platform/hooks/usePlatform';
@@ -9,6 +10,13 @@ import { usePlatform } from '@/platform/hooks/usePlatform';
 const PENDING_GIFT_TOKEN_KEY = 'ultima_pending_gift_token';
 const PENDING_GIFT_TOKEN_TS_KEY = 'ultima_pending_gift_token_ts';
 const PENDING_GIFT_TOKEN_TTL_MS = 15 * 60 * 1000;
+const PENDING_GIFT_EXTEND_KEY = 'ultima_pending_gift_extend_v1';
+
+type PendingGiftExtend = {
+  token: string;
+  requiredAmountKopeks: number;
+  createdAt: number;
+};
 
 export function UltimaGift() {
   const { t } = useTranslation();
@@ -23,6 +31,7 @@ export function UltimaGift() {
   const [pendingGiftToken, setPendingGiftToken] = useState<string | null>(null);
   const [generatedGiftCode, setGeneratedGiftCode] = useState<string | null>(null);
   const [extendingToken, setExtendingToken] = useState<string | null>(null);
+  const [pendingGiftExtend, setPendingGiftExtend] = useState<PendingGiftExtend | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [historyExpanded, setHistoryExpanded] = useState(true);
@@ -33,6 +42,12 @@ export function UltimaGift() {
     queryFn: giftApi.getConfig,
     staleTime: 0,
     refetchOnMount: 'always',
+  });
+  const { data: balanceData } = useQuery({
+    queryKey: ['balance'],
+    queryFn: balanceApi.getBalance,
+    staleTime: 5000,
+    refetchInterval: pendingGiftExtend ? 2500 : false,
   });
   const isGiftConfigLoaded = giftConfig !== undefined;
   const { data: sentGifts = [] } = useQuery({
@@ -69,7 +84,7 @@ export function UltimaGift() {
     () => gatewayMethods.find((method) => method.method_id === giftPaymentMethod) ?? null,
     [giftPaymentMethod, gatewayMethods],
   );
-  const currentBalanceKopeks = giftConfig?.balance_kopeks ?? 0;
+  const currentBalanceKopeks = balanceData?.balance_kopeks ?? giftConfig?.balance_kopeks ?? 0;
   const selectedGiftPriceKopeks = selectedGiftPeriod?.price_kopeks ?? 0;
   const missingAmountKopeks = Math.max(0, selectedGiftPriceKopeks - currentBalanceKopeks);
   const selectedMethodMinAmountKopeks = selectedGatewayMethod?.min_amount_kopeks ?? 0;
@@ -132,6 +147,26 @@ export function UltimaGift() {
     sessionStorage.setItem(PENDING_GIFT_TOKEN_KEY, token);
     sessionStorage.setItem(PENDING_GIFT_TOKEN_TS_KEY, String(Date.now()));
   }, [searchParams]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(PENDING_GIFT_EXTEND_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as PendingGiftExtend;
+      if (!parsed?.token || !Number.isFinite(parsed?.requiredAmountKopeks)) return;
+      setPendingGiftExtend(parsed);
+    } catch {
+      // ignore malformed persisted state
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!pendingGiftExtend) {
+      localStorage.removeItem(PENDING_GIFT_EXTEND_KEY);
+      return;
+    }
+    localStorage.setItem(PENDING_GIFT_EXTEND_KEY, JSON.stringify(pendingGiftExtend));
+  }, [pendingGiftExtend]);
 
   const giftStatusQuery = useQuery({
     queryKey: ['gift-status-inline', pendingGiftToken],
@@ -272,14 +307,16 @@ export function UltimaGift() {
   };
 
   const extendGiftMutation = useMutation({
-    mutationFn: async (giftToken: string) => giftApi.extendSentGift(giftToken),
-    onMutate: (giftToken: string) => {
+    mutationFn: async (payload: { giftToken: string; source: 'manual' | 'auto' }) =>
+      giftApi.extendSentGift(payload.giftToken),
+    onMutate: ({ giftToken }) => {
       setExtendingToken(giftToken);
       setError(null);
       setSuccess(null);
     },
     onSuccess: async (result) => {
       setExtendingToken(null);
+      setPendingGiftExtend((prev) => (prev?.token === result.token ? null : prev));
       setSuccess(
         `Подарок продлен: +${result.added_days} дн. • Списано ${result.charged_amount_label}${
           result.recipient_username ? ` • Получатель: ${result.recipient_username}` : ''
@@ -292,17 +329,94 @@ export function UltimaGift() {
         queryClient.invalidateQueries({ queryKey: ['gift-received'] }),
       ]);
     },
-    onError: (rawError: unknown) => {
+    onError: async (rawError: unknown, payload) => {
       setExtendingToken(null);
-      const axiosError = rawError as { response?: { data?: { detail?: string } } };
+      const axiosError = rawError as {
+        response?: {
+          data?: {
+            detail?:
+              | string
+              | {
+                  message?: string;
+                  code?: string;
+                  missing_amount?: number;
+                  required_amount?: number;
+                  balance?: number;
+                };
+          };
+        };
+      };
       const detail = axiosError.response?.data?.detail;
-      setError(detail || 'Не удалось продлить подарок');
+      const detailObj = typeof detail === 'object' && detail ? detail : null;
+      const missingAmount =
+        typeof detailObj?.missing_amount === 'number' ? Math.max(0, detailObj.missing_amount) : 0;
+      const requiredAmount =
+        typeof detailObj?.required_amount === 'number'
+          ? Math.max(1, detailObj.required_amount)
+          : Math.max(1, currentBalanceKopeks + missingAmount);
+
+      if (payload.source === 'manual' && missingAmount > 0) {
+        const selectedMethodId = giftPaymentMethod ?? gatewayMethods[0]?.method_id ?? null;
+        const selectedMethod =
+          gatewayMethods.find((method) => method.method_id === selectedMethodId) ?? null;
+        if (!selectedMethod || !selectedMethodId) {
+          setError('Недостаточно средств и нет доступной платежки для автодоплаты');
+          return;
+        }
+
+        const selectedOption =
+          selectedMethod.sub_options?.find((option) => option.id === giftPaymentOption)?.id ??
+          selectedMethod.sub_options?.[0]?.id ??
+          undefined;
+        const topupAmount = Math.max(missingAmount, selectedMethod.min_amount_kopeks ?? 1);
+
+        try {
+          const payment = await balanceApi.createTopUp(
+            topupAmount,
+            selectedMethodId,
+            selectedOption,
+          );
+          setPendingGiftExtend({
+            token: payload.giftToken,
+            requiredAmountKopeks: requiredAmount,
+            createdAt: Date.now(),
+          });
+          setSuccess(
+            'Создана оплата на недостающую сумму. После оплаты подарок продлится автоматически.',
+          );
+          setError(null);
+          if (payment.payment_url.includes('t.me/')) {
+            openTelegramLink(payment.payment_url);
+          } else {
+            openLink(payment.payment_url);
+          }
+          return;
+        } catch {
+          setError('Не удалось создать платежку на недостающую сумму');
+          return;
+        }
+      }
+
+      if (pendingGiftExtend?.token === payload.giftToken) {
+        setError('Ожидаем оплату: как только баланс пополнится, подарок продлится автоматически.');
+        return;
+      }
+      setError(
+        (typeof detail === 'string' ? detail : detailObj?.message) || 'Не удалось продлить подарок',
+      );
     },
   });
 
+  useEffect(() => {
+    if (!pendingGiftExtend) return;
+    if (extendingToken) return;
+    if ((balanceData?.balance_kopeks ?? 0) < pendingGiftExtend.requiredAmountKopeks) return;
+    extendGiftMutation.mutate({ giftToken: pendingGiftExtend.token, source: 'auto' });
+  }, [balanceData?.balance_kopeks, extendGiftMutation, extendingToken, pendingGiftExtend]);
+
   const onRenewFromHistory = (gift: SentGift) => {
     if (extendGiftMutation.isPending) return;
-    extendGiftMutation.mutate(gift.token);
+    extendGiftMutation.mutate({ giftToken: gift.token, source: 'manual' });
   };
 
   return (
