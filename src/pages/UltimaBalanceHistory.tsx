@@ -82,6 +82,9 @@ export function UltimaBalanceHistory() {
         return t('balance.deposit');
       case 'SUBSCRIPTION_PAYMENT':
         return t('balance.subscriptionPayment');
+      case 'GIFT_PAYMENT':
+      case 'GIFT_PURCHASE':
+        return t('balance.giftPayment', { defaultValue: 'Покупка подарка' });
       case 'REFERRAL_REWARD':
         return t('balance.referralReward');
       case 'WITHDRAWAL':

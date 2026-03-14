@@ -655,6 +655,7 @@
     "deposit": "Пополнение",
     "withdrawal": "Списание",
     "subscriptionPayment": "Оплата подписки",
+    "giftPayment": "Покупка подарка",
     "referralReward": "Реферальный бонус",
     "minAmount": "Мин.",
     "maxAmount": "Макс.",

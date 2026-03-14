@@ -106,6 +106,9 @@ export default function LiteBalance() {
         return t('balance.deposit');
       case 'SUBSCRIPTION_PAYMENT':
         return t('balance.subscriptionPayment');
+      case 'GIFT_PAYMENT':
+      case 'GIFT_PURCHASE':
+        return t('balance.giftPayment', { defaultValue: 'Покупка подарка' });
       case 'REFERRAL_REWARD':
         return t('balance.referralReward');
       case 'WITHDRAWAL':
@@ -120,6 +123,9 @@ export default function LiteBalance() {
       case 'DEPOSIT':
         return 'bg-success-500/15 text-success-400 border-success-500/25';
       case 'SUBSCRIPTION_PAYMENT':
+        return 'bg-accent-500/15 text-accent-400 border-accent-500/25';
+      case 'GIFT_PAYMENT':
+      case 'GIFT_PURCHASE':
         return 'bg-accent-500/15 text-accent-400 border-accent-500/25';
       case 'REFERRAL_REWARD':
         return 'bg-warning-500/15 text-warning-400 border-warning-500/25';

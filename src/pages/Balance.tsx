@@ -145,6 +145,9 @@ function FullBalance() {
         return 'badge-success';
       case 'SUBSCRIPTION_PAYMENT':
         return 'badge-info';
+      case 'GIFT_PAYMENT':
+      case 'GIFT_PURCHASE':
+        return 'badge-info';
       case 'REFERRAL_REWARD':
         return 'badge-warning';
       case 'WITHDRAWAL':
@@ -160,6 +163,9 @@ function FullBalance() {
         return t('balance.deposit');
       case 'SUBSCRIPTION_PAYMENT':
         return t('balance.subscriptionPayment');
+      case 'GIFT_PAYMENT':
+      case 'GIFT_PURCHASE':
+        return t('balance.giftPayment', { defaultValue: 'Покупка подарка' });
       case 'REFERRAL_REWARD':
         return t('balance.referralReward');
       case 'WITHDRAWAL':
