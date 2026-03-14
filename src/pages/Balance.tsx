@@ -207,7 +207,8 @@ function FullBalance() {
           ? 'expired'
           : errorDetail.toLowerCase().includes('fully used')
             ? 'used'
-            : errorDetail.toLowerCase().includes('already used')
+            : errorDetail.toLowerCase().includes('already used') ||
+                errorDetail.toLowerCase().includes('already activated')
               ? 'already_used_by_user'
               : 'server_error';
       setPromocodeError(t(`balance.promocode.errors.${errorKey}`));
