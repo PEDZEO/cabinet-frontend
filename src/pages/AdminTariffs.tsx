@@ -173,7 +173,7 @@ function SortableTariffCard({
 
         {/* Content */}
         <div className="min-w-0 flex-1">
-          <div className="mb-1 flex items-center gap-2">
+          <div className="mb-1 flex flex-wrap items-center gap-2">
             <h3 className="truncate font-medium text-dark-100">{tariff.name}</h3>
             {tariff.is_daily ? (
               <span className="rounded bg-warning-500/20 px-2 py-0.5 text-xs text-warning-400">
