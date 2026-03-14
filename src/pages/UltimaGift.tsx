@@ -210,8 +210,6 @@ export function UltimaGift() {
     createGiftMutation.mutate();
   };
 
-  const isCheckingGiftPayment = giftStatusQuery.isFetching && !!pendingGiftToken;
-
   return (
     <div className="ultima-shell ultima-flat-frames">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(95%_70%_at_50%_45%,rgba(33,208,154,0.14),rgba(7,20,46,0.02)_62%,rgba(7,20,46,0)_100%)]" />
@@ -366,19 +364,6 @@ export function UltimaGift() {
                         defaultValue: 'Сгенерировать подарочный код',
                       })}
               </button>
-
-              {pendingGiftToken ? (
-                <button
-                  type="button"
-                  onClick={() => void giftStatusQuery.refetch()}
-                  disabled={isCheckingGiftPayment}
-                  className="mt-2 h-9 w-full rounded-xl border border-sky-200/30 bg-sky-500/20 px-3 text-[12px] font-medium text-sky-100 transition hover:bg-sky-500/25 disabled:cursor-not-allowed disabled:opacity-55"
-                >
-                  {t('balance.promocode.checkGiftPayment', {
-                    defaultValue: 'Проверить оплату',
-                  })}
-                </button>
-              ) : null}
 
               {generatedGiftCode ? (
                 <div className="mt-2 rounded-xl border border-emerald-200/15 bg-emerald-950/35 px-2.5 py-2">
