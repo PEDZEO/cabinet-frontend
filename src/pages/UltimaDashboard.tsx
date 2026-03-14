@@ -323,6 +323,27 @@ export function UltimaDashboard() {
     navigate('/support');
   };
 
+  const openDevices = () => {
+    haptic.impact('light');
+    void queryClient.prefetchQuery({
+      queryKey: ['subscription'],
+      queryFn: subscriptionApi.getSubscription,
+      staleTime: 15000,
+    });
+    void queryClient.prefetchQuery({
+      queryKey: ['devices'],
+      queryFn: subscriptionApi.getDevices,
+      staleTime: 10000,
+    });
+    void queryClient.prefetchQuery({
+      queryKey: ['device-reduction-info'],
+      queryFn: subscriptionApi.getDeviceReductionInfo,
+      staleTime: 10000,
+    });
+    void import('./UltimaDevices');
+    navigate('/ultima/devices');
+  };
+
   const hasSetupReminder = connectionStep === 2;
 
   if (!isI18nReady || !isSubscriptionReady || shouldHoldForAutoTrial) {
@@ -409,7 +430,14 @@ export function UltimaDashboard() {
               <p className="text-[32px] font-semibold leading-none tracking-[-0.02em] sm:text-[36px] lg:text-[34px]">
                 {expiryLabel}
               </p>
-              <p className="mt-2 text-base text-emerald-300/90">online</p>
+              <button
+                type="button"
+                onClick={openDevices}
+                className="mt-2 text-left text-base text-emerald-300/90 transition hover:text-emerald-200"
+              >
+                {t('lite.devicesTotal', { defaultValue: 'Устройств' })}:{' '}
+                {subscription?.device_limit ?? 0}
+              </button>
             </div>
             <span
               className={`relative inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ${statusTone.pill}`}
