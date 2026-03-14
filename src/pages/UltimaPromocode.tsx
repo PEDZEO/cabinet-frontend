@@ -324,182 +324,184 @@ export function UltimaPromocode() {
             </p>
           </div>
 
-          <div className="mt-4 rounded-2xl border border-emerald-200/10 bg-emerald-950/20 px-3 py-3">
-            <p className="text-[13px] font-medium text-white/80">
-              {t('balance.promocode.createGiftTitle', {
-                defaultValue: 'Создать подарок как промокод',
-              })}
-            </p>
-            <p className="text-white/56 mt-1 text-[11px] leading-snug">
-              {t('balance.promocode.createGiftDescription', {
-                defaultValue:
-                  'Код генерируется автоматически. Получатель просто вводит его на этой странице и активирует подарок.',
-              })}
-            </p>
-            <p className="text-white/56 mt-1 text-[11px] leading-snug">
-              {t('balance.promocode.giftAutoBalanceTopupDescription', {
-                defaultValue:
-                  'Если на балансе хватает средств — подарок оплачивается сразу. Если не хватает — к оплате уйдет только недостающая сумма.',
-              })}
-            </p>
+          {giftConfig?.is_enabled ? (
+            <div className="mt-4 rounded-2xl border border-emerald-200/10 bg-emerald-950/20 px-3 py-3">
+              <p className="text-[13px] font-medium text-white/80">
+                {t('balance.promocode.createGiftTitle', {
+                  defaultValue: 'Создать подарок как промокод',
+                })}
+              </p>
+              <p className="text-white/56 mt-1 text-[11px] leading-snug">
+                {t('balance.promocode.createGiftDescription', {
+                  defaultValue:
+                    'Код генерируется автоматически. Получатель просто вводит его на этой странице и активирует подарок.',
+                })}
+              </p>
+              <p className="text-white/56 mt-1 text-[11px] leading-snug">
+                {t('balance.promocode.giftAutoBalanceTopupDescription', {
+                  defaultValue:
+                    'Если на балансе хватает средств — подарок оплачивается сразу. Если не хватает — к оплате уйдет только недостающая сумма.',
+                })}
+              </p>
 
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              <select
-                value={giftTariffId ?? ''}
-                onChange={(event) => {
-                  const next = Number(event.target.value);
-                  setGiftTariffId(Number.isFinite(next) ? next : null);
-                }}
-                className="border-emerald-200/12 h-10 min-w-0 rounded-xl border bg-emerald-950/35 px-2.5 text-[13px] text-white"
-              >
-                {giftTariffOptions.map((tariff) => (
-                  <option key={tariff.id} value={tariff.id}>
-                    {tariff.name}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={giftPeriodDays ?? ''}
-                onChange={(event) => {
-                  const next = Number(event.target.value);
-                  setGiftPeriodDays(Number.isFinite(next) ? next : null);
-                }}
-                className="border-emerald-200/12 h-10 min-w-0 rounded-xl border bg-emerald-950/35 px-2.5 text-[13px] text-white"
-              >
-                {giftPeriods.map((period) => (
-                  <option key={period.days} value={period.days}>
-                    {period.days} {t('gift.days', { defaultValue: 'дн.' })}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {requiresGatewayPayment ? (
-              <div className="mt-2 space-y-2">
-                <div className="rounded-xl border border-sky-300/20 bg-sky-500/10 px-2.5 py-2">
-                  <p className="text-[11px] leading-snug text-sky-100">
-                    {t('balance.promocode.giftNeedTopupHint', {
-                      defaultValue:
-                        'Для покупки подарка не хватает средств на балансе. Оплатите недостающую сумму через выбранную платежку.',
-                    })}
-                  </p>
-                </div>
+              <div className="mt-2 grid grid-cols-2 gap-2">
                 <select
-                  value={giftPaymentMethod ?? ''}
-                  onChange={(event) => setGiftPaymentMethod(event.target.value || null)}
-                  className="border-emerald-200/12 h-10 w-full rounded-xl border bg-emerald-950/35 px-2.5 text-[13px] text-white"
+                  value={giftTariffId ?? ''}
+                  onChange={(event) => {
+                    const next = Number(event.target.value);
+                    setGiftTariffId(Number.isFinite(next) ? next : null);
+                  }}
+                  className="border-emerald-200/12 h-10 min-w-0 rounded-xl border bg-emerald-950/35 px-2.5 text-[13px] text-white"
                 >
-                  {gatewayMethods.map((method) => (
-                    <option key={method.method_id} value={method.method_id}>
-                      {method.display_name}
+                  {giftTariffOptions.map((tariff) => (
+                    <option key={tariff.id} value={tariff.id}>
+                      {tariff.name}
                     </option>
                   ))}
                 </select>
 
-                {(selectedGatewayMethod?.sub_options?.length ?? 0) > 0 ? (
+                <select
+                  value={giftPeriodDays ?? ''}
+                  onChange={(event) => {
+                    const next = Number(event.target.value);
+                    setGiftPeriodDays(Number.isFinite(next) ? next : null);
+                  }}
+                  className="border-emerald-200/12 h-10 min-w-0 rounded-xl border bg-emerald-950/35 px-2.5 text-[13px] text-white"
+                >
+                  {giftPeriods.map((period) => (
+                    <option key={period.days} value={period.days}>
+                      {period.days} {t('gift.days', { defaultValue: 'дн.' })}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {requiresGatewayPayment ? (
+                <div className="mt-2 space-y-2">
+                  <div className="rounded-xl border border-sky-300/20 bg-sky-500/10 px-2.5 py-2">
+                    <p className="text-[11px] leading-snug text-sky-100">
+                      {t('balance.promocode.giftNeedTopupHint', {
+                        defaultValue:
+                          'Для покупки подарка не хватает средств на балансе. Оплатите недостающую сумму через выбранную платежку.',
+                      })}
+                    </p>
+                  </div>
                   <select
-                    value={giftPaymentOption ?? ''}
-                    onChange={(event) => setGiftPaymentOption(event.target.value || null)}
+                    value={giftPaymentMethod ?? ''}
+                    onChange={(event) => setGiftPaymentMethod(event.target.value || null)}
                     className="border-emerald-200/12 h-10 w-full rounded-xl border bg-emerald-950/35 px-2.5 text-[13px] text-white"
                   >
-                    {selectedGatewayMethod?.sub_options?.map((option) => (
-                      <option key={option.id} value={option.id}>
-                        {option.name}
+                    {gatewayMethods.map((method) => (
+                      <option key={method.method_id} value={method.method_id}>
+                        {method.display_name}
                       </option>
                     ))}
                   </select>
-                ) : null}
-              </div>
-            ) : null}
 
-            <div className="border-emerald-200/12 mt-2 flex items-center justify-between rounded-xl border bg-emerald-950/35 px-2.5 py-2">
-              <span className="text-[11px] text-white/65">
-                {t('balance.promocode.giftPrice', { defaultValue: 'Цена подарка' })}
-              </span>
-              <span className="text-[13px] font-medium text-white">
-                {selectedGiftPeriod?.price_label ?? '—'}
-              </span>
-            </div>
+                  {(selectedGatewayMethod?.sub_options?.length ?? 0) > 0 ? (
+                    <select
+                      value={giftPaymentOption ?? ''}
+                      onChange={(event) => setGiftPaymentOption(event.target.value || null)}
+                      className="border-emerald-200/12 h-10 w-full rounded-xl border bg-emerald-950/35 px-2.5 text-[13px] text-white"
+                    >
+                      {selectedGatewayMethod?.sub_options?.map((option) => (
+                        <option key={option.id} value={option.id}>
+                          {option.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : null}
+                </div>
+              ) : null}
 
-            <div className="border-emerald-200/12 mt-2 flex items-center justify-between rounded-xl border bg-emerald-950/35 px-2.5 py-2">
-              <span className="text-[11px] text-white/65">
-                {t('balance.promocode.balanceAvailable', { defaultValue: 'Баланс' })}
-              </span>
-              <span className="text-[13px] font-medium text-white">
-                {(currentBalanceKopeks / 100).toFixed(2)} ₽
-              </span>
-            </div>
-
-            {requiresGatewayPayment ? (
-              <div className="mt-2 flex items-center justify-between rounded-xl border border-sky-300/20 bg-sky-500/10 px-2.5 py-2">
-                <span className="text-[11px] text-sky-100/85">
-                  {t('balance.promocode.needToPay', { defaultValue: 'К оплате (недостающее)' })}
+              <div className="border-emerald-200/12 mt-2 flex items-center justify-between rounded-xl border bg-emerald-950/35 px-2.5 py-2">
+                <span className="text-[11px] text-white/65">
+                  {t('balance.promocode.giftPrice', { defaultValue: 'Цена подарка' })}
                 </span>
-                <span className="text-[13px] font-semibold text-sky-100">
-                  {(topupAmountKopeks / 100).toFixed(2)} ₽
+                <span className="text-[13px] font-medium text-white">
+                  {selectedGiftPeriod?.price_label ?? '—'}
                 </span>
               </div>
-            ) : null}
 
-            <button
-              type="button"
-              onClick={onCreateGift}
-              disabled={
-                createGiftMutation.isPending ||
-                !giftConfig?.is_enabled ||
-                giftTariffId == null ||
-                giftPeriodDays == null ||
-                (requiresGatewayPayment && !giftPaymentMethod)
-              }
-              className="mt-2 h-10 w-full rounded-xl border border-emerald-200/25 bg-emerald-400/85 px-3 text-[13px] font-medium text-slate-900 transition hover:bg-emerald-300/90 disabled:cursor-not-allowed disabled:opacity-45"
-            >
-              {createGiftMutation.isPending
-                ? t('common.loading')
-                : requiresGatewayPayment
-                  ? t('balance.promocode.createGiftAndPayButton', {
-                      defaultValue: 'Оплатить и создать код',
-                    })
-                  : t('balance.promocode.createGiftButton', {
-                      defaultValue: 'Сгенерировать подарочный код',
-                    })}
-            </button>
+              <div className="border-emerald-200/12 mt-2 flex items-center justify-between rounded-xl border bg-emerald-950/35 px-2.5 py-2">
+                <span className="text-[11px] text-white/65">
+                  {t('balance.promocode.balanceAvailable', { defaultValue: 'Баланс' })}
+                </span>
+                <span className="text-[13px] font-medium text-white">
+                  {(currentBalanceKopeks / 100).toFixed(2)} ₽
+                </span>
+              </div>
 
-            {pendingGiftToken ? (
+              {requiresGatewayPayment ? (
+                <div className="mt-2 flex items-center justify-between rounded-xl border border-sky-300/20 bg-sky-500/10 px-2.5 py-2">
+                  <span className="text-[11px] text-sky-100/85">
+                    {t('balance.promocode.needToPay', { defaultValue: 'К оплате (недостающее)' })}
+                  </span>
+                  <span className="text-[13px] font-semibold text-sky-100">
+                    {(topupAmountKopeks / 100).toFixed(2)} ₽
+                  </span>
+                </div>
+              ) : null}
+
               <button
                 type="button"
-                onClick={() => void giftStatusQuery.refetch()}
-                disabled={isCheckingGiftPayment}
-                className="mt-2 h-9 w-full rounded-xl border border-sky-200/30 bg-sky-500/20 px-3 text-[12px] font-medium text-sky-100 transition hover:bg-sky-500/25 disabled:cursor-not-allowed disabled:opacity-55"
+                onClick={onCreateGift}
+                disabled={
+                  createGiftMutation.isPending ||
+                  !giftConfig?.is_enabled ||
+                  giftTariffId == null ||
+                  giftPeriodDays == null ||
+                  (requiresGatewayPayment && !giftPaymentMethod)
+                }
+                className="mt-2 h-10 w-full rounded-xl border border-emerald-200/25 bg-emerald-400/85 px-3 text-[13px] font-medium text-slate-900 transition hover:bg-emerald-300/90 disabled:cursor-not-allowed disabled:opacity-45"
               >
-                {isCheckingGiftPayment
+                {createGiftMutation.isPending
                   ? t('common.loading')
-                  : t('balance.promocode.checkGiftPayment', {
-                      defaultValue: 'Проверить оплату',
-                    })}
+                  : requiresGatewayPayment
+                    ? t('balance.promocode.createGiftAndPayButton', {
+                        defaultValue: 'Оплатить и создать код',
+                      })
+                    : t('balance.promocode.createGiftButton', {
+                        defaultValue: 'Сгенерировать подарочный код',
+                      })}
               </button>
-            ) : null}
 
-            {generatedGiftCode ? (
-              <div className="mt-2 rounded-xl border border-emerald-200/15 bg-emerald-950/35 px-2.5 py-2">
-                <p className="text-white/56 text-[11px]">
-                  {t('balance.promocode.generatedGiftCode', { defaultValue: 'Подарочный код' })}
-                </p>
-                <div className="mt-1 flex items-center gap-2">
-                  <p className="min-w-0 flex-1 break-all font-mono text-[13px] text-emerald-100">
-                    {generatedGiftCode}
+              {pendingGiftToken ? (
+                <button
+                  type="button"
+                  onClick={() => void giftStatusQuery.refetch()}
+                  disabled={isCheckingGiftPayment}
+                  className="mt-2 h-9 w-full rounded-xl border border-sky-200/30 bg-sky-500/20 px-3 text-[12px] font-medium text-sky-100 transition hover:bg-sky-500/25 disabled:cursor-not-allowed disabled:opacity-55"
+                >
+                  {isCheckingGiftPayment
+                    ? t('common.loading')
+                    : t('balance.promocode.checkGiftPayment', {
+                        defaultValue: 'Проверить оплату',
+                      })}
+                </button>
+              ) : null}
+
+              {generatedGiftCode ? (
+                <div className="mt-2 rounded-xl border border-emerald-200/15 bg-emerald-950/35 px-2.5 py-2">
+                  <p className="text-white/56 text-[11px]">
+                    {t('balance.promocode.generatedGiftCode', { defaultValue: 'Подарочный код' })}
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => void navigator.clipboard.writeText(generatedGiftCode)}
-                    className="h-8 shrink-0 rounded-lg border border-emerald-200/20 bg-emerald-900/35 px-2 text-[12px] text-white/85"
-                  >
-                    {t('common.copy', { defaultValue: 'Копировать' })}
-                  </button>
+                  <div className="mt-1 flex items-center gap-2">
+                    <p className="min-w-0 flex-1 break-all font-mono text-[13px] text-emerald-100">
+                      {generatedGiftCode}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => void navigator.clipboard.writeText(generatedGiftCode)}
+                      className="h-8 shrink-0 rounded-lg border border-emerald-200/20 bg-emerald-900/35 px-2 text-[12px] text-white/85"
+                    >
+                      {t('common.copy', { defaultValue: 'Копировать' })}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ) : null}
-          </div>
+              ) : null}
+            </div>
+          ) : null}
         </section>
 
         <div className="ultima-nav-dock">

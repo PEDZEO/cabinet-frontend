@@ -174,23 +174,25 @@ function SortableTariffCard({
         {/* Content */}
         <div className="min-w-0 flex-1">
           <div className="mb-1 flex flex-wrap items-center gap-2">
-            <h3 className="truncate font-medium text-dark-100">{tariff.name}</h3>
+            <h3 className="basis-full text-sm font-medium text-dark-100 sm:basis-auto sm:text-base">
+              {tariff.name}
+            </h3>
             {tariff.is_daily ? (
-              <span className="rounded bg-warning-500/20 px-2 py-0.5 text-xs text-warning-400">
+              <span className="shrink-0 rounded bg-warning-500/20 px-2 py-0.5 text-xs leading-none text-warning-400">
                 {t('admin.tariffs.dailyType')}
               </span>
             ) : (
-              <span className="rounded bg-accent-500/20 px-2 py-0.5 text-xs text-accent-400">
+              <span className="shrink-0 rounded bg-accent-500/20 px-2 py-0.5 text-xs leading-none text-accent-400">
                 {t('admin.tariffs.periodType')}
               </span>
             )}
             {tariff.is_trial_available && (
-              <span className="rounded bg-success-500/20 px-2 py-0.5 text-xs text-success-400">
+              <span className="shrink-0 rounded bg-success-500/20 px-2 py-0.5 text-xs leading-none text-success-400">
                 {t('admin.tariffs.trial')}
               </span>
             )}
             {tariff.show_in_gift && (
-              <span className="inline-flex items-center gap-1 rounded bg-purple-500/20 px-2 py-0.5 text-xs text-purple-400">
+              <span className="inline-flex shrink-0 items-center gap-1 rounded bg-purple-500/20 px-2 py-0.5 text-xs leading-none text-purple-400">
                 <svg
                   className="h-3 w-3"
                   fill="none"
