@@ -93,6 +93,11 @@ export async function warmUltimaStartup(
       queryFn: brandingApi.getBranding,
       staleTime: 60000,
     }),
+    queryClient.prefetchQuery({
+      queryKey: ['ultima-theme-config'],
+      queryFn: brandingApi.getUltimaThemeConfig,
+      staleTime: 60000,
+    }),
 
     queryClient.prefetchQuery({
       queryKey: ['linked-identities'],

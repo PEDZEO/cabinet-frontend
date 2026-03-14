@@ -2,6 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --ultima-color-primary: #1bd29f;
+  --ultima-color-primary-text: #ffffff;
+  --ultima-color-secondary: #0c2d2a;
+  --ultima-color-secondary-text: #f7fffc;
+  --ultima-color-nav-bg: #0f3a38;
+  --ultima-color-nav-active: #1bd29f;
+  --ultima-color-nav-text: #d6f6ee;
+  --ultima-color-bg-top: #031824;
+  --ultima-color-bg-bottom: #06232b;
+  --ultima-color-aura: #21d09a;
+  --ultima-color-ring: #b8ffec;
+  --ultima-color-surface: #0c2d2a;
+  --ultima-color-surface-border: #92f4d8;
+  --ultima-color-scrollbar-thumb: #49e9b3;
+  --ultima-color-scrollbar-track: #0c262a;
+  --ultima-animation-content-enter-ms: 320;
+  --ultima-animation-tap-ring-ms: 780;
+  --ultima-animation-ring-wave-sec: 18;
+  --ultima-animation-slider-glow-sec: 2.6;
+  --ultima-animation-step-ring-sec: 5.8;
+  --ultima-animation-success-wave-ms: 1050;
+  --ultima-animation-item-enter-ms: 280;
+}
+
 /* Animated gradient border — @property enables CSS-only angle animation */
 @property --border-angle {
   syntax: '<angle>';
@@ -72,7 +97,7 @@
 }
 
 .ultima-ring-wave {
-  animation: ultima-ring-wave 18s linear infinite;
+  animation: ultima-ring-wave calc(var(--ultima-animation-ring-wave-sec, 18) * 1s) linear infinite;
   will-change: transform, opacity;
   transform-origin: center;
   backface-visibility: hidden;
@@ -90,10 +115,15 @@
 }
 
 .ultima-tap-ring {
-  border: 1px solid rgba(184, 255, 236, 0.42);
+  border: 1px solid color-mix(in srgb, var(--ultima-color-ring) 42%, transparent);
   border-radius: 9999px;
-  background: radial-gradient(circle, rgba(180, 255, 231, 0.2) 0%, rgba(180, 255, 231, 0) 66%);
-  animation: ultima-tap-ring 780ms cubic-bezier(0.18, 0.72, 0.25, 1) forwards;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--ultima-color-ring) 22%, transparent) 0%,
+    transparent 66%
+  );
+  animation: ultima-tap-ring calc(var(--ultima-animation-tap-ring-ms, 780) * 1ms)
+    cubic-bezier(0.18, 0.72, 0.25, 1) forwards;
   will-change: transform, opacity;
 }
 
@@ -111,7 +141,8 @@
 }
 
 .ultima-content-enter {
-  animation: ultima-content-enter 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: ultima-content-enter calc(var(--ultima-animation-content-enter-ms, 320) * 1ms)
+    cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 @keyframes ultima-slider-glow {
@@ -130,7 +161,8 @@
 }
 
 .ultima-slider-glow {
-  animation: ultima-slider-glow 2.6s ease-in-out infinite;
+  animation: ultima-slider-glow calc(var(--ultima-animation-slider-glow-sec, 2.6) * 1s) ease-in-out
+    infinite;
   will-change: transform, opacity;
 }
 
@@ -204,7 +236,8 @@
 }
 
 .ultima-step-ring {
-  animation: ultima-step-ring-breathe 5.8s ease-in-out infinite;
+  animation: ultima-step-ring-breathe calc(var(--ultima-animation-step-ring-sec, 5.8) * 1s)
+    ease-in-out infinite;
   transform-origin: center;
   will-change: transform, opacity;
 }
@@ -232,7 +265,8 @@
 }
 
 .ultima-success-wave {
-  animation: ultima-success-wave 1.05s cubic-bezier(0.16, 0.84, 0.24, 1) forwards;
+  animation: ultima-success-wave calc(var(--ultima-animation-success-wave-ms, 1050) * 1ms)
+    cubic-bezier(0.16, 0.84, 0.24, 1) forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -257,7 +291,8 @@
 
 .ultima-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(95, 255, 207, 0.46) rgba(12, 38, 42, 0.36);
+  scrollbar-color: color-mix(in srgb, var(--ultima-color-scrollbar-thumb) 80%, transparent)
+    color-mix(in srgb, var(--ultima-color-scrollbar-track) 36%, transparent);
 }
 
 .ultima-scrollbar::-webkit-scrollbar {
@@ -267,17 +302,25 @@
 .ultima-scrollbar::-webkit-scrollbar-track {
   margin: 8px 0;
   border-radius: 9999px;
-  background: rgba(12, 38, 42, 0.36);
+  background: color-mix(in srgb, var(--ultima-color-scrollbar-track) 36%, transparent);
 }
 
 .ultima-scrollbar::-webkit-scrollbar-thumb {
   border-radius: 9999px;
-  border: 1px solid rgba(150, 255, 227, 0.2);
-  background: linear-gradient(180deg, rgba(73, 233, 179, 0.9) 0%, rgba(45, 171, 142, 0.86) 100%);
+  border: 1px solid color-mix(in srgb, var(--ultima-color-ring) 20%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ultima-color-scrollbar-thumb) 92%, transparent) 0%,
+    color-mix(in srgb, var(--ultima-color-scrollbar-thumb) 76%, #000000) 100%
+  );
 }
 
 .ultima-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, rgba(93, 245, 196, 0.94) 0%, rgba(52, 192, 160, 0.9) 100%);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ultima-color-scrollbar-thumb) 98%, #ffffff) 0%,
+    color-mix(in srgb, var(--ultima-color-scrollbar-thumb) 88%, #000000) 100%
+  );
 }
 
 .ultima-flat-frames [class*='border'] {
@@ -289,10 +332,26 @@
   height: 100svh;
   min-height: 100dvh;
   overflow: hidden;
-  background: transparent;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--ultima-color-bg-top) 96%, #000000) 0%,
+    color-mix(in srgb, var(--ultima-color-bg-bottom) 94%, #000000) 100%
+  );
   padding-inline: clamp(12px, 3vw, 16px);
   padding-top: clamp(12px, 2.2vh, 16px);
   padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+}
+
+.ultima-shell-aura {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    95% 70% at 50% 45%,
+    color-mix(in srgb, var(--ultima-color-aura) 16%, transparent),
+    transparent 62%,
+    transparent 100%
+  );
 }
 
 .ultima-shell-inner {
@@ -316,7 +375,8 @@
 .ultima-stagger-list > * {
   opacity: 1;
   transform: translateY(0);
-  animation: ultima-item-in 280ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: ultima-item-in calc(var(--ultima-animation-item-enter-ms, 280) * 1ms)
+    cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .ultima-stagger-list > :nth-child(1) {

@@ -17,6 +17,7 @@ import { ToastProvider } from './components/Toast';
 import { TooltipProvider } from './components/primitives/Tooltip';
 import { isInTelegramWebApp } from './hooks/useTelegramSDK';
 import { getCachedUltimaMode } from './hooks/useUltimaMode';
+import { useUltimaThemeConfig } from './features/ultima/theme';
 
 const TWEMOJI_OPTIONS = { className: 'twemoji', folder: 'svg', ext: '.svg' } as const;
 
@@ -101,6 +102,7 @@ function TelegramBackButton() {
 export function AppWithNavigator() {
   const isTelegram = isInTelegramWebApp();
   const { ready } = useTranslation();
+  useUltimaThemeConfig();
 
   return (
     <BrowserRouter>

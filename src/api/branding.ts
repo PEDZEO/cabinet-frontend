@@ -41,6 +41,56 @@ export interface AnalyticsCounters {
   google_ads_label: string;
 }
 
+export interface UltimaThemeConfig {
+  primaryColor: string;
+  primaryTextColor: string;
+  secondaryColor: string;
+  secondaryTextColor: string;
+  navBackgroundColor: string;
+  navActiveColor: string;
+  navTextColor: string;
+  backgroundTopColor: string;
+  backgroundBottomColor: string;
+  auraColor: string;
+  ringColor: string;
+  surfaceColor: string;
+  surfaceBorderColor: string;
+  scrollbarThumbColor: string;
+  scrollbarTrackColor: string;
+  contentEnterMs: number;
+  tapRingMs: number;
+  ringWaveSec: number;
+  sliderGlowSec: number;
+  stepRingSec: number;
+  successWaveMs: number;
+  itemEnterMs: number;
+}
+
+export const DEFAULT_ULTIMA_THEME_CONFIG: UltimaThemeConfig = {
+  primaryColor: '#1bd29f',
+  primaryTextColor: '#ffffff',
+  secondaryColor: '#0c2d2a',
+  secondaryTextColor: '#f7fffc',
+  navBackgroundColor: '#0f3a38',
+  navActiveColor: '#1bd29f',
+  navTextColor: '#d6f6ee',
+  backgroundTopColor: '#031824',
+  backgroundBottomColor: '#06232b',
+  auraColor: '#21d09a',
+  ringColor: '#b8ffec',
+  surfaceColor: '#0c2d2a',
+  surfaceBorderColor: '#92f4d8',
+  scrollbarThumbColor: '#49e9b3',
+  scrollbarTrackColor: '#0c262a',
+  contentEnterMs: 320,
+  tapRingMs: 780,
+  ringWaveSec: 18,
+  sliderGlowSec: 2.6,
+  stepRingSec: 5.8,
+  successWaveMs: 1050,
+  itemEnterMs: 280,
+};
+
 const BRANDING_CACHE_KEY = 'cabinet_branding';
 const LOGO_PRELOADED_KEY = 'cabinet_logo_preloaded';
 
@@ -374,6 +424,37 @@ export const brandingApi = {
   // Update analytics counters (admin only)
   updateAnalyticsCounters: async (data: Partial<AnalyticsCounters>): Promise<AnalyticsCounters> => {
     const response = await apiClient.patch<AnalyticsCounters>('/cabinet/branding/analytics', data);
+    return response.data;
+  },
+
+  // Get ultima visual config (public)
+  getUltimaThemeConfig: async (): Promise<UltimaThemeConfig> => {
+    try {
+      const response = await apiClient.get<UltimaThemeConfig>(
+        '/cabinet/branding/ultima-theme-config',
+      );
+      return response.data;
+    } catch {
+      return DEFAULT_ULTIMA_THEME_CONFIG;
+    }
+  },
+
+  // Update ultima visual config (admin only)
+  updateUltimaThemeConfig: async (
+    config: Partial<UltimaThemeConfig>,
+  ): Promise<UltimaThemeConfig> => {
+    const response = await apiClient.patch<UltimaThemeConfig>(
+      '/cabinet/branding/ultima-theme-config',
+      config,
+    );
+    return response.data;
+  },
+
+  // Reset ultima visual config (admin only)
+  resetUltimaThemeConfig: async (): Promise<UltimaThemeConfig> => {
+    const response = await apiClient.post<UltimaThemeConfig>(
+      '/cabinet/branding/ultima-theme-config/reset',
+    );
     return response.data;
   },
 };

@@ -98,7 +98,7 @@ export default function Login() {
               : 'calc(1rem + env(safe-area-inset-bottom, 0px))',
         }}
       >
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(95%_70%_at_50%_45%,rgba(33,208,154,0.16),rgba(7,20,46,0.02)_62%,rgba(7,20,46,0)_100%)]" />
+        <div className="ultima-shell-aura" />
         {[0, 2.8, 5.6].map((delay) => (
           <div
             key={delay}

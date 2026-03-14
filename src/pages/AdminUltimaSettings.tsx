@@ -37,6 +37,19 @@ const DocIcon = () => (
   </svg>
 );
 
+const PaletteIcon = () => (
+  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M12 3a9 9 0 0 0-9 9c0 3.9 3.1 7 7 7h1.2a1.8 1.8 0 0 0 0-3.6h-.9a1.8 1.8 0 1 1 0-3.6h5.4A5.3 5.3 0 0 0 21 6.5 3.5 3.5 0 0 0 17.5 3H12Z"
+    />
+    <circle cx="7.5" cy="9.5" r="1" />
+    <circle cx="11" cy="7.5" r="1" />
+    <circle cx="15" cy="7.8" r="1" />
+  </svg>
+);
+
 export default function AdminUltimaSettings() {
   const { t } = useTranslation();
 
@@ -96,6 +109,26 @@ export default function AdminUltimaSettings() {
                 {t('admin.ultimaSettings.startMessageDesc', {
                   defaultValue:
                     'Отдельная настройка текста и кнопки стартового сообщения Ultima в боте.',
+                })}
+              </span>
+            </span>
+          </Link>
+          <Link
+            to="/admin/ultima-settings/theme"
+            className="group flex items-start gap-3 rounded-xl border border-dark-700/50 bg-dark-800/40 px-4 py-3 transition-colors hover:border-violet-400/40 hover:bg-dark-800/70"
+          >
+            <span className="mt-0.5 text-violet-300">
+              <PaletteIcon />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-medium text-dark-100">
+                {t('admin.ultimaSettings.themeTitle', {
+                  defaultValue: 'Тема и анимации Ultima',
+                })}
+              </span>
+              <span className="block text-xs text-dark-400">
+                {t('admin.ultimaSettings.themeDesc', {
+                  defaultValue: 'Полная кастомизация цветов и скорости анимаций Ultima режима.',
                 })}
               </span>
             </span>

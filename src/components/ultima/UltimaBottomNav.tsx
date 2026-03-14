@@ -71,8 +71,8 @@ export function UltimaBottomNav({
 
   const getButtonClassName = (isActive: boolean) =>
     isActive
-      ? 'flex h-11 items-center justify-center rounded-[16px] border border-[#7af4d4]/35 bg-[#1bd29f] text-white shadow-[0_8px_20px_rgba(20,209,157,0.32),inset_0_1px_0_rgba(255,255,255,0.24)] translate-y-[-1px] transition-all duration-200 active:translate-y-0 active:scale-[0.985]'
-      : 'flex h-11 items-center justify-center rounded-[16px] text-white/78 transition-all duration-200 hover:bg-white/8 hover:translate-y-[-1px] active:translate-y-0 active:scale-[0.985]';
+      ? 'flex h-11 items-center justify-center rounded-[16px] border text-[var(--ultima-color-primary-text)] shadow-[0_8px_20px_rgba(20,209,157,0.32),inset_0_1px_0_rgba(255,255,255,0.24)] translate-y-[-1px] transition-all duration-200 active:translate-y-0 active:scale-[0.985]'
+      : 'flex h-11 items-center justify-center rounded-[16px] text-[var(--ultima-color-nav-text)]/78 transition-all duration-200 hover:bg-white/8 hover:translate-y-[-1px] active:translate-y-0 active:scale-[0.985]';
 
   const handlePointerMove =
     (tab: UltimaBottomNavTab) => (event: PointerEvent<HTMLButtonElement>) => {
@@ -94,11 +94,30 @@ export function UltimaBottomNav({
     return {
       transform: `translate3d(${offset.x}px, ${baseY + offset.y}px, 0)`,
       willChange: 'transform',
+      ...(isActive
+        ? {
+            backgroundColor: 'var(--ultima-color-nav-active)',
+            borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 35%, transparent)',
+            color: 'var(--ultima-color-primary-text)',
+            boxShadow:
+              '0 8px 20px color-mix(in srgb, var(--ultima-color-nav-active) 34%, transparent), inset 0 1px 0 rgba(255,255,255,0.24)',
+          }
+        : null),
     };
   };
 
   return (
-    <nav className="ultima-bottom-nav grid grid-cols-4 gap-1.5 rounded-[22px] bg-[linear-gradient(180deg,rgba(24,92,76,0.76),rgba(10,48,40,0.92))] p-1.5 text-white/80 shadow-[0_14px_34px_rgba(3,9,18,0.45),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-xl">
+    <nav
+      className="ultima-bottom-nav grid grid-cols-4 gap-1.5 rounded-[22px] p-1.5 shadow-[0_14px_34px_rgba(3,9,18,0.45),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-xl"
+      style={{
+        background: `linear-gradient(
+          180deg,
+          color-mix(in srgb, var(--ultima-color-nav-bg) 76%, transparent),
+          color-mix(in srgb, var(--ultima-color-nav-bg) 92%, #000)
+        )`,
+        color: 'var(--ultima-color-nav-text)',
+      }}
+    >
       <button
         type="button"
         data-ultima-nav-btn="1"
