@@ -527,40 +527,6 @@ export default function UltimaAccountLinking() {
                   'Готово. Привязка завершена. При необходимости можно создать новый код.'}
               </div>
 
-              <div className="border-white/12 sticky bottom-3 z-20 rounded-2xl border bg-[rgba(7,18,33,0.82)] p-2 backdrop-blur-xl">
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant="secondary"
-                    onClick={() => previewLinkCodeMutation.mutate(normalizedLinkCode)}
-                    loading={previewLinkCodeMutation.isPending}
-                    disabled={!hasLinkCode}
-                  >
-                    Проверить
-                  </Button>
-                  <Button
-                    onClick={() => confirmLinkCodeMutation.mutate(normalizedLinkCode)}
-                    loading={confirmLinkCodeMutation.isPending}
-                    disabled={!canConfirmLink}
-                  >
-                    Привязать
-                  </Button>
-                  {linkFlowStep === 'manual' && (
-                    <Button
-                      onClick={() =>
-                        manualMergeMutation.mutate({
-                          code: normalizedLinkCode,
-                          comment: manualMergeComment.trim() || undefined,
-                        })
-                      }
-                      loading={manualMergeMutation.isPending}
-                      disabled={!hasLinkCode}
-                    >
-                      Отправить в поддержку
-                    </Button>
-                  )}
-                </div>
-              </div>
-
               {linkPreview && (
                 <div className="border-white/12 bg-white/6 rounded-2xl border p-3">
                   <p className="text-white/74 mb-2 text-sm">
@@ -701,6 +667,43 @@ export default function UltimaAccountLinking() {
               )}
             </div>
           </section>
+        </div>
+
+        <div className="border-white/12 mb-2 rounded-2xl border bg-[rgba(7,18,33,0.9)] p-2 backdrop-blur-xl">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="secondary"
+              className="border-emerald-200/20 bg-emerald-950/45 text-emerald-100 hover:bg-emerald-900/45"
+              onClick={() => previewLinkCodeMutation.mutate(normalizedLinkCode)}
+              loading={previewLinkCodeMutation.isPending}
+              disabled={!hasLinkCode}
+            >
+              Проверить
+            </Button>
+            <Button
+              className="bg-emerald-400 text-slate-950 hover:bg-emerald-300"
+              onClick={() => confirmLinkCodeMutation.mutate(normalizedLinkCode)}
+              loading={confirmLinkCodeMutation.isPending}
+              disabled={!canConfirmLink}
+            >
+              Привязать
+            </Button>
+            {linkFlowStep === 'manual' && (
+              <Button
+                className="bg-emerald-400 text-slate-950 hover:bg-emerald-300"
+                onClick={() =>
+                  manualMergeMutation.mutate({
+                    code: normalizedLinkCode,
+                    comment: manualMergeComment.trim() || undefined,
+                  })
+                }
+                loading={manualMergeMutation.isPending}
+                disabled={!hasLinkCode}
+              >
+                Отправить в поддержку
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="ultima-nav-dock">

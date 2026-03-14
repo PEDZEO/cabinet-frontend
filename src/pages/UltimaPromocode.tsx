@@ -104,7 +104,7 @@ export function UltimaPromocode() {
               type="button"
               onClick={onApply}
               disabled={activateMutation.isPending || !promocode.trim()}
-              className="h-11 shrink-0 rounded-xl border border-sky-200/30 bg-sky-500/85 px-3 text-[13px] font-medium text-white transition hover:bg-sky-400/90 disabled:cursor-not-allowed disabled:opacity-45"
+              className="h-11 shrink-0 rounded-xl border border-emerald-200/30 bg-emerald-400/90 px-3 text-[13px] font-medium text-slate-950 transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-45"
             >
               {activateMutation.isPending ? t('common.loading') : t('balance.promocode.activate')}
             </button>
