@@ -3251,6 +3251,13 @@
       "ultimaStartSaved": "Ultima /start updated",
       "ultimaStartSaveError": "Failed to save Ultima /start",
       "ultimaStartValidationError": "Fill in both message text and button text",
+      "ultimaNotificationsTitle": "Ultima notification buttons",
+      "ultimaNotificationsSubtitle": "Only these miniapp buttons will be used in Ultima notifications.",
+      "ultimaNotificationsEnabled": "Enabled",
+      "ultimaNotificationsAddButton": "Add notification button",
+      "ultimaNotificationsFillDefaults": "Fill defaults",
+      "ultimaNotificationsButtonTextPlaceholder": "Notification button text",
+      "ultimaNotificationsValidationError": "Add at least one notification button",
       "statsTab": "Statistics",
       "stats": {
         "period": "Period",

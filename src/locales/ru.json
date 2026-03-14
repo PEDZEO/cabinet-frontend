@@ -3802,6 +3802,13 @@
       "ultimaStartSaved": "Ultima /start обновлен",
       "ultimaStartSaveError": "Не удалось сохранить Ultima /start",
       "ultimaStartValidationError": "Заполните текст сообщения и текст кнопки",
+      "ultimaNotificationsTitle": "Кнопки уведомлений Ultima",
+      "ultimaNotificationsSubtitle": "Для всех уведомлений в режиме Ultima используются только эти кнопки miniapp.",
+      "ultimaNotificationsEnabled": "Включено",
+      "ultimaNotificationsAddButton": "Добавить кнопку уведомления",
+      "ultimaNotificationsFillDefaults": "Заполнить стандарт",
+      "ultimaNotificationsButtonTextPlaceholder": "Текст кнопки уведомления",
+      "ultimaNotificationsValidationError": "Добавьте хотя бы одну кнопку уведомления",
       "statsTab": "Статистика",
       "stats": {
         "period": "Период",

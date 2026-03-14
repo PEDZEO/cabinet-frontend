@@ -108,7 +108,7 @@ export default function AdminUltimaSettings() {
               <span className="block text-xs text-dark-400">
                 {t('admin.ultimaSettings.startMessageDesc', {
                   defaultValue:
-                    'Отдельная настройка текста и кнопки стартового сообщения Ultima в боте.',
+                    'Отдельная настройка текста /start и кнопок уведомлений Ultima в боте.',
                 })}
               </span>
             </span>

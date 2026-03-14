@@ -132,6 +132,21 @@ export interface UltimaStartConfigUpdateRequest {
   button_url: string;
 }
 
+export interface UltimaNotificationButton {
+  text: string;
+  path: string;
+}
+
+export interface UltimaNotificationConfigResponse {
+  enabled: boolean;
+  buttons: UltimaNotificationButton[];
+}
+
+export interface UltimaNotificationConfigUpdateRequest {
+  enabled: boolean;
+  buttons: UltimaNotificationButton[];
+}
+
 const FALLBACK_DEFAULT_MENU_LAYOUT: MenuLayoutUpdateRequest = {
   rows: [
     {
@@ -335,6 +350,23 @@ export const adminMenuLayoutApi = {
   ): Promise<UltimaStartConfigResponse> => {
     const response = await apiClient.put<UltimaStartConfigResponse>(
       '/cabinet/admin/menu-layout/ultima-start',
+      payload,
+    );
+    return response.data;
+  },
+
+  getUltimaNotificationButtonsConfig: async (): Promise<UltimaNotificationConfigResponse> => {
+    const response = await apiClient.get<UltimaNotificationConfigResponse>(
+      '/cabinet/admin/menu-layout/ultima-notification-buttons',
+    );
+    return response.data;
+  },
+
+  updateUltimaNotificationButtonsConfig: async (
+    payload: UltimaNotificationConfigUpdateRequest,
+  ): Promise<UltimaNotificationConfigResponse> => {
+    const response = await apiClient.put<UltimaNotificationConfigResponse>(
+      '/cabinet/admin/menu-layout/ultima-notification-buttons',
       payload,
     );
     return response.data;
