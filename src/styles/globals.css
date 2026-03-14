@@ -338,8 +338,8 @@
   overflow: hidden;
   background: linear-gradient(
     160deg,
-    color-mix(in srgb, var(--ultima-color-bg-top) 96%, #000000) 0%,
-    color-mix(in srgb, var(--ultima-color-bg-bottom) 94%, #000000) 100%
+    color-mix(in srgb, var(--ultima-color-bg-top) 18%, transparent) 0%,
+    color-mix(in srgb, var(--ultima-color-bg-bottom) 22%, transparent) 100%
   );
   padding-inline: clamp(12px, 3vw, 16px);
   padding-top: clamp(12px, 2.2vh, 16px);
