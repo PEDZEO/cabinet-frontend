@@ -11,6 +11,7 @@ import Referral from '../Referral';
 import AccountLinking from '../AccountLinking';
 import Connection from '../Connection';
 import { UltimaAgreement } from '../UltimaAgreement';
+import { UltimaDevices } from '../UltimaDevices';
 import { UltimaGift } from '../UltimaGift';
 import { UltimaPromocode } from '../UltimaPromocode';
 
@@ -167,6 +168,14 @@ export const protectedRoutes: RouteConfig[] = [
     element: (
       <ProtectedRoute>
         <UltimaGift />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/ultima/devices',
+    element: (
+      <ProtectedRoute>
+        <UltimaDevices />
       </ProtectedRoute>
     ),
   },

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { type ReactNode } from 'react';
 import { balanceApi } from '@/api/balance';
 import { useCurrency } from '@/hooks/useCurrency';
+import type { PaginatedResponse, Transaction } from '@/types';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 
 const CardIcon = () => (
@@ -83,6 +84,31 @@ export function UltimaTopUpMethodSelect() {
     staleTime: 60000,
     placeholderData: (previousData) => previousData,
   });
+
+  const { data: transactions, isLoading: transactionsLoading } = useQuery<
+    PaginatedResponse<Transaction>
+  >({
+    queryKey: ['transactions', 1, 'ultima-methods'],
+    queryFn: () => balanceApi.getTransactions({ per_page: 6, page: 1 }),
+    staleTime: 15000,
+    placeholderData: (previousData) => previousData,
+  });
+
+  const getTypeLabel = (type: string) => {
+    const normalized = type?.toUpperCase?.() ?? type;
+    switch (normalized) {
+      case 'DEPOSIT':
+        return t('balance.deposit', { defaultValue: 'Пополнение' });
+      case 'SUBSCRIPTION_PAYMENT':
+        return t('balance.subscriptionPayment', { defaultValue: 'Оплата подписки' });
+      case 'REFERRAL_REWARD':
+        return t('balance.referralReward', { defaultValue: 'Реферальный бонус' });
+      case 'WITHDRAWAL':
+        return t('balance.withdrawal', { defaultValue: 'Вывод' });
+      default:
+        return type;
+    }
+  };
 
   const handleMethodClick = (methodId: string) => {
     const params = new URLSearchParams();
@@ -182,6 +208,59 @@ export function UltimaTopUpMethodSelect() {
                 'Деньги зачисляются на баланс, а затем автоматически учитываются в оплате подписки.',
             })}
           </p>
+        </section>
+
+        <section className="mt-2 rounded-2xl border border-emerald-200/10 bg-emerald-950/20 p-3">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <p className="text-white/72 text-[12px]">
+              {t('profile.transactionsTitle', { defaultValue: 'История операций' })}
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate('/balance')}
+              className="border-emerald-200/12 rounded-lg border bg-emerald-900/35 px-2 py-1 text-[11px] text-white/80"
+            >
+              {t('common.all', { defaultValue: 'Все' })}
+            </button>
+          </div>
+
+          {transactionsLoading ? (
+            <div className="flex h-16 items-center justify-center">
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-emerald-300/40 border-t-transparent" />
+            </div>
+          ) : !transactions?.items?.length ? (
+            <p className="text-[12px] text-white/50">
+              {t('balance.noTransactions', { defaultValue: 'Операций пока нет' })}
+            </p>
+          ) : (
+            <div className="space-y-1.5">
+              {transactions.items.map((tx) => {
+                const isPositive = tx.amount_rubles >= 0;
+                const sign = isPositive ? '+' : '-';
+                const amountValue = Math.abs(tx.amount_rubles);
+
+                return (
+                  <div
+                    key={tx.id}
+                    className="border-emerald-200/8 bg-emerald-950/28 flex items-center justify-between rounded-xl border px-2.5 py-1.5"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-white/88 truncate text-[12px]">{getTypeLabel(tx.type)}</p>
+                      <p className="text-[10px] text-white/50">
+                        {new Date(tx.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <p
+                      className={`text-[12px] font-medium ${isPositive ? 'text-emerald-200' : 'text-rose-200'}`}
+                    >
+                      {sign}
+                      {formatAmount(amountValue)} {currencySymbol}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </section>
 
         <div className="ultima-nav-dock">

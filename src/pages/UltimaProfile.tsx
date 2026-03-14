@@ -33,14 +33,10 @@ const PaymentIcon = () => (
   </svg>
 );
 
-const HistoryIcon = () => (
+const DevicesIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
-    <path
-      d="M5 5h14M5 12h14M5 19h14"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-    />
+    <rect x="7.5" y="3.5" width="9" height="17" rx="2.4" stroke="currentColor" strokeWidth="1.8" />
+    <path d="M10 17.5h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
   </svg>
 );
 
@@ -192,11 +188,13 @@ export function UltimaProfile() {
       icon: <PaymentIcon />,
     },
     {
-      key: 'history',
-      title: t('profile.transactionsTitle', { defaultValue: 'История операций' }),
-      subtitle: t('profile.transactionsDescription', { defaultValue: 'Список ваших транзакций' }),
-      path: '/balance',
-      icon: <HistoryIcon />,
+      key: 'devices',
+      title: t('lite.devices', { defaultValue: 'Устройства' }),
+      subtitle: t('profile.devicesDescription', {
+        defaultValue: 'Удаление устройств и изменение лимита',
+      }),
+      path: '/ultima/devices',
+      icon: <DevicesIcon />,
     },
     {
       key: 'referral',
@@ -277,20 +275,34 @@ export function UltimaProfile() {
             staleTime: 60000,
           }),
         );
-      } else if (path === '/balance') {
-        tasks.push(import('./Balance'));
+      } else if (path === '/ultima/devices') {
+        tasks.push(import('./UltimaDevices'));
         tasks.push(
           queryClient.prefetchQuery({
-            queryKey: ['balance'],
-            queryFn: balanceApi.getBalance,
+            queryKey: ['subscription'],
+            queryFn: subscriptionApi.getSubscription,
             staleTime: 15000,
           }),
         );
         tasks.push(
           queryClient.prefetchQuery({
-            queryKey: ['transactions', 1, 'ultima'],
-            queryFn: () => balanceApi.getTransactions({ page: 1, per_page: 20 }),
-            staleTime: 15000,
+            queryKey: ['devices'],
+            queryFn: subscriptionApi.getDevices,
+            staleTime: 10000,
+          }),
+        );
+        tasks.push(
+          queryClient.prefetchQuery({
+            queryKey: ['device-reduction-info'],
+            queryFn: subscriptionApi.getDeviceReductionInfo,
+            staleTime: 10000,
+          }),
+        );
+        tasks.push(
+          queryClient.prefetchQuery({
+            queryKey: ['device-price', 1],
+            queryFn: () => subscriptionApi.getDevicePrice(1),
+            staleTime: 10000,
           }),
         );
       } else if (path === '/referral') {
