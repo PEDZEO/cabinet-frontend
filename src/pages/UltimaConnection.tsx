@@ -652,13 +652,15 @@ export function UltimaConnection({
       {showFinishSuccess && (
         <div className="pointer-events-none absolute inset-0 z-40">
           <div
-            className="ultima-success-wave absolute h-[54vmax] w-[54vmax] rounded-full border border-emerald-200/40"
+            className="absolute"
             style={{
               left: successWaveOrigin.x,
               top: successWaveOrigin.y,
               transform: 'translate(-50%, -50%)',
             }}
-          />
+          >
+            <div className="ultima-success-wave h-[54vmax] w-[54vmax] rounded-full border border-emerald-200/40" />
+          </div>
         </div>
       )}
     </div>

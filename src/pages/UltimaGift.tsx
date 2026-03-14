@@ -700,7 +700,9 @@ export function UltimaGift() {
                               <button
                                 type="button"
                                 onClick={() => onRenewFromHistory(gift)}
-                                disabled={extendGiftMutation.isPending}
+                                disabled={
+                                  extendGiftMutation.isPending && extendingToken === gift.token
+                                }
                                 className="rounded-lg border border-emerald-200/25 bg-emerald-400/85 px-2 py-1 text-[11px] font-medium text-slate-950 disabled:cursor-not-allowed disabled:opacity-55"
                               >
                                 {extendGiftMutation.isPending && extendingToken === gift.token
