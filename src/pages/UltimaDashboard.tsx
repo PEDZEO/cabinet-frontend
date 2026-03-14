@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 import { balanceApi } from '@/api/balance';
+import { brandingApi } from '@/api/branding';
 import { infoApi } from '@/api/info';
 import { promoApi } from '@/api/promo';
 import { subscriptionApi } from '@/api/subscription';
 import { ticketsApi } from '@/api/tickets';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useBranding } from '@/hooks/useBranding';
 import { useHaptic } from '@/platform';
 import { useAuthStore } from '@/store/auth';
 import { warmUltimaStartup } from '@/features/ultima/warmup';
@@ -87,6 +89,7 @@ export function UltimaDashboard() {
   const queryClient = useQueryClient();
   const { t, i18n } = useTranslation();
   const { currencySymbol } = useCurrency();
+  const { hasCustomLogo, logoUrl } = useBranding();
   const haptic = useHaptic();
   const isAdmin = useAuthStore((state) => state.isAdmin);
   const user = useAuthStore((state) => state.user);
@@ -124,6 +127,12 @@ export function UltimaDashboard() {
     queryKey: ['active-discount'],
     queryFn: promoApi.getActiveDiscount,
     staleTime: 30000,
+    placeholderData: (previousData) => previousData,
+  });
+  const { data: ultimaThemeConfig } = useQuery({
+    queryKey: ['ultima-theme-config'],
+    queryFn: brandingApi.getUltimaThemeConfig,
+    staleTime: 60000,
     placeholderData: (previousData) => previousData,
   });
 
@@ -376,6 +385,17 @@ export function UltimaDashboard() {
     navigate('/ultima/devices');
   };
 
+  const openSubscriptionInfo = () => {
+    haptic.impact('light');
+    void queryClient.prefetchQuery({
+      queryKey: ['subscription'],
+      queryFn: subscriptionApi.getSubscription,
+      staleTime: 15000,
+    });
+    void import('./UltimaSubscriptionInfo');
+    navigate('/ultima/subscription-info');
+  };
+
   const hasSetupReminder = connectionStep === 2;
   const firstPromoOffer = useMemo(
     () => (promoOffers ?? []).find((offer) => offer.is_active && !offer.is_claimed) ?? null,
@@ -384,6 +404,9 @@ export function UltimaDashboard() {
   const showPromoCard =
     (activeDiscount?.is_active === true && (activeDiscount.discount_percent ?? 0) > 0) ||
     Boolean(firstPromoOffer);
+  const showBrandLogoOnHome = Boolean(
+    ultimaThemeConfig?.homeUseBrandLogo && hasCustomLogo && logoUrl,
+  );
 
   if (!isI18nReady || !isSubscriptionReady || shouldHoldForAutoTrial) {
     return (
@@ -441,7 +464,27 @@ export function UltimaDashboard() {
                 />
               ))}
             </span>
-            <ShieldIcon />
+            {showBrandLogoOnHome ? (
+              <span
+                className="flex h-[86px] w-[86px] items-center justify-center rounded-full border bg-black/20 p-3 backdrop-blur"
+                style={{
+                  borderColor:
+                    'color-mix(in srgb, var(--ultima-color-surface-border) 34%, transparent)',
+                  boxShadow:
+                    '0 0 20px color-mix(in srgb, var(--ultima-color-ring) 24%, transparent), inset 0 1px 0 rgba(255,255,255,0.12)',
+                }}
+              >
+                <img
+                  src={logoUrl ?? undefined}
+                  alt="project-logo"
+                  className="h-full w-full rounded-full object-contain"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </span>
+            ) : (
+              <ShieldIcon />
+            )}
           </button>
 
           {hasSetupReminder && (
@@ -520,9 +563,13 @@ export function UltimaDashboard() {
 
           <div className="mb-3 mt-auto flex items-center justify-between text-white lg:mb-2 lg:mt-0">
             <div>
-              <p className="text-[32px] font-semibold leading-none tracking-[-0.02em] sm:text-[36px] lg:text-[34px]">
+              <button
+                type="button"
+                onClick={openSubscriptionInfo}
+                className="text-left text-[32px] font-semibold leading-none tracking-[-0.02em] text-white transition hover:text-white/90 sm:text-[36px] lg:text-[34px]"
+              >
                 {expiryLabel}
-              </p>
+              </button>
               <button
                 type="button"
                 onClick={openDevices}

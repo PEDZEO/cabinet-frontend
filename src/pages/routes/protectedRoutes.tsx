@@ -14,6 +14,7 @@ import { UltimaAgreement } from '../UltimaAgreement';
 import { UltimaDevices } from '../UltimaDevices';
 import { UltimaGift } from '../UltimaGift';
 import { UltimaPromocode } from '../UltimaPromocode';
+import { UltimaSubscriptionInfo } from '../UltimaSubscriptionInfo';
 
 const Dashboard = lazy(() => import('../Dashboard'));
 const Subscription = lazy(() => import('../Subscription'));
@@ -176,6 +177,14 @@ export const protectedRoutes: RouteConfig[] = [
     element: (
       <ProtectedRoute>
         <UltimaDevices />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/ultima/subscription-info',
+    element: (
+      <ProtectedRoute>
+        <UltimaSubscriptionInfo />
       </ProtectedRoute>
     ),
   },

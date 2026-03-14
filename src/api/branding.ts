@@ -65,6 +65,7 @@ export interface UltimaThemeConfig {
   successWaveMs: number;
   itemEnterMs: number;
   framesEnabled: boolean;
+  homeUseBrandLogo: boolean;
 }
 
 export const DEFAULT_ULTIMA_THEME_CONFIG: UltimaThemeConfig = {
@@ -91,6 +92,7 @@ export const DEFAULT_ULTIMA_THEME_CONFIG: UltimaThemeConfig = {
   successWaveMs: 1050,
   itemEnterMs: 280,
   framesEnabled: false,
+  homeUseBrandLogo: false,
 };
 
 const BRANDING_CACHE_KEY = 'cabinet_branding';

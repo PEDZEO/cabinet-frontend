@@ -174,6 +174,9 @@ export function UltimaConnection({
   const [burst, setBurst] = useState(0);
   const [showReturnConfetti, setShowReturnConfetti] = useState(false);
   const [showFinishSuccess, setShowFinishSuccess] = useState(false);
+  const [viewportHeight, setViewportHeight] = useState<number>(() =>
+    typeof window === 'undefined' ? 820 : window.innerHeight,
+  );
   const stepInitRef = useRef(false);
   const centerActionRef = useRef<HTMLDivElement | null>(null);
   const [successWaveOrigin, setSuccessWaveOrigin] = useState<{ x: number; y: number }>({
@@ -265,6 +268,16 @@ export function UltimaConnection({
     haptic.impact('light');
   }, [haptic, step]);
 
+  useEffect(() => {
+    const syncViewport = () => setViewportHeight(window.innerHeight);
+    syncViewport();
+    window.addEventListener('resize', syncViewport);
+    return () => window.removeEventListener('resize', syncViewport);
+  }, []);
+
+  const isShortViewport = viewportHeight < 790;
+  const isVeryShortViewport = viewportHeight < 720;
+
   const title =
     step === 1
       ? t('subscription.connection.stepInstallTitle', { defaultValue: 'Приложение' })
@@ -291,8 +304,16 @@ export function UltimaConnection({
   const progressRatio = step === 1 ? 0.34 : step === 2 ? 0.67 : 1;
   const stepProgressPercent = step === 1 ? 0 : step === 2 ? 50 : 100;
   const ringSizes = isFinalStep
-    ? { outer: 320, middle: 238, inner: 168, progress: 198, center: 112, button: 98 }
-    : { outer: 360, middle: 270, inner: 188, progress: 220, center: 124, button: 110 };
+    ? isVeryShortViewport
+      ? { outer: 248, middle: 188, inner: 136, progress: 164, center: 92, button: 82 }
+      : isShortViewport
+        ? { outer: 284, middle: 214, inner: 152, progress: 182, center: 102, button: 90 }
+        : { outer: 320, middle: 238, inner: 168, progress: 198, center: 112, button: 98 }
+    : isVeryShortViewport
+      ? { outer: 286, middle: 218, inner: 156, progress: 186, center: 104, button: 92 }
+      : isShortViewport
+        ? { outer: 320, middle: 244, inner: 172, progress: 202, center: 114, button: 100 }
+        : { outer: 360, middle: 270, inner: 188, progress: 220, center: 124, button: 110 };
   const ringRadius = 90;
   const ringCircumference = 2 * Math.PI * ringRadius;
   const ringOffset = ringCircumference * (1 - progressRatio);
@@ -373,10 +394,19 @@ export function UltimaConnection({
     <div className="ultima-shell">
       <div className="ultima-shell-inner lg:max-w-[520px]">
         <section className="flex min-h-0 flex-1 flex-col">
-          <div key={step} className="ultima-step-enter pt-2 text-center lg:pt-1">
+          <div
+            key={step}
+            className={`ultima-step-enter text-center lg:pt-1 ${isVeryShortViewport ? 'pt-0.5' : 'pt-2'}`}
+          >
             <h1
               className={`font-semibold leading-[0.96] text-white ${
-                isDoneStep ? 'text-[34px] sm:text-[38px]' : 'text-[42px] sm:text-[46px]'
+                isDoneStep
+                  ? isVeryShortViewport
+                    ? 'text-[28px] sm:text-[32px]'
+                    : 'text-[34px] sm:text-[38px]'
+                  : isVeryShortViewport
+                    ? 'text-[34px] sm:text-[38px]'
+                    : 'text-[42px] sm:text-[46px]'
               }`}
             >
               {title}
@@ -384,14 +414,18 @@ export function UltimaConnection({
             <p
               className={`mx-auto mt-2 leading-[1.2] ${
                 isDoneStep
-                  ? 'text-white/72 max-w-[300px] text-[14px] sm:max-w-[332px] sm:text-[15px]'
+                  ? isVeryShortViewport
+                    ? 'text-white/72 max-w-[280px] text-[13px]'
+                    : 'text-white/72 max-w-[300px] text-[14px] sm:max-w-[332px] sm:text-[15px]'
                   : 'max-w-[360px] text-[17px] text-white/70'
               }`}
             >
               {subtitle}
             </p>
             {step === 3 && (
-              <div className="border-emerald-200/28 mx-auto mt-2 w-full max-w-[332px] rounded-2xl border bg-[linear-gradient(130deg,rgba(28,171,142,0.30),rgba(8,27,24,0.58))] px-3.5 py-2 shadow-[0_10px_24px_rgba(4,16,14,0.35),inset_0_1px_0_rgba(255,255,255,0.16)] backdrop-blur-md">
+              <div
+                className={`border-emerald-200/28 mx-auto w-full max-w-[332px] rounded-2xl border bg-[linear-gradient(130deg,rgba(28,171,142,0.30),rgba(8,27,24,0.58))] px-3.5 shadow-[0_10px_24px_rgba(4,16,14,0.35),inset_0_1px_0_rgba(255,255,255,0.16)] backdrop-blur-md ${isVeryShortViewport ? 'mt-1.5 py-1.5' : 'mt-2 py-2'}`}
+              >
                 <p className="text-[12px] font-medium leading-[1.22] text-emerald-50/95">
                   {t('subscription.connection.tapCheckHint', {
                     defaultValue: 'Можно нажать и здесь: галочка в центре тоже переключает VPN.',
@@ -399,7 +433,9 @@ export function UltimaConnection({
                 </p>
               </div>
             )}
-            <div className="mx-auto mt-4 flex w-fit items-center gap-2">
+            <div
+              className={`mx-auto flex w-fit items-center gap-2 ${isVeryShortViewport ? 'mt-2' : 'mt-4'}`}
+            >
               {[1, 2, 3].map((index) => {
                 const done = step > index || (step === 3 && index === 3);
                 const active = step === index && !done;
@@ -419,7 +455,9 @@ export function UltimaConnection({
                 );
               })}
             </div>
-            <div className="mx-auto mt-2 h-1 w-[168px] overflow-hidden rounded-full bg-white/15">
+            <div
+              className={`mx-auto h-1 w-[168px] overflow-hidden rounded-full bg-white/15 ${isVeryShortViewport ? 'mt-1.5' : 'mt-2'}`}
+            >
               <div
                 className="h-full rounded-full bg-gradient-to-r from-emerald-200/85 via-emerald-300/90 to-emerald-200/85 transition-[width] duration-500 ease-out"
                 style={{ width: `${stepProgressPercent}%` }}
@@ -428,7 +466,7 @@ export function UltimaConnection({
           </div>
 
           <div
-            className={`relative mt-7 flex flex-1 items-center justify-center lg:mt-5 ${isFinalStep ? 'mb-2' : ''}`}
+            className={`relative flex flex-1 items-center justify-center lg:mt-5 ${isFinalStep ? 'mb-2' : ''} ${isVeryShortViewport ? 'mt-3' : isShortViewport ? 'mt-5' : 'mt-7'}`}
           >
             <div
               className="ultima-step-ring border-emerald-200/22 pointer-events-none absolute rounded-full border"
@@ -579,14 +617,14 @@ export function UltimaConnection({
                 type="button"
                 onClick={finishFlow}
                 disabled={showFinishSuccess}
-                className="ultima-btn-pill ultima-btn-primary mb-3 flex w-full items-center justify-center px-5 py-2.5 text-[16px]"
+                className={`ultima-btn-pill ultima-btn-primary mb-3 flex w-full items-center justify-center px-5 text-[16px] ${isVeryShortViewport ? 'py-2' : 'py-2.5'}`}
               >
                 {t('subscription.connection.finishSetup', { defaultValue: 'Завершить настройку' })}
               </button>
               <button
                 type="button"
                 onClick={() => navigate('/support')}
-                className="ultima-btn-pill ultima-btn-secondary mb-3 flex w-full items-center justify-center px-5 py-2.5 text-[15px]"
+                className={`ultima-btn-pill ultima-btn-secondary mb-3 flex w-full items-center justify-center px-5 text-[15px] ${isVeryShortViewport ? 'py-2' : 'py-2.5'}`}
               >
                 {t('subscription.connection.needHelp', { defaultValue: 'Не получилось?' })}
               </button>
@@ -597,7 +635,7 @@ export function UltimaConnection({
             <button
               type="button"
               onClick={advanceStep}
-              className="ultima-btn-pill ultima-btn-secondary mb-3 flex w-full items-center justify-center gap-2 px-5 py-2.5 text-[16px]"
+              className={`ultima-btn-pill ultima-btn-secondary mb-3 flex w-full items-center justify-center gap-2 px-5 text-[16px] ${isVeryShortViewport ? 'py-2' : 'py-2.5'}`}
             >
               {t('subscription.connection.nextStep', { defaultValue: 'Следующий шаг' })}
               <span aria-hidden className="text-white/70">

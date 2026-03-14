@@ -216,7 +216,7 @@ export default function AdminUltimaTheme() {
               <h2 className="text-sm font-semibold uppercase tracking-wide text-dark-300">
                 Рамки и контуры
               </h2>
-              <div className="rounded-xl border border-dark-700/70 bg-dark-900/55 p-3">
+              <div className="space-y-2 rounded-xl border border-dark-700/70 bg-dark-900/55 p-3">
                 <button
                   type="button"
                   className="flex w-full items-center justify-between gap-3 rounded-lg border border-dark-700/70 bg-dark-900/70 px-3 py-2 text-left transition hover:border-accent-500/40"
@@ -234,6 +234,27 @@ export default function AdminUltimaTheme() {
                     className={`rounded-full px-2.5 py-1 text-xs font-semibold ${draft.framesEnabled ? 'bg-accent-500/20 text-accent-300' : 'bg-dark-700/70 text-dark-300'}`}
                   >
                     {draft.framesEnabled ? 'Включено' : 'Выключено'}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className="flex w-full items-center justify-between gap-3 rounded-lg border border-dark-700/70 bg-dark-900/70 px-3 py-2 text-left transition hover:border-accent-500/40"
+                  onClick={() =>
+                    setDraft((prev) => ({ ...prev, homeUseBrandLogo: !prev.homeUseBrandLogo }))
+                  }
+                >
+                  <div>
+                    <div className="text-sm font-semibold text-dark-100">
+                      Логотип вместо щита на главной
+                    </div>
+                    <div className="text-xs text-dark-400">
+                      Если включено, на главной Ultima используется загруженный логотип проекта.
+                    </div>
+                  </div>
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-xs font-semibold ${draft.homeUseBrandLogo ? 'bg-accent-500/20 text-accent-300' : 'bg-dark-700/70 text-dark-300'}`}
+                  >
+                    {draft.homeUseBrandLogo ? 'Включено' : 'Выключено'}
                   </span>
                 </button>
               </div>

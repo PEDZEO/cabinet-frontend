@@ -6,24 +6,6 @@ import { subscriptionApi } from '@/api/subscription';
 import { useCurrency } from '@/hooks/useCurrency';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 
-const CopyIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
-    <rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" strokeWidth="1.8" />
-    <path d="M5 15V6a2 2 0 0 1 2-2h9" stroke="currentColor" strokeWidth="1.8" />
-  </svg>
-);
-
-const ShareIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
-    <path d="M8 12h8m0 0-3-3m3 3-3 3" stroke="currentColor" strokeWidth="1.8" />
-    <path
-      d="M16 6h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2M8 6H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    />
-  </svg>
-);
-
 const DeviceIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
     <rect x="6.5" y="3.5" width="11" height="17" rx="2.5" stroke="currentColor" strokeWidth="1.8" />
@@ -58,7 +40,6 @@ export function UltimaDevices() {
 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [linkCopied, setLinkCopied] = useState(false);
   const [addCount, setAddCount] = useState(1);
   const [reduceLimit, setReduceLimit] = useState(1);
 
@@ -71,7 +52,6 @@ export function UltimaDevices() {
 
   const hasSubscription = Boolean(subscriptionData?.has_subscription);
   const currentLimit = subscriptionData?.subscription?.device_limit ?? 0;
-  const subscriptionLink = subscriptionData?.subscription?.subscription_url ?? '';
 
   const { data: devicesData, isLoading: devicesLoading } = useQuery({
     queryKey: ['devices'],
@@ -117,30 +97,6 @@ export function UltimaDevices() {
     const id = window.setTimeout(() => setSuccess(null), 2400);
     return () => window.clearTimeout(id);
   }, [success]);
-
-  const copySubscriptionLink = async () => {
-    if (!subscriptionLink) return;
-    await navigator.clipboard.writeText(subscriptionLink);
-    setLinkCopied(true);
-    window.setTimeout(() => setLinkCopied(false), 1400);
-  };
-
-  const shareSubscriptionLink = async () => {
-    if (!subscriptionLink) return;
-    if (typeof navigator.share !== 'function') {
-      await copySubscriptionLink();
-      return;
-    }
-    try {
-      await navigator.share({
-        title: t('profile.subscriptionLink', { defaultValue: 'Ваша ссылка на подписку' }),
-        text: subscriptionLink,
-        url: subscriptionLink,
-      });
-    } catch {
-      // user cancelled share dialog
-    }
-  };
 
   const getErrorMessage = (err: unknown) => {
     const detail = (err as ApiErrorLike)?.response?.data?.detail;
@@ -273,41 +229,6 @@ export function UltimaDevices() {
               {success}
             </div>
           ) : null}
-
-          <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
-            <p className="text-white/62 mb-2 text-[12px]">
-              {t('profile.subscriptionLink', { defaultValue: 'Ваша ссылка на подписку' })}
-            </p>
-            <div className="rounded-2xl border border-emerald-200/10 bg-emerald-950/30 px-3 py-2">
-              <p className="truncate text-[13px] text-white/90">{subscriptionLink || '-'}</p>
-            </div>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => void copySubscriptionLink()}
-                className="ultima-btn-pill ultima-btn-secondary rounded-xl px-3 py-2 text-[13px]"
-                disabled={!subscriptionLink}
-              >
-                <span className="inline-flex items-center gap-1.5">
-                  <CopyIcon />
-                  {linkCopied
-                    ? t('common.copied', { defaultValue: 'Скопировано' })
-                    : t('common.copy', { defaultValue: 'Копировать' })}
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() => void shareSubscriptionLink()}
-                className="ultima-btn-pill ultima-btn-secondary rounded-xl px-3 py-2 text-[13px]"
-                disabled={!subscriptionLink}
-              >
-                <span className="inline-flex items-center gap-1.5">
-                  <ShareIcon />
-                  {t('common.share', { defaultValue: 'Поделиться' })}
-                </span>
-              </button>
-            </div>
-          </section>
 
           {!subscriptionLoading && !hasSubscription ? (
             <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-4 backdrop-blur-md">

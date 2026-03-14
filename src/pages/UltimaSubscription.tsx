@@ -220,6 +220,7 @@ export function UltimaSubscription() {
       Math.min(...tariffs.map((tariff) => tariff.base_device_limit ?? tariff.device_limit ?? 1)),
     );
     const minBase = Math.max(
+      minBaseFromTariffs,
       currentSubscriptionLimit,
       devicePriceMeta?.current_device_limit ?? minBaseFromTariffs,
     );
@@ -241,6 +242,12 @@ export function UltimaSubscription() {
 
   const closestDeviceIndex = useMemo(() => {
     if (!deviceLimits.length) return 0;
+    const hasSubscription = subscriptionResponse?.has_subscription === true;
+    if (!hasSubscription && availableDeviceLimits.length) {
+      const minAvailable = availableDeviceLimits[0];
+      const index = deviceLimits.findIndex((value) => value === minAvailable);
+      if (index >= 0) return index;
+    }
     const subscriptionLimit = subscriptionResponse?.subscription?.device_limit;
     if (typeof subscriptionLimit === 'number' && subscriptionLimit > 0) {
       const exactSubscriptionMatch = deviceLimits.findIndex((value) => value === subscriptionLimit);
@@ -261,7 +268,13 @@ export function UltimaSubscription() {
       }
     });
     return best;
-  }, [tariffs, deviceLimits, subscriptionResponse?.subscription?.device_limit]);
+  }, [
+    tariffs,
+    deviceLimits,
+    availableDeviceLimits,
+    subscriptionResponse?.has_subscription,
+    subscriptionResponse?.subscription?.device_limit,
+  ]);
 
   useEffect(() => {
     if (!deviceLimits.length) {
