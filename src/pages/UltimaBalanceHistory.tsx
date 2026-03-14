@@ -5,6 +5,7 @@ import { balanceApi } from '@/api/balance';
 import { useCurrency } from '@/hooks/useCurrency';
 import type { PaginatedResponse, Transaction } from '@/types';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+import { formatTransactionDescription } from '@/utils/transactionDescription';
 
 const EyeIcon = ({ hidden }: { hidden: boolean }) =>
   hidden ? (
@@ -148,6 +149,11 @@ export function UltimaBalanceHistory() {
                   const isPositive = tx.amount_rubles >= 0;
                   const sign = isPositive ? '+' : '-';
                   const amountValue = Math.abs(tx.amount_rubles);
+                  const localizedDescription = formatTransactionDescription(
+                    tx.description,
+                    tx.type,
+                    t,
+                  );
                   return (
                     <div
                       key={tx.id}
@@ -161,8 +167,8 @@ export function UltimaBalanceHistory() {
                           {new Date(tx.created_at).toLocaleDateString()}
                         </span>
                       </div>
-                      {tx.description ? (
-                        <p className="text-white/58 mb-1 text-[12px]">{tx.description}</p>
+                      {localizedDescription ? (
+                        <p className="text-white/58 mb-1 text-[12px]">{localizedDescription}</p>
                       ) : null}
                       <p
                         className={`text-[15px] font-medium ${isPositive ? 'text-emerald-200' : 'text-rose-200'}`}

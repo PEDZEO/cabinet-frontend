@@ -467,6 +467,8 @@
     "withdrawal": "برداشت",
     "subscriptionPayment": "پرداخت اشتراک",
     "giftPayment": "خرید هدیه",
+    "giftGatewaySettle": "خرید هدیه",
+    "giftLabel": "هدیه",
     "referralReward": "پاداش معرفی",
     "minAmount": "حداقل",
     "maxAmount": "حداکثر",

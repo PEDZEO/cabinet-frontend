@@ -14,6 +14,7 @@ import { useToast } from '../components/Toast';
 import type { PaginatedResponse, Transaction } from '../types';
 import LiteBalance from './LiteBalance';
 import { UltimaBalanceHistory } from './UltimaBalanceHistory';
+import { formatTransactionDescription } from '@/utils/transactionDescription';
 
 import { Card } from '@/components/data-display/Card';
 import { Button } from '@/components/primitives/Button';
@@ -384,6 +385,11 @@ function FullBalance() {
                           : isPositive
                             ? 'text-success-400'
                             : 'text-error-400';
+                        const localizedDescription = formatTransactionDescription(
+                          tx.description,
+                          tx.type,
+                          t,
+                        );
 
                         return (
                           <motion.div
@@ -400,8 +406,8 @@ function FullBalance() {
                                   {new Date(tx.created_at).toLocaleDateString()}
                                 </span>
                               </div>
-                              {tx.description && (
-                                <div className="text-sm text-dark-400">{tx.description}</div>
+                              {localizedDescription && (
+                                <div className="text-sm text-dark-400">{localizedDescription}</div>
                               )}
                             </div>
                             <div className={`text-lg font-semibold ${colorClass}`}>

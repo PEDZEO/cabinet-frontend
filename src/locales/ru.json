@@ -656,6 +656,8 @@
     "withdrawal": "Списание",
     "subscriptionPayment": "Оплата подписки",
     "giftPayment": "Покупка подарка",
+    "giftGatewaySettle": "Покупка подарка",
+    "giftLabel": "Подарок",
     "referralReward": "Реферальный бонус",
     "minAmount": "Мин.",
     "maxAmount": "Макс.",

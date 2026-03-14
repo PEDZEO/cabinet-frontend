@@ -467,6 +467,8 @@
     "withdrawal": "支出",
     "subscriptionPayment": "订阅付款",
     "giftPayment": "礼品购买",
+    "giftGatewaySettle": "礼品购买",
+    "giftLabel": "礼品",
     "referralReward": "推荐奖励",
     "minAmount": "最小",
     "maxAmount": "最大",
