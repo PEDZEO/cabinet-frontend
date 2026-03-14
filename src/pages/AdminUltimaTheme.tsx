@@ -214,6 +214,33 @@ export default function AdminUltimaTheme() {
 
             <section className="space-y-3">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-dark-300">
+                Рамки и контуры
+              </h2>
+              <div className="rounded-xl border border-dark-700/70 bg-dark-900/55 p-3">
+                <button
+                  type="button"
+                  className="flex w-full items-center justify-between gap-3 rounded-lg border border-dark-700/70 bg-dark-900/70 px-3 py-2 text-left transition hover:border-accent-500/40"
+                  onClick={() =>
+                    setDraft((prev) => ({ ...prev, framesEnabled: !prev.framesEnabled }))
+                  }
+                >
+                  <div>
+                    <div className="text-sm font-semibold text-dark-100">Показывать рамки</div>
+                    <div className="text-xs text-dark-400">
+                      Вкл: карточки и блоки с видимыми контурами. Выкл: стекло без рамок.
+                    </div>
+                  </div>
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-xs font-semibold ${draft.framesEnabled ? 'bg-accent-500/20 text-accent-300' : 'bg-dark-700/70 text-dark-300'}`}
+                  >
+                    {draft.framesEnabled ? 'Включено' : 'Выключено'}
+                  </span>
+                </button>
+              </div>
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-dark-300">
                 Базовые цвета
               </h2>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">

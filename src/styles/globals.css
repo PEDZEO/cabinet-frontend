@@ -327,7 +327,7 @@
   );
 }
 
-.ultima-flat-frames [class*='border'] {
+html:not(.ultima-frames-enabled) .ultima-flat-frames [class*='border'] {
   border-color: transparent !important;
 }
 
@@ -365,7 +365,7 @@
   background-color: color-mix(in srgb, var(--ultima-color-surface) 58%, transparent) !important;
 }
 
-.ultima-shell [class*='border-emerald-'] {
+html.ultima-frames-enabled .ultima-shell [class*='border-emerald-'] {
   border-color: color-mix(in srgb, var(--ultima-color-surface-border) 34%, transparent) !important;
 }
 
@@ -382,8 +382,8 @@
   color: var(--ultima-color-primary-text) !important;
 }
 
-.ultima-shell [class*='border-[#52ecc6]'],
-.ultima-shell [class*='border-[#66ebc9]'] {
+html.ultima-frames-enabled .ultima-shell [class*='border-[#52ecc6]'],
+html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   border-color: color-mix(in srgb, var(--ultima-color-surface-border) 52%, transparent) !important;
 }
 

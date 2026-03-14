@@ -64,6 +64,7 @@ export interface UltimaThemeConfig {
   stepRingSec: number;
   successWaveMs: number;
   itemEnterMs: number;
+  framesEnabled: boolean;
 }
 
 export const DEFAULT_ULTIMA_THEME_CONFIG: UltimaThemeConfig = {
@@ -89,10 +90,12 @@ export const DEFAULT_ULTIMA_THEME_CONFIG: UltimaThemeConfig = {
   stepRingSec: 5.8,
   successWaveMs: 1050,
   itemEnterMs: 280,
+  framesEnabled: false,
 };
 
 const BRANDING_CACHE_KEY = 'cabinet_branding';
 const LOGO_PRELOADED_KEY = 'cabinet_logo_preloaded';
+export const ULTIMA_THEME_CONFIG_CACHE_KEY = 'cabinet_ultima_theme_config';
 
 // In-memory blob URL cache to avoid exposing backend URL
 let _logoBlobUrl: string | null = null;
@@ -182,6 +185,16 @@ export const initLogoPreload = () => {
   const cached = getCachedBranding();
   if (cached) {
     preloadLogo(cached);
+  }
+};
+
+export const getCachedUltimaThemeConfig = (): UltimaThemeConfig | null => {
+  try {
+    const cached = localStorage.getItem(ULTIMA_THEME_CONFIG_CACHE_KEY);
+    if (!cached) return null;
+    return { ...DEFAULT_ULTIMA_THEME_CONFIG, ...JSON.parse(cached) };
+  } catch {
+    return null;
   }
 };
 
@@ -433,9 +446,14 @@ export const brandingApi = {
       const response = await apiClient.get<UltimaThemeConfig>(
         '/cabinet/branding/ultima-theme-config',
       );
+      try {
+        localStorage.setItem(ULTIMA_THEME_CONFIG_CACHE_KEY, JSON.stringify(response.data));
+      } catch {
+        // localStorage not available
+      }
       return response.data;
     } catch {
-      return DEFAULT_ULTIMA_THEME_CONFIG;
+      return getCachedUltimaThemeConfig() ?? DEFAULT_ULTIMA_THEME_CONFIG;
     }
   },
 
@@ -447,6 +465,11 @@ export const brandingApi = {
       '/cabinet/branding/ultima-theme-config',
       config,
     );
+    try {
+      localStorage.setItem(ULTIMA_THEME_CONFIG_CACHE_KEY, JSON.stringify(response.data));
+    } catch {
+      // localStorage not available
+    }
     return response.data;
   },
 
@@ -455,6 +478,11 @@ export const brandingApi = {
     const response = await apiClient.post<UltimaThemeConfig>(
       '/cabinet/branding/ultima-theme-config/reset',
     );
+    try {
+      localStorage.setItem(ULTIMA_THEME_CONFIG_CACHE_KEY, JSON.stringify(response.data));
+    } catch {
+      // localStorage not available
+    }
     return response.data;
   },
 };

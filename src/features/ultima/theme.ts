@@ -26,6 +26,7 @@ export function applyUltimaThemeConfig(config: UltimaThemeConfig) {
   root.style.setProperty('--ultima-animation-step-ring-sec', String(config.stepRingSec));
   root.style.setProperty('--ultima-animation-success-wave-ms', String(config.successWaveMs));
   root.style.setProperty('--ultima-animation-item-enter-ms', String(config.itemEnterMs));
+  root.classList.toggle('ultima-frames-enabled', config.framesEnabled === true);
 }
 
 export function useUltimaThemeConfig() {

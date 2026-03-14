@@ -17,6 +17,8 @@
       (() => {
         try {
           const THEME_KEY = 'cabinet-theme';
+          const ULTIMA_MODE_KEY = 'cabinet_ultima_mode';
+          const ULTIMA_THEME_CONFIG_KEY = 'cabinet_ultima_theme_config';
           const storedTheme = localStorage.getItem(THEME_KEY);
           const prefersLight =
             window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
@@ -32,6 +34,44 @@
           if (meta) {
             meta.setAttribute('content', theme === 'light' ? '#fef9f0' : '#0a0f1a');
           }
+
+          const ultimaEnabled = localStorage.getItem(ULTIMA_MODE_KEY) === 'true';
+          if (ultimaEnabled) {
+            const ultimaRaw = localStorage.getItem(ULTIMA_THEME_CONFIG_KEY);
+            const ultimaConfig = ultimaRaw ? JSON.parse(ultimaRaw) : null;
+            if (ultimaConfig && typeof ultimaConfig === 'object') {
+              const map = [
+                ['primaryColor', '--ultima-color-primary'],
+                ['primaryTextColor', '--ultima-color-primary-text'],
+                ['secondaryColor', '--ultima-color-secondary'],
+                ['secondaryTextColor', '--ultima-color-secondary-text'],
+                ['navBackgroundColor', '--ultima-color-nav-bg'],
+                ['navActiveColor', '--ultima-color-nav-active'],
+                ['navTextColor', '--ultima-color-nav-text'],
+                ['backgroundTopColor', '--ultima-color-bg-top'],
+                ['backgroundBottomColor', '--ultima-color-bg-bottom'],
+                ['auraColor', '--ultima-color-aura'],
+                ['ringColor', '--ultima-color-ring'],
+                ['surfaceColor', '--ultima-color-surface'],
+                ['surfaceBorderColor', '--ultima-color-surface-border'],
+                ['scrollbarThumbColor', '--ultima-color-scrollbar-thumb'],
+                ['scrollbarTrackColor', '--ultima-color-scrollbar-track'],
+              ];
+              for (const [source, cssVar] of map) {
+                const value = ultimaConfig[source];
+                if (typeof value === 'string' && value.length > 0) {
+                  document.documentElement.style.setProperty(cssVar, value);
+                }
+              }
+              if (ultimaConfig.framesEnabled === true) {
+                document.documentElement.classList.add('ultima-frames-enabled');
+              }
+              document.documentElement.classList.add('ultima-prepaint');
+              if (meta && typeof ultimaConfig.backgroundTopColor === 'string') {
+                meta.setAttribute('content', ultimaConfig.backgroundTopColor);
+              }
+            }
+          }
         } catch {
           // Ignore prepaint failures and fall back to static theme.
         }
@@ -41,6 +81,13 @@
     <style>
       html.dark body {
         background-color: #0a0f1a;
+      }
+      html.ultima-prepaint body {
+        background: linear-gradient(
+          165deg,
+          color-mix(in srgb, var(--ultima-color-bg-top) 92%, #000) 0%,
+          color-mix(in srgb, var(--ultima-color-bg-bottom) 95%, #000) 100%
+        );
       }
       html.light body {
         background-color: #f7e7ce;
@@ -67,6 +114,13 @@
       }
       html.light #app-startup-overlay {
         background: radial-gradient(circle at 70% 45%, rgba(16, 185, 129, 0.12), #f7e7ce 60%);
+      }
+      html.ultima-prepaint #app-startup-overlay {
+        background: radial-gradient(
+          circle at 70% 45%,
+          color-mix(in srgb, var(--ultima-color-aura) 28%, transparent),
+          color-mix(in srgb, var(--ultima-color-bg-top) 82%, #000) 60%
+        );
       }
       html.app-ready #app-startup-overlay {
         opacity: 0;
