@@ -214,9 +214,7 @@ export function AppShell({ children }: AppShellProps) {
   const { isLiteMode, isLiteModeReady } = useLiteMode();
   const { isUltimaMode, isUltimaModeReady } = useUltimaMode();
   const isCompactMode = isLiteMode || isUltimaMode;
-  const isUltimaAnimatedRoute =
-    isUltimaMode &&
-    ['/', '/subscription', '/connection', '/profile', '/support'].includes(location.pathname);
+  const isUltimaAnimatedRoute = isUltimaMode && !location.pathname.startsWith('/admin');
   const isUltimaSceneRoute =
     isUltimaMode && ['/', '/subscription', '/connection'].includes(location.pathname);
   const ultimaWavePhaseShiftSecRef = useRef(-((Date.now() / 1000) % ULTIMA_RING_DURATION_SEC));
@@ -366,9 +364,27 @@ export function AppShell({ children }: AppShellProps) {
       {/* Animated background (disabled for Ultima mode) */}
       {(!isUltimaModeReady || !isUltimaMode) && <BackgroundRenderer />}
       {isUltimaModeReady && isUltimaAnimatedRoute && (
-        <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[radial-gradient(circle_at_74%_58%,rgba(23,200,145,0.26),rgba(4,16,25,0.98)_56%)]">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_84%,rgba(15,168,132,0.22),transparent_52%),radial-gradient(circle_at_84%_18%,rgba(124,255,218,0.1),transparent_48%)]" />
-          <div className="absolute inset-0 bg-[linear-gradient(160deg,rgba(2,13,22,0.6)_0%,rgba(7,42,41,0.28)_44%,rgba(3,17,27,0.74)_100%)]" />
+        <div
+          className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
+          style={{
+            background:
+              'radial-gradient(circle at 74% 58%, color-mix(in srgb, var(--ultima-color-aura) 26%, transparent), color-mix(in srgb, var(--ultima-color-bg-top) 98%, #000000) 56%)',
+          }}
+        >
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                'radial-gradient(circle at 30% 84%, color-mix(in srgb, var(--ultima-color-aura) 22%, transparent), transparent 52%), radial-gradient(circle at 84% 18%, color-mix(in srgb, var(--ultima-color-ring) 14%, transparent), transparent 48%)',
+            }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                'linear-gradient(160deg, color-mix(in srgb, var(--ultima-color-bg-top) 68%, #000000) 0%, color-mix(in srgb, var(--ultima-color-bg-bottom) 42%, transparent) 44%, color-mix(in srgb, var(--ultima-color-bg-top) 80%, #000000) 100%)',
+            }}
+          />
           {[0, 1.8, 3.6, 5.4, 7.2, 9, 10.8, 12.6, 14.4].map((delay) => (
             <div
               key={delay}

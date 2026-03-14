@@ -285,7 +285,7 @@ export function UltimaDevices() {
               <button
                 type="button"
                 onClick={() => void copySubscriptionLink()}
-                className="rounded-xl border border-emerald-200/15 bg-emerald-900/35 px-3 py-2 text-[13px] text-white/90"
+                className="ultima-btn-pill ultima-btn-secondary rounded-xl px-3 py-2 text-[13px]"
                 disabled={!subscriptionLink}
               >
                 <span className="inline-flex items-center gap-1.5">
@@ -298,7 +298,7 @@ export function UltimaDevices() {
               <button
                 type="button"
                 onClick={() => void shareSubscriptionLink()}
-                className="rounded-xl border border-emerald-200/15 bg-emerald-900/35 px-3 py-2 text-[13px] text-white/90"
+                className="ultima-btn-pill ultima-btn-secondary rounded-xl px-3 py-2 text-[13px]"
                 disabled={!subscriptionLink}
               >
                 <span className="inline-flex items-center gap-1.5">
@@ -318,7 +318,7 @@ export function UltimaDevices() {
               </p>
               <button
                 type="button"
-                className="mt-3 w-full rounded-xl bg-emerald-400 px-4 py-3 text-sm font-semibold text-slate-900 transition hover:bg-emerald-300"
+                className="ultima-btn-pill ultima-btn-primary mt-3 w-full rounded-xl px-4 py-3 text-sm font-semibold"
                 onClick={() => navigate('/subscription/purchase')}
               >
                 {t('subscription.connection.goChooseTariff', { defaultValue: 'Выбрать тариф' })}
@@ -352,7 +352,7 @@ export function UltimaDevices() {
                       type="button"
                       onClick={() => deleteAllMutation.mutate()}
                       disabled={isBusy}
-                      className="rounded-lg border border-rose-300/25 bg-rose-950/35 px-2.5 py-1 text-[11px] text-rose-100 disabled:opacity-45"
+                      className="ultima-btn-pill ultima-btn-secondary rounded-lg px-2.5 py-1 text-[11px] disabled:opacity-45"
                     >
                       {t('lite.deleteAll', { defaultValue: 'Удалить все' })}
                     </button>
@@ -381,7 +381,7 @@ export function UltimaDevices() {
                         <button
                           type="button"
                           onClick={() => deleteMutation.mutate(device.hwid)}
-                          className="rounded-lg border border-rose-300/20 bg-rose-950/30 p-2 text-rose-100 disabled:opacity-45"
+                          className="ultima-btn-pill ultima-btn-secondary rounded-lg p-2 disabled:opacity-45"
                           disabled={isBusy}
                           aria-label={t('lite.deleteDevice', {
                             defaultValue: 'Удалить устройство',
@@ -407,7 +407,7 @@ export function UltimaDevices() {
                   <button
                     type="button"
                     onClick={() => setAddCount((prev) => Math.max(1, prev - 1))}
-                    className="h-8 w-8 rounded-lg border border-emerald-200/15 bg-emerald-900/35 text-white"
+                    className="ultima-btn-pill ultima-btn-secondary h-8 w-8 rounded-lg"
                     disabled={isBusy}
                   >
                     -
@@ -418,7 +418,7 @@ export function UltimaDevices() {
                   <button
                     type="button"
                     onClick={() => setAddCount((prev) => Math.min(maxAdd, prev + 1))}
-                    className="h-8 w-8 rounded-lg border border-emerald-200/15 bg-emerald-900/35 text-white"
+                    className="ultima-btn-pill ultima-btn-secondary h-8 w-8 rounded-lg"
                     disabled={isBusy}
                   >
                     +
@@ -437,7 +437,7 @@ export function UltimaDevices() {
                 </p>
                 <button
                   type="button"
-                  className="mt-2 w-full rounded-xl bg-emerald-400 px-4 py-2.5 text-sm font-semibold text-slate-900 transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="ultima-btn-pill ultima-btn-primary mt-2 w-full rounded-xl px-4 py-2.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50"
                   onClick={() => purchaseMutation.mutate(addCount)}
                   disabled={isBusy || !devicePrice?.available}
                 >
@@ -453,7 +453,7 @@ export function UltimaDevices() {
                       <button
                         type="button"
                         onClick={() => setReduceLimit((prev) => Math.max(minReduceLimit, prev - 1))}
-                        className="h-8 w-8 rounded-lg border border-emerald-200/15 bg-emerald-900/35 text-white"
+                        className="ultima-btn-pill ultima-btn-secondary h-8 w-8 rounded-lg"
                         disabled={isBusy}
                       >
                         -
@@ -464,7 +464,7 @@ export function UltimaDevices() {
                       <button
                         type="button"
                         onClick={() => setReduceLimit((prev) => Math.min(maxReduceLimit, prev + 1))}
-                        className="h-8 w-8 rounded-lg border border-emerald-200/15 bg-emerald-900/35 text-white"
+                        className="ultima-btn-pill ultima-btn-secondary h-8 w-8 rounded-lg"
                         disabled={isBusy}
                       >
                         +
@@ -475,7 +475,7 @@ export function UltimaDevices() {
                     </div>
                     <button
                       type="button"
-                      className="w-full rounded-xl border border-emerald-200/20 bg-emerald-900/35 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-900/50 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="ultima-btn-pill ultima-btn-secondary w-full rounded-xl px-4 py-2.5 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
                       onClick={() => reduceMutation.mutate(reduceLimit)}
                       disabled={
                         isBusy || reduceLimit >= currentLimit || reduceLimit < minReduceLimit

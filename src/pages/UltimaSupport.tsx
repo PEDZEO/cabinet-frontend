@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type CSSProperties } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -131,17 +131,24 @@ export function UltimaSupport() {
       return {
         label: t('support.statusClosed', { defaultValue: 'Закрыт' }),
         classes: 'bg-white/10 text-white/80',
+        style: undefined as CSSProperties | undefined,
       };
     }
     if (status === 'answered') {
       return {
         label: t('support.statusAnswered', { defaultValue: 'Ответ админа' }),
-        classes: 'border-emerald-300/40 bg-emerald-400/15 text-emerald-100',
+        classes: 'border text-white',
+        style: {
+          borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 48%, transparent)',
+          background: 'color-mix(in srgb, var(--ultima-color-primary) 20%, transparent)',
+          color: 'color-mix(in srgb, var(--ultima-color-ring) 86%, #fff)',
+        } as CSSProperties,
       };
     }
     return {
       label: t('support.statusOpen', { defaultValue: 'Открыт' }),
       classes: 'border-sky-300/35 bg-sky-400/15 text-sky-100',
+      style: undefined as CSSProperties | undefined,
     };
   };
 
@@ -164,8 +171,8 @@ export function UltimaSupport() {
       onClick={() => setSelectedTicketId(ticket.id)}
       className={`w-full rounded-2xl px-3 py-2 text-left transition lg:px-3.5 lg:py-2.5 ${
         selectedTicketId === ticket.id
-          ? 'bg-emerald-500/12 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
-          : 'bg-emerald-950/36 hover:bg-emerald-900/30'
+          ? 'bg-[color:color-mix(in_srgb,var(--ultima-color-primary)_16%,transparent)] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
+          : 'bg-[color:color-mix(in_srgb,var(--ultima-color-secondary)_58%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--ultima-color-secondary)_72%,transparent)]'
       }`}
     >
       <div className="mb-1.5 flex items-start justify-between gap-2">
@@ -174,6 +181,7 @@ export function UltimaSupport() {
         </p>
         <span
           className={`inline-flex shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${getStatusMeta(ticket.status).classes}`}
+          style={getStatusMeta(ticket.status).style}
         >
           {getStatusMeta(ticket.status).label}
         </span>
@@ -216,7 +224,7 @@ export function UltimaSupport() {
             <button
               type="button"
               onClick={() => supportContact?.action()}
-              className="flex w-full items-center justify-center rounded-full border border-[#52ecc6]/40 bg-[#12cd97] px-5 py-3 text-sm font-medium text-white"
+              className="ultima-btn-pill ultima-btn-primary flex w-full items-center justify-center px-5 py-3 text-sm"
             >
               {supportContact?.label || t('support.contactUs')}
             </button>
@@ -246,7 +254,7 @@ export function UltimaSupport() {
                   newTitle.trim().length < 3 ||
                   newMessage.trim().length < 10
                 }
-                className="flex flex-1 items-center justify-center gap-2 rounded-full border border-[#52ecc6]/40 bg-[#12cd97] px-4 py-2.5 text-sm font-medium text-white disabled:opacity-60"
+                className="ultima-btn-pill ultima-btn-primary flex flex-1 items-center justify-center gap-2 px-4 py-2.5 text-sm disabled:opacity-60"
               >
                 <SendIcon />
                 {t('support.send')}
@@ -254,7 +262,7 @@ export function UltimaSupport() {
               <button
                 type="button"
                 onClick={() => setShowCreate(false)}
-                className="rounded-full bg-white/10 px-4 py-2.5 text-sm text-white/90"
+                className="ultima-btn-pill ultima-btn-secondary px-4 py-2.5 text-sm"
               >
                 {t('common.cancel')}
               </button>
@@ -267,7 +275,7 @@ export function UltimaSupport() {
               <button
                 type="button"
                 onClick={() => setShowCreate(true)}
-                className="bg-emerald-900/42 rounded-full px-3 py-1.5 text-[12px] leading-none text-white/90"
+                className="ultima-btn-pill ultima-btn-secondary px-3 py-1.5 text-[12px] leading-none"
               >
                 {t('support.newTicket')}
               </button>
@@ -293,7 +301,15 @@ export function UltimaSupport() {
                         <button
                           type="button"
                           onClick={() => setShowOldTickets((prev) => !prev)}
-                          className="w-full rounded-xl bg-emerald-900/25 px-2.5 py-2 text-left text-[12px] text-white/80"
+                          className="w-full rounded-xl border px-2.5 py-2 text-left text-[12px]"
+                          style={{
+                            borderColor:
+                              'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
+                            background:
+                              'color-mix(in srgb, var(--ultima-color-secondary) 60%, transparent)',
+                            color:
+                              'color-mix(in srgb, var(--ultima-color-secondary-text) 82%, transparent)',
+                          }}
                         >
                           {showOldTickets
                             ? t('support.hideOldTickets', {
@@ -326,6 +342,7 @@ export function UltimaSupport() {
                       </p>
                       <span
                         className={`inline-flex shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${getStatusMeta(ticketDetail.status).classes}`}
+                        style={getStatusMeta(ticketDetail.status).style}
                       >
                         {getStatusMeta(ticketDetail.status).label}
                       </span>
@@ -372,7 +389,7 @@ export function UltimaSupport() {
                           type="button"
                           onClick={() => replyMutation.mutate()}
                           disabled={replyMutation.isPending || !replyMessage.trim()}
-                          className="rounded-xl border border-[#52ecc6]/40 bg-[#12cd97] px-3 text-white disabled:opacity-60 lg:h-11 lg:px-4"
+                          className="ultima-btn-pill ultima-btn-primary rounded-xl px-3 text-sm disabled:opacity-60 lg:h-11 lg:px-4"
                           aria-label="send-reply"
                         >
                           <SendIcon />

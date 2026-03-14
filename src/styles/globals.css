@@ -358,6 +358,43 @@
   );
 }
 
+.ultima-shell [class*='bg-[rgba(12,45,42'],
+.ultima-shell [class*='bg-[rgba(10,40,44'],
+.ultima-shell [class*='bg-emerald-950'],
+.ultima-shell [class*='bg-emerald-900'] {
+  background-color: color-mix(in srgb, var(--ultima-color-surface) 58%, transparent) !important;
+}
+
+.ultima-shell [class*='border-emerald-'] {
+  border-color: color-mix(in srgb, var(--ultima-color-surface-border) 34%, transparent) !important;
+}
+
+.ultima-shell [class*='text-emerald-'] {
+  color: color-mix(in srgb, var(--ultima-color-ring) 88%, #ffffff) !important;
+}
+
+.ultima-shell [class*='bg-[#12cd97]'],
+.ultima-shell [class*='bg-[#14cf9a]'],
+.ultima-shell [class*='bg-[#16d8a1]'],
+.ultima-shell [class*='bg-emerald-400'],
+.ultima-shell [class*='bg-emerald-500'] {
+  background-color: var(--ultima-color-primary) !important;
+  color: var(--ultima-color-primary-text) !important;
+}
+
+.ultima-shell [class*='border-[#52ecc6]'],
+.ultima-shell [class*='border-[#66ebc9]'] {
+  border-color: color-mix(in srgb, var(--ultima-color-surface-border) 52%, transparent) !important;
+}
+
+.ultima-shell [class*='from-emerald-'],
+.ultima-shell [class*='via-emerald-'],
+.ultima-shell [class*='to-emerald-'] {
+  --tw-gradient-from: color-mix(in srgb, var(--ultima-color-ring) 76%, transparent) !important;
+  --tw-gradient-via: color-mix(in srgb, var(--ultima-color-primary) 84%, transparent) !important;
+  --tw-gradient-to: color-mix(in srgb, var(--ultima-color-ring) 76%, transparent) !important;
+}
+
 .ultima-shell-inner {
   position: relative;
   z-index: 10;
