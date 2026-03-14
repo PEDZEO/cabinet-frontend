@@ -84,8 +84,20 @@ export default function UltimaChannelSubscriptionScreen() {
   }, [clearBlocking, t]);
 
   return (
-    <div className="fixed inset-0 z-[100] overflow-hidden bg-[#041225]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(95%_70%_at_50%_45%,rgba(33,208,154,0.16),rgba(7,20,46,0.02)_62%,rgba(7,20,46,0)_100%)]" />
+    <div
+      className="fixed inset-0 z-[100] overflow-hidden"
+      style={{
+        background:
+          'linear-gradient(160deg, color-mix(in srgb, var(--ultima-color-bg-top) 28%, transparent) 0%, color-mix(in srgb, var(--ultima-color-bg-bottom) 40%, #000000) 100%)',
+      }}
+    >
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(95% 70% at 50% 45%, color-mix(in srgb, var(--ultima-color-aura) 16%, transparent), color-mix(in srgb, var(--ultima-color-bg-bottom) 8%, transparent) 62%, transparent 100%)',
+        }}
+      />
       {[0, 2.8, 5.6].map((delay) => (
         <div
           key={delay}
@@ -95,9 +107,23 @@ export default function UltimaChannelSubscriptionScreen() {
       ))}
 
       <div className="relative z-10 mx-auto flex h-full w-full max-w-md flex-col justify-center px-4 py-6">
-        <section className="rounded-[28px] border border-emerald-200/15 bg-[rgba(10,40,44,0.36)] p-4 backdrop-blur-md">
+        <section
+          className="rounded-[28px] border p-4 backdrop-blur-md"
+          style={{
+            borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
+            background: 'color-mix(in srgb, var(--ultima-color-surface) 44%, transparent)',
+          }}
+        >
           <div className="mb-3 flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-emerald-200/20 bg-emerald-400/15 text-emerald-100">
+            <div
+              className="flex h-11 w-11 items-center justify-center rounded-2xl border"
+              style={{
+                borderColor:
+                  'color-mix(in srgb, var(--ultima-color-surface-border) 28%, transparent)',
+                background: 'color-mix(in srgb, var(--ultima-color-primary) 20%, transparent)',
+                color: 'color-mix(in srgb, var(--ultima-color-ring) 92%, #ffffff)',
+              }}
+            >
               <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6">
                 <path
                   d="M7 12.5 10 15.5 17 8.5"
@@ -130,7 +156,12 @@ export default function UltimaChannelSubscriptionScreen() {
               channels.map((channel) => (
                 <div
                   key={channel.channel_id}
-                  className="border-emerald-200/14 bg-emerald-950/28 rounded-2xl border p-3"
+                  className="rounded-2xl border p-3"
+                  style={{
+                    borderColor:
+                      'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
+                    background: 'color-mix(in srgb, var(--ultima-color-surface) 36%, transparent)',
+                  }}
                 >
                   <p className="truncate text-[14px] font-medium text-white/95">
                     {channel.title || channel.channel_id}
@@ -140,7 +171,13 @@ export default function UltimaChannelSubscriptionScreen() {
                       <button
                         type="button"
                         onClick={() => safeOpenUrl(channel.channel_link)}
-                        className="rounded-full border border-[#52ecc6]/40 bg-[#12cd97] px-3 py-1.5 text-[12px] font-medium text-white"
+                        className="rounded-full border px-3 py-1.5 text-[12px] font-medium"
+                        style={{
+                          borderColor:
+                            'color-mix(in srgb, var(--ultima-color-surface-border) 40%, transparent)',
+                          background: 'var(--ultima-color-primary)',
+                          color: 'var(--ultima-color-primary-text)',
+                        }}
                       >
                         {t('blocking.channel.openChannel', { defaultValue: 'Открыть канал' })}
                       </button>
@@ -152,7 +189,13 @@ export default function UltimaChannelSubscriptionScreen() {
               <button
                 type="button"
                 onClick={() => safeOpenUrl(channelInfo.channel_link)}
-                className="w-full rounded-full border border-[#52ecc6]/40 bg-[#12cd97] px-5 py-2.5 text-sm font-medium text-white"
+                className="w-full rounded-full border px-5 py-2.5 text-sm font-medium"
+                style={{
+                  borderColor:
+                    'color-mix(in srgb, var(--ultima-color-surface-border) 40%, transparent)',
+                  background: 'var(--ultima-color-primary)',
+                  color: 'var(--ultima-color-primary-text)',
+                }}
               >
                 {t('blocking.channel.openChannel', { defaultValue: 'Открыть канал' })}
               </button>
@@ -169,7 +212,13 @@ export default function UltimaChannelSubscriptionScreen() {
             type="button"
             onClick={checkSubscription}
             disabled={isChecking || cooldown > 0}
-            className="mt-3 w-full rounded-full border border-[#52ecc6]/40 bg-[#12cd97] px-5 py-3 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-3 w-full rounded-full border px-5 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60"
+            style={{
+              borderColor:
+                'color-mix(in srgb, var(--ultima-color-surface-border) 40%, transparent)',
+              background: 'var(--ultima-color-primary)',
+              color: 'var(--ultima-color-primary-text)',
+            }}
           >
             {isChecking
               ? t('blocking.channel.checking', { defaultValue: 'Проверяем...' })

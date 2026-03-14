@@ -3,7 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router';
 import { balanceApi } from '@/api/balance';
+import { promoApi } from '@/api/promo';
 import { subscriptionApi } from '@/api/subscription';
+import { createApplyPromoDiscount } from '@/features/subscription/utils/pricing';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useCloseOnSuccessNotification } from '@/store/successNotification';
 import { useHaptic, usePlatform } from '@/platform';
@@ -148,6 +150,12 @@ export function UltimaSubscription() {
     queryKey: ['balance'],
     queryFn: balanceApi.getBalance,
     staleTime: 15000,
+    placeholderData: (previousData) => previousData,
+  });
+  const { data: activeDiscount } = useQuery({
+    queryKey: ['active-discount'],
+    queryFn: promoApi.getActiveDiscount,
+    staleTime: 30000,
     placeholderData: (previousData) => previousData,
   });
 
@@ -624,13 +632,14 @@ export function UltimaSubscription() {
     const value = Number.isInteger(rubles) ? String(rubles) : rubles.toFixed(2);
     return `${value} ${currencySymbol}`;
   };
+  const applyPromoDiscount = createApplyPromoDiscount(activeDiscount);
 
   const baseDeviceLimit = Math.max(
     1,
     selectedTariff.base_device_limit ?? selectedTariff.device_limit ?? 1,
   );
   const extraDevicePricePerMonth = Math.max(0, selectedTariff.device_price_kopeks ?? 0);
-  const calculatePeriodPrice = (period: DisplayPeriod): number => {
+  const calculateRawPeriodPrice = (period: DisplayPeriod): number => {
     const months = Math.max(1, period.months);
     const selectedExtraDevices = Math.max(0, selectedDeviceLimit - baseDeviceLimit);
     const baseTariffPrice = period.base_tariff_price_kopeks ?? period.price_kopeks;
@@ -641,7 +650,11 @@ export function UltimaSubscription() {
     let bestDays: number | null = null;
     let bestPerDay = Number.POSITIVE_INFINITY;
     for (const period of displayPeriods) {
-      const perDay = calculatePeriodPrice(period) / Math.max(1, period.days);
+      const periodPrice = applyPromoDiscount(
+        calculateRawPeriodPrice(period),
+        period.original_price_kopeks ?? null,
+      ).price;
+      const perDay = periodPrice / Math.max(1, period.days);
       if (perDay < bestPerDay) {
         bestPerDay = perDay;
         bestDays = period.days;
@@ -649,7 +662,11 @@ export function UltimaSubscription() {
     }
     return bestDays;
   })();
-  const selectedPriceKopeks = calculatePeriodPrice(selectedPeriod);
+  const selectedPricePreview = applyPromoDiscount(
+    calculateRawPeriodPrice(selectedPeriod),
+    selectedPeriod.original_price_kopeks ?? null,
+  );
+  const selectedPriceKopeks = selectedPricePreview.price;
   const currentBalanceKopeks = Math.max(0, balanceData?.balance_kopeks ?? 0);
   const payableAmountKopeks = Math.max(0, selectedPriceKopeks - currentBalanceKopeks);
   const isCompactHeight = viewportHeight < 780;
@@ -807,7 +824,14 @@ export function UltimaSubscription() {
           }`}
         >
           <div className={`flex items-center gap-3 ${isUltraCompactHeight ? 'mb-2' : 'mb-3'}`}>
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/90">
+            <span
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border text-[18px] font-semibold text-white shadow-[0_0_18px_color-mix(in_srgb,var(--ultima-color-primary)_36%,transparent)]"
+              style={{
+                borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 52%, transparent)',
+                background:
+                  'radial-gradient(circle at 30% 30%, color-mix(in srgb, #ffffff 34%, transparent), color-mix(in srgb, var(--ultima-color-primary) 36%, transparent) 40%, color-mix(in srgb, var(--ultima-color-surface) 78%, #000000) 100%)',
+              }}
+            >
               {selectedDeviceLimit}
             </span>
             <div>
@@ -820,7 +844,7 @@ export function UltimaSubscription() {
                       : 'text-[22px]'
                 } font-medium leading-none text-white`}
               >
-                Устройство
+                Устройства
               </p>
               <p
                 className={`${isUltraCompactHeight ? 'mt-0.5 text-[13px]' : 'mt-1 text-[14px]'} text-white/70`}
@@ -1043,13 +1067,25 @@ export function UltimaSubscription() {
                           : 'text-[clamp(28px,8.6vw,32px)]'
                     }`}
                   >
-                    {formatPrice(calculatePeriodPrice(period))}
+                    {formatPrice(
+                      applyPromoDiscount(
+                        calculateRawPeriodPrice(period),
+                        period.original_price_kopeks ?? null,
+                      ).price,
+                    )}
                   </p>
                   <p className="mt-1 text-[12px] text-white/70">
                     {`${formatPrice(
                       Math.max(
                         1,
-                        Math.round((calculatePeriodPrice(period) / Math.max(1, period.days)) * 30),
+                        Math.round(
+                          (applyPromoDiscount(
+                            calculateRawPeriodPrice(period),
+                            period.original_price_kopeks ?? null,
+                          ).price /
+                            Math.max(1, period.days)) *
+                            30,
+                        ),
                       ),
                     )} / мес`}
                   </p>
@@ -1076,10 +1112,10 @@ export function UltimaSubscription() {
             <span>Оплатить подписку</span>
             <span className="flex items-center gap-2 text-white/95">
               {formatPrice(payableAmountKopeks)}
-              {selectedPeriod.original_price_kopeks &&
-              selectedPeriod.original_price_kopeks > selectedPeriod.price_kopeks ? (
+              {selectedPricePreview.original &&
+              selectedPricePreview.original > selectedPriceKopeks ? (
                 <span className="text-[13px] text-white/60 line-through">
-                  {formatPrice(selectedPeriod.original_price_kopeks)}
+                  {formatPrice(selectedPricePreview.original)}
                 </span>
               ) : null}
             </span>

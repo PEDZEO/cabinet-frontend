@@ -88,8 +88,10 @@ export default function Login() {
   if (isUltimaMode) {
     return (
       <div
-        className="relative min-h-[100dvh] overflow-hidden bg-[#041225]"
+        className="relative min-h-[100dvh] overflow-hidden"
         style={{
+          background:
+            'linear-gradient(160deg, color-mix(in srgb, var(--ultima-color-bg-top) 28%, transparent) 0%, color-mix(in srgb, var(--ultima-color-bg-bottom) 40%, #000000) 100%)',
           paddingTop:
             safeTop > 0 ? `${safeTop + 16}px` : 'calc(1rem + env(safe-area-inset-top, 0px))',
           paddingBottom:
@@ -118,7 +120,14 @@ export default function Login() {
 
         <div className="relative z-10 mx-auto flex w-full max-w-md flex-col px-4">
           <header className="mb-4 flex flex-col items-center pt-8 text-center">
-            <div className="mb-3 flex h-20 w-20 items-center justify-center rounded-[28px] border border-emerald-200/20 bg-emerald-400/10">
+            <div
+              className="mb-3 flex h-20 w-20 items-center justify-center rounded-[28px] border"
+              style={{
+                borderColor:
+                  'color-mix(in srgb, var(--ultima-color-surface-border) 28%, transparent)',
+                background: 'color-mix(in srgb, var(--ultima-color-primary) 16%, transparent)',
+              }}
+            >
               <UltimaLogoShield />
             </div>
             <h1 className="text-[34px] font-semibold leading-none tracking-[-0.01em] text-white">
@@ -130,18 +139,39 @@ export default function Login() {
           </header>
 
           {registeredEmail ? (
-            <div className="rounded-[28px] border border-emerald-200/15 bg-[rgba(10,40,44,0.36)] p-4 backdrop-blur-md">
+            <div
+              className="rounded-[28px] border p-4 backdrop-blur-md"
+              style={{
+                borderColor:
+                  'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
+                background: 'color-mix(in srgb, var(--ultima-color-surface) 44%, transparent)',
+              }}
+            >
               <LoginCheckEmailCard email={registeredEmail} onBackToLogin={handleBackToLogin} />
             </div>
           ) : (
-            <div className="rounded-[28px] border border-emerald-200/15 bg-[rgba(10,40,44,0.36)] p-4 backdrop-blur-md">
+            <div
+              className="rounded-[28px] border p-4 backdrop-blur-md"
+              style={{
+                borderColor:
+                  'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
+                background: 'color-mix(in srgb, var(--ultima-color-surface) 44%, transparent)',
+              }}
+            >
               {error && (
                 <div className="bg-rose-500/12 mb-4 rounded-xl border border-rose-300/35 px-4 py-2.5 text-sm text-rose-100">
                   {error}
                 </div>
               )}
 
-              <div className="bg-emerald-950/26 rounded-2xl border border-emerald-200/10 p-3">
+              <div
+                className="rounded-2xl border p-3"
+                style={{
+                  borderColor:
+                    'color-mix(in srgb, var(--ultima-color-surface-border) 20%, transparent)',
+                  background: 'color-mix(in srgb, var(--ultima-color-surface) 34%, transparent)',
+                }}
+              >
                 <LoginTelegramSection
                   isLoading={isLoading}
                   isTelegramWebApp={isTelegramWebApp}
@@ -152,7 +182,14 @@ export default function Login() {
                 />
               </div>
 
-              <div className="bg-emerald-950/26 mt-3 rounded-2xl border border-emerald-200/10 p-3">
+              <div
+                className="mt-3 rounded-2xl border p-3"
+                style={{
+                  borderColor:
+                    'color-mix(in srgb, var(--ultima-color-surface-border) 20%, transparent)',
+                  background: 'color-mix(in srgb, var(--ultima-color-surface) 34%, transparent)',
+                }}
+              >
                 <LoginOAuthSection
                   isLoading={isOAuthProvidersLoading}
                   providers={oauthProviders}
@@ -161,7 +198,14 @@ export default function Login() {
                 />
               </div>
 
-              <div className="bg-emerald-950/26 mt-3 rounded-2xl border border-emerald-200/10 p-3">
+              <div
+                className="mt-3 rounded-2xl border p-3"
+                style={{
+                  borderColor:
+                    'color-mix(in srgb, var(--ultima-color-surface-border) 20%, transparent)',
+                  background: 'color-mix(in srgb, var(--ultima-color-surface) 34%, transparent)',
+                }}
+              >
                 <LoginEmailAuthSection
                   isEmailAuthLoading={isEmailAuthLoading}
                   isEmailAuthEnabled={isEmailAuthEnabled}

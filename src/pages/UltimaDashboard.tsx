@@ -244,15 +244,13 @@ export function UltimaDashboard() {
   });
   const claimOfferMutation = useMutation({
     mutationFn: (offerId: number) => promoApi.claimOffer(offerId),
-    onSuccess: (result) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['promo-offers'] });
       queryClient.invalidateQueries({ queryKey: ['active-discount'] });
       queryClient.invalidateQueries({ queryKey: ['subscription'] });
       queryClient.invalidateQueries({ queryKey: ['purchase-options'] });
       queryClient.invalidateQueries({ queryKey: ['balance'] });
-      setPromoMessage(
-        result.message || t('promo.offers.activated', { defaultValue: 'Предложение активировано' }),
-      );
+      setPromoMessage(t('promo.offers.activated', { defaultValue: 'Предложение активировано' }));
       window.setTimeout(() => setPromoMessage(null), 3500);
     },
     onError: () => {
