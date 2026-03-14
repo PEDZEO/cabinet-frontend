@@ -832,6 +832,7 @@
   "support": {
     "title": "Support",
     "newTicket": "New Ticket",
+    "closeTicket": "Close ticket",
     "yourTickets": "Your Tickets",
     "noTickets": "No tickets yet",
     "createTicket": "Create New Ticket",
@@ -4049,6 +4050,7 @@
     "expiresIn": "Expires in",
     "source": "Source",
     "useNow": "Use discount now",
+    "activate": "Activate",
     "discountApplied": "Discount applied",
     "time": {
       "days": "d",

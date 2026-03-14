@@ -62,6 +62,11 @@ export const ticketsApi = {
     return response.data;
   },
 
+  closeTicket: async (ticketId: number): Promise<TicketDetail> => {
+    const response = await apiClient.post<TicketDetail>(`/cabinet/tickets/${ticketId}/close`);
+    return response.data;
+  },
+
   // Upload media file for tickets
   uploadMedia: async (file: File, mediaType: string = 'photo'): Promise<MediaUploadResponse> => {
     const formData = new FormData();

@@ -98,6 +98,14 @@ export function UltimaSupport() {
     },
   });
 
+  const closeMutation = useMutation({
+    mutationFn: () => ticketsApi.closeTicket(selectedTicketId as number),
+    onSuccess: (updated) => {
+      queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      queryClient.setQueryData(['ticket', selectedTicketId], updated);
+    },
+  });
+
   const supportContact = useMemo(() => {
     if (!supportConfig) {
       return null;
@@ -340,12 +348,24 @@ export function UltimaSupport() {
                       <p className="truncate text-[14px] font-medium text-white/95 lg:text-[16px]">
                         {selectedTicket?.title}
                       </p>
-                      <span
-                        className={`inline-flex shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${getStatusMeta(ticketDetail.status).classes}`}
-                        style={getStatusMeta(ticketDetail.status).style}
-                      >
-                        {getStatusMeta(ticketDetail.status).label}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`inline-flex shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${getStatusMeta(ticketDetail.status).classes}`}
+                          style={getStatusMeta(ticketDetail.status).style}
+                        >
+                          {getStatusMeta(ticketDetail.status).label}
+                        </span>
+                        {ticketDetail.status !== 'closed' && (
+                          <button
+                            type="button"
+                            onClick={() => closeMutation.mutate()}
+                            disabled={closeMutation.isPending}
+                            className="ultima-btn-pill ultima-btn-secondary px-2.5 py-1 text-[11px] disabled:opacity-60"
+                          >
+                            {t('support.closeTicket', { defaultValue: 'Закрыть' })}
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <div className="max-h-[24vh] space-y-2 overflow-y-auto pr-1 lg:max-h-[52vh] lg:space-y-2.5">
                       {ticketLoading ? (

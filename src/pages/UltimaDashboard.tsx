@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 import { balanceApi } from '@/api/balance';
 import { infoApi } from '@/api/info';
+import { promoApi } from '@/api/promo';
 import { subscriptionApi } from '@/api/subscription';
 import { ticketsApi } from '@/api/tickets';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
@@ -94,6 +95,7 @@ export function UltimaDashboard() {
   const trialAutoActivationAttemptedRef = useRef(false);
   const [shieldRipples, setShieldRipples] = useState<ShieldRipple[]>([]);
   const [connectionStep, setConnectionStep] = useState<1 | 2 | 3>(1);
+  const [promoMessage, setPromoMessage] = useState<string | null>(null);
 
   const {
     data: subscriptionResponse,
@@ -110,6 +112,18 @@ export function UltimaDashboard() {
     queryKey: ['purchase-options'],
     queryFn: subscriptionApi.getPurchaseOptions,
     staleTime: 60000,
+    placeholderData: (previousData) => previousData,
+  });
+  const { data: promoOffers } = useQuery({
+    queryKey: ['promo-offers'],
+    queryFn: promoApi.getOffers,
+    staleTime: 30000,
+    placeholderData: (previousData) => previousData,
+  });
+  const { data: activeDiscount } = useQuery({
+    queryKey: ['active-discount'],
+    queryFn: promoApi.getActiveDiscount,
+    staleTime: 30000,
     placeholderData: (previousData) => previousData,
   });
 
@@ -226,6 +240,26 @@ export function UltimaDashboard() {
       queryClient.invalidateQueries({ queryKey: ['trial-info'] });
       queryClient.invalidateQueries({ queryKey: ['balance'] });
       queryClient.invalidateQueries({ queryKey: ['purchase-options'] });
+    },
+  });
+  const claimOfferMutation = useMutation({
+    mutationFn: (offerId: number) => promoApi.claimOffer(offerId),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['promo-offers'] });
+      queryClient.invalidateQueries({ queryKey: ['active-discount'] });
+      queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      queryClient.invalidateQueries({ queryKey: ['purchase-options'] });
+      queryClient.invalidateQueries({ queryKey: ['balance'] });
+      setPromoMessage(
+        result.message || t('promo.offers.activated', { defaultValue: 'Предложение активировано' }),
+      );
+      window.setTimeout(() => setPromoMessage(null), 3500);
+    },
+    onError: () => {
+      setPromoMessage(
+        t('promo.offers.activationFailed', { defaultValue: 'Не удалось активировать предложение' }),
+      );
+      window.setTimeout(() => setPromoMessage(null), 3500);
     },
   });
 
@@ -345,6 +379,13 @@ export function UltimaDashboard() {
   };
 
   const hasSetupReminder = connectionStep === 2;
+  const firstPromoOffer = useMemo(
+    () => (promoOffers ?? []).find((offer) => offer.is_active && !offer.is_claimed) ?? null,
+    [promoOffers],
+  );
+  const showPromoCard =
+    (activeDiscount?.is_active === true && (activeDiscount.discount_percent ?? 0) > 0) ||
+    Boolean(firstPromoOffer);
 
   if (!isI18nReady || !isSubscriptionReady || shouldHoldForAutoTrial) {
     return (
@@ -422,6 +463,60 @@ export function UltimaDashboard() {
               >
                 {t('ultima.finishSetup', { defaultValue: 'Завершить установку' })}
               </button>
+            </div>
+          )}
+
+          {showPromoCard && (
+            <div
+              className="mb-4 rounded-2xl border p-3.5 backdrop-blur-md"
+              style={{
+                borderColor:
+                  'color-mix(in srgb, var(--ultima-color-surface-border) 30%, transparent)',
+                background: 'color-mix(in srgb, var(--ultima-color-surface) 38%, transparent)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 10px 24px rgba(3,14,24,0.22)',
+              }}
+            >
+              <p
+                className="text-[15px] font-semibold leading-tight"
+                style={{
+                  color: 'color-mix(in srgb, var(--ultima-color-secondary-text) 94%, #fff)',
+                }}
+              >
+                {activeDiscount?.is_active && (activeDiscount.discount_percent ?? 0) > 0
+                  ? t('promo.offers.discountActiveTitle', {
+                      percent: activeDiscount.discount_percent,
+                    })
+                  : t('promo.offers.specialOffer', { defaultValue: 'Спецпредложение' })}
+              </p>
+              <p className="mt-1 text-[13px] leading-snug text-white/70">
+                {activeDiscount?.is_active && (activeDiscount.discount_percent ?? 0) > 0
+                  ? t('promo.useNow', {
+                      defaultValue: 'Скидка уже активна. Можно использовать сейчас.',
+                    })
+                  : t('promo.offers.activateDiscountHint', {
+                      defaultValue: 'Активируйте предложение, чтобы получить выгоду.',
+                    })}
+              </p>
+              {promoMessage && <p className="mt-1.5 text-[12px] text-white/85">{promoMessage}</p>}
+              <div className="mt-2.5 flex gap-2">
+                {firstPromoOffer && (
+                  <button
+                    type="button"
+                    onClick={() => claimOfferMutation.mutate(firstPromoOffer.id)}
+                    disabled={claimOfferMutation.isPending}
+                    className="ultima-btn-pill ultima-btn-secondary flex-1 px-4 py-2.5 text-[14px] disabled:opacity-60"
+                  >
+                    {t('promo.activate', { defaultValue: 'Активировать' })}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => navigate('/subscription')}
+                  className="ultima-btn-pill ultima-btn-primary flex-1 px-4 py-2.5 text-[14px]"
+                >
+                  {t('promo.useNow', { defaultValue: 'Использовать' })}
+                </button>
+              </div>
             </div>
           )}
 

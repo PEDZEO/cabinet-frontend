@@ -860,6 +860,7 @@
   "support": {
     "title": "Поддержка",
     "newTicket": "Новый тикет",
+    "closeTicket": "Закрыть тикет",
     "yourTickets": "Ваши обращения",
     "noTickets": "Нет обращений",
     "createTicket": "Создать обращение",
@@ -4607,6 +4608,7 @@
     "expiresIn": "Истекает через",
     "source": "Источник",
     "useNow": "Использовать сейчас",
+    "activate": "Активировать",
     "discountApplied": "Скидка применена",
     "time": {
       "days": "д",
