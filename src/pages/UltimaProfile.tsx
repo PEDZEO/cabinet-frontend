@@ -1,7 +1,7 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { initDataUser } from '@telegram-apps/sdk-react';
 import { subscriptionApi } from '@/api/subscription';
 import { infoApi } from '@/api/info';
@@ -142,14 +142,6 @@ export function UltimaProfile() {
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
   const [idCopied, setIdCopied] = useState(false);
-  const [linkCopied, setLinkCopied] = useState(false);
-
-  const { data: subscriptionResponse } = useQuery({
-    queryKey: ['subscription'],
-    queryFn: subscriptionApi.getSubscription,
-    staleTime: 15000,
-    placeholderData: (previousData) => previousData,
-  });
 
   const userLabel = useMemo(() => {
     const fallback = user?.telegram_id ?? user?.id ?? 0;
@@ -174,8 +166,6 @@ export function UltimaProfile() {
       String(user?.telegram_id ?? user?.id ?? '?');
     return source.slice(0, 1).toUpperCase();
   }, [user?.first_name, user?.id, user?.telegram_id, user?.username]);
-
-  const subscriptionLink = subscriptionResponse?.subscription?.subscription_url ?? '';
 
   const profileItems: SectionItem[] = [
     {
@@ -520,24 +510,6 @@ export function UltimaProfile() {
         </div>
 
         <section>
-          <div className="mb-3 flex items-center gap-3 rounded-2xl bg-[rgba(12,45,42,0.25)] px-4 py-3 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md">
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[13px]">{subscriptionLink || '-'}</p>
-              <p className="text-xs text-white/65">
-                {t('profile.subscriptionLink', { defaultValue: 'Ваша ссылка на подписку' })}
-              </p>
-            </div>
-            <button
-              type="button"
-              className="bg-emerald-900/42 flex h-8 w-8 items-center justify-center rounded-lg text-white/75"
-              onClick={() => void copyText(subscriptionLink, setLinkCopied)}
-              aria-label="copy-subscription-link"
-            >
-              <CopyIcon />
-            </button>
-            {linkCopied ? <span className="text-xs text-emerald-200">OK</span> : null}
-          </div>
-
           <div className="ultima-nav-dock">
             <UltimaBottomNav active="profile" onSupportClick={openSupportFast} />
           </div>

@@ -5,6 +5,96 @@ import { AdminBackButton } from '@/components/admin';
 import { ColorPicker } from '@/components/ColorPicker';
 import { applyUltimaThemeConfig } from '@/features/ultima/theme';
 
+type UltimaThemePreset = {
+  id: string;
+  name: string;
+  description: string;
+  config: UltimaThemeConfig;
+};
+
+const ULTIMA_THEME_PRESETS: UltimaThemePreset[] = [
+  {
+    id: 'emerald',
+    name: 'Emerald (Классика)',
+    description: 'Базовый Ultima-стиль с мягкой зелёной аурой.',
+    config: { ...DEFAULT_ULTIMA_THEME_CONFIG },
+  },
+  {
+    id: 'neon-ocean',
+    name: 'Neon Ocean',
+    description: 'Холодный неон с яркими кольцами и контрастным меню.',
+    config: {
+      ...DEFAULT_ULTIMA_THEME_CONFIG,
+      primaryColor: '#1ed6bf',
+      secondaryColor: '#0a2a35',
+      navBackgroundColor: '#0b2f36',
+      navActiveColor: '#1ed6bf',
+      navTextColor: '#cdf8ff',
+      backgroundTopColor: '#021425',
+      backgroundBottomColor: '#052933',
+      auraColor: '#20d0c0',
+      ringColor: '#c8fff8',
+      surfaceColor: '#0b2d36',
+      surfaceBorderColor: '#7ef0e4',
+      scrollbarThumbColor: '#42dec9',
+      scrollbarTrackColor: '#0b242b',
+      ringWaveSec: 16,
+      sliderGlowSec: 2.2,
+    },
+  },
+  {
+    id: 'sunset',
+    name: 'Sunset Mint',
+    description: 'Тёплый фон с мягким янтарным акцентом.',
+    config: {
+      ...DEFAULT_ULTIMA_THEME_CONFIG,
+      primaryColor: '#f3b63c',
+      primaryTextColor: '#1f1a0a',
+      secondaryColor: '#1f3a32',
+      secondaryTextColor: '#f7fff3',
+      navBackgroundColor: '#24423a',
+      navActiveColor: '#f3b63c',
+      navTextColor: '#f3f7ea',
+      backgroundTopColor: '#111f2d',
+      backgroundBottomColor: '#1a3d37',
+      auraColor: '#f0b04f',
+      ringColor: '#ffe0a3',
+      surfaceColor: '#1f3f39',
+      surfaceBorderColor: '#f4d08a',
+      scrollbarThumbColor: '#f0bd67',
+      scrollbarTrackColor: '#1f2f2b',
+      ringWaveSec: 20,
+      tapRingMs: 860,
+    },
+  },
+  {
+    id: 'arctic',
+    name: 'Arctic Glass',
+    description: 'Светлые стеклянные акценты и более спокойные анимации.',
+    config: {
+      ...DEFAULT_ULTIMA_THEME_CONFIG,
+      primaryColor: '#7de6d5',
+      primaryTextColor: '#0d1c1f',
+      secondaryColor: '#12313a',
+      secondaryTextColor: '#eefeff',
+      navBackgroundColor: '#12313a',
+      navActiveColor: '#8cf5e4',
+      navTextColor: '#d9fcff',
+      backgroundTopColor: '#041a29',
+      backgroundBottomColor: '#0a2f3d',
+      auraColor: '#7fefe0',
+      ringColor: '#ddfffb',
+      surfaceColor: '#12363e',
+      surfaceBorderColor: '#b7faf0',
+      scrollbarThumbColor: '#99f3e5',
+      scrollbarTrackColor: '#14313b',
+      contentEnterMs: 300,
+      ringWaveSec: 22,
+      stepRingSec: 6.8,
+    },
+  },
+];
+
 function NumberSlider({
   label,
   value,
@@ -101,6 +191,27 @@ export default function AdminUltimaTheme() {
           <div className="py-8 text-center text-dark-400">Загрузка...</div>
         ) : (
           <div className="space-y-6">
+            <section className="space-y-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-dark-300">
+                Готовые шаблоны
+              </h2>
+              <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                {ULTIMA_THEME_PRESETS.map((preset) => (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    className="rounded-xl border border-dark-700/70 bg-dark-900/55 p-3 text-left transition hover:border-accent-500/40 hover:bg-dark-800/60"
+                    onClick={() => setDraft({ ...preset.config })}
+                  >
+                    <div className="text-sm font-semibold text-dark-100">{preset.name}</div>
+                    <div className="mt-1 text-xs leading-snug text-dark-400">
+                      {preset.description}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </section>
+
             <section className="space-y-3">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-dark-300">
                 Базовые цвета

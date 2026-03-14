@@ -557,7 +557,7 @@ export function UltimaConnection({
             <button
               type="button"
               onClick={startInstallFlow}
-              className="border-[#66ebc9]/42 mb-3 flex w-full items-center justify-center gap-2 rounded-full border bg-[#14cf9a] px-5 py-2.5 text-[16px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(7,146,108,0.2)]"
+              className="ultima-btn-pill ultima-btn-primary mb-3 flex w-full items-center justify-center gap-2 px-5 py-2.5 text-[16px]"
             >
               <span aria-hidden>⟳</span>
               {t('subscription.connection.installApp', { defaultValue: 'Установить приложение' })}
@@ -567,7 +567,7 @@ export function UltimaConnection({
             <button
               type="button"
               onClick={startAddSubscriptionFlow}
-              className="border-[#66ebc9]/42 mb-3 flex w-full items-center justify-center gap-2 rounded-full border bg-[#14cf9a] px-5 py-2.5 text-[16px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(7,146,108,0.2)]"
+              className="ultima-btn-pill ultima-btn-primary mb-3 flex w-full items-center justify-center gap-2 px-5 py-2.5 text-[16px]"
             >
               <span aria-hidden>◌</span>
               {t('subscription.connection.addSubscription', { defaultValue: 'Добавить подписку' })}
@@ -579,14 +579,14 @@ export function UltimaConnection({
                 type="button"
                 onClick={finishFlow}
                 disabled={showFinishSuccess}
-                className="border-[#66ebc9]/42 mb-3 flex w-full items-center justify-center rounded-full border bg-[#14cf9a] px-5 py-2.5 text-[16px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(7,146,108,0.2)]"
+                className="ultima-btn-pill ultima-btn-primary mb-3 flex w-full items-center justify-center px-5 py-2.5 text-[16px]"
               >
                 {t('subscription.connection.finishSetup', { defaultValue: 'Завершить настройку' })}
               </button>
               <button
                 type="button"
                 onClick={() => navigate('/support')}
-                className="border-emerald-200/22 text-white/92 mb-3 flex w-full items-center justify-center rounded-full border bg-[rgba(12,45,42,0.34)] px-5 py-2.5 text-[15px] font-medium shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] backdrop-blur-md transition hover:bg-[rgba(16,58,52,0.44)]"
+                className="ultima-btn-pill ultima-btn-secondary mb-3 flex w-full items-center justify-center px-5 py-2.5 text-[15px]"
               >
                 {t('subscription.connection.needHelp', { defaultValue: 'Не получилось?' })}
               </button>
@@ -597,7 +597,7 @@ export function UltimaConnection({
             <button
               type="button"
               onClick={advanceStep}
-              className="border-emerald-200/22 mb-3 flex w-full items-center justify-center gap-2 rounded-full border bg-[rgba(12,45,42,0.34)] px-5 py-2.5 text-[16px] font-medium text-white/95 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] backdrop-blur-md transition hover:bg-[rgba(16,58,52,0.42)]"
+              className="ultima-btn-pill ultima-btn-secondary mb-3 flex w-full items-center justify-center gap-2 px-5 py-2.5 text-[16px]"
             >
               {t('subscription.connection.nextStep', { defaultValue: 'Следующий шаг' })}
               <span aria-hidden className="text-white/70">
@@ -640,7 +640,7 @@ export function UltimaConnection({
             <button
               type="button"
               onClick={() => setShowInfo(false)}
-              className="border-emerald-200/22 mt-4 flex w-full items-center justify-center rounded-full border bg-[rgba(12,45,42,0.34)] px-5 py-2.5 text-[15px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] backdrop-blur-md"
+              className="ultima-btn-pill ultima-btn-secondary mt-4 flex w-full items-center justify-center px-5 py-2.5 text-[15px]"
             >
               {t('subscription.connection.gotIt', {
                 defaultValue: 'Все понятно',
@@ -659,7 +659,12 @@ export function UltimaConnection({
               transform: 'translate(-50%, -50%)',
             }}
           >
-            <div className="ultima-success-wave h-[54vmax] w-[54vmax] rounded-full border border-emerald-200/40" />
+            <div
+              className="ultima-success-wave h-[54vmax] w-[54vmax] rounded-full border"
+              style={{
+                borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 52%, transparent)',
+              }}
+            />
           </div>
         </div>
       )}

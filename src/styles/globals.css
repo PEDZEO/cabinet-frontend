@@ -82,13 +82,13 @@
     opacity: 0;
   }
   8% {
-    opacity: 0.2;
+    opacity: 0.28;
   }
   22% {
-    opacity: 0.36;
+    opacity: 0.52;
   }
   56% {
-    opacity: 0.24;
+    opacity: 0.3;
   }
   100% {
     transform: scale(1.56);
@@ -97,6 +97,10 @@
 }
 
 .ultima-ring-wave {
+  border-color: color-mix(in srgb, var(--ultima-color-ring) 54%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--ultima-color-ring) 16%, transparent),
+    0 0 42px color-mix(in srgb, var(--ultima-color-ring) 8%, transparent);
   animation: ultima-ring-wave calc(var(--ultima-animation-ring-wave-sec, 18) * 1s) linear infinite;
   will-change: transform, opacity;
   transform-origin: center;
@@ -370,6 +374,54 @@
   margin-top: auto;
   padding-top: 12px;
   padding-bottom: 2px;
+}
+
+.ultima-btn-pill {
+  border-radius: 9999px;
+  border: 1px solid;
+  font-weight: 500;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    transform 120ms ease,
+    box-shadow 180ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ultima-btn-pill:active {
+  transform: scale(0.992);
+}
+
+.ultima-btn-primary {
+  border-color: color-mix(in srgb, var(--ultima-color-surface-border) 42%, transparent);
+  background: var(--ultima-color-primary);
+  color: var(--ultima-color-primary-text);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #ffffff 28%, transparent),
+    0 6px 18px color-mix(in srgb, var(--ultima-color-primary) 24%, transparent);
+}
+
+.ultima-btn-primary:hover {
+  background: color-mix(in srgb, var(--ultima-color-primary) 88%, #ffffff);
+}
+
+.ultima-btn-primary:disabled {
+  opacity: 0.56;
+  cursor: not-allowed;
+}
+
+.ultima-btn-secondary {
+  border-color: color-mix(in srgb, var(--ultima-color-surface-border) 30%, transparent);
+  background: color-mix(in srgb, var(--ultima-color-secondary) 56%, transparent);
+  color: var(--ultima-color-secondary-text);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #ffffff 10%, transparent),
+    0 10px 24px color-mix(in srgb, #020c14 28%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.ultima-btn-secondary:hover {
+  background: color-mix(in srgb, var(--ultima-color-secondary) 66%, transparent);
 }
 
 .ultima-stagger-list > * {

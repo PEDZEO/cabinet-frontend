@@ -830,7 +830,15 @@ export function UltimaSubscription() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-emerald-200/10 bg-[linear-gradient(180deg,rgba(10,49,43,0.42)_0%,rgba(8,25,29,0.46)_100%)] p-2">
+          <div
+            className="rounded-2xl border p-2"
+            style={{
+              borderColor:
+                'color-mix(in srgb, var(--ultima-color-surface-border) 22%, transparent)',
+              background:
+                'linear-gradient(180deg,color-mix(in srgb, var(--ultima-color-surface) 64%, transparent) 0%,color-mix(in srgb, var(--ultima-color-secondary) 58%, transparent) 100%)',
+            }}
+          >
             <div
               ref={deviceTrackRef}
               role="button"
@@ -850,24 +858,34 @@ export function UltimaSubscription() {
               className="relative"
             >
               <div className="relative h-9 w-full">
-                <div className="absolute left-0 right-0 top-1/2 h-[8px] -translate-y-1/2 rounded-full border border-emerald-200/15 bg-white/10 shadow-[inset_0_1px_4px_rgba(0,0,0,0.25)]" />
                 <div
-                  className="absolute left-0 top-1/2 h-[8px] -translate-y-1/2 rounded-full bg-[linear-gradient(90deg,rgba(45,212,191,0.9)_0%,rgba(16,185,129,0.95)_100%)] shadow-[0_0_14px_rgba(45,212,191,0.42)]"
+                  className="absolute left-0 right-0 top-1/2 h-[8px] -translate-y-1/2 rounded-full border bg-white/10 shadow-[inset_0_1px_4px_rgba(0,0,0,0.25)]"
                   style={{
-                    width: `${sliderProgressPercent}%`,
-                    boxShadow: `0 0 ${12 + sliderProgressPercent * 0.13}px rgba(45,212,191,${Math.min(0.72, sliderVisualPower)})`,
+                    borderColor:
+                      'color-mix(in srgb, var(--ultima-color-surface-border) 28%, transparent)',
                   }}
                 />
                 <div
-                  className="ultima-slider-glow pointer-events-none absolute left-0 top-1/2 h-[8px] -translate-y-1/2 rounded-full bg-[linear-gradient(90deg,rgba(162,255,233,0)_0%,rgba(162,255,233,0.65)_45%,rgba(162,255,233,0)_100%)]"
+                  className="absolute left-0 top-1/2 h-[8px] -translate-y-1/2 rounded-full"
+                  style={{
+                    width: `${sliderProgressPercent}%`,
+                    background:
+                      'linear-gradient(90deg,color-mix(in srgb, var(--ultima-color-nav-active) 92%, #ffffff) 0%,color-mix(in srgb, var(--ultima-color-primary) 94%, #000000) 100%)',
+                    boxShadow: `0 0 ${12 + sliderProgressPercent * 0.13}px color-mix(in srgb, var(--ultima-color-primary) ${Math.min(72, Math.round(sliderVisualPower * 100))}%, transparent)`,
+                  }}
+                />
+                <div
+                  className="ultima-slider-glow pointer-events-none absolute left-0 top-1/2 h-[8px] -translate-y-1/2 rounded-full"
                   style={{
                     width: `${Math.max(18, sliderProgressPercent)}%`,
                     filter: `blur(${2 + sliderProgressPercent * 0.02}px)`,
                     opacity: Math.min(0.78, 0.26 + sliderProgressPercent / 170),
+                    background:
+                      'linear-gradient(90deg,color-mix(in srgb, var(--ultima-color-ring) 0%, transparent) 0%,color-mix(in srgb, var(--ultima-color-ring) 72%, transparent) 45%,color-mix(in srgb, var(--ultima-color-ring) 0%, transparent) 100%)',
                   }}
                 />
                 <span
-                  className="absolute top-1/2 z-20 h-5 w-5 -translate-y-1/2 rounded-full border border-emerald-100/70 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.75),rgba(45,212,191,0.9)_45%,rgba(6,38,31,0.95)_100%)] shadow-[0_0_16px_rgba(52,211,153,0.55)]"
+                  className="absolute top-1/2 z-20 h-5 w-5 -translate-y-1/2 rounded-full border"
                   style={{
                     left: `calc(${sliderProgressPercent}% - 10px + ${
                       selectedDeviceIndex === 0
@@ -877,7 +895,10 @@ export function UltimaSubscription() {
                           : '0px'
                     })`,
                     transform: `translateY(-50%) scale(${1 + sliderProgressPercent / 500})`,
-                    boxShadow: `0 0 ${16 + sliderProgressPercent * 0.16}px rgba(52,211,153,${Math.min(0.86, 0.44 + sliderProgressPercent / 220)})`,
+                    borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 82%, transparent)',
+                    background:
+                      'radial-gradient(circle at 30% 30%, color-mix(in srgb, #ffffff 76%, transparent), color-mix(in srgb, var(--ultima-color-primary) 88%, transparent) 45%, color-mix(in srgb, var(--ultima-color-secondary) 92%, #000000) 100%)',
+                    boxShadow: `0 0 ${16 + sliderProgressPercent * 0.16}px color-mix(in srgb, var(--ultima-color-primary) ${Math.min(86, Math.round((0.44 + sliderProgressPercent / 220) * 100))}%, transparent)`,
                   }}
                 />
                 <input
@@ -913,14 +934,15 @@ export function UltimaSubscription() {
                       }}
                     >
                       <span
-                        className={`block rounded-full transition ${
-                          active ? 'bg-emerald-200' : 'bg-white/30'
-                        }`}
+                        className={`block rounded-full transition ${active ? '' : 'bg-white/30'}`}
                         style={{
                           width: active ? 10 : 8,
                           height: active ? 10 : 8,
+                          backgroundColor: active
+                            ? 'color-mix(in srgb, var(--ultima-color-ring) 88%, #ffffff)'
+                            : undefined,
                           boxShadow: active
-                            ? `0 0 ${10 + sliderProgressPercent * 0.1}px rgba(52,211,153,${Math.min(0.92, 0.54 + sliderProgressPercent / 170)})`
+                            ? `0 0 ${10 + sliderProgressPercent * 0.1}px color-mix(in srgb, var(--ultima-color-primary) ${Math.min(92, Math.round((0.54 + sliderProgressPercent / 170) * 100))}%, transparent)`
                             : 'none',
                         }}
                       />
@@ -958,9 +980,21 @@ export function UltimaSubscription() {
                           : 'min-h-[152px] p-3.5'
                   } ${
                     active
-                      ? 'border-emerald-400 bg-[#0a2522] shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_0_0_1px_rgba(16,185,129,0.25)]'
+                      ? 'border bg-black/20'
                       : 'border-white/12 bg-black/20 hover:border-white/25'
                   }`}
+                  style={
+                    active
+                      ? {
+                          borderColor:
+                            'color-mix(in srgb, var(--ultima-color-surface-border) 70%, transparent)',
+                          boxShadow:
+                            'inset 0 1px 0 color-mix(in srgb, #ffffff 14%, transparent), 0 0 0 1px color-mix(in srgb, var(--ultima-color-primary) 28%, transparent)',
+                          background:
+                            'color-mix(in srgb, var(--ultima-color-surface) 74%, #000000)',
+                        }
+                      : undefined
+                  }
                 >
                   <div
                     className={`${isUltraCompactHeight ? 'mb-2' : 'mb-3'} flex items-center justify-between`}
@@ -977,11 +1011,25 @@ export function UltimaSubscription() {
                       {periodLabel(period)}
                     </span>
                     {period.days === bestDealPeriodDays ? (
-                      <span className="rounded-full border border-emerald-200/45 bg-emerald-300/25 px-2 py-[1px] text-[11px] font-semibold text-emerald-100">
+                      <span
+                        className="rounded-full border px-2 py-[1px] text-[11px] font-semibold"
+                        style={{
+                          borderColor:
+                            'color-mix(in srgb, var(--ultima-color-surface-border) 52%, transparent)',
+                          background:
+                            'color-mix(in srgb, var(--ultima-color-primary) 26%, transparent)',
+                          color: 'color-mix(in srgb, var(--ultima-color-ring) 84%, #ffffff)',
+                        }}
+                      >
                         Выгодно
                       </span>
                     ) : (
-                      <span className={`text-emerald-300 ${active ? 'opacity-100' : 'opacity-0'}`}>
+                      <span
+                        className={active ? 'opacity-100' : 'opacity-0'}
+                        style={{
+                          color: 'color-mix(in srgb, var(--ultima-color-primary) 82%, #ffffff)',
+                        }}
+                      >
                         ★
                       </span>
                     )}
@@ -1021,9 +1069,9 @@ export function UltimaSubscription() {
             disabled={
               purchaseMutation.isPending || createPaymentMutation.isPending || isFinalizingPending
             }
-            className={`border-[#66ebc9]/42 flex w-full items-center justify-between rounded-full border bg-[#14cf9a] px-5 ${
+            className={`ultima-btn-pill ultima-btn-primary flex w-full items-center justify-between px-5 ${
               isUltraCompactHeight ? 'py-2.5 text-[15px]' : 'py-3 text-[16px]'
-            } font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(7,146,108,0.2)] transition hover:bg-[#16d8a1] disabled:cursor-not-allowed disabled:opacity-75`}
+            } disabled:cursor-not-allowed disabled:opacity-75`}
           >
             <span>Оплатить подписку</span>
             <span className="flex items-center gap-2 text-white/95">

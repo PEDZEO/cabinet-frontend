@@ -9,9 +9,8 @@ export default function PageLoader({ variant = 'dark' }: PageLoaderProps) {
         {[0, 1.2, 2.4].map((delay) => (
           <div
             key={delay}
-            className="absolute left-1/2 top-[42%] h-[120vmax] w-[120vmax] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/30"
+            className="ultima-ring-wave absolute left-1/2 top-[42%] h-[120vmax] w-[120vmax] -translate-x-1/2 -translate-y-1/2 rounded-full border"
             style={{
-              animation: 'ultima-ring-wave 9.6s cubic-bezier(0.16, 0.84, 0.24, 1) infinite',
               animationDelay: `-${delay}s`,
             }}
           />

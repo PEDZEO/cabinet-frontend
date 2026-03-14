@@ -372,7 +372,7 @@ export function AppShell({ children }: AppShellProps) {
           {[0, 1.8, 3.6, 5.4, 7.2, 9, 10.8, 12.6, 14.4].map((delay) => (
             <div
               key={delay}
-              className="ultima-ring-wave absolute left-1/2 top-1/2 h-[170vmax] w-[170vmax] -translate-x-1/2 -translate-y-1/2 transform-gpu rounded-full border border-emerald-200/50"
+              className="ultima-ring-wave absolute left-1/2 top-1/2 h-[170vmax] w-[170vmax] -translate-x-1/2 -translate-y-1/2 transform-gpu rounded-full border"
               style={{ animationDelay: `${ultimaWavePhaseShiftSecRef.current + delay}s` }}
             />
           ))}

@@ -397,7 +397,7 @@ export function UltimaDashboard() {
               <button
                 type="button"
                 onClick={() => navigate('/connection')}
-                className="border-[#66ebc9]/42 mt-2.5 flex w-full items-center justify-center rounded-full border bg-[#14cf9a] px-4 py-2.5 text-[15px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_6px_14px_rgba(7,146,108,0.24)] transition hover:bg-[#16d8a1]"
+                className="ultima-btn-pill ultima-btn-primary mt-2.5 flex w-full items-center justify-center px-4 py-2.5 text-[15px]"
               >
                 {t('ultima.finishSetup', { defaultValue: 'Завершить установку' })}
               </button>
@@ -445,7 +445,7 @@ export function UltimaDashboard() {
               void import('./Subscription');
               navigate('/subscription');
             }}
-            className="border-[#66ebc9]/42 mb-3 flex w-full items-center justify-between rounded-full border bg-[#14cf9a] px-5 py-3 text-[16px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(7,146,108,0.2)] transition hover:bg-[#16d8a1]"
+            className="ultima-btn-pill ultima-btn-primary mb-3 flex w-full items-center justify-between px-5 py-3 text-[16px]"
           >
             <span className="flex items-center gap-2">
               <GlobeIcon />
@@ -457,7 +457,7 @@ export function UltimaDashboard() {
           <button
             type="button"
             onClick={() => navigate('/connection')}
-            className="mb-4 flex w-full items-center justify-between rounded-full border border-emerald-200/25 bg-[rgba(12,45,42,0.36)] px-5 py-3 text-[16px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_24px_rgba(3,14,24,0.32)] backdrop-blur-md transition hover:bg-[rgba(16,58,52,0.44)]"
+            className="ultima-btn-pill ultima-btn-secondary mb-4 flex w-full items-center justify-between px-5 py-3 text-[16px]"
           >
             <span className="flex items-center gap-2">
               <SetupIcon />

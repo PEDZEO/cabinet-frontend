@@ -102,7 +102,7 @@ export default function Login() {
         {[0, 2.8, 5.6].map((delay) => (
           <div
             key={delay}
-            className="ultima-ring-wave absolute left-1/2 top-[36%] h-[150vmax] w-[150vmax] -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-200/35"
+            className="ultima-ring-wave absolute left-1/2 top-[36%] h-[150vmax] w-[150vmax] -translate-x-1/2 -translate-y-1/2 rounded-full border"
             style={{ animationDelay: `${delay}s` }}
           />
         ))}
