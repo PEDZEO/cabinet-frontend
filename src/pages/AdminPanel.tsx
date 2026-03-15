@@ -701,9 +701,17 @@ export default function AdminPanel() {
   return (
     <div className="animate-fade-in space-y-4">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-dark-100">{t('admin.panel.title')}</h1>
-        <p className="mt-1 text-sm text-dark-400">{t('admin.panel.subtitle')}</p>
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-dark-100">{t('admin.panel.title')}</h1>
+          <p className="mt-1 text-sm text-dark-400">{t('admin.panel.subtitle')}</p>
+        </div>
+        <Link
+          to="/"
+          className="inline-flex items-center rounded-lg border border-dark-600/70 bg-dark-800/50 px-3 py-2 text-sm font-medium text-dark-100 transition-colors hover:border-accent-500/40 hover:text-accent-300"
+        >
+          {t('admin.panel.backToCabinet', { defaultValue: 'Вернуться в кабинет' })}
+        </Link>
       </div>
 
       {/* Groups Grid */}
