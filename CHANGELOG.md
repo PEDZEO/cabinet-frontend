@@ -1,5 +1,42 @@
 # Changelog
 
+## [1.9.0](https://github.com/PEDZEO/cabinet-frontend/compare/v1.8.0...v1.9.0) (2026-03-15)
+
+
+### Features
+
+* **admin:** move ultima params to section pages ([c884c40](https://github.com/PEDZEO/cabinet-frontend/commit/c884c4039459cf0deaf51808a2e82a3712b7b496))
+* **admin:** split ultima start message settings and reduce duplicate params ([e0b538f](https://github.com/PEDZEO/cabinet-frontend/commit/e0b538f013881fa030aa573aec020a4d482bc620))
+* **ultima:** add admin editor for notification button templates ([bbf92a1](https://github.com/PEDZEO/cabinet-frontend/commit/bbf92a1e8abf2b1d3729f859e1b4043fe40b4df5))
+* **ultima:** add dedicated theme and animation customization ([0e0d3c7](https://github.com/PEDZEO/cabinet-frontend/commit/0e0d3c73ef348ef16fe58ce475d23ad5082fc48d))
+* **ultima:** add home promo offers card and allow user ticket closing ([ce55bd6](https://github.com/PEDZEO/cabinet-frontend/commit/ce55bd660e96de1c5d2096e470938afd211a6e61))
+* **ultima:** add optional frames theme toggle and themed prepaint loader ([763ed90](https://github.com/PEDZEO/cabinet-frontend/commit/763ed90d7d41bd6162a96ca54ea8224377a851cd))
+* **ultima:** add subscription info page and logo toggle ([b0b942c](https://github.com/PEDZEO/cabinet-frontend/commit/b0b942cfea90f6ab34b4f34907ff88e3e96487aa))
+* **ultima:** improve promo UX and tariff period/month display ([238b925](https://github.com/PEDZEO/cabinet-frontend/commit/238b925c53ee5576b8cfd3cbea8654e394e900c2))
+* **ultima:** show device count on dashboard and complete theme propagation ([2cebbba](https://github.com/PEDZEO/cabinet-frontend/commit/2cebbba4dfcb58af3b2475dc5a5ae99c96f7ccfe))
+* **ultima:** unify theme-driven rings/buttons and move subscription link to devices ([a525b57](https://github.com/PEDZEO/cabinet-frontend/commit/a525b57e020f7ea00579869f18bad441a1fdc5ac))
+
+
+### Bug Fixes
+
+* add robust telegram share fallback in ultima subscription info ([c244cbf](https://github.com/PEDZEO/cabinet-frontend/commit/c244cbf360288881abd428746d9f91e340bb3bb7))
+* **balance:** localize gift purchase transaction type ([0a251de](https://github.com/PEDZEO/cabinet-frontend/commit/0a251deee5118d23136ee1273d44ed852b0a620b))
+* **balance:** localize gift transaction descriptions ([0f831bf](https://github.com/PEDZEO/cabinet-frontend/commit/0f831bfbba461e324a2fa1a08f01bdb702300987))
+* prevent ultima theme flash on first load using cached config ([c3651cb](https://github.com/PEDZEO/cabinet-frontend/commit/c3651cb9c74bc1e74b6786a22d2cb8d0315878fa))
+* **promocode:** map already-activated gift errors ([9c38b36](https://github.com/PEDZEO/cabinet-frontend/commit/9c38b368d6139d0cced7f0e876f7f393018e438c))
+* **promocode:** normalize gift error localization across flows ([a481b6c](https://github.com/PEDZEO/cabinet-frontend/commit/a481b6c84a70e6b39601dde9def911d65be7025e))
+* require manual confirmation for pending gift extension ([6e0d9b1](https://github.com/PEDZEO/cabinet-frontend/commit/6e0d9b196f4a6bca7bf3a9298a5fc59db6523718))
+* **ultima:** apply theme colors across all screens and legacy emerald styles ([0030424](https://github.com/PEDZEO/cabinet-frontend/commit/0030424c46c6fe0a5ce62782035e97fd3ef7354e))
+* **ultima:** improve subscription info locale and unlimited traffic labels ([00848b1](https://github.com/PEDZEO/cabinet-frontend/commit/00848b1ef7c21820b49ee8b70befbd533ab730e0))
+* **ultima:** keep animated rings visible on all pages ([786a5a8](https://github.com/PEDZEO/cabinet-frontend/commit/786a5a8fef308b0b1609409a3957b353ca107276))
+* **ultima:** prevent home logo flicker on page transitions ([ce9fcfe](https://github.com/PEDZEO/cabinet-frontend/commit/ce9fcfec7988d6a2cf7e0cd5b81009a71dfff081))
+* **ultima:** theme-aware auth/channel screens and purchase copy ([1c85a57](https://github.com/PEDZEO/cabinet-frontend/commit/1c85a578ab07f514f89a9397da1be7763a3ef610))
+
+
+### Performance Improvements
+
+* remove obsolete auto extension polling in ultima gift ([1be4d66](https://github.com/PEDZEO/cabinet-frontend/commit/1be4d668e9846cd1d00f20e14f482289b574ec94))
+
 ## [1.8.0](https://github.com/PEDZEO/cabinet-frontend/compare/v1.7.0...v1.8.0) (2026-03-14)
 
 
