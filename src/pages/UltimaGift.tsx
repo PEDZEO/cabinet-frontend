@@ -160,6 +160,10 @@ export function UltimaGift() {
       const parsed = JSON.parse(raw) as PendingGiftExtend;
       if (!parsed?.token || !Number.isFinite(parsed?.requiredAmountKopeks)) return;
       if (!Number.isFinite(parsed?.periodDays) || (parsed?.periodDays ?? 0) <= 0) return;
+      if (!Number.isFinite(parsed?.createdAt) || Date.now() - parsed.createdAt > 15 * 60 * 1000) {
+        localStorage.removeItem(PENDING_GIFT_EXTEND_KEY);
+        return;
+      }
       setPendingGiftExtend(parsed);
     } catch {
       // ignore malformed persisted state
@@ -442,7 +446,7 @@ export function UltimaGift() {
       }
 
       if (pendingGiftExtend?.token === payload.giftToken) {
-        setError('Ожидаем оплату: как только баланс пополнится, подарок продлится автоматически.');
+        setError('Ожидаем оплату: после пополнения нажмите кнопку подтверждения продления.');
         return;
       }
       setError(
@@ -450,17 +454,6 @@ export function UltimaGift() {
       );
     },
   });
-
-  useEffect(() => {
-    if (!pendingGiftExtend) return;
-    if (extendingToken) return;
-    if ((balanceData?.balance_kopeks ?? 0) < pendingGiftExtend.requiredAmountKopeks) return;
-    extendGiftMutation.mutate({
-      giftToken: pendingGiftExtend.token,
-      periodDays: pendingGiftExtend.periodDays,
-      source: 'auto',
-    });
-  }, [balanceData?.balance_kopeks, extendGiftMutation, extendingToken, pendingGiftExtend]);
 
   const onRenewFromHistory = (gift: SentGift) => {
     if (extendGiftMutation.isPending) return;
@@ -770,6 +763,40 @@ export function UltimaGift() {
                   </div>
                 </div>
               ) : null}
+            </div>
+          ) : null}
+
+          {pendingGiftExtend ? (
+            <div className="mt-2 rounded-xl border border-amber-200/20 bg-amber-500/10 px-2.5 py-2 text-[11px] text-amber-100">
+              Ожидается продление кода GIFT-{pendingGiftExtend.token}. После пополнения подтвердите
+              продление вручную.
+              <div className="mt-2 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    extendGiftMutation.mutate({
+                      giftToken: pendingGiftExtend.token,
+                      periodDays: pendingGiftExtend.periodDays,
+                      source: 'manual',
+                    })
+                  }
+                  disabled={
+                    extendGiftMutation.isPending ||
+                    (balanceData?.balance_kopeks ?? 0) < pendingGiftExtend.requiredAmountKopeks
+                  }
+                  className="rounded-lg border border-emerald-200/25 bg-emerald-400/85 px-2 py-1 text-[11px] font-medium text-slate-950 disabled:cursor-not-allowed disabled:opacity-55"
+                >
+                  Подтвердить продление
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPendingGiftExtend(null)}
+                  disabled={extendGiftMutation.isPending}
+                  className="rounded-lg border border-white/20 bg-white/10 px-2 py-1 text-[11px] text-white/90 disabled:cursor-not-allowed disabled:opacity-55"
+                >
+                  Отменить
+                </button>
+              </div>
             </div>
           ) : null}
 
