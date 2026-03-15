@@ -49,7 +49,6 @@ export function UltimaGift() {
     queryKey: ['balance'],
     queryFn: balanceApi.getBalance,
     staleTime: 5000,
-    refetchInterval: pendingGiftExtend ? 2500 : false,
   });
   const isGiftConfigLoaded = giftConfig !== undefined;
   const { data: sentGifts = [] } = useQuery({
@@ -351,11 +350,8 @@ export function UltimaGift() {
   };
 
   const extendGiftMutation = useMutation({
-    mutationFn: async (payload: {
-      giftToken: string;
-      periodDays: number;
-      source: 'manual' | 'auto';
-    }) => giftApi.extendSentGift(payload.giftToken, payload.periodDays),
+    mutationFn: async (payload: { giftToken: string; periodDays: number; source: 'manual' }) =>
+      giftApi.extendSentGift(payload.giftToken, payload.periodDays),
     onMutate: ({ giftToken }) => {
       setExtendingToken(giftToken);
       setError(null);
@@ -402,7 +398,7 @@ export function UltimaGift() {
           ? Math.max(1, detailObj.required_amount)
           : Math.max(1, currentBalanceKopeks + missingAmount);
 
-      if (payload.source === 'manual' && missingAmount > 0) {
+      if (missingAmount > 0) {
         const selectedMethodId = giftPaymentMethod ?? gatewayMethods[0]?.method_id ?? null;
         const selectedMethod =
           gatewayMethods.find((method) => method.method_id === selectedMethodId) ?? null;
