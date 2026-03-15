@@ -7,6 +7,7 @@ import { ticketsApi } from '@/api/tickets';
 import { infoApi } from '@/api/info';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { useHaptic } from '@/platform';
+import { usePlatform } from '@/platform';
 
 const CopyIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
@@ -45,6 +46,7 @@ export function UltimaSubscriptionInfo() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const haptic = useHaptic();
+  const { openTelegramLink } = usePlatform();
   const [linkCopied, setLinkCopied] = useState(false);
 
   const { data: subscriptionResponse, isLoading } = useQuery({
@@ -111,8 +113,12 @@ export function UltimaSubscriptionInfo() {
 
   const shareSubscriptionLink = async () => {
     if (!subscriptionLink) return;
+    const fallbackTelegramShare = () => {
+      const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(subscriptionLink)}`;
+      openTelegramLink(shareUrl);
+    };
     if (typeof navigator.share !== 'function') {
-      await copySubscriptionLink();
+      fallbackTelegramShare();
       return;
     }
     try {
@@ -122,7 +128,7 @@ export function UltimaSubscriptionInfo() {
         url: subscriptionLink,
       });
     } catch {
-      // user cancelled share dialog
+      fallbackTelegramShare();
     }
   };
 
