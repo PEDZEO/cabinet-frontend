@@ -1,10 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
   tariffsApi,
-  TariffDetail,
   TariffCreateRequest,
   TariffUpdateRequest,
   PeriodPrice,
@@ -84,6 +83,54 @@ const RefreshIcon = () => (
 
 type TariffType = 'period' | 'daily' | null;
 
+const normalizePeriodPrices = (raw: unknown): PeriodPrice[] => {
+  if (Array.isArray(raw)) {
+    return raw
+      .map((item) => {
+        if (!item || typeof item !== 'object') return null;
+        const daysRaw = (item as { days?: unknown }).days;
+        const priceKopeksRaw = (item as { price_kopeks?: unknown }).price_kopeks;
+        const legacyPriceRaw = (item as { price?: unknown }).price;
+        const days = Number(daysRaw);
+        const price_kopeks = Number(
+          priceKopeksRaw ?? (legacyPriceRaw !== undefined ? Number(legacyPriceRaw) * 100 : NaN),
+        );
+        if (
+          !Number.isFinite(days) ||
+          days <= 0 ||
+          !Number.isFinite(price_kopeks) ||
+          price_kopeks < 0
+        ) {
+          return null;
+        }
+        return { days, price_kopeks };
+      })
+      .filter((item): item is PeriodPrice => item !== null)
+      .sort((a, b) => a.days - b.days);
+  }
+
+  if (raw && typeof raw === 'object') {
+    return Object.entries(raw as Record<string, unknown>)
+      .map(([daysKey, priceValue]) => {
+        const days = Number(daysKey);
+        const price_kopeks = Number(priceValue);
+        if (
+          !Number.isFinite(days) ||
+          days <= 0 ||
+          !Number.isFinite(price_kopeks) ||
+          price_kopeks < 0
+        ) {
+          return null;
+        }
+        return { days, price_kopeks };
+      })
+      .filter((item): item is PeriodPrice => item !== null)
+      .sort((a, b) => a.days - b.days);
+  }
+
+  return [];
+};
+
 export default function AdminTariffCreate() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -148,7 +195,12 @@ export default function AdminTariffCreate() {
   });
 
   // Fetch tariff for editing
-  const { isLoading: isLoadingTariff } = useQuery({
+  const {
+    data: tariffData,
+    isLoading: isLoadingTariff,
+    isError: isTariffError,
+    error: tariffError,
+  } = useQuery({
     queryKey: ['admin-tariff', id],
     queryFn: () => tariffsApi.getTariff(Number(id)),
     enabled: isEdit,
@@ -156,30 +208,36 @@ export default function AdminTariffCreate() {
     gcTime: 0,
     refetchOnMount: true,
     refetchOnWindowFocus: false,
-    select: useCallback((data: TariffDetail) => {
-      setTariffType(data.is_daily ? 'daily' : 'period');
-      setName(data.name);
-      setDescription(data.description || '');
-      setIsActive(data.is_active ?? true);
-      setTrafficLimitGb(data.traffic_limit_gb ?? 100);
-      setDeviceLimit(data.device_limit || 1);
-      setDevicePriceKopeks(data.device_price_kopeks || 0);
-      setMaxDeviceLimit(data.max_device_limit || 0);
-      setTierLevel(data.tier_level || 1);
-      setPeriodPrices(data.period_prices?.length ? data.period_prices : []);
-      setSelectedSquads(data.allowed_squads || []);
-      setSelectedPromoGroups(
-        data.promo_groups?.filter((pg) => pg.is_selected).map((pg) => pg.id) || [],
-      );
-      setDailyPriceKopeks(data.daily_price_kopeks || 0);
-      setTrafficTopupEnabled(data.traffic_topup_enabled || false);
-      setMaxTopupTrafficGb(data.max_topup_traffic_gb || 0);
-      setTrafficTopupPackages(data.traffic_topup_packages || {});
-      setTrafficResetMode(data.traffic_reset_mode || null);
-      setShowInGift(data.show_in_gift ?? true);
-      return data;
-    }, []),
   });
+
+  useEffect(() => {
+    if (!tariffData) return;
+
+    const rawPeriods =
+      (tariffData as unknown as { period_prices?: unknown }).period_prices ??
+      (tariffData as unknown as { periods?: unknown }).periods;
+
+    setTariffType(tariffData.is_daily ? 'daily' : 'period');
+    setName(tariffData.name);
+    setDescription(tariffData.description || '');
+    setIsActive(tariffData.is_active ?? true);
+    setTrafficLimitGb(tariffData.traffic_limit_gb ?? 100);
+    setDeviceLimit(tariffData.device_limit || 1);
+    setDevicePriceKopeks(tariffData.device_price_kopeks || 0);
+    setMaxDeviceLimit(tariffData.max_device_limit || 0);
+    setTierLevel(tariffData.tier_level || 1);
+    setPeriodPrices(normalizePeriodPrices(rawPeriods));
+    setSelectedSquads(tariffData.allowed_squads || []);
+    setSelectedPromoGroups(
+      tariffData.promo_groups?.filter((pg) => pg.is_selected).map((pg) => pg.id) || [],
+    );
+    setDailyPriceKopeks(tariffData.daily_price_kopeks || 0);
+    setTrafficTopupEnabled(tariffData.traffic_topup_enabled || false);
+    setMaxTopupTrafficGb(tariffData.max_topup_traffic_gb || 0);
+    setTrafficTopupPackages(tariffData.traffic_topup_packages || {});
+    setTrafficResetMode(tariffData.traffic_reset_mode || null);
+    setShowInGift(tariffData.show_in_gift ?? true);
+  }, [tariffData]);
 
   // Create mutation
   const createMutation = useMutation({
@@ -318,6 +376,25 @@ export default function AdminTariffCreate() {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (isEdit && isTariffError) {
+    const errorMessage =
+      tariffError instanceof Error ? tariffError.message : 'Failed to load tariff';
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <AdminBackButton to="/admin/tariffs" />
+          <h1 className="text-xl font-bold text-dark-100">{t('admin.tariffs.editTitle')}</h1>
+        </div>
+        <div className="rounded-xl border border-error-500/40 bg-error-500/10 p-4">
+          <p className="text-sm font-medium text-error-300">
+            {t('admin.tariffs.loadFailed', { defaultValue: 'Не удалось загрузить тариф' })}
+          </p>
+          <p className="mt-1 text-xs text-error-200">{errorMessage}</p>
+        </div>
       </div>
     );
   }
