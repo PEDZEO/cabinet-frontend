@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { brandingApi, DEFAULT_ULTIMA_THEME_CONFIG, type UltimaThemeConfig } from '@/api/branding';
+import { brandingApi, getCachedUltimaThemeConfig, type UltimaThemeConfig } from '@/api/branding';
 
 export function applyUltimaThemeConfig(config: UltimaThemeConfig) {
   const root = document.documentElement;
@@ -30,13 +30,17 @@ export function applyUltimaThemeConfig(config: UltimaThemeConfig) {
 }
 
 export function useUltimaThemeConfig() {
+  const cachedThemeConfig = getCachedUltimaThemeConfig();
   const { data } = useQuery({
     queryKey: ['ultima-theme-config'],
     queryFn: brandingApi.getUltimaThemeConfig,
+    initialData: cachedThemeConfig ?? undefined,
+    placeholderData: (previousData) => previousData,
     staleTime: 60_000,
   });
 
   useEffect(() => {
-    applyUltimaThemeConfig(data ?? DEFAULT_ULTIMA_THEME_CONFIG);
+    if (!data) return;
+    applyUltimaThemeConfig(data);
   }, [data]);
 }
