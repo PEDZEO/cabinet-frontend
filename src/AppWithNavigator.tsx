@@ -43,6 +43,10 @@ const DEFAULT_TOP_LEVEL_PATHS = ['/', '/connection', '/balance', '/referral', '/
 const ULTIMA_TOP_LEVEL_PATHS = ['/', '/connection', '/profile', '/support'];
 
 const getBackFallbackPath = (pathname: string): string | null => {
+  if (pathname === '/admin/users') {
+    return '/admin';
+  }
+
   if (/^\/admin\/users\/[^/]+$/.test(pathname)) {
     return '/admin/users';
   }
@@ -75,7 +79,7 @@ function TelegramBackButton() {
   const handler = useCallback(() => {
     const fallbackPath = getBackFallbackPath(location.pathname);
     if (fallbackPath) {
-      navigateRef.current(fallbackPath);
+      navigateRef.current(fallbackPath, { replace: true });
       return;
     }
     navigateRef.current(-1);

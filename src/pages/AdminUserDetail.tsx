@@ -30,7 +30,10 @@ export default function AdminUserDetail() {
   const navigate = useNavigate();
   const notify = useNotify();
   const { id } = useParams<{ id: string }>();
-  const navigateToUsers = useCallback(() => navigate('/admin/users'), [navigate]);
+  const navigateToUsers = useCallback(
+    () => navigate('/admin/users', { replace: true }),
+    [navigate],
+  );
 
   const locale = getUserDetailLocale(i18n.language);
 
