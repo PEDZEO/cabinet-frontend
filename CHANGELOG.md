@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.1](https://github.com/PEDZEO/cabinet-frontend/compare/v1.9.0...v1.9.1) (2026-03-16)
+
+
+### Bug Fixes
+
+* **auth:** avoid protected prefetch on oauth callback ([321cbcb](https://github.com/PEDZEO/cabinet-frontend/commit/321cbcb136344626055c821a39466c1345e569c4))
+
 ## [1.9.0](https://github.com/PEDZEO/cabinet-frontend/compare/v1.8.0...v1.9.0) (2026-03-16)
 
 
