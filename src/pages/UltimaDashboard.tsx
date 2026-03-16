@@ -14,6 +14,7 @@ import { useBranding } from '@/hooks/useBranding';
 import { useHaptic } from '@/platform';
 import { useAuthStore } from '@/store/auth';
 import {
+  readUltimaConnectionCompleted,
   readUltimaConnectionReminderHidden,
   readUltimaConnectionStep,
 } from '@/features/ultima/connectionFlow';
@@ -102,6 +103,7 @@ export function UltimaDashboard() {
   const trialAutoActivationAttemptedRef = useRef(false);
   const [shieldRipples, setShieldRipples] = useState<ShieldRipple[]>([]);
   const [connectionStep, setConnectionStep] = useState<1 | 2 | 3>(1);
+  const [isConnectionCompleted, setIsConnectionCompleted] = useState(false);
   const [isReminderHidden, setIsReminderHidden] = useState(false);
   const [promoMessage, setPromoMessage] = useState<string | null>(null);
 
@@ -320,6 +322,7 @@ export function UltimaDashboard() {
   useEffect(() => {
     const readStep = () => {
       setConnectionStep(readUltimaConnectionStep(user?.id));
+      setIsConnectionCompleted(readUltimaConnectionCompleted(user?.id));
       setIsReminderHidden(readUltimaConnectionReminderHidden(user?.id));
     };
 
@@ -402,9 +405,12 @@ export function UltimaDashboard() {
   const canPermanentlyHideReminder = Boolean(
     subscription?.is_active && !subscription?.is_expired && !subscription?.is_trial,
   );
-  const hasSetupReminder = connectionStep === 2 && !isReminderHidden;
+  const hasSetupReminder = connectionStep === 2 && !isReminderHidden && !isConnectionCompleted;
   const hasCompactSetupReminder =
-    connectionStep !== 3 && isReminderHidden && canPermanentlyHideReminder;
+    connectionStep !== 3 &&
+    isReminderHidden &&
+    canPermanentlyHideReminder &&
+    !isConnectionCompleted;
   const firstPromoOffer = useMemo(
     () => (promoOffers ?? []).find((offer) => offer.is_active && !offer.is_claimed) ?? null,
     [promoOffers],

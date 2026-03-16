@@ -11,8 +11,10 @@ import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import {
   ULTIMA_CONNECTION_PENDING_STEP2_KEY,
   ULTIMA_CONNECTION_PENDING_STEP3_KEY,
+  readUltimaConnectionCompleted,
   readUltimaConnectionReminderHidden,
   readUltimaConnectionStep,
+  writeUltimaConnectionCompleted,
   writeUltimaConnectionReminderHidden,
   writeUltimaConnectionStep,
 } from '@/features/ultima/connectionFlow';
@@ -179,6 +181,7 @@ export function UltimaConnection({
   const [showInfo, setShowInfo] = useState(true);
   const [burst, setBurst] = useState(0);
   const [showReturnConfetti, setShowReturnConfetti] = useState(false);
+  const [showFinishConfetti, setShowFinishConfetti] = useState(false);
   const [showFinishSuccess, setShowFinishSuccess] = useState(false);
   const [isReminderHidden, setIsReminderHidden] = useState(false);
   const [viewportHeight, setViewportHeight] = useState<number>(() =>
@@ -208,10 +211,11 @@ export function UltimaConnection({
 
   useEffect(() => {
     const normalized = readUltimaConnectionStep(user?.id);
+    const completed = readUltimaConnectionCompleted(user?.id);
     const hidden = readUltimaConnectionReminderHidden(user?.id);
     setStep(normalized);
     setIsReminderHidden(hidden);
-    setShowInfo(normalized === 1 && !hidden);
+    setShowInfo(normalized === 1 && !hidden && !completed);
   }, [user?.id]);
 
   useEffect(() => {
@@ -338,6 +342,7 @@ export function UltimaConnection({
   };
 
   const startInstallFlow = () => {
+    writeUltimaConnectionCompleted(user?.id, false);
     try {
       localStorage.setItem(`${ULTIMA_CONNECTION_PENDING_STEP2_KEY}:${user?.id ?? 'guest'}`, '1');
       localStorage.setItem(ULTIMA_CONNECTION_PENDING_STEP2_KEY, '1');
@@ -354,6 +359,7 @@ export function UltimaConnection({
   };
 
   const startAddSubscriptionFlow = () => {
+    writeUltimaConnectionCompleted(user?.id, false);
     try {
       localStorage.setItem(`${ULTIMA_CONNECTION_PENDING_STEP3_KEY}:${user?.id ?? 'guest'}`, '1');
       localStorage.setItem(ULTIMA_CONNECTION_PENDING_STEP3_KEY, '1');
@@ -369,6 +375,7 @@ export function UltimaConnection({
 
   const advanceStep = () => {
     if (step === 1) {
+      writeUltimaConnectionCompleted(user?.id, false);
       setStep(2);
       return;
     }
@@ -392,15 +399,23 @@ export function UltimaConnection({
         y: window.innerHeight / 2,
       });
     }
-    setShowFinishSuccess(true);
+    writeUltimaConnectionCompleted(user?.id, true);
+    setShowFinishConfetti(true);
     setBurst((prev) => prev + 1);
     haptic.notification('success');
     window.setTimeout(() => {
+      setShowFinishSuccess(true);
+    }, 180);
+    window.setTimeout(() => {
+      setShowFinishConfetti(false);
+    }, 1500);
+    window.setTimeout(() => {
       setShowFinishSuccess(false);
+      writeUltimaConnectionStep(user?.id, 1);
       setStep(1);
       setShowInfo(false);
       onGoBack();
-    }, 1200);
+    }, 1780);
   };
 
   const dismissReminderForNow = () => {
@@ -581,7 +596,7 @@ export function UltimaConnection({
               ) : (
                 icon
               )}
-              {step === 3 && showReturnConfetti && (
+              {step === 3 && (showReturnConfetti || showFinishConfetti) && (
                 <div className="pointer-events-none absolute inset-[-160px] overflow-visible">
                   {Array.from({ length: 260 }).map((_, index) => {
                     const angle = (index * 137.5) % 360;
@@ -605,7 +620,7 @@ export function UltimaConnection({
                     } as CSSProperties;
                     return (
                       <span
-                        key={`${burst}-${index}`}
+                        key={`${burst}-${showFinishConfetti ? 'finish' : 'return'}-${index}`}
                         className="ultima-confetti-chip absolute left-1/2 top-1/2 rounded-sm"
                         style={confettiStyle}
                       />
