@@ -111,6 +111,7 @@ type ShieldDigit = {
 };
 
 const loadedHomeLogoUrls = new Set<string>();
+const shieldTapResetDelayMs = 1400;
 
 export function UltimaDashboard() {
   const navigate = useNavigate();
@@ -124,6 +125,7 @@ export function UltimaDashboard() {
   const rippleIdRef = useRef(0);
   const digitIdRef = useRef(0);
   const tapCountRef = useRef(0);
+  const tapResetTimeoutRef = useRef<number | null>(null);
   const warmedLanguagesRef = useRef<Set<string>>(new Set());
   const trialAutoActivationAttemptedRef = useRef(false);
   const [shieldRipples, setShieldRipples] = useState<ShieldRipple[]>([]);
@@ -361,6 +363,14 @@ export function UltimaDashboard() {
     };
   }, [user?.id]);
 
+  useEffect(() => {
+    return () => {
+      if (tapResetTimeoutRef.current !== null) {
+        window.clearTimeout(tapResetTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const handleShieldTap = useCallback(
     (event: PointerEvent<HTMLButtonElement>) => {
       haptic.impact('light');
@@ -375,6 +385,10 @@ export function UltimaDashboard() {
       const y = event.clientY - rect.top;
       const size = Math.max(rect.width, rect.height) * 1.85;
       setShieldRipples((previous) => [...previous, { id, x, y, size }]);
+
+      if (tapResetTimeoutRef.current !== null) {
+        window.clearTimeout(tapResetTimeoutRef.current);
+      }
 
       const nextTapNumber = ++tapCountRef.current;
       const side = nextTapNumber % 2 === 0 ? 1 : -1;
@@ -402,6 +416,11 @@ export function UltimaDashboard() {
       window.setTimeout(() => {
         setShieldDigits((previous) => previous.filter((item) => item.id !== digitId));
       }, 1280);
+
+      tapResetTimeoutRef.current = window.setTimeout(() => {
+        tapCountRef.current = 0;
+        tapResetTimeoutRef.current = null;
+      }, shieldTapResetDelayMs);
     },
     [haptic],
   );
