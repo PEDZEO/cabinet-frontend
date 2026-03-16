@@ -181,7 +181,6 @@ export function UltimaConnection({
   const [showInfo, setShowInfo] = useState(true);
   const [burst, setBurst] = useState(0);
   const [showReturnConfetti, setShowReturnConfetti] = useState(false);
-  const [showFinishConfetti, setShowFinishConfetti] = useState(false);
   const [showFinishSuccess, setShowFinishSuccess] = useState(false);
   const [isReminderHidden, setIsReminderHidden] = useState(false);
   const [viewportHeight, setViewportHeight] = useState<number>(() =>
@@ -240,9 +239,11 @@ export function UltimaConnection({
           localStorage.removeItem(pendingGlobalKey);
           onRefreshAppConfig?.();
           setStep(3);
-          setShowReturnConfetti(true);
-          setBurst((prev) => prev + 1);
-          window.setTimeout(() => setShowReturnConfetti(false), 2400);
+          window.setTimeout(() => {
+            setShowReturnConfetti(true);
+            setBurst((prev) => prev + 1);
+          }, 180);
+          window.setTimeout(() => setShowReturnConfetti(false), 2580);
           return;
         }
         if (pendingStep2) {
@@ -400,22 +401,17 @@ export function UltimaConnection({
       });
     }
     writeUltimaConnectionCompleted(user?.id, true);
-    setShowFinishConfetti(true);
-    setBurst((prev) => prev + 1);
     haptic.notification('success');
     window.setTimeout(() => {
       setShowFinishSuccess(true);
     }, 180);
-    window.setTimeout(() => {
-      setShowFinishConfetti(false);
-    }, 1500);
     window.setTimeout(() => {
       setShowFinishSuccess(false);
       writeUltimaConnectionStep(user?.id, 1);
       setStep(1);
       setShowInfo(false);
       onGoBack();
-    }, 1780);
+    }, 1560);
   };
 
   const dismissReminderForNow = () => {
@@ -596,7 +592,7 @@ export function UltimaConnection({
               ) : (
                 icon
               )}
-              {step === 3 && (showReturnConfetti || showFinishConfetti) && (
+              {step === 3 && showReturnConfetti && (
                 <div className="pointer-events-none absolute inset-[-160px] overflow-visible">
                   {Array.from({ length: 260 }).map((_, index) => {
                     const angle = (index * 137.5) % 360;
@@ -620,7 +616,7 @@ export function UltimaConnection({
                     } as CSSProperties;
                     return (
                       <span
-                        key={`${burst}-${showFinishConfetti ? 'finish' : 'return'}-${index}`}
+                        key={`${burst}-return-${index}`}
                         className="ultima-confetti-chip absolute left-1/2 top-1/2 rounded-sm"
                         style={confettiStyle}
                       />
