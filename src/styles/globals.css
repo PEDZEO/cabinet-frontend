@@ -131,6 +131,40 @@
   will-change: transform, opacity;
 }
 
+@keyframes ultima-float-number {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translate3d(0, 8px, 0) scale(0.82)
+      rotate(var(--ultima-digit-rotate-start, -6deg));
+    filter: blur(1px);
+  }
+  18% {
+    opacity: var(--ultima-digit-opacity, 0.88);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%)
+      translate3d(var(--ultima-digit-drift-x, 0px), var(--ultima-digit-drift-y, -34px), 0)
+      scale(var(--ultima-digit-scale, 1.06)) rotate(var(--ultima-digit-rotate-end, 10deg));
+    filter: blur(0.4px);
+  }
+}
+
+.ultima-float-number {
+  color: color-mix(in srgb, #fff 82%, var(--ultima-color-ring) 18%);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  text-shadow:
+    0 0 14px color-mix(in srgb, var(--ultima-color-ring) 30%, transparent),
+    0 0 24px color-mix(in srgb, #fff 16%, transparent);
+  animation: ultima-float-number var(--ultima-digit-duration, 880ms)
+    cubic-bezier(0.22, 0.72, 0.22, 1) var(--ultima-digit-delay, 0ms) forwards;
+  will-change: transform, opacity, filter;
+}
+
 @keyframes ultima-content-enter {
   0% {
     opacity: 0.01;

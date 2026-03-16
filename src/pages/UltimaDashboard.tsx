@@ -1,7 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent,
+} from 'react';
 import { balanceApi } from '@/api/balance';
 import { brandingApi, getCachedUltimaThemeConfig } from '@/api/branding';
 import { infoApi } from '@/api/info';
@@ -87,6 +95,21 @@ type ShieldRipple = {
   size: number;
 };
 
+type ShieldDigit = {
+  id: number;
+  x: number;
+  y: number;
+  value: number;
+  driftX: number;
+  driftY: number;
+  size: number;
+  duration: number;
+  opacity: number;
+  startRotate: number;
+  endRotate: number;
+  scale: number;
+};
+
 const loadedHomeLogoUrls = new Set<string>();
 
 export function UltimaDashboard() {
@@ -99,9 +122,12 @@ export function UltimaDashboard() {
   const isAdmin = useAuthStore((state) => state.isAdmin);
   const user = useAuthStore((state) => state.user);
   const rippleIdRef = useRef(0);
+  const digitIdRef = useRef(0);
+  const tapCountRef = useRef(0);
   const warmedLanguagesRef = useRef<Set<string>>(new Set());
   const trialAutoActivationAttemptedRef = useRef(false);
   const [shieldRipples, setShieldRipples] = useState<ShieldRipple[]>([]);
+  const [shieldDigits, setShieldDigits] = useState<ShieldDigit[]>([]);
   const [connectionStep, setConnectionStep] = useState<1 | 2 | 3>(1);
   const [isConnectionCompleted, setIsConnectionCompleted] = useState(false);
   const [isReminderHidden, setIsReminderHidden] = useState(false);
@@ -350,9 +376,32 @@ export function UltimaDashboard() {
       const size = Math.max(rect.width, rect.height) * 1.85;
       setShieldRipples((previous) => [...previous, { id, x, y, size }]);
 
+      const nextTapNumber = ++tapCountRef.current;
+      const side = nextTapNumber % 2 === 0 ? 1 : -1;
+      const digitId = digitIdRef.current++;
+      const digit = {
+        id: digitId,
+        x,
+        y: y - 2,
+        value: nextTapNumber,
+        driftX: side * (10 + Math.random() * 10),
+        driftY: -(28 + Math.random() * 18),
+        size: 16 + Math.min(String(nextTapNumber).length, 3) * 1.5,
+        duration: 820 + Math.random() * 180,
+        opacity: 0.84 + Math.random() * 0.12,
+        startRotate: side * (3 + Math.random() * 5),
+        endRotate: side * (8 + Math.random() * 8),
+        scale: 1.04 + Math.random() * 0.1,
+      } satisfies ShieldDigit;
+      setShieldDigits((previous) => [...previous, digit]);
+
       window.setTimeout(() => {
         setShieldRipples((previous) => previous.filter((ripple) => ripple.id !== id));
       }, 900);
+
+      window.setTimeout(() => {
+        setShieldDigits((previous) => previous.filter((item) => item.id !== digitId));
+      }, 1280);
     },
     [haptic],
   );
@@ -485,6 +534,30 @@ export function UltimaDashboard() {
                   }}
                 />
               ))}
+              {shieldDigits.map((digit) => {
+                const style = {
+                  left: digit.x,
+                  top: digit.y,
+                  fontSize: `${digit.size}px`,
+                  ['--ultima-digit-drift-x']: `${digit.driftX}px`,
+                  ['--ultima-digit-drift-y']: `${digit.driftY}px`,
+                  ['--ultima-digit-duration']: `${digit.duration}ms`,
+                  ['--ultima-digit-opacity']: `${digit.opacity}`,
+                  ['--ultima-digit-rotate-start']: `${digit.startRotate}deg`,
+                  ['--ultima-digit-rotate-end']: `${digit.endRotate}deg`,
+                  ['--ultima-digit-scale']: `${digit.scale}`,
+                } as CSSProperties;
+
+                return (
+                  <span
+                    key={digit.id}
+                    className="ultima-float-number absolute -translate-x-1/2 -translate-y-1/2"
+                    style={style}
+                  >
+                    {digit.value}
+                  </span>
+                );
+              })}
             </span>
             {showBrandLogoOnHome ? (
               <span
