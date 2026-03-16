@@ -1,11 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
+import { subscriptionApi } from '@/api/subscription';
 import { useHaptic } from '@/platform';
 import { useAuthStore } from '@/store/auth';
 import type { AppConfig, LocalizedText, RemnawaveAppClient } from '@/types';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+import {
+  ULTIMA_CONNECTION_PENDING_STEP2_KEY,
+  ULTIMA_CONNECTION_PENDING_STEP3_KEY,
+  readUltimaConnectionReminderHidden,
+  readUltimaConnectionStep,
+  writeUltimaConnectionReminderHidden,
+  writeUltimaConnectionStep,
+} from '@/features/ultima/connectionFlow';
 
 type Step = 1 | 2 | 3;
 
@@ -15,10 +25,6 @@ type UltimaConnectionProps = {
   onGoBack: () => void;
   onRefreshAppConfig?: () => void;
 };
-
-const ULTIMA_CONNECTION_STATE_KEY = 'ultima_connection_flow_v1';
-const ULTIMA_CONNECTION_PENDING_STEP2_KEY = 'ultima_connection_pending_step2_v1';
-const ULTIMA_CONNECTION_PENDING_STEP3_KEY = 'ultima_connection_pending_step3_v1';
 
 const DownloadIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-[74px] w-[74px] text-white/90">
@@ -174,6 +180,7 @@ export function UltimaConnection({
   const [burst, setBurst] = useState(0);
   const [showReturnConfetti, setShowReturnConfetti] = useState(false);
   const [showFinishSuccess, setShowFinishSuccess] = useState(false);
+  const [isReminderHidden, setIsReminderHidden] = useState(false);
   const [viewportHeight, setViewportHeight] = useState<number>(() =>
     typeof window === 'undefined' ? 820 : window.innerHeight,
   );
@@ -188,19 +195,23 @@ export function UltimaConnection({
     () => findSetupUrls(appConfig, i18n.language || 'ru'),
     [appConfig, i18n.language],
   );
+  const { data: subscriptionResponse } = useQuery({
+    queryKey: ['subscription'],
+    queryFn: subscriptionApi.getSubscription,
+    staleTime: 15000,
+    placeholderData: (previousData) => previousData,
+  });
+  const subscription = subscriptionResponse?.subscription ?? null;
+  const canPermanentlyHideReminder = Boolean(
+    subscription?.is_active && !subscription?.is_expired && !subscription?.is_trial,
+  );
 
   useEffect(() => {
-    const key = `${ULTIMA_CONNECTION_STATE_KEY}:${user?.id ?? 'guest'}`;
-    try {
-      const raw = localStorage.getItem(key);
-      const parsed = raw ? Number(raw) : 1;
-      const normalized: Step = parsed === 3 ? 3 : parsed === 2 ? 2 : 1;
-      setStep(normalized);
-      setShowInfo(normalized === 1);
-    } catch {
-      setStep(1);
-      setShowInfo(true);
-    }
+    const normalized = readUltimaConnectionStep(user?.id);
+    const hidden = readUltimaConnectionReminderHidden(user?.id);
+    setStep(normalized);
+    setIsReminderHidden(hidden);
+    setShowInfo(normalized === 1 && !hidden);
   }, [user?.id]);
 
   useEffect(() => {
@@ -252,13 +263,15 @@ export function UltimaConnection({
   }, [onRefreshAppConfig, user?.id]);
 
   useEffect(() => {
-    const key = `${ULTIMA_CONNECTION_STATE_KEY}:${user?.id ?? 'guest'}`;
-    try {
-      localStorage.setItem(key, String(step));
-    } catch {
-      // ignore persistence errors
-    }
+    writeUltimaConnectionStep(user?.id, step);
   }, [step, user?.id]);
+
+  useEffect(() => {
+    if (!canPermanentlyHideReminder && isReminderHidden) {
+      writeUltimaConnectionReminderHidden(user?.id, false);
+      setIsReminderHidden(false);
+    }
+  }, [canPermanentlyHideReminder, isReminderHidden, user?.id]);
 
   useEffect(() => {
     if (!stepInitRef.current) {
@@ -388,6 +401,20 @@ export function UltimaConnection({
       setShowInfo(false);
       onGoBack();
     }, 1200);
+  };
+
+  const dismissReminderForNow = () => {
+    setShowInfo(false);
+  };
+
+  const hideReminderPermanently = () => {
+    if (!canPermanentlyHideReminder) {
+      setShowInfo(false);
+      return;
+    }
+    writeUltimaConnectionReminderHidden(user?.id, true);
+    setIsReminderHidden(true);
+    setShowInfo(false);
   };
 
   return (
@@ -662,7 +689,7 @@ export function UltimaConnection({
               </h3>
               <button
                 type="button"
-                onClick={() => setShowInfo(false)}
+                onClick={dismissReminderForNow}
                 className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-white/90"
                 aria-label="close-info-modal"
               >
@@ -677,13 +704,28 @@ export function UltimaConnection({
             </p>
             <button
               type="button"
-              onClick={() => setShowInfo(false)}
+              onClick={dismissReminderForNow}
               className="ultima-btn-pill ultima-btn-secondary mt-4 flex w-full items-center justify-center px-5 py-2.5 text-[15px]"
             >
-              {t('subscription.connection.gotIt', {
-                defaultValue: 'Все понятно',
-              })}
+              {canPermanentlyHideReminder
+                ? t('subscription.connection.remindLater', {
+                    defaultValue: 'Напомнить позже',
+                  })
+                : t('subscription.connection.gotIt', {
+                    defaultValue: 'Все понятно',
+                  })}
             </button>
+            {canPermanentlyHideReminder && (
+              <button
+                type="button"
+                onClick={hideReminderPermanently}
+                className="ultima-btn-pill ultima-btn-secondary mt-2 flex w-full items-center justify-center px-5 py-2.5 text-[15px]"
+              >
+                {t('subscription.connection.hideReminderPermanently', {
+                  defaultValue: 'Больше не показывать',
+                })}
+              </button>
+            )}
           </div>
         </>
       )}

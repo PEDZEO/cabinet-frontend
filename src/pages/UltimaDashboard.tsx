@@ -13,9 +13,11 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { useBranding } from '@/hooks/useBranding';
 import { useHaptic } from '@/platform';
 import { useAuthStore } from '@/store/auth';
+import {
+  readUltimaConnectionReminderHidden,
+  readUltimaConnectionStep,
+} from '@/features/ultima/connectionFlow';
 import { warmUltimaStartup } from '@/features/ultima/warmup';
-
-const ULTIMA_CONNECTION_STATE_KEY = 'ultima_connection_flow_v1';
 
 const ShieldIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-16 w-16 text-white/95">
@@ -100,6 +102,7 @@ export function UltimaDashboard() {
   const trialAutoActivationAttemptedRef = useRef(false);
   const [shieldRipples, setShieldRipples] = useState<ShieldRipple[]>([]);
   const [connectionStep, setConnectionStep] = useState<1 | 2 | 3>(1);
+  const [isReminderHidden, setIsReminderHidden] = useState(false);
   const [promoMessage, setPromoMessage] = useState<string | null>(null);
 
   const {
@@ -315,15 +318,9 @@ export function UltimaDashboard() {
   }, [i18n.language, queryClient]);
 
   useEffect(() => {
-    const key = `${ULTIMA_CONNECTION_STATE_KEY}:${user?.id ?? 'guest'}`;
     const readStep = () => {
-      try {
-        const raw = localStorage.getItem(key);
-        const parsed = raw ? Number(raw) : 1;
-        setConnectionStep(parsed === 3 ? 3 : parsed === 2 ? 2 : 1);
-      } catch {
-        setConnectionStep(1);
-      }
+      setConnectionStep(readUltimaConnectionStep(user?.id));
+      setIsReminderHidden(readUltimaConnectionReminderHidden(user?.id));
     };
 
     readStep();
@@ -402,7 +399,12 @@ export function UltimaDashboard() {
     navigate('/ultima/subscription-info');
   };
 
-  const hasSetupReminder = connectionStep === 2;
+  const canPermanentlyHideReminder = Boolean(
+    subscription?.is_active && !subscription?.is_expired && !subscription?.is_trial,
+  );
+  const hasSetupReminder = connectionStep === 2 && !isReminderHidden;
+  const hasCompactSetupReminder =
+    connectionStep !== 3 && isReminderHidden && canPermanentlyHideReminder;
   const firstPromoOffer = useMemo(
     () => (promoOffers ?? []).find((offer) => offer.is_active && !offer.is_claimed) ?? null,
     [promoOffers],
@@ -531,6 +533,28 @@ export function UltimaDashboard() {
                 {t('ultima.finishSetup', { defaultValue: 'Завершить установку' })}
               </button>
             </div>
+          )}
+
+          {hasCompactSetupReminder && (
+            <button
+              type="button"
+              onClick={() => navigate('/connection')}
+              className="border-emerald-200/16 mb-4 flex w-full items-center justify-between gap-3 rounded-2xl border bg-[rgba(12,45,42,0.28)] px-4 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_24px_rgba(3,14,24,0.18)] backdrop-blur-md transition hover:bg-[rgba(16,58,54,0.34)]"
+            >
+              <div className="min-w-0">
+                <p className="text-[14px] font-semibold leading-tight text-white/95">
+                  {t('ultima.setupCompactTitle', { defaultValue: 'VPN ещё не настроен' })}
+                </p>
+                <p className="text-white/68 mt-1 text-[12px] leading-snug">
+                  {t('ultima.setupCompactDesc', {
+                    defaultValue: 'Откройте установку и завершите подключение, когда будет удобно.',
+                  })}
+                </p>
+              </div>
+              <span className="shrink-0 text-[12px] font-medium text-emerald-200/90">
+                {t('ultima.finishSetup', { defaultValue: 'Завершить установку' })}
+              </span>
+            </button>
           )}
 
           {showPromoCard && (
