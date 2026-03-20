@@ -174,14 +174,6 @@ export function UltimaTrialGuide({
           <Stat key={stat.label} value={stat.value} label={stat.label} />
         ))}
       </div>
-
-      <button
-        type="button"
-        onClick={onPrimaryAction}
-        className="ultima-btn-pill ultima-btn-primary mt-3 flex w-full items-center justify-center px-5 py-2.5 text-[15px]"
-      >
-        {t('ultima.trialGuide.inlineAction', { defaultValue: 'Открыть установку' })}
-      </button>
     </div>
   );
 }

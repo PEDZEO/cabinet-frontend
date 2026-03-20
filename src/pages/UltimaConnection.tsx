@@ -336,17 +336,15 @@ export function UltimaConnection({
         : t('subscription.connection.stepDoneDesc', {
             defaultValue: 'Нажмите на круглую кнопку включения VPN в приложении Happ',
           });
-  const importantInfoDescription =
-    isActiveTrial && trialExpiryLabel
-      ? t('ultima.trialGuide.connectionInfoDesc', {
-          date: trialExpiryLabel,
-          defaultValue:
-            'Пробный доступ уже активирован до {{date}}. После установки приложения вернитесь сюда и перейдите к следующему шагу, чтобы добавить подписку.',
-        })
-      : t('subscription.connection.importantInfoDesc', {
-          defaultValue:
-            'После установки приложения Happ, обязательно вернитесь на этот экран и нажмите «Следующий шаг», чтобы добавить конфигурацию в приложение.',
-        });
+  const importantInfoDescription = isActiveTrial
+    ? t('ultima.trialGuide.connectionInfoDesc', {
+        defaultValue:
+          'Пробный доступ уже активирован. После установки приложения вернитесь сюда и перейдите к следующему шагу, чтобы добавить подписку.',
+      })
+    : t('subscription.connection.importantInfoDesc', {
+        defaultValue:
+          'После установки приложения Happ, обязательно вернитесь на этот экран и нажмите «Следующий шаг», чтобы добавить конфигурацию в приложение.',
+      });
 
   const icon = step === 1 ? <DownloadIcon /> : step === 2 ? <PlusIcon /> : <CheckIcon />;
   const isFinalStep = step === 3;

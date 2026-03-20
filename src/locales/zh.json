@@ -3626,7 +3626,7 @@
       "inlineDescription": "下一步：安装应用并一键添加订阅。",
       "inlineAction": "打开安装流程",
       "connectionBadge": "试用有效期至 {{date}}",
-      "connectionInfoDesc": "试用已激活至 {{date}}。安装应用后请返回此页面并继续下一步，以便添加订阅。",
+      "connectionInfoDesc": "试用已激活。安装应用后请返回此页面并继续下一步，以便添加订阅。",
       "stats": {
         "days": "天",
         "daysUnit": "天",

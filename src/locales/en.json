@@ -4415,7 +4415,7 @@
       "inlineDescription": "Next step: install the app and add your subscription in one flow.",
       "inlineAction": "Open setup",
       "connectionBadge": "Trial is active until {{date}}",
-      "connectionInfoDesc": "Your trial access is already active until {{date}}. After installing the app, return to this screen and continue to the next step to add the subscription.",
+      "connectionInfoDesc": "Your trial access is already active. After installing the app, return to this screen and continue to the next step to add the subscription.",
       "stats": {
         "days": "Days",
         "daysUnit": "days",

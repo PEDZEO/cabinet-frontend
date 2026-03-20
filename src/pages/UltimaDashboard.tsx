@@ -843,41 +843,41 @@ export function UltimaDashboard() {
             </div>
           )}
 
-          <div className="mb-3 mt-auto flex items-center justify-between text-white lg:mb-2 lg:mt-0">
-            <div>
-              {!showTrialSetupCard && (
-                <button
-                  type="button"
-                  onClick={openSubscriptionInfo}
-                  className="text-left text-[32px] font-semibold leading-none tracking-[-0.02em] text-white transition hover:text-white/90 sm:text-[36px] lg:text-[34px]"
+          {!showTrialSetupCard && (
+            <>
+              <div className="mb-3 mt-auto flex items-center justify-between text-white lg:mb-2 lg:mt-0">
+                <div>
+                  <button
+                    type="button"
+                    onClick={openSubscriptionInfo}
+                    className="text-left text-[32px] font-semibold leading-none tracking-[-0.02em] text-white transition hover:text-white/90 sm:text-[36px] lg:text-[34px]"
+                  >
+                    {expiryLabel}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={openDevices}
+                    className="mt-2 text-left text-base text-emerald-300/90 transition hover:text-emerald-200"
+                  >
+                    {t('lite.devicesTotal', { defaultValue: 'Устройств' })}:{' '}
+                    {subscription?.device_limit ?? 0}
+                  </button>
+                </div>
+                <span
+                  className={`relative inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ${statusTone.pill}`}
                 >
-                  {expiryLabel}
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={openDevices}
-                className={`text-left text-base text-emerald-300/90 transition hover:text-emerald-200 ${
-                  showTrialSetupCard ? 'mt-0' : 'mt-2'
-                }`}
-              >
-                {t('lite.devicesTotal', { defaultValue: 'Устройств' })}:{' '}
-                {subscription?.device_limit ?? 0}
-              </button>
-            </div>
-            <span
-              className={`relative inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ${statusTone.pill}`}
-            >
-              <span
-                className={`absolute left-1.5 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full blur-[4px] ${statusTone.halo}`}
+                  <span
+                    className={`absolute left-1.5 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full blur-[4px] ${statusTone.halo}`}
+                  />
+                  <span className={`relative h-1.5 w-1.5 rounded-full ${statusTone.dot}`} />
+                  {statusLabel}
+                </span>
+              </div>
+              <div
+                className={`mb-3 h-[2px] w-full rounded-full bg-gradient-to-r ${statusTone.pulse} lg:mb-2`}
               />
-              <span className={`relative h-1.5 w-1.5 rounded-full ${statusTone.dot}`} />
-              {statusLabel}
-            </span>
-          </div>
-          <div
-            className={`mb-3 h-[2px] w-full rounded-full bg-gradient-to-r ${statusTone.pulse} lg:mb-2`}
-          />
+            </>
+          )}
         </section>
 
         <section className="mt-auto pb-0 lg:mt-5 lg:pb-0">
@@ -911,8 +911,8 @@ export function UltimaDashboard() {
           <div className="relative mb-4">
             {showConnectionCtaHighlight && (
               <>
-                <span className="border-emerald-200/22 pointer-events-none absolute inset-[-4px] rounded-[999px] border shadow-[0_0_22px_rgba(16,185,129,0.16)]" />
-                <span className="pointer-events-none absolute inset-[-8px] animate-pulse rounded-[999px] border border-emerald-200/10" />
+                <span className="ultima-cta-highlight pointer-events-none absolute inset-[-4px] rounded-[999px]" />
+                <span className="ultima-cta-highlight ultima-cta-highlight-delay pointer-events-none absolute inset-[-10px] rounded-[999px]" />
               </>
             )}
             <button

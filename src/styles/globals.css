@@ -291,6 +291,43 @@
   animation-delay: 1.8s;
 }
 
+@keyframes ultima-cta-outline {
+  0% {
+    opacity: 0.34;
+    transform: scale(0.992);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--ultima-color-primary) 10%, transparent),
+      0 0 18px color-mix(in srgb, var(--ultima-color-primary) 14%, transparent);
+  }
+  50% {
+    opacity: 0.88;
+    transform: scale(1.02);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--ultima-color-ring) 26%, transparent),
+      0 0 28px color-mix(in srgb, var(--ultima-color-primary) 28%, transparent);
+  }
+  100% {
+    opacity: 0.34;
+    transform: scale(0.992);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--ultima-color-primary) 10%, transparent),
+      0 0 18px color-mix(in srgb, var(--ultima-color-primary) 14%, transparent);
+  }
+}
+
+.ultima-cta-highlight {
+  border: 1px solid color-mix(in srgb, var(--ultima-color-ring) 24%, transparent);
+  animation: ultima-cta-outline calc(var(--ultima-animation-slider-glow-sec, 2.6) * 1s) ease-in-out
+    infinite;
+  transform-origin: center;
+  will-change: transform, opacity, box-shadow;
+}
+
+.ultima-cta-highlight-delay {
+  border-color: color-mix(in srgb, var(--ultima-color-surface-border) 18%, transparent);
+  animation-delay: calc(var(--ultima-animation-slider-glow-sec, 2.6) * -0.5s);
+}
+
 @keyframes ultima-success-wave {
   0% {
     transform: scale(0.08);
@@ -330,6 +367,11 @@
 
   .ultima-step-ring {
     animation: none;
+  }
+
+  .ultima-cta-highlight {
+    animation: none;
+    opacity: 0.48;
   }
 }
 
