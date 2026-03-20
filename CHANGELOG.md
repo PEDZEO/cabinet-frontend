@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.10.0](https://github.com/PEDZEO/cabinet-frontend/compare/v1.9.1...v1.10.0) (2026-03-20)
+
+
+### Features
+
+* add media attachment support for admin ticket replies ([7ada668](https://github.com/PEDZEO/cabinet-frontend/commit/7ada66818d0bc2383fa56007062ac34be915e276))
+* **ultima:** add trial onboarding guide ([03e9790](https://github.com/PEDZEO/cabinet-frontend/commit/03e979080ccc4a8712d0bee88160d07b4954ace7))
+
+
+### Bug Fixes
+
+* port upstream startup and purchase banner fixes ([f39ef7e](https://github.com/PEDZEO/cabinet-frontend/commit/f39ef7e2c0ff2306e252a6052d73f54e774f7308))
+* **ultima:** hide trial device upsell ([23754cd](https://github.com/PEDZEO/cabinet-frontend/commit/23754cddd114ba95f5658ed5cdbb8c89d3ba6d52))
+* **ultima:** polish trial onboarding copy ([ebf0de2](https://github.com/PEDZEO/cabinet-frontend/commit/ebf0de266c94e8f1dc1f6a581af778a051857419))
+* **ultima:** rebalance trial dashboard layout ([2b55212](https://github.com/PEDZEO/cabinet-frontend/commit/2b55212a312e275114ef24554394aea870e17f32))
+* **ultima:** refine trial onboarding details ([d9ed112](https://github.com/PEDZEO/cabinet-frontend/commit/d9ed112bb7f05bbd60c362ba10b21d63469c337b))
+* **ultima:** simplify trial setup prompt ([6ad3638](https://github.com/PEDZEO/cabinet-frontend/commit/6ad3638c938cc7efb47da7d91ea577c68dd6c7fb))
+* **ultima:** streamline onboarding prompts ([71840b3](https://github.com/PEDZEO/cabinet-frontend/commit/71840b38fb9d86179f13d02c83134c3558756002))
+
 ## [1.9.1](https://github.com/PEDZEO/cabinet-frontend/compare/v1.9.0...v1.9.1) (2026-03-16)
 
 
