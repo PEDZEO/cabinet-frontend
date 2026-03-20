@@ -51,6 +51,11 @@ export function UltimaDevices() {
   });
 
   const hasSubscription = Boolean(subscriptionData?.has_subscription);
+  const isActiveTrial = Boolean(
+    subscriptionData?.subscription?.is_trial &&
+    subscriptionData?.subscription?.is_active &&
+    !subscriptionData?.subscription?.is_expired,
+  );
   const currentLimit = subscriptionData?.subscription?.device_limit ?? 0;
 
   const { data: devicesData, isLoading: devicesLoading } = useQuery({
@@ -72,7 +77,7 @@ export function UltimaDevices() {
   const { data: devicePrice } = useQuery({
     queryKey: ['device-price', addCount],
     queryFn: () => subscriptionApi.getDevicePrice(addCount),
-    enabled: hasSubscription && addCount > 0,
+    enabled: hasSubscription && addCount > 0 && !isActiveTrial,
     staleTime: 10000,
     placeholderData: (previousData) => previousData,
   });
@@ -320,51 +325,53 @@ export function UltimaDevices() {
                 )}
               </section>
 
-              <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
-                <p className="mb-2 text-[14px] text-white/90">
-                  {t('lite.addDevices', { defaultValue: 'Добавить устройства' })}
-                </p>
-                <div className="mb-2 flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setAddCount((prev) => Math.max(1, prev - 1))}
-                    className="ultima-btn-pill ultima-btn-secondary h-8 w-8 rounded-lg"
-                    disabled={isBusy}
-                  >
-                    -
-                  </button>
-                  <div className="min-w-[68px] rounded-lg border border-emerald-200/15 bg-emerald-950/30 px-3 py-1.5 text-center text-sm text-white">
-                    {addCount}
+              {!isActiveTrial ? (
+                <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
+                  <p className="mb-2 text-[14px] text-white/90">
+                    {t('lite.addDevices', { defaultValue: 'Добавить устройства' })}
+                  </p>
+                  <div className="mb-2 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setAddCount((prev) => Math.max(1, prev - 1))}
+                      className="ultima-btn-pill ultima-btn-secondary h-8 w-8 rounded-lg"
+                      disabled={isBusy}
+                    >
+                      -
+                    </button>
+                    <div className="min-w-[68px] rounded-lg border border-emerald-200/15 bg-emerald-950/30 px-3 py-1.5 text-center text-sm text-white">
+                      {addCount}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setAddCount((prev) => Math.min(maxAdd, prev + 1))}
+                      className="ultima-btn-pill ultima-btn-secondary h-8 w-8 rounded-lg"
+                      disabled={isBusy}
+                    >
+                      +
+                    </button>
+                    <span className="text-[12px] text-white/55">
+                      {t('lite.max', { defaultValue: 'макс.' })}: {maxAdd}
+                    </span>
                   </div>
+                  <p className="text-white/58 text-[12px]">
+                    {devicePrice?.available && devicePrice.total_price_kopeks
+                      ? `${t('balance.amount', { defaultValue: 'Сумма' })}: ${formatAmount(devicePrice.total_price_kopeks / 100)} ${currencySymbol}`
+                      : devicePrice?.reason ||
+                        t('lite.devicesNotAvailable', {
+                          defaultValue: 'Покупка устройств недоступна',
+                        })}
+                  </p>
                   <button
                     type="button"
-                    onClick={() => setAddCount((prev) => Math.min(maxAdd, prev + 1))}
-                    className="ultima-btn-pill ultima-btn-secondary h-8 w-8 rounded-lg"
-                    disabled={isBusy}
+                    className="ultima-btn-pill ultima-btn-primary mt-2 w-full rounded-xl px-4 py-2.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+                    onClick={() => purchaseMutation.mutate(addCount)}
+                    disabled={isBusy || !devicePrice?.available}
                   >
-                    +
+                    {t('lite.buyDevices', { defaultValue: 'Купить устройства' })}
                   </button>
-                  <span className="text-[12px] text-white/55">
-                    {t('lite.max', { defaultValue: 'макс.' })}: {maxAdd}
-                  </span>
-                </div>
-                <p className="text-white/58 text-[12px]">
-                  {devicePrice?.available && devicePrice.total_price_kopeks
-                    ? `${t('balance.amount', { defaultValue: 'Сумма' })}: ${formatAmount(devicePrice.total_price_kopeks / 100)} ${currencySymbol}`
-                    : devicePrice?.reason ||
-                      t('lite.devicesNotAvailable', {
-                        defaultValue: 'Покупка устройств недоступна',
-                      })}
-                </p>
-                <button
-                  type="button"
-                  className="ultima-btn-pill ultima-btn-primary mt-2 w-full rounded-xl px-4 py-2.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50"
-                  onClick={() => purchaseMutation.mutate(addCount)}
-                  disabled={isBusy || !devicePrice?.available}
-                >
-                  {t('lite.buyDevices', { defaultValue: 'Купить устройства' })}
-                </button>
-              </section>
+                </section>
+              ) : null}
 
               <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
                 <p className="mb-2 text-[14px] text-white/90">Уменьшить количество устройств</p>
