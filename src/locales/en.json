@@ -4418,6 +4418,9 @@
       "connectionInfoDesc": "Your trial access is already active until {{date}}. After installing the app, return to this screen and continue to the next step to add the subscription.",
       "stats": {
         "days": "Days",
+        "daysUnit": "days",
+        "daysUnit_one": "day",
+        "daysUnit_other": "days",
         "traffic": "Traffic",
         "unlimited": "Unlimited",
         "devices": "Devices"

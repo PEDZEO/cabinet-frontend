@@ -3630,6 +3630,9 @@
       "connectionInfoDesc": "دسترسی آزمایشی شما تا {{date}} فعال است. بعد از نصب برنامه، به این صفحه برگردید و به مرحله بعد بروید تا اشتراک اضافه شود.",
       "stats": {
         "days": "روز",
+        "daysUnit": "روز",
+        "daysUnit_one": "روز",
+        "daysUnit_other": "روز",
         "traffic": "ترافیک",
         "unlimited": "نامحدود",
         "devices": "دستگاه"

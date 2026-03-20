@@ -36,10 +36,17 @@ export function UltimaTrialGuide({
   onDismiss,
 }: UltimaTrialGuideProps) {
   const { t } = useTranslation();
+  const normalizedDaysLeft = daysLeft === null ? null : Math.max(daysLeft, 0);
   const stats = [
     {
-      value: daysLeft === null ? '...' : String(daysLeft),
-      label: t('ultima.trialGuide.stats.days', { defaultValue: 'Дней' }),
+      value: normalizedDaysLeft === null ? '...' : String(normalizedDaysLeft),
+      label:
+        normalizedDaysLeft === null
+          ? t('ultima.trialGuide.stats.days', { defaultValue: 'Дней' })
+          : t('ultima.trialGuide.stats.daysUnit', {
+              count: normalizedDaysLeft,
+              defaultValue: 'дней',
+            }),
     },
     {
       value:

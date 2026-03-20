@@ -240,11 +240,7 @@ export function UltimaDashboard() {
       return t('ultima.buySubscriptionRenew', { defaultValue: 'Продлить подписку' });
     }
     if ((daysLeft ?? 99) <= 3) {
-      const daysLabel = t('subscription.days', { count: daysLeft ?? 0 });
-      return t('ultima.buySubscriptionDaysLeft', {
-        daysLabel,
-        defaultValue: `Продлить (${daysLabel})`,
-      });
+      return t('subscription.renew', { defaultValue: 'Продлить' });
     }
     return t('lite.buySubscription', { defaultValue: 'Купить подписку' });
   }, [daysLeft, hasAnySubscription, isActive, t]);
@@ -849,17 +845,21 @@ export function UltimaDashboard() {
 
           <div className="mb-3 mt-auto flex items-center justify-between text-white lg:mb-2 lg:mt-0">
             <div>
-              <button
-                type="button"
-                onClick={openSubscriptionInfo}
-                className="text-left text-[32px] font-semibold leading-none tracking-[-0.02em] text-white transition hover:text-white/90 sm:text-[36px] lg:text-[34px]"
-              >
-                {expiryLabel}
-              </button>
+              {!showTrialSetupCard && (
+                <button
+                  type="button"
+                  onClick={openSubscriptionInfo}
+                  className="text-left text-[32px] font-semibold leading-none tracking-[-0.02em] text-white transition hover:text-white/90 sm:text-[36px] lg:text-[34px]"
+                >
+                  {expiryLabel}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={openDevices}
-                className="mt-2 text-left text-base text-emerald-300/90 transition hover:text-emerald-200"
+                className={`text-left text-base text-emerald-300/90 transition hover:text-emerald-200 ${
+                  showTrialSetupCard ? 'mt-0' : 'mt-2'
+                }`}
               >
                 {t('lite.devicesTotal', { defaultValue: 'Устройств' })}:{' '}
                 {subscription?.device_limit ?? 0}
