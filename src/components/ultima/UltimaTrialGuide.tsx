@@ -7,22 +7,33 @@ type UltimaTrialGuideProps = {
   trafficLimitGb: number;
   deviceLimit: number;
   onPrimaryAction: () => void;
+  onStatClick?: () => void;
   onDismiss?: () => void;
 };
 
 type StatProps = {
   value: string;
   label: string;
+  onClick?: () => void;
 };
 
-function Stat({ value, label }: StatProps) {
+function Stat({ value, label, onClick }: StatProps) {
+  const Component = onClick ? 'button' : 'div';
   return (
-    <div className="border-white/12 rounded-2xl border bg-white/[0.05] px-3 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+    <Component
+      type={onClick ? 'button' : undefined}
+      onClick={onClick}
+      className={`border-white/12 rounded-2xl border bg-white/[0.05] px-3 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] ${
+        onClick
+          ? 'transition hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 active:scale-[0.985]'
+          : ''
+      }`}
+    >
       <div className="text-[22px] font-semibold leading-none tracking-[-0.03em] text-white">
         {value}
       </div>
       <div className="text-white/48 mt-1 text-[11px] uppercase tracking-[0.18em]">{label}</div>
-    </div>
+    </Component>
   );
 }
 
@@ -33,6 +44,7 @@ export function UltimaTrialGuide({
   trafficLimitGb,
   deviceLimit,
   onPrimaryAction,
+  onStatClick,
   onDismiss,
 }: UltimaTrialGuideProps) {
   const { t } = useTranslation();
@@ -175,7 +187,7 @@ export function UltimaTrialGuide({
 
       <div className="mt-3 grid grid-cols-3 gap-2">
         {stats.map((stat) => (
-          <Stat key={stat.label} value={stat.value} label={stat.label} />
+          <Stat key={stat.label} value={stat.value} label={stat.label} onClick={onStatClick} />
         ))}
       </div>
     </div>

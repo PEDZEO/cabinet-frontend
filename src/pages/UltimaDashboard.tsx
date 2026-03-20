@@ -143,6 +143,8 @@ export function UltimaDashboard() {
   const [isReminderHidden, setIsReminderHidden] = useState(false);
   const [isTrialGuideVisible, setIsTrialGuideVisible] = useState(false);
   const [promoMessage, setPromoMessage] = useState<string | null>(null);
+  const [displayHomeLogoUrl, setDisplayHomeLogoUrl] = useState<string | null>(null);
+  const [hasHomeLogoLoadError, setHasHomeLogoLoadError] = useState(false);
 
   const {
     data: subscriptionResponse,
@@ -180,10 +182,6 @@ export function UltimaDashboard() {
     staleTime: 60000,
     placeholderData: (previousData) => previousData,
   });
-  const [isHomeLogoReady, setIsHomeLogoReady] = useState<boolean>(() =>
-    Boolean(logoUrl && loadedHomeLogoUrls.has(logoUrl)),
-  );
-
   const subscription = subscriptionResponse?.subscription ?? null;
   const hasAnySubscription = subscriptionResponse?.has_subscription === true;
   const isI18nReady =
@@ -612,22 +610,60 @@ export function UltimaDashboard() {
   const showBrandLogoOnHome = Boolean(
     ultimaThemeConfig?.homeUseBrandLogo && hasCustomLogo && logoUrl,
   );
+  const shouldHoldForHomeLogo = showBrandLogoOnHome && !displayHomeLogoUrl && !hasHomeLogoLoadError;
 
   useEffect(() => {
     if (!logoUrl) {
-      setIsHomeLogoReady(false);
+      setDisplayHomeLogoUrl(null);
+      setHasHomeLogoLoadError(false);
       return;
     }
-    setIsHomeLogoReady(loadedHomeLogoUrls.has(logoUrl));
-  }, [logoUrl]);
+    if (loadedHomeLogoUrls.has(logoUrl)) {
+      setDisplayHomeLogoUrl(logoUrl);
+      setHasHomeLogoLoadError(false);
+      return;
+    }
 
-  if (!isI18nReady || !isSubscriptionReady || shouldHoldForAutoTrial) {
+    let isCancelled = false;
+    const image = new Image();
+
+    setHasHomeLogoLoadError(false);
+
+    image.decoding = 'async';
+    image.onload = () => {
+      if (isCancelled) {
+        return;
+      }
+      loadedHomeLogoUrls.add(logoUrl);
+      setDisplayHomeLogoUrl(logoUrl);
+      setHasHomeLogoLoadError(false);
+    };
+    image.onerror = () => {
+      if (isCancelled) {
+        return;
+      }
+      setHasHomeLogoLoadError(true);
+    };
+    image.src = logoUrl;
+
+    return () => {
+      isCancelled = true;
+      image.onload = null;
+      image.onerror = null;
+    };
+  }, [displayHomeLogoUrl, logoUrl]);
+
+  if (!isI18nReady || !isSubscriptionReady || shouldHoldForAutoTrial || shouldHoldForHomeLogo) {
     return (
       <div className="ultima-shell pb-[calc(20px+env(safe-area-inset-bottom,0px))] pt-2">
         <div className="relative z-10 mx-auto flex h-[calc(100dvh-26px)] w-full flex-col px-4 sm:px-6">
           <section className="pt-[clamp(74px,16vh,160px)]">
             <div className="mx-auto mb-[clamp(24px,5vh,56px)] flex h-24 w-24 items-center justify-center rounded-full bg-black/15">
-              <ShieldIcon />
+              {shouldHoldForHomeLogo ? (
+                <div className="h-[86px] w-[86px] animate-pulse rounded-full border border-white/10 bg-white/[0.06]" />
+              ) : (
+                <ShieldIcon />
+              )}
             </div>
             <div className="mb-5 h-16 animate-pulse rounded-2xl bg-white/10" />
           </section>
@@ -701,7 +737,7 @@ export function UltimaDashboard() {
                 );
               })}
             </span>
-            {showBrandLogoOnHome ? (
+            {showBrandLogoOnHome && displayHomeLogoUrl ? (
               <span
                 className="flex h-[86px] w-[86px] items-center justify-center rounded-full border bg-black/20 p-3 backdrop-blur"
                 style={{
@@ -712,24 +748,23 @@ export function UltimaDashboard() {
                 }}
               >
                 <img
-                  src={logoUrl ?? undefined}
+                  src={displayHomeLogoUrl}
                   alt="project-logo"
-                  className={`h-full w-full rounded-full object-contain transition-opacity duration-150 ${isHomeLogoReady ? 'opacity-100' : 'opacity-0'}`}
+                  className="h-full w-full rounded-full object-contain"
                   loading="eager"
                   decoding="sync"
                   onLoad={() => {
-                    if (!logoUrl) {
+                    if (!displayHomeLogoUrl) {
                       return;
                     }
-                    loadedHomeLogoUrls.add(logoUrl);
-                    setIsHomeLogoReady(true);
+                    loadedHomeLogoUrls.add(displayHomeLogoUrl);
+                    setHasHomeLogoLoadError(false);
+                  }}
+                  onError={() => {
+                    setDisplayHomeLogoUrl(null);
+                    setHasHomeLogoLoadError(true);
                   }}
                 />
-                {!isHomeLogoReady && (
-                  <span className="absolute inset-0 grid place-items-center">
-                    <ShieldIcon />
-                  </span>
-                )}
               </span>
             ) : (
               <ShieldIcon />
@@ -841,6 +876,7 @@ export function UltimaDashboard() {
                 trafficLimitGb={subscription?.traffic_limit_gb ?? 0}
                 deviceLimit={subscription?.device_limit ?? 0}
                 onPrimaryAction={handleTrialGuideStart}
+                onStatClick={openSubscriptionInfo}
               />
             </div>
           )}
