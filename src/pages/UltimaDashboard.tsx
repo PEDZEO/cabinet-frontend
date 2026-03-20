@@ -17,6 +17,7 @@ import { promoApi } from '@/api/promo';
 import { subscriptionApi } from '@/api/subscription';
 import { ticketsApi } from '@/api/tickets';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+import { UltimaTrialGuide } from '@/components/ultima/UltimaTrialGuide';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useBranding } from '@/hooks/useBranding';
 import { useHaptic } from '@/platform';
@@ -25,7 +26,14 @@ import {
   readUltimaConnectionCompleted,
   readUltimaConnectionReminderHidden,
   readUltimaConnectionStep,
+  writeUltimaConnectionCompleted,
+  writeUltimaConnectionReminderHidden,
+  writeUltimaConnectionStep,
 } from '@/features/ultima/connectionFlow';
+import {
+  hasUltimaTrialGuideBeenAcknowledged,
+  writeUltimaTrialGuideAcknowledged,
+} from '@/features/ultima/trialOnboardingFlow';
 import { warmUltimaStartup } from '@/features/ultima/warmup';
 
 const ShieldIcon = () => (
@@ -133,6 +141,7 @@ export function UltimaDashboard() {
   const [connectionStep, setConnectionStep] = useState<1 | 2 | 3>(1);
   const [isConnectionCompleted, setIsConnectionCompleted] = useState(false);
   const [isReminderHidden, setIsReminderHidden] = useState(false);
+  const [isTrialGuideVisible, setIsTrialGuideVisible] = useState(false);
   const [promoMessage, setPromoMessage] = useState<string | null>(null);
 
   const {
@@ -183,7 +192,12 @@ export function UltimaDashboard() {
   const isSubscriptionReady =
     isSubscriptionFetched || Boolean(subscriptionResponse) || isSubscriptionError;
   const isActive = Boolean(subscription?.is_active && !subscription?.is_expired);
-  const statusLabel = isActive ? t('subscription.active') : t('subscription.expired');
+  const isActiveTrial = Boolean(subscription?.is_trial && isActive);
+  const statusLabel = isActiveTrial
+    ? t('subscription.trialStatus')
+    : isActive
+      ? t('subscription.active')
+      : t('subscription.expired');
   const daysLeft = useMemo(() => {
     if (!subscription?.end_date) return null;
     const end = new Date(subscription.end_date).getTime();
@@ -198,19 +212,26 @@ export function UltimaDashboard() {
         pill: 'border-rose-200/25 bg-rose-400/16 text-rose-100/95',
         pulse: 'from-rose-400/32 via-rose-300/22 to-transparent',
       }
-    : (daysLeft ?? 99) <= 3
+    : isActiveTrial
       ? {
-          dot: 'bg-amber-200/95',
-          halo: 'bg-amber-300/42',
-          pill: 'border-amber-200/30 bg-amber-300/16 text-amber-50/95',
-          pulse: 'from-amber-300/30 via-amber-200/20 to-transparent',
-        }
-      : {
           dot: 'bg-emerald-200/95',
           halo: 'bg-emerald-300/45',
           pill: 'border-emerald-200/28 bg-emerald-300/16 text-emerald-50/95',
           pulse: 'from-emerald-300/34 via-emerald-200/24 to-transparent',
-        };
+        }
+      : (daysLeft ?? 99) <= 3
+        ? {
+            dot: 'bg-amber-200/95',
+            halo: 'bg-amber-300/42',
+            pill: 'border-amber-200/30 bg-amber-300/16 text-amber-50/95',
+            pulse: 'from-amber-300/30 via-amber-200/20 to-transparent',
+          }
+        : {
+            dot: 'bg-emerald-200/95',
+            halo: 'bg-emerald-300/45',
+            pill: 'border-emerald-200/28 bg-emerald-300/16 text-emerald-50/95',
+            pulse: 'from-emerald-300/34 via-emerald-200/24 to-transparent',
+          };
   const buyCtaLabel = useMemo(() => {
     if (!hasAnySubscription) {
       return t('ultima.buySubscriptionActivate', { defaultValue: 'Активировать подписку' });
@@ -219,20 +240,14 @@ export function UltimaDashboard() {
       return t('ultima.buySubscriptionRenew', { defaultValue: 'Продлить подписку' });
     }
     if ((daysLeft ?? 99) <= 3) {
-      const dayWord =
-        i18n.language?.startsWith('ru') && daysLeft === 1
-          ? 'день'
-          : i18n.language?.startsWith('ru') && (daysLeft === 2 || daysLeft === 3 || daysLeft === 4)
-            ? 'дня'
-            : i18n.language?.startsWith('ru')
-              ? 'дней'
-              : 'days';
       return t('ultima.buySubscriptionDaysLeft', {
-        defaultValue: `Продлить (${daysLeft ?? 0} ${dayWord})`,
+        count: daysLeft ?? 0,
+        daysLabel: t('subscription.days', { count: daysLeft ?? 0 }),
+        defaultValue: `Продлить (${daysLeft ?? 0} ${t('subscription.days', { count: daysLeft ?? 0 })})`,
       });
     }
     return t('lite.buySubscription', { defaultValue: 'Купить подписку' });
-  }, [daysLeft, hasAnySubscription, i18n.language, isActive, t]);
+  }, [daysLeft, hasAnySubscription, isActive, t]);
   const buyFromLabel = useMemo(() => {
     if (!purchaseOptions || purchaseOptions.sales_mode !== 'tariffs')
       return `от 199 ${currencySymbol}`;
@@ -272,6 +287,13 @@ export function UltimaDashboard() {
     }
     return formatted;
   })();
+  const trialSignature = useMemo(() => {
+    if (!subscription?.is_trial || !subscription.end_date) {
+      return null;
+    }
+    return `${subscription.id}:${subscription.end_date}`;
+  }, [subscription?.end_date, subscription?.id, subscription?.is_trial]);
+  const isTrialGuideAcknowledged = hasUltimaTrialGuideBeenAcknowledged(user?.id, trialSignature);
 
   const { data: trialInfo } = useQuery({
     queryKey: ['trial-info'],
@@ -364,6 +386,47 @@ export function UltimaDashboard() {
   }, [user?.id]);
 
   useEffect(() => {
+    if (!trialSignature || !isActiveTrial) {
+      setIsTrialGuideVisible(false);
+      return;
+    }
+    if (isTrialGuideAcknowledged) {
+      return;
+    }
+
+    writeUltimaConnectionStep(user?.id, 1);
+    writeUltimaConnectionCompleted(user?.id, false);
+    writeUltimaConnectionReminderHidden(user?.id, false);
+    setConnectionStep(1);
+    setIsConnectionCompleted(false);
+    setIsReminderHidden(false);
+  }, [isActiveTrial, isTrialGuideAcknowledged, trialSignature, user?.id]);
+
+  useEffect(() => {
+    if (!trialSignature || !isActiveTrial || isConnectionCompleted || connectionStep !== 1) {
+      setIsTrialGuideVisible(false);
+      return;
+    }
+    if (isTrialGuideAcknowledged) {
+      setIsTrialGuideVisible(false);
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setIsTrialGuideVisible(true);
+    }, 420);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    connectionStep,
+    isActiveTrial,
+    isConnectionCompleted,
+    isTrialGuideAcknowledged,
+    trialSignature,
+    user?.id,
+  ]);
+
+  useEffect(() => {
     return () => {
       if (tapResetTimeoutRef.current !== null) {
         window.clearTimeout(tapResetTimeoutRef.current);
@@ -438,6 +501,48 @@ export function UltimaDashboard() {
     navigate('/support');
   };
 
+  const openConnection = useCallback(
+    (resetToFirstStep = false) => {
+      haptic.impact('light');
+
+      if (resetToFirstStep) {
+        writeUltimaConnectionCompleted(user?.id, false);
+        writeUltimaConnectionStep(user?.id, 1);
+        writeUltimaConnectionReminderHidden(user?.id, false);
+        setConnectionStep(1);
+        setIsConnectionCompleted(false);
+        setIsReminderHidden(false);
+      }
+
+      void import('./UltimaConnection');
+      void queryClient.prefetchQuery({
+        queryKey: ['appConfig'],
+        queryFn: () => subscriptionApi.getAppConfig(),
+        staleTime: 0,
+      });
+      navigate('/connection');
+    },
+    [haptic, navigate, queryClient, user?.id],
+  );
+
+  const acknowledgeTrialGuide = useCallback(() => {
+    if (!trialSignature) {
+      return;
+    }
+    writeUltimaTrialGuideAcknowledged(user?.id, trialSignature);
+  }, [trialSignature, user?.id]);
+
+  const handleTrialGuideStart = useCallback(() => {
+    acknowledgeTrialGuide();
+    setIsTrialGuideVisible(false);
+    openConnection(true);
+  }, [acknowledgeTrialGuide, openConnection]);
+
+  const handleTrialGuideDismiss = useCallback(() => {
+    acknowledgeTrialGuide();
+    setIsTrialGuideVisible(false);
+  }, [acknowledgeTrialGuide]);
+
   const openDevices = () => {
     haptic.impact('light');
     void queryClient.prefetchQuery({
@@ -474,11 +579,19 @@ export function UltimaDashboard() {
     subscription?.is_active && !subscription?.is_expired && !subscription?.is_trial,
   );
   const hasSetupReminder = connectionStep === 2 && !isReminderHidden && !isConnectionCompleted;
+  const showTrialSetupCard =
+    isActiveTrial &&
+    connectionStep === 1 &&
+    !isConnectionCompleted &&
+    !isTrialGuideVisible &&
+    isTrialGuideAcknowledged;
   const hasCompactSetupReminder =
     connectionStep !== 3 &&
     isReminderHidden &&
     canPermanentlyHideReminder &&
     !isConnectionCompleted;
+  const showConnectionCtaHighlight =
+    isTrialGuideVisible || (showTrialSetupCard && !hasSetupReminder);
   const firstPromoOffer = useMemo(
     () => (promoOffers ?? []).find((offer) => offer.is_active && !offer.is_claimed) ?? null,
     [promoOffers],
@@ -625,7 +738,7 @@ export function UltimaDashboard() {
               </p>
               <button
                 type="button"
-                onClick={() => navigate('/connection')}
+                onClick={() => openConnection()}
                 className="ultima-btn-pill ultima-btn-primary mt-2.5 flex w-full items-center justify-center px-4 py-2.5 text-[15px]"
               >
                 {t('ultima.finishSetup', { defaultValue: 'Завершить установку' })}
@@ -633,10 +746,21 @@ export function UltimaDashboard() {
             </div>
           )}
 
+          {showTrialSetupCard && (
+            <UltimaTrialGuide
+              variant="inline"
+              expiresLabel={expiryLabel}
+              daysLeft={daysLeft}
+              trafficLimitGb={subscription?.traffic_limit_gb ?? 0}
+              deviceLimit={subscription?.device_limit ?? 0}
+              onPrimaryAction={handleTrialGuideStart}
+            />
+          )}
+
           {hasCompactSetupReminder && (
             <button
               type="button"
-              onClick={() => navigate('/connection')}
+              onClick={() => openConnection()}
               className="border-emerald-200/16 mb-4 flex w-full items-center justify-between gap-3 rounded-2xl border bg-[rgba(12,45,42,0.28)] px-4 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_24px_rgba(3,14,24,0.18)] backdrop-blur-md transition hover:bg-[rgba(16,58,54,0.34)]"
             >
               <div className="min-w-0">
@@ -770,25 +894,45 @@ export function UltimaDashboard() {
             <span className="text-[16px] text-white/90">{buyFromLabel}</span>
           </button>
 
-          <button
-            type="button"
-            onClick={() => navigate('/connection')}
-            className="ultima-btn-pill ultima-btn-secondary mb-4 flex w-full items-center justify-between px-5 py-3 text-[16px]"
-          >
-            <span className="flex items-center gap-2">
-              <SetupIcon />
-              {t('lite.connectAndSetup', { defaultValue: 'Установка и настройка' })}
-            </span>
-            <span className="text-white/70">
-              <PhoneIcon />
-            </span>
-          </button>
+          <div className="relative mb-4">
+            {showConnectionCtaHighlight && (
+              <>
+                <span className="pointer-events-none absolute inset-[-10px] rounded-[999px] border border-emerald-200/35 shadow-[0_0_0_1px_rgba(167,243,208,0.08),0_0_28px_rgba(16,185,129,0.24)]" />
+                <span className="border-emerald-200/16 pointer-events-none absolute inset-[-16px] animate-pulse rounded-[999px] border" />
+              </>
+            )}
+            <button
+              type="button"
+              onClick={() => openConnection()}
+              className="ultima-btn-pill ultima-btn-secondary relative flex w-full items-center justify-between px-5 py-3 text-[16px]"
+            >
+              <span className="flex items-center gap-2">
+                <SetupIcon />
+                {t('lite.connectAndSetup', { defaultValue: 'Установка и настройка' })}
+              </span>
+              <span className="text-white/70">
+                <PhoneIcon />
+              </span>
+            </button>
+          </div>
 
           <div className="ultima-nav-dock">
             <UltimaBottomNav active="home" onSupportClick={openSupport} />
           </div>
         </section>
       </div>
+
+      {isTrialGuideVisible && (
+        <UltimaTrialGuide
+          variant="overlay"
+          expiresLabel={expiryLabel}
+          daysLeft={daysLeft}
+          trafficLimitGb={subscription?.traffic_limit_gb ?? 0}
+          deviceLimit={subscription?.device_limit ?? 0}
+          onPrimaryAction={handleTrialGuideStart}
+          onDismiss={handleTrialGuideDismiss}
+        />
+      )}
     </div>
   );
 }

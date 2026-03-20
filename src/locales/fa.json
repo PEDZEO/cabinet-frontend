@@ -3605,5 +3605,35 @@
       "title": "Link all sign-ins into one profile",
       "cta": "Go to account linking"
     }
+  },
+  "ultima": {
+    "buySubscriptionActivate": "فعال‌سازی اشتراک",
+    "buySubscriptionRenew": "تمدید اشتراک",
+    "buySubscriptionDaysLeft": "تمدید ({{count}} {{daysLabel}})",
+    "setupNotFinishedTitle": "نصب کامل نشده است",
+    "setupNotFinishedDesc": "به نصب برگردید و اتصال VPN را کامل کنید.",
+    "finishSetup": "تکمیل نصب",
+    "setupCompactTitle": "VPN هنوز تنظیم نشده است",
+    "setupCompactDesc": "هر زمان آماده بودید، نصب را باز کنید و اتصال را کامل کنید.",
+    "trialGuide": {
+      "badge": "دوره آزمایشی فعال شد",
+      "title": "الان می‌توانید متصل شوید",
+      "description": "دسترسی آزمایشی شما تا {{date}} فعال است. فقط باید برنامه را نصب کرده و اشتراک را اضافه کنید.",
+      "stepLabel": "مرحله 1 از 3",
+      "hint": "ابتدا صفحه نصب را باز کنید، بعد رابط کاربری شما را ادامه می‌دهد.",
+      "primaryAction": "شروع نصب",
+      "dismissAction": "بعداً",
+      "inlineTitle": "آزمایشی تا {{date}} فعال است",
+      "inlineDescription": "مرحله بعد: برنامه را نصب کنید و اشتراک را در یک جریان اضافه کنید.",
+      "inlineAction": "باز کردن نصب",
+      "connectionBadge": "آزمایشی تا {{date}} فعال است",
+      "connectionInfoDesc": "دسترسی آزمایشی شما تا {{date}} فعال است. بعد از نصب برنامه، به این صفحه برگردید و به مرحله بعد بروید تا اشتراک اضافه شود.",
+      "stats": {
+        "days": "روز",
+        "traffic": "ترافیک",
+        "unlimited": "نامحدود",
+        "devices": "دستگاه"
+      }
+    }
   }
 }

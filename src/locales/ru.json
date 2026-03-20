@@ -4959,5 +4959,35 @@
     "shareModalActivateViaCabinet": "Или через сайт:",
     "copyMessage": "Скопировать сообщение",
     "shareToastCopied": "Сообщение скопировано"
+  },
+  "ultima": {
+    "buySubscriptionActivate": "Активировать подписку",
+    "buySubscriptionRenew": "Продлить подписку",
+    "buySubscriptionDaysLeft": "Продлить ({{count}} {{daysLabel}})",
+    "setupNotFinishedTitle": "Установка не завершена",
+    "setupNotFinishedDesc": "Вернитесь к настройке и завершите подключение VPN.",
+    "finishSetup": "Завершить установку",
+    "setupCompactTitle": "VPN ещё не настроен",
+    "setupCompactDesc": "Откройте установку и завершите подключение, когда будет удобно.",
+    "trialGuide": {
+      "badge": "Триал активирован",
+      "title": "Можно подключаться прямо сейчас",
+      "description": "Пробный доступ уже активирован до {{date}}. Осталось установить приложение и добавить подписку.",
+      "stepLabel": "Шаг 1 из 3",
+      "hint": "Сначала открываем экран установки, дальше интерфейс поведет вас сам.",
+      "primaryAction": "Начать установку",
+      "dismissAction": "Позже",
+      "inlineTitle": "Триал активен до {{date}}",
+      "inlineDescription": "Следующий шаг: установите приложение и добавьте подписку в один поток.",
+      "inlineAction": "Открыть установку",
+      "connectionBadge": "Триал активен до {{date}}",
+      "connectionInfoDesc": "Пробный доступ уже активирован до {{date}}. После установки приложения вернитесь сюда и перейдите к следующему шагу, чтобы добавить подписку.",
+      "stats": {
+        "days": "Дней",
+        "traffic": "Трафик",
+        "unlimited": "Безлимит",
+        "devices": "Устройств"
+      }
+    }
   }
 }

@@ -4393,5 +4393,35 @@
     "shareModalActivateViaCabinet": "Or via website:",
     "copyMessage": "Copy message",
     "shareToastCopied": "Message copied"
+  },
+  "ultima": {
+    "buySubscriptionActivate": "Activate subscription",
+    "buySubscriptionRenew": "Renew subscription",
+    "buySubscriptionDaysLeft": "Renew ({{count}} {{daysLabel}})",
+    "setupNotFinishedTitle": "Setup not finished",
+    "setupNotFinishedDesc": "Return to setup and finish connecting VPN.",
+    "finishSetup": "Finish setup",
+    "setupCompactTitle": "VPN is not configured yet",
+    "setupCompactDesc": "Open setup and finish the connection whenever you're ready.",
+    "trialGuide": {
+      "badge": "Trial activated",
+      "title": "You can connect right now",
+      "description": "Your trial access is already active until {{date}}. The next step is to install the app and add the subscription.",
+      "stepLabel": "Step 1 of 3",
+      "hint": "Open the setup screen first, then the interface will guide you through the rest.",
+      "primaryAction": "Start setup",
+      "dismissAction": "Later",
+      "inlineTitle": "Trial is active until {{date}}",
+      "inlineDescription": "Next step: install the app and add your subscription in one flow.",
+      "inlineAction": "Open setup",
+      "connectionBadge": "Trial is active until {{date}}",
+      "connectionInfoDesc": "Your trial access is already active until {{date}}. After installing the app, return to this screen and continue to the next step to add the subscription.",
+      "stats": {
+        "days": "Days",
+        "traffic": "Traffic",
+        "unlimited": "Unlimited",
+        "devices": "Devices"
+      }
+    }
   }
 }

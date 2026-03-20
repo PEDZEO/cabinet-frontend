@@ -204,6 +204,26 @@ export function UltimaConnection({
     placeholderData: (previousData) => previousData,
   });
   const subscription = subscriptionResponse?.subscription ?? null;
+  const isActiveTrial = Boolean(
+    subscription?.is_active && !subscription?.is_expired && subscription?.is_trial,
+  );
+  const trialDaysLeft = useMemo(() => {
+    if (!subscription?.end_date) return null;
+    const end = new Date(subscription.end_date).getTime();
+    if (Number.isNaN(end)) return null;
+    const diff = end - Date.now();
+    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  }, [subscription?.end_date]);
+  const trialExpiryLabel = useMemo(() => {
+    if (!subscription?.end_date) return null;
+    const date = new Date(subscription.end_date);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toLocaleDateString(i18n.language || 'ru-RU', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  }, [i18n.language, subscription?.end_date]);
   const canPermanentlyHideReminder = Boolean(
     subscription?.is_active && !subscription?.is_expired && !subscription?.is_trial,
   );
@@ -316,6 +336,17 @@ export function UltimaConnection({
         : t('subscription.connection.stepDoneDesc', {
             defaultValue: 'Нажмите на круглую кнопку включения VPN в приложении Happ',
           });
+  const importantInfoDescription =
+    isActiveTrial && trialExpiryLabel
+      ? t('ultima.trialGuide.connectionInfoDesc', {
+          date: trialExpiryLabel,
+          defaultValue:
+            'Пробный доступ уже активирован до {{date}}. После установки приложения вернитесь сюда и перейдите к следующему шагу, чтобы добавить подписку.',
+        })
+      : t('subscription.connection.importantInfoDesc', {
+          defaultValue:
+            'После установки приложения Happ, обязательно вернитесь на этот экран и нажмите «Следующий шаг», чтобы добавить конфигурацию в приложение.',
+        });
 
   const icon = step === 1 ? <DownloadIcon /> : step === 2 ? <PlusIcon /> : <CheckIcon />;
   const isFinalStep = step === 3;
@@ -436,6 +467,16 @@ export function UltimaConnection({
             key={step}
             className={`ultima-step-enter text-center lg:pt-1 ${isVeryShortViewport ? 'pt-0.5' : 'pt-2'}`}
           >
+            {isActiveTrial && (
+              <div className="border-emerald-200/18 bg-emerald-300/12 text-emerald-50/92 mx-auto mb-3 inline-flex max-w-[320px] items-center justify-center gap-2 rounded-full border px-3 py-1.5 text-center text-[12px] font-medium leading-tight shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-emerald-200" />
+                {t('ultima.trialGuide.connectionBadge', {
+                  count: trialDaysLeft ?? 0,
+                  date: trialExpiryLabel ?? '',
+                  defaultValue: 'Триал активен до {{date}}',
+                })}
+              </div>
+            )}
             <h1
               className={`font-semibold leading-[0.96] text-white ${
                 isDoneStep
@@ -707,12 +748,7 @@ export function UltimaConnection({
                 ×
               </button>
             </div>
-            <p className="text-white/92 text-[15px] leading-[1.28]">
-              {t('subscription.connection.importantInfoDesc', {
-                defaultValue:
-                  'После установки приложения Happ, обязательно вернитесь на этот экран и нажмите «Следующий шаг», чтобы добавить конфигурацию в приложение.',
-              })}
-            </p>
+            <p className="text-white/92 text-[15px] leading-[1.28]">{importantInfoDescription}</p>
             <button
               type="button"
               onClick={dismissReminderForNow}
