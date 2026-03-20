@@ -3635,7 +3635,10 @@
         "daysUnit_other": "روز",
         "traffic": "ترافیک",
         "unlimited": "نامحدود",
-        "devices": "دستگاه"
+        "devices": "دستگاه",
+        "devicesUnit": "دستگاه",
+        "devicesUnit_one": "دستگاه",
+        "devicesUnit_other": "دستگاه"
       }
     }
   }

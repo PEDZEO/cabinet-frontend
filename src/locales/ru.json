@@ -4990,7 +4990,11 @@
         "daysUnit_many": "дней",
         "traffic": "Трафик",
         "unlimited": "Безлимит",
-        "devices": "Устройств"
+        "devices": "Устройств",
+        "devicesUnit": "устройств",
+        "devicesUnit_one": "устройство",
+        "devicesUnit_few": "устройства",
+        "devicesUnit_many": "устройств"
       }
     }
   }

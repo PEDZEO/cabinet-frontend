@@ -4423,7 +4423,10 @@
         "daysUnit_other": "days",
         "traffic": "Traffic",
         "unlimited": "Unlimited",
-        "devices": "Devices"
+        "devices": "Devices",
+        "devicesUnit": "devices",
+        "devicesUnit_one": "device",
+        "devicesUnit_other": "devices"
       }
     }
   }

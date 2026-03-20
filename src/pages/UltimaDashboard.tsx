@@ -756,17 +756,6 @@ export function UltimaDashboard() {
             </div>
           )}
 
-          {showTrialSetupCard && (
-            <UltimaTrialGuide
-              variant="inline"
-              expiryDateLabel={trialExpiryDateLabel}
-              daysLeft={daysLeft}
-              trafficLimitGb={subscription?.traffic_limit_gb ?? 0}
-              deviceLimit={subscription?.device_limit ?? 0}
-              onPrimaryAction={handleTrialGuideStart}
-            />
-          )}
-
           {hasCompactSetupReminder && (
             <button
               type="button"
@@ -843,6 +832,19 @@ export function UltimaDashboard() {
             </div>
           )}
 
+          {showTrialSetupCard && (
+            <div className="mt-auto">
+              <UltimaTrialGuide
+                variant="inline"
+                expiryDateLabel={trialExpiryDateLabel}
+                daysLeft={daysLeft}
+                trafficLimitGb={subscription?.traffic_limit_gb ?? 0}
+                deviceLimit={subscription?.device_limit ?? 0}
+                onPrimaryAction={handleTrialGuideStart}
+              />
+            </div>
+          )}
+
           {!showTrialSetupCard && (
             <>
               <div className="mb-3 mt-auto flex items-center justify-between text-white lg:mb-2 lg:mt-0">
@@ -911,8 +913,8 @@ export function UltimaDashboard() {
           <div className="relative mb-4">
             {showConnectionCtaHighlight && (
               <>
-                <span className="ultima-cta-highlight pointer-events-none absolute inset-[-4px] rounded-[999px]" />
-                <span className="ultima-cta-highlight ultima-cta-highlight-delay pointer-events-none absolute inset-[-10px] rounded-[999px]" />
+                <span className="ultima-cta-highlight pointer-events-none absolute inset-[-2px] rounded-[999px]" />
+                <span className="ultima-cta-highlight ultima-cta-highlight-delay pointer-events-none absolute inset-[-5px] rounded-[999px]" />
               </>
             )}
             <button

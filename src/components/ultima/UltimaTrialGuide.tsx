@@ -37,6 +37,7 @@ export function UltimaTrialGuide({
 }: UltimaTrialGuideProps) {
   const { t } = useTranslation();
   const normalizedDaysLeft = daysLeft === null ? null : Math.max(daysLeft, 0);
+  const normalizedDeviceLimit = Math.max(deviceLimit, 0);
   const stats = [
     {
       value: normalizedDaysLeft === null ? '...' : String(normalizedDaysLeft),
@@ -59,8 +60,11 @@ export function UltimaTrialGuide({
           : t('ultima.trialGuide.stats.unlimited', { defaultValue: 'Безлимит' }),
     },
     {
-      value: String(deviceLimit),
-      label: t('ultima.trialGuide.stats.devices', { defaultValue: 'Устройств' }),
+      value: String(normalizedDeviceLimit),
+      label: t('ultima.trialGuide.stats.devicesUnit', {
+        count: normalizedDeviceLimit,
+        defaultValue: 'устройств',
+      }),
     },
   ];
 

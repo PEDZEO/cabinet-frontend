@@ -3634,7 +3634,10 @@
         "daysUnit_other": "天",
         "traffic": "流量",
         "unlimited": "无限",
-        "devices": "设备"
+        "devices": "设备",
+        "devicesUnit": "设备",
+        "devicesUnit_one": "设备",
+        "devicesUnit_other": "设备"
       }
     }
   }

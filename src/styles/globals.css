@@ -293,25 +293,25 @@
 
 @keyframes ultima-cta-outline {
   0% {
-    opacity: 0.34;
-    transform: scale(0.992);
+    opacity: 0.3;
+    transform: scale(0.996);
     box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--ultima-color-primary) 10%, transparent),
-      0 0 18px color-mix(in srgb, var(--ultima-color-primary) 14%, transparent);
+      0 0 0 1px color-mix(in srgb, var(--ultima-color-primary) 8%, transparent),
+      0 0 14px color-mix(in srgb, var(--ultima-color-primary) 12%, transparent);
   }
   50% {
-    opacity: 0.88;
-    transform: scale(1.02);
+    opacity: 0.72;
+    transform: scale(1.008);
     box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--ultima-color-ring) 26%, transparent),
-      0 0 28px color-mix(in srgb, var(--ultima-color-primary) 28%, transparent);
+      0 0 0 1px color-mix(in srgb, var(--ultima-color-ring) 18%, transparent),
+      0 0 22px color-mix(in srgb, var(--ultima-color-primary) 20%, transparent);
   }
   100% {
-    opacity: 0.34;
-    transform: scale(0.992);
+    opacity: 0.3;
+    transform: scale(0.996);
     box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--ultima-color-primary) 10%, transparent),
-      0 0 18px color-mix(in srgb, var(--ultima-color-primary) 14%, transparent);
+      0 0 0 1px color-mix(in srgb, var(--ultima-color-primary) 8%, transparent),
+      0 0 14px color-mix(in srgb, var(--ultima-color-primary) 12%, transparent);
   }
 }
 
