@@ -240,10 +240,10 @@ export function UltimaDashboard() {
       return t('ultima.buySubscriptionRenew', { defaultValue: 'Продлить подписку' });
     }
     if ((daysLeft ?? 99) <= 3) {
+      const daysLabel = t('subscription.days', { count: daysLeft ?? 0 });
       return t('ultima.buySubscriptionDaysLeft', {
-        count: daysLeft ?? 0,
-        daysLabel: t('subscription.days', { count: daysLeft ?? 0 }),
-        defaultValue: `Продлить (${daysLeft ?? 0} ${t('subscription.days', { count: daysLeft ?? 0 })})`,
+        daysLabel,
+        defaultValue: `Продлить (${daysLabel})`,
       });
     }
     return t('lite.buySubscription', { defaultValue: 'Купить подписку' });
@@ -284,6 +284,20 @@ export function UltimaDashboard() {
     });
     if ((i18n.language || '').toLowerCase().startsWith('ru')) {
       return `до ${formatted.replace(' г.', '')}`;
+    }
+    return formatted;
+  })();
+  const trialExpiryDateLabel = (() => {
+    if (!subscription?.end_date) return t('subscription.notActive');
+    const date = new Date(subscription.end_date);
+    if (Number.isNaN(date.getTime())) return t('subscription.notActive');
+    const formatted = date.toLocaleDateString(i18n.language || 'ru-RU', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+    if ((i18n.language || '').toLowerCase().startsWith('ru')) {
+      return formatted.replace(' г.', '');
     }
     return formatted;
   })();
@@ -749,7 +763,7 @@ export function UltimaDashboard() {
           {showTrialSetupCard && (
             <UltimaTrialGuide
               variant="inline"
-              expiresLabel={expiryLabel}
+              expiryDateLabel={trialExpiryDateLabel}
               daysLeft={daysLeft}
               trafficLimitGb={subscription?.traffic_limit_gb ?? 0}
               deviceLimit={subscription?.device_limit ?? 0}
@@ -897,8 +911,8 @@ export function UltimaDashboard() {
           <div className="relative mb-4">
             {showConnectionCtaHighlight && (
               <>
-                <span className="pointer-events-none absolute inset-[-10px] rounded-[999px] border border-emerald-200/35 shadow-[0_0_0_1px_rgba(167,243,208,0.08),0_0_28px_rgba(16,185,129,0.24)]" />
-                <span className="border-emerald-200/16 pointer-events-none absolute inset-[-16px] animate-pulse rounded-[999px] border" />
+                <span className="border-emerald-200/22 pointer-events-none absolute inset-[-4px] rounded-[999px] border shadow-[0_0_22px_rgba(16,185,129,0.16)]" />
+                <span className="pointer-events-none absolute inset-[-8px] animate-pulse rounded-[999px] border border-emerald-200/10" />
               </>
             )}
             <button
@@ -925,7 +939,7 @@ export function UltimaDashboard() {
       {isTrialGuideVisible && (
         <UltimaTrialGuide
           variant="overlay"
-          expiresLabel={expiryLabel}
+          expiryDateLabel={trialExpiryDateLabel}
           daysLeft={daysLeft}
           trafficLimitGb={subscription?.traffic_limit_gb ?? 0}
           deviceLimit={subscription?.device_limit ?? 0}

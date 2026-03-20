@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 
 type UltimaTrialGuideProps = {
   variant: 'overlay' | 'inline';
-  expiresLabel: string;
+  expiryDateLabel: string;
   daysLeft: number | null;
   trafficLimitGb: number;
   deviceLimit: number;
@@ -28,7 +28,7 @@ function Stat({ value, label }: StatProps) {
 
 export function UltimaTrialGuide({
   variant,
-  expiresLabel,
+  expiryDateLabel,
   daysLeft,
   trafficLimitGb,
   deviceLimit,
@@ -42,7 +42,10 @@ export function UltimaTrialGuide({
       label: t('ultima.trialGuide.stats.days', { defaultValue: 'Дней' }),
     },
     {
-      value: trafficLimitGb > 0 ? String(trafficLimitGb) : '∞',
+      value:
+        trafficLimitGb > 0
+          ? `${trafficLimitGb} ${t('common.units.gb', { defaultValue: 'ГБ' })}`
+          : '∞',
       label:
         trafficLimitGb > 0
           ? t('ultima.trialGuide.stats.traffic', { defaultValue: 'Трафик' })
@@ -74,7 +77,7 @@ export function UltimaTrialGuide({
               </p>
               <p className="text-white/74 mt-3 max-w-[320px] text-[14px] leading-[1.38]">
                 {t('ultima.trialGuide.description', {
-                  date: expiresLabel,
+                  date: expiryDateLabel,
                   defaultValue:
                     'Пробный доступ уже активирован до {{date}}. Осталось установить приложение и добавить подписку.',
                 })}
@@ -143,7 +146,7 @@ export function UltimaTrialGuide({
         <div className="min-w-0">
           <p className="text-[16px] font-semibold leading-tight text-white/95">
             {t('ultima.trialGuide.inlineTitle', {
-              date: expiresLabel,
+              date: expiryDateLabel,
               defaultValue: 'Триал активен до {{date}}',
             })}
           </p>

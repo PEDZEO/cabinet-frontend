@@ -4963,7 +4963,7 @@
   "ultima": {
     "buySubscriptionActivate": "Активировать подписку",
     "buySubscriptionRenew": "Продлить подписку",
-    "buySubscriptionDaysLeft": "Продлить ({{count}} {{daysLabel}})",
+    "buySubscriptionDaysLeft": "Продлить ({{daysLabel}})",
     "setupNotFinishedTitle": "Установка не завершена",
     "setupNotFinishedDesc": "Вернитесь к настройке и завершите подключение VPN.",
     "finishSetup": "Завершить установку",

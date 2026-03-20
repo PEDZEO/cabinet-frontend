@@ -4397,7 +4397,7 @@
   "ultima": {
     "buySubscriptionActivate": "Activate subscription",
     "buySubscriptionRenew": "Renew subscription",
-    "buySubscriptionDaysLeft": "Renew ({{count}} {{daysLabel}})",
+    "buySubscriptionDaysLeft": "Renew ({{daysLabel}})",
     "setupNotFinishedTitle": "Setup not finished",
     "setupNotFinishedDesc": "Return to setup and finish connecting VPN.",
     "finishSetup": "Finish setup",

@@ -3608,7 +3608,7 @@
   "ultima": {
     "buySubscriptionActivate": "激活订阅",
     "buySubscriptionRenew": "续费订阅",
-    "buySubscriptionDaysLeft": "续费（{{count}} {{daysLabel}}）",
+    "buySubscriptionDaysLeft": "续费（{{daysLabel}}）",
     "setupNotFinishedTitle": "安装尚未完成",
     "setupNotFinishedDesc": "返回安装流程并完成 VPN 连接。",
     "finishSetup": "完成安装",

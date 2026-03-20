@@ -3609,7 +3609,7 @@
   "ultima": {
     "buySubscriptionActivate": "فعال‌سازی اشتراک",
     "buySubscriptionRenew": "تمدید اشتراک",
-    "buySubscriptionDaysLeft": "تمدید ({{count}} {{daysLabel}})",
+    "buySubscriptionDaysLeft": "تمدید ({{daysLabel}})",
     "setupNotFinishedTitle": "نصب کامل نشده است",
     "setupNotFinishedDesc": "به نصب برگردید و اتصال VPN را کامل کنید.",
     "finishSetup": "تکمیل نصب",
