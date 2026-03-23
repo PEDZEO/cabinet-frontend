@@ -293,6 +293,7 @@ export default function AdminNews() {
     onSuccess: () => {
       haptic.success();
       queryClient.invalidateQueries({ queryKey: ['admin', 'news'] });
+      queryClient.invalidateQueries({ queryKey: ['news'] });
     },
   });
 
@@ -301,6 +302,7 @@ export default function AdminNews() {
     onSuccess: () => {
       haptic.success();
       queryClient.invalidateQueries({ queryKey: ['admin', 'news'] });
+      queryClient.invalidateQueries({ queryKey: ['news'] });
     },
   });
 
@@ -309,6 +311,7 @@ export default function AdminNews() {
     onSuccess: () => {
       haptic.success();
       queryClient.invalidateQueries({ queryKey: ['admin', 'news'] });
+      queryClient.invalidateQueries({ queryKey: ['news'] });
     },
   });
 

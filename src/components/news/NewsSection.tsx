@@ -415,7 +415,7 @@ export default function NewsSection() {
   }
 
   return (
-    <section className="relative overflow-hidden rounded-2xl bg-dark-900/50 backdrop-blur-xl">
+    <section className="relative overflow-hidden rounded-2xl bg-dark-850/80 backdrop-blur-xl">
       <div className="px-5 py-8 sm:px-6 sm:py-10">
         {/* Header */}
         <motion.div
