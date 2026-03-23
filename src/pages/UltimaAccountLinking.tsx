@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { authApi } from '@/api/auth';
 import { Button } from '@/components/primitives/Button';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useAuthStore } from '@/store/auth';
 import type { LinkCodePreviewResponse, LinkedIdentity } from '@/types';
 
@@ -25,6 +26,7 @@ export default function UltimaAccountLinking() {
   const { t } = useTranslation();
   const { setUser, setTokens, checkAdminStatus, user } = useAuthStore();
   const queryClient = useQueryClient();
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
 
   const [linkCode, setLinkCode] = useState('');
   const [activeLinkCode, setActiveLinkCode] = useState('');
@@ -348,7 +350,9 @@ export default function UltimaAccountLinking() {
     isCodePreviewed && (linkFlowStep === 'preview' || linkFlowStep === 'warning');
 
   return (
-    <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
+    <div
+      className={`ultima-shell ultima-shell-wide ultima-flat-frames${isDesktop ? 'ultima-shell-profile-desktop' : ''}`}
+    >
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner lg:max-w-[960px]">
         <header className="mb-3">

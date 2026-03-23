@@ -3,7 +3,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { balanceApi } from '@/api/balance';
+import {
+  UltimaDesktopPanel,
+  UltimaDesktopSectionLayout,
+} from '@/components/ultima/desktop/UltimaDesktopSectionLayout';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { usePlatform } from '@/platform';
 import type { PaymentMethod } from '@/types';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
@@ -83,6 +88,7 @@ export function UltimaTopUpAmount() {
   const { formatAmount, convertAmount, convertToRub, currencySymbol, targetCurrency } =
     useCurrency();
   const { openTelegramLink, openLink } = usePlatform();
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const { data: methodsData } = useQuery({
@@ -190,6 +196,207 @@ export function UltimaTopUpAmount() {
     return <div className="h-[100svh] min-h-[100dvh] w-full bg-transparent" />;
   }
 
+  const bottomNav = <UltimaBottomNav active="profile" />;
+
+  const amountContent = (
+    <>
+      <section className="border-emerald-200/12 min-h-0 flex-1 overflow-y-auto rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:overflow-visible lg:p-4">
+        <div className="mb-3 flex items-center gap-3 rounded-2xl border border-emerald-200/10 bg-emerald-950/30 px-3 py-2.5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-200/15 bg-emerald-900/45 text-emerald-100">
+            <MethodIcon methodId={method.id} />
+          </div>
+          <div className="min-w-0">
+            <p className="truncate text-[15px] font-medium text-white/95">{methodName}</p>
+            <p className="text-[11px] text-white/55">
+              {formatAmount(minRub, 0)} - {formatAmount(maxRub, 0)} {currencySymbol}
+            </p>
+          </div>
+        </div>
+
+        {method.options && method.options.length > 0 ? (
+          <div className="mb-3 grid grid-cols-2 gap-2">
+            {method.options.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                onClick={() => setSelectedOption(option.id)}
+                className={`rounded-xl border px-3 py-2 text-left text-sm ${
+                  selectedOption === option.id
+                    ? 'bg-emerald-500/12 border-emerald-300/45 text-white'
+                    : 'border-emerald-200/10 bg-emerald-950/30 text-white/75'
+                }`}
+              >
+                {option.name}
+              </button>
+            ))}
+          </div>
+        ) : null}
+
+        <div className="text-white/62 mb-2 text-[12px]">{t('balance.enterAmount')}</div>
+        <div className="flex gap-2">
+          <div className="border-emerald-200/12 relative flex-1 rounded-2xl border bg-emerald-950/35">
+            <input
+              ref={inputRef}
+              type="number"
+              value={amount}
+              onChange={(event) => setAmount(event.target.value)}
+              className="h-12 w-full bg-transparent px-3 pr-10 text-lg font-semibold text-white outline-none"
+              placeholder="0"
+              inputMode="decimal"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50">
+              {currencySymbol}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={handleCreatePayment}
+            disabled={topUpMutation.isPending}
+            className="rounded-2xl border border-[#52ecc6]/40 bg-[#12cd97] px-4 text-sm font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] disabled:opacity-60"
+          >
+            {t('balance.topUp')}
+          </button>
+        </div>
+
+        {quickRubles.length > 0 ? (
+          <div className="mt-3 grid grid-cols-4 gap-2">
+            {quickRubles.map((value) => (
+              <button
+                key={value}
+                type="button"
+                className={`rounded-xl border px-2 py-2 text-[13px] transition ${
+                  amount ===
+                  (targetCurrency === 'RUB' || targetCurrency === 'IRR'
+                    ? String(Math.round(convertAmount(value)))
+                    : convertAmount(value).toFixed(2))
+                    ? 'bg-emerald-500/12 border-emerald-300/45 text-white'
+                    : 'border-emerald-200/10 bg-emerald-950/30 text-white/85 hover:border-emerald-200/25'
+                }`}
+                onClick={() => handleQuick(value)}
+              >
+                {formatAmount(value, 0)}
+              </button>
+            ))}
+          </div>
+        ) : null}
+
+        {error ? (
+          <div className="bg-red-500/12 mt-3 rounded-xl border border-red-400/30 px-3 py-2 text-sm text-red-200">
+            {error}
+          </div>
+        ) : null}
+
+        {paymentUrl ? (
+          <div className="mt-3 rounded-2xl border border-emerald-300/30 bg-emerald-500/10 p-3">
+            <p className="text-[13px] font-medium text-emerald-100">{t('balance.paymentReady')}</p>
+            <button
+              type="button"
+              onClick={() => openPayment(paymentUrl)}
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-[#52ecc6]/40 bg-[#12cd97] px-3 py-2.5 text-sm font-medium text-white"
+            >
+              <OpenIcon />
+              {t('balance.openPaymentPage')}
+            </button>
+            <div className="mt-2 flex items-center gap-2">
+              <div className="min-w-0 flex-1 rounded-lg border border-emerald-200/10 bg-emerald-950/30 px-2.5 py-2">
+                <p className="truncate text-[11px] text-white/55">{paymentUrl}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => void handleCopyUrl()}
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-emerald-200/15 bg-emerald-900/40 text-white/80"
+              >
+                {copied ? <CheckIcon /> : <CopyIcon />}
+              </button>
+            </div>
+          </div>
+        ) : null}
+      </section>
+
+      <section className="rounded-2xl border border-emerald-200/10 bg-emerald-950/20 px-3 py-2.5">
+        <p className="text-white/58 text-[11px] leading-snug">
+          {t('balance.ultimaBalanceNotice', {
+            defaultValue:
+              'После пополнения сумма попадает на баланс и затем списывается в оплату подписки.',
+          })}
+        </p>
+      </section>
+    </>
+  );
+
+  if (isDesktop) {
+    return (
+      <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-profile-desktop">
+        <div className="ultima-shell-aura" />
+        <UltimaDesktopSectionLayout
+          icon={<MethodIcon methodId={method.id} />}
+          eyebrow={methodName}
+          title={methodName}
+          subtitle={t('balance.ultimaBalanceNotice', {
+            defaultValue:
+              'Средства поступят на баланс и автоматически учтутся в стоимости подписки.',
+          })}
+          metrics={[
+            {
+              label: t('balance.amount', { defaultValue: 'Диапазон' }),
+              value: `${formatAmount(minRub, 0)} - ${formatAmount(maxRub, 0)} ${currencySymbol}`,
+              hint: t('payment.desktopRangeHint', {
+                defaultValue: 'Минимальная и максимальная сумма зависят от платежного метода.',
+              }),
+            },
+            {
+              label: t('balance.enterAmount', { defaultValue: 'Сумма' }),
+              value: amount || '0',
+              hint: t('payment.desktopAmountHint', {
+                defaultValue: 'Введите сумму вручную или используйте быстрые варианты ниже.',
+              }),
+            },
+            {
+              label: t('common.status', { defaultValue: 'Статус' }),
+              value: topUpMutation.isPending ? t('common.loading') : paymentUrl ? 'Ready' : 'Draft',
+              hint:
+                error ||
+                t('payment.desktopStatusHint', {
+                  defaultValue: 'После создания ссылки откроется окно платежа.',
+                }),
+            },
+          ]}
+          aside={
+            <UltimaDesktopPanel
+              title={t('payment.desktopAsideTitle', { defaultValue: 'Оплата' })}
+              subtitle={t('payment.desktopAsideHint', {
+                defaultValue:
+                  'Платежная ссылка создается под выбранный метод и сумму и открывается сразу после генерации.',
+              })}
+            >
+              <div className="space-y-3">
+                {quickRubles.length > 0 ? (
+                  <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3">
+                    <div className="text-white/42 text-[11px] uppercase tracking-[0.2em]">
+                      {t('balance.quickAmounts', { defaultValue: 'Быстрые суммы' })}
+                    </div>
+                    <div className="mt-2 text-sm font-medium text-white/90">
+                      {quickRubles.map((value) => formatAmount(value, 0)).join(' • ')}
+                    </div>
+                  </div>
+                ) : null}
+                <div className="text-white/72 rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-[1.6]">
+                  {t('balance.ultimaBalanceNotice', {
+                    defaultValue:
+                      'После пополнения сумма попадает на баланс и затем списывается в оплату подписки.',
+                  })}
+                </div>
+              </div>
+            </UltimaDesktopPanel>
+          }
+          bottomNav={bottomNav}
+        >
+          {amountContent}
+        </UltimaDesktopSectionLayout>
+      </div>
+    );
+  }
+
   return (
     <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
       <div className="ultima-shell-aura" />
@@ -209,133 +416,9 @@ export function UltimaTopUpAmount() {
           </p>
         </header>
 
-        <section className="border-emerald-200/12 min-h-0 flex-1 overflow-y-auto rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:overflow-visible lg:p-4">
-          <div className="mb-3 flex items-center gap-3 rounded-2xl border border-emerald-200/10 bg-emerald-950/30 px-3 py-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-200/15 bg-emerald-900/45 text-emerald-100">
-              <MethodIcon methodId={method.id} />
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-[15px] font-medium text-white/95">{methodName}</p>
-              <p className="text-[11px] text-white/55">
-                {formatAmount(minRub, 0)} - {formatAmount(maxRub, 0)} {currencySymbol}
-              </p>
-            </div>
-          </div>
+        {amountContent}
 
-          {method.options && method.options.length > 0 ? (
-            <div className="mb-3 grid grid-cols-2 gap-2">
-              {method.options.map((option) => (
-                <button
-                  key={option.id}
-                  type="button"
-                  onClick={() => setSelectedOption(option.id)}
-                  className={`rounded-xl border px-3 py-2 text-left text-sm ${
-                    selectedOption === option.id
-                      ? 'bg-emerald-500/12 border-emerald-300/45 text-white'
-                      : 'border-emerald-200/10 bg-emerald-950/30 text-white/75'
-                  }`}
-                >
-                  {option.name}
-                </button>
-              ))}
-            </div>
-          ) : null}
-
-          <div className="text-white/62 mb-2 text-[12px]">{t('balance.enterAmount')}</div>
-          <div className="flex gap-2">
-            <div className="border-emerald-200/12 relative flex-1 rounded-2xl border bg-emerald-950/35">
-              <input
-                ref={inputRef}
-                type="number"
-                value={amount}
-                onChange={(event) => setAmount(event.target.value)}
-                className="h-12 w-full bg-transparent px-3 pr-10 text-lg font-semibold text-white outline-none"
-                placeholder="0"
-                inputMode="decimal"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50">
-                {currencySymbol}
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={handleCreatePayment}
-              disabled={topUpMutation.isPending}
-              className="rounded-2xl border border-[#52ecc6]/40 bg-[#12cd97] px-4 text-sm font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] disabled:opacity-60"
-            >
-              {t('balance.topUp')}
-            </button>
-          </div>
-
-          {quickRubles.length > 0 ? (
-            <div className="mt-3 grid grid-cols-4 gap-2">
-              {quickRubles.map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  className={`rounded-xl border px-2 py-2 text-[13px] transition ${
-                    amount ===
-                    (targetCurrency === 'RUB' || targetCurrency === 'IRR'
-                      ? String(Math.round(convertAmount(value)))
-                      : convertAmount(value).toFixed(2))
-                      ? 'bg-emerald-500/12 border-emerald-300/45 text-white'
-                      : 'border-emerald-200/10 bg-emerald-950/30 text-white/85 hover:border-emerald-200/25'
-                  }`}
-                  onClick={() => handleQuick(value)}
-                >
-                  {formatAmount(value, 0)}
-                </button>
-              ))}
-            </div>
-          ) : null}
-
-          {error ? (
-            <div className="bg-red-500/12 mt-3 rounded-xl border border-red-400/30 px-3 py-2 text-sm text-red-200">
-              {error}
-            </div>
-          ) : null}
-
-          {paymentUrl ? (
-            <div className="mt-3 rounded-2xl border border-emerald-300/30 bg-emerald-500/10 p-3">
-              <p className="text-[13px] font-medium text-emerald-100">
-                {t('balance.paymentReady')}
-              </p>
-              <button
-                type="button"
-                onClick={() => openPayment(paymentUrl)}
-                className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-[#52ecc6]/40 bg-[#12cd97] px-3 py-2.5 text-sm font-medium text-white"
-              >
-                <OpenIcon />
-                {t('balance.openPaymentPage')}
-              </button>
-              <div className="mt-2 flex items-center gap-2">
-                <div className="min-w-0 flex-1 rounded-lg border border-emerald-200/10 bg-emerald-950/30 px-2.5 py-2">
-                  <p className="truncate text-[11px] text-white/55">{paymentUrl}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => void handleCopyUrl()}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-emerald-200/15 bg-emerald-900/40 text-white/80"
-                >
-                  {copied ? <CheckIcon /> : <CopyIcon />}
-                </button>
-              </div>
-            </div>
-          ) : null}
-        </section>
-
-        <section className="mt-2 rounded-2xl border border-emerald-200/10 bg-emerald-950/20 px-3 py-2.5">
-          <p className="text-white/58 text-[11px] leading-snug">
-            {t('balance.ultimaBalanceNotice', {
-              defaultValue:
-                'После пополнения сумма попадает на баланс и затем списывается в оплату подписки.',
-            })}
-          </p>
-        </section>
-
-        <div className="ultima-nav-dock">
-          <UltimaBottomNav active="profile" />
-        </div>
+        <div className="ultima-nav-dock">{bottomNav}</div>
       </div>
     </div>
   );

@@ -3,8 +3,13 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { type ReactNode } from 'react';
 import { balanceApi } from '@/api/balance';
+import {
+  UltimaDesktopPanel,
+  UltimaDesktopSectionLayout,
+} from '@/components/ultima/desktop/UltimaDesktopSectionLayout';
 import { useCurrency } from '@/hooks/useCurrency';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 const CardIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
@@ -76,6 +81,7 @@ export function UltimaTopUpMethodSelect() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { formatAmount, currencySymbol } = useCurrency();
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
 
   const { data: paymentMethods, isLoading } = useQuery({
     queryKey: ['payment-methods'],
@@ -94,6 +100,167 @@ export function UltimaTopUpMethodSelect() {
     navigate(`/balance/top-up/${methodId}${qs ? `?${qs}` : ''}`);
   };
 
+  const bottomNav = <UltimaBottomNav active="profile" />;
+
+  const methodsContent = (
+    <>
+      <section className="border-emerald-200/12 min-h-0 flex-1 overflow-y-auto rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:overflow-visible lg:p-4">
+        {isLoading ? (
+          <div className="flex h-40 items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-300/40 border-t-transparent" />
+          </div>
+        ) : !paymentMethods || paymentMethods.length === 0 ? (
+          <div className="text-white/62 py-8 text-center text-sm">
+            {t('balance.noPaymentMethods')}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {paymentMethods.map((method) => {
+              const methodKey = method.id.toLowerCase().replace(/-/g, '_');
+              const visual = getMethodVisual(method.id);
+              const translatedName = t(`balance.paymentMethods.${methodKey}.name`, {
+                defaultValue: '',
+              });
+              const translatedDesc = t(`balance.paymentMethods.${methodKey}.description`, {
+                defaultValue: '',
+              });
+
+              return (
+                <button
+                  key={method.id}
+                  type="button"
+                  disabled={!method.is_available}
+                  onClick={() => handleMethodClick(method.id)}
+                  className="group flex w-full items-start gap-3 rounded-2xl border border-emerald-200/10 bg-emerald-950/30 px-3 py-3 text-left transition enabled:hover:border-emerald-200/25 enabled:hover:bg-emerald-900/25 disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  <div
+                    className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${visual.iconBoxClassName}`}
+                  >
+                    {visual.icon}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="truncate text-[15px] font-medium leading-tight text-white/95">
+                        {translatedName || method.name}
+                      </p>
+                      <span className="mt-0.5 shrink-0 text-white/55 transition group-hover:translate-x-0.5 group-hover:text-white/80">
+                        <ArrowIcon />
+                      </span>
+                    </div>
+                    {(translatedDesc || method.description) && (
+                      <p className="text-white/58 mt-1 line-clamp-2 text-[12px]">
+                        {translatedDesc || method.description}
+                      </p>
+                    )}
+                    <div className="mt-2 flex items-center gap-1.5">
+                      <span className="rounded-full border border-emerald-200/15 bg-emerald-900/45 px-2 py-0.5 text-[10px] text-white/60">
+                        {t('balance.amount', { defaultValue: 'Сумма' })}
+                      </span>
+                      <span className="text-[11px] text-white/55">
+                        {formatAmount(method.min_amount_kopeks / 100, 0)} -{' '}
+                        {formatAmount(method.max_amount_kopeks / 100, 0)} {currencySymbol}
+                      </span>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      <section className="rounded-2xl border border-emerald-200/10 bg-emerald-950/20 px-3 py-2.5">
+        <p className="text-white/58 text-[11px] leading-snug">
+          {t('balance.ultimaBalanceNotice', {
+            defaultValue:
+              'Деньги зачисляются на баланс, а затем автоматически учитываются в оплате подписки.',
+          })}
+        </p>
+      </section>
+
+      <section className="rounded-2xl border border-emerald-200/10 bg-emerald-950/20 p-3">
+        <p className="text-white/72 mb-2 text-[12px]">
+          {t('profile.transactionsTitle', { defaultValue: 'История операций' })}
+        </p>
+        <button
+          type="button"
+          onClick={() => navigate('/balance')}
+          className="border-emerald-200/12 w-full rounded-xl border bg-emerald-900/35 px-3 py-2 text-left text-[13px] text-white/85 transition hover:bg-emerald-900/50"
+        >
+          {t('profile.transactionsDescription', {
+            defaultValue: 'Открыть страницу истории операций',
+          })}
+        </button>
+      </section>
+    </>
+  );
+
+  if (isDesktop) {
+    const availableCount = paymentMethods?.filter((method) => method.is_available).length ?? 0;
+
+    return (
+      <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-profile-desktop">
+        <div className="ultima-shell-aura" />
+        <UltimaDesktopSectionLayout
+          icon={<CardIcon />}
+          eyebrow={t('balance.selectPaymentMethod', { defaultValue: 'Способ оплаты' })}
+          title={t('balance.selectPaymentMethod', { defaultValue: 'Способ оплаты' })}
+          subtitle={t('balance.ultimaBalanceNotice', {
+            defaultValue:
+              'При пополнении средства зачисляются на баланс и затем учитываются в стоимости подписки.',
+          })}
+          metrics={[
+            {
+              label: t('common.available', { defaultValue: 'Доступно' }),
+              value: String(availableCount),
+              hint: t('payment.desktopAvailableHint', {
+                defaultValue: 'Количество платежных методов, доступных прямо сейчас.',
+              }),
+            },
+            {
+              label: t('balance.amount', { defaultValue: 'Сумма' }),
+              value:
+                paymentMethods && paymentMethods.length > 0
+                  ? `${formatAmount(paymentMethods[0].min_amount_kopeks / 100, 0)} - ${formatAmount(paymentMethods[0].max_amount_kopeks / 100, 0)} ${currencySymbol}`
+                  : '—',
+              hint: t('payment.desktopRangeHint', {
+                defaultValue: 'Фактический диапазон зависит от выбранного метода.',
+              }),
+            },
+          ]}
+          aside={
+            <UltimaDesktopPanel
+              title={t('payment.desktopAsideTitle', { defaultValue: 'Пополнение баланса' })}
+              subtitle={t('payment.desktopAsideHint', {
+                defaultValue:
+                  'После пополнения средства остаются на балансе и затем автоматически списываются в оплату подписки.',
+              })}
+            >
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => navigate('/balance')}
+                  className="ultima-btn-pill ultima-btn-secondary w-full px-4 py-2.5 text-sm"
+                >
+                  {t('profile.transactionsTitle', { defaultValue: 'История операций' })}
+                </button>
+                <div className="text-white/72 rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-[1.6]">
+                  {t('balance.ultimaBalanceNotice', {
+                    defaultValue:
+                      'Деньги зачисляются на баланс, а затем автоматически учитываются в оплате подписки.',
+                  })}
+                </div>
+              </div>
+            </UltimaDesktopPanel>
+          }
+          bottomNav={bottomNav}
+        >
+          {methodsContent}
+        </UltimaDesktopSectionLayout>
+      </div>
+    );
+  }
+
   return (
     <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
       <div className="ultima-shell-aura" />
@@ -110,98 +277,9 @@ export function UltimaTopUpMethodSelect() {
           </p>
         </header>
 
-        <section className="border-emerald-200/12 min-h-0 flex-1 overflow-y-auto rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:overflow-visible lg:p-4">
-          {isLoading ? (
-            <div className="flex h-40 items-center justify-center">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-300/40 border-t-transparent" />
-            </div>
-          ) : !paymentMethods || paymentMethods.length === 0 ? (
-            <div className="text-white/62 py-8 text-center text-sm">
-              {t('balance.noPaymentMethods')}
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {paymentMethods.map((method) => {
-                const methodKey = method.id.toLowerCase().replace(/-/g, '_');
-                const visual = getMethodVisual(method.id);
-                const translatedName = t(`balance.paymentMethods.${methodKey}.name`, {
-                  defaultValue: '',
-                });
-                const translatedDesc = t(`balance.paymentMethods.${methodKey}.description`, {
-                  defaultValue: '',
-                });
+        {methodsContent}
 
-                return (
-                  <button
-                    key={method.id}
-                    type="button"
-                    disabled={!method.is_available}
-                    onClick={() => handleMethodClick(method.id)}
-                    className="group flex w-full items-start gap-3 rounded-2xl border border-emerald-200/10 bg-emerald-950/30 px-3 py-3 text-left transition enabled:hover:border-emerald-200/25 enabled:hover:bg-emerald-900/25 disabled:cursor-not-allowed disabled:opacity-45"
-                  >
-                    <div
-                      className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${visual.iconBoxClassName}`}
-                    >
-                      {visual.icon}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="truncate text-[15px] font-medium leading-tight text-white/95">
-                          {translatedName || method.name}
-                        </p>
-                        <span className="mt-0.5 shrink-0 text-white/55 transition group-hover:translate-x-0.5 group-hover:text-white/80">
-                          <ArrowIcon />
-                        </span>
-                      </div>
-                      {(translatedDesc || method.description) && (
-                        <p className="text-white/58 mt-1 line-clamp-2 text-[12px]">
-                          {translatedDesc || method.description}
-                        </p>
-                      )}
-                      <div className="mt-2 flex items-center gap-1.5">
-                        <span className="rounded-full border border-emerald-200/15 bg-emerald-900/45 px-2 py-0.5 text-[10px] text-white/60">
-                          {t('balance.amount', { defaultValue: 'Сумма' })}
-                        </span>
-                        <span className="text-[11px] text-white/55">
-                          {formatAmount(method.min_amount_kopeks / 100, 0)} -{' '}
-                          {formatAmount(method.max_amount_kopeks / 100, 0)} {currencySymbol}
-                        </span>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </section>
-
-        <section className="mt-2 rounded-2xl border border-emerald-200/10 bg-emerald-950/20 px-3 py-2.5">
-          <p className="text-white/58 text-[11px] leading-snug">
-            {t('balance.ultimaBalanceNotice', {
-              defaultValue:
-                'Деньги зачисляются на баланс, а затем автоматически учитываются в оплате подписки.',
-            })}
-          </p>
-        </section>
-
-        <section className="mt-2 rounded-2xl border border-emerald-200/10 bg-emerald-950/20 p-3">
-          <p className="text-white/72 mb-2 text-[12px]">
-            {t('profile.transactionsTitle', { defaultValue: 'История операций' })}
-          </p>
-          <button
-            type="button"
-            onClick={() => navigate('/balance')}
-            className="border-emerald-200/12 w-full rounded-xl border bg-emerald-900/35 px-3 py-2 text-left text-[13px] text-white/85 transition hover:bg-emerald-900/50"
-          >
-            {t('profile.transactionsDescription', {
-              defaultValue: 'Открыть страницу истории операций',
-            })}
-          </button>
-        </section>
-
-        <div className="ultima-nav-dock">
-          <UltimaBottomNav active="profile" />
-        </div>
+        <div className="ultima-nav-dock">{bottomNav}</div>
       </div>
     </div>
   );

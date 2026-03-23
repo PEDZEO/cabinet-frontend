@@ -2,7 +2,12 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { balanceApi } from '@/api/balance';
+import {
+  UltimaDesktopPanel,
+  UltimaDesktopSectionLayout,
+} from '@/components/ultima/desktop/UltimaDesktopSectionLayout';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import type { PaginatedResponse, Transaction } from '@/types';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { formatTransactionDescription } from '@/utils/transactionDescription';
@@ -48,6 +53,7 @@ const getStoredHidden = () => {
 export function UltimaBalanceHistory() {
   const { t } = useTranslation();
   const { formatAmount, currencySymbol } = useCurrency();
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
   const [page, setPage] = useState(1);
   const [hiddenBalance, setHiddenBalance] = useState(getStoredHidden);
 
@@ -97,6 +103,185 @@ export function UltimaBalanceHistory() {
 
   const transactionItems = useMemo(() => transactions?.items ?? [], [transactions]);
 
+  const bottomNav = <UltimaBottomNav active="profile" />;
+
+  const historyContent = (
+    <>
+      <section className="border-emerald-200/12 mb-3 rounded-2xl border bg-[rgba(12,45,42,0.2)] p-3 backdrop-blur-md">
+        <div className="mb-1 flex items-center justify-between">
+          <p className="text-[12px] text-white/55">{t('balance.currentBalance')}</p>
+          <button
+            type="button"
+            onClick={toggleBalanceVisibility}
+            className="border-emerald-200/12 flex items-center gap-1 rounded-lg border bg-emerald-900/30 px-2 py-1 text-[11px] text-white/75"
+          >
+            <EyeIcon hidden={hiddenBalance} />
+            {hiddenBalance
+              ? t('common.show', { defaultValue: 'Показать' })
+              : t('common.hide', { defaultValue: 'Скрыть' })}
+          </button>
+        </div>
+        <p className="text-[30px] font-semibold leading-none text-white">
+          {hiddenBalance ? '•••••' : formatAmount(balanceData?.balance_rubles || 0)}
+          <span className="ml-2 text-[18px] text-white/55">{currencySymbol}</span>
+        </p>
+      </section>
+
+      <section className="border-emerald-200/12 min-h-0 flex-1 overflow-hidden rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:p-4">
+        <div className="ultima-scrollbar h-full overflow-y-auto pr-1 lg:h-auto lg:overflow-visible lg:pr-0">
+          {txLoading ? (
+            <div className="flex h-40 items-center justify-center">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-300/40 border-t-transparent" />
+            </div>
+          ) : transactionItems.length === 0 ? (
+            <div className="py-10 text-center">
+              <div className="mb-3 flex justify-center">
+                <WalletIcon />
+              </div>
+              <p className="text-white/58 text-sm">{t('balance.noTransactions')}</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {transactionItems.map((tx) => {
+                const isPositive = tx.amount_rubles >= 0;
+                const sign = isPositive ? '+' : '-';
+                const amountValue = Math.abs(tx.amount_rubles);
+                const localizedDescription = formatTransactionDescription(
+                  tx.description,
+                  tx.type,
+                  t,
+                );
+                return (
+                  <div
+                    key={tx.id}
+                    className="rounded-2xl border border-emerald-200/10 bg-emerald-950/30 px-3 py-2.5"
+                  >
+                    <div className="mb-1 flex items-center justify-between gap-2">
+                      <span className="rounded-full border border-emerald-200/15 bg-emerald-900/35 px-2 py-0.5 text-[10px] text-white/70">
+                        {getTypeLabel(tx.type)}
+                      </span>
+                      <span className="text-[11px] text-white/45">
+                        {new Date(tx.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    {localizedDescription ? (
+                      <p className="text-white/58 mb-1 text-[12px]">{localizedDescription}</p>
+                    ) : null}
+                    <p
+                      className={`text-[15px] font-medium ${isPositive ? 'text-emerald-200' : 'text-rose-200'}`}
+                    >
+                      {sign}
+                      {formatAmount(amountValue)} {currencySymbol}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {transactions && transactions.pages > 1 ? (
+            <div className="mt-3 flex items-center gap-2">
+              <button
+                type="button"
+                className="border-emerald-200/12 rounded-xl border bg-emerald-900/30 px-3 py-2 text-[12px] text-white/80 disabled:opacity-40"
+                onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                disabled={transactions.page <= 1}
+              >
+                {t('common.back')}
+              </button>
+              <p className="flex-1 text-center text-[12px] text-white/60">
+                {t('balance.page', { current: transactions.page, total: transactions.pages })}
+              </p>
+              <button
+                type="button"
+                className="border-emerald-200/12 rounded-xl border bg-emerald-900/30 px-3 py-2 text-[12px] text-white/80 disabled:opacity-40"
+                onClick={() =>
+                  setPage((prev) =>
+                    transactions.pages ? Math.min(transactions.pages, prev + 1) : prev + 1,
+                  )
+                }
+                disabled={transactions.page >= transactions.pages}
+              >
+                {t('common.next')}
+              </button>
+            </div>
+          ) : null}
+        </div>
+      </section>
+    </>
+  );
+
+  if (isDesktop) {
+    return (
+      <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-profile-desktop">
+        <div className="ultima-shell-aura" />
+        <UltimaDesktopSectionLayout
+          icon={<WalletIcon />}
+          eyebrow={t('profile.transactionsTitle', { defaultValue: 'История операций' })}
+          title={t('profile.transactionsTitle', { defaultValue: 'История операций' })}
+          subtitle={t('profile.transactionsDescription', {
+            defaultValue: 'Список ваших транзакций',
+          })}
+          metrics={[
+            {
+              label: t('balance.currentBalance'),
+              value: hiddenBalance
+                ? '•••••'
+                : `${formatAmount(balanceData?.balance_rubles || 0)} ${currencySymbol}`,
+              hint: t('history.desktopBalanceHint', {
+                defaultValue: 'Текущий баланс можно скрыть прямо на этой странице.',
+              }),
+            },
+            {
+              label: t('common.entries', { defaultValue: 'Операции' }),
+              value: String(transactionItems.length),
+              hint: t('history.desktopEntriesHint', {
+                defaultValue: 'На странице показываются последние операции по балансу.',
+              }),
+            },
+            {
+              label: t('balance.page', { defaultValue: 'Страница' }),
+              value: transactions ? `${transactions.page}/${transactions.pages}` : '1/1',
+              hint: t('history.desktopPageHint', {
+                defaultValue: 'Переключайте страницы, если операций больше двадцати.',
+              }),
+            },
+          ]}
+          aside={
+            <UltimaDesktopPanel
+              title={t('history.desktopAsideTitle', { defaultValue: 'Баланс и приватность' })}
+              subtitle={t('history.desktopAsideHint', {
+                defaultValue: 'Быстро переключайте видимость баланса и следите за типами операций.',
+              })}
+            >
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={toggleBalanceVisibility}
+                  className="ultima-btn-pill ultima-btn-secondary flex w-full items-center justify-center gap-2 px-4 py-2.5 text-sm"
+                >
+                  <EyeIcon hidden={hiddenBalance} />
+                  {hiddenBalance
+                    ? t('common.show', { defaultValue: 'Показать баланс' })
+                    : t('common.hide', { defaultValue: 'Скрыть баланс' })}
+                </button>
+                <div className="text-white/72 rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-[1.6]">
+                  {t('history.desktopTypesHint', {
+                    defaultValue:
+                      'Зачисления, оплаты подписки, реферальные бонусы и вывод средств отображаются в одном журнале.',
+                  })}
+                </div>
+              </div>
+            </UltimaDesktopPanel>
+          }
+          bottomNav={bottomNav}
+        >
+          {historyContent}
+        </UltimaDesktopSectionLayout>
+      </div>
+    );
+  }
+
   return (
     <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
       <div className="ultima-shell-aura" />
@@ -110,111 +295,9 @@ export function UltimaBalanceHistory() {
           </p>
         </header>
 
-        <section className="border-emerald-200/12 mb-3 rounded-2xl border bg-[rgba(12,45,42,0.2)] p-3 backdrop-blur-md">
-          <div className="mb-1 flex items-center justify-between">
-            <p className="text-[12px] text-white/55">{t('balance.currentBalance')}</p>
-            <button
-              type="button"
-              onClick={toggleBalanceVisibility}
-              className="border-emerald-200/12 flex items-center gap-1 rounded-lg border bg-emerald-900/30 px-2 py-1 text-[11px] text-white/75"
-            >
-              <EyeIcon hidden={hiddenBalance} />
-              {hiddenBalance
-                ? t('common.show', { defaultValue: 'Показать' })
-                : t('common.hide', { defaultValue: 'Скрыть' })}
-            </button>
-          </div>
-          <p className="text-[30px] font-semibold leading-none text-white">
-            {hiddenBalance ? '•••••' : formatAmount(balanceData?.balance_rubles || 0)}
-            <span className="ml-2 text-[18px] text-white/55">{currencySymbol}</span>
-          </p>
-        </section>
+        {historyContent}
 
-        <section className="border-emerald-200/12 min-h-0 flex-1 overflow-hidden rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:p-4">
-          <div className="ultima-scrollbar h-full overflow-y-auto pr-1 lg:h-auto lg:overflow-visible lg:pr-0">
-            {txLoading ? (
-              <div className="flex h-40 items-center justify-center">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-300/40 border-t-transparent" />
-              </div>
-            ) : transactionItems.length === 0 ? (
-              <div className="py-10 text-center">
-                <div className="mb-3 flex justify-center">
-                  <WalletIcon />
-                </div>
-                <p className="text-white/58 text-sm">{t('balance.noTransactions')}</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {transactionItems.map((tx) => {
-                  const isPositive = tx.amount_rubles >= 0;
-                  const sign = isPositive ? '+' : '-';
-                  const amountValue = Math.abs(tx.amount_rubles);
-                  const localizedDescription = formatTransactionDescription(
-                    tx.description,
-                    tx.type,
-                    t,
-                  );
-                  return (
-                    <div
-                      key={tx.id}
-                      className="rounded-2xl border border-emerald-200/10 bg-emerald-950/30 px-3 py-2.5"
-                    >
-                      <div className="mb-1 flex items-center justify-between gap-2">
-                        <span className="rounded-full border border-emerald-200/15 bg-emerald-900/35 px-2 py-0.5 text-[10px] text-white/70">
-                          {getTypeLabel(tx.type)}
-                        </span>
-                        <span className="text-[11px] text-white/45">
-                          {new Date(tx.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                      {localizedDescription ? (
-                        <p className="text-white/58 mb-1 text-[12px]">{localizedDescription}</p>
-                      ) : null}
-                      <p
-                        className={`text-[15px] font-medium ${isPositive ? 'text-emerald-200' : 'text-rose-200'}`}
-                      >
-                        {sign}
-                        {formatAmount(amountValue)} {currencySymbol}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {transactions && transactions.pages > 1 ? (
-              <div className="mt-3 flex items-center gap-2">
-                <button
-                  type="button"
-                  className="border-emerald-200/12 rounded-xl border bg-emerald-900/30 px-3 py-2 text-[12px] text-white/80 disabled:opacity-40"
-                  onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                  disabled={transactions.page <= 1}
-                >
-                  {t('common.back')}
-                </button>
-                <p className="flex-1 text-center text-[12px] text-white/60">
-                  {t('balance.page', { current: transactions.page, total: transactions.pages })}
-                </p>
-                <button
-                  type="button"
-                  className="border-emerald-200/12 rounded-xl border bg-emerald-900/30 px-3 py-2 text-[12px] text-white/80 disabled:opacity-40"
-                  onClick={() =>
-                    setPage((prev) =>
-                      transactions.pages ? Math.min(transactions.pages, prev + 1) : prev + 1,
-                    )
-                  }
-                  disabled={transactions.page >= transactions.pages}
-                >
-                  {t('common.next')}
-                </button>
-              </div>
-            ) : null}
-          </div>
-        </section>
-
-        <div className="ultima-nav-dock">
-          <UltimaBottomNav active="profile" />
-        </div>
+        <div className="ultima-nav-dock">{bottomNav}</div>
       </div>
     </div>
   );

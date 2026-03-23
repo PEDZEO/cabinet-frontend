@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { balanceApi } from '@/api/balance';
 import { type GiftPurchaseRequest, giftApi, type SentGift } from '@/api/gift';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { usePlatform } from '@/platform/hooks/usePlatform';
 
 const PENDING_GIFT_TOKEN_KEY = 'ultima_pending_gift_token';
@@ -23,6 +24,7 @@ export function UltimaGift() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { openLink, openTelegramLink } = usePlatform();
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [giftTariffId, setGiftTariffId] = useState<number | null>(null);
@@ -458,7 +460,9 @@ export function UltimaGift() {
   };
 
   return (
-    <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
+    <div
+      className={`ultima-shell ultima-shell-wide ultima-flat-frames${isDesktop ? 'ultima-shell-profile-desktop' : ''}`}
+    >
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner lg:max-w-[960px]">
         <header className="mb-3">

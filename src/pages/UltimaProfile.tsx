@@ -14,9 +14,14 @@ import { authApi } from '@/api/auth';
 import { giftApi } from '@/api/gift';
 import { ultimaAgreementApi } from '@/api/ultimaAgreement';
 import { withdrawalApi } from '@/api/withdrawals';
+import {
+  UltimaDesktopPanel,
+  UltimaDesktopSectionLayout,
+} from '@/components/ultima/desktop/UltimaDesktopSectionLayout';
 import { useAuthStore } from '@/store/auth';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { warmUltimaStartup } from '@/features/ultima/warmup';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 const CopyIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
@@ -141,6 +146,7 @@ export function UltimaProfile() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
   const [idCopied, setIdCopied] = useState(false);
 
   const userLabel = useMemo(() => {
@@ -454,6 +460,169 @@ export function UltimaProfile() {
     navigate('/support');
   };
 
+  const bottomNav = <UltimaBottomNav active="profile" onSupportClick={openSupportFast} />;
+
+  const sectionsContent = (
+    <div className="grid gap-4 xl:grid-cols-2">
+      <section className="rounded-3xl bg-[rgba(12,45,42,0.2)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md">
+        <p className="text-white/68 mb-3 text-[14px]">
+          {t('profile.profileSettings', { defaultValue: 'Настройки профиля' })}
+        </p>
+        <div className="ultima-stagger-list space-y-2.5">
+          {profileItems.map((item) => (
+            <MenuItem key={item.key} item={item} onClick={() => openPathFast(item.path)} />
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-3xl bg-[rgba(12,45,42,0.2)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md">
+        <p className="text-white/68 mb-3 text-[14px]">
+          {t('nav.support', { defaultValue: 'Поддержка' })}
+        </p>
+        <div className="ultima-stagger-list space-y-2.5">
+          {supportItems.map((item) => (
+            <MenuItem key={item.key} item={item} onClick={() => openPathFast(item.path)} />
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+
+  if (isDesktop) {
+    return (
+      <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-profile-desktop">
+        <div className="ultima-shell-aura" />
+        <UltimaDesktopSectionLayout
+          icon={<AccessIcon />}
+          eyebrow={t('nav.profile', { defaultValue: 'Профиль' })}
+          title={t('profile.title', { defaultValue: 'Профиль' })}
+          subtitle={t('profile.desktopDescription', {
+            defaultValue:
+              'Все ключевые действия аккаунта собраны в одном desktop-пространстве: платежи, устройства, подарки, промокоды и поддержка.',
+          })}
+          metrics={[
+            {
+              label: t('profile.accountId', { defaultValue: 'Аккаунт' }),
+              value: userLabel,
+              hint: user?.username ? `@${user.username}` : avatarFallbackLabel,
+            },
+            {
+              label: t('profile.profileSettings', { defaultValue: 'Настройки профиля' }),
+              value: String(profileItems.length),
+              hint: t('profile.desktopSettingsHint', {
+                defaultValue: 'Платежи, устройства, рефералы и доступ.',
+              }),
+            },
+            {
+              label: t('nav.support', { defaultValue: 'Поддержка' }),
+              value: String(supportItems.length),
+              hint: t('profile.desktopSupportHint', {
+                defaultValue: 'Тикеты, соглашение и помощь по сервису.',
+              }),
+            },
+          ]}
+          heroActions={
+            <>
+              <button
+                type="button"
+                onClick={() => void openPathFast('/balance/top-up')}
+                className="ultima-btn-pill ultima-btn-primary px-5 py-3 text-sm"
+              >
+                {t('profile.paymentMethodsTitle', { defaultValue: 'Способы оплаты' })}
+              </button>
+              <button
+                type="button"
+                onClick={openSupportFast}
+                className="ultima-btn-pill ultima-btn-secondary px-5 py-3 text-sm"
+              >
+                {t('profile.supportContactTitle', { defaultValue: 'Поддержка' })}
+              </button>
+            </>
+          }
+          aside={
+            <>
+              <UltimaDesktopPanel
+                title={t('profile.accountOverview', { defaultValue: 'Доступ к аккаунту' })}
+                subtitle={t('profile.accountOverviewHint', {
+                  defaultValue: 'Быстрые переходы к самым частым действиям и данные аккаунта.',
+                })}
+              >
+                <div className="space-y-3">
+                  <div className="rounded-[22px] border border-white/10 bg-white/[0.04] p-4">
+                    <div className="flex items-center gap-3">
+                      {telegramPhotoUrl ? (
+                        <img
+                          src={telegramPhotoUrl}
+                          alt="telegram-avatar"
+                          className="h-12 w-12 rounded-full object-cover shadow-[0_6px_12px_rgba(0,0,0,0.22)]"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-300 text-base font-semibold text-slate-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
+                          {avatarFallbackLabel}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="text-white/92 truncate text-sm font-medium">{userLabel}</p>
+                        <p className="truncate text-xs text-white/55">
+                          {user?.first_name || user?.username || 'Telegram user'}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="ultima-btn-pill ultima-btn-secondary mt-4 flex w-full items-center justify-center gap-2 px-4 py-2.5 text-sm"
+                      onClick={() =>
+                        void copyText(String(user?.telegram_id ?? user?.id ?? ''), setIdCopied)
+                      }
+                    >
+                      <CopyIcon />
+                      {idCopied
+                        ? t('common.copied', { defaultValue: 'Скопировано' })
+                        : t('profile.copyAccountId', { defaultValue: 'Скопировать ID' })}
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => void openPathFast('/ultima/devices')}
+                    className="flex min-h-[56px] items-center justify-between rounded-[20px] border border-white/10 bg-white/[0.05] px-4 py-3 text-left transition hover:bg-white/[0.08]"
+                  >
+                    <span className="text-sm font-medium text-white/90">
+                      {t('lite.connectedDevices', { defaultValue: 'Устройства' })}
+                    </span>
+                    <span className="text-white/58 text-xs">
+                      {t('profile.devicesDescription', {
+                        defaultValue: 'Управление лимитом и подключениями',
+                      })}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void openPathFast('/ultima/gift')}
+                    className="flex min-h-[56px] items-center justify-between rounded-[20px] border border-white/10 bg-white/[0.05] px-4 py-3 text-left transition hover:bg-white/[0.08]"
+                  >
+                    <span className="text-sm font-medium text-white/90">
+                      {t('nav.gift', { defaultValue: 'Подарок' })}
+                    </span>
+                    <span className="text-white/58 text-xs">
+                      {t('profile.giftDescription', {
+                        defaultValue: 'Подарочные подписки и история кодов',
+                      })}
+                    </span>
+                  </button>
+                </div>
+              </UltimaDesktopPanel>
+            </>
+          }
+          bottomNav={bottomNav}
+        >
+          {sectionsContent}
+        </UltimaDesktopSectionLayout>
+      </div>
+    );
+  }
+
   return (
     <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
       <div className="ultima-shell-aura" />
@@ -486,33 +655,11 @@ export function UltimaProfile() {
         </section>
 
         <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0 lg:overflow-visible lg:pr-0">
-          <section className="rounded-3xl bg-[rgba(12,45,42,0.2)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md">
-            <p className="text-white/68 mb-2 text-[14px]">
-              {t('profile.profileSettings', { defaultValue: 'Настройки профиля' })}
-            </p>
-            <div className="ultima-stagger-list space-y-2">
-              {profileItems.map((item) => (
-                <MenuItem key={item.key} item={item} onClick={() => openPathFast(item.path)} />
-              ))}
-            </div>
-          </section>
-
-          <section className="rounded-3xl bg-[rgba(12,45,42,0.2)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md">
-            <p className="text-white/68 mb-2 text-[14px]">
-              {t('nav.support', { defaultValue: 'Поддержка' })}
-            </p>
-            <div className="ultima-stagger-list space-y-2">
-              {supportItems.map((item) => (
-                <MenuItem key={item.key} item={item} onClick={() => openPathFast(item.path)} />
-              ))}
-            </div>
-          </section>
+          {sectionsContent}
         </div>
 
         <section>
-          <div className="ultima-nav-dock">
-            <UltimaBottomNav active="profile" onSupportClick={openSupportFast} />
-          </div>
+          <div className="ultima-nav-dock">{bottomNav}</div>
         </section>
       </div>
     </div>

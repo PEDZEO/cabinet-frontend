@@ -3,8 +3,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { subscriptionApi } from '@/api/subscription';
+import {
+  UltimaDesktopPanel,
+  UltimaDesktopSectionLayout,
+} from '@/components/ultima/desktop/UltimaDesktopSectionLayout';
 import { useCurrency } from '@/hooks/useCurrency';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 const DeviceIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
@@ -37,6 +42,7 @@ export function UltimaDevices() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { formatAmount, currencySymbol } = useCurrency();
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -208,6 +214,304 @@ export function UltimaDevices() {
   const minReduceLimit = reductionInfo?.min_device_limit ?? 1;
   const maxReduceLimit = reductionInfo?.current_device_limit ?? currentLimit ?? 1;
 
+  const bottomNav = <UltimaBottomNav active="profile" />;
+
+  const devicesContent = (
+    <div className="space-y-4">
+      {error ? (
+        <div className="rounded-2xl border border-rose-300/30 bg-rose-950/30 px-3 py-2 text-sm text-rose-100">
+          {error}
+        </div>
+      ) : null}
+      {success ? (
+        <div className="rounded-2xl border border-emerald-200/20 bg-emerald-900/35 px-3 py-2 text-sm text-emerald-100">
+          {success}
+        </div>
+      ) : null}
+
+      {!subscriptionLoading && !hasSubscription ? (
+        <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-4 backdrop-blur-md">
+          <p className="text-sm text-white/80">
+            {t('subscription.connection.needSubscription', {
+              defaultValue: 'Для управления устройствами нужна активная подписка.',
+            })}
+          </p>
+          <button
+            type="button"
+            className="ultima-btn-pill ultima-btn-primary mt-3 w-full rounded-xl px-4 py-3 text-sm font-semibold"
+            onClick={() => navigate('/subscription/purchase')}
+          >
+            {t('subscription.connection.goChooseTariff', { defaultValue: 'Выбрать тариф' })}
+          </button>
+        </section>
+      ) : (
+        <>
+          <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-900/45 text-white/85">
+                <DeviceIcon />
+              </div>
+              <div>
+                <p className="text-[14px] text-white/95">
+                  {t('lite.devicesTotal', { defaultValue: 'Лимит устройств' })}: {currentLimit}
+                </p>
+                <p className="text-white/58 text-[12px]">
+                  {t('lite.connectedDevices', { defaultValue: 'Подключено' })}: {connectedCount}
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-[14px] text-white/90">
+                {t('lite.connectedDevices', { defaultValue: 'Подключенные устройства' })}
+              </p>
+              {connectedCount > 1 ? (
+                <button
+                  type="button"
+                  onClick={() => deleteAllMutation.mutate()}
+                  disabled={isBusy}
+                  className="ultima-btn-pill ultima-btn-secondary rounded-lg px-2.5 py-1 text-[11px] disabled:opacity-45"
+                >
+                  {t('lite.deleteAll', { defaultValue: 'Удалить все' })}
+                </button>
+              ) : null}
+            </div>
+
+            {devicesLoading ? (
+              <div className="flex h-20 items-center justify-center">
+                <div className="h-7 w-7 animate-spin rounded-full border-2 border-emerald-300/40 border-t-transparent" />
+              </div>
+            ) : devicesData?.devices.length ? (
+              <div className="space-y-2">
+                {devicesData.devices.map((device) => (
+                  <div
+                    key={device.hwid}
+                    className="bg-emerald-950/28 flex items-center justify-between rounded-2xl border border-emerald-200/10 px-3 py-2"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-white/92 truncate text-[13px]">
+                        {device.device_model || device.platform}
+                      </p>
+                      <p className="text-white/52 truncate text-[11px]">
+                        {device.platform} • {device.hwid}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => deleteMutation.mutate(device.hwid)}
+                      className="ultima-btn-pill ultima-btn-secondary rounded-lg p-2 disabled:opacity-45"
+                      disabled={isBusy}
+                      aria-label={t('lite.deleteDevice', {
+                        defaultValue: 'Удалить устройство',
+                      })}
+                    >
+                      <TrashIcon />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-white/56 text-sm">
+                {t('lite.noDevices', { defaultValue: 'Устройств пока нет' })}
+              </p>
+            )}
+          </section>
+
+          {!isActiveTrial ? (
+            <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
+              <p className="mb-2 text-[14px] text-white/90">
+                {t('lite.addDevices', { defaultValue: 'Добавить устройства' })}
+              </p>
+              <div className="mb-2 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAddCount((prev) => Math.max(1, prev - 1))}
+                  className="ultima-btn-pill ultima-btn-secondary h-8 w-8 rounded-lg"
+                  disabled={isBusy}
+                >
+                  -
+                </button>
+                <div className="min-w-[68px] rounded-lg border border-emerald-200/15 bg-emerald-950/30 px-3 py-1.5 text-center text-sm text-white">
+                  {addCount}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setAddCount((prev) => Math.min(maxAdd, prev + 1))}
+                  className="ultima-btn-pill ultima-btn-secondary h-8 w-8 rounded-lg"
+                  disabled={isBusy}
+                >
+                  +
+                </button>
+                <span className="text-[12px] text-white/55">
+                  {t('lite.max', { defaultValue: 'макс.' })}: {maxAdd}
+                </span>
+              </div>
+              <p className="text-white/58 text-[12px]">
+                {devicePrice?.available && devicePrice.total_price_kopeks
+                  ? `${t('balance.amount', { defaultValue: 'Сумма' })}: ${formatAmount(devicePrice.total_price_kopeks / 100)} ${currencySymbol}`
+                  : devicePrice?.reason ||
+                    t('lite.devicesNotAvailable', {
+                      defaultValue: 'Покупка устройств недоступна',
+                    })}
+              </p>
+              <button
+                type="button"
+                className="ultima-btn-pill ultima-btn-primary mt-2 w-full rounded-xl px-4 py-2.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+                onClick={() => purchaseMutation.mutate(addCount)}
+                disabled={isBusy || !devicePrice?.available}
+              >
+                {t('lite.buyDevices', { defaultValue: 'Купить устройства' })}
+              </button>
+            </section>
+          ) : null}
+
+          <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
+            <p className="mb-2 text-[14px] text-white/90">Уменьшить количество устройств</p>
+            {canReduce ? (
+              <>
+                <div className="mb-2 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setReduceLimit((prev) => Math.max(minReduceLimit, prev - 1))}
+                    className="ultima-btn-pill ultima-btn-secondary h-8 w-8 rounded-lg"
+                    disabled={isBusy}
+                  >
+                    -
+                  </button>
+                  <div className="min-w-[68px] rounded-lg border border-emerald-200/15 bg-emerald-950/30 px-3 py-1.5 text-center text-sm text-white">
+                    {reduceLimit}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setReduceLimit((prev) => Math.min(maxReduceLimit, prev + 1))}
+                    className="ultima-btn-pill ultima-btn-secondary h-8 w-8 rounded-lg"
+                    disabled={isBusy}
+                  >
+                    +
+                  </button>
+                  <span className="text-[12px] text-white/55">
+                    {minReduceLimit}-{maxReduceLimit}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className="ultima-btn-pill ultima-btn-secondary w-full rounded-xl px-4 py-2.5 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
+                  onClick={() => reduceMutation.mutate(reduceLimit)}
+                  disabled={isBusy || reduceLimit >= currentLimit || reduceLimit < minReduceLimit}
+                >
+                  Применить
+                </button>
+              </>
+            ) : (
+              <p className="text-[12px] text-white/55">
+                {getReductionReasonText(reductionInfo?.reason)}
+              </p>
+            )}
+          </section>
+        </>
+      )}
+    </div>
+  );
+
+  if (isDesktop) {
+    return (
+      <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-profile-desktop">
+        <div className="ultima-shell-aura" />
+        <UltimaDesktopSectionLayout
+          icon={<DeviceIcon />}
+          eyebrow={t('lite.connectedDevices', { defaultValue: 'Устройства' })}
+          title="Устройства"
+          subtitle={t('lite.devicesDescription', {
+            defaultValue: 'Удаление подключений и управление лимитом устройств подписки.',
+          })}
+          metrics={[
+            {
+              label: t('lite.devicesTotal', { defaultValue: 'Лимит' }),
+              value: String(currentLimit || 0),
+              hint: t('lite.connectedDevices', { defaultValue: 'Подключено' }),
+            },
+            {
+              label: t('lite.connectedDevices', { defaultValue: 'Подключено' }),
+              value: String(connectedCount),
+              hint: t('devices.desktopConnectedHint', {
+                defaultValue: 'Активные устройства, привязанные к подписке.',
+              }),
+            },
+            {
+              label: t('balance.amount', { defaultValue: 'Добавление' }),
+              value:
+                devicePrice?.available && devicePrice.total_price_kopeks
+                  ? `${formatAmount(devicePrice.total_price_kopeks / 100)} ${currencySymbol}`
+                  : '—',
+              hint: isActiveTrial
+                ? t('devices.desktopTrialHint', {
+                    defaultValue: 'На пробном тарифе покупка дополнительных устройств отключена.',
+                  })
+                : t('devices.desktopPriceHint', {
+                    defaultValue: 'Текущая цена за выбранное количество устройств.',
+                  }),
+            },
+          ]}
+          heroActions={
+            hasSubscription ? (
+              <button
+                type="button"
+                onClick={() => navigate('/subscription/info')}
+                className="ultima-btn-pill ultima-btn-secondary px-5 py-3 text-sm"
+              >
+                {t('subscription.infoTitle', { defaultValue: 'Инфо о подписке' })}
+              </button>
+            ) : undefined
+          }
+          aside={
+            <UltimaDesktopPanel
+              title={t('devices.desktopControlTitle', { defaultValue: 'Управление лимитом' })}
+              subtitle={t('devices.desktopControlHint', {
+                defaultValue:
+                  'Покупайте новые слоты или уменьшайте лимит, если устройств стало меньше.',
+              })}
+            >
+              <div className="space-y-3">
+                <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3">
+                  <div className="text-white/42 text-[11px] uppercase tracking-[0.2em]">
+                    {t('lite.max', { defaultValue: 'Максимум' })}
+                  </div>
+                  <div className="mt-2 text-sm font-medium text-white/90">{maxAdd}</div>
+                  <div className="mt-1 text-xs leading-[1.5] text-white/60">
+                    {t('devices.desktopMaxHint', {
+                      defaultValue:
+                        'Максимум дополнительных устройств, доступных к покупке сейчас.',
+                    })}
+                  </div>
+                </div>
+                <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3">
+                  <div className="text-white/42 text-[11px] uppercase tracking-[0.2em]">
+                    {t('devices.desktopReduceTitle', { defaultValue: 'Диапазон уменьшения' })}
+                  </div>
+                  <div className="mt-2 text-sm font-medium text-white/90">
+                    {minReduceLimit}-{maxReduceLimit}
+                  </div>
+                  <div className="mt-1 text-xs leading-[1.5] text-white/60">
+                    {canReduce
+                      ? t('devices.desktopReduceHint', {
+                          defaultValue: 'Новый лимит применяется сразу после подтверждения.',
+                        })
+                      : getReductionReasonText(reductionInfo?.reason)}
+                  </div>
+                </div>
+              </div>
+            </UltimaDesktopPanel>
+          }
+          bottomNav={bottomNav}
+        >
+          {devicesContent}
+        </UltimaDesktopSectionLayout>
+      </div>
+    );
+  }
+
   return (
     <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
       <div className="ultima-shell-aura" />
@@ -223,208 +527,11 @@ export function UltimaDevices() {
           </p>
         </header>
 
-        <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 lg:overflow-visible lg:pr-0">
-          {error ? (
-            <div className="rounded-2xl border border-rose-300/30 bg-rose-950/30 px-3 py-2 text-sm text-rose-100">
-              {error}
-            </div>
-          ) : null}
-          {success ? (
-            <div className="rounded-2xl border border-emerald-200/20 bg-emerald-900/35 px-3 py-2 text-sm text-emerald-100">
-              {success}
-            </div>
-          ) : null}
-
-          {!subscriptionLoading && !hasSubscription ? (
-            <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-4 backdrop-blur-md">
-              <p className="text-sm text-white/80">
-                {t('subscription.connection.needSubscription', {
-                  defaultValue: 'Для управления устройствами нужна активная подписка.',
-                })}
-              </p>
-              <button
-                type="button"
-                className="ultima-btn-pill ultima-btn-primary mt-3 w-full rounded-xl px-4 py-3 text-sm font-semibold"
-                onClick={() => navigate('/subscription/purchase')}
-              >
-                {t('subscription.connection.goChooseTariff', { defaultValue: 'Выбрать тариф' })}
-              </button>
-            </section>
-          ) : (
-            <>
-              <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-900/45 text-white/85">
-                    <DeviceIcon />
-                  </div>
-                  <div>
-                    <p className="text-[14px] text-white/95">
-                      {t('lite.devicesTotal', { defaultValue: 'Лимит устройств' })}: {currentLimit}
-                    </p>
-                    <p className="text-white/58 text-[12px]">
-                      {t('lite.connectedDevices', { defaultValue: 'Подключено' })}: {connectedCount}
-                    </p>
-                  </div>
-                </div>
-              </section>
-
-              <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
-                <div className="mb-2 flex items-center justify-between">
-                  <p className="text-[14px] text-white/90">
-                    {t('lite.connectedDevices', { defaultValue: 'Подключенные устройства' })}
-                  </p>
-                  {connectedCount > 1 ? (
-                    <button
-                      type="button"
-                      onClick={() => deleteAllMutation.mutate()}
-                      disabled={isBusy}
-                      className="ultima-btn-pill ultima-btn-secondary rounded-lg px-2.5 py-1 text-[11px] disabled:opacity-45"
-                    >
-                      {t('lite.deleteAll', { defaultValue: 'Удалить все' })}
-                    </button>
-                  ) : null}
-                </div>
-
-                {devicesLoading ? (
-                  <div className="flex h-20 items-center justify-center">
-                    <div className="h-7 w-7 animate-spin rounded-full border-2 border-emerald-300/40 border-t-transparent" />
-                  </div>
-                ) : devicesData?.devices.length ? (
-                  <div className="space-y-2">
-                    {devicesData.devices.map((device) => (
-                      <div
-                        key={device.hwid}
-                        className="bg-emerald-950/28 flex items-center justify-between rounded-2xl border border-emerald-200/10 px-3 py-2"
-                      >
-                        <div className="min-w-0">
-                          <p className="text-white/92 truncate text-[13px]">
-                            {device.device_model || device.platform}
-                          </p>
-                          <p className="text-white/52 truncate text-[11px]">
-                            {device.platform} • {device.hwid}
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => deleteMutation.mutate(device.hwid)}
-                          className="ultima-btn-pill ultima-btn-secondary rounded-lg p-2 disabled:opacity-45"
-                          disabled={isBusy}
-                          aria-label={t('lite.deleteDevice', {
-                            defaultValue: 'Удалить устройство',
-                          })}
-                        >
-                          <TrashIcon />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-white/56 text-sm">
-                    {t('lite.noDevices', { defaultValue: 'Устройств пока нет' })}
-                  </p>
-                )}
-              </section>
-
-              {!isActiveTrial ? (
-                <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
-                  <p className="mb-2 text-[14px] text-white/90">
-                    {t('lite.addDevices', { defaultValue: 'Добавить устройства' })}
-                  </p>
-                  <div className="mb-2 flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setAddCount((prev) => Math.max(1, prev - 1))}
-                      className="ultima-btn-pill ultima-btn-secondary h-8 w-8 rounded-lg"
-                      disabled={isBusy}
-                    >
-                      -
-                    </button>
-                    <div className="min-w-[68px] rounded-lg border border-emerald-200/15 bg-emerald-950/30 px-3 py-1.5 text-center text-sm text-white">
-                      {addCount}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setAddCount((prev) => Math.min(maxAdd, prev + 1))}
-                      className="ultima-btn-pill ultima-btn-secondary h-8 w-8 rounded-lg"
-                      disabled={isBusy}
-                    >
-                      +
-                    </button>
-                    <span className="text-[12px] text-white/55">
-                      {t('lite.max', { defaultValue: 'макс.' })}: {maxAdd}
-                    </span>
-                  </div>
-                  <p className="text-white/58 text-[12px]">
-                    {devicePrice?.available && devicePrice.total_price_kopeks
-                      ? `${t('balance.amount', { defaultValue: 'Сумма' })}: ${formatAmount(devicePrice.total_price_kopeks / 100)} ${currencySymbol}`
-                      : devicePrice?.reason ||
-                        t('lite.devicesNotAvailable', {
-                          defaultValue: 'Покупка устройств недоступна',
-                        })}
-                  </p>
-                  <button
-                    type="button"
-                    className="ultima-btn-pill ultima-btn-primary mt-2 w-full rounded-xl px-4 py-2.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50"
-                    onClick={() => purchaseMutation.mutate(addCount)}
-                    disabled={isBusy || !devicePrice?.available}
-                  >
-                    {t('lite.buyDevices', { defaultValue: 'Купить устройства' })}
-                  </button>
-                </section>
-              ) : null}
-
-              <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
-                <p className="mb-2 text-[14px] text-white/90">Уменьшить количество устройств</p>
-                {canReduce ? (
-                  <>
-                    <div className="mb-2 flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setReduceLimit((prev) => Math.max(minReduceLimit, prev - 1))}
-                        className="ultima-btn-pill ultima-btn-secondary h-8 w-8 rounded-lg"
-                        disabled={isBusy}
-                      >
-                        -
-                      </button>
-                      <div className="min-w-[68px] rounded-lg border border-emerald-200/15 bg-emerald-950/30 px-3 py-1.5 text-center text-sm text-white">
-                        {reduceLimit}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setReduceLimit((prev) => Math.min(maxReduceLimit, prev + 1))}
-                        className="ultima-btn-pill ultima-btn-secondary h-8 w-8 rounded-lg"
-                        disabled={isBusy}
-                      >
-                        +
-                      </button>
-                      <span className="text-[12px] text-white/55">
-                        {minReduceLimit}-{maxReduceLimit}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      className="ultima-btn-pill ultima-btn-secondary w-full rounded-xl px-4 py-2.5 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
-                      onClick={() => reduceMutation.mutate(reduceLimit)}
-                      disabled={
-                        isBusy || reduceLimit >= currentLimit || reduceLimit < minReduceLimit
-                      }
-                    >
-                      Применить
-                    </button>
-                  </>
-                ) : (
-                  <p className="text-[12px] text-white/55">
-                    {getReductionReasonText(reductionInfo?.reason)}
-                  </p>
-                )}
-              </section>
-            </>
-          )}
+        <div className="min-h-0 flex-1 overflow-y-auto pr-1 lg:overflow-visible lg:pr-0">
+          {devicesContent}
         </div>
 
-        <div className="ultima-nav-dock">
-          <UltimaBottomNav active="profile" />
-        </div>
+        <div className="ultima-nav-dock">{bottomNav}</div>
       </div>
     </div>
   );

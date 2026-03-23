@@ -5,7 +5,12 @@ import { useTranslation } from 'react-i18next';
 import { subscriptionApi } from '@/api/subscription';
 import { ticketsApi } from '@/api/tickets';
 import { infoApi } from '@/api/info';
+import {
+  UltimaDesktopPanel,
+  UltimaDesktopSectionLayout,
+} from '@/components/ultima/desktop/UltimaDesktopSectionLayout';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useHaptic } from '@/platform';
 import { usePlatform } from '@/platform';
 
@@ -47,6 +52,7 @@ export function UltimaSubscriptionInfo() {
   const queryClient = useQueryClient();
   const haptic = useHaptic();
   const { openTelegramLink } = usePlatform();
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
   const [linkCopied, setLinkCopied] = useState(false);
 
   const { data: subscriptionResponse, isLoading } = useQuery({
@@ -136,6 +142,223 @@ export function UltimaSubscriptionInfo() {
     return <div className="h-[100svh] min-h-[100dvh] w-full bg-transparent" />;
   }
 
+  const bottomNav = <UltimaBottomNav active="home" onSupportClick={openSupport} />;
+
+  const infoContent =
+    !hasSubscription || !subscription ? (
+      <section
+        className="text-white/82 rounded-2xl border p-4 text-sm backdrop-blur-md"
+        style={{
+          borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
+          background: 'color-mix(in srgb, var(--ultima-color-surface) 36%, transparent)',
+        }}
+      >
+        {t('subscription.connection.needSubscription', {
+          defaultValue: 'Для просмотра информации нужна активная подписка.',
+        })}
+      </section>
+    ) : (
+      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 lg:space-y-4 lg:overflow-visible lg:pr-0">
+        <section
+          className="rounded-2xl border p-3 backdrop-blur-md"
+          style={{
+            borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
+            background: 'color-mix(in srgb, var(--ultima-color-surface) 36%, transparent)',
+          }}
+        >
+          <p className="text-white/62 mb-2 text-[12px]">
+            {t('profile.subscriptionLink', { defaultValue: 'Ваша ссылка на подписку' })}
+          </p>
+          <div className="rounded-xl border border-white/10 bg-black/15 px-3 py-2">
+            <p className="text-white/92 truncate text-[13px]">{subscriptionLink || '-'}</p>
+          </div>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => void copySubscriptionLink()}
+              className="ultima-btn-pill ultima-btn-secondary rounded-xl px-3 py-2 text-[13px]"
+              disabled={!subscriptionLink}
+            >
+              <span className="inline-flex items-center gap-1.5">
+                <CopyIcon />
+                {linkCopied
+                  ? t('common.copied', { defaultValue: 'Скопировано' })
+                  : t('common.copy', { defaultValue: 'Копировать' })}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => void shareSubscriptionLink()}
+              className="ultima-btn-pill ultima-btn-secondary rounded-xl px-3 py-2 text-[13px]"
+              disabled={!subscriptionLink}
+            >
+              <span className="inline-flex items-center gap-1.5">
+                <ShareIcon />
+                {t('common.share', { defaultValue: 'Поделиться' })}
+              </span>
+            </button>
+          </div>
+        </section>
+
+        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-4">
+          <StatCard
+            label={t('subscription.status', { defaultValue: 'Статус' })}
+            value={
+              subscription.is_active && !subscription.is_expired
+                ? t('subscription.active', { defaultValue: 'Активна' })
+                : t('subscription.expired', { defaultValue: 'Истекла' })
+            }
+          />
+          <StatCard
+            label={t('subscription.expiresAt', { defaultValue: 'Действует до' })}
+            value={endDateLabel}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-4">
+          <StatCard
+            label={t('subscription.trafficUsed', { defaultValue: 'Трафик использован' })}
+            value={`${trafficUsed.toFixed(1)} GB`}
+            hint={
+              isUnlimitedTraffic
+                ? t('subscription.unlimited', { defaultValue: 'Безлимит' })
+                : t('subscription.trafficLimit', {
+                    defaultValue: 'Лимит: {{limit}} GB',
+                    limit: trafficTotal,
+                  })
+            }
+          />
+          <StatCard
+            label={t('subscription.trafficRemaining', { defaultValue: 'Осталось трафика' })}
+            value={
+              isUnlimitedTraffic
+                ? t('subscription.unlimited', { defaultValue: 'Безлимит' })
+                : `${trafficLeft.toFixed(1)} GB`
+            }
+            hint={
+              isUnlimitedTraffic
+                ? '∞'
+                : `${Math.min(100, Math.max(0, 100 - (subscription.traffic_used_percent ?? 0))).toFixed(0)}%`
+            }
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <StatCard
+            label={t('subscription.devices', { defaultValue: 'Устройства' })}
+            value={String(subscription.device_limit ?? 0)}
+          />
+          <StatCard
+            label={t('subscription.timeLeft', { defaultValue: 'Осталось времени' })}
+            value={timeLeftLabel}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <StatCard
+            label={tariffLabel}
+            value={
+              subscription.tariff_name || t('common.notSpecified', { defaultValue: 'Не указан' })
+            }
+          />
+          <StatCard
+            label={t('subscription.servers', { defaultValue: 'Серверы' })}
+            value={String(subscription.servers?.length ?? 0)}
+          />
+        </div>
+      </div>
+    );
+
+  if (isDesktop) {
+    return (
+      <div className="ultima-shell ultima-shell-wide ultima-shell-profile-desktop">
+        <div className="ultima-shell-aura" />
+        <UltimaDesktopSectionLayout
+          icon={<ShareIcon />}
+          eyebrow={t('subscription.infoTitle', { defaultValue: 'Инфо о подписке' })}
+          title={t('subscription.infoTitle', { defaultValue: 'Инфо о подписке' })}
+          subtitle={t('subscription.infoDescription', {
+            defaultValue: 'Ключевые параметры подписки и управления устройствами.',
+          })}
+          metrics={[
+            {
+              label: t('subscription.status', { defaultValue: 'Статус' }),
+              value:
+                subscription?.is_active && !subscription?.is_expired
+                  ? t('subscription.active', { defaultValue: 'Активна' })
+                  : t('subscription.expired', { defaultValue: 'Истекла' }),
+              hint: endDateLabel,
+            },
+            {
+              label: t('subscription.devices', { defaultValue: 'Устройства' }),
+              value: String(subscription?.device_limit ?? 0),
+              hint: t('subscription.manageDevices', { defaultValue: 'Управление устройствами' }),
+            },
+            {
+              label: t('subscription.timeLeft', { defaultValue: 'Осталось времени' }),
+              value: timeLeftLabel,
+              hint: subscription?.tariff_name || tariffLabel,
+            },
+          ]}
+          heroActions={
+            hasSubscription ? (
+              <button
+                type="button"
+                onClick={() => {
+                  haptic.impact('light');
+                  navigate('/ultima/devices');
+                }}
+                className="ultima-btn-pill ultima-btn-primary px-5 py-3 text-sm"
+              >
+                {t('subscription.manageDevices', { defaultValue: 'Управление устройствами' })}
+              </button>
+            ) : undefined
+          }
+          aside={
+            <UltimaDesktopPanel
+              title={t('subscription.desktopAsideTitle', { defaultValue: 'Быстрые действия' })}
+              subtitle={t('subscription.desktopAsideHint', {
+                defaultValue:
+                  'Скопируйте ссылку на подписку, поделитесь ею или откройте поддержку, если настройка еще не завершена.',
+              })}
+            >
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => void copySubscriptionLink()}
+                  className="ultima-btn-pill ultima-btn-secondary w-full px-4 py-2.5 text-sm"
+                  disabled={!subscriptionLink}
+                >
+                  {linkCopied
+                    ? t('common.copied', { defaultValue: 'Скопировано' })
+                    : t('common.copy', { defaultValue: 'Копировать ссылку' })}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void shareSubscriptionLink()}
+                  className="ultima-btn-pill ultima-btn-secondary w-full px-4 py-2.5 text-sm"
+                  disabled={!subscriptionLink}
+                >
+                  {t('common.share', { defaultValue: 'Поделиться' })}
+                </button>
+                <button
+                  type="button"
+                  onClick={openSupport}
+                  className="ultima-btn-pill ultima-btn-secondary w-full px-4 py-2.5 text-sm"
+                >
+                  {t('nav.support', { defaultValue: 'Поддержка' })}
+                </button>
+              </div>
+            </UltimaDesktopPanel>
+          }
+          bottomNav={bottomNav}
+        >
+          {infoContent}
+        </UltimaDesktopSectionLayout>
+      </div>
+    );
+  }
+
   return (
     <div className="ultima-shell ultima-shell-wide">
       <div className="ultima-shell-aura" />
@@ -151,132 +374,7 @@ export function UltimaSubscriptionInfo() {
           </p>
         </header>
 
-        {!hasSubscription || !subscription ? (
-          <section
-            className="text-white/82 rounded-2xl border p-4 text-sm backdrop-blur-md"
-            style={{
-              borderColor:
-                'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
-              background: 'color-mix(in srgb, var(--ultima-color-surface) 36%, transparent)',
-            }}
-          >
-            {t('subscription.connection.needSubscription', {
-              defaultValue: 'Для просмотра информации нужна активная подписка.',
-            })}
-          </section>
-        ) : (
-          <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 lg:space-y-4 lg:overflow-visible lg:pr-0">
-            <section
-              className="rounded-2xl border p-3 backdrop-blur-md"
-              style={{
-                borderColor:
-                  'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
-                background: 'color-mix(in srgb, var(--ultima-color-surface) 36%, transparent)',
-              }}
-            >
-              <p className="text-white/62 mb-2 text-[12px]">
-                {t('profile.subscriptionLink', { defaultValue: 'Ваша ссылка на подписку' })}
-              </p>
-              <div className="rounded-xl border border-white/10 bg-black/15 px-3 py-2">
-                <p className="text-white/92 truncate text-[13px]">{subscriptionLink || '-'}</p>
-              </div>
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => void copySubscriptionLink()}
-                  className="ultima-btn-pill ultima-btn-secondary rounded-xl px-3 py-2 text-[13px]"
-                  disabled={!subscriptionLink}
-                >
-                  <span className="inline-flex items-center gap-1.5">
-                    <CopyIcon />
-                    {linkCopied
-                      ? t('common.copied', { defaultValue: 'Скопировано' })
-                      : t('common.copy', { defaultValue: 'Копировать' })}
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void shareSubscriptionLink()}
-                  className="ultima-btn-pill ultima-btn-secondary rounded-xl px-3 py-2 text-[13px]"
-                  disabled={!subscriptionLink}
-                >
-                  <span className="inline-flex items-center gap-1.5">
-                    <ShareIcon />
-                    {t('common.share', { defaultValue: 'Поделиться' })}
-                  </span>
-                </button>
-              </div>
-            </section>
-
-            <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-4">
-              <StatCard
-                label={t('subscription.status', { defaultValue: 'Статус' })}
-                value={
-                  subscription.is_active && !subscription.is_expired
-                    ? t('subscription.active', { defaultValue: 'Активна' })
-                    : t('subscription.expired', { defaultValue: 'Истекла' })
-                }
-              />
-              <StatCard
-                label={t('subscription.expiresAt', { defaultValue: 'Действует до' })}
-                value={endDateLabel}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-4">
-              <StatCard
-                label={t('subscription.trafficUsed', { defaultValue: 'Трафик использован' })}
-                value={`${trafficUsed.toFixed(1)} GB`}
-                hint={
-                  isUnlimitedTraffic
-                    ? t('subscription.unlimited', { defaultValue: 'Безлимит' })
-                    : t('subscription.trafficLimit', {
-                        defaultValue: 'Лимит: {{limit}} GB',
-                        limit: trafficTotal,
-                      })
-                }
-              />
-              <StatCard
-                label={t('subscription.trafficRemaining', { defaultValue: 'Осталось трафика' })}
-                value={
-                  isUnlimitedTraffic
-                    ? t('subscription.unlimited', { defaultValue: 'Безлимит' })
-                    : `${trafficLeft.toFixed(1)} GB`
-                }
-                hint={
-                  isUnlimitedTraffic
-                    ? '∞'
-                    : `${Math.min(100, Math.max(0, 100 - (subscription.traffic_used_percent ?? 0))).toFixed(0)}%`
-                }
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <StatCard
-                label={t('subscription.devices', { defaultValue: 'Устройства' })}
-                value={String(subscription.device_limit ?? 0)}
-              />
-              <StatCard
-                label={t('subscription.timeLeft', { defaultValue: 'Осталось времени' })}
-                value={timeLeftLabel}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <StatCard
-                label={tariffLabel}
-                value={
-                  subscription.tariff_name ||
-                  t('common.notSpecified', { defaultValue: 'Не указан' })
-                }
-              />
-              <StatCard
-                label={t('subscription.servers', { defaultValue: 'Серверы' })}
-                value={String(subscription.servers?.length ?? 0)}
-              />
-            </div>
-          </div>
-        )}
+        {infoContent}
 
         <section className="mt-3 space-y-3 pb-0">
           <button
@@ -290,9 +388,7 @@ export function UltimaSubscriptionInfo() {
             {t('subscription.manageDevices', { defaultValue: 'Управление устройствами' })}
           </button>
 
-          <div className="ultima-nav-dock">
-            <UltimaBottomNav active="home" onSupportClick={openSupport} />
-          </div>
+          <div className="ultima-nav-dock">{bottomNav}</div>
         </section>
       </div>
     </div>
