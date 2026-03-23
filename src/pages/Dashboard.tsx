@@ -11,6 +11,7 @@ import { wheelApi } from '../api/wheel';
 import { authApi } from '../api/auth';
 import Onboarding, { useOnboarding } from '../components/Onboarding';
 import PromoOffersSection from '../components/PromoOffersSection';
+import NewsSection from '../components/news/NewsSection';
 import { useLiteMode } from '../hooks/useLiteMode';
 import { getCachedUltimaMode, useUltimaMode } from '../hooks/useUltimaMode';
 import { LiteDashboard } from './LiteDashboard';
@@ -501,6 +502,9 @@ function FullDashboard() {
           </div>
         </Link>
       )}
+
+      {/* News Section */}
+      <NewsSection />
 
       {/* Onboarding Tutorial */}
       {showOnboarding && (

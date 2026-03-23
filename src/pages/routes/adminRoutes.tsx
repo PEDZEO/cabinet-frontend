@@ -64,6 +64,8 @@ const AdminRoleAssign = lazy(() => import('../AdminRoleAssign'));
 const AdminPolicies = lazy(() => import('../AdminPolicies'));
 const AdminPolicyEdit = lazy(() => import('../AdminPolicyEdit'));
 const AdminAuditLog = lazy(() => import('../AdminAuditLog'));
+const AdminNews = lazy(() => import('../AdminNews'));
+const AdminNewsCreate = lazy(() => import('../AdminNewsCreate'));
 const AdminUltimaSettings = lazy(() => import('../AdminUltimaSettings'));
 const AdminUltimaAgreement = lazy(() => import('../AdminUltimaAgreement'));
 const AdminUltimaStartMessage = lazy(() => import('../AdminUltimaStartMessage'));
@@ -185,4 +187,7 @@ export const adminRoutes: RouteConfig[] = [
   { path: '/admin/policies/create', element: withAdminLayout(<AdminPolicyEdit />) },
   { path: '/admin/policies/:id/edit', element: withAdminLayout(<AdminPolicyEdit />) },
   { path: '/admin/audit-log', element: withAdminLayout(<AdminAuditLog />) },
+  { path: '/admin/news', element: withAdminLayout(<AdminNews />) },
+  { path: '/admin/news/create', element: withAdminLayout(<AdminNewsCreate />) },
+  { path: '/admin/news/:id/edit', element: withAdminLayout(<AdminNewsCreate />) },
 ];

@@ -2,9 +2,9 @@ import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Navigate, Route, Routes, useLocation } from 'react-router';
 import { BlockingOverlay } from './components/routing/RouteShells';
-import { useAnalyticsCounters } from './hooks/useAnalyticsCounters';
 import { infoApi } from './api/info';
 import { ticketsApi } from './api/tickets';
+import { useAnalyticsCounters } from './hooks/useAnalyticsCounters';
 import { adminRoutes } from './pages/routes/adminRoutes';
 import { protectedRoutes } from './pages/routes/protectedRoutes';
 import { publicRoutes } from './pages/routes/publicRoutes';
@@ -26,9 +26,9 @@ function App() {
       void import('./pages/Connection');
       void import('./pages/Balance');
       void import('./pages/Support');
+      void import('./pages/NewsArticle');
     };
 
-    // Start critical route prefetch immediately to avoid first navigation hitch in Ultima flow.
     prefetch();
     void queryClient.prefetchQuery({
       queryKey: ['support-config'],
