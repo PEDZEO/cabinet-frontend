@@ -442,11 +442,11 @@ export function UltimaConnection({
 
   return (
     <div className="ultima-shell ultima-shell-compact">
-      <div className="ultima-shell-inner lg:max-w-[520px] lg:justify-between">
-        <section className="flex min-h-0 flex-1 flex-col lg:flex-none">
+      <div className="ultima-shell-inner lg:max-w-[560px] lg:justify-between">
+        <section className="flex min-h-0 flex-1 flex-col lg:flex-none lg:pb-2">
           <div
             key={step}
-            className={`ultima-step-enter text-center lg:pt-0 ${isVeryShortViewport ? 'pt-0.5' : 'pt-2'}`}
+            className={`ultima-step-enter text-center lg:pt-2 ${isVeryShortViewport ? 'pt-0.5' : 'pt-2'}`}
           >
             <h1
               className={`font-semibold leading-[0.96] text-white ${
@@ -484,7 +484,7 @@ export function UltimaConnection({
               </div>
             )}
             <div
-              className={`mx-auto flex w-fit items-center gap-2 lg:mt-3 ${isVeryShortViewport ? 'mt-2' : 'mt-4'}`}
+              className={`mx-auto flex w-fit items-center gap-2 lg:mt-4 ${isVeryShortViewport ? 'mt-2' : 'mt-4'}`}
             >
               {[1, 2, 3].map((index) => {
                 const done = step > index || (step === 3 && index === 3);
@@ -506,7 +506,7 @@ export function UltimaConnection({
               })}
             </div>
             <div
-              className={`mx-auto h-1 w-[168px] overflow-hidden rounded-full bg-white/15 lg:mt-1.5 ${isVeryShortViewport ? 'mt-1.5' : 'mt-2'}`}
+              className={`mx-auto h-1 w-[168px] overflow-hidden rounded-full bg-white/15 lg:mt-2 ${isVeryShortViewport ? 'mt-1.5' : 'mt-2'}`}
             >
               <div
                 className="h-full rounded-full bg-gradient-to-r from-emerald-200/85 via-emerald-300/90 to-emerald-200/85 transition-[width] duration-500 ease-out"
@@ -516,7 +516,7 @@ export function UltimaConnection({
           </div>
 
           <div
-            className={`relative flex flex-1 items-center justify-center lg:mt-3 lg:min-h-[250px] lg:flex-none ${isFinalStep ? 'mb-2' : ''} ${isVeryShortViewport ? 'mt-3' : isShortViewport ? 'mt-5' : 'mt-7'}`}
+            className={`relative flex flex-1 items-center justify-center lg:mt-6 lg:min-h-[290px] lg:flex-none ${isFinalStep ? 'mb-2' : ''} ${isVeryShortViewport ? 'mt-3' : isShortViewport ? 'mt-5' : 'mt-7'}`}
           >
             <div
               className="ultima-step-ring border-emerald-200/22 pointer-events-none absolute rounded-full border"
@@ -640,7 +640,7 @@ export function UltimaConnection({
           </div>
         </section>
 
-        <section className={`${isFinalStep ? 'pt-1' : ''} pb-0 lg:pt-2`}>
+        <section className={`${isFinalStep ? 'pt-1' : ''} pb-0 lg:pt-3`}>
           {step === 1 && (
             <button
               type="button"

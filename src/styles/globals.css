@@ -615,8 +615,8 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
     overflow-y: auto;
     align-items: flex-start;
     justify-content: center;
-    padding-top: 18px;
-    padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    padding-top: 12px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
   }
 
   .ultima-shell-inner {
@@ -624,9 +624,9 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
     width: min(100%, 760px);
     max-width: 760px;
     height: auto;
-    min-height: calc(100dvh - 48px - env(safe-area-inset-bottom, 0px));
+    min-height: calc(100dvh - 32px - env(safe-area-inset-bottom, 0px));
     max-height: none;
-    padding-bottom: 108px;
+    padding-bottom: 28px;
   }
 
   .ultima-shell-wide .ultima-shell-inner {
@@ -639,19 +639,16 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
     --ultima-dock-max-width: 520px;
     width: min(100%, 520px);
     max-width: 520px;
-    height: min(860px, calc(100dvh - 48px - env(safe-area-inset-bottom, 0px)));
-    min-height: 600px;
-    max-height: calc(100dvh - 32px - env(safe-area-inset-bottom, 0px));
+    min-height: calc(100dvh - 32px - env(safe-area-inset-bottom, 0px));
   }
 
   .ultima-nav-dock {
-    position: fixed;
-    left: 50%;
-    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
-    z-index: 30;
-    width: min(calc(100vw - 32px), var(--ultima-dock-max-width, 760px));
-    transform: translateX(-50%);
-    margin-top: 0;
+    position: sticky;
+    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    z-index: 24;
+    width: 100%;
+    transform: none;
+    margin-top: 14px;
     padding-top: 0;
     padding-bottom: 0;
     background: none;
@@ -659,7 +656,7 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
 
   .ultima-nav-dock .ultima-bottom-nav {
     margin-inline: auto;
-    max-width: 100%;
+    max-width: min(100%, var(--ultima-dock-max-width, 760px));
   }
 }
 
