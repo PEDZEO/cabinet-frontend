@@ -58,13 +58,16 @@ export const newsApi = {
     return response.data;
   },
 
-  uploadMedia: async (file: File): Promise<NewsMediaUploadResponse> => {
+  uploadMedia: async (file: File, signal?: AbortSignal): Promise<NewsMediaUploadResponse> => {
     const formData = new FormData();
     formData.append('file', file);
     const response = await apiClient.post<NewsMediaUploadResponse>(
       '/cabinet/admin/news/media/upload',
       formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } },
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        signal,
+      },
     );
     return response.data;
   },
