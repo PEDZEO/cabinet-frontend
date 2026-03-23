@@ -137,9 +137,9 @@ export function UltimaSubscriptionInfo() {
   }
 
   return (
-    <div className="ultima-shell">
+    <div className="ultima-shell ultima-shell-wide">
       <div className="ultima-shell-aura" />
-      <div className="ultima-shell-inner">
+      <div className="ultima-shell-inner lg:max-w-[960px]">
         <header className="mb-3">
           <h1 className="text-[clamp(34px,9.2vw,42px)] font-semibold leading-[0.92] tracking-[-0.01em] text-white">
             {t('subscription.infoTitle', { defaultValue: 'Инфо о подписке' })}
@@ -165,7 +165,7 @@ export function UltimaSubscriptionInfo() {
             })}
           </section>
         ) : (
-          <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
+          <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 lg:space-y-4 lg:overflow-visible lg:pr-0">
             <section
               className="rounded-2xl border p-3 backdrop-blur-md"
               style={{
@@ -208,7 +208,7 @@ export function UltimaSubscriptionInfo() {
               </div>
             </section>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-4">
               <StatCard
                 label={t('subscription.status', { defaultValue: 'Статус' })}
                 value={
@@ -223,7 +223,7 @@ export function UltimaSubscriptionInfo() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-4">
               <StatCard
                 label={t('subscription.trafficUsed', { defaultValue: 'Трафик использован' })}
                 value={`${trafficUsed.toFixed(1)} GB`}

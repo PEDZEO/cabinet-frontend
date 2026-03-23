@@ -441,7 +441,7 @@ export function UltimaConnection({
   };
 
   return (
-    <div className="ultima-shell">
+    <div className="ultima-shell ultima-shell-compact">
       <div className="ultima-shell-inner lg:max-w-[520px]">
         <section className="flex min-h-0 flex-1 flex-col">
           <div

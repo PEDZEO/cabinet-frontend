@@ -458,9 +458,9 @@ export function UltimaGift() {
   };
 
   return (
-    <div className="ultima-shell ultima-flat-frames">
+    <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
       <div className="ultima-shell-aura" />
-      <div className="ultima-shell-inner">
+      <div className="ultima-shell-inner lg:max-w-[960px]">
         <header className="mb-3">
           <h1 className="text-[clamp(34px,9.5vw,44px)] font-semibold leading-[0.9] tracking-[-0.01em] text-white">
             {t('nav.gift', { defaultValue: 'Подарок' })}
@@ -473,7 +473,7 @@ export function UltimaGift() {
           </p>
         </header>
 
-        <section className="border-emerald-200/12 min-h-0 flex-1 overflow-y-auto rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
+        <section className="border-emerald-200/12 min-h-0 flex-1 overflow-y-auto rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:overflow-visible lg:p-4">
           <div ref={formAnchorRef} />
           {!isGiftConfigLoaded ? (
             <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2.5">

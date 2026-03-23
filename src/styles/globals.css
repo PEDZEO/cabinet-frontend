@@ -609,23 +609,50 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
 @media (min-width: 1024px) {
   .ultima-shell {
     display: flex;
-    align-items: center;
+    height: auto;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    align-items: flex-start;
     justify-content: center;
-    padding-top: 18px;
-    padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    padding-top: 24px;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
   }
 
   .ultima-shell-inner {
-    width: min(100%, 430px);
-    max-width: 430px;
-    height: min(860px, calc(100svh - 36px - env(safe-area-inset-bottom, 0px)));
+    width: min(100%, 760px);
+    max-width: 760px;
+    height: auto;
+    min-height: calc(100dvh - 48px - env(safe-area-inset-bottom, 0px));
+    max-height: none;
+  }
+
+  .ultima-shell-wide .ultima-shell-inner {
+    width: min(100%, 1040px);
+    max-width: 1040px;
+  }
+
+  .ultima-shell-compact .ultima-shell-inner {
+    width: min(100%, 520px);
+    max-width: 520px;
+    height: min(860px, calc(100dvh - 48px - env(safe-area-inset-bottom, 0px)));
     min-height: 620px;
-    max-height: calc(100svh - 24px - env(safe-area-inset-bottom, 0px));
+    max-height: calc(100dvh - 48px - env(safe-area-inset-bottom, 0px));
   }
 
   .ultima-nav-dock {
-    padding-top: 10px;
-    padding-bottom: 3px;
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    margin-top: auto;
+    padding-top: 18px;
+    padding-bottom: 8px;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      color-mix(in srgb, var(--ultima-color-bg-bottom) 70%, transparent) 28%,
+      color-mix(in srgb, var(--ultima-color-bg-bottom) 94%, transparent) 100%
+    );
   }
 }
 

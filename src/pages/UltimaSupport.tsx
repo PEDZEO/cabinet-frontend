@@ -207,7 +207,7 @@ export function UltimaSupport() {
   );
 
   return (
-    <div className="ultima-shell ultima-flat-frames">
+    <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner lg:max-w-[980px]">
         <header className="mb-4">

@@ -79,9 +79,9 @@ export function UltimaAgreement() {
   }, [data, i18n.language]);
 
   return (
-    <div className="ultima-shell ultima-flat-frames">
+    <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
       <div className="ultima-shell-aura" />
-      <div className="ultima-shell-inner">
+      <div className="ultima-shell-inner lg:max-w-[960px]">
         <section className="mb-3 rounded-[24px] border border-emerald-200/10 bg-[linear-gradient(180deg,rgba(69,186,142,0.16),rgba(18,79,64,0.26))] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] backdrop-blur-md">
           <div className="bg-white/6 flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 text-white/80">
             <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6">
@@ -123,7 +123,7 @@ export function UltimaAgreement() {
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-300/35 border-t-transparent" />
             </div>
           ) : (
-            <div className="text-white/87 h-full overflow-y-auto px-1 pb-1 text-[14px] leading-[1.6]">
+            <div className="text-white/87 h-full overflow-y-auto px-1 pb-1 text-[14px] leading-[1.6] lg:overflow-visible lg:px-0">
               {htmlContent ? (
                 <div
                   className="prose prose-invert max-w-none [&_a]:text-[#5de8c3] [&_a]:underline [&_h1]:mb-3 [&_h1]:text-[34px] [&_h1]:font-semibold [&_h1]:leading-[1] [&_h2]:mb-2 [&_h2]:mt-6 [&_h2]:text-[34px] [&_h2]:font-semibold [&_h2]:leading-[1] [&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-[34px] [&_h3]:font-semibold [&_h3]:leading-[1] [&_li]:mb-1 [&_p]:mb-3 [&_strong]:font-semibold"

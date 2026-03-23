@@ -348,9 +348,9 @@ export default function UltimaAccountLinking() {
     isCodePreviewed && (linkFlowStep === 'preview' || linkFlowStep === 'warning');
 
   return (
-    <div className="ultima-shell ultima-flat-frames">
+    <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
       <div className="ultima-shell-aura" />
-      <div className="ultima-shell-inner">
+      <div className="ultima-shell-inner lg:max-w-[960px]">
         <header className="mb-3">
           <h1 className="text-[clamp(32px,8.5vw,38px)] font-semibold leading-[0.95] tracking-[-0.01em] text-white">
             Привязка аккаунтов
@@ -360,7 +360,7 @@ export default function UltimaAccountLinking() {
           </p>
         </header>
 
-        <div className="ultima-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
+        <div className="ultima-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto pr-1 lg:overflow-visible lg:pr-0">
           <section className="border-emerald-200/12 mb-1 rounded-[28px] border bg-[linear-gradient(180deg,rgba(69,186,142,0.16),rgba(18,79,64,0.28))] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md">
             <div className="flex items-start gap-3">
               <div className="border-white/12 bg-white/8 flex h-10 w-10 items-center justify-center rounded-2xl border text-white/85">

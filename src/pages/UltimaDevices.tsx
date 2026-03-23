@@ -209,9 +209,9 @@ export function UltimaDevices() {
   const maxReduceLimit = reductionInfo?.current_device_limit ?? currentLimit ?? 1;
 
   return (
-    <div className="ultima-shell ultima-flat-frames">
+    <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
       <div className="ultima-shell-aura" />
-      <div className="ultima-shell-inner">
+      <div className="ultima-shell-inner lg:max-w-[960px]">
         <header className="mb-3">
           <h1 className="text-[clamp(34px,9.5vw,44px)] font-semibold leading-[0.9] tracking-[-0.01em] text-white">
             Устройства
@@ -223,7 +223,7 @@ export function UltimaDevices() {
           </p>
         </header>
 
-        <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
+        <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 lg:overflow-visible lg:pr-0">
           {error ? (
             <div className="rounded-2xl border border-rose-300/30 bg-rose-950/30 px-3 py-2 text-sm text-rose-100">
               {error}

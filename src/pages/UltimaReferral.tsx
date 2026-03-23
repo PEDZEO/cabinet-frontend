@@ -152,9 +152,9 @@ export function UltimaReferral() {
   const showRejectedSection = partnerStatusValue === 'rejected';
 
   return (
-    <div className="ultima-shell ultima-flat-frames">
+    <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
       <div className="ultima-shell-aura" />
-      <div className="ultima-shell-inner">
+      <div className="ultima-shell-inner lg:max-w-[960px]">
         <header className="mb-3">
           <h1 className="text-[clamp(34px,9vw,42px)] font-semibold leading-[0.9] tracking-[-0.01em] text-white">
             {t('referral.title')}
@@ -164,8 +164,8 @@ export function UltimaReferral() {
           </p>
         </header>
 
-        <section className="border-emerald-200/12 min-h-0 flex-1 overflow-hidden rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
-          <div className="ultima-scrollbar h-full space-y-3 overflow-y-auto pr-1">
+        <section className="border-emerald-200/12 min-h-0 flex-1 overflow-hidden rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:p-4">
+          <div className="ultima-scrollbar h-full space-y-3 overflow-y-auto pr-1 lg:overflow-visible lg:pr-0">
             {isLoading ? (
               <div className="flex h-40 items-center justify-center">
                 <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-300/40 border-t-transparent" />

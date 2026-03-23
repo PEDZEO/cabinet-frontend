@@ -803,9 +803,9 @@ export function UltimaSubscription() {
     <div
       className={`relative h-[100svh] min-h-[100dvh] overflow-hidden bg-transparent ${
         isNarrowWidth ? 'px-3' : 'px-4'
-      } pb-[calc(16px+env(safe-area-inset-bottom,0px))] ${isUltraCompactHeight ? 'pt-3' : 'pt-4'}`}
+      } pb-[calc(16px+env(safe-area-inset-bottom,0px))] ${isUltraCompactHeight ? 'pt-3' : 'pt-4'} lg:h-auto lg:overflow-y-auto lg:px-6 lg:pb-6 lg:pt-6`}
     >
-      <div className="ultima-shell-inner">
+      <div className="ultima-shell-inner lg:max-w-[960px]">
         <header className={isUltraCompactHeight ? 'mb-2' : 'mb-3'}>
           <h1
             className={`font-semibold leading-[0.95] text-white ${
@@ -992,7 +992,7 @@ export function UltimaSubscription() {
         </section>
 
         <section
-          className={`ultima-scrollbar min-h-0 flex-1 overflow-y-auto ${
+          className={`ultima-scrollbar min-h-0 flex-1 overflow-y-auto lg:overflow-visible ${
             isUltraCompactHeight ? 'pb-0' : 'pb-1'
           }`}
         >

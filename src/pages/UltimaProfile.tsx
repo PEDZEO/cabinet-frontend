@@ -455,10 +455,10 @@ export function UltimaProfile() {
   };
 
   return (
-    <div className="ultima-shell ultima-flat-frames">
+    <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
       <div className="ultima-shell-aura" />
-      <div className="ultima-shell-inner">
-        <section className="mb-3 flex items-center gap-3 rounded-3xl bg-[rgba(12,45,42,0.2)] px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md">
+      <div className="ultima-shell-inner lg:max-w-[960px]">
+        <section className="mb-3 flex items-center gap-3 rounded-3xl bg-[rgba(12,45,42,0.2)] px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md lg:px-4 lg:py-3">
           {telegramPhotoUrl ? (
             <img
               src={telegramPhotoUrl}
@@ -485,7 +485,7 @@ export function UltimaProfile() {
           {idCopied ? <span className="text-xs text-emerald-200">OK</span> : null}
         </section>
 
-        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
+        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0 lg:overflow-visible lg:pr-0">
           <section className="rounded-3xl bg-[rgba(12,45,42,0.2)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md">
             <p className="text-white/68 mb-2 text-[14px]">
               {t('profile.profileSettings', { defaultValue: 'Настройки профиля' })}
