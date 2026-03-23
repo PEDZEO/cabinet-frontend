@@ -81,7 +81,13 @@ export function UltimaAgreement() {
   return (
     <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
       <div className="ultima-shell-aura" />
-      <div className="ultima-shell-inner lg:max-h-[calc(100dvh-32px-env(safe-area-inset-bottom,0px))] lg:min-h-[calc(100dvh-32px-env(safe-area-inset-bottom,0px))] lg:max-w-[960px]">
+      <div
+        className="ultima-shell-inner lg:max-w-[960px]"
+        style={{
+          minHeight: 'calc(100dvh - 32px - env(safe-area-inset-bottom, 0px))',
+          maxHeight: 'calc(100dvh - 32px - env(safe-area-inset-bottom, 0px))',
+        }}
+      >
         <section className="mb-3 rounded-[24px] border border-emerald-200/10 bg-[linear-gradient(180deg,rgba(69,186,142,0.16),rgba(18,79,64,0.26))] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] backdrop-blur-md">
           <div className="bg-white/6 flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 text-white/80">
             <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6">
@@ -117,7 +123,7 @@ export function UltimaAgreement() {
           </p>
         </section>
 
-        <section className="min-h-0 flex-1 overflow-hidden rounded-3xl lg:pb-2">
+        <section className="min-h-0 flex-1 overflow-hidden rounded-3xl lg:min-h-0 lg:pb-2">
           {isLoading ? (
             <div className="flex h-full items-center justify-center">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-300/35 border-t-transparent" />
