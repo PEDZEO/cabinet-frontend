@@ -703,47 +703,49 @@ export function UltimaConnection({
       {step === 1 && showInfo && (
         <>
           <div className="bg-black/52 absolute inset-0 z-[18]" />
-          <div className="ultima-step-enter border-white/24 absolute inset-x-4 bottom-[252px] z-20 rounded-[24px] border bg-[#05070B] p-4 text-white shadow-[0_26px_56px_rgba(0,0,0,0.72)] backdrop-blur-xl lg:inset-x-auto lg:bottom-[238px] lg:left-1/2 lg:w-[520px] lg:-translate-x-1/2">
-            <div className="mb-2 flex items-start justify-between gap-3">
-              <h3 className="text-[24px] font-semibold leading-[1.06] text-white/95">
-                {t('subscription.connection.importantInfo', {
-                  defaultValue: 'Важная информация',
-                })}
-              </h3>
+          <div className="absolute inset-x-4 bottom-[252px] z-20 lg:inset-x-auto lg:bottom-[260px] lg:left-1/2 lg:w-[560px] lg:-translate-x-1/2">
+            <div className="ultima-step-enter border-white/24 rounded-[24px] border bg-[#05070B] p-4 text-white shadow-[0_26px_56px_rgba(0,0,0,0.72)] backdrop-blur-xl">
+              <div className="mb-2 flex items-start justify-between gap-3">
+                <h3 className="text-[24px] font-semibold leading-[1.06] text-white/95">
+                  {t('subscription.connection.importantInfo', {
+                    defaultValue: 'Важная информация',
+                  })}
+                </h3>
+                <button
+                  type="button"
+                  onClick={dismissReminderForNow}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-white/90"
+                  aria-label="close-info-modal"
+                >
+                  ×
+                </button>
+              </div>
+              <p className="text-white/92 text-[15px] leading-[1.28]">{importantInfoDescription}</p>
               <button
                 type="button"
                 onClick={dismissReminderForNow}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-white/90"
-                aria-label="close-info-modal"
+                className="ultima-btn-pill ultima-btn-secondary mt-4 flex w-full items-center justify-center px-5 py-2.5 text-[15px]"
               >
-                ×
+                {canPermanentlyHideReminder
+                  ? t('subscription.connection.remindLater', {
+                      defaultValue: 'Напомнить позже',
+                    })
+                  : t('subscription.connection.gotIt', {
+                      defaultValue: 'Все понятно',
+                    })}
               </button>
-            </div>
-            <p className="text-white/92 text-[15px] leading-[1.28]">{importantInfoDescription}</p>
-            <button
-              type="button"
-              onClick={dismissReminderForNow}
-              className="ultima-btn-pill ultima-btn-secondary mt-4 flex w-full items-center justify-center px-5 py-2.5 text-[15px]"
-            >
-              {canPermanentlyHideReminder
-                ? t('subscription.connection.remindLater', {
-                    defaultValue: 'Напомнить позже',
-                  })
-                : t('subscription.connection.gotIt', {
-                    defaultValue: 'Все понятно',
+              {canPermanentlyHideReminder && (
+                <button
+                  type="button"
+                  onClick={hideReminderPermanently}
+                  className="ultima-btn-pill ultima-btn-secondary mt-2 flex w-full items-center justify-center px-5 py-2.5 text-[15px]"
+                >
+                  {t('subscription.connection.hideReminderPermanently', {
+                    defaultValue: 'Больше не показывать',
                   })}
-            </button>
-            {canPermanentlyHideReminder && (
-              <button
-                type="button"
-                onClick={hideReminderPermanently}
-                className="ultima-btn-pill ultima-btn-secondary mt-2 flex w-full items-center justify-center px-5 py-2.5 text-[15px]"
-              >
-                {t('subscription.connection.hideReminderPermanently', {
-                  defaultValue: 'Больше не показывать',
-                })}
-              </button>
-            )}
+                </button>
+              )}
+            </div>
           </div>
         </>
       )}
