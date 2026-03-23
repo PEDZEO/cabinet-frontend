@@ -426,16 +426,41 @@ export default function NewsSection() {
           className="mb-8"
         >
           <div className="mb-2 flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-accent-400 to-accent-600 font-mono text-sm font-extrabold text-dark-950">
-              N
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-accent-400 to-accent-600">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"
+                  fill="currentColor"
+                  className="text-dark-950/20"
+                />
+                <path
+                  d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  className="text-dark-950"
+                />
+                <path
+                  d="M7 8h4M7 11h10M7 14h10M7 17h6"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  className="text-dark-950"
+                />
+                <rect
+                  x="14"
+                  y="7"
+                  width="4"
+                  height="4"
+                  rx="0.5"
+                  fill="currentColor"
+                  className="text-dark-950"
+                />
+              </svg>
             </div>
             <span className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-dark-500">
               {t('news.title')}
             </span>
           </div>
-          <h2 className="mb-5 text-2xl font-extrabold leading-tight text-dark-50 sm:text-[34px]">
-            {t('news.title')}
-          </h2>
 
           {categories.length > 0 && (
             <FilterTabs categories={categories} active={filter} onChange={handleFilterChange} />
