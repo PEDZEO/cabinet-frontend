@@ -44,7 +44,6 @@ type DesktopMetricCardProps = {
 
 type DesktopQuickActionProps = {
   label: string;
-  hint: string;
   onClick: () => void;
 };
 
@@ -183,55 +182,49 @@ function clampPercent(value: number): number {
 function DesktopMetricCard({ icon, label, value, meta }: DesktopMetricCardProps) {
   return (
     <div className={cn(sharedCardClassName, 'p-4')} style={defaultCardStyle}>
-      <div className="text-white/84 mb-3 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06]">
+      <div className="text-white/84 mb-2.5 flex h-9 w-9 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06]">
         {icon}
       </div>
-      <div className="text-white/42 text-[11px] uppercase tracking-[0.22em]">{label}</div>
-      <div className="mt-2 text-[28px] font-semibold leading-none tracking-[-0.03em] text-white">
+      <div className="text-white/42 text-[10px] uppercase tracking-[0.18em]">{label}</div>
+      <div className="mt-2 text-[24px] font-semibold leading-none tracking-[-0.03em] text-white">
         {value}
       </div>
-      <div className="text-white/62 mt-2 text-sm leading-snug">{meta}</div>
+      <div className="text-white/62 mt-1.5 text-[13px] leading-snug">{meta}</div>
     </div>
   );
 }
 
-function DesktopQuickAction({ label, hint, onClick }: DesktopQuickActionProps) {
+function DesktopQuickAction({ label, onClick }: DesktopQuickActionProps) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition hover:bg-white/[0.08]"
+      className="flex min-h-[56px] items-center justify-between gap-3 rounded-[20px] border border-white/10 bg-white/[0.05] px-4 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition hover:bg-white/[0.08]"
     >
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <div className="text-white/92 text-sm font-medium">{label}</div>
-          <div className="text-white/58 mt-1 text-xs leading-snug">{hint}</div>
-        </div>
-        <span className="text-white/68 rounded-full border border-white/10 p-1">
-          <ArrowUpRightIcon />
-        </span>
-      </div>
+      <div className="text-white/92 text-sm font-medium leading-snug">{label}</div>
+      <span className="text-white/68 rounded-full border border-white/10 p-1">
+        <ArrowUpRightIcon />
+      </span>
     </button>
   );
 }
 
 export function UltimaDesktopDashboardSkeleton({ bottomNav }: { bottomNav: ReactNode }) {
   return (
-    <div className="ultima-shell-inner lg:max-w-[1180px]">
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.6fr)_360px] lg:items-start">
-        <div className="space-y-5">
-          <section className={cn(sharedCardClassName, 'min-h-[280px]')} style={accentCardStyle}>
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_180px] lg:items-center">
+    <div className="ultima-shell-inner lg:max-w-[1240px]">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+        <div className="space-y-4">
+          <section className={cn(sharedCardClassName, 'min-h-[236px]')} style={accentCardStyle}>
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_160px] lg:items-center">
               <div>
-                <div className="h-4 w-32 animate-pulse rounded-full bg-white/10" />
-                <div className="mt-5 h-16 w-[78%] animate-pulse rounded-[28px] bg-white/10" />
-                <div className="mt-4 h-5 w-[60%] animate-pulse rounded-full bg-white/10" />
-                <div className="mt-8 flex gap-3">
-                  <div className="h-14 flex-1 animate-pulse rounded-full bg-white/10" />
-                  <div className="h-14 w-[240px] animate-pulse rounded-full bg-white/10" />
+                <div className="h-14 w-[74%] animate-pulse rounded-[24px] bg-white/10" />
+                <div className="mt-4 h-5 w-[44%] animate-pulse rounded-full bg-white/10" />
+                <div className="mt-6 flex gap-3">
+                  <div className="h-12 flex-1 animate-pulse rounded-full bg-white/10" />
+                  <div className="h-12 w-[228px] animate-pulse rounded-full bg-white/10" />
                 </div>
               </div>
-              <div className="mx-auto h-[152px] w-[152px] animate-pulse rounded-full border border-white/10 bg-white/[0.06]" />
+              <div className="mx-auto h-[136px] w-[136px] animate-pulse rounded-full border border-white/10 bg-white/[0.06]" />
             </div>
           </section>
 
@@ -239,27 +232,27 @@ export function UltimaDesktopDashboardSkeleton({ bottomNav }: { bottomNav: React
             {Array.from({ length: 4 }).map((_, index) => (
               <div
                 key={index}
-                className={cn(sharedCardClassName, 'min-h-[164px] animate-pulse')}
+                className={cn(sharedCardClassName, 'min-h-[136px] animate-pulse')}
                 style={defaultCardStyle}
               />
             ))}
           </div>
 
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_400px]">
             <div
-              className={cn(sharedCardClassName, 'min-h-[250px] animate-pulse')}
+              className={cn(sharedCardClassName, 'min-h-[220px] animate-pulse')}
               style={defaultCardStyle}
             />
             <div
-              className={cn(sharedCardClassName, 'min-h-[250px] animate-pulse')}
+              className={cn(sharedCardClassName, 'min-h-[220px] animate-pulse')}
               style={defaultCardStyle}
             />
           </div>
         </div>
 
-        <aside className="space-y-5">
+        <aside className="space-y-4">
           <div
-            className={cn(sharedCardClassName, 'min-h-[280px] animate-pulse')}
+            className={cn(sharedCardClassName, 'min-h-[236px] animate-pulse')}
             style={defaultCardStyle}
           />
           <div className="ultima-nav-dock mt-0">{bottomNav}</div>
@@ -347,23 +340,22 @@ export function UltimaDesktopDashboard({
           : t('support.title', { defaultValue: 'Поддержка и навигация' });
   const supportCardDescription = hasSetupReminder
     ? t('ultima.setupNotFinishedDesc', {
-        defaultValue: 'Вернитесь к настройке и завершите подключение VPN.',
+        defaultValue: 'Вернитесь к настройке и завершите подключение.',
       })
     : hasCompactSetupReminder
       ? t('ultima.setupCompactDesc', {
-          defaultValue: 'Откройте установку и завершите подключение, когда будет удобно.',
+          defaultValue: 'Откройте установку и завершите подключение.',
         })
       : activeDiscount?.is_active === true
         ? t('promo.useNow', {
-            defaultValue: 'Скидка уже активна. Можно использовать сейчас.',
+            defaultValue: 'Скидка уже активна.',
           })
         : firstPromoOffer
           ? t('promo.offers.activateDiscountHint', {
-              defaultValue: 'Активируйте предложение, чтобы зафиксировать выгоду на оплате.',
+              defaultValue: 'Зафиксируйте скидку перед оплатой.',
             })
           : t('ultima.desktop.supportHint', {
-              defaultValue:
-                'Откройте детали подписки, устройства или чат поддержки без лишних переходов.',
+              defaultValue: 'Откройте поддержку, устройства или детали доступа.',
             });
 
   const renderSpotlightCard = () => {
@@ -375,18 +367,15 @@ export function UltimaDesktopDashboard({
       <section className={cn(sharedCardClassName, 'h-full')} style={defaultCardStyle}>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-white/42 text-[11px] uppercase tracking-[0.22em]">
-              {t('ultima.desktop.focusLabel', { defaultValue: 'Фокус на сейчас' })}
-            </div>
-            <h2 className="mt-3 text-[26px] font-semibold leading-[1.02] tracking-[-0.03em] text-white">
+            <h2 className="text-[24px] font-semibold leading-[1.04] tracking-[-0.03em] text-white">
               {supportCardTitle}
             </h2>
-            <p className="mt-3 max-w-[38ch] text-sm leading-[1.55] text-white/70">
+            <p className="mt-2 max-w-[42ch] text-[14px] leading-[1.5] text-white/70">
               {supportCardDescription}
             </p>
-            {promoMessage && <p className="text-white/88 mt-3 text-sm">{promoMessage}</p>}
+            {promoMessage && <p className="text-white/88 mt-2 text-sm">{promoMessage}</p>}
           </div>
-          <div className="text-white/84 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06]">
+          <div className="text-white/84 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06]">
             {firstPromoOffer || activeDiscount?.is_active ? <TrafficIcon /> : <SupportIcon />}
           </div>
         </div>
@@ -396,7 +385,7 @@ export function UltimaDesktopDashboard({
             <button
               type="button"
               onClick={onOpenConnection}
-              className="ultima-btn-pill ultima-btn-primary px-5 py-3 text-[15px]"
+              className="ultima-btn-pill ultima-btn-primary min-h-[48px] px-5 py-3 text-[15px]"
             >
               {t('ultima.finishSetup', { defaultValue: 'Завершить установку' })}
             </button>
@@ -406,7 +395,7 @@ export function UltimaDesktopDashboard({
               type="button"
               onClick={onActivateOffer}
               disabled={isActivatingOffer}
-              className="ultima-btn-pill ultima-btn-secondary px-5 py-3 text-[15px] disabled:opacity-60"
+              className="ultima-btn-pill ultima-btn-secondary min-h-[48px] px-5 py-3 text-[15px] disabled:opacity-60"
             >
               {t('promo.activate', { defaultValue: 'Активировать' })}
             </button>
@@ -417,7 +406,7 @@ export function UltimaDesktopDashboard({
               onClick={
                 firstPromoOffer || activeDiscount?.is_active ? onBuySubscription : onOpenSupport
               }
-              className="ultima-btn-pill ultima-btn-primary px-5 py-3 text-[15px]"
+              className="ultima-btn-pill ultima-btn-primary min-h-[48px] px-5 py-3 text-[15px]"
             >
               {firstPromoOffer || activeDiscount?.is_active
                 ? t('promo.useNow', { defaultValue: 'Использовать' })
@@ -425,64 +414,25 @@ export function UltimaDesktopDashboard({
             </button>
           )}
         </div>
-
-        <div className="mt-6 grid gap-3 sm:grid-cols-3">
-          <DesktopQuickAction
-            label={t('subscription.details', { defaultValue: 'Детали подписки' })}
-            hint={t('ultima.desktop.quick.subscription', {
-              defaultValue: 'Проверить срок, трафик и текущие параметры.',
-            })}
-            onClick={onOpenSubscriptionInfo}
-          />
-          <DesktopQuickAction
-            label={t('lite.devicesTotal', { defaultValue: 'Устройства' })}
-            hint={t('ultima.desktop.quick.devices', {
-              defaultValue: 'Управление лимитом и списком подключенных девайсов.',
-            })}
-            onClick={onOpenDevices}
-          />
-          <DesktopQuickAction
-            label={t('lite.connectAndSetup', { defaultValue: 'Установка и настройка' })}
-            hint={t('ultima.desktop.quick.connection', {
-              defaultValue: 'Открыть flow подключения и пройти шаги заново.',
-            })}
-            onClick={onOpenConnection}
-          />
-        </div>
       </section>
     );
   };
 
   return (
-    <div className="ultima-shell-inner lg:max-w-[1180px]">
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.6fr)_360px] lg:items-start">
-        <div className="space-y-5">
+    <div className="ultima-shell-inner lg:max-w-[1240px]">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+        <div className="space-y-4">
           <section
-            className={cn(sharedCardClassName, 'relative overflow-hidden p-6 lg:p-7')}
+            className={cn(sharedCardClassName, 'relative overflow-hidden p-5 lg:p-6')}
             style={accentCardStyle}
           >
             <div className="absolute inset-y-0 right-[-12%] w-[42%] rounded-full bg-white/[0.05] blur-3xl" />
-            <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_180px] lg:items-center">
+            <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_160px] lg:items-center">
               <div>
-                <div className="text-white/42 text-[11px] uppercase tracking-[0.24em]">
-                  {t('ultima.desktop.overline', { defaultValue: 'Ultima Desktop' })}
-                </div>
-                <h1 className="mt-4 max-w-[12ch] text-[clamp(42px,6vw,68px)] font-semibold leading-[0.94] tracking-[-0.045em] text-white">
+                <h1 className="max-w-[12ch] text-[clamp(38px,4.8vw,58px)] font-semibold leading-[0.94] tracking-[-0.045em] text-white">
                   {expiryLabel}
                 </h1>
-                <p className="text-white/72 mt-4 max-w-[56ch] text-[15px] leading-[1.65]">
-                  {isConnectionCompleted
-                    ? t('ultima.desktop.connectedSummary', {
-                        defaultValue:
-                          'Доступ уже активен. На desktop вы сразу видите срок подписки, нагрузку по трафику и ключевые действия без мобильной тесноты.',
-                      })
-                    : t('ultima.desktop.pendingSummary', {
-                        defaultValue:
-                          'Интерфейс собран как desktop cockpit: главные действия и состояние подключения находятся на одном экране, а не прячутся ниже fold.',
-                      })}
-                </p>
-
-                <div className="mt-5 flex flex-wrap items-center gap-3">
+                <div className="mt-4 flex flex-wrap items-center gap-3">
                   <span
                     className={cn(
                       'relative inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm',
@@ -509,12 +459,13 @@ export function UltimaDesktopDashboard({
                         })}
                   </span>
                 </div>
+                {promoMessage && <p className="text-white/88 mt-3 text-sm">{promoMessage}</p>}
 
-                <div className="mt-7 flex flex-wrap gap-3">
+                <div className="mt-6 flex flex-wrap gap-3">
                   <button
                     type="button"
                     onClick={onBuySubscription}
-                    className="ultima-btn-pill ultima-btn-primary inline-flex min-h-[54px] items-center justify-between gap-4 px-6 text-[15px]"
+                    className="ultima-btn-pill ultima-btn-primary inline-flex min-h-[50px] items-center justify-between gap-4 px-5 text-[15px]"
                   >
                     <span>{buyCtaLabel}</span>
                     <span className="text-white/84">{buyFromLabel}</span>
@@ -523,7 +474,7 @@ export function UltimaDesktopDashboard({
                     type="button"
                     onClick={onOpenConnection}
                     className={cn(
-                      'ultima-btn-pill inline-flex min-h-[54px] items-center justify-between gap-4 px-6 text-[15px]',
+                      'ultima-btn-pill inline-flex min-h-[50px] items-center justify-between gap-4 px-5 text-[15px]',
                       showConnectionCtaHighlight ? 'ultima-btn-primary' : 'ultima-btn-secondary',
                     )}
                   >
@@ -590,14 +541,11 @@ export function UltimaDesktopDashboard({
             />
           </div>
 
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_400px]">
             <section className={cn(sharedCardClassName, 'p-5')} style={defaultCardStyle}>
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="text-white/42 text-[11px] uppercase tracking-[0.22em]">
-                    {t('ultima.desktop.cockpitLabel', { defaultValue: 'Control Center' })}
-                  </div>
-                  <h2 className="mt-3 text-[28px] font-semibold leading-[1.02] tracking-[-0.03em] text-white">
+                  <h2 className="text-[24px] font-semibold leading-[1.04] tracking-[-0.03em] text-white">
                     {t('ultima.desktop.connectionTitle', {
                       defaultValue: 'Подключение и текущая нагрузка',
                     })}
@@ -608,7 +556,7 @@ export function UltimaDesktopDashboard({
                 </div>
               </div>
 
-              <div className="mt-6 space-y-5">
+              <div className="mt-5 space-y-4">
                 <div>
                   <div className="text-white/74 mb-2 flex items-center justify-between gap-3 text-sm">
                     <span>
@@ -661,26 +609,17 @@ export function UltimaDesktopDashboard({
                 </div>
               </div>
 
-              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
                 <DesktopQuickAction
                   label={t('subscription.details', { defaultValue: 'Детали подписки' })}
-                  hint={t('ultima.desktop.quick.subscription', {
-                    defaultValue: 'Срок, параметры и статус доступа.',
-                  })}
                   onClick={onOpenSubscriptionInfo}
                 />
                 <DesktopQuickAction
                   label={t('lite.devicesTotal', { defaultValue: 'Устройства' })}
-                  hint={t('ultima.desktop.quick.devices', {
-                    defaultValue: 'Лимит, список и управление устройствами.',
-                  })}
                   onClick={onOpenDevices}
                 />
                 <DesktopQuickAction
                   label={t('support.title', { defaultValue: 'Поддержка' })}
-                  hint={t('ultima.desktop.quick.support', {
-                    defaultValue: 'Открыть чат и решить вопросы без поиска.',
-                  })}
                   onClick={onOpenSupport}
                 />
               </div>
@@ -690,15 +629,12 @@ export function UltimaDesktopDashboard({
           </div>
         </div>
 
-        <aside className="space-y-5 lg:sticky lg:top-5">
+        <aside className="space-y-4 lg:sticky lg:top-4">
           <section className={cn(sharedCardClassName, 'p-5')} style={defaultCardStyle}>
-            <div className="text-white/42 text-[11px] uppercase tracking-[0.22em]">
-              {t('ultima.desktop.summaryLabel', { defaultValue: 'Account Summary' })}
-            </div>
-            <div className="mt-3 text-[34px] font-semibold leading-[0.98] tracking-[-0.04em] text-white">
+            <div className="text-[30px] font-semibold leading-[0.98] tracking-[-0.04em] text-white">
               {expiryLabel}
             </div>
-            <div className="mt-4 flex flex-wrap items-center gap-3">
+            <div className="mt-3 flex flex-wrap items-center gap-3">
               <span
                 className={cn(
                   'relative inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs',
@@ -714,14 +650,9 @@ export function UltimaDesktopDashboard({
                 <span className="relative h-1.5 w-1.5 rounded-full bg-current" />
                 {statusLabel}
               </span>
-              <span className="text-white/58 text-sm">
-                {t('ultima.desktop.rightRailHint', {
-                  defaultValue: 'Быстрый срез по доступу и переходам.',
-                })}
-              </span>
             </div>
 
-            <div className="mt-6 space-y-4">
+            <div className="mt-5 space-y-3">
               <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-white/62 text-sm">

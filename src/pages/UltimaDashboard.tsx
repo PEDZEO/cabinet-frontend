@@ -839,7 +839,7 @@ export function UltimaDashboard() {
         )}
 
         <UltimaDesktopDashboard
-          heroButton={renderShieldButton('h-[120px] w-[120px] lg:h-[136px] lg:w-[136px]')}
+          heroButton={renderShieldButton('h-[108px] w-[108px] lg:h-[124px] lg:w-[124px]')}
           subscription={subscription}
           expiryLabel={expiryLabel}
           statusLabel={statusLabel}

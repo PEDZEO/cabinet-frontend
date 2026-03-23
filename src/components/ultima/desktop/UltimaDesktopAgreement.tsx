@@ -58,9 +58,16 @@ export function UltimaDesktopAgreement({
   bottomNav,
 }: UltimaDesktopAgreementProps) {
   return (
-    <div className="ultima-shell-inner lg:max-w-[1160px]">
-      <div className="grid h-full min-h-0 gap-5 lg:grid-cols-[320px_minmax(0,1fr)] lg:items-start">
-        <aside className="space-y-5 lg:sticky lg:top-5">
+    <div
+      className="ultima-shell-inner lg:max-w-[1120px]"
+      style={{
+        height: 'calc(100dvh - 32px - env(safe-area-inset-bottom, 0px))',
+        minHeight: 'calc(100dvh - 32px - env(safe-area-inset-bottom, 0px))',
+        maxHeight: 'calc(100dvh - 32px - env(safe-area-inset-bottom, 0px))',
+      }}
+    >
+      <div className="grid h-full min-h-0 gap-5 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start">
+        <aside className="space-y-5 lg:sticky lg:top-4">
           <section
             className={cn(cardClassName, 'relative overflow-hidden p-6')}
             style={highlightStyle}
@@ -68,10 +75,7 @@ export function UltimaDesktopAgreement({
             <div className="text-white/84 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.07]">
               <DocumentIcon />
             </div>
-            <div className="text-white/42 mt-5 text-[11px] uppercase tracking-[0.24em]">
-              Ultima Desktop
-            </div>
-            <h1 className="mt-3 text-[38px] font-semibold leading-[0.94] tracking-[-0.04em] text-white">
+            <h1 className="mt-4 text-[36px] font-semibold leading-[0.94] tracking-[-0.04em] text-white">
               {title}
             </h1>
             <p className="mt-3 text-sm leading-[1.6] text-white/70">{subtitle}</p>
@@ -85,36 +89,26 @@ export function UltimaDesktopAgreement({
             </div>
           </section>
 
-          <section className={cn(cardClassName, 'p-5')} style={cardStyle}>
-            <div className="text-white/42 text-[11px] uppercase tracking-[0.22em]">
-              Reading Mode
-            </div>
-            <p className="mt-3 text-sm leading-[1.65] text-white/70">
-              На desktop текст скроллится внутри отдельной области. Навигация и служебные блоки не
-              прыгают вниз вместе с длинным соглашением.
-            </p>
-          </section>
-
           <div className="ultima-nav-dock mt-0">{bottomNav}</div>
         </aside>
 
-        <section className={cn(cardClassName, 'min-h-0 overflow-hidden p-0')} style={cardStyle}>
+        <section
+          className={cn(cardClassName, 'flex min-h-0 flex-col overflow-hidden p-0')}
+          style={cardStyle}
+        >
           <div className="border-white/8 flex items-center justify-between border-b px-6 py-5">
             <div>
-              <div className="text-white/42 text-[11px] uppercase tracking-[0.22em]">Document</div>
-              <div className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-white">
-                {title}
-              </div>
+              <div className="text-2xl font-semibold tracking-[-0.03em] text-white">{title}</div>
             </div>
             <div className="text-white/52 text-sm">{updatedAtLabel ?? 'Актуальная версия'}</div>
           </div>
 
           {isLoading ? (
-            <div className="flex h-[calc(100dvh-220px)] items-center justify-center">
+            <div className="flex min-h-0 flex-1 items-center justify-center">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-300/35 border-t-transparent" />
             </div>
           ) : (
-            <div className="ultima-scrollbar h-[calc(100dvh-220px)] overflow-y-auto px-6 py-6">
+            <div className="ultima-scrollbar min-h-0 flex-1 overflow-y-auto px-6 py-6">
               {htmlContent ? (
                 <div
                   className="prose prose-invert max-w-none text-[15px] leading-[1.75] [&_a]:text-[#5de8c3] [&_a]:underline [&_h1]:mb-4 [&_h1]:text-[38px] [&_h1]:font-semibold [&_h1]:leading-[1] [&_h2]:mb-3 [&_h2]:mt-8 [&_h2]:text-[32px] [&_h2]:font-semibold [&_h2]:leading-[1.08] [&_h3]:mb-3 [&_h3]:mt-6 [&_h3]:text-[26px] [&_h3]:font-semibold [&_li]:mb-2 [&_p]:mb-4 [&_strong]:font-semibold"
