@@ -427,8 +427,9 @@ export default function NewsSection() {
     if (featuredSlug) handleCardClick(featuredSlug);
   }, [featuredSlug, handleCardClick]);
 
-  // Don't render if no news and not loading
-  if (!isLoading && items.length === 0) {
+  // Don't render until we know there are news items.
+  // This prevents the skeleton from briefly flashing when there are no articles.
+  if (items.length === 0) {
     return null;
   }
 
@@ -463,27 +464,8 @@ export default function NewsSection() {
           )}
         </motion.div>
 
-        {/* Loading skeleton */}
-        {isLoading && (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div
-                key={i}
-                className={cn(
-                  'animate-pulse rounded-2xl bg-dark-900 p-7',
-                  i === 0 && 'col-span-full',
-                )}
-              >
-                <div className="mb-4 h-4 w-24 rounded bg-dark-800" />
-                <div className="mb-3 h-6 w-3/4 rounded bg-dark-800" />
-                <div className="h-4 w-1/2 rounded bg-dark-800" />
-              </div>
-            ))}
-          </div>
-        )}
-
         {/* Grid */}
-        {!isLoading && items.length > 0 && (
+        {items.length > 0 && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {featured && <FeaturedCard item={featured} onClick={handleFeaturedClick} />}
             {regular.map((item, i) => (

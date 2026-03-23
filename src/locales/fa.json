@@ -880,7 +880,10 @@
       "auditLog": "گزارش بازرسی",
       "salesStats": "آمار فروش",
       "mainMenuButtons": "Main Menu Buttons",
-      "accountLinking": "Account Merges"
+      "accountLinking": "Account Merges",
+      "landings": "صفحات فرود",
+      "referralNetwork": "شبکه ارجاع",
+      "news": "اخبار"
     },
     "panel": {
       "title": "پنل مدیریت",
@@ -915,7 +918,10 @@
       "auditLogDesc": "بررسی فعالیت سیستم و تاریخچه دسترسی",
       "salesStatsDesc": "تحلیل فروش و روندها",
       "mainMenuButtonsDesc": "Configure custom main menu buttons",
-      "accountLinkingDesc": "Manual moderation for disputed account merges"
+      "accountLinkingDesc": "Manual moderation for disputed account merges",
+      "landingsDesc": "صفحات خرید سریع",
+      "referralNetworkDesc": "نمایش بصری گراف ارجاعات و کمپین‌ها",
+      "newsDesc": "مدیریت مقالات خبری و انتشارات"
     },
     "salesStats": {
       "title": "آمار فروش",

@@ -1062,7 +1062,10 @@
       "salesStats": "Sales Statistics",
       "mainMenuButtons": "Main Menu Buttons",
       "accountLinking": "Account Merges",
-      "balancer": "Balancer"
+      "balancer": "Balancer",
+      "landings": "Landings",
+      "referralNetwork": "Referral Network",
+      "news": "News"
     },
     "panel": {
       "title": "Admin Panel",
@@ -1098,7 +1101,10 @@
       "salesStatsDesc": "Sales analytics and trends",
       "mainMenuButtonsDesc": "Configure custom main menu buttons",
       "accountLinkingDesc": "Manual moderation for disputed account merges",
-      "balancerDesc": "Manage and monitor xray-balancer"
+      "balancerDesc": "Manage and monitor xray-balancer",
+      "landingsDesc": "Quick purchase landing pages",
+      "referralNetworkDesc": "Referral graph and campaign visualization",
+      "newsDesc": "Manage news articles and publications"
     },
     "salesStats": {
       "title": "Sales Statistics",

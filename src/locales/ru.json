@@ -1083,7 +1083,10 @@
       "salesStats": "Статистика продаж",
       "mainMenuButtons": "Кнопки меню",
       "accountLinking": "Merge аккаунтов",
-      "balancer": "Балансер"
+      "balancer": "Балансер",
+      "landings": "Лендинги",
+      "referralNetwork": "Реферальная сеть",
+      "news": "Новости"
     },
     "panel": {
       "title": "Панель администратора",
@@ -1119,7 +1122,10 @@
       "salesStatsDesc": "Аналитика продаж и тренды",
       "mainMenuButtonsDesc": "Настройка дополнительных кнопок главного меню",
       "accountLinkingDesc": "Ручная модерация спорных объединений аккаунтов",
-      "balancerDesc": "Управление и мониторинг xray-balancer"
+      "balancerDesc": "Управление и мониторинг xray-balancer",
+      "landingsDesc": "Страницы быстрой покупки",
+      "referralNetworkDesc": "Визуализация графа рефералов и РК",
+      "newsDesc": "Управление новостями и статьями"
     },
     "salesStats": {
       "title": "Статистика продаж",
