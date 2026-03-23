@@ -276,9 +276,10 @@ export function UltimaSubscriptionInfo() {
         <UltimaDesktopSectionLayout
           icon={<ShareIcon />}
           eyebrow={t('subscription.infoTitle', { defaultValue: 'Инфо о подписке' })}
-          title={t('subscription.infoTitle', { defaultValue: 'Инфо о подписке' })}
+          title={t('subscription.desktopTitle', { defaultValue: 'Подписка' })}
           subtitle={t('subscription.infoDescription', {
-            defaultValue: 'Ключевые параметры подписки и управления устройствами.',
+            defaultValue:
+              'Срок действия, ссылка на подписку и быстрый переход к устройствам в одном окне.',
           })}
           metrics={[
             {
@@ -310,16 +311,16 @@ export function UltimaSubscriptionInfo() {
                 }}
                 className="ultima-btn-pill ultima-btn-primary px-5 py-3 text-sm"
               >
-                {t('subscription.manageDevices', { defaultValue: 'Управление устройствами' })}
+                {t('subscription.desktopOpenDevices', { defaultValue: 'Открыть устройства' })}
               </button>
             ) : undefined
           }
           aside={
             <UltimaDesktopPanel
-              title={t('subscription.desktopAsideTitle', { defaultValue: 'Быстрые действия' })}
+              title={t('subscription.desktopAsideTitle', { defaultValue: 'Ссылка и помощь' })}
               subtitle={t('subscription.desktopAsideHint', {
                 defaultValue:
-                  'Скопируйте ссылку на подписку, поделитесь ею или откройте поддержку, если настройка еще не завершена.',
+                  'Скопируйте ссылку, отправьте ее себе или сразу откройте поддержку, если что-то не работает.',
               })}
             >
               <div className="space-y-3">

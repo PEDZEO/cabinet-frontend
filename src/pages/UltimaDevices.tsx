@@ -424,7 +424,7 @@ export function UltimaDevices() {
           eyebrow={t('lite.connectedDevices', { defaultValue: 'Устройства' })}
           title="Устройства"
           subtitle={t('lite.devicesDescription', {
-            defaultValue: 'Удаление подключений и управление лимитом устройств подписки.',
+            defaultValue: 'Удаляйте старые подключения и меняйте лимит устройств вашей подписки.',
           })}
           metrics={[
             {
@@ -461,16 +461,16 @@ export function UltimaDevices() {
                 onClick={() => navigate('/subscription/info')}
                 className="ultima-btn-pill ultima-btn-secondary px-5 py-3 text-sm"
               >
-                {t('subscription.infoTitle', { defaultValue: 'Инфо о подписке' })}
+                {t('subscription.desktopOpenInfo', { defaultValue: 'Открыть подписку' })}
               </button>
             ) : undefined
           }
           aside={
             <UltimaDesktopPanel
-              title={t('devices.desktopControlTitle', { defaultValue: 'Управление лимитом' })}
+              title={t('devices.desktopControlTitle', { defaultValue: 'Лимит и изменения' })}
               subtitle={t('devices.desktopControlHint', {
                 defaultValue:
-                  'Покупайте новые слоты или уменьшайте лимит, если устройств стало меньше.',
+                  'Здесь видно, сколько слотов еще можно добавить и насколько можно уменьшить лимит.',
               })}
             >
               <div className="space-y-3">

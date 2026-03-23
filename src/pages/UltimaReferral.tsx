@@ -410,7 +410,7 @@ export function UltimaReferral() {
           eyebrow={t('referral.title')}
           title={t('referral.title')}
           subtitle={t('profile.referralDescription', {
-            defaultValue: 'Получайте бонусы за приглашения',
+            defaultValue: 'Приглашайте друзей, следите за начислениями и выводите вознаграждение.',
           })}
           metrics={[
             {
@@ -438,10 +438,10 @@ export function UltimaReferral() {
           ]}
           aside={
             <UltimaDesktopPanel
-              title={t('referral.desktopAsideTitle', { defaultValue: 'Партнерский статус' })}
+              title={t('referral.desktopAsideTitle', { defaultValue: 'Партнерский кабинет' })}
               subtitle={t('referral.desktopAsideHint', {
                 defaultValue:
-                  'Следите за партнерским статусом, заявками на вывод и основными действиями по реферальной программе.',
+                  'Здесь собраны статус партнера, ссылка и основные действия по программе.',
               })}
             >
               <div className="space-y-3">

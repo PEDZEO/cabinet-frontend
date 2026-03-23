@@ -207,7 +207,7 @@ export function UltimaTopUpMethodSelect() {
           title={t('balance.selectPaymentMethod', { defaultValue: 'Способ оплаты' })}
           subtitle={t('balance.ultimaBalanceNotice', {
             defaultValue:
-              'При пополнении средства зачисляются на баланс и затем учитываются в стоимости подписки.',
+              'Выберите удобный способ пополнения. Деньги сначала поступят на баланс, а потом спишутся в оплату подписки.',
           })}
           metrics={[
             {
@@ -230,10 +230,10 @@ export function UltimaTopUpMethodSelect() {
           ]}
           aside={
             <UltimaDesktopPanel
-              title={t('payment.desktopAsideTitle', { defaultValue: 'Пополнение баланса' })}
+              title={t('payment.desktopAsideTitle', { defaultValue: 'Что дальше' })}
               subtitle={t('payment.desktopAsideHint', {
                 defaultValue:
-                  'После пополнения средства остаются на балансе и затем автоматически списываются в оплату подписки.',
+                  'После пополнения сумма останется на балансе и будет списываться в нужный момент автоматически.',
               })}
             >
               <div className="space-y-3">

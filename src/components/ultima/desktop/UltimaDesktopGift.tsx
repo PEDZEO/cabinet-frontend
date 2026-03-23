@@ -484,8 +484,7 @@ export function UltimaDesktopGift({
       <UltimaDesktopPanel
         title={t('gift.desktopHistoryTitle', { defaultValue: 'История подарков' })}
         subtitle={t('gift.desktopHistorySubtitle', {
-          defaultValue:
-            'Отправленные коды можно копировать и продлевать прямо из desktop-интерфейса.',
+          defaultValue: 'Отправленные коды можно копировать и продлевать прямо из этой страницы.',
         })}
       >
         <div className="grid gap-4 xl:grid-cols-2">

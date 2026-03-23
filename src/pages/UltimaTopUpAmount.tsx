@@ -334,7 +334,7 @@ export function UltimaTopUpAmount() {
           title={methodName}
           subtitle={t('balance.ultimaBalanceNotice', {
             defaultValue:
-              'Средства поступят на баланс и автоматически учтутся в стоимости подписки.',
+              'Укажите сумму, получите ссылку и сразу откройте оплату в выбранном методе.',
           })}
           metrics={[
             {
@@ -353,7 +353,11 @@ export function UltimaTopUpAmount() {
             },
             {
               label: t('common.status', { defaultValue: 'Статус' }),
-              value: topUpMutation.isPending ? t('common.loading') : paymentUrl ? 'Ready' : 'Draft',
+              value: topUpMutation.isPending
+                ? t('common.loading', { defaultValue: 'Загрузка...' })
+                : paymentUrl
+                  ? t('payment.desktopReady', { defaultValue: 'Ссылка готова' })
+                  : t('payment.desktopDraft', { defaultValue: 'Черновик' }),
               hint:
                 error ||
                 t('payment.desktopStatusHint', {
@@ -366,7 +370,7 @@ export function UltimaTopUpAmount() {
               title={t('payment.desktopAsideTitle', { defaultValue: 'Оплата' })}
               subtitle={t('payment.desktopAsideHint', {
                 defaultValue:
-                  'Платежная ссылка создается под выбранный метод и сумму и открывается сразу после генерации.',
+                  'Ссылка на оплату создается под выбранную сумму и открывается сразу после генерации.',
               })}
             >
               <div className="space-y-3">

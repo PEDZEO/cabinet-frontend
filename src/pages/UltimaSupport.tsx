@@ -514,7 +514,7 @@ export function UltimaSupport() {
                 })
               : t('support.desktopDescription', {
                   defaultValue:
-                    'Тикеты, ответы администраторов и создание новых запросов собраны в одном рабочем окне.',
+                    'Здесь можно открыть новый тикет, прочитать ответы и быстро вернуться к нужному диалогу.',
                 })
           }
           metrics={[
@@ -533,9 +533,13 @@ export function UltimaSupport() {
               }),
             },
             {
-              label: t('support.desktopChannelLabel', { defaultValue: 'Канал связи' }),
-              value: supportChannelValue,
-              hint: supportChannelHint,
+              label: t('support.selectedTicket', { defaultValue: 'Диалог' }),
+              value: selectedTicket ? t('support.desktopOpened', { defaultValue: 'Открыт' }) : '—',
+              hint:
+                selectedTicket?.title ||
+                t('support.desktopSelectionHint', {
+                  defaultValue: 'Выберите тикет или откройте внешний канал поддержки.',
+                }),
             },
           ]}
           heroActions={
@@ -551,9 +555,10 @@ export function UltimaSupport() {
           }
           aside={
             <UltimaDesktopPanel
-              title={t('support.supportDesk', { defaultValue: 'Панель поддержки' })}
+              title={t('support.supportDesk', { defaultValue: 'Связь и диалог' })}
               subtitle={t('support.supportDeskHint', {
-                defaultValue: 'Текущий канал связи, активный диалог и быстрые действия.',
+                defaultValue:
+                  'Внешний канал поддержки и текущий выбранный тикет собраны в одном месте.',
               })}
             >
               <div className="space-y-3">

@@ -77,6 +77,11 @@ export function UltimaDesktopSectionLayout({
   children,
   contentClassName,
 }: UltimaDesktopSectionLayoutProps) {
+  const normalizedEyebrow = eyebrow?.trim().toLowerCase();
+  const normalizedTitle = title.trim().toLowerCase();
+  const displayEyebrow =
+    normalizedEyebrow && normalizedEyebrow !== normalizedTitle ? eyebrow : undefined;
+
   return (
     <div className="ultima-shell-inner lg:max-w-[1160px]">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
@@ -92,9 +97,9 @@ export function UltimaDesktopSectionLayout({
                   <div className="text-white/84 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.08]">
                     {icon}
                   </div>
-                  {eyebrow ? (
+                  {displayEyebrow ? (
                     <div className="text-white/48 mt-4 text-[11px] uppercase tracking-[0.22em]">
-                      {eyebrow}
+                      {displayEyebrow}
                     </div>
                   ) : null}
                   <h1 className="mt-3 text-[clamp(34px,4.2vw,52px)] font-semibold leading-[0.94] tracking-[-0.045em] text-white">

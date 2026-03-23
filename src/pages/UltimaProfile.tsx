@@ -498,7 +498,7 @@ export function UltimaProfile() {
           title={t('profile.title', { defaultValue: 'Профиль' })}
           subtitle={t('profile.desktopDescription', {
             defaultValue:
-              'Все ключевые действия аккаунта собраны в одном desktop-пространстве: платежи, устройства, подарки, промокоды и поддержка.',
+              'Здесь собраны платежи, устройства, подарки, промокоды и помощь по аккаунту.',
           })}
           metrics={[
             {
@@ -528,14 +528,14 @@ export function UltimaProfile() {
                 onClick={() => void openPathFast('/balance/top-up')}
                 className="ultima-btn-pill ultima-btn-primary px-5 py-3 text-sm"
               >
-                {t('profile.paymentMethodsTitle', { defaultValue: 'Способы оплаты' })}
+                {t('balance.topUp', { defaultValue: 'Пополнить баланс' })}
               </button>
               <button
                 type="button"
                 onClick={openSupportFast}
                 className="ultima-btn-pill ultima-btn-secondary px-5 py-3 text-sm"
               >
-                {t('profile.supportContactTitle', { defaultValue: 'Поддержка' })}
+                {t('support.title', { defaultValue: 'Поддержка' })}
               </button>
             </>
           }
@@ -544,7 +544,7 @@ export function UltimaProfile() {
               <UltimaDesktopPanel
                 title={t('profile.accountOverview', { defaultValue: 'Доступ к аккаунту' })}
                 subtitle={t('profile.accountOverviewHint', {
-                  defaultValue: 'Быстрые переходы к самым частым действиям и данные аккаунта.',
+                  defaultValue: 'Самое важное по аккаунту и быстрые переходы без лишнего поиска.',
                 })}
               >
                 <div className="space-y-3">
@@ -651,7 +651,11 @@ export function UltimaProfile() {
           >
             <CopyIcon />
           </button>
-          {idCopied ? <span className="text-xs text-emerald-200">OK</span> : null}
+          {idCopied ? (
+            <span className="text-xs text-emerald-200">
+              {t('common.copied', { defaultValue: 'Скопировано' })}
+            </span>
+          ) : null}
         </section>
 
         <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0 lg:overflow-visible lg:pr-0">

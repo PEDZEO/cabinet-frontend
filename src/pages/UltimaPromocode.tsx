@@ -145,7 +145,7 @@ export function UltimaPromocode() {
           title={t('balance.promocode.title', { defaultValue: 'Промокод' })}
           subtitle={t('balance.promocode.ultimaDescription', {
             defaultValue:
-              'Активируйте промокод для бонусов. Скидки и бонусы будут учтены в подписке автоматически.',
+              'Введите промокод или подарочный код и сразу увидите результат применения.',
           })}
           metrics={[
             {
@@ -157,7 +157,11 @@ export function UltimaPromocode() {
             },
             {
               label: t('common.status', { defaultValue: 'Статус' }),
-              value: activateMutation.isPending ? t('common.loading') : success ? 'OK' : 'Ready',
+              value: activateMutation.isPending
+                ? t('common.loading', { defaultValue: 'Загрузка...' })
+                : success
+                  ? t('promocode.desktopApplied', { defaultValue: 'Применен' })
+                  : t('promocode.desktopWaiting', { defaultValue: 'Ожидает' }),
               hint:
                 error ||
                 success ||
@@ -167,7 +171,9 @@ export function UltimaPromocode() {
             },
             {
               label: t('nav.gift', { defaultValue: 'Подарок' }),
-              value: giftActivationNotice ? 'Gift' : '—',
+              value: giftActivationNotice
+                ? t('promocode.desktopGiftCode', { defaultValue: 'Есть код' })
+                : '—',
               hint: t('promocode.desktopGiftHint', {
                 defaultValue: 'Подарочные коды активируются в этом же окне.',
               }),
@@ -175,10 +181,10 @@ export function UltimaPromocode() {
           ]}
           aside={
             <UltimaDesktopPanel
-              title={t('promocode.desktopAsideTitle', { defaultValue: 'Как это работает' })}
+              title={t('promocode.desktopAsideTitle', { defaultValue: 'Что произойдет' })}
               subtitle={t('promocode.desktopAsideHint', {
                 defaultValue:
-                  'Промокоды и подарочные коды применяются мгновенно и сразу отражаются в подписке.',
+                  'Если код подойдет, изменения сразу появятся в подписке и истории операций.',
               })}
             >
               <div className="space-y-3">

@@ -778,7 +778,7 @@ export function UltimaGift() {
           title={t('nav.gift', { defaultValue: 'Подарок' })}
           subtitle={t('balance.promocode.createGiftDescription', {
             defaultValue:
-              'Создавайте подарочные коды, оплачивайте недостающую сумму только при необходимости и управляйте историей отправленных подарков в одном desktop-интерфейсе.',
+              'Создайте подарочный код, отправьте его человеку и следите за активацией в истории.',
           })}
           metrics={desktopMetrics}
           purchaseIntro={t('gift.desktopBuilderSubtitle', {

@@ -220,7 +220,7 @@ export function UltimaBalanceHistory() {
           eyebrow={t('profile.transactionsTitle', { defaultValue: 'История операций' })}
           title={t('profile.transactionsTitle', { defaultValue: 'История операций' })}
           subtitle={t('profile.transactionsDescription', {
-            defaultValue: 'Список ваших транзакций',
+            defaultValue: 'Все пополнения, списания и бонусы по балансу в одном журнале.',
           })}
           metrics={[
             {
@@ -249,9 +249,10 @@ export function UltimaBalanceHistory() {
           ]}
           aside={
             <UltimaDesktopPanel
-              title={t('history.desktopAsideTitle', { defaultValue: 'Баланс и приватность' })}
+              title={t('history.desktopAsideTitle', { defaultValue: 'Баланс' })}
               subtitle={t('history.desktopAsideHint', {
-                defaultValue: 'Быстро переключайте видимость баланса и следите за типами операций.',
+                defaultValue:
+                  'Скрывайте сумму баланса и быстро понимайте, какие операции прошли по счету.',
               })}
             >
               <div className="space-y-3">
