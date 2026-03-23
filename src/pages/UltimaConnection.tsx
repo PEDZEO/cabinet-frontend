@@ -4,10 +4,12 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { subscriptionApi } from '@/api/subscription';
+import { UltimaDesktopConnection } from '@/components/ultima/desktop/UltimaDesktopConnection';
 import { useHaptic } from '@/platform';
 import { useAuthStore } from '@/store/auth';
 import type { AppConfig, LocalizedText, RemnawaveAppClient } from '@/types';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import {
   ULTIMA_CONNECTION_PENDING_STEP2_KEY,
   ULTIMA_CONNECTION_PENDING_STEP3_KEY,
@@ -177,6 +179,7 @@ export function UltimaConnection({
   const navigate = useNavigate();
   const haptic = useHaptic();
   const user = useAuthStore((state) => state.user);
+  const isDesktopViewport = useMediaQuery('(min-width: 1024px)');
   const [step, setStep] = useState<Step>(1);
   const [showInfo, setShowInfo] = useState(true);
   const [burst, setBurst] = useState(0);
@@ -440,6 +443,52 @@ export function UltimaConnection({
     setShowInfo(false);
   };
 
+  const bottomNav = <UltimaBottomNav active="connection" />;
+
+  if (isDesktopViewport) {
+    return (
+      <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-connection-desktop relative">
+        <div className="ultima-shell-aura" />
+        <UltimaDesktopConnection
+          step={step}
+          title={title}
+          subtitle={subtitle}
+          importantInfoDescription={importantInfoDescription}
+          showInfo={showInfo}
+          canPermanentlyHideReminder={canPermanentlyHideReminder}
+          bottomNav={bottomNav}
+          onStartInstall={startInstallFlow}
+          onStartAddSubscription={startAddSubscriptionFlow}
+          onAdvance={advanceStep}
+          onFinish={finishFlow}
+          onNeedHelp={() => navigate('/support')}
+          onToggleVpn={openToggleVpn}
+          onDismissInfo={dismissReminderForNow}
+          onHideReminderPermanently={hideReminderPermanently}
+        />
+        {showFinishSuccess && (
+          <div className="pointer-events-none absolute inset-0 z-40">
+            <div
+              className="absolute"
+              style={{
+                left: successWaveOrigin.x,
+                top: successWaveOrigin.y,
+                transform: 'translate(-50%, -50%)',
+              }}
+            >
+              <div
+                className="ultima-success-wave h-[54vmax] w-[54vmax] rounded-full border"
+                style={{
+                  borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 52%, transparent)',
+                }}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="ultima-shell ultima-shell-compact">
       <div className="ultima-shell-inner lg:max-w-[560px] lg:justify-between">
@@ -694,9 +743,7 @@ export function UltimaConnection({
             </button>
           )}
 
-          <div className="ultima-nav-dock">
-            <UltimaBottomNav active="connection" />
-          </div>
+          <div className="ultima-nav-dock">{bottomNav}</div>
         </section>
       </div>
 

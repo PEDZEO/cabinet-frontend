@@ -5,8 +5,10 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { balanceApi } from '@/api/balance';
 import { promoApi } from '@/api/promo';
 import { subscriptionApi } from '@/api/subscription';
+import { UltimaDesktopSubscription } from '@/components/ultima/desktop/UltimaDesktopSubscription';
 import { createApplyPromoDiscount } from '@/features/subscription/utils/pricing';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useCloseOnSuccessNotification } from '@/store/successNotification';
 import { useHaptic, usePlatform } from '@/platform';
 import type { PaymentMethod, Tariff, TariffPeriod } from '@/types';
@@ -104,6 +106,7 @@ export function UltimaSubscription() {
   const { currencySymbol } = useCurrency();
   const haptic = useHaptic();
   const { openLink, openTelegramLink } = usePlatform();
+  const isDesktopViewport = useMediaQuery('(min-width: 1024px)');
 
   const [selectedDeviceIndex, setSelectedDeviceIndex] = useState(0);
   const [selectedPeriodDays, setSelectedPeriodDays] = useState<number | null>(null);
@@ -629,10 +632,34 @@ export function UltimaSubscription() {
   }, []);
 
   if (isLoading) {
+    if (isDesktopViewport) {
+      return (
+        <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-subscription-desktop">
+          <div className="ultima-shell-aura" />
+          <div className="ultima-shell-inner lg:max-w-[1200px]">
+            <div className="flex min-h-[calc(100dvh-48px)] items-center justify-center">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-300/35 border-t-transparent" />
+            </div>
+          </div>
+        </div>
+      );
+    }
     return <div className="h-[100svh] min-h-[100dvh] w-full bg-transparent" />;
   }
 
   if (!selectedTariff || !selectedPeriod) {
+    if (isDesktopViewport) {
+      return (
+        <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-subscription-desktop">
+          <div className="ultima-shell-aura" />
+          <div className="ultima-shell-inner lg:max-w-[1200px]">
+            <div className="flex min-h-[calc(100dvh-48px)] items-center justify-center text-dark-200">
+              {t('subscription.noTariffsAvailable', { defaultValue: 'Тарифы недоступны' })}
+            </div>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="flex h-[100svh] min-h-[100dvh] items-center justify-center text-dark-200">
         {t('subscription.noTariffsAvailable', { defaultValue: 'Тарифы недоступны' })}
@@ -681,10 +708,12 @@ export function UltimaSubscription() {
   );
   const selectedPriceKopeks = selectedPricePreview.price;
   const currentBalanceKopeks = Math.max(0, balanceData?.balance_kopeks ?? 0);
+  const balanceAppliedKopeks = Math.min(currentBalanceKopeks, selectedPriceKopeks);
   const payableAmountKopeks = Math.max(0, selectedPriceKopeks - currentBalanceKopeks);
   const isCompactHeight = viewportHeight < 780;
   const isUltraCompactHeight = viewportHeight < 700;
   const isNarrowWidth = viewportWidth < 390;
+  const bottomNav = <UltimaBottomNav active="home" />;
 
   const openTopUpForSubscription = async () => {
     setError(null);
@@ -798,6 +827,67 @@ export function UltimaSubscription() {
     }
     return `${period.days} дней`;
   };
+
+  const desktopPeriods = displayPeriods.map((period) => {
+    const preview = applyPromoDiscount(
+      calculateRawPeriodPrice(period),
+      period.original_price_kopeks ?? null,
+    );
+    const monthlyPrice = Math.max(1, Math.round((preview.price / Math.max(1, period.days)) * 30));
+
+    return {
+      days: period.days,
+      label: periodLabel(period),
+      priceLabel: formatPrice(preview.price),
+      monthlyLabel: `${formatPrice(monthlyPrice)} / мес`,
+      originalPriceLabel:
+        preview.original && preview.original > preview.price ? formatPrice(preview.original) : null,
+      isSelected: period.days === selectedPeriod.days,
+      isBestDeal: period.days === bestDealPeriodDays,
+    };
+  });
+
+  if (isDesktopViewport) {
+    return (
+      <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-subscription-desktop">
+        <div className="ultima-shell-aura" />
+        <UltimaDesktopSubscription
+          title={t('subscription.purchaseTitle', { defaultValue: 'Покупка подписки' })}
+          subtitle={t('subscription.purchaseSubtitle', {
+            defaultValue:
+              'Выберите количество устройств и подходящий период, а итоговая оплата пересчитается автоматически.',
+          })}
+          selectedDeviceLimit={selectedDeviceLimit}
+          deviceLimits={deviceLimits}
+          periods={desktopPeriods}
+          selectedPeriodLabel={periodLabel(selectedPeriod)}
+          totalPriceLabel={formatPrice(selectedPriceKopeks)}
+          balanceAppliedLabel={formatPrice(balanceAppliedKopeks)}
+          payablePriceLabel={formatPrice(payableAmountKopeks)}
+          originalPriceLabel={
+            selectedPricePreview.original && selectedPricePreview.original > selectedPriceKopeks
+              ? formatPrice(selectedPricePreview.original)
+              : null
+          }
+          error={error}
+          awaitingPaymentCompletion={awaitingPaymentCompletion}
+          isFinalizingPending={isFinalizingPending}
+          isPayDisabled={
+            purchaseMutation.isPending || createPaymentMutation.isPending || isFinalizingPending
+          }
+          bottomNav={bottomNav}
+          onSelectDevice={(index) => applyDeviceIndex(index)}
+          onSelectPeriod={(days) => {
+            haptic.impact('light');
+            setSelectedPeriodDays(days);
+          }}
+          onPay={() => {
+            void openTopUpForSubscription();
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -1133,9 +1223,7 @@ export function UltimaSubscription() {
               ) : null}
             </span>
           </button>
-          <div className="ultima-nav-dock">
-            <UltimaBottomNav active="home" />
-          </div>
+          <div className="ultima-nav-dock">{bottomNav}</div>
         </div>
       </div>
     </div>
