@@ -644,11 +644,11 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
 
   .ultima-nav-dock {
     position: sticky;
-    bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(40px + env(safe-area-inset-bottom, 0px));
     z-index: 24;
     width: 100%;
     transform: none;
-    margin-top: 8px;
+    margin-top: 10px;
     padding-top: 0;
     padding-bottom: 0;
     background: none;
@@ -656,8 +656,8 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
 
   .ultima-nav-dock .ultima-bottom-nav {
     margin-inline: auto;
-    width: min(100%, 560px);
-    max-width: 560px;
+    width: min(100%, var(--ultima-dock-max-width, 760px));
+    max-width: min(100%, var(--ultima-dock-max-width, 760px));
   }
 }
 

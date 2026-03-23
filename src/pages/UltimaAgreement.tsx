@@ -84,9 +84,9 @@ export function UltimaAgreement() {
       <div
         className="ultima-shell-inner lg:max-w-[960px]"
         style={{
-          height: 'calc(100dvh - 56px - env(safe-area-inset-bottom, 0px))',
-          minHeight: 'calc(100dvh - 56px - env(safe-area-inset-bottom, 0px))',
-          maxHeight: 'calc(100dvh - 56px - env(safe-area-inset-bottom, 0px))',
+          height: 'calc(100dvh - 40px - env(safe-area-inset-bottom, 0px))',
+          minHeight: 'calc(100dvh - 40px - env(safe-area-inset-bottom, 0px))',
+          maxHeight: 'calc(100dvh - 40px - env(safe-area-inset-bottom, 0px))',
         }}
       >
         <section className="mb-3 rounded-[24px] border border-emerald-200/10 bg-[linear-gradient(180deg,rgba(69,186,142,0.16),rgba(18,79,64,0.26))] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] backdrop-blur-md">
