@@ -615,8 +615,8 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
     overflow-y: auto;
     align-items: flex-start;
     justify-content: center;
-    padding-top: 24px;
-    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    padding-top: 18px;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
   }
 
   .ultima-shell-inner {
@@ -636,21 +636,21 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
     width: min(100%, 520px);
     max-width: 520px;
     height: min(860px, calc(100dvh - 48px - env(safe-area-inset-bottom, 0px)));
-    min-height: 620px;
-    max-height: calc(100dvh - 48px - env(safe-area-inset-bottom, 0px));
+    min-height: 600px;
+    max-height: calc(100dvh - 32px - env(safe-area-inset-bottom, 0px));
   }
 
   .ultima-nav-dock {
     position: sticky;
-    bottom: 0;
+    bottom: 10px;
     z-index: 20;
     margin-top: auto;
-    padding-top: 18px;
-    padding-bottom: 8px;
+    padding-top: 10px;
+    padding-bottom: 0;
     background: linear-gradient(
       180deg,
       transparent 0%,
-      color-mix(in srgb, var(--ultima-color-bg-bottom) 70%, transparent) 28%,
+      color-mix(in srgb, var(--ultima-color-bg-bottom) 58%, transparent) 24%,
       color-mix(in srgb, var(--ultima-color-bg-bottom) 94%, transparent) 100%
     );
   }
