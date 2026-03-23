@@ -1,4 +1,4 @@
-import { type CSSProperties } from 'react';
+import { type CSSProperties, type PointerEvent, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 type UltimaBottomNavTab = 'home' | 'connection' | 'profile' | 'support';
@@ -60,29 +60,49 @@ export function UltimaBottomNav({
   onSupportClick,
 }: UltimaBottomNavProps) {
   const navigate = useNavigate();
+  const [magnetOffset, setMagnetOffset] = useState<
+    Record<UltimaBottomNavTab, { x: number; y: number }>
+  >({
+    home: { x: 0, y: 0 },
+    connection: { x: 0, y: 0 },
+    profile: { x: 0, y: 0 },
+    support: { x: 0, y: 0 },
+  });
 
-  const getButtonClassName = () =>
-    'flex h-11 items-center justify-center rounded-[16px] border text-[var(--ultima-color-nav-text)] transition-[background-color,border-color,color,box-shadow] duration-200';
+  const getButtonClassName = (isActive: boolean) =>
+    isActive
+      ? 'flex h-11 items-center justify-center rounded-[16px] border text-[var(--ultima-color-primary-text)] shadow-[0_8px_20px_rgba(20,209,157,0.32),inset_0_1px_0_rgba(255,255,255,0.24)] translate-y-[-1px] transition-all duration-200 active:translate-y-0 active:scale-[0.985]'
+      : 'flex h-11 items-center justify-center rounded-[16px] text-[var(--ultima-color-nav-text)]/78 transition-all duration-200 hover:bg-white/8 hover:translate-y-[-1px] active:translate-y-0 active:scale-[0.985]';
 
-  const getButtonStyle = (isActive: boolean): CSSProperties => {
+  const handlePointerMove =
+    (tab: UltimaBottomNavTab) => (event: PointerEvent<HTMLButtonElement>) => {
+      const rect = event.currentTarget.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const x = Math.max(-3, Math.min(3, (event.clientX - centerX) * 0.16));
+      const y = Math.max(-2.4, Math.min(2.4, (event.clientY - centerY) * 0.14));
+      setMagnetOffset((prev) => ({ ...prev, [tab]: { x, y } }));
+    };
+
+  const resetMagnet = (tab: UltimaBottomNavTab) => () => {
+    setMagnetOffset((prev) => ({ ...prev, [tab]: { x: 0, y: 0 } }));
+  };
+
+  const getButtonStyle = (tab: UltimaBottomNavTab, isActive: boolean): CSSProperties => {
+    const offset = magnetOffset[tab] ?? { x: 0, y: 0 };
+    const baseY = isActive ? -1 : 0;
     return {
-      backgroundColor: isActive
-        ? 'var(--ultima-color-nav-active)'
-        : 'color-mix(in srgb, var(--ultima-color-nav-bg) 72%, transparent)',
-      borderColor: isActive
-        ? 'color-mix(in srgb, var(--ultima-color-ring) 35%, transparent)'
-        : 'color-mix(in srgb, var(--ultima-color-surface-border) 22%, transparent)',
-      color: isActive
-        ? 'var(--ultima-color-primary-text)'
-        : 'color-mix(in srgb, var(--ultima-color-nav-text) 86%, #ffffff)',
+      transform: `translate3d(${offset.x}px, ${baseY + offset.y}px, 0)`,
+      willChange: 'transform',
       ...(isActive
         ? {
+            backgroundColor: 'var(--ultima-color-nav-active)',
+            borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 35%, transparent)',
+            color: 'var(--ultima-color-primary-text)',
             boxShadow:
               '0 8px 20px color-mix(in srgb, var(--ultima-color-nav-active) 34%, transparent), inset 0 1px 0 rgba(255,255,255,0.24)',
           }
-        : {
-            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
-          }),
+        : null),
     };
   };
 
@@ -101,44 +121,52 @@ export function UltimaBottomNav({
       <button
         type="button"
         data-ultima-nav-btn="1"
-        className={getButtonClassName()}
-        style={getButtonStyle(active === 'home')}
+        className={getButtonClassName(active === 'home')}
+        style={getButtonStyle('home', active === 'home')}
         onClick={onHomeClick ?? (() => navigate('/'))}
+        onPointerMove={handlePointerMove('home')}
+        onPointerLeave={resetMagnet('home')}
+        onPointerUp={resetMagnet('home')}
         aria-label="ultima-nav-home"
-        aria-current={active === 'home' ? 'page' : undefined}
       >
         <GridIcon />
       </button>
       <button
         type="button"
         data-ultima-nav-btn="1"
-        className={getButtonClassName()}
-        style={getButtonStyle(active === 'connection')}
+        className={getButtonClassName(active === 'connection')}
+        style={getButtonStyle('connection', active === 'connection')}
         onClick={onConnectionClick ?? (() => navigate('/connection'))}
+        onPointerMove={handlePointerMove('connection')}
+        onPointerLeave={resetMagnet('connection')}
+        onPointerUp={resetMagnet('connection')}
         aria-label="ultima-nav-connection"
-        aria-current={active === 'connection' ? 'page' : undefined}
       >
         <GearIcon />
       </button>
       <button
         type="button"
         data-ultima-nav-btn="1"
-        className={getButtonClassName()}
-        style={getButtonStyle(active === 'profile')}
+        className={getButtonClassName(active === 'profile')}
+        style={getButtonStyle('profile', active === 'profile')}
         onClick={onProfileClick ?? (() => navigate('/profile'))}
+        onPointerMove={handlePointerMove('profile')}
+        onPointerLeave={resetMagnet('profile')}
+        onPointerUp={resetMagnet('profile')}
         aria-label="ultima-nav-profile"
-        aria-current={active === 'profile' ? 'page' : undefined}
       >
         <ProfileIcon />
       </button>
       <button
         type="button"
         data-ultima-nav-btn="1"
-        className={getButtonClassName()}
-        style={getButtonStyle(active === 'support')}
+        className={getButtonClassName(active === 'support')}
+        style={getButtonStyle('support', active === 'support')}
         onClick={onSupportClick ?? (() => navigate('/support'))}
+        onPointerMove={handlePointerMove('support')}
+        onPointerLeave={resetMagnet('support')}
+        onPointerUp={resetMagnet('support')}
         aria-label="ultima-nav-support"
-        aria-current={active === 'support' ? 'page' : undefined}
       >
         <SupportIcon />
       </button>

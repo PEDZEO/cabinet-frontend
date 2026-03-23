@@ -124,13 +124,13 @@ export function UltimaAgreement() {
           </p>
         </section>
 
-        <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl lg:min-h-0 lg:pb-2">
+        <section className="min-h-0 flex-1 overflow-hidden rounded-3xl lg:min-h-0 lg:pb-2">
           {isLoading ? (
             <div className="flex h-full items-center justify-center">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-300/35 border-t-transparent" />
             </div>
           ) : (
-            <div className="text-white/87 flex min-h-0 flex-1 flex-col overflow-y-auto px-1 pb-1 text-[14px] leading-[1.6] lg:px-0 lg:pr-2">
+            <div className="text-white/87 h-full min-h-0 overflow-y-auto px-1 pb-1 text-[14px] leading-[1.6] lg:px-0 lg:pr-2">
               {htmlContent ? (
                 <div
                   className="prose prose-invert max-w-none [&_a]:text-[#5de8c3] [&_a]:underline [&_h1]:mb-3 [&_h1]:text-[34px] [&_h1]:font-semibold [&_h1]:leading-[1] [&_h2]:mb-2 [&_h2]:mt-6 [&_h2]:text-[34px] [&_h2]:font-semibold [&_h2]:leading-[1] [&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-[34px] [&_h3]:font-semibold [&_h3]:leading-[1] [&_li]:mb-1 [&_p]:mb-3 [&_strong]:font-semibold"
