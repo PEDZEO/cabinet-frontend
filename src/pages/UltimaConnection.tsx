@@ -446,7 +446,7 @@ export function UltimaConnection({
         <section className="flex min-h-0 flex-1 flex-col lg:flex-none lg:pb-2">
           <div
             key={step}
-            className={`ultima-step-enter text-center lg:pt-2 ${isVeryShortViewport ? 'pt-0.5' : 'pt-2'}`}
+            className={`ultima-step-enter text-center lg:pt-3 ${isVeryShortViewport ? 'pt-0.5' : 'pt-2'}`}
           >
             <h1
               className={`font-semibold leading-[0.96] text-white ${
@@ -484,7 +484,7 @@ export function UltimaConnection({
               </div>
             )}
             <div
-              className={`mx-auto flex w-fit items-center gap-2 lg:mt-4 ${isVeryShortViewport ? 'mt-2' : 'mt-4'}`}
+              className={`mx-auto flex w-fit items-center gap-2 lg:mt-3 ${isVeryShortViewport ? 'mt-2' : 'mt-4'}`}
             >
               {[1, 2, 3].map((index) => {
                 const done = step > index || (step === 3 && index === 3);
@@ -506,7 +506,7 @@ export function UltimaConnection({
               })}
             </div>
             <div
-              className={`mx-auto h-1 w-[168px] overflow-hidden rounded-full bg-white/15 lg:mt-2 ${isVeryShortViewport ? 'mt-1.5' : 'mt-2'}`}
+              className={`mx-auto h-1 w-[168px] overflow-hidden rounded-full bg-white/15 lg:mt-1.5 ${isVeryShortViewport ? 'mt-1.5' : 'mt-2'}`}
             >
               <div
                 className="h-full rounded-full bg-gradient-to-r from-emerald-200/85 via-emerald-300/90 to-emerald-200/85 transition-[width] duration-500 ease-out"
@@ -516,7 +516,7 @@ export function UltimaConnection({
           </div>
 
           <div
-            className={`relative flex flex-1 items-center justify-center lg:mt-6 lg:min-h-[290px] lg:flex-none ${isFinalStep ? 'mb-2' : ''} ${isVeryShortViewport ? 'mt-3' : isShortViewport ? 'mt-5' : 'mt-7'}`}
+            className={`relative flex flex-1 items-center justify-center lg:mt-8 lg:min-h-[320px] lg:flex-none ${isFinalStep ? 'mb-2' : ''} ${isVeryShortViewport ? 'mt-3' : isShortViewport ? 'mt-5' : 'mt-7'}`}
           >
             <div
               className="ultima-step-ring border-emerald-200/22 pointer-events-none absolute rounded-full border"
@@ -703,7 +703,7 @@ export function UltimaConnection({
       {step === 1 && showInfo && (
         <>
           <div className="bg-black/52 absolute inset-0 z-[18]" />
-          <div className="ultima-step-enter border-white/24 absolute inset-x-4 bottom-[252px] z-20 rounded-[24px] border bg-[#05070B] p-4 text-white shadow-[0_26px_56px_rgba(0,0,0,0.72)] backdrop-blur-xl lg:inset-x-auto lg:bottom-auto lg:left-1/2 lg:top-1/2 lg:w-[520px] lg:-translate-x-1/2 lg:-translate-y-1/2">
+          <div className="ultima-step-enter border-white/24 absolute inset-x-4 bottom-[252px] z-20 rounded-[24px] border bg-[#05070B] p-4 text-white shadow-[0_26px_56px_rgba(0,0,0,0.72)] backdrop-blur-xl lg:inset-x-auto lg:bottom-[168px] lg:left-1/2 lg:w-[520px] lg:-translate-x-1/2">
             <div className="mb-2 flex items-start justify-between gap-3">
               <h3 className="text-[24px] font-semibold leading-[1.06] text-white/95">
                 {t('subscription.connection.importantInfo', {
