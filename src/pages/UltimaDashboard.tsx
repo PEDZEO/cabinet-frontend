@@ -690,13 +690,13 @@ export function UltimaDashboard() {
         </button>
       )}
 
-      <div className="ultima-shell-inner">
-        <section className="flex min-h-0 flex-1 flex-col pb-[clamp(14px,2.8vh,24px)] pt-[clamp(86px,19vh,198px)] lg:pb-3 lg:pt-16">
+      <div className="ultima-shell-inner lg:max-w-[680px] lg:justify-between">
+        <section className="flex min-h-0 flex-1 flex-col pb-[clamp(14px,2.8vh,24px)] pt-[clamp(86px,19vh,198px)] lg:flex-none lg:pb-2 lg:pt-8">
           <button
             type="button"
             aria-label={t('nav.dashboard')}
             onPointerDown={handleShieldTap}
-            className="relative mx-auto mb-[clamp(24px,5vh,56px)] flex h-24 w-24 items-center justify-center rounded-full bg-black/15 focus-visible:outline-none lg:mb-8"
+            className="relative mx-auto mb-[clamp(24px,5vh,56px)] flex h-24 w-24 items-center justify-center rounded-full bg-black/15 focus-visible:outline-none lg:mb-5"
             style={{ WebkitTapHighlightColor: 'transparent' }}
           >
             <span aria-hidden className="pointer-events-none absolute inset-0 overflow-visible">
@@ -883,19 +883,19 @@ export function UltimaDashboard() {
 
           {!showTrialSetupCard && (
             <>
-              <div className="mb-3 mt-auto flex items-center justify-between text-white lg:mb-2 lg:mt-0">
-                <div>
+              <div className="mb-3 mt-auto flex items-center justify-between text-white lg:mb-3 lg:mt-4 lg:flex-col lg:justify-center lg:gap-3 lg:text-center">
+                <div className="lg:flex lg:flex-col lg:items-center">
                   <button
                     type="button"
                     onClick={openSubscriptionInfo}
-                    className="text-left text-[32px] font-semibold leading-none tracking-[-0.02em] text-white transition hover:text-white/90 sm:text-[36px] lg:text-[34px]"
+                    className="text-left text-[32px] font-semibold leading-none tracking-[-0.02em] text-white transition hover:text-white/90 sm:text-[36px] lg:text-center lg:text-[38px]"
                   >
                     {expiryLabel}
                   </button>
                   <button
                     type="button"
                     onClick={openDevices}
-                    className="mt-2 text-left text-base text-emerald-300/90 transition hover:text-emerald-200"
+                    className="mt-2 text-left text-base text-emerald-300/90 transition hover:text-emerald-200 lg:text-center"
                   >
                     {t('lite.devicesTotal', { defaultValue: 'Устройств' })}:{' '}
                     {subscription?.device_limit ?? 0}
@@ -918,7 +918,7 @@ export function UltimaDashboard() {
           )}
         </section>
 
-        <section className="mt-auto pb-0 lg:mt-5 lg:pb-0">
+        <section className="mt-auto pb-0 lg:mt-0 lg:pb-0">
           <button
             type="button"
             onClick={() => {
