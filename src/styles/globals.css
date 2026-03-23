@@ -620,19 +620,23 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   }
 
   .ultima-shell-inner {
+    --ultima-dock-max-width: 760px;
     width: min(100%, 760px);
     max-width: 760px;
     height: auto;
     min-height: calc(100dvh - 48px - env(safe-area-inset-bottom, 0px));
     max-height: none;
+    padding-bottom: 108px;
   }
 
   .ultima-shell-wide .ultima-shell-inner {
+    --ultima-dock-max-width: 1040px;
     width: min(100%, 1040px);
     max-width: 1040px;
   }
 
   .ultima-shell-compact .ultima-shell-inner {
+    --ultima-dock-max-width: 520px;
     width: min(100%, 520px);
     max-width: 520px;
     height: min(860px, calc(100dvh - 48px - env(safe-area-inset-bottom, 0px)));
@@ -641,18 +645,21 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   }
 
   .ultima-nav-dock {
-    position: sticky;
-    bottom: 10px;
-    z-index: 20;
-    margin-top: auto;
-    padding-top: 10px;
+    position: fixed;
+    left: 50%;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    z-index: 30;
+    width: min(calc(100vw - 32px), var(--ultima-dock-max-width, 760px));
+    transform: translateX(-50%);
+    margin-top: 0;
+    padding-top: 0;
     padding-bottom: 0;
-    background: linear-gradient(
-      180deg,
-      transparent 0%,
-      color-mix(in srgb, var(--ultima-color-bg-bottom) 58%, transparent) 24%,
-      color-mix(in srgb, var(--ultima-color-bg-bottom) 94%, transparent) 100%
-    );
+    background: none;
+  }
+
+  .ultima-nav-dock .ultima-bottom-nav {
+    margin-inline: auto;
+    max-width: 100%;
   }
 }
 
