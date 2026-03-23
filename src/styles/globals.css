@@ -659,6 +659,12 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
     max-width: 1200px;
   }
 
+  .ultima-shell-gift-desktop .ultima-shell-inner {
+    --ultima-dock-max-width: 1220px;
+    width: min(100%, 1220px);
+    max-width: 1220px;
+  }
+
   .ultima-shell-profile-desktop .ultima-shell-inner {
     --ultima-dock-max-width: 1160px;
     width: min(100%, 1160px);

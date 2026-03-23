@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { balanceApi } from '@/api/balance';
 import { type GiftPurchaseRequest, giftApi, type SentGift } from '@/api/gift';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+import { UltimaDesktopGift } from '@/components/ultima/desktop/UltimaDesktopGift';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { usePlatform } from '@/platform/hooks/usePlatform';
 
@@ -97,6 +98,12 @@ export function UltimaGift() {
   const topupAmountKopeks =
     missingAmountKopeks > 0 ? Math.max(missingAmountKopeks, selectedMethodMinAmountKopeks) : 0;
   const requiresGatewayPayment = missingAmountKopeks > 0;
+  const currencySymbol = giftConfig?.currency_symbol ?? '₽';
+
+  const formatCurrency = useCallback(
+    (amountKopeks: number) => `${(amountKopeks / 100).toFixed(2)} ${currencySymbol}`,
+    [currencySymbol],
+  );
 
   useEffect(() => {
     if (!giftTariffOptions.length) return;
@@ -208,24 +215,31 @@ export function UltimaGift() {
     },
   });
 
-  const copyGiftCode = async (token: string) => {
-    const code = `GIFT-${token}`;
-    try {
-      await navigator.clipboard.writeText(code);
-      setSuccess(
-        t('balance.promocode.giftCodeCopied', {
-          defaultValue: `Промокод скопирован: ${code}`,
-        }),
-      );
-      setError(null);
-    } catch {
-      setError(
-        t('errors.copyFailed', {
-          defaultValue: 'Не удалось скопировать промокод',
-        }),
-      );
-    }
-  };
+  const copyGiftCodeValue = useCallback(
+    async (code: string) => {
+      try {
+        await navigator.clipboard.writeText(code);
+        setSuccess(
+          t('balance.promocode.giftCodeCopied', {
+            defaultValue: `Промокод скопирован: ${code}`,
+          }),
+        );
+        setError(null);
+      } catch {
+        setError(
+          t('errors.copyFailed', {
+            defaultValue: 'Не удалось скопировать промокод',
+          }),
+        );
+      }
+    },
+    [t],
+  );
+
+  const copyGiftCode = useCallback(
+    async (token: string) => copyGiftCodeValue(`GIFT-${token}`),
+    [copyGiftCodeValue],
+  );
 
   useEffect(() => {
     const statusData = giftStatusQuery.data;
@@ -453,11 +467,387 @@ export function UltimaGift() {
     },
   });
 
-  const onRenewFromHistory = (gift: SentGift) => {
-    if (extendGiftMutation.isPending) return;
-    const periodDays = giftExtendPeriods[gift.token] ?? gift.period_days;
-    extendGiftMutation.mutate({ giftToken: gift.token, periodDays, source: 'manual' });
+  const onRenewFromHistory = useCallback(
+    (gift: SentGift) => {
+      if (extendGiftMutation.isPending) return;
+      const periodDays = giftExtendPeriods[gift.token] ?? gift.period_days;
+      extendGiftMutation.mutate({ giftToken: gift.token, periodDays, source: 'manual' });
+    },
+    [extendGiftMutation, giftExtendPeriods],
+  );
+
+  const scrollToGiftBuilder = () => {
+    formAnchorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
+
+  const desktopMetrics = useMemo(() => {
+    const historyTotal = sentGifts.length + receivedGifts.length;
+
+    return [
+      {
+        label: t('balance.title', { defaultValue: 'Баланс' }),
+        value: formatCurrency(currentBalanceKopeks),
+        hint: t('gift.desktopBalanceHint', {
+          defaultValue: 'Доступно для мгновенного списания.',
+        }),
+      },
+      {
+        label: t('nav.gift', { defaultValue: 'Подарок' }),
+        value: selectedGiftPeriod?.price_label ?? '—',
+        hint: selectedGiftTariff
+          ? `${selectedGiftTariff.name} • ${selectedGiftPeriod?.days ?? '—'} ${t('gift.days', {
+              defaultValue: 'дн.',
+            })}`
+          : t('gift.desktopChooseHint', {
+              defaultValue: 'Выберите тариф и период для генерации кода.',
+            }),
+      },
+      {
+        label: requiresGatewayPayment
+          ? t('balance.promocode.needToPay', { defaultValue: 'К оплате' })
+          : t('gift.desktopHistoryMetric', { defaultValue: 'История' }),
+        value: requiresGatewayPayment ? formatCurrency(topupAmountKopeks) : String(historyTotal),
+        hint: requiresGatewayPayment
+          ? (selectedGatewayMethod?.display_name ??
+            t('gift.desktopGatewayHint', {
+              defaultValue: 'Недостающая сумма уйдет через выбранную платежку.',
+            }))
+          : `${sentGifts.length} ${t('gift.desktopSentShort', {
+              defaultValue: 'отправлено',
+            })} • ${receivedGifts.length} ${t('gift.desktopReceivedShort', {
+              defaultValue: 'получено',
+            })}`,
+      },
+    ];
+  }, [
+    currentBalanceKopeks,
+    formatCurrency,
+    receivedGifts.length,
+    requiresGatewayPayment,
+    selectedGatewayMethod?.display_name,
+    selectedGiftPeriod?.days,
+    selectedGiftPeriod?.price_label,
+    selectedGiftTariff,
+    sentGifts.length,
+    t,
+    topupAmountKopeks,
+  ]);
+
+  const desktopTariffs = useMemo(
+    () =>
+      giftTariffOptions.map((tariff) => ({
+        id: tariff.id,
+        name: tariff.name,
+        description:
+          tariff.description ??
+          `${tariff.device_limit} ${t('lite.devicesTotal', {
+            defaultValue: 'устройств',
+          })} • ${tariff.traffic_limit_gb} GB`,
+        deviceLimit: tariff.device_limit,
+        isSelected: tariff.id === giftTariffId,
+      })),
+    [giftTariffId, giftTariffOptions, t],
+  );
+
+  const desktopPeriods = useMemo(
+    () =>
+      giftPeriods.map((period) => ({
+        days: period.days,
+        label: `${period.days} ${t('gift.days', { defaultValue: 'дн.' })}`,
+        priceLabel: period.price_label,
+        badge: period.discount_percent
+          ? `-${period.discount_percent}%`
+          : period.original_price_kopeks
+            ? t('gift.desktopBestChoice', { defaultValue: 'Выгодно' })
+            : null,
+        isSelected: period.days === giftPeriodDays,
+      })),
+    [giftPeriodDays, giftPeriods, t],
+  );
+
+  const desktopPaymentMethods = useMemo(
+    () =>
+      gatewayMethods.map((method) => ({
+        id: method.method_id,
+        name: method.display_name,
+        description:
+          method.description ??
+          (method.min_amount_kopeks
+            ? `${t('gift.desktopMinTopup', {
+                defaultValue: 'Мин. пополнение',
+              })}: ${formatCurrency(method.min_amount_kopeks)}`
+            : null),
+        isSelected: method.method_id === giftPaymentMethod,
+      })),
+    [formatCurrency, gatewayMethods, giftPaymentMethod, t],
+  );
+
+  const desktopPaymentSubOptions = useMemo(
+    () =>
+      (selectedGatewayMethod?.sub_options ?? []).map((option) => ({
+        id: option.id,
+        name: option.name,
+        isSelected: option.id === giftPaymentOption,
+      })),
+    [giftPaymentOption, selectedGatewayMethod?.sub_options],
+  );
+
+  const desktopSummaryRows = useMemo(() => {
+    const rows = [
+      {
+        label: t('subscription.tariff', { defaultValue: 'Тариф' }),
+        value: selectedGiftTariff?.name ?? '—',
+      },
+      {
+        label: t('subscription.period', { defaultValue: 'Период' }),
+        value:
+          selectedGiftPeriod != null
+            ? `${selectedGiftPeriod.days} ${t('gift.days', { defaultValue: 'дн.' })}`
+            : '—',
+      },
+      {
+        label: t('balance.title', { defaultValue: 'Баланс' }),
+        value: formatCurrency(currentBalanceKopeks),
+      },
+      {
+        label: t('subscription.price', { defaultValue: 'Стоимость' }),
+        value: selectedGiftPeriod?.price_label ?? '—',
+      },
+    ];
+
+    if (requiresGatewayPayment) {
+      rows.push({
+        label: t('balance.promocode.needToPay', { defaultValue: 'К оплате' }),
+        value: formatCurrency(topupAmountKopeks),
+      });
+      rows.push({
+        label: t('balance.topUp.paymentMethodTitle', { defaultValue: 'Платежка' }),
+        value: selectedGatewayMethod?.display_name ?? '—',
+      });
+    } else {
+      rows.push({
+        label: t('gift.desktopPaymentSource', { defaultValue: 'Источник' }),
+        value: t('balance.title', { defaultValue: 'Баланс' }),
+      });
+    }
+
+    return rows;
+  }, [
+    currentBalanceKopeks,
+    formatCurrency,
+    requiresGatewayPayment,
+    selectedGatewayMethod?.display_name,
+    selectedGiftPeriod,
+    selectedGiftTariff?.name,
+    t,
+    topupAmountKopeks,
+  ]);
+
+  const pendingPurchaseMessage = useMemo(() => {
+    if (!pendingGiftToken) return null;
+
+    switch (giftStatusQuery.data?.status) {
+      case 'pending':
+        return t('gift.desktopPendingPayment', {
+          defaultValue: 'Ожидаем оплату. После подтверждения код появится автоматически.',
+        });
+      case 'paid':
+      case 'pending_activation':
+        return t('gift.desktopPaidPending', {
+          defaultValue: 'Оплата подтверждена. Обновляем код и историю подарков.',
+        });
+      case 'failed':
+      case 'expired':
+        return t('gift.desktopExpiredPayment', {
+          defaultValue: 'Ссылка на оплату истекла. Создайте подарок заново.',
+        });
+      default:
+        return t('gift.desktopCheckingPayment', {
+          defaultValue: 'Проверяем статус оплаты подарка.',
+        });
+    }
+  }, [giftStatusQuery.data?.status, pendingGiftToken, t]);
+
+  const desktopSentItems = useMemo(
+    () =>
+      sentGifts.map((gift) => {
+        const status = getStatusLabel(gift.status);
+        const periodOptions = (gift.tariff_id != null
+          ? tariffPeriodsById.get(gift.tariff_id)
+          : undefined
+        )?.map((period) => ({
+          days: period.days,
+          label: `${period.days} ${t('gift.days', { defaultValue: 'дн.' })}`,
+        })) ?? [
+          {
+            days: gift.period_days,
+            label: `${gift.period_days} ${t('gift.days', { defaultValue: 'дн.' })}`,
+          },
+        ];
+
+        return {
+          token: gift.token,
+          title: `${gift.tariff_name ?? t('subscription.tariff', { defaultValue: 'Тариф' })} • ${gift.period_days} ${t('gift.days', { defaultValue: 'дн.' })}`,
+          subtitle: gift.created_at
+            ? `${t('gift.desktopCreatedAt', { defaultValue: 'Создан' })}: ${new Date(gift.created_at).toLocaleDateString()}`
+            : t('gift.desktopCreatedRecently', { defaultValue: 'Создан недавно' }),
+          detail: gift.activated_by_username
+            ? `${t('gift.desktopActivatedBy', {
+                defaultValue: 'Активировал',
+              })}: ${gift.activated_by_username}`
+            : gift.gift_recipient_value
+              ? `${t('gift.desktopRecipient', { defaultValue: 'Получатель' })}: ${gift.gift_recipient_value}`
+              : t('gift.desktopReadyToShare', {
+                  defaultValue: 'Код готов к передаче получателю.',
+                }),
+          statusLabel: status.text,
+          statusClassName: status.cls,
+          periodOptions,
+          selectedPeriodDays: giftExtendPeriods[gift.token] ?? gift.period_days,
+          isRenewing: extendGiftMutation.isPending && extendingToken === gift.token,
+          onPeriodChange: (days: number) =>
+            setGiftExtendPeriods((prev) => ({ ...prev, [gift.token]: days })),
+          onRenew: () => onRenewFromHistory(gift),
+          onCopyCode: () => void copyGiftCode(gift.token),
+        };
+      }),
+    [
+      copyGiftCode,
+      extendGiftMutation.isPending,
+      extendingToken,
+      giftExtendPeriods,
+      onRenewFromHistory,
+      sentGifts,
+      t,
+      tariffPeriodsById,
+    ],
+  );
+
+  const desktopReceivedItems = useMemo(
+    () =>
+      receivedGifts.map((gift) => {
+        const status = getStatusLabel(gift.status);
+        const messageText = gift.gift_message?.trim();
+        return {
+          token: gift.token,
+          title: `${gift.tariff_name ?? t('subscription.tariff', { defaultValue: 'Тариф' })} • ${gift.period_days} ${t('gift.days', { defaultValue: 'дн.' })}`,
+          subtitle: gift.created_at
+            ? `${t('gift.desktopReceivedAt', { defaultValue: 'Получен' })}: ${new Date(gift.created_at).toLocaleDateString()}`
+            : t('gift.desktopReceivedRecently', { defaultValue: 'Получен недавно' }),
+          detail: messageText
+            ? `${t('gift.desktopMessage', { defaultValue: 'Сообщение' })}: ${messageText}`
+            : `${t('gift.desktopFrom', { defaultValue: 'От' })}: ${gift.sender_display ?? '—'}`,
+          statusLabel: status.text,
+          statusClassName: status.cls,
+        };
+      }),
+    [receivedGifts, t],
+  );
+
+  const desktopPendingExtend = useMemo(() => {
+    if (!pendingGiftExtend) return null;
+
+    return {
+      tokenLabel: `GIFT-${pendingGiftExtend.token}`,
+      description: t('gift.desktopPendingExtendDescription', {
+        defaultValue:
+          'Пополните баланс и подтвердите продление вручную. После подтверждения срок подарка обновится сразу.',
+      }),
+      canConfirm: (balanceData?.balance_kopeks ?? 0) >= pendingGiftExtend.requiredAmountKopeks,
+      isPending: extendGiftMutation.isPending,
+      onConfirm: () =>
+        extendGiftMutation.mutate({
+          giftToken: pendingGiftExtend.token,
+          periodDays: pendingGiftExtend.periodDays,
+          source: 'manual',
+        }),
+      onCancel: () => setPendingGiftExtend(null),
+    };
+  }, [balanceData?.balance_kopeks, extendGiftMutation, pendingGiftExtend, t]);
+
+  const copyGeneratedGiftCode = async () => {
+    if (!generatedGiftCode) return;
+    await copyGiftCodeValue(generatedGiftCode);
+  };
+
+  if (isDesktop) {
+    return (
+      <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-gift-desktop">
+        <div className="ultima-shell-aura" />
+        <UltimaDesktopGift
+          title={t('nav.gift', { defaultValue: 'Подарок' })}
+          subtitle={t('balance.promocode.createGiftDescription', {
+            defaultValue:
+              'Создавайте подарочные коды, оплачивайте недостающую сумму только при необходимости и управляйте историей отправленных подарков в одном desktop-интерфейсе.',
+          })}
+          metrics={desktopMetrics}
+          purchaseIntro={t('gift.desktopBuilderSubtitle', {
+            defaultValue:
+              'Выберите тариф, период и при необходимости платежку. Код будет создан автоматически после оплаты.',
+          })}
+          purchaseAnchorRef={formAnchorRef}
+          isLoading={!isGiftConfigLoaded}
+          disabledMessage={
+            isGiftConfigLoaded && giftConfig?.is_enabled === false
+              ? t('gift.disabled', {
+                  defaultValue: 'Подарки отключены администратором.',
+                })
+              : null
+          }
+          purchaseHint={t('balance.promocode.giftAutoBalanceTopupDescription', {
+            defaultValue:
+              'Если на балансе хватает средств, подарок оплачивается сразу. Если не хватает, к оплате уходит только недостающая сумма.',
+          })}
+          gatewayHint={
+            requiresGatewayPayment
+              ? t('balance.promocode.giftNeedTopupHint', {
+                  defaultValue:
+                    'Для покупки подарка не хватает средств на балансе. Оплатите только недостающую сумму через выбранную платежку.',
+                })
+              : null
+          }
+          tariffs={desktopTariffs}
+          periods={desktopPeriods}
+          paymentMethods={desktopPaymentMethods}
+          paymentSubOptions={desktopPaymentSubOptions}
+          requiresGatewayPayment={requiresGatewayPayment}
+          summaryRows={desktopSummaryRows}
+          primaryActionLabel={
+            createGiftMutation.isPending
+              ? t('common.loading', { defaultValue: 'Загрузка...' })
+              : requiresGatewayPayment
+                ? t('balance.promocode.createGiftAndPayButton', {
+                    defaultValue: 'Оплатить и создать код',
+                  })
+                : t('balance.promocode.createGiftButton', {
+                    defaultValue: 'Сгенерировать подарочный код',
+                  })
+          }
+          isPrimaryActionDisabled={
+            createGiftMutation.isPending ||
+            giftTariffId == null ||
+            giftPeriodDays == null ||
+            (requiresGatewayPayment && !giftPaymentMethod)
+          }
+          pendingPurchaseMessage={pendingPurchaseMessage}
+          generatedGiftCode={generatedGiftCode}
+          error={error}
+          success={success}
+          sentItems={desktopSentItems}
+          receivedItems={desktopReceivedItems}
+          pendingExtend={desktopPendingExtend}
+          bottomNav={<UltimaBottomNav active="profile" />}
+          onScrollToPurchase={scrollToGiftBuilder}
+          onSelectTariff={setGiftTariffId}
+          onSelectPeriod={setGiftPeriodDays}
+          onSelectPaymentMethod={setGiftPaymentMethod}
+          onSelectPaymentSubOption={setGiftPaymentOption}
+          onCreate={onCreateGift}
+          onCopyGeneratedCode={() => void copyGeneratedGiftCode()}
+        />
+      </div>
+    );
+  }
 
   return (
     <div
