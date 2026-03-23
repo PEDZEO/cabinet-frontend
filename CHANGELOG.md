@@ -1,5 +1,38 @@
 # Changelog
 
+## [1.11.0](https://github.com/PEDZEO/cabinet-frontend/compare/v1.10.0...v1.11.0) (2026-03-23)
+
+
+### Features
+
+* add ultima desktop setup flows ([fad045d](https://github.com/PEDZEO/cabinet-frontend/commit/fad045d2e15d5c4764e1cbd1548715036db96396))
+* expand ultima desktop profile pages ([3c6fe14](https://github.com/PEDZEO/cabinet-frontend/commit/3c6fe149e3cba6b90931ebe713330d27aab646be))
+* redesign ultima gift desktop ([fc6ba99](https://github.com/PEDZEO/cabinet-frontend/commit/fc6ba996e923b0775f1ac7a79261bdb36ed5fa35))
+* start ultima desktop redesign ([05c7b57](https://github.com/PEDZEO/cabinet-frontend/commit/05c7b571dcccc9e99984e3327a1be2bdb80422a8))
+
+
+### Bug Fixes
+
+* align ultima desktop overlays ([e6c7030](https://github.com/PEDZEO/cabinet-frontend/commit/e6c7030653d9f7218950254b4892776d3069ca99))
+* center ultima connection info modal ([fc71167](https://github.com/PEDZEO/cabinet-frontend/commit/fc711671d1791b3e479e7bcdf2c526cba0274269))
+* improve ultima desktop layout ([bf0f139](https://github.com/PEDZEO/cabinet-frontend/commit/bf0f139286421bd48472aa9d7490db46d90307ff))
+* pin ultima desktop dock ([a014880](https://github.com/PEDZEO/cabinet-frontend/commit/a0148800d5c3a695a19ff9d189e1eb571af956eb))
+* polish ultima desktop copy ([b460804](https://github.com/PEDZEO/cabinet-frontend/commit/b4608043e3862cc088092088feae02a42d551ef0))
+* raise ultima desktop dock ([bf522fb](https://github.com/PEDZEO/cabinet-frontend/commit/bf522fbd50fdd2c0e5a26b3997dc43f04597fdf1))
+* raise ultima dock and agreement scroll ([2b08be9](https://github.com/PEDZEO/cabinet-frontend/commit/2b08be9004ba79a62474dad9bf2aa8de3a4073c2))
+* refine ultima desktop density ([d7dbcda](https://github.com/PEDZEO/cabinet-frontend/commit/d7dbcda838239d4fbf6686fe93d31f2f6e9ed364))
+* refine ultima desktop screens ([a9c8fd6](https://github.com/PEDZEO/cabinet-frontend/commit/a9c8fd6b592164d146c8aa3c8802d1707157f4ea))
+* refine ultima support desktop ([8a0f1f1](https://github.com/PEDZEO/cabinet-frontend/commit/8a0f1f16b16d309866ec8a653763e47eb4778f8e))
+* restore ultima desktop dock ([7947668](https://github.com/PEDZEO/cabinet-frontend/commit/794766802c40b8d93b349e629950e91657541ca6))
+* restore ultima desktop spacing ([4422166](https://github.com/PEDZEO/cabinet-frontend/commit/44221669a977d25cd237b6b448e7154d9ca549e9))
+* tighten ultima desktop dashboard ([daafff7](https://github.com/PEDZEO/cabinet-frontend/commit/daafff7917c60c176de8bac674a66abe92ee5f68))
+* unify ultima desktop dock ([17e8533](https://github.com/PEDZEO/cabinet-frontend/commit/17e8533cbb7c8d2d5c918909154f99309ce6de71))
+
+
+### Reverts
+
+* restore ultima desktop spacing ([74548c2](https://github.com/PEDZEO/cabinet-frontend/commit/74548c23c295e417945f7988eb6ada106636204f))
+
 ## [1.10.0](https://github.com/PEDZEO/cabinet-frontend/compare/v1.9.1...v1.10.0) (2026-03-20)
 
 
