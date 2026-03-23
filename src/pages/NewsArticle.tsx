@@ -99,6 +99,26 @@ DOMPurify.addHook('afterSanitizeAttributes', (node) => {
   }
 });
 
+// Hook: validate <video> src — only allow http/https URLs
+DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+  if (node.tagName === 'VIDEO') {
+    const src = node.getAttribute('src') ?? '';
+    try {
+      const url = new URL(src);
+      if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+        node.remove();
+        return;
+      }
+    } catch {
+      node.remove();
+      return;
+    }
+    // Force safe defaults
+    node.setAttribute('controls', '');
+    node.setAttribute('preload', 'metadata');
+  }
+});
+
 /**
  * Strict allowlist of tags and attributes for article content.
  * Using ALLOWED_TAGS / ALLOWED_ATTR instead of ADD_TAGS / ADD_ATTR
@@ -145,6 +165,7 @@ const SANITIZE_CONFIG = {
     'sup',
     'small',
     'img',
+    'video',
     // Embed (validated by afterSanitizeAttributes hook)
     'iframe',
     'figure',
@@ -164,6 +185,9 @@ const SANITIZE_CONFIG = {
     'start',
     'reversed',
     'type',
+    // video-specific
+    'controls',
+    'preload',
     // iframe-specific (validated by hook)
     'frameborder',
     'allowfullscreen',

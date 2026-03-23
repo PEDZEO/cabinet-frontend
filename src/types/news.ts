@@ -57,3 +57,13 @@ export interface NewsCreateRequest {
 export interface NewsUpdateRequest extends Partial<NewsCreateRequest> {
   id?: never;
 }
+
+export interface NewsMediaUploadResponse {
+  url: string;
+  thumbnail_url: string | null;
+  media_type: 'image' | 'video';
+  filename: string;
+  size_bytes: number;
+  width: number | null;
+  height: number | null;
+}

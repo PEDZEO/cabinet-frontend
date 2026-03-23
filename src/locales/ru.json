@@ -5026,6 +5026,11 @@
       "saved": "Новость сохранена",
       "deleted": "Новость удалена",
       "selectColor": "Выбрать цвет {{color}}",
+      "uploading": "Загрузка...",
+      "dropMedia": "Перетащите изображение или видео сюда",
+      "uploadError": "Ошибка загрузки",
+      "fileTooLarge": "Файл слишком большой",
+      "uploadFeaturedImage": "Загрузить изображение",
       "toolbar": {
         "bold": "Жирный",
         "italic": "Курсив",

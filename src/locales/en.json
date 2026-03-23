@@ -4447,6 +4447,11 @@
       "saved": "Article saved",
       "deleted": "Article deleted",
       "selectColor": "Select color {{color}}",
+      "uploading": "Uploading...",
+      "dropMedia": "Drop image or video here",
+      "uploadError": "Upload failed",
+      "fileTooLarge": "File is too large",
+      "uploadFeaturedImage": "Upload image",
       "toolbar": {
         "bold": "Bold",
         "italic": "Italic",

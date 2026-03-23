@@ -3695,6 +3695,11 @@
       "saved": "文章已保存",
       "deleted": "文章已删除",
       "selectColor": "选择颜色 {{color}}",
+      "uploading": "上传中...",
+      "dropMedia": "将图片或视频拖到这里",
+      "uploadError": "上传失败",
+      "fileTooLarge": "文件太大",
+      "uploadFeaturedImage": "上传图片",
       "toolbar": {
         "bold": "粗体",
         "italic": "斜体",

@@ -4,6 +4,7 @@ import type {
   NewsListResponse,
   NewsCreateRequest,
   NewsUpdateRequest,
+  NewsMediaUploadResponse,
 } from '../types/news';
 
 export const newsApi = {
@@ -55,5 +56,20 @@ export const newsApi = {
   toggleFeatured: async (id: number): Promise<NewsArticle> => {
     const response = await apiClient.post<NewsArticle>(`/cabinet/admin/news/${id}/feature`);
     return response.data;
+  },
+
+  uploadMedia: async (file: File): Promise<NewsMediaUploadResponse> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await apiClient.post<NewsMediaUploadResponse>(
+      '/cabinet/admin/news/media/upload',
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } },
+    );
+    return response.data;
+  },
+
+  deleteMedia: async (filename: string): Promise<void> => {
+    await apiClient.delete(`/cabinet/admin/news/media/${encodeURIComponent(filename)}`);
   },
 };

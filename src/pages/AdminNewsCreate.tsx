@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -110,24 +110,37 @@ const HighlightIcon = () => (
   </svg>
 );
 
+const UploadIcon = () => (
+  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
+    />
+  </svg>
+);
+
 // --- Toolbar Button ---
 interface ToolbarButtonProps {
   onClick: () => void;
   isActive?: boolean;
+  disabled?: boolean;
   title: string;
   children: React.ReactNode;
 }
 
-function ToolbarButton({ onClick, isActive, title, children }: ToolbarButtonProps) {
+function ToolbarButton({ onClick, isActive, disabled, title, children }: ToolbarButtonProps) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       title={title}
       aria-label={title}
       aria-pressed={isActive}
       className={cn(
         'min-h-[44px] min-w-[44px] rounded p-2.5 transition-colors',
+        disabled && 'cursor-not-allowed opacity-50',
         isActive
           ? 'bg-accent-500/20 text-accent-400'
           : 'text-dark-400 hover:bg-dark-700 hover:text-dark-200',
@@ -195,6 +208,19 @@ export default function AdminNewsCreate() {
   const [isFeatured, setIsFeatured] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
+  // Media upload state
+  const mediaInputRef = useRef<HTMLInputElement>(null);
+  const featuredImageInputRef = useRef<HTMLInputElement>(null);
+  const [uploadCount, setUploadCount] = useState(0);
+  const isUploading = uploadCount > 0;
+  const [isDragging, setIsDragging] = useState(false);
+  const [isFeaturedImageUploading, setIsFeaturedImageUploading] = useState(false);
+  const uploadAbortRef = useRef<AbortController | null>(null);
+
+  // Ref to hold the media upload handler — allows editorProps.handlePaste to
+  // reference it without a circular dependency with useEditor.
+  const handleMediaUploadRef = useRef<(file: File) => void>(() => {});
+
   // TipTap editor — extensions are memoized with NO deps so the editor is
   // never destroyed/recreated on re-renders. The PlaceholderExtension
   // placeholder reads the translation at mount time only, which is acceptable
@@ -231,8 +257,158 @@ export default function AdminNewsCreate() {
       attributes: {
         class: 'prose max-w-none min-h-[300px] p-4 focus:outline-none',
       },
+      handlePaste: (_view, event) => {
+        const items = event.clipboardData?.items;
+        if (!items) return false;
+
+        for (const item of Array.from(items)) {
+          if (item.type.startsWith('image/') || item.type.startsWith('video/')) {
+            const file = item.getAsFile();
+            if (file) {
+              handleMediaUploadRef.current(file);
+              return true;
+            }
+          }
+        }
+        return false;
+      },
+      handleDrop: (_view, event) => {
+        const file = event.dataTransfer?.files[0];
+        if (file && (file.type.startsWith('image/') || file.type.startsWith('video/'))) {
+          event.preventDefault();
+          handleMediaUploadRef.current(file);
+          return true;
+        }
+        return false;
+      },
     },
   });
+
+  // --- Media upload handlers ---
+
+  const handleMediaUpload = useCallback(
+    async (file: File) => {
+      if (!editor) return;
+
+      const isImage = file.type.startsWith('image/');
+      const isVideo = file.type.startsWith('video/');
+      if (!isImage && !isVideo) return;
+
+      const maxSize = isImage ? 10 * 1024 * 1024 : 50 * 1024 * 1024;
+      if (file.size > maxSize) {
+        haptic.error();
+        setSaveError(t('news.admin.fileTooLarge'));
+        return;
+      }
+
+      uploadAbortRef.current?.abort();
+      const controller = new AbortController();
+      uploadAbortRef.current = controller;
+
+      setUploadCount((c) => c + 1);
+
+      try {
+        const result = await newsApi.uploadMedia(file);
+        if (controller.signal.aborted) return;
+
+        if (!isSafeUrl(result.url)) {
+          haptic.error();
+          setSaveError(t('news.admin.uploadError'));
+          return;
+        }
+
+        if (result.media_type === 'image') {
+          editor.chain().focus().setImage({ src: result.url, alt: file.name }).run();
+        } else {
+          const safeUrl = result.url.replace(/"/g, '&quot;');
+          editor
+            .chain()
+            .focus()
+            .insertContent(
+              `<video src="${safeUrl}" controls class="w-full rounded-xl max-h-96"></video>`,
+            )
+            .run();
+        }
+        haptic.success();
+      } catch {
+        if (controller.signal.aborted) return;
+        haptic.error();
+        setSaveError(t('news.admin.uploadError'));
+      } finally {
+        if (!controller.signal.aborted) setUploadCount((c) => c - 1);
+      }
+    },
+    [editor, haptic, t],
+  );
+
+  // Keep the ref in sync so editorProps handlers can access the latest callback
+  handleMediaUploadRef.current = handleMediaUpload;
+
+  // Cancel in-flight uploads on unmount to prevent state updates on destroyed editor
+  useEffect(() => {
+    return () => {
+      uploadAbortRef.current?.abort();
+    };
+  }, []);
+
+  const handleFileInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) handleMediaUpload(file);
+      e.target.value = '';
+    },
+    [handleMediaUpload],
+  );
+
+  const handleFeaturedImageUpload = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      e.target.value = '';
+
+      if (!file.type.startsWith('image/')) return;
+
+      if (file.size > 10 * 1024 * 1024) {
+        haptic.error();
+        setSaveError(t('news.admin.fileTooLarge'));
+        return;
+      }
+
+      setIsFeaturedImageUploading(true);
+
+      try {
+        const result = await newsApi.uploadMedia(file);
+        setFeaturedImageUrl(result.url);
+        haptic.success();
+      } catch {
+        haptic.error();
+        setSaveError(t('news.admin.uploadError'));
+      } finally {
+        setIsFeaturedImageUploading(false);
+      }
+    },
+    [haptic, t],
+  );
+
+  const handleEditorDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleEditorDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  }, []);
+
+  const handleEditorDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+      const file = e.dataTransfer.files[0];
+      if (file) handleMediaUpload(file);
+    },
+    [handleMediaUpload],
+  );
 
   // Fetch existing categories for suggestions
   const { data: newsData } = useQuery({
@@ -328,19 +504,6 @@ export default function AdminNewsCreate() {
   };
 
   // Toolbar actions
-  const addImage = () => {
-    const url = window.prompt(t('news.admin.toolbar.imageUrlPrompt'));
-    if (url && editor) {
-      try {
-        const parsed = new URL(url);
-        if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return;
-      } catch {
-        return;
-      }
-      editor.chain().focus().setImage({ src: url }).run();
-    }
-  };
-
   const addLink = () => {
     const url = window.prompt(t('news.admin.toolbar.linkUrlPrompt'));
     if (url && editor) {
@@ -500,12 +663,36 @@ export default function AdminNewsCreate() {
         {/* Featured Image URL */}
         <div>
           <label className="label">{t('news.admin.imageLabel')}</label>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={featuredImageUrl}
+              onChange={(e) => setFeaturedImageUrl(e.target.value)}
+              className="input flex-1"
+              placeholder="https://..."
+            />
+            <button
+              type="button"
+              onClick={() => featuredImageInputRef.current?.click()}
+              disabled={isFeaturedImageUploading}
+              className="flex min-h-[44px] items-center gap-2 rounded-lg bg-dark-700 px-4 py-2.5 text-sm font-medium text-dark-200 transition-colors hover:bg-dark-600 disabled:cursor-not-allowed disabled:opacity-50"
+              aria-label={t('news.admin.uploadFeaturedImage')}
+            >
+              {isFeaturedImageUploading ? (
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-accent-400 border-t-transparent" />
+              ) : (
+                <UploadIcon />
+              )}
+              <span className="hidden sm:inline">{t('news.admin.uploadFeaturedImage')}</span>
+            </button>
+          </div>
           <input
-            type="text"
-            value={featuredImageUrl}
-            onChange={(e) => setFeaturedImageUrl(e.target.value)}
-            className="input"
-            placeholder="https://..."
+            ref={featuredImageInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            onChange={handleFeaturedImageUpload}
+            className="hidden"
+            aria-hidden="true"
           />
           {isSafeUrl(featuredImageUrl) && (
             <div className="mt-2 overflow-hidden rounded-xl">
@@ -542,7 +729,33 @@ export default function AdminNewsCreate() {
         {/* Content editor */}
         <div>
           <label className="label">{t('news.admin.contentLabel')}</label>
-          <div className="overflow-hidden rounded-xl border border-dark-700 bg-dark-800/50">
+          <div
+            className="relative overflow-hidden rounded-xl border border-dark-700 bg-dark-800/50"
+            onDragOver={handleEditorDragOver}
+            onDragLeave={handleEditorDragLeave}
+            onDrop={handleEditorDrop}
+          >
+            {/* Upload progress overlay */}
+            {isUploading && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-dark-900/60 backdrop-blur-sm">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-400 border-t-transparent" />
+                  <span className="text-sm font-medium text-dark-200">
+                    {t('news.admin.uploading')}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Drag overlay */}
+            {isDragging && !isUploading && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl border-2 border-dashed border-accent-400 bg-accent-400/10">
+                <span className="text-sm font-semibold text-accent-400">
+                  {t('news.admin.dropMedia')}
+                </span>
+              </div>
+            )}
+
             {/* Toolbar */}
             {editor && (
               <div className="flex flex-wrap items-center gap-0.5 border-b border-dark-700 bg-dark-800 p-2">
@@ -659,8 +872,16 @@ export default function AdminNewsCreate() {
                 <ToolbarButton onClick={addLink} title={t('news.admin.toolbar.link')}>
                   <LinkIcon />
                 </ToolbarButton>
-                <ToolbarButton onClick={addImage} title={t('news.admin.toolbar.image')}>
-                  <ImageIcon />
+                <ToolbarButton
+                  onClick={() => mediaInputRef.current?.click()}
+                  disabled={isUploading}
+                  title={t('news.admin.toolbar.image')}
+                >
+                  {isUploading ? (
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-accent-400 border-t-transparent" />
+                  ) : (
+                    <ImageIcon />
+                  )}
                 </ToolbarButton>
               </div>
             )}
@@ -668,6 +889,16 @@ export default function AdminNewsCreate() {
             {/* Editor content */}
             <EditorContent editor={editor} />
           </div>
+
+          {/* Hidden file inputs */}
+          <input
+            ref={mediaInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"
+            onChange={handleFileInputChange}
+            className="hidden"
+            aria-hidden="true"
+          />
         </div>
 
         {/* Error feedback */}

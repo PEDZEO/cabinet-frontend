@@ -3696,6 +3696,11 @@
       "saved": "مقاله ذخیره شد",
       "deleted": "مقاله حذف شد",
       "selectColor": "انتخاب رنگ {{color}}",
+      "uploading": "در حال آپلود...",
+      "dropMedia": "تصویر یا ویدیو را اینجا رها کنید",
+      "uploadError": "آپلود ناموفق بود",
+      "fileTooLarge": "فایل خیلی بزرگ است",
+      "uploadFeaturedImage": "آپلود تصویر",
       "toolbar": {
         "bold": "پررنگ",
         "italic": "کج",
