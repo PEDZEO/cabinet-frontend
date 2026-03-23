@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -24,6 +24,8 @@ const SendIcon = () => (
   </svg>
 );
 
+const TICKETS_BATCH_SIZE = 5;
+
 export function UltimaSupport() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -37,6 +39,8 @@ export function UltimaSupport() {
   const [newMessage, setNewMessage] = useState('');
   const [replyMessage, setReplyMessage] = useState('');
   const [showOldTickets, setShowOldTickets] = useState(false);
+  const [visibleRecentCount, setVisibleRecentCount] = useState(TICKETS_BATCH_SIZE);
+  const [visibleOldCount, setVisibleOldCount] = useState(TICKETS_BATCH_SIZE);
 
   const { data: supportConfig, isLoading: configLoading } = useQuery({
     queryKey: ['support-config'],
@@ -130,6 +134,34 @@ export function UltimaSupport() {
     };
   }, [supportConfig, t, openLink, openTelegramLink]);
 
+  const supportChannelValue = useMemo(() => {
+    if (supportConfig?.tickets_enabled) {
+      return t('support.desktopTicketsChannel', { defaultValue: 'Тикеты' });
+    }
+
+    if (supportConfig?.support_type === 'url') {
+      return t('support.desktopWebChannel', { defaultValue: 'Сайт' });
+    }
+
+    return 'Telegram';
+  }, [supportConfig?.support_type, supportConfig?.tickets_enabled, t]);
+
+  const supportChannelHint = useMemo(() => {
+    if (supportConfig?.support_type === 'url' && supportConfig.support_url) {
+      return supportConfig.support_url;
+    }
+
+    if (supportConfig?.support_username) {
+      return supportConfig.support_username.startsWith('@')
+        ? supportConfig.support_username
+        : `@${supportConfig.support_username}`;
+    }
+
+    return t('support.desktopChannelHint', {
+      defaultValue: 'Канал поддержки доступен из этого окна.',
+    });
+  }, [supportConfig?.support_type, supportConfig?.support_url, supportConfig?.support_username, t]);
+
   const formatDate = (iso: string) => new Date(iso).toLocaleDateString();
   const formatDateTime = (iso: string) =>
     new Date(iso).toLocaleString(undefined, {
@@ -167,6 +199,21 @@ export function UltimaSupport() {
   };
 
   const ticketsDisabled = Boolean(supportConfig && !supportConfig.tickets_enabled);
+
+  useEffect(() => {
+    setVisibleRecentCount(TICKETS_BATCH_SIZE);
+    setVisibleOldCount(TICKETS_BATCH_SIZE);
+  }, [ticketBuckets.recent.length, ticketBuckets.old.length]);
+
+  const visibleRecentTickets = useMemo(
+    () => ticketBuckets.recent.slice(0, visibleRecentCount),
+    [ticketBuckets.recent, visibleRecentCount],
+  );
+
+  const visibleOldTickets = useMemo(
+    () => ticketBuckets.old.slice(0, visibleOldCount),
+    [ticketBuckets.old, visibleOldCount],
+  );
 
   const openProfileFast = () => {
     void queryClient.prefetchQuery({
@@ -289,7 +336,26 @@ export function UltimaSupport() {
                   <p className="px-1 text-[10px] uppercase tracking-[0.18em] text-white/45">
                     {t('support.recentTickets', { defaultValue: 'Новые и активные' })}
                   </p>
-                  {ticketBuckets.recent.map((ticket) => renderTicketCard(ticket))}
+                  {visibleRecentTickets.map((ticket) => renderTicketCard(ticket))}
+                  {ticketBuckets.recent.length > visibleRecentCount ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setVisibleRecentCount((prev) =>
+                          Math.min(ticketBuckets.recent.length, prev + TICKETS_BATCH_SIZE),
+                        )
+                      }
+                      className="w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-left text-[12px] text-white/80 transition hover:bg-white/[0.08]"
+                    >
+                      {t('support.desktopShowMoreTickets', {
+                        count: Math.min(
+                          TICKETS_BATCH_SIZE,
+                          ticketBuckets.recent.length - visibleRecentCount,
+                        ),
+                        defaultValue: `Показать еще ${Math.min(TICKETS_BATCH_SIZE, ticketBuckets.recent.length - visibleRecentCount)}`,
+                      })}
+                    </button>
+                  ) : null}
                 </div>
               )}
 
@@ -317,7 +383,26 @@ export function UltimaSupport() {
                   </button>
                   {showOldTickets && (
                     <div className="space-y-2">
-                      {ticketBuckets.old.map((ticket) => renderTicketCard(ticket))}
+                      {visibleOldTickets.map((ticket) => renderTicketCard(ticket))}
+                      {ticketBuckets.old.length > visibleOldCount ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setVisibleOldCount((prev) =>
+                              Math.min(ticketBuckets.old.length, prev + TICKETS_BATCH_SIZE),
+                            )
+                          }
+                          className="w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-left text-[12px] text-white/80 transition hover:bg-white/[0.08]"
+                        >
+                          {t('support.desktopShowMoreTickets', {
+                            count: Math.min(
+                              TICKETS_BATCH_SIZE,
+                              ticketBuckets.old.length - visibleOldCount,
+                            ),
+                            defaultValue: `Показать еще ${Math.min(TICKETS_BATCH_SIZE, ticketBuckets.old.length - visibleOldCount)}`,
+                          })}
+                        </button>
+                      ) : null}
                     </div>
                   )}
                 </div>
@@ -448,9 +533,9 @@ export function UltimaSupport() {
               }),
             },
             {
-              label: t('support.status', { defaultValue: 'Канал' }),
-              value: supportConfig?.tickets_enabled ? 'Tickets' : 'Direct',
-              hint: supportContact?.label || t('support.contactUs'),
+              label: t('support.desktopChannelLabel', { defaultValue: 'Канал связи' }),
+              value: supportChannelValue,
+              hint: supportChannelHint,
             },
           ]}
           heroActions={
@@ -474,18 +559,23 @@ export function UltimaSupport() {
               <div className="space-y-3">
                 <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3">
                   <div className="text-white/42 text-[11px] uppercase tracking-[0.2em]">
-                    {t('support.contactUs')}
+                    {t('support.desktopChannelLabel', { defaultValue: 'Канал связи' })}
                   </div>
                   <div className="mt-2 text-sm font-medium text-white/90">
-                    {supportContact?.label || t('support.contactUs')}
+                    {supportChannelValue}
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => supportContact?.action()}
-                    className="ultima-btn-pill ultima-btn-secondary mt-4 w-full px-4 py-2.5 text-sm"
-                  >
-                    {supportContact?.label || t('support.contactUs')}
-                  </button>
+                  <div className="mt-1 text-xs leading-[1.5] text-white/60">
+                    {supportChannelHint}
+                  </div>
+                  {supportContact ? (
+                    <button
+                      type="button"
+                      onClick={() => supportContact.action()}
+                      className="ultima-btn-pill ultima-btn-secondary mt-4 w-full px-4 py-2.5 text-sm"
+                    >
+                      {supportContact.label}
+                    </button>
+                  ) : null}
                 </div>
 
                 <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3">
