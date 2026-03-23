@@ -53,36 +53,181 @@ const CalendarIcon = () => (
 
 /**
  * Sanitizes HTML content using DOMPurify to prevent XSS attacks.
- * All article content from the API is sanitized before rendering.
+ * Uses explicit allowlists (not ADD_TAGS/ADD_ATTR) for defense-in-depth.
+ *
+ * iframe elements are allowed only when their src points to a trusted
+ * video host (YouTube, Vimeo) over HTTPS. All other iframes are stripped.
  */
-const ALLOWED_IFRAME_HOSTS = [
+const ALLOWED_IFRAME_HOSTS = new Set([
   'www.youtube.com',
   'youtube.com',
   'player.vimeo.com',
   'www.youtube-nocookie.com',
-];
+]);
 
-// Register DOMPurify hook to restrict iframe src to trusted hosts
-DOMPurify.addHook('uponSanitizeElement', (node, data) => {
-  if (data.tagName === 'iframe') {
-    const el = node as Element;
-    const src = el.getAttribute?.('src') ?? '';
-    try {
-      const url = new URL(src);
-      if (!ALLOWED_IFRAME_HOSTS.includes(url.hostname)) {
-        el.parentNode?.removeChild(el);
-      }
-    } catch {
-      el.parentNode?.removeChild(el);
+/**
+ * Validate that an iframe src URL points to a trusted host over HTTPS.
+ * Returns false for any non-HTTPS, non-allowlisted, or malformed URL.
+ */
+function isAllowedIframeSrc(src: string): boolean {
+  try {
+    const url = new URL(src);
+    return url.protocol === 'https:' && ALLOWED_IFRAME_HOSTS.has(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
+// Hook: strip iframes with disallowed src before DOMPurify finalizes the DOM.
+// Using 'afterSanitizeAttributes' is more reliable than 'uponSanitizeElement'
+// because the node is fully formed at this point.
+DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+  if (node.tagName === 'IFRAME') {
+    const src = node.getAttribute('src') ?? '';
+    if (!isAllowedIframeSrc(src)) {
+      node.remove();
+      return;
+    }
+    // Force sandbox attribute on surviving iframes for defense-in-depth.
+    // allow-scripts + allow-same-origin are needed for YouTube/Vimeo embeds.
+    node.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation');
+    // Strip any allow/allowfullscreen values we did not explicitly set
+    if (node.hasAttribute('allow')) {
+      // Only permit safe feature policies for video embeds
+      node.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture');
+    }
+  }
+});
+
+/**
+ * Strict allowlist of tags and attributes for article content.
+ * Using ALLOWED_TAGS / ALLOWED_ATTR instead of ADD_TAGS / ADD_ATTR
+ * ensures nothing from the permissive defaults leaks through.
+ */
+const SANITIZE_CONFIG = {
+  ALLOWED_TAGS: [
+    // Block elements
+    'p',
+    'div',
+    'br',
+    'hr',
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+    'blockquote',
+    'pre',
+    'code',
+    'ul',
+    'ol',
+    'li',
+    'table',
+    'thead',
+    'tbody',
+    'tr',
+    'th',
+    'td',
+    // Inline elements
+    'a',
+    'strong',
+    'b',
+    'em',
+    'i',
+    'u',
+    's',
+    'del',
+    'ins',
+    'span',
+    'mark',
+    'sub',
+    'sup',
+    'small',
+    'img',
+    // Embed (validated by afterSanitizeAttributes hook)
+    'iframe',
+    'figure',
+    'figcaption',
+  ],
+  ALLOWED_ATTR: [
+    'href',
+    'target',
+    'rel',
+    'src',
+    'alt',
+    'title',
+    'width',
+    'height',
+    'loading',
+    'class',
+    'start',
+    'reversed',
+    'type',
+    // iframe-specific (validated by hook)
+    'frameborder',
+    'allowfullscreen',
+    'allow',
+    'sandbox',
+    // text-align from TipTap editor
+    'style',
+  ],
+  ALLOW_DATA_ATTR: false,
+  // Force all links to open in new tab safely
+  ADD_ATTR: ['target'],
+};
+
+// Hook: force rel="noopener noreferrer" on all <a> tags to prevent tabnabbing
+DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+  if (node.tagName === 'A') {
+    node.setAttribute('target', '_blank');
+    node.setAttribute('rel', 'noopener noreferrer');
+  }
+});
+
+/**
+ * Restrict inline styles to only text-align (used by TipTap).
+ * Strip any other CSS property to prevent CSS injection / exfiltration.
+ */
+DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+  if (node.hasAttribute('style')) {
+    const style = node.getAttribute('style') ?? '';
+    const match = style.match(/text-align\s*:\s*(left|center|right|justify)/i);
+    if (match) {
+      node.setAttribute('style', `text-align: ${match[1]}`);
+    } else {
+      node.removeAttribute('style');
     }
   }
 });
 
 function sanitizeHtml(html: string): string {
-  return DOMPurify.sanitize(html, {
-    ADD_TAGS: ['iframe'],
-    ADD_ATTR: ['allowfullscreen', 'frameborder', 'src', 'allow'],
-  });
+  return DOMPurify.sanitize(html, SANITIZE_CONFIG);
+}
+
+/**
+ * Validates that a color string is a safe hex color.
+ * Prevents CSS injection via malicious category_color values.
+ * Returns the color if valid, otherwise returns a safe fallback.
+ */
+const HEX_COLOR_RE = /^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
+function safeColor(color: string | null | undefined, fallback = '#888888'): string {
+  if (!color || !HEX_COLOR_RE.test(color)) return fallback;
+  return color;
+}
+
+/**
+ * Validates that a URL uses a safe protocol (https or http only).
+ * Prevents javascript:, data:, and other dangerous URI schemes.
+ */
+function isSafeUrl(url: string | null | undefined): url is string {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+  } catch {
+    return false;
+  }
 }
 
 export default function NewsArticlePage() {
@@ -109,7 +254,10 @@ export default function NewsArticlePage() {
     isError,
   } = useQuery({
     queryKey: ['news', 'article', slug],
-    queryFn: () => newsApi.getArticle(slug!),
+    queryFn: () => {
+      if (!slug) throw new Error('Missing slug parameter');
+      return newsApi.getArticle(slug);
+    },
     enabled: !!slug,
     staleTime: 60_000,
   });
@@ -138,7 +286,7 @@ export default function NewsArticlePage() {
         {!capabilities.hasBackButton && (
           <button
             onClick={() => navigate('/')}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-dark-700 bg-dark-800 transition-colors hover:border-dark-600"
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-dark-700 bg-dark-800 transition-colors hover:border-dark-600"
             aria-label={t('news.backToHome')}
           >
             <BackIcon />
@@ -157,7 +305,7 @@ export default function NewsArticlePage() {
       {!capabilities.hasBackButton && (
         <button
           onClick={() => navigate(-1)}
-          className="flex h-10 items-center gap-2 rounded-xl border border-dark-700 bg-dark-800 px-4 text-sm text-dark-400 transition-colors hover:border-dark-600 hover:text-dark-200"
+          className="flex min-h-[44px] items-center gap-2 rounded-xl border border-dark-700 bg-dark-800 px-4 text-sm text-dark-400 transition-colors hover:border-dark-600 hover:text-dark-200"
           aria-label={t('news.backToHome')}
         >
           <BackIcon />
@@ -173,35 +321,42 @@ export default function NewsArticlePage() {
       >
         {/* Category + tag */}
         <div className="mb-4 flex flex-wrap items-center gap-3">
-          <span
-            className="inline-flex items-center gap-1.5 rounded-md px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-widest"
-            style={{
-              color: article.category_color,
-              background: `${article.category_color}15`,
-              border: `1px solid ${article.category_color}30`,
-            }}
-          >
-            <span
-              className="h-1.5 w-1.5 animate-pulse rounded-full"
-              style={{
-                background: article.category_color,
-                boxShadow: `0 0 8px ${article.category_color}`,
-              }}
-            />
-            {article.category}
-          </span>
-          {article.tag && (
-            <span
-              className="inline-block rounded px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider"
-              style={{
-                color: article.category_color,
-                border: `1px solid ${article.category_color}33`,
-                background: `${article.category_color}11`,
-              }}
-            >
-              {article.tag}
-            </span>
-          )}
+          {(() => {
+            const color = safeColor(article.category_color);
+            return (
+              <>
+                <span
+                  className="inline-flex items-center gap-1.5 rounded-md px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-widest"
+                  style={{
+                    color,
+                    background: `${color}15`,
+                    border: `1px solid ${color}30`,
+                  }}
+                >
+                  <span
+                    className="h-1.5 w-1.5 animate-pulse rounded-full"
+                    style={{
+                      background: color,
+                      boxShadow: `0 0 8px ${color}`,
+                    }}
+                  />
+                  {article.category}
+                </span>
+                {article.tag && (
+                  <span
+                    className="inline-block rounded px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider"
+                    style={{
+                      color,
+                      border: `1px solid ${color}33`,
+                      background: `${color}11`,
+                    }}
+                  >
+                    {article.tag}
+                  </span>
+                )}
+              </>
+            );
+          })()}
         </div>
 
         {/* Title */}
@@ -228,8 +383,8 @@ export default function NewsArticlePage() {
         </div>
       </motion.div>
 
-      {/* Featured image */}
-      {article.featured_image_url && (
+      {/* Featured image - only render if URL uses safe protocol */}
+      {isSafeUrl(article.featured_image_url) && (
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -237,10 +392,11 @@ export default function NewsArticlePage() {
           className="overflow-hidden rounded-xl"
         >
           <img
-            src={article.featured_image_url}
+            src={article.featured_image_url!}
             alt={article.title}
             className="h-auto w-full rounded-xl object-cover"
-            loading="lazy"
+            loading="eager"
+            fetchPriority="high"
           />
         </motion.div>
       )}

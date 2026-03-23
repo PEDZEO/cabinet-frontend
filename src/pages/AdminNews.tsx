@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, memo } from 'react';
 import { useNavigate } from 'react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -11,13 +11,27 @@ import type { NewsListItem } from '../types/news';
 
 // Icons
 const PlusIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+  <svg
+    className="h-5 w-5"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={2}
+    aria-hidden="true"
+  >
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
   </svg>
 );
 
 const RefreshIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+  <svg
+    className="h-4 w-4"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={2}
+    aria-hidden="true"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -27,7 +41,14 @@ const RefreshIcon = () => (
 );
 
 const PencilIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+  <svg
+    className="h-4 w-4"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={2}
+    aria-hidden="true"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -37,7 +58,14 @@ const PencilIcon = () => (
 );
 
 const TrashIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+  <svg
+    className="h-4 w-4"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={2}
+    aria-hidden="true"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -53,6 +81,7 @@ const StarIcon = ({ filled }: { filled: boolean }) => (
     viewBox="0 0 24 24"
     stroke="currentColor"
     strokeWidth={2}
+    aria-hidden="true"
   >
     <path
       strokeLinecap="round"
@@ -63,7 +92,14 @@ const StarIcon = ({ filled }: { filled: boolean }) => (
 );
 
 const NewsIcon = () => (
-  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+  <svg
+    className="h-6 w-6"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={1.5}
+    aria-hidden="true"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -72,7 +108,15 @@ const NewsIcon = () => (
   </svg>
 );
 
-function ArticleRow({
+// --- Security: hex color validation to prevent CSS injection ---
+const HEX_COLOR_RE = /^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
+function safeColor(color: string | null | undefined, fallback = '#888888'): string {
+  if (!color || !HEX_COLOR_RE.test(color)) return fallback;
+  return color;
+}
+
+// memo: prevents rows from re-rendering when sibling rows or parent state change
+const ArticleRow = memo(function ArticleRow({
   article,
   onEdit,
   onDelete,
@@ -86,6 +130,7 @@ function ArticleRow({
   onToggleFeatured: () => void;
 }) {
   const { t } = useTranslation();
+  const color = safeColor(article.category_color);
 
   return (
     <div className="rounded-xl border border-dark-700 bg-dark-800/50 p-4 transition-all hover:border-dark-600">
@@ -95,14 +140,11 @@ function ArticleRow({
             <span
               className="inline-flex items-center gap-1 rounded px-2 py-0.5 font-mono text-[10px] font-bold uppercase"
               style={{
-                color: article.category_color,
-                background: `${article.category_color}15`,
+                color,
+                background: `${color}15`,
               }}
             >
-              <span
-                className="h-1 w-1 rounded-full"
-                style={{ background: article.category_color }}
-              />
+              <span className="h-1 w-1 rounded-full" style={{ background: color }} />
               {article.category}
             </span>
             <span
@@ -143,6 +185,7 @@ function ArticleRow({
 
         <div className="flex shrink-0 items-center gap-1.5">
           <button
+            type="button"
             onClick={onToggleFeatured}
             className={`min-h-[44px] min-w-[44px] rounded-lg p-2.5 transition-colors ${
               article.is_featured
@@ -150,21 +193,30 @@ function ArticleRow({
                 : 'text-dark-500 hover:bg-dark-700 hover:text-dark-300'
             }`}
             title={t('news.admin.featured')}
+            aria-label={t('news.admin.featured')}
           >
             <StarIcon filled={article.is_featured} />
           </button>
-          <Toggle checked={article.is_published} onChange={onTogglePublish} />
+          <Toggle
+            checked={article.is_published}
+            onChange={onTogglePublish}
+            aria-label={t('news.admin.published')}
+          />
           <button
+            type="button"
             onClick={onEdit}
             className="min-h-[44px] min-w-[44px] rounded-lg p-2.5 text-dark-400 transition-colors hover:bg-dark-700 hover:text-dark-200"
             title={t('news.admin.edit')}
+            aria-label={t('news.admin.edit')}
           >
             <PencilIcon />
           </button>
           <button
+            type="button"
             onClick={onDelete}
             className="min-h-[44px] min-w-[44px] rounded-lg p-2.5 text-dark-400 transition-colors hover:bg-error-500/10 hover:text-error-400"
             title={t('news.admin.delete')}
+            aria-label={t('news.admin.delete')}
           >
             <TrashIcon />
           </button>
@@ -172,7 +224,49 @@ function ArticleRow({
       </div>
     </div>
   );
+});
+
+// Thin wrapper that provides stable per-row callbacks so ArticleRow (memo'd)
+// does not re-render on every parent render due to new inline lambdas.
+interface ArticleRowWrapperProps {
+  article: NewsListItem;
+  onNavigate: (path: string) => void;
+  onDelete: (id: number) => void;
+  onTogglePublish: (id: number) => void;
+  onToggleFeatured: (id: number) => void;
 }
+
+const ArticleRowWrapper = memo(function ArticleRowWrapper({
+  article,
+  onNavigate,
+  onDelete,
+  onTogglePublish,
+  onToggleFeatured,
+}: ArticleRowWrapperProps) {
+  const handleEdit = useCallback(
+    () => onNavigate(`/admin/news/${article.id}/edit`),
+    [article.id, onNavigate],
+  );
+  const handleDelete = useCallback(() => onDelete(article.id), [article.id, onDelete]);
+  const handleTogglePublish = useCallback(
+    () => onTogglePublish(article.id),
+    [article.id, onTogglePublish],
+  );
+  const handleToggleFeatured = useCallback(
+    () => onToggleFeatured(article.id),
+    [article.id, onToggleFeatured],
+  );
+
+  return (
+    <ArticleRow
+      article={article}
+      onEdit={handleEdit}
+      onDelete={handleDelete}
+      onTogglePublish={handleTogglePublish}
+      onToggleFeatured={handleToggleFeatured}
+    />
+  );
+});
 
 export default function AdminNews() {
   const { t } = useTranslation();
@@ -218,12 +312,31 @@ export default function AdminNews() {
     },
   });
 
-  const handleDelete = async (id: number) => {
-    const confirmed = await confirm(t('news.admin.confirmDelete'));
-    if (confirmed) {
-      deleteMutation.mutate(id);
-    }
-  };
+  // Stable callbacks passed to ArticleRowWrapper — reference equality is
+  // required for memo to prevent unnecessary re-renders of each row.
+  const handleDelete = useCallback(
+    async (id: number) => {
+      const confirmed = await confirm(t('news.admin.confirmDelete'));
+      if (confirmed) {
+        deleteMutation.mutate(id);
+      }
+    },
+    [confirm, deleteMutation, t],
+  );
+
+  const handleTogglePublish = useCallback(
+    (id: number) => {
+      togglePublishMutation.mutate(id);
+    },
+    [togglePublishMutation],
+  );
+
+  const handleToggleFeatured = useCallback(
+    (id: number) => {
+      toggleFeaturedMutation.mutate(id);
+    },
+    [toggleFeaturedMutation],
+  );
 
   return (
     <div className="space-y-6">
@@ -291,13 +404,13 @@ export default function AdminNews() {
       ) : (
         <div className="space-y-3">
           {articles.map((article) => (
-            <ArticleRow
+            <ArticleRowWrapper
               key={article.id}
               article={article}
-              onEdit={() => navigate(`/admin/news/${article.id}/edit`)}
-              onDelete={() => handleDelete(article.id)}
-              onTogglePublish={() => togglePublishMutation.mutate(article.id)}
-              onToggleFeatured={() => toggleFeaturedMutation.mutate(article.id)}
+              onNavigate={navigate}
+              onDelete={handleDelete}
+              onTogglePublish={handleTogglePublish}
+              onToggleFeatured={handleToggleFeatured}
             />
           ))}
         </div>

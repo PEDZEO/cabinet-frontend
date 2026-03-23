@@ -18,7 +18,7 @@ export const newsApi = {
   },
 
   getArticle: async (slug: string): Promise<NewsArticle> => {
-    const response = await apiClient.get<NewsArticle>(`/cabinet/news/${slug}`);
+    const response = await apiClient.get<NewsArticle>(`/cabinet/news/${encodeURIComponent(slug)}`);
     return response.data;
   },
 

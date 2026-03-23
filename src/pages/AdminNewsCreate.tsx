@@ -121,10 +121,13 @@ interface ToolbarButtonProps {
 function ToolbarButton({ onClick, isActive, title, children }: ToolbarButtonProps) {
   return (
     <button
+      type="button"
       onClick={onClick}
       title={title}
+      aria-label={title}
+      aria-pressed={isActive}
       className={cn(
-        'rounded p-2 transition-colors',
+        'min-h-[44px] min-w-[44px] rounded p-2.5 transition-colors',
         isActive
           ? 'bg-accent-500/20 text-accent-400'
           : 'text-dark-400 hover:bg-dark-700 hover:text-dark-200',
@@ -135,11 +138,22 @@ function ToolbarButton({ onClick, isActive, title, children }: ToolbarButtonProp
   );
 }
 
+// --- Security: URL scheme validation ---
+function isSafeUrl(url: string | null | undefined): boolean {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+  } catch {
+    return false;
+  }
+}
+
 // --- Slug utility ---
 function generateSlug(title: string): string {
   return title
     .toLowerCase()
-    .replace(/[^\w\s-а-яё]/gi, '')
+    .replace(/[^\w\s\-а-яёА-ЯЁ]/g, '')
     .replace(/[\s_]+/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-+|-+$/g, '')
@@ -161,10 +175,11 @@ const CATEGORY_COLORS = [
 export default function AdminNewsCreate() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
+  const { id: rawId } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const haptic = useHapticFeedback();
-  const isEdit = !!id;
+  const articleId = rawId != null ? Number(rawId) : undefined;
+  const isEdit = articleId != null && !Number.isNaN(articleId);
 
   // Form state
   const [title, setTitle] = useState('');
@@ -180,7 +195,11 @@ export default function AdminNewsCreate() {
   const [isFeatured, setIsFeatured] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  // TipTap editor — memoize extensions to avoid re-creation on every render
+  // TipTap editor — extensions are memoized with NO deps so the editor is
+  // never destroyed/recreated on re-renders. The PlaceholderExtension
+  // placeholder reads the translation at mount time only, which is acceptable
+  // since locale changes at runtime are rare and the editor retains content.
+  // Using [t] as the dependency would destroy the editor on every locale change.
   const extensions = useMemo(
     () => [
       StarterKit.configure({
@@ -202,7 +221,8 @@ export default function AdminNewsCreate() {
       }),
       HighlightExtension,
     ],
-    [t],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
   );
 
   const editor = useEditor({
@@ -224,8 +244,11 @@ export default function AdminNewsCreate() {
 
   // Fetch article for editing
   const { data: articleData, isLoading: isLoadingArticle } = useQuery({
-    queryKey: ['admin', 'news', 'article', id],
-    queryFn: () => newsApi.getAdminArticle(Number(id)),
+    queryKey: ['admin', 'news', 'article', articleId],
+    queryFn: () => {
+      if (articleId == null) throw new Error('Missing article id parameter');
+      return newsApi.getAdminArticle(articleId);
+    },
     enabled: isEdit,
     staleTime: 0,
     gcTime: 0,
@@ -264,8 +287,8 @@ export default function AdminNewsCreate() {
   // Save mutation
   const saveMutation = useMutation({
     mutationFn: (data: NewsCreateRequest) => {
-      if (isEdit) {
-        return newsApi.updateArticle(Number(id), data);
+      if (isEdit && articleId != null) {
+        return newsApi.updateArticle(articleId, data);
       }
       return newsApi.createArticle(data);
     },
@@ -294,7 +317,7 @@ export default function AdminNewsCreate() {
       category: category.trim(),
       category_color: categoryColor,
       tag: tag.trim() || null,
-      featured_image_url: featuredImageUrl.trim() || null,
+      featured_image_url: isSafeUrl(featuredImageUrl.trim()) ? featuredImageUrl.trim() : null,
       is_published: isPublished,
       is_featured: isFeatured,
       read_time_minutes: readTimeMinutes,
@@ -425,13 +448,14 @@ export default function AdminNewsCreate() {
               {CATEGORY_COLORS.map((color) => (
                 <button
                   key={color}
+                  type="button"
                   onClick={() => setCategoryColor(color)}
                   className={cn(
-                    'h-10 w-10 rounded-lg border-2 transition-all',
+                    'min-h-[44px] min-w-[44px] rounded-lg border-2 transition-all',
                     categoryColor === color ? 'scale-110 border-white' : 'border-transparent',
                   )}
                   style={{ background: color }}
-                  aria-label={color}
+                  aria-label={t('news.admin.selectColor', { color })}
                 />
               ))}
             </div>
@@ -483,7 +507,7 @@ export default function AdminNewsCreate() {
             className="input"
             placeholder="https://..."
           />
-          {featuredImageUrl && (
+          {isSafeUrl(featuredImageUrl) && (
             <div className="mt-2 overflow-hidden rounded-xl">
               <img
                 src={featuredImageUrl}
@@ -498,11 +522,19 @@ export default function AdminNewsCreate() {
         {/* Toggles row */}
         <div className="flex flex-wrap items-center gap-6">
           <div className="flex items-center gap-3">
-            <Toggle checked={isPublished} onChange={() => setIsPublished((v) => !v)} />
+            <Toggle
+              checked={isPublished}
+              onChange={() => setIsPublished((v) => !v)}
+              aria-label={t('news.admin.published')}
+            />
             <span className="text-sm text-dark-300">{t('news.admin.published')}</span>
           </div>
           <div className="flex items-center gap-3">
-            <Toggle checked={isFeatured} onChange={() => setIsFeatured((v) => !v)} />
+            <Toggle
+              checked={isFeatured}
+              onChange={() => setIsFeatured((v) => !v)}
+              aria-label={t('news.admin.featured')}
+            />
             <span className="text-sm text-dark-300">{t('news.admin.featured')}</span>
           </div>
         </div>
@@ -649,7 +681,7 @@ export default function AdminNewsCreate() {
         <button
           onClick={handleSave}
           disabled={saveMutation.isPending || !title.trim() || !slug.trim() || !category.trim()}
-          className="w-full rounded-lg bg-accent-500 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-600 disabled:cursor-not-allowed disabled:opacity-50"
+          className="min-h-[44px] w-full rounded-lg bg-accent-500 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-600 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {saveMutation.isPending ? t('news.admin.saving') : t('news.admin.save')}
         </button>

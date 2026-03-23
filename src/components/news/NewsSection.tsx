@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo, memo } from 'react';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
@@ -8,6 +8,13 @@ import { useHapticFeedback } from '../../platform/hooks/useHaptic';
 import { cn } from '../../lib/utils';
 import type { NewsListItem } from '../../types/news';
 import GridBackground from './GridBackground';
+
+// --- Security: hex color validation to prevent CSS injection ---
+const HEX_COLOR_RE = /^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
+function safeColor(color: string | null | undefined, fallback = '#888888'): string {
+  if (!color || !HEX_COLOR_RE.test(color)) return fallback;
+  return color;
+}
 
 // --- Animation variants ---
 const EASE_OUT: [number, number, number, number] = [0.23, 1, 0.32, 1];
@@ -64,7 +71,12 @@ interface CategoryBadgeProps {
   className?: string;
 }
 
-function CategoryBadge({ category, color, className }: CategoryBadgeProps) {
+const CategoryBadge = memo(function CategoryBadge({
+  category,
+  color,
+  className,
+}: CategoryBadgeProps) {
+  const c = safeColor(color);
   return (
     <span
       className={cn(
@@ -72,42 +84,43 @@ function CategoryBadge({ category, color, className }: CategoryBadgeProps) {
         className,
       )}
       style={{
-        color,
-        background: `${color}15`,
-        border: `1px solid ${color}30`,
+        color: c,
+        background: `${c}15`,
+        border: `1px solid ${c}30`,
       }}
     >
       <span
         className="h-1.5 w-1.5 animate-pulse rounded-full"
         style={{
-          background: color,
-          boxShadow: `0 0 8px ${color}`,
+          background: c,
+          boxShadow: `0 0 8px ${c}`,
         }}
       />
       {category}
     </span>
   );
-}
+});
 
 interface TagBadgeProps {
   text: string;
   color: string;
 }
 
-function TagBadge({ text, color }: TagBadgeProps) {
+const TagBadge = memo(function TagBadge({ text, color }: TagBadgeProps) {
+  const c = safeColor(color);
   return (
     <span
       className="inline-block rounded px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider"
       style={{
-        color,
-        border: `1px solid ${color}33`,
-        background: `${color}11`,
+        color: c,
+        border: `1px solid ${c}33`,
+        background: `${c}11`,
       }}
     >
       {text}
     </span>
   );
-}
+});
 
 interface FilterTabsProps {
   categories: string[];
@@ -115,7 +128,7 @@ interface FilterTabsProps {
   onChange: (category: string) => void;
 }
 
-function FilterTabs({ categories, active, onChange }: FilterTabsProps) {
+const FilterTabs = memo(function FilterTabs({ categories, active, onChange }: FilterTabsProps) {
   const { t } = useTranslation();
   const haptic = useHapticFeedback();
 
@@ -162,23 +175,31 @@ function FilterTabs({ categories, active, onChange }: FilterTabsProps) {
       })}
     </div>
   );
-}
+});
 
 interface FeaturedCardProps {
   item: NewsListItem;
   onClick: () => void;
 }
 
-function FeaturedCard({ item, onClick }: FeaturedCardProps) {
+const FeaturedCard = memo(function FeaturedCard({ item, onClick }: FeaturedCardProps) {
   const { t, i18n } = useTranslation();
 
   return (
-    <motion.div
+    <motion.article
       custom={0}
       variants={fadeSlideUp}
       initial="hidden"
       animate="visible"
-      className="group col-span-full cursor-pointer rounded-2xl p-px transition-all duration-500"
+      role="link"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      className="group col-span-full cursor-pointer rounded-2xl p-px transition-all duration-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-950"
       style={{
         background:
           'linear-gradient(135deg, rgba(var(--color-accent-400), 0.2), rgba(var(--color-dark-900), 0.2), rgba(var(--color-accent-400), 0.2))',
@@ -239,9 +260,9 @@ function FeaturedCard({ item, onClick }: FeaturedCardProps) {
           </span>
         </div>
       </div>
-    </motion.div>
+    </motion.article>
   );
-}
+});
 
 interface NewsCardProps {
   item: NewsListItem;
@@ -249,23 +270,32 @@ interface NewsCardProps {
   onClick: () => void;
 }
 
-function NewsCard({ item, index, onClick }: NewsCardProps) {
+const NewsCard = memo(function NewsCard({ item, index, onClick }: NewsCardProps) {
   const { t, i18n } = useTranslation();
+  const color = safeColor(item.category_color);
 
   return (
-    <motion.div
+    <motion.article
       custom={index + 1}
       variants={fadeSlideUp}
       initial="hidden"
       animate="visible"
-      className="group cursor-pointer rounded-[14px] p-px transition-all duration-[450ms]"
+      role="link"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      className="group cursor-pointer rounded-[14px] p-px transition-all duration-[450ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-950"
       style={{
         background:
           'linear-gradient(160deg, rgba(var(--color-dark-700), 0.25), rgba(var(--color-dark-900), 0.25))',
       }}
       whileHover={{
         y: -4,
-        background: `linear-gradient(160deg, ${item.category_color}55, transparent 60%)`,
+        background: `linear-gradient(160deg, ${color}55, transparent 60%)`,
       }}
       onClick={onClick}
     >
@@ -274,7 +304,7 @@ function NewsCard({ item, index, onClick }: NewsCardProps) {
         <div
           className="pointer-events-none absolute -bottom-5 -right-5 h-[100px] w-[100px] opacity-0 transition-opacity duration-500 group-hover:opacity-100"
           style={{
-            background: `radial-gradient(circle, ${item.category_color}08, transparent 70%)`,
+            background: `radial-gradient(circle, ${color}08, transparent 70%)`,
           }}
         />
 
@@ -282,18 +312,18 @@ function NewsCard({ item, index, onClick }: NewsCardProps) {
           <div className="mb-3.5 flex items-center gap-2.5">
             <span
               className="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-widest"
-              style={{ color: item.category_color }}
+              style={{ color }}
             >
               <span
                 className="h-[5px] w-[5px] rounded-full"
                 style={{
-                  background: item.category_color,
-                  boxShadow: `0 0 6px ${item.category_color}80`,
+                  background: color,
+                  boxShadow: `0 0 6px ${color}80`,
                 }}
               />
               {item.category}
             </span>
-            {item.tag && <TagBadge text={item.tag} color={item.category_color} />}
+            {item.tag && <TagBadge text={item.tag} color={color} />}
           </div>
 
           <h3 className="mb-2.5 break-words text-[17px] font-bold leading-snug text-dark-100 transition-colors duration-300 group-hover:text-white">
@@ -314,9 +344,27 @@ function NewsCard({ item, index, onClick }: NewsCardProps) {
           </span>
         </div>
       </div>
-    </motion.div>
+    </motion.article>
   );
+});
+
+// Thin wrapper that binds the per-item click handler without creating a new
+// anonymous lambda in the parent's JSX on every render, which would defeat
+// the memo on NewsCard.
+interface NewsCardWrapperProps {
+  item: NewsListItem;
+  index: number;
+  onCardClick: (slug: string) => void;
 }
+
+const NewsCardWrapper = memo(function NewsCardWrapper({
+  item,
+  index,
+  onCardClick,
+}: NewsCardWrapperProps) {
+  const handleClick = useCallback(() => onCardClick(item.slug), [item.slug, onCardClick]);
+  return <NewsCard item={item} index={index} onClick={handleClick} />;
+});
 
 // --- Main Component ---
 
@@ -334,15 +382,25 @@ export default function NewsSection() {
   const { data, isLoading } = useQuery({
     queryKey: ['news', 'list', categoryParam, limit],
     queryFn: () => newsApi.getNews({ category: categoryParam, limit, offset: 0 }),
-    staleTime: 60_000,
+    // staleTime: serve cached data for 2 min before background re-fetch.
+    // gcTime: keep in cache for 10 min so navigating away and back is instant.
+    staleTime: 2 * 60_000,
+    gcTime: 10 * 60_000,
   });
 
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
   const categories = data?.categories ?? [];
 
-  const featured = items.find((n) => n.is_featured);
-  const regular = items.filter((n) => !n.is_featured);
+  // Memoized so FeaturedCard/NewsCard receive stable object references when
+  // parent state unrelated to the list changes (e.g. load-more button state).
+  const { featured, regular } = useMemo(
+    () => ({
+      featured: items.find((n) => n.is_featured),
+      regular: items.filter((n) => !n.is_featured),
+    }),
+    [items],
+  );
 
   const handleCardClick = useCallback(
     (slug: string) => {
@@ -361,6 +419,13 @@ export default function NewsSection() {
     setFilter(category);
     setLimit(NEWS_LIMIT);
   }, []);
+
+  // Stable reference for the featured card — avoids re-rendering FeaturedCard
+  // when `featured` is a new object reference but contains the same slug.
+  const featuredSlug = featured?.slug;
+  const handleFeaturedClick = useCallback(() => {
+    if (featuredSlug) handleCardClick(featuredSlug);
+  }, [featuredSlug, handleCardClick]);
 
   // Don't render if no news and not loading
   if (!isLoading && items.length === 0) {
@@ -420,16 +485,9 @@ export default function NewsSection() {
         {/* Grid */}
         {!isLoading && items.length > 0 && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {featured && (
-              <FeaturedCard item={featured} onClick={() => handleCardClick(featured.slug)} />
-            )}
+            {featured && <FeaturedCard item={featured} onClick={handleFeaturedClick} />}
             {regular.map((item, i) => (
-              <NewsCard
-                key={item.id}
-                item={item}
-                index={i}
-                onClick={() => handleCardClick(item.slug)}
-              />
+              <NewsCardWrapper key={item.id} item={item} index={i} onCardClick={handleCardClick} />
             ))}
           </div>
         )}
@@ -445,7 +503,7 @@ export default function NewsSection() {
           >
             <button
               onClick={handleLoadMore}
-              className="rounded-xl border border-dark-700 bg-transparent px-8 py-3 text-[13px] font-semibold tracking-wide text-dark-400 transition-all duration-300 hover:border-accent-400/30 hover:text-accent-400"
+              className="min-h-[44px] rounded-xl border border-dark-700 bg-transparent px-8 py-3 text-[13px] font-semibold tracking-wide text-dark-400 transition-all duration-300 hover:border-accent-400/30 hover:text-accent-400"
             >
               {t('news.loadMore')}
             </button>

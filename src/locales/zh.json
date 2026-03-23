@@ -3688,6 +3688,7 @@
       "saveError": "保存文章失败，请重试。",
       "saved": "文章已保存",
       "deleted": "文章已删除",
+      "selectColor": "选择颜色 {{color}}",
       "toolbar": {
         "bold": "粗体",
         "italic": "斜体",
