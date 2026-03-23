@@ -4,7 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { ultimaAgreementApi } from '@/api/ultimaAgreement';
+import { UltimaDesktopAgreement } from '@/components/ultima/desktop/UltimaDesktopAgreement';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 const sanitizeHtml = (html: string): string =>
   DOMPurify.sanitize(html, {
@@ -58,6 +60,7 @@ const formatContent = (content: string): string => {
 export function UltimaAgreement() {
   const navigate = useNavigate();
   const { i18n, t } = useTranslation();
+  const isDesktopViewport = useMediaQuery('(min-width: 1024px)');
 
   const { data, isLoading } = useQuery({
     queryKey: ['ultima-agreement', i18n.language],
@@ -77,6 +80,37 @@ export function UltimaAgreement() {
       year: 'numeric',
     });
   }, [data, i18n.language]);
+
+  const title = t('profile.termsTitle', { defaultValue: 'Пользовательское соглашение' });
+  const subtitle = updatedAtLabel
+    ? t('common.updatedAtDate', {
+        defaultValue: `Обновлено ${updatedAtLabel}`,
+        date: updatedAtLabel,
+      })
+    : t('profile.termsDescription', {
+        defaultValue: 'Соглашения и правила сервиса',
+      });
+  const emptyLabel = t('info.noContent', { defaultValue: 'Контент не заполнен' });
+  const bottomNav = (
+    <UltimaBottomNav active="profile" onProfileClick={() => navigate('/profile')} />
+  );
+
+  if (isDesktopViewport) {
+    return (
+      <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-reading-desktop">
+        <div className="ultima-shell-aura" />
+        <UltimaDesktopAgreement
+          title={title}
+          subtitle={subtitle}
+          updatedAtLabel={updatedAtLabel}
+          htmlContent={htmlContent}
+          isLoading={isLoading}
+          emptyLabel={emptyLabel}
+          bottomNav={bottomNav}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
@@ -110,18 +144,9 @@ export function UltimaAgreement() {
             </svg>
           </div>
           <h1 className="mt-2 text-[clamp(27px,7.4vw,34px)] font-semibold leading-[0.95] tracking-[-0.015em] text-white">
-            {t('profile.termsTitle', { defaultValue: 'Пользовательское соглашение' })}
+            {title}
           </h1>
-          <p className="mt-1 text-[12px] text-white/55">
-            {updatedAtLabel
-              ? t('common.updatedAtDate', {
-                  defaultValue: `Обновлено ${updatedAtLabel}`,
-                  date: updatedAtLabel,
-                })
-              : t('profile.termsDescription', {
-                  defaultValue: 'Соглашения и правила сервиса',
-                })}
-          </p>
+          <p className="mt-1 text-[12px] text-white/55">{subtitle}</p>
         </section>
 
         <section className="min-h-0 flex-1 overflow-hidden rounded-3xl lg:min-h-0 lg:pb-2">
@@ -137,17 +162,13 @@ export function UltimaAgreement() {
                   dangerouslySetInnerHTML={{ __html: htmlContent }}
                 />
               ) : (
-                <p className="text-white/60">
-                  {t('info.noContent', { defaultValue: 'Контент не заполнен' })}
-                </p>
+                <p className="text-white/60">{emptyLabel}</p>
               )}
             </div>
           )}
         </section>
 
-        <div className="ultima-nav-dock">
-          <UltimaBottomNav active="profile" onProfileClick={() => navigate('/profile')} />
-        </div>
+        <div className="ultima-nav-dock">{bottomNav}</div>
       </div>
     </div>
   );

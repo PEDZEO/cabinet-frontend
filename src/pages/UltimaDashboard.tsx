@@ -15,11 +15,18 @@ import { brandingApi, getCachedUltimaThemeConfig } from '@/api/branding';
 import { infoApi } from '@/api/info';
 import { promoApi } from '@/api/promo';
 import { subscriptionApi } from '@/api/subscription';
+import {
+  UltimaDesktopDashboard,
+  UltimaDesktopDashboardSkeleton,
+  type UltimaDashboardStatusTone,
+} from '@/components/ultima/desktop/UltimaDesktopDashboard';
 import { ticketsApi } from '@/api/tickets';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { UltimaTrialGuide } from '@/components/ultima/UltimaTrialGuide';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useBranding } from '@/hooks/useBranding';
+import { cn } from '@/lib/utils';
 import { useHaptic } from '@/platform';
 import { useAuthStore } from '@/store/auth';
 import {
@@ -130,6 +137,7 @@ export function UltimaDashboard() {
   const haptic = useHaptic();
   const isAdmin = useAuthStore((state) => state.isAdmin);
   const user = useAuthStore((state) => state.user);
+  const isDesktopViewport = useMediaQuery('(min-width: 1024px)');
   const rippleIdRef = useRef(0);
   const digitIdRef = useRef(0);
   const tapCountRef = useRef(0);
@@ -203,33 +211,41 @@ export function UltimaDashboard() {
     const diff = end - Date.now();
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
   }, [subscription?.end_date]);
-  const statusTone = !isActive
-    ? {
-        dot: 'bg-rose-300/95',
-        halo: 'bg-rose-400/45',
-        pill: 'border-rose-200/25 bg-rose-400/16 text-rose-100/95',
-        pulse: 'from-rose-400/32 via-rose-300/22 to-transparent',
-      }
+  const statusToneKey: UltimaDashboardStatusTone = !isActive
+    ? 'expired'
     : isActiveTrial
-      ? {
-          dot: 'bg-emerald-200/95',
-          halo: 'bg-emerald-300/45',
-          pill: 'border-emerald-200/28 bg-emerald-300/16 text-emerald-50/95',
-          pulse: 'from-emerald-300/34 via-emerald-200/24 to-transparent',
-        }
+      ? 'trial'
       : (daysLeft ?? 99) <= 3
+        ? 'warning'
+        : 'active';
+  const statusTone =
+    statusToneKey === 'expired'
+      ? {
+          dot: 'bg-rose-300/95',
+          halo: 'bg-rose-400/45',
+          pill: 'border-rose-200/25 bg-rose-400/16 text-rose-100/95',
+          pulse: 'from-rose-400/32 via-rose-300/22 to-transparent',
+        }
+      : statusToneKey === 'trial'
         ? {
-            dot: 'bg-amber-200/95',
-            halo: 'bg-amber-300/42',
-            pill: 'border-amber-200/30 bg-amber-300/16 text-amber-50/95',
-            pulse: 'from-amber-300/30 via-amber-200/20 to-transparent',
-          }
-        : {
             dot: 'bg-emerald-200/95',
             halo: 'bg-emerald-300/45',
             pill: 'border-emerald-200/28 bg-emerald-300/16 text-emerald-50/95',
             pulse: 'from-emerald-300/34 via-emerald-200/24 to-transparent',
-          };
+          }
+        : statusToneKey === 'warning'
+          ? {
+              dot: 'bg-amber-200/95',
+              halo: 'bg-amber-300/42',
+              pill: 'border-amber-200/30 bg-amber-300/16 text-amber-50/95',
+              pulse: 'from-amber-300/30 via-amber-200/20 to-transparent',
+            }
+          : {
+              dot: 'bg-emerald-200/95',
+              halo: 'bg-emerald-300/45',
+              pill: 'border-emerald-200/28 bg-emerald-300/16 text-emerald-50/95',
+              pulse: 'from-emerald-300/34 via-emerald-200/24 to-transparent',
+            };
   const buyCtaLabel = useMemo(() => {
     if (!hasAnySubscription) {
       return t('ultima.buySubscriptionActivate', { defaultValue: 'Активировать подписку' });
@@ -583,6 +599,23 @@ export function UltimaDashboard() {
     navigate('/ultima/subscription-info');
   };
 
+  const openSubscriptionPurchase = useCallback(() => {
+    void queryClient.prefetchQuery({
+      queryKey: ['purchase-options'],
+      queryFn: subscriptionApi.getPurchaseOptions,
+    });
+    void queryClient.prefetchQuery({
+      queryKey: ['payment-methods'],
+      queryFn: balanceApi.getPaymentMethods,
+    });
+    void queryClient.prefetchQuery({
+      queryKey: ['device-price', 'ultima-max'],
+      queryFn: () => subscriptionApi.getDevicePrice(1),
+    });
+    void import('./Subscription');
+    navigate('/subscription');
+  }, [navigate, queryClient]);
+
   const canPermanentlyHideReminder = Boolean(
     subscription?.is_active && !subscription?.is_expired && !subscription?.is_trial,
   );
@@ -611,6 +644,114 @@ export function UltimaDashboard() {
     ultimaThemeConfig?.homeUseBrandLogo && hasCustomLogo && logoUrl,
   );
   const shouldHoldForHomeLogo = showBrandLogoOnHome && !displayHomeLogoUrl && !hasHomeLogoLoadError;
+
+  const renderShieldButton = useCallback(
+    (className?: string) => (
+      <button
+        type="button"
+        aria-label={t('nav.dashboard')}
+        onPointerDown={handleShieldTap}
+        className={cn(
+          'relative mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-black/15 focus-visible:outline-none',
+          className,
+        )}
+        style={{ WebkitTapHighlightColor: 'transparent' }}
+      >
+        <span aria-hidden className="pointer-events-none absolute inset-0 overflow-visible">
+          {shieldRipples.map((ripple) => (
+            <span
+              key={ripple.id}
+              className="ultima-tap-ring absolute -translate-x-1/2 -translate-y-1/2"
+              style={{
+                left: ripple.x,
+                top: ripple.y,
+                width: ripple.size,
+                height: ripple.size,
+              }}
+            />
+          ))}
+          {shieldDigits.map((digit) => {
+            const style = {
+              left: digit.x,
+              top: digit.y,
+              fontSize: `${digit.size}px`,
+              ['--ultima-digit-drift-x']: `${digit.driftX}px`,
+              ['--ultima-digit-drift-y']: `${digit.driftY}px`,
+              ['--ultima-digit-duration']: `${digit.duration}ms`,
+              ['--ultima-digit-opacity']: `${digit.opacity}`,
+              ['--ultima-digit-rotate-start']: `${digit.startRotate}deg`,
+              ['--ultima-digit-rotate-end']: `${digit.endRotate}deg`,
+              ['--ultima-digit-scale']: `${digit.scale}`,
+            } as CSSProperties;
+
+            return (
+              <span
+                key={digit.id}
+                className="ultima-float-number absolute -translate-x-1/2 -translate-y-1/2"
+                style={style}
+              >
+                {digit.value}
+              </span>
+            );
+          })}
+        </span>
+        {showBrandLogoOnHome && displayHomeLogoUrl ? (
+          <span
+            className="flex h-[86px] w-[86px] items-center justify-center rounded-full border bg-black/20 p-3 backdrop-blur"
+            style={{
+              borderColor:
+                'color-mix(in srgb, var(--ultima-color-surface-border) 34%, transparent)',
+              boxShadow:
+                '0 0 20px color-mix(in srgb, var(--ultima-color-ring) 24%, transparent), inset 0 1px 0 rgba(255,255,255,0.12)',
+            }}
+          >
+            <img
+              src={displayHomeLogoUrl}
+              alt="project-logo"
+              className="h-full w-full rounded-full object-contain"
+              loading="eager"
+              decoding="sync"
+              onLoad={() => {
+                if (!displayHomeLogoUrl) {
+                  return;
+                }
+                loadedHomeLogoUrls.add(displayHomeLogoUrl);
+                setHasHomeLogoLoadError(false);
+              }}
+              onError={() => {
+                setDisplayHomeLogoUrl(null);
+                setHasHomeLogoLoadError(true);
+              }}
+            />
+          </span>
+        ) : (
+          <ShieldIcon />
+        )}
+      </button>
+    ),
+    [displayHomeLogoUrl, handleShieldTap, shieldDigits, shieldRipples, showBrandLogoOnHome, t],
+  );
+
+  const adminButtonClassName = isDesktopViewport
+    ? 'absolute right-5 top-5 z-30 inline-flex h-10 items-center gap-2 rounded-full border border-white/10 bg-black/25 px-4 text-sm font-medium text-white/84 backdrop-blur'
+    : 'absolute right-4 top-2 z-30 inline-flex h-9 items-center gap-1.5 rounded-full border border-amber-300/30 bg-black/30 px-3 text-xs font-medium text-amber-200 backdrop-blur';
+  const shellClassName = cn(
+    'ultima-shell',
+    isDesktopViewport && 'ultima-flat-frames ultima-shell-dashboard-desktop',
+  );
+  const bottomNav = <UltimaBottomNav active="home" onSupportClick={openSupport} />;
+  const desktopTrialGuide =
+    showTrialSetupCard && !isTrialGuideVisible ? (
+      <UltimaTrialGuide
+        variant="inline"
+        expiryDateLabel={trialExpiryDateLabel}
+        daysLeft={daysLeft}
+        trafficLimitGb={subscription?.traffic_limit_gb ?? 0}
+        deviceLimit={subscription?.device_limit ?? 0}
+        onPrimaryAction={handleTrialGuideStart}
+        onStatClick={openSubscriptionInfo}
+      />
+    ) : null;
 
   useEffect(() => {
     if (!logoUrl) {
@@ -654,6 +795,15 @@ export function UltimaDashboard() {
   }, [displayHomeLogoUrl, logoUrl]);
 
   if (!isI18nReady || !isSubscriptionReady || shouldHoldForAutoTrial || shouldHoldForHomeLogo) {
+    if (isDesktopViewport) {
+      return (
+        <div className={shellClassName}>
+          <div className="ultima-shell-aura" />
+          <UltimaDesktopDashboardSkeleton bottomNav={bottomNav} />
+        </div>
+      );
+    }
+
     return (
       <div className="ultima-shell pb-[calc(20px+env(safe-area-inset-bottom,0px))] pt-2">
         <div className="relative z-10 mx-auto flex h-[calc(100dvh-26px)] w-full flex-col px-4 sm:px-6">
@@ -677,14 +827,67 @@ export function UltimaDashboard() {
     );
   }
 
+  if (isDesktopViewport) {
+    return (
+      <div className={shellClassName}>
+        <div className="ultima-shell-aura" />
+        {isAdmin && (
+          <button type="button" onClick={() => navigate('/admin')} className={adminButtonClassName}>
+            <AdminIcon />
+            <span>{t('admin.nav.title', { defaultValue: 'Админ' })}</span>
+          </button>
+        )}
+
+        <UltimaDesktopDashboard
+          heroButton={renderShieldButton('h-[120px] w-[120px] lg:h-[136px] lg:w-[136px]')}
+          subscription={subscription}
+          expiryLabel={expiryLabel}
+          statusLabel={statusLabel}
+          statusTone={statusToneKey}
+          daysLeft={daysLeft}
+          connectionStep={connectionStep}
+          isConnectionCompleted={isConnectionCompleted}
+          buyCtaLabel={buyCtaLabel}
+          buyFromLabel={buyFromLabel}
+          promoMessage={promoMessage}
+          activeDiscount={activeDiscount}
+          firstPromoOffer={firstPromoOffer}
+          showTrialSetupCard={showTrialSetupCard}
+          trialGuide={desktopTrialGuide}
+          hasSetupReminder={hasSetupReminder}
+          hasCompactSetupReminder={hasCompactSetupReminder}
+          showConnectionCtaHighlight={showConnectionCtaHighlight}
+          onBuySubscription={openSubscriptionPurchase}
+          onOpenConnection={() => openConnection()}
+          onOpenDevices={openDevices}
+          onOpenSubscriptionInfo={openSubscriptionInfo}
+          onOpenSupport={openSupport}
+          onActivateOffer={
+            firstPromoOffer ? () => claimOfferMutation.mutate(firstPromoOffer.id) : null
+          }
+          isActivatingOffer={claimOfferMutation.isPending}
+          bottomNav={bottomNav}
+        />
+
+        {isTrialGuideVisible && (
+          <UltimaTrialGuide
+            variant="overlay"
+            expiryDateLabel={trialExpiryDateLabel}
+            daysLeft={daysLeft}
+            trafficLimitGb={subscription?.traffic_limit_gb ?? 0}
+            deviceLimit={subscription?.device_limit ?? 0}
+            onPrimaryAction={handleTrialGuideStart}
+            onDismiss={handleTrialGuideDismiss}
+          />
+        )}
+      </div>
+    );
+  }
+
   return (
-    <div className="ultima-shell">
+    <div className={shellClassName}>
       {isAdmin && (
-        <button
-          type="button"
-          onClick={() => navigate('/admin')}
-          className="absolute right-4 top-2 z-30 inline-flex h-9 items-center gap-1.5 rounded-full border border-amber-300/30 bg-black/30 px-3 text-xs font-medium text-amber-200 backdrop-blur"
-        >
+        <button type="button" onClick={() => navigate('/admin')} className={adminButtonClassName}>
           <AdminIcon />
           <span>{t('admin.nav.title', { defaultValue: 'Админ' })}</span>
         </button>
@@ -692,84 +895,7 @@ export function UltimaDashboard() {
 
       <div className="ultima-shell-inner lg:max-w-[680px] lg:justify-between">
         <section className="flex min-h-0 flex-1 flex-col pb-[clamp(14px,2.8vh,24px)] pt-[clamp(86px,19vh,198px)] lg:flex-none lg:pb-2 lg:pt-8">
-          <button
-            type="button"
-            aria-label={t('nav.dashboard')}
-            onPointerDown={handleShieldTap}
-            className="relative mx-auto mb-[clamp(24px,5vh,56px)] flex h-24 w-24 items-center justify-center rounded-full bg-black/15 focus-visible:outline-none lg:mb-5"
-            style={{ WebkitTapHighlightColor: 'transparent' }}
-          >
-            <span aria-hidden className="pointer-events-none absolute inset-0 overflow-visible">
-              {shieldRipples.map((ripple) => (
-                <span
-                  key={ripple.id}
-                  className="ultima-tap-ring absolute -translate-x-1/2 -translate-y-1/2"
-                  style={{
-                    left: ripple.x,
-                    top: ripple.y,
-                    width: ripple.size,
-                    height: ripple.size,
-                  }}
-                />
-              ))}
-              {shieldDigits.map((digit) => {
-                const style = {
-                  left: digit.x,
-                  top: digit.y,
-                  fontSize: `${digit.size}px`,
-                  ['--ultima-digit-drift-x']: `${digit.driftX}px`,
-                  ['--ultima-digit-drift-y']: `${digit.driftY}px`,
-                  ['--ultima-digit-duration']: `${digit.duration}ms`,
-                  ['--ultima-digit-opacity']: `${digit.opacity}`,
-                  ['--ultima-digit-rotate-start']: `${digit.startRotate}deg`,
-                  ['--ultima-digit-rotate-end']: `${digit.endRotate}deg`,
-                  ['--ultima-digit-scale']: `${digit.scale}`,
-                } as CSSProperties;
-
-                return (
-                  <span
-                    key={digit.id}
-                    className="ultima-float-number absolute -translate-x-1/2 -translate-y-1/2"
-                    style={style}
-                  >
-                    {digit.value}
-                  </span>
-                );
-              })}
-            </span>
-            {showBrandLogoOnHome && displayHomeLogoUrl ? (
-              <span
-                className="flex h-[86px] w-[86px] items-center justify-center rounded-full border bg-black/20 p-3 backdrop-blur"
-                style={{
-                  borderColor:
-                    'color-mix(in srgb, var(--ultima-color-surface-border) 34%, transparent)',
-                  boxShadow:
-                    '0 0 20px color-mix(in srgb, var(--ultima-color-ring) 24%, transparent), inset 0 1px 0 rgba(255,255,255,0.12)',
-                }}
-              >
-                <img
-                  src={displayHomeLogoUrl}
-                  alt="project-logo"
-                  className="h-full w-full rounded-full object-contain"
-                  loading="eager"
-                  decoding="sync"
-                  onLoad={() => {
-                    if (!displayHomeLogoUrl) {
-                      return;
-                    }
-                    loadedHomeLogoUrls.add(displayHomeLogoUrl);
-                    setHasHomeLogoLoadError(false);
-                  }}
-                  onError={() => {
-                    setDisplayHomeLogoUrl(null);
-                    setHasHomeLogoLoadError(true);
-                  }}
-                />
-              </span>
-            ) : (
-              <ShieldIcon />
-            )}
-          </button>
+          {renderShieldButton('mb-[clamp(24px,5vh,56px)] lg:mb-5')}
 
           {hasSetupReminder && (
             <div className="border-emerald-200/24 mb-4 rounded-2xl border bg-[rgba(12,45,42,0.38)] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_24px_rgba(3,14,24,0.28)] backdrop-blur-md">
@@ -921,22 +1047,7 @@ export function UltimaDashboard() {
         <section className="mt-auto pb-0 lg:mt-0 lg:pb-0">
           <button
             type="button"
-            onClick={() => {
-              void queryClient.prefetchQuery({
-                queryKey: ['purchase-options'],
-                queryFn: subscriptionApi.getPurchaseOptions,
-              });
-              void queryClient.prefetchQuery({
-                queryKey: ['payment-methods'],
-                queryFn: balanceApi.getPaymentMethods,
-              });
-              void queryClient.prefetchQuery({
-                queryKey: ['device-price', 'ultima-max'],
-                queryFn: () => subscriptionApi.getDevicePrice(1),
-              });
-              void import('./Subscription');
-              navigate('/subscription');
-            }}
+            onClick={openSubscriptionPurchase}
             className="ultima-btn-pill ultima-btn-primary mb-3 flex w-full items-center justify-between px-5 py-3 text-[16px]"
           >
             <span className="flex items-center gap-2">
@@ -968,9 +1079,7 @@ export function UltimaDashboard() {
             </button>
           </div>
 
-          <div className="ultima-nav-dock">
-            <UltimaBottomNav active="home" onSupportClick={openSupport} />
-          </div>
+          <div className="ultima-nav-dock">{bottomNav}</div>
         </section>
       </div>
 
