@@ -641,7 +641,7 @@ export function UltimaDesktopDashboard({
           </div>
         </div>
 
-        <aside className="space-y-4 lg:sticky lg:top-4">
+        <aside className="ultima-desktop-aside space-y-4 lg:sticky lg:top-4">
           <section className={cn(sharedCardClassName, 'p-5')} style={defaultCardStyle}>
             <h2 className="text-[24px] font-semibold leading-[1.04] tracking-[-0.03em] text-white">
               {asideTitle}

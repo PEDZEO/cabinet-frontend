@@ -138,7 +138,7 @@ export function UltimaDesktopSectionLayout({
           {children}
         </div>
 
-        <aside className="space-y-4 lg:sticky lg:top-4">
+        <aside className="ultima-desktop-aside space-y-4 lg:sticky lg:top-4">
           {aside}
           <div className="ultima-nav-dock mt-0">{bottomNav}</div>
         </aside>

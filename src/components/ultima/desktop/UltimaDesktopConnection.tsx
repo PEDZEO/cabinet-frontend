@@ -329,7 +329,7 @@ export function UltimaDesktopConnection({
           </section>
         </div>
 
-        <aside className="space-y-4 lg:sticky lg:top-4">
+        <aside className="ultima-desktop-aside space-y-4 lg:sticky lg:top-4">
           {showInfo && step === 1 && (
             <section className={cn(sharedCardClassName, 'p-5')} style={defaultCardStyle}>
               <div className="flex items-start justify-between gap-3">

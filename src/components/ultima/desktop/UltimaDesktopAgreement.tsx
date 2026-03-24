@@ -67,7 +67,7 @@ export function UltimaDesktopAgreement({
       }}
     >
       <div className="grid h-full min-h-0 gap-5 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start">
-        <aside className="space-y-5 lg:sticky lg:top-4">
+        <aside className="ultima-desktop-aside space-y-5 lg:sticky lg:top-4">
           <section
             className={cn(cardClassName, 'relative overflow-hidden p-6')}
             style={highlightStyle}

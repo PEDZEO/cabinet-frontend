@@ -152,7 +152,7 @@ export function UltimaDesktopSubscription({
           </section>
         </div>
 
-        <aside className="space-y-4 lg:sticky lg:top-4">
+        <aside className="ultima-desktop-aside space-y-4 lg:sticky lg:top-4">
           <section className={cn(sharedCardClassName, 'p-5')} style={defaultCardStyle}>
             <div className="text-[30px] font-semibold leading-[0.98] tracking-[-0.04em] text-white">
               {payablePriceLabel}
