@@ -12,6 +12,7 @@ import { useBranding } from '@/hooks/useBranding';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 import { useLiteMode } from '@/hooks/useLiteMode';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { getCachedUltimaMode, useUltimaMode } from '@/hooks/useUltimaMode';
 import { themeColorsApi } from '@/api/themeColors';
 import { isLogoPreloaded } from '@/api/branding';
@@ -213,6 +214,7 @@ export function AppShell({ children }: AppShellProps) {
   const { referralEnabled, wheelEnabled, hasContests, hasPolls, giftEnabled } = useFeatureFlags();
   const { isLiteMode, isLiteModeReady } = useLiteMode();
   const { isUltimaMode, isUltimaModeReady } = useUltimaMode();
+  const isDesktopViewport = useMediaQuery('(min-width: 1024px)');
   const isCompactMode = isLiteMode || isUltimaMode;
   const isUltimaAnimatedRoute = isUltimaMode && !location.pathname.startsWith('/admin');
   const isUltimaSceneRoute =
@@ -320,7 +322,7 @@ export function AppShell({ children }: AppShellProps) {
   }, [logoUrl]);
 
   useEffect(() => {
-    if (!isUltimaSceneRoute) {
+    if (!isUltimaSceneRoute || isDesktopViewport) {
       return;
     }
     const prevBody = document.body.style.overflow;
@@ -331,7 +333,7 @@ export function AppShell({ children }: AppShellProps) {
       document.body.style.overflow = prevBody;
       document.documentElement.style.overflow = prevHtml;
     };
-  }, [isUltimaSceneRoute]);
+  }, [isDesktopViewport, isUltimaSceneRoute]);
 
   useEffect(() => {
     if (!isUltimaMode) {
