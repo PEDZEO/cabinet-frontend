@@ -181,14 +181,12 @@ export default function AdminTickets() {
 
   // Cancel in-flight uploads and cleanup blob URL on unmount
   useEffect(() => {
-    const uploadCounterRef = uploadIdRef;
-    const previewUrlRef = previewRef;
-
+    const uploadRef = uploadIdRef;
+    const prevRef = previewRef;
     return () => {
-      uploadCounterRef.current += 1;
-      const previewUrl = previewUrlRef.current;
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
+      uploadRef.current++;
+      if (prevRef.current) {
+        URL.revokeObjectURL(prevRef.current);
       }
     };
   }, []);
