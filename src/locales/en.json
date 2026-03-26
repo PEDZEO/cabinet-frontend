@@ -4413,6 +4413,7 @@
     "finishSetup": "Finish setup",
     "setupCompactTitle": "VPN is not configured yet",
     "setupCompactDesc": "Open setup and finish the connection whenever you're ready.",
+    "referralCtaDescription": "Earn {{percent}}% commission from referrals",
     "trialGuide": {
       "badge": "Trial activated",
       "title": "You can connect right now",

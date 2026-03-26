@@ -14,7 +14,9 @@ import { balanceApi } from '@/api/balance';
 import { brandingApi, getCachedUltimaThemeConfig } from '@/api/branding';
 import { infoApi } from '@/api/info';
 import { promoApi } from '@/api/promo';
+import { referralApi } from '@/api/referral';
 import { subscriptionApi } from '@/api/subscription';
+import { UltimaReferralCta } from '@/components/ultima/UltimaReferralCta';
 import {
   UltimaDesktopDashboard,
   UltimaDesktopDashboardSkeleton,
@@ -188,6 +190,20 @@ export function UltimaDashboard() {
     queryFn: brandingApi.getUltimaThemeConfig,
     initialData: getCachedUltimaThemeConfig() ?? undefined,
     staleTime: 60000,
+    placeholderData: (previousData) => previousData,
+  });
+  const { data: referralInfo } = useQuery({
+    queryKey: ['referral-info'],
+    queryFn: referralApi.getReferralInfo,
+    staleTime: 60000,
+    retry: false,
+    placeholderData: (previousData) => previousData,
+  });
+  const { data: referralTerms } = useQuery({
+    queryKey: ['referral-terms'],
+    queryFn: referralApi.getReferralTerms,
+    staleTime: 60000,
+    retry: false,
     placeholderData: (previousData) => previousData,
   });
   const subscription = subscriptionResponse?.subscription ?? null;
@@ -525,6 +541,32 @@ export function UltimaDashboard() {
     navigate('/support');
   };
 
+  const openReferral = useCallback(() => {
+    haptic.impact('light');
+    void import('./Referral');
+    void queryClient.prefetchQuery({
+      queryKey: ['referral-info'],
+      queryFn: referralApi.getReferralInfo,
+      staleTime: 15000,
+    });
+    void queryClient.prefetchQuery({
+      queryKey: ['referral-terms'],
+      queryFn: referralApi.getReferralTerms,
+      staleTime: 15000,
+    });
+    void queryClient.prefetchQuery({
+      queryKey: ['referral-list'],
+      queryFn: () => referralApi.getReferralList({ per_page: 20 }),
+      staleTime: 15000,
+    });
+    void queryClient.prefetchQuery({
+      queryKey: ['referral-earnings'],
+      queryFn: () => referralApi.getReferralEarnings({ per_page: 20 }),
+      staleTime: 15000,
+    });
+    navigate('/referral');
+  }, [haptic, navigate, queryClient]);
+
   const openConnection = useCallback(
     (resetToFirstStep = false) => {
       haptic.impact('light');
@@ -640,6 +682,9 @@ export function UltimaDashboard() {
   const showPromoCard =
     (activeDiscount?.is_active === true && (activeDiscount.discount_percent ?? 0) > 0) ||
     Boolean(firstPromoOffer);
+  const showReferralEntry = Boolean(referralTerms?.is_enabled || referralInfo?.referral_link);
+  const referralCommissionPercent =
+    referralInfo?.commission_percent ?? referralTerms?.commission_percent ?? 0;
   const showBrandLogoOnHome = Boolean(
     ultimaThemeConfig?.homeUseBrandLogo && hasCustomLogo && logoUrl,
   );
@@ -840,6 +885,15 @@ export function UltimaDashboard() {
 
         <UltimaDesktopDashboard
           heroButton={renderShieldButton('h-[108px] w-[108px] lg:h-[124px] lg:w-[124px]')}
+          referralCta={
+            showReferralEntry ? (
+              <UltimaReferralCta
+                commissionPercent={referralCommissionPercent}
+                onClick={openReferral}
+                variant="desktop"
+              />
+            ) : null
+          }
           subscription={subscription}
           expiryLabel={expiryLabel}
           statusLabel={statusLabel}
@@ -937,6 +991,15 @@ export function UltimaDashboard() {
                 {t('ultima.finishSetup', { defaultValue: 'Завершить установку' })}
               </span>
             </button>
+          )}
+
+          {showReferralEntry && (
+            <div className="mb-4">
+              <UltimaReferralCta
+                commissionPercent={referralCommissionPercent}
+                onClick={openReferral}
+              />
+            </div>
           )}
 
           {showPromoCard && (

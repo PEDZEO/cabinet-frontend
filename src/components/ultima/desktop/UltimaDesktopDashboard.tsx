@@ -8,6 +8,7 @@ export type UltimaDashboardStatusTone = 'active' | 'trial' | 'warning' | 'expire
 
 type UltimaDesktopDashboardProps = {
   heroButton: ReactNode;
+  referralCta?: ReactNode;
   subscription: Subscription | null;
   expiryLabel: string;
   statusLabel: string;
@@ -264,6 +265,7 @@ export function UltimaDesktopDashboardSkeleton({ bottomNav }: { bottomNav: React
 
 export function UltimaDesktopDashboard({
   heroButton,
+  referralCta,
   subscription,
   expiryLabel,
   statusLabel,
@@ -501,6 +503,8 @@ export function UltimaDesktopDashboard({
                     </span>
                   </button>
                 </div>
+
+                {referralCta ? <div className="mt-3 max-w-[460px]">{referralCta}</div> : null}
               </div>
 
               <div className="mx-auto flex items-center justify-center lg:justify-self-end">
