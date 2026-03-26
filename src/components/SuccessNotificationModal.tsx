@@ -3,12 +3,13 @@
  * Shows prominent success messages for balance top-ups and subscription purchases.
  */
 
-import { useEffect, useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { useSuccessNotification } from '../store/successNotification';
 import { useCurrency } from '../hooks/useCurrency';
+import { getCachedUltimaMode } from '../hooks/useUltimaMode';
 import { useTelegramSDK } from '../hooks/useTelegramSDK';
 import { useHaptic } from '@/platform';
 
@@ -69,6 +70,22 @@ const TrafficIcon = () => (
   </svg>
 );
 
+const ArrowRightIcon = () => (
+  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.9}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m0 0-5-5m5 5-5 5" />
+  </svg>
+);
+
+const InstallAppIcon = () => (
+  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M12 3v10m0 0 3.5-3.5M12 13 8.5 9.5M7 17.5h10M8.75 21h6.5A2.25 2.25 0 0 0 17.5 18.75V5.25A2.25 2.25 0 0 0 15.25 3h-6.5A2.25 2.25 0 0 0 6.5 5.25v13.5A2.25 2.25 0 0 0 8.75 21Z"
+    />
+  </svg>
+);
+
 const CloseIcon = () => (
   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -77,6 +94,7 @@ const CloseIcon = () => (
 
 export default function SuccessNotificationModal() {
   const { t } = useTranslation();
+  const location = useLocation();
   const navigate = useNavigate();
   const isOpen = useSuccessNotification((state) => state.isOpen);
   const data = useSuccessNotification((state) => state.data);
@@ -88,6 +106,7 @@ export default function SuccessNotificationModal() {
   const safeBottom = isTelegramWebApp
     ? Math.max(safeAreaInset.bottom, contentSafeAreaInset.bottom)
     : 0;
+  const isUltimaTheme = getCachedUltimaMode() === true || location.pathname.startsWith('/ultima');
 
   const handleClose = useCallback(() => {
     hide();
@@ -134,6 +153,9 @@ export default function SuccessNotificationModal() {
     data.type === 'subscription_purchased';
   const isDevicesPurchased = data.type === 'devices_purchased';
   const isTrafficPurchased = data.type === 'traffic_purchased';
+  const isPurchaseSuccess = isSubscription || isDevicesPurchased || isTrafficPurchased;
+  const subscriptionDetailsPath =
+    isUltimaTheme && isPurchaseSuccess ? '/ultima/subscription-info' : '/subscription';
 
   // Format amount
   const formattedAmount = data.amountKopeks
@@ -191,13 +213,102 @@ export default function SuccessNotificationModal() {
 
   const handleGoToSubscription = () => {
     hide();
-    navigate('/subscription');
+    navigate(subscriptionDetailsPath);
   };
 
   const handleGoToBalance = () => {
     hide();
     navigate('/balance');
   };
+
+  const handleGoToConnection = () => {
+    hide();
+    navigate('/connection');
+  };
+
+  const modalClassName = isUltimaTheme
+    ? 'relative mx-4 w-full max-w-sm overflow-hidden rounded-[28px] border shadow-2xl'
+    : 'relative mx-4 w-full max-w-sm overflow-hidden rounded-3xl border border-dark-700/50 bg-dark-900 shadow-2xl';
+  const detailCardClassName = isUltimaTheme
+    ? 'flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 backdrop-blur-md'
+    : 'flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3';
+  const primaryButtonClassName = isUltimaTheme
+    ? 'ultima-btn-pill ultima-btn-primary flex w-full items-center justify-center gap-2 px-4 py-3.5 text-[15px] font-semibold'
+    : 'flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-accent-500 to-accent-600 py-3.5 font-bold text-white shadow-lg shadow-accent-500/25 transition-all hover:from-accent-400 hover:to-accent-500 active:from-accent-600 active:to-accent-700';
+  const balanceButtonClassName = isUltimaTheme
+    ? 'ultima-btn-pill ultima-btn-secondary flex w-full items-center justify-center gap-2 px-4 py-3.5 text-[15px] font-semibold'
+    : 'flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-success-500 to-success-600 py-3.5 font-bold text-white shadow-lg shadow-success-500/25 transition-all hover:from-success-400 hover:to-success-500 active:from-success-600 active:to-success-700';
+  const devicesButtonClassName = isUltimaTheme
+    ? 'ultima-btn-pill ultima-btn-primary flex w-full items-center justify-center gap-2 px-4 py-3.5 text-[15px] font-semibold'
+    : 'flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-600 py-3.5 font-bold text-white shadow-lg shadow-blue-500/25 transition-all hover:from-blue-400 hover:to-cyan-500 active:from-blue-600 active:to-cyan-700';
+  const trafficButtonClassName = isUltimaTheme
+    ? 'ultima-btn-pill ultima-btn-primary flex w-full items-center justify-center gap-2 px-4 py-3.5 text-[15px] font-semibold'
+    : 'flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-success-500 to-success-600 py-3.5 font-bold text-white shadow-lg shadow-success-500/25 transition-all hover:from-success-400 hover:to-success-500 active:from-success-600 active:to-success-700';
+  const secondaryButtonClassName = isUltimaTheme
+    ? 'ultima-btn-pill ultima-btn-secondary flex w-full items-center justify-center gap-2 px-4 py-3.5 text-[15px] font-semibold'
+    : 'w-full rounded-xl bg-dark-800 py-3 font-semibold text-dark-300 transition-colors hover:bg-dark-700 hover:text-dark-100';
+
+  const modalStyle = isUltimaTheme
+    ? {
+        borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 36%, transparent)',
+        background:
+          'linear-gradient(180deg, color-mix(in srgb, var(--ultima-color-bg-top) 92%, transparent) 0%, color-mix(in srgb, var(--ultima-color-bg-bottom) 94%, transparent) 100%)',
+        boxShadow:
+          '0 24px 64px rgba(2, 12, 20, 0.54), inset 0 1px 0 color-mix(in srgb, #ffffff 10%, transparent)',
+      }
+    : undefined;
+  const closeButtonStyle = isUltimaTheme
+    ? {
+        color: 'color-mix(in srgb, var(--ultima-color-ring) 76%, #ffffff)',
+      }
+    : undefined;
+  const headerStyle = isUltimaTheme
+    ? {
+        background:
+          'radial-gradient(circle at top, color-mix(in srgb, var(--ultima-color-primary) 44%, transparent) 0%, color-mix(in srgb, var(--ultima-color-primary) 18%, transparent) 34%, transparent 72%)',
+        borderBottom:
+          '1px solid color-mix(in srgb, var(--ultima-color-surface-border) 16%, transparent)',
+      }
+    : undefined;
+  const iconWrapStyle = isUltimaTheme
+    ? {
+        border: '1px solid color-mix(in srgb, var(--ultima-color-ring) 28%, transparent)',
+        background: 'color-mix(in srgb, var(--ultima-color-surface) 44%, transparent)',
+        boxShadow:
+          '0 0 0 1px color-mix(in srgb, var(--ultima-color-ring) 10%, transparent), 0 18px 40px color-mix(in srgb, var(--ultima-color-primary) 18%, transparent)',
+      }
+    : undefined;
+  const titleStyle = isUltimaTheme
+    ? {
+        color: '#ffffff',
+      }
+    : undefined;
+  const messageStyle = isUltimaTheme
+    ? {
+        color: 'color-mix(in srgb, #ffffff 72%, var(--ultima-color-ring) 28%)',
+      }
+    : undefined;
+  const detailCardStyle = isUltimaTheme
+    ? {
+        borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
+        background: 'color-mix(in srgb, var(--ultima-color-surface) 36%, transparent)',
+      }
+    : undefined;
+  const detailLabelStyle = isUltimaTheme
+    ? {
+        color: 'rgba(255, 255, 255, 0.62)',
+      }
+    : undefined;
+  const detailValueStyle = isUltimaTheme
+    ? {
+        color: '#ffffff',
+      }
+    : undefined;
+  const detailAccentValueStyle = isUltimaTheme
+    ? {
+        color: 'var(--ultima-color-ring)',
+      }
+    : undefined;
 
   const modalContent = (
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
@@ -211,41 +322,71 @@ export default function SuccessNotificationModal() {
 
       {/* Modal */}
       <div
-        className="relative mx-4 w-full max-w-sm overflow-hidden rounded-3xl border border-dark-700/50 bg-dark-900 shadow-2xl"
+        className={modalClassName}
         style={{
           marginBottom: safeBottom ? `${safeBottom}px` : undefined,
+          ...modalStyle,
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
         <button
+          type="button"
           onClick={handleClose}
-          className="absolute right-3 top-3 z-10 rounded-xl p-2 text-dark-400 transition-colors hover:bg-dark-800 hover:text-dark-200"
+          className={`absolute right-3 top-3 z-10 rounded-xl p-2 transition-colors ${isUltimaTheme ? 'hover:bg-white/10' : 'text-dark-400 hover:bg-dark-800 hover:text-dark-200'}`}
+          style={closeButtonStyle}
+          aria-label={t('common.close', 'Close')}
         >
           <CloseIcon />
         </button>
 
         {/* Success header with animation */}
         <div
-          className={`flex flex-col items-center bg-gradient-to-br ${gradientClass} px-6 pb-8 pt-10`}
+          className={
+            isUltimaTheme
+              ? 'flex flex-col items-center px-6 pb-8 pt-10 text-center'
+              : `flex flex-col items-center bg-gradient-to-br ${gradientClass} px-6 pb-8 pt-10`
+          }
+          style={headerStyle}
         >
-          <div className="mb-4 animate-bounce text-white">{icon}</div>
-          <h2 className="text-center text-2xl font-bold text-white">{title}</h2>
-          {message && <p className="mt-2 text-center text-white/80">{message}</p>}
+          <div
+            className={`mb-4 text-white ${isUltimaTheme ? 'flex h-20 w-20 items-center justify-center rounded-full backdrop-blur-md' : 'animate-bounce'}`}
+            style={iconWrapStyle}
+          >
+            {icon}
+          </div>
+          <h2 className="text-center text-2xl font-bold text-white" style={titleStyle}>
+            {title}
+          </h2>
+          {message && (
+            <p className="mt-2 text-center text-white/80" style={messageStyle}>
+              {message}
+            </p>
+          )}
         </div>
 
         {/* Details */}
         <div className="space-y-4 p-6">
           {/* Amount */}
           {formattedAmount && (
-            <div className="flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
-              <span className="text-dark-400">
+            <div className={detailCardClassName} style={detailCardStyle}>
+              <span
+                className={isUltimaTheme ? undefined : 'text-dark-400'}
+                style={detailLabelStyle}
+              >
                 {isBalanceTopup
                   ? t('successNotification.amount', 'Amount')
                   : t('successNotification.price', 'Price')}
               </span>
               <span
-                className={`text-lg font-bold ${isDevicesPurchased || isTrafficPurchased ? 'text-dark-100' : 'text-success-400'}`}
+                className={`text-lg font-bold ${isUltimaTheme ? '' : isDevicesPurchased || isTrafficPurchased ? 'text-dark-100' : 'text-success-400'}`}
+                style={
+                  isUltimaTheme
+                    ? isDevicesPurchased || isTrafficPurchased
+                      ? detailValueStyle
+                      : detailAccentValueStyle
+                    : undefined
+                }
               >
                 {isDevicesPurchased || isTrafficPurchased ? '' : '+'}
                 {formattedAmount}
@@ -255,67 +396,125 @@ export default function SuccessNotificationModal() {
 
           {/* Devices info (for devices purchase) */}
           {isDevicesPurchased && data.devicesAdded && (
-            <div className="flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
-              <span className="text-dark-400">
+            <div className={detailCardClassName} style={detailCardStyle}>
+              <span
+                className={isUltimaTheme ? undefined : 'text-dark-400'}
+                style={detailLabelStyle}
+              >
                 {t('successNotification.devicesAdded', 'Devices added')}
               </span>
-              <span className="text-lg font-bold text-blue-400">+{data.devicesAdded}</span>
+              <span
+                className={`text-lg font-bold ${isUltimaTheme ? '' : 'text-blue-400'}`}
+                style={isUltimaTheme ? detailAccentValueStyle : undefined}
+              >
+                +{data.devicesAdded}
+              </span>
             </div>
           )}
 
           {isDevicesPurchased && data.newDeviceLimit && (
-            <div className="flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
-              <span className="text-dark-400">
+            <div className={detailCardClassName} style={detailCardStyle}>
+              <span
+                className={isUltimaTheme ? undefined : 'text-dark-400'}
+                style={detailLabelStyle}
+              >
                 {t('successNotification.totalDevices', 'Total devices')}
               </span>
-              <span className="font-semibold text-dark-100">{data.newDeviceLimit}</span>
+              <span
+                className={`font-semibold ${isUltimaTheme ? '' : 'text-dark-100'}`}
+                style={isUltimaTheme ? detailValueStyle : undefined}
+              >
+                {data.newDeviceLimit}
+              </span>
             </div>
           )}
 
           {/* Traffic info (for traffic purchase) */}
           {isTrafficPurchased && data.trafficGbAdded && (
-            <div className="flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
-              <span className="text-dark-400">
+            <div className={detailCardClassName} style={detailCardStyle}>
+              <span
+                className={isUltimaTheme ? undefined : 'text-dark-400'}
+                style={detailLabelStyle}
+              >
                 {t('successNotification.trafficAdded', 'Traffic added')}
               </span>
-              <span className="text-lg font-bold text-success-400">+{data.trafficGbAdded} GB</span>
+              <span
+                className={`text-lg font-bold ${isUltimaTheme ? '' : 'text-success-400'}`}
+                style={isUltimaTheme ? detailAccentValueStyle : undefined}
+              >
+                +{data.trafficGbAdded} GB
+              </span>
             </div>
           )}
 
           {isTrafficPurchased && data.newTrafficLimitGb && (
-            <div className="flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
-              <span className="text-dark-400">
+            <div className={detailCardClassName} style={detailCardStyle}>
+              <span
+                className={isUltimaTheme ? undefined : 'text-dark-400'}
+                style={detailLabelStyle}
+              >
                 {t('successNotification.totalTraffic', 'Total traffic')}
               </span>
-              <span className="font-semibold text-dark-100">{data.newTrafficLimitGb} GB</span>
+              <span
+                className={`font-semibold ${isUltimaTheme ? '' : 'text-dark-100'}`}
+                style={isUltimaTheme ? detailValueStyle : undefined}
+              >
+                {data.newTrafficLimitGb} GB
+              </span>
             </div>
           )}
 
           {/* New balance (for top-up) */}
           {isBalanceTopup && formattedBalance && (
-            <div className="flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
-              <span className="text-dark-400">
+            <div className={detailCardClassName} style={detailCardStyle}>
+              <span
+                className={isUltimaTheme ? undefined : 'text-dark-400'}
+                style={detailLabelStyle}
+              >
                 {t('successNotification.newBalance', 'New balance')}
               </span>
-              <span className="text-lg font-bold text-dark-100">{formattedBalance}</span>
+              <span
+                className={`text-lg font-bold ${isUltimaTheme ? '' : 'text-dark-100'}`}
+                style={isUltimaTheme ? detailValueStyle : undefined}
+              >
+                {formattedBalance}
+              </span>
             </div>
           )}
 
           {/* Tariff name */}
           {data.tariffName && (
-            <div className="flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
-              <span className="text-dark-400">{t('successNotification.tariff', 'Tariff')}</span>
-              <span className="font-semibold text-dark-100">{data.tariffName}</span>
+            <div className={detailCardClassName} style={detailCardStyle}>
+              <span
+                className={isUltimaTheme ? undefined : 'text-dark-400'}
+                style={detailLabelStyle}
+              >
+                {t('successNotification.tariff', 'Tariff')}
+              </span>
+              <span
+                className={`font-semibold ${isUltimaTheme ? '' : 'text-dark-100'}`}
+                style={isUltimaTheme ? detailValueStyle : undefined}
+              >
+                {data.tariffName}
+              </span>
             </div>
           )}
 
           {/* Expiry date */}
           {formattedExpiry && (
-            <div className="flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3">
-              <span className="text-dark-400">
+            <div className={detailCardClassName} style={detailCardStyle}>
+              <span
+                className={isUltimaTheme ? undefined : 'text-dark-400'}
+                style={detailLabelStyle}
+              >
                 {t('successNotification.validUntil', 'Valid until')}
               </span>
-              <span className="font-semibold text-dark-100">{formattedExpiry}</span>
+              <span
+                className={`font-semibold ${isUltimaTheme ? '' : 'text-dark-100'}`}
+                style={isUltimaTheme ? detailValueStyle : undefined}
+              >
+                {formattedExpiry}
+              </span>
             </div>
           )}
 
@@ -323,29 +522,39 @@ export default function SuccessNotificationModal() {
           <div className="space-y-2 pt-2">
             {isBalanceTopup && (
               <button
+                type="button"
                 onClick={handleGoToSubscription}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-accent-500 to-accent-600 py-3.5 font-bold text-white shadow-lg shadow-accent-500/25 transition-all hover:from-accent-400 hover:to-accent-500 active:from-accent-600 active:to-accent-700"
+                className={primaryButtonClassName}
               >
-                <RocketIcon />
+                <ArrowRightIcon />
                 <span>{t('successNotification.goToTariffs', 'Go to Tariffs')}</span>
               </button>
             )}
 
             {isSubscription && (
               <button
+                type="button"
                 onClick={handleGoToSubscription}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-accent-500 to-accent-600 py-3.5 font-bold text-white shadow-lg shadow-accent-500/25 transition-all hover:from-accent-400 hover:to-accent-500 active:from-accent-600 active:to-accent-700"
+                className={primaryButtonClassName}
               >
-                <RocketIcon />
+                <ArrowRightIcon />
                 <span>{t('successNotification.goToSubscription', 'Go to Subscription')}</span>
               </button>
             )}
 
-            {isBalanceTopup && (
+            {isUltimaTheme && isPurchaseSuccess && (
               <button
-                onClick={handleGoToBalance}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-success-500 to-success-600 py-3.5 font-bold text-white shadow-lg shadow-success-500/25 transition-all hover:from-success-400 hover:to-success-500 active:from-success-600 active:to-success-700"
+                type="button"
+                onClick={handleGoToConnection}
+                className={secondaryButtonClassName}
               >
+                <InstallAppIcon />
+                <span>{t('successNotification.installApp', 'Install app')}</span>
+              </button>
+            )}
+
+            {isBalanceTopup && (
+              <button type="button" onClick={handleGoToBalance} className={balanceButtonClassName}>
                 <WalletIcon />
                 <span>{t('successNotification.goToBalance', 'Go to Balance')}</span>
               </button>
@@ -353,28 +562,27 @@ export default function SuccessNotificationModal() {
 
             {isDevicesPurchased && (
               <button
+                type="button"
                 onClick={handleGoToSubscription}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-600 py-3.5 font-bold text-white shadow-lg shadow-blue-500/25 transition-all hover:from-blue-400 hover:to-cyan-500 active:from-blue-600 active:to-cyan-700"
+                className={devicesButtonClassName}
               >
-                <DevicesIcon />
+                <ArrowRightIcon />
                 <span>{t('successNotification.goToSubscription', 'Go to Subscription')}</span>
               </button>
             )}
 
             {isTrafficPurchased && (
               <button
+                type="button"
                 onClick={handleGoToSubscription}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-success-500 to-success-600 py-3.5 font-bold text-white shadow-lg shadow-success-500/25 transition-all hover:from-success-400 hover:to-success-500 active:from-success-600 active:to-success-700"
+                className={trafficButtonClassName}
               >
-                <TrafficIcon />
+                <ArrowRightIcon />
                 <span>{t('successNotification.goToSubscription', 'Go to Subscription')}</span>
               </button>
             )}
 
-            <button
-              onClick={handleClose}
-              className="w-full rounded-xl bg-dark-800 py-3 font-semibold text-dark-300 transition-colors hover:bg-dark-700 hover:text-dark-100"
-            >
+            <button type="button" onClick={handleClose} className={secondaryButtonClassName}>
               {t('common.close', 'Close')}
             </button>
           </div>

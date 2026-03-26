@@ -150,6 +150,7 @@
     "validUntil": "Valid until",
     "goToTariffs": "Go to Tariffs",
     "goToSubscription": "Go to Subscription",
+    "installApp": "Install App",
     "goToBalance": "Go to Balance"
   },
   "auth": {
