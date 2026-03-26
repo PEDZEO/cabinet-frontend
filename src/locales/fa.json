@@ -143,7 +143,9 @@
     "validUntil": "معتبر تا",
     "goToTariffs": "رفتن به تعرفه‌ها",
     "goToSubscription": "رفتن به اشتراک",
+    "buySubscription": "خرید اشتراک",
     "installApp": "نصب برنامه",
+    "dontShowAgain": "دیگر نشان نده",
     "goToBalance": "رفتن به موجودی"
   },
   "auth": {

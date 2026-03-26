@@ -12,6 +12,8 @@ import { useCurrency } from '../hooks/useCurrency';
 import { getCachedUltimaMode } from '../hooks/useUltimaMode';
 import { useTelegramSDK } from '../hooks/useTelegramSDK';
 import { useHaptic } from '@/platform';
+import { useAuthStore } from '@/store/auth';
+import { dismissTopUpFollowUp } from '@/utils/topUpFollowUp';
 
 // Icons
 const CheckCircleIcon = () => (
@@ -96,6 +98,7 @@ export default function SuccessNotificationModal() {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
+  const userId = useAuthStore((state) => state.user?.id ?? null);
   const isOpen = useSuccessNotification((state) => state.isOpen);
   const data = useSuccessNotification((state) => state.data);
   const hide = useSuccessNotification((state) => state.hide);
@@ -153,6 +156,7 @@ export default function SuccessNotificationModal() {
     data.type === 'subscription_purchased';
   const isDevicesPurchased = data.type === 'devices_purchased';
   const isTrafficPurchased = data.type === 'traffic_purchased';
+  const isUltimaBalanceTopup = isUltimaTheme && isBalanceTopup;
   const isPurchaseSuccess = isSubscription || isDevicesPurchased || isTrafficPurchased;
   const subscriptionDetailsPath =
     isUltimaTheme && isPurchaseSuccess ? '/ultima/subscription-info' : '/subscription';
@@ -224,6 +228,11 @@ export default function SuccessNotificationModal() {
   const handleGoToConnection = () => {
     hide();
     navigate('/connection');
+  };
+
+  const handleDismissTopUpFollowUp = () => {
+    dismissTopUpFollowUp(userId);
+    hide();
   };
 
   const modalClassName = isUltimaTheme
@@ -527,7 +536,11 @@ export default function SuccessNotificationModal() {
                 className={primaryButtonClassName}
               >
                 <ArrowRightIcon />
-                <span>{t('successNotification.goToTariffs', 'Go to Tariffs')}</span>
+                <span>
+                  {isUltimaBalanceTopup
+                    ? t('successNotification.buySubscription', 'Buy subscription')
+                    : t('successNotification.goToTariffs', 'Go to Tariffs')}
+                </span>
               </button>
             )}
 
@@ -542,7 +555,7 @@ export default function SuccessNotificationModal() {
               </button>
             )}
 
-            {isUltimaTheme && isPurchaseSuccess && (
+            {isUltimaTheme && (isPurchaseSuccess || isBalanceTopup) && (
               <button
                 type="button"
                 onClick={handleGoToConnection}
@@ -553,7 +566,7 @@ export default function SuccessNotificationModal() {
               </button>
             )}
 
-            {isBalanceTopup && (
+            {isBalanceTopup && !isUltimaBalanceTopup && (
               <button type="button" onClick={handleGoToBalance} className={balanceButtonClassName}>
                 <WalletIcon />
                 <span>{t('successNotification.goToBalance', 'Go to Balance')}</span>
@@ -582,8 +595,14 @@ export default function SuccessNotificationModal() {
               </button>
             )}
 
-            <button type="button" onClick={handleClose} className={secondaryButtonClassName}>
-              {t('common.close', 'Close')}
+            <button
+              type="button"
+              onClick={isUltimaBalanceTopup ? handleDismissTopUpFollowUp : handleClose}
+              className={secondaryButtonClassName}
+            >
+              {isUltimaBalanceTopup
+                ? t('successNotification.dontShowAgain', 'Do not show again')
+                : t('common.close', 'Close')}
             </button>
           </div>
         </div>

@@ -153,7 +153,9 @@
     "validUntil": "Действует до",
     "goToTariffs": "Перейти к тарифам",
     "goToSubscription": "Перейти к подписке",
+    "buySubscription": "Купить подписку",
     "installApp": "Установить приложение",
+    "dontShowAgain": "Больше не показывать",
     "goToBalance": "Перейти к балансу"
   },
   "auth": {

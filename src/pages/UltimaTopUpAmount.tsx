@@ -9,9 +9,12 @@ import {
 } from '@/components/ultima/desktop/UltimaDesktopSectionLayout';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { usePendingTopUpFollowUp } from '@/hooks/usePendingTopUpFollowUp';
 import { usePlatform } from '@/platform';
 import { useCloseOnSuccessNotification } from '@/store/successNotification';
+import { useAuthStore } from '@/store/auth';
 import type { PaymentMethod } from '@/types';
+import { writePendingTopUpFollowUp } from '@/utils/topUpFollowUp';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 
 const OpenIcon = () => (
@@ -87,6 +90,7 @@ export function UltimaTopUpAmount() {
   const { methodId } = useParams<{ methodId: string }>();
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
+  const userId = useAuthStore((state) => state.user?.id ?? null);
   const { formatAmount, convertAmount, convertToRub, currencySymbol, targetCurrency } =
     useCurrency();
   const { openTelegramLink, openLink } = usePlatform();
@@ -103,6 +107,12 @@ export function UltimaTopUpAmount() {
   const methods =
     methodsData ?? queryClient.getQueryData<PaymentMethod[]>(['payment-methods']) ?? [];
   const method = methods.find((item) => item.id === methodId);
+  const { data: balanceData } = useQuery({
+    queryKey: ['balance'],
+    queryFn: balanceApi.getBalance,
+    staleTime: 15000,
+    placeholderData: (previousData) => previousData,
+  });
 
   const initialAmountRub = searchParams.get('amount')
     ? Number(searchParams.get('amount'))
@@ -141,15 +151,20 @@ export function UltimaTopUpAmount() {
   }, [navigate, returnTo]);
 
   useCloseOnSuccessNotification(handleSuccess);
+  usePendingTopUpFollowUp();
 
   const topUpMutation = useMutation({
     mutationFn: async (amountKopeks: number) => {
       if (!method) throw new Error('method_not_found');
       return balanceApi.createTopUp(amountKopeks, method.id, selectedOption || undefined);
     },
-    onSuccess: (result) => {
+    onSuccess: (result, amountKopeks) => {
       setError(null);
       const url = result.payment_url;
+      writePendingTopUpFollowUp(userId, {
+        amountKopeks,
+        balanceBeforeKopeks: Math.max(0, balanceData?.balance_kopeks ?? 0),
+      });
       setPaymentUrl(url);
       openPayment(url);
     },

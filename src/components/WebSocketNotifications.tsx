@@ -12,6 +12,7 @@ import { useToast } from './Toast';
 import { useAuthStore } from '../store/auth';
 import { useCurrency } from '../hooks/useCurrency';
 import { showSuccessNotification } from '../store/successNotification';
+import { clearPendingTopUpFollowUp } from '@/utils/topUpFollowUp';
 
 export default function WebSocketNotifications() {
   const { t } = useTranslation();
@@ -19,6 +20,7 @@ export default function WebSocketNotifications() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const refreshUser = useAuthStore((state) => state.refreshUser);
+  const userId = useAuthStore((state) => state.user?.id ?? null);
   const { formatAmount, currencySymbol } = useCurrency();
 
   const handleMessage = useCallback(
@@ -33,6 +35,7 @@ export default function WebSocketNotifications() {
       // Balance events
       if (type === 'balance.topup') {
         // Show prominent success modal for balance top-up
+        clearPendingTopUpFollowUp(userId);
         showSuccessNotification({
           type: 'balance_topup',
           amountKopeks: message.amount_kopeks,
@@ -390,7 +393,7 @@ export default function WebSocketNotifications() {
         return;
       }
     },
-    [t, showToast, navigate, queryClient, refreshUser, formatAmount, currencySymbol],
+    [t, showToast, navigate, queryClient, refreshUser, formatAmount, currencySymbol, userId],
   );
 
   // Connect to WebSocket and handle messages

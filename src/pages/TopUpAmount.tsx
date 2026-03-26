@@ -1,15 +1,18 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 
 import { balanceApi } from '../api/balance';
 import { useCurrency } from '../hooks/useCurrency';
 import { checkRateLimit, getRateLimitResetTime, RATE_LIMIT_KEYS } from '../utils/rateLimit';
 import { useCloseOnSuccessNotification } from '../store/successNotification';
+import { usePendingTopUpFollowUp } from '@/hooks/usePendingTopUpFollowUp';
 import { useHaptic, usePlatform } from '@/platform';
+import { useAuthStore } from '@/store/auth';
 import { useUltimaMode } from '@/hooks/useUltimaMode';
+import { writePendingTopUpFollowUp } from '@/utils/topUpFollowUp';
 import { staggerContainer, staggerItem } from '@/components/motion/transitions';
 import type { PaymentMethod } from '../types';
 import BentoCard from '../components/ui/BentoCard';
@@ -87,6 +90,7 @@ function TopUpAmountContent() {
   const { methodId } = useParams<{ methodId: string }>();
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
+  const userId = useAuthStore((state) => state.user?.id ?? null);
   const { formatAmount, currencySymbol, convertAmount, convertToRub, targetCurrency } =
     useCurrency();
   const { openInvoice, openTelegramLink, openLink } = usePlatform();
@@ -131,6 +135,14 @@ function TopUpAmountContent() {
 
   // Auto-redirect when success notification appears (e.g., balance topped up via WebSocket)
   useCloseOnSuccessNotification(handleSuccess);
+  usePendingTopUpFollowUp();
+
+  const { data: balanceData } = useQuery({
+    queryKey: ['balance'],
+    queryFn: balanceApi.getBalance,
+    staleTime: 15000,
+    placeholderData: (previousData) => previousData,
+  });
 
   const getInitialAmount = (): string => {
     if (!initialAmountRubles || initialAmountRubles <= 0) return '';
@@ -240,9 +252,13 @@ function TopUpAmountContent() {
       if (!method) throw new Error('Method not loaded');
       return balanceApi.createTopUp(amountKopeks, method.id, selectedOption || undefined);
     },
-    onSuccess: (data) => {
+    onSuccess: (data, amountKopeks) => {
       const redirectUrl = data.payment_url || data.invoice_url;
       if (redirectUrl) {
+        writePendingTopUpFollowUp(userId, {
+          amountKopeks,
+          balanceBeforeKopeks: Math.max(0, balanceData?.balance_kopeks ?? 0),
+        });
         setPaymentUrl(redirectUrl);
         if (autoOpenPayment) {
           handleOpenPayment(redirectUrl);

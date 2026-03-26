@@ -143,7 +143,9 @@
     "validUntil": "有效期至",
     "goToTariffs": "前往套餐",
     "goToSubscription": "查看订阅",
+    "buySubscription": "购买订阅",
     "installApp": "安装应用",
+    "dontShowAgain": "不再显示",
     "goToBalance": "查看余额"
   },
   "auth": {
