@@ -33,6 +33,26 @@ export interface SuccessNotificationData {
   newTrafficLimitGb?: number;
 }
 
+const RECENT_NOTIFICATION_TTL_MS = 4000;
+
+const getNotificationFingerprint = (data: SuccessNotificationData): string =>
+  JSON.stringify({
+    type: data.type.startsWith('subscription_') ? 'subscription' : data.type,
+    amountKopeks: data.amountKopeks ?? null,
+    newBalanceKopeks: data.newBalanceKopeks ?? null,
+    expiresAt: data.expiresAt ?? null,
+    tariffName: data.tariffName ?? null,
+    devicesAdded: data.devicesAdded ?? null,
+    newDeviceLimit: data.newDeviceLimit ?? null,
+    trafficGbAdded: data.trafficGbAdded ?? null,
+    newTrafficLimitGb: data.newTrafficLimitGb ?? null,
+    title: data.title ?? null,
+    message: data.message ?? null,
+  });
+
+let lastNotificationFingerprint: string | null = null;
+let lastNotificationAt = 0;
+
 interface SuccessNotificationState {
   isOpen: boolean;
   data: SuccessNotificationData | null;
@@ -57,6 +77,24 @@ export const useSuccessNotification = create<SuccessNotificationState>((set) => 
     })),
   hide: () => set({ isOpen: false, data: null }),
 }));
+
+export function showSuccessNotification(
+  data: SuccessNotificationData,
+  options?: { dedupeMs?: number },
+) {
+  const dedupeMs = options?.dedupeMs ?? RECENT_NOTIFICATION_TTL_MS;
+  const fingerprint = getNotificationFingerprint(data);
+  const now = Date.now();
+
+  if (fingerprint === lastNotificationFingerprint && now - lastNotificationAt < dedupeMs) {
+    return false;
+  }
+
+  lastNotificationFingerprint = fingerprint;
+  lastNotificationAt = now;
+  useSuccessNotification.getState().show(data);
+  return true;
+}
 
 /**
  * Hook that calls onClose when a success notification appears.

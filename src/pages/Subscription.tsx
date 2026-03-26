@@ -21,7 +21,10 @@ import type {
 } from '../types';
 import InsufficientBalancePrompt from '../components/InsufficientBalancePrompt';
 import { useCurrency } from '../hooks/useCurrency';
-import { useCloseOnSuccessNotification } from '../store/successNotification';
+import {
+  showSuccessNotification,
+  useCloseOnSuccessNotification,
+} from '../store/successNotification';
 import { useHaptic } from '@/platform';
 import {
   buildPurchaseSteps,
@@ -369,8 +372,14 @@ function FullSubscription() {
 
   const purchaseMutation = useMutation({
     mutationFn: () => subscriptionApi.submitPurchase(currentSelection),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      showSuccessNotification({
+        type: 'subscription_purchased',
+        tariffName: data.subscription.tariff_name,
+        expiresAt: data.subscription.end_date,
+      });
       queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      queryClient.invalidateQueries({ queryKey: ['balance'] });
       queryClient.invalidateQueries({ queryKey: ['purchase-options'] });
       setShowPurchaseForm(false);
       setCurrentStep('period');

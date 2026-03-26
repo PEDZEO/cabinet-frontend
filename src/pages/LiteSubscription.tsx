@@ -11,6 +11,7 @@ import { useLocation } from 'react-router';
 import type { Tariff, TrafficPackage } from '@/types';
 import { PullToRefresh } from '@/components/lite/PullToRefresh';
 import { LiteSubscriptionSkeleton } from '@/components/lite/LiteSubscriptionSkeleton';
+import { showSuccessNotification } from '@/store/successNotification';
 import { getPromocodeErrorKey } from '@/utils/promocodeErrors';
 
 // Icons
@@ -304,6 +305,11 @@ export function LiteSubscription() {
     mutationFn: (params: { tariffId: number; periodDays: number }) =>
       subscriptionApi.purchaseTariff(params.tariffId, params.periodDays),
     onSuccess: (data) => {
+      showSuccessNotification({
+        type: 'subscription_purchased',
+        tariffName: data.tariff_name,
+        expiresAt: data.subscription.end_date,
+      });
       setSuccess(data.message);
       setError(null);
       queryClient.invalidateQueries({ queryKey: ['subscription'] });

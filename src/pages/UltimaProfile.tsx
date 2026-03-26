@@ -123,6 +123,8 @@ type SectionItem = {
   icon: ReactNode;
 };
 
+const ULTIMA_TOP_UP_PATH = '/balance/top-up?returnTo=/subscription';
+
 function MenuItem({ item, onClick }: { item: SectionItem; onClick: () => void }) {
   return (
     <button
@@ -180,7 +182,7 @@ export function UltimaProfile() {
       subtitle: t('profile.paymentMethodsDescription', {
         defaultValue: 'Настройка способов оплаты',
       }),
-      path: '/balance/top-up',
+      path: ULTIMA_TOP_UP_PATH,
       icon: <PaymentIcon />,
     },
     {
@@ -262,8 +264,8 @@ export function UltimaProfile() {
     async (path: string) => {
       const tasks: Array<Promise<unknown>> = [];
 
-      if (path === '/balance/top-up') {
-        tasks.push(import('./TopUpMethodSelect'));
+      if (path.startsWith('/balance/top-up')) {
+        tasks.push(import('./UltimaTopUpMethodSelect'));
         tasks.push(
           queryClient.prefetchQuery({
             queryKey: ['payment-methods'],
@@ -525,7 +527,7 @@ export function UltimaProfile() {
             <>
               <button
                 type="button"
-                onClick={() => void openPathFast('/balance/top-up')}
+                onClick={() => void openPathFast(ULTIMA_TOP_UP_PATH)}
                 className="ultima-btn-pill ultima-btn-primary px-5 py-3 text-sm"
               >
                 {t('balance.topUp', { defaultValue: 'Пополнить баланс' })}

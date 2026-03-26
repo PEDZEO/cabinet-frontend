@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useParams, useSearchParams } from 'react-router';
+import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { balanceApi } from '@/api/balance';
 import {
@@ -10,6 +10,7 @@ import {
 import { useCurrency } from '@/hooks/useCurrency';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { usePlatform } from '@/platform';
+import { useCloseOnSuccessNotification } from '@/store/successNotification';
 import type { PaymentMethod } from '@/types';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 
@@ -82,6 +83,7 @@ const MethodIcon = ({ methodId }: { methodId: string }) => {
 
 export function UltimaTopUpAmount() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { methodId } = useParams<{ methodId: string }>();
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
@@ -105,6 +107,7 @@ export function UltimaTopUpAmount() {
   const initialAmountRub = searchParams.get('amount')
     ? Number(searchParams.get('amount'))
     : undefined;
+  const returnTo = searchParams.get('returnTo');
   const [amount, setAmount] = useState(() => {
     if (!initialAmountRub || Number.isNaN(initialAmountRub) || initialAmountRub <= 0) return '';
     if (targetCurrency === 'RUB' || targetCurrency === 'IRR')
@@ -132,6 +135,12 @@ export function UltimaTopUpAmount() {
     },
     [openLink, openTelegramLink],
   );
+
+  const handleSuccess = useCallback(() => {
+    navigate(returnTo || '/subscription', { replace: true });
+  }, [navigate, returnTo]);
+
+  useCloseOnSuccessNotification(handleSuccess);
 
   const topUpMutation = useMutation({
     mutationFn: async (amountKopeks: number) => {

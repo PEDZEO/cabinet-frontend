@@ -2,6 +2,7 @@ import { useMutation, type QueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 
 import { subscriptionApi } from '@/api/subscription';
+import { showSuccessNotification } from '@/store/successNotification';
 import type { Tariff, TariffPeriod } from '@/types';
 
 type UseTariffMutationsParams = {
@@ -84,8 +85,14 @@ export const useTariffMutations = ({
         useCustomTraffic && selectedTariff.custom_traffic_enabled ? customTrafficGb : undefined;
       return subscriptionApi.purchaseTariff(selectedTariff.id, days, trafficGb);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      showSuccessNotification({
+        type: 'subscription_purchased',
+        tariffName: data.tariff_name,
+        expiresAt: data.subscription.end_date,
+      });
       queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      queryClient.invalidateQueries({ queryKey: ['balance'] });
       queryClient.invalidateQueries({ queryKey: ['purchase-options'] });
       setShowTariffPurchase(false);
       setSelectedTariff(null);

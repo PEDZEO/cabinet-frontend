@@ -11,7 +11,7 @@ import { useWebSocket, WSMessage } from '../hooks/useWebSocket';
 import { useToast } from './Toast';
 import { useAuthStore } from '../store/auth';
 import { useCurrency } from '../hooks/useCurrency';
-import { useSuccessNotification } from '../store/successNotification';
+import { showSuccessNotification } from '../store/successNotification';
 
 export default function WebSocketNotifications() {
   const { t } = useTranslation();
@@ -20,7 +20,6 @@ export default function WebSocketNotifications() {
   const { showToast } = useToast();
   const refreshUser = useAuthStore((state) => state.refreshUser);
   const { formatAmount, currencySymbol } = useCurrency();
-  const showSuccessModal = useSuccessNotification((state) => state.show);
 
   const handleMessage = useCallback(
     (message: WSMessage) => {
@@ -34,7 +33,7 @@ export default function WebSocketNotifications() {
       // Balance events
       if (type === 'balance.topup') {
         // Show prominent success modal for balance top-up
-        showSuccessModal({
+        showSuccessNotification({
           type: 'balance_topup',
           amountKopeks: message.amount_kopeks,
           newBalanceKopeks: message.new_balance_kopeks,
@@ -77,7 +76,7 @@ export default function WebSocketNotifications() {
       // Subscription events
       if (type === 'subscription.activated') {
         // Show prominent success modal for subscription activation
-        showSuccessModal({
+        showSuccessNotification({
           type: 'subscription_activated',
           expiresAt: message.expires_at,
           tariffName: message.tariff_name,
@@ -91,10 +90,11 @@ export default function WebSocketNotifications() {
 
       if (type === 'subscription.renewed') {
         // Show prominent success modal for subscription renewal
-        showSuccessModal({
+        showSuccessNotification({
           type: 'subscription_renewed',
           amountKopeks: message.amount_kopeks,
           expiresAt: message.new_expires_at,
+          tariffName: message.tariff_name,
         });
         queryClient.invalidateQueries({ queryKey: ['subscription'] });
         queryClient.invalidateQueries({ queryKey: ['balance'] });
@@ -177,7 +177,7 @@ export default function WebSocketNotifications() {
 
       if (type === 'subscription.devices_purchased') {
         // Show prominent success modal for device purchase
-        showSuccessModal({
+        showSuccessNotification({
           type: 'devices_purchased',
           amountKopeks: message.amount_kopeks,
           devicesAdded: message.devices_added,
@@ -193,7 +193,7 @@ export default function WebSocketNotifications() {
 
       if (type === 'subscription.traffic_purchased') {
         // Show prominent success modal for traffic purchase
-        showSuccessModal({
+        showSuccessNotification({
           type: 'traffic_purchased',
           amountKopeks: message.amount_kopeks,
           trafficGbAdded: message.traffic_gb_added,
@@ -390,16 +390,7 @@ export default function WebSocketNotifications() {
         return;
       }
     },
-    [
-      t,
-      showToast,
-      showSuccessModal,
-      navigate,
-      queryClient,
-      refreshUser,
-      formatAmount,
-      currencySymbol,
-    ],
+    [t, showToast, navigate, queryClient, refreshUser, formatAmount, currencySymbol],
   );
 
   // Connect to WebSocket and handle messages

@@ -151,6 +151,7 @@
     "newBalance": "Новый баланс",
     "tariff": "Тариф",
     "validUntil": "Действует до",
+    "goToTariffs": "Перейти к тарифам",
     "goToSubscription": "Перейти к подписке",
     "goToBalance": "Перейти к балансу"
   },

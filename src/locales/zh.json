@@ -141,6 +141,7 @@
     "newBalance": "新余额",
     "tariff": "套餐",
     "validUntil": "有效期至",
+    "goToTariffs": "前往套餐",
     "goToSubscription": "查看订阅",
     "goToBalance": "查看余额"
   },

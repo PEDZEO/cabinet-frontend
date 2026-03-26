@@ -321,6 +321,16 @@ export default function SuccessNotificationModal() {
 
           {/* Action buttons */}
           <div className="space-y-2 pt-2">
+            {isBalanceTopup && (
+              <button
+                onClick={handleGoToSubscription}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-accent-500 to-accent-600 py-3.5 font-bold text-white shadow-lg shadow-accent-500/25 transition-all hover:from-accent-400 hover:to-accent-500 active:from-accent-600 active:to-accent-700"
+              >
+                <RocketIcon />
+                <span>{t('successNotification.goToTariffs', 'Go to Tariffs')}</span>
+              </button>
+            )}
+
             {isSubscription && (
               <button
                 onClick={handleGoToSubscription}

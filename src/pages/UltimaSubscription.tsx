@@ -9,7 +9,10 @@ import { UltimaDesktopSubscription } from '@/components/ultima/desktop/UltimaDes
 import { createApplyPromoDiscount } from '@/features/subscription/utils/pricing';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
-import { useCloseOnSuccessNotification } from '@/store/successNotification';
+import {
+  showSuccessNotification,
+  useCloseOnSuccessNotification,
+} from '@/store/successNotification';
 import { useHaptic, usePlatform } from '@/platform';
 import type { PaymentMethod, Tariff, TariffPeriod } from '@/types';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
@@ -414,6 +417,11 @@ export function UltimaSubscription() {
       clearPendingUltimaPurchase();
       setAwaitingPaymentCompletion(false);
       setError(null);
+      showSuccessNotification({
+        type: 'subscription_purchased',
+        tariffName: result.tariff_name,
+        expiresAt: result.subscription.end_date,
+      });
       queryClient.setQueryData(['subscription'], (prev: unknown) => {
         const previous = prev as { has_subscription?: boolean } | undefined;
         return {
@@ -552,6 +560,11 @@ export function UltimaSubscription() {
         clearPendingUltimaPurchase();
         setAwaitingPaymentCompletion(false);
         setError(null);
+        showSuccessNotification({
+          type: 'subscription_purchased',
+          tariffName: result.tariff_name,
+          expiresAt: result.subscription.end_date,
+        });
         await Promise.all([
           queryClient.invalidateQueries({ queryKey: ['subscription'] }),
           queryClient.invalidateQueries({ queryKey: ['purchase-options'] }),
