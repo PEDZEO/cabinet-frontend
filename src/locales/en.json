@@ -143,6 +143,10 @@
     "subscriptionPurchased": {
       "title": "Subscription purchased!"
     },
+    "accountLinked": {
+      "title": "Accounts linked!",
+      "message": "Linking is complete. You can now sign in with the connected login methods."
+    },
     "amount": "Amount",
     "price": "Price",
     "newBalance": "New balance",

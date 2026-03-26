@@ -7,6 +7,7 @@ import { authApi } from '@/api/auth';
 import { Button } from '@/components/primitives/Button';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { showSuccessNotification } from '@/store/successNotification';
 import { useAuthStore } from '@/store/auth';
 import type { LinkCodePreviewResponse, LinkedIdentity } from '@/types';
 
@@ -193,6 +194,13 @@ export default function UltimaAccountLinking() {
     return parsed.message || t('common.error', 'Произошла ошибка');
   };
 
+  const resetUnlinkState = () => {
+    setUnlinkProvider(null);
+    setUnlinkRequestToken(null);
+    setUnlinkOtpCode('');
+    setUnlinkError(null);
+  };
+
   const { data: linkedIdentitiesData } = useQuery({
     queryKey: ['linked-identities'],
     queryFn: authApi.getLinkedIdentities,
@@ -217,6 +225,7 @@ export default function UltimaAccountLinking() {
   const createLinkCodeMutation = useMutation({
     mutationFn: authApi.createLinkCode,
     onSuccess: (data) => {
+      setUnlinkError(null);
       setLinkError(null);
       setLinkSuccess('Код привязки создан');
       setActiveLinkCode(data.code);
@@ -235,6 +244,7 @@ export default function UltimaAccountLinking() {
   const previewLinkCodeMutation = useMutation({
     mutationFn: (code: string) => authApi.previewLinkCode(code),
     onSuccess: (data, code) => {
+      setUnlinkError(null);
       setLinkError(null);
       setLinkPreview(data);
       const hasTelegramInPreview = !!data.source_identity_hints?.telegram;
@@ -257,7 +267,8 @@ export default function UltimaAccountLinking() {
       setTokens(data.access_token, data.refresh_token);
       setUser(data.user);
       await checkAdminStatus();
-      setLinkSuccess('Аккаунты успешно объединены');
+      resetUnlinkState();
+      setLinkSuccess(null);
       setLinkError(null);
       setActiveLinkCode('');
       setLinkCode('');
@@ -267,6 +278,14 @@ export default function UltimaAccountLinking() {
       setManualMergeComment('');
       queryClient.invalidateQueries({ queryKey: ['linked-identities'] });
       queryClient.invalidateQueries({ queryKey: ['user'] });
+      showSuccessNotification({
+        type: 'account_linked',
+        title: t('successNotification.accountLinked.title', 'Аккаунты связаны!'),
+        message: t(
+          'successNotification.accountLinked.message',
+          'Привязка завершена. Теперь вы можете входить через связанные способы входа.',
+        ),
+      });
     },
     onError: (err: unknown) => {
       setLinkSuccess(null);
@@ -509,6 +528,7 @@ export default function UltimaAccountLinking() {
                   const nextCode = e.target.value.toUpperCase().trim();
                   setLinkCode(nextCode);
                   setLinkError(null);
+                  setUnlinkError(null);
                   setLinkSuccess(null);
                   if (nextCode !== previewedCode) {
                     setLinkPreview(null);

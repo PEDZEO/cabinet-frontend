@@ -3,6 +3,7 @@ import { create } from 'zustand';
 
 export type SuccessNotificationType =
   | 'balance_topup'
+  | 'account_linked'
   | 'subscription_activated'
   | 'subscription_renewed'
   | 'subscription_purchased'

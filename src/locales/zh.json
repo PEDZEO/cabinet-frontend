@@ -136,6 +136,10 @@
     "subscriptionPurchased": {
       "title": "订阅已购买！"
     },
+    "accountLinked": {
+      "title": "账号已关联！",
+      "message": "关联已完成。现在您可以使用已连接的登录方式进入账户。"
+    },
     "amount": "金额",
     "price": "价格",
     "newBalance": "新余额",
