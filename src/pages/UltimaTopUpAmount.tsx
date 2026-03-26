@@ -217,7 +217,7 @@ export function UltimaTopUpAmount() {
   }, [method, t]);
 
   if (!method) {
-    return <div className="h-[100svh] min-h-[100dvh] w-full bg-transparent" />;
+    return <div className="min-h-[100dvh] min-h-[100svh] w-full bg-transparent" />;
   }
 
   const bottomNav = <UltimaBottomNav active="profile" />;
@@ -238,7 +238,7 @@ export function UltimaTopUpAmount() {
         </div>
 
         {method.options && method.options.length > 0 ? (
-          <div className="mb-3 grid grid-cols-2 gap-2">
+          <div className="mb-3 grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
             {method.options.map((option) => (
               <button
                 key={option.id}
@@ -257,7 +257,7 @@ export function UltimaTopUpAmount() {
         ) : null}
 
         <div className="text-white/62 mb-2 text-[12px]">{t('balance.enterAmount')}</div>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 min-[360px]:flex-row">
           <div className="border-emerald-200/12 relative flex-1 rounded-2xl border bg-emerald-950/35">
             <input
               ref={inputRef}
@@ -276,14 +276,14 @@ export function UltimaTopUpAmount() {
             type="button"
             onClick={handleCreatePayment}
             disabled={topUpMutation.isPending}
-            className="rounded-2xl border border-[#52ecc6]/40 bg-[#12cd97] px-4 text-sm font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] disabled:opacity-60"
+            className="rounded-2xl border border-[#52ecc6]/40 bg-[#12cd97] px-4 py-3 text-sm font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] disabled:opacity-60 min-[360px]:py-0"
           >
             {t('balance.topUp')}
           </button>
         </div>
 
         {quickRubles.length > 0 ? (
-          <div className="mt-3 grid grid-cols-4 gap-2">
+          <div className="mt-3 grid grid-cols-2 gap-2 min-[360px]:grid-cols-4">
             {quickRubles.map((value) => (
               <button
                 key={value}
@@ -430,7 +430,7 @@ export function UltimaTopUpAmount() {
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner lg:max-w-[960px]">
         <header className="mb-3">
-          <h1 className="text-[clamp(32px,8.5vw,36px)] font-semibold leading-[0.9] tracking-[-0.01em] text-white">
+          <h1 className="text-[clamp(32px,8.5vw,36px)] font-semibold leading-[0.9] tracking-[-0.01em] text-white [overflow-wrap:anywhere]">
             {methodName}
           </h1>
           <p className="text-white/62 mt-1.5 text-[13px] leading-tight">

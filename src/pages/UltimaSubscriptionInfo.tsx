@@ -139,7 +139,7 @@ export function UltimaSubscriptionInfo() {
   };
 
   if (isLoading) {
-    return <div className="h-[100svh] min-h-[100dvh] w-full bg-transparent" />;
+    return <div className="min-h-[100dvh] min-h-[100svh] w-full bg-transparent" />;
   }
 
   const bottomNav = <UltimaBottomNav active="home" onSupportClick={openSupport} />;
@@ -172,14 +172,14 @@ export function UltimaSubscriptionInfo() {
           <div className="rounded-xl border border-white/10 bg-black/15 px-3 py-2">
             <p className="text-white/92 truncate text-[13px]">{subscriptionLink || '-'}</p>
           </div>
-          <div className="mt-2 grid grid-cols-2 gap-2">
+          <div className="mt-2 grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
             <button
               type="button"
               onClick={() => void copySubscriptionLink()}
               className="ultima-btn-pill ultima-btn-secondary rounded-xl px-3 py-2 text-[13px]"
               disabled={!subscriptionLink}
             >
-              <span className="inline-flex items-center gap-1.5">
+              <span className="inline-flex items-center gap-1.5 break-words">
                 <CopyIcon />
                 {linkCopied
                   ? t('common.copied', { defaultValue: 'Скопировано' })
@@ -192,7 +192,7 @@ export function UltimaSubscriptionInfo() {
               className="ultima-btn-pill ultima-btn-secondary rounded-xl px-3 py-2 text-[13px]"
               disabled={!subscriptionLink}
             >
-              <span className="inline-flex items-center gap-1.5">
+              <span className="inline-flex items-center gap-1.5 break-words">
                 <ShareIcon />
                 {t('common.share', { defaultValue: 'Поделиться' })}
               </span>
@@ -200,7 +200,7 @@ export function UltimaSubscriptionInfo() {
           </div>
         </section>
 
-        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-4">
+        <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2 lg:grid-cols-4 lg:gap-4">
           <StatCard
             label={t('subscription.status', { defaultValue: 'Статус' })}
             value={
@@ -215,7 +215,7 @@ export function UltimaSubscriptionInfo() {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-4">
+        <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2 lg:grid-cols-4 lg:gap-4">
           <StatCard
             label={t('subscription.trafficUsed', { defaultValue: 'Трафик использован' })}
             value={`${trafficUsed.toFixed(1)} GB`}
@@ -243,7 +243,7 @@ export function UltimaSubscriptionInfo() {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
           <StatCard
             label={t('subscription.devices', { defaultValue: 'Устройства' })}
             value={String(subscription.device_limit ?? 0)}
@@ -254,7 +254,7 @@ export function UltimaSubscriptionInfo() {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
           <StatCard
             label={tariffLabel}
             value={
@@ -365,10 +365,10 @@ export function UltimaSubscriptionInfo() {
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner lg:max-w-[960px]">
         <header className="mb-3">
-          <h1 className="text-[clamp(34px,9.2vw,42px)] font-semibold leading-[0.92] tracking-[-0.01em] text-white">
+          <h1 className="break-words text-[clamp(34px,9.2vw,42px)] font-semibold leading-[0.92] tracking-[-0.01em] text-white">
             {t('subscription.infoTitle', { defaultValue: 'Инфо о подписке' })}
           </h1>
-          <p className="text-white/62 mt-1.5 text-[14px] leading-tight">
+          <p className="text-white/62 mt-1.5 break-words text-[14px] leading-tight">
             {t('subscription.infoDescription', {
               defaultValue: 'Ключевые параметры подписки и управления устройствами.',
             })}

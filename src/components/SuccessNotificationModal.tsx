@@ -236,26 +236,26 @@ export default function SuccessNotificationModal() {
   };
 
   const modalClassName = isUltimaTheme
-    ? 'relative mx-4 w-full max-w-sm overflow-hidden rounded-[28px] border shadow-2xl'
-    : 'relative mx-4 w-full max-w-sm overflow-hidden rounded-3xl border border-dark-700/50 bg-dark-900 shadow-2xl';
+    ? 'relative mx-3 w-full max-w-sm overflow-y-auto overscroll-contain rounded-[28px] border shadow-2xl max-h-[calc(100dvh-1.5rem)]'
+    : 'relative mx-3 w-full max-w-sm overflow-y-auto overscroll-contain rounded-3xl border border-dark-700/50 bg-dark-900 shadow-2xl max-h-[calc(100dvh-1.5rem)]';
   const detailCardClassName = isUltimaTheme
-    ? 'flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 backdrop-blur-md'
-    : 'flex items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3';
+    ? 'flex min-w-0 items-center justify-between gap-3 rounded-2xl border px-4 py-3 backdrop-blur-md'
+    : 'flex min-w-0 items-center justify-between rounded-xl bg-dark-800/50 px-4 py-3';
   const primaryButtonClassName = isUltimaTheme
-    ? 'ultima-btn-pill ultima-btn-primary flex w-full items-center justify-center gap-2 px-4 py-3.5 text-[15px] font-semibold'
-    : 'flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-accent-500 to-accent-600 py-3.5 font-bold text-white shadow-lg shadow-accent-500/25 transition-all hover:from-accent-400 hover:to-accent-500 active:from-accent-600 active:to-accent-700';
+    ? 'ultima-btn-pill ultima-btn-primary flex w-full items-center justify-center gap-2 px-4 py-3.5 text-center text-[15px] font-semibold leading-snug'
+    : 'flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-accent-500 to-accent-600 py-3.5 text-center font-bold leading-snug text-white shadow-lg shadow-accent-500/25 transition-all hover:from-accent-400 hover:to-accent-500 active:from-accent-600 active:to-accent-700';
   const balanceButtonClassName = isUltimaTheme
-    ? 'ultima-btn-pill ultima-btn-secondary flex w-full items-center justify-center gap-2 px-4 py-3.5 text-[15px] font-semibold'
-    : 'flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-success-500 to-success-600 py-3.5 font-bold text-white shadow-lg shadow-success-500/25 transition-all hover:from-success-400 hover:to-success-500 active:from-success-600 active:to-success-700';
+    ? 'ultima-btn-pill ultima-btn-secondary flex w-full items-center justify-center gap-2 px-4 py-3.5 text-center text-[15px] font-semibold leading-snug'
+    : 'flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-success-500 to-success-600 py-3.5 text-center font-bold leading-snug text-white shadow-lg shadow-success-500/25 transition-all hover:from-success-400 hover:to-success-500 active:from-success-600 active:to-success-700';
   const devicesButtonClassName = isUltimaTheme
-    ? 'ultima-btn-pill ultima-btn-primary flex w-full items-center justify-center gap-2 px-4 py-3.5 text-[15px] font-semibold'
-    : 'flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-600 py-3.5 font-bold text-white shadow-lg shadow-blue-500/25 transition-all hover:from-blue-400 hover:to-cyan-500 active:from-blue-600 active:to-cyan-700';
+    ? 'ultima-btn-pill ultima-btn-primary flex w-full items-center justify-center gap-2 px-4 py-3.5 text-center text-[15px] font-semibold leading-snug'
+    : 'flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-600 py-3.5 text-center font-bold leading-snug text-white shadow-lg shadow-blue-500/25 transition-all hover:from-blue-400 hover:to-cyan-500 active:from-blue-600 active:to-cyan-700';
   const trafficButtonClassName = isUltimaTheme
-    ? 'ultima-btn-pill ultima-btn-primary flex w-full items-center justify-center gap-2 px-4 py-3.5 text-[15px] font-semibold'
-    : 'flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-success-500 to-success-600 py-3.5 font-bold text-white shadow-lg shadow-success-500/25 transition-all hover:from-success-400 hover:to-success-500 active:from-success-600 active:to-success-700';
+    ? 'ultima-btn-pill ultima-btn-primary flex w-full items-center justify-center gap-2 px-4 py-3.5 text-center text-[15px] font-semibold leading-snug'
+    : 'flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-success-500 to-success-600 py-3.5 text-center font-bold leading-snug text-white shadow-lg shadow-success-500/25 transition-all hover:from-success-400 hover:to-success-500 active:from-success-600 active:to-success-700';
   const secondaryButtonClassName = isUltimaTheme
-    ? 'ultima-btn-pill ultima-btn-secondary flex w-full items-center justify-center gap-2 px-4 py-3.5 text-[15px] font-semibold'
-    : 'w-full rounded-xl bg-dark-800 py-3 font-semibold text-dark-300 transition-colors hover:bg-dark-700 hover:text-dark-100';
+    ? 'ultima-btn-pill ultima-btn-secondary flex w-full items-center justify-center gap-2 px-4 py-3.5 text-center text-[15px] font-semibold leading-snug'
+    : 'w-full rounded-xl bg-dark-800 py-3 text-center font-semibold leading-snug text-dark-300 transition-colors hover:bg-dark-700 hover:text-dark-100';
 
   const modalStyle = isUltimaTheme
     ? {
@@ -364,11 +364,14 @@ export default function SuccessNotificationModal() {
           >
             {icon}
           </div>
-          <h2 className="text-center text-2xl font-bold text-white" style={titleStyle}>
+          <h2
+            className="max-w-[16ch] break-words text-center text-2xl font-bold text-white"
+            style={titleStyle}
+          >
             {title}
           </h2>
           {message && (
-            <p className="mt-2 text-center text-white/80" style={messageStyle}>
+            <p className="mt-2 break-words text-center text-white/80" style={messageStyle}>
               {message}
             </p>
           )}
@@ -380,7 +383,9 @@ export default function SuccessNotificationModal() {
           {formattedAmount && (
             <div className={detailCardClassName} style={detailCardStyle}>
               <span
-                className={isUltimaTheme ? undefined : 'text-dark-400'}
+                className={
+                  isUltimaTheme ? 'min-w-0 flex-1 pr-2' : 'min-w-0 flex-1 pr-2 text-dark-400'
+                }
                 style={detailLabelStyle}
               >
                 {isBalanceTopup
@@ -388,7 +393,7 @@ export default function SuccessNotificationModal() {
                   : t('successNotification.price', 'Price')}
               </span>
               <span
-                className={`text-lg font-bold ${isUltimaTheme ? '' : isDevicesPurchased || isTrafficPurchased ? 'text-dark-100' : 'text-success-400'}`}
+                className={`max-w-[58%] break-words text-right text-lg font-bold ${isUltimaTheme ? '' : isDevicesPurchased || isTrafficPurchased ? 'text-dark-100' : 'text-success-400'}`}
                 style={
                   isUltimaTheme
                     ? isDevicesPurchased || isTrafficPurchased
@@ -407,13 +412,15 @@ export default function SuccessNotificationModal() {
           {isDevicesPurchased && data.devicesAdded && (
             <div className={detailCardClassName} style={detailCardStyle}>
               <span
-                className={isUltimaTheme ? undefined : 'text-dark-400'}
+                className={
+                  isUltimaTheme ? 'min-w-0 flex-1 pr-2' : 'min-w-0 flex-1 pr-2 text-dark-400'
+                }
                 style={detailLabelStyle}
               >
                 {t('successNotification.devicesAdded', 'Devices added')}
               </span>
               <span
-                className={`text-lg font-bold ${isUltimaTheme ? '' : 'text-blue-400'}`}
+                className={`max-w-[58%] break-words text-right text-lg font-bold ${isUltimaTheme ? '' : 'text-blue-400'}`}
                 style={isUltimaTheme ? detailAccentValueStyle : undefined}
               >
                 +{data.devicesAdded}
@@ -424,13 +431,15 @@ export default function SuccessNotificationModal() {
           {isDevicesPurchased && data.newDeviceLimit && (
             <div className={detailCardClassName} style={detailCardStyle}>
               <span
-                className={isUltimaTheme ? undefined : 'text-dark-400'}
+                className={
+                  isUltimaTheme ? 'min-w-0 flex-1 pr-2' : 'min-w-0 flex-1 pr-2 text-dark-400'
+                }
                 style={detailLabelStyle}
               >
                 {t('successNotification.totalDevices', 'Total devices')}
               </span>
               <span
-                className={`font-semibold ${isUltimaTheme ? '' : 'text-dark-100'}`}
+                className={`max-w-[58%] break-words text-right font-semibold ${isUltimaTheme ? '' : 'text-dark-100'}`}
                 style={isUltimaTheme ? detailValueStyle : undefined}
               >
                 {data.newDeviceLimit}
@@ -442,13 +451,15 @@ export default function SuccessNotificationModal() {
           {isTrafficPurchased && data.trafficGbAdded && (
             <div className={detailCardClassName} style={detailCardStyle}>
               <span
-                className={isUltimaTheme ? undefined : 'text-dark-400'}
+                className={
+                  isUltimaTheme ? 'min-w-0 flex-1 pr-2' : 'min-w-0 flex-1 pr-2 text-dark-400'
+                }
                 style={detailLabelStyle}
               >
                 {t('successNotification.trafficAdded', 'Traffic added')}
               </span>
               <span
-                className={`text-lg font-bold ${isUltimaTheme ? '' : 'text-success-400'}`}
+                className={`max-w-[58%] break-words text-right text-lg font-bold ${isUltimaTheme ? '' : 'text-success-400'}`}
                 style={isUltimaTheme ? detailAccentValueStyle : undefined}
               >
                 +{data.trafficGbAdded} GB
@@ -459,13 +470,15 @@ export default function SuccessNotificationModal() {
           {isTrafficPurchased && data.newTrafficLimitGb && (
             <div className={detailCardClassName} style={detailCardStyle}>
               <span
-                className={isUltimaTheme ? undefined : 'text-dark-400'}
+                className={
+                  isUltimaTheme ? 'min-w-0 flex-1 pr-2' : 'min-w-0 flex-1 pr-2 text-dark-400'
+                }
                 style={detailLabelStyle}
               >
                 {t('successNotification.totalTraffic', 'Total traffic')}
               </span>
               <span
-                className={`font-semibold ${isUltimaTheme ? '' : 'text-dark-100'}`}
+                className={`max-w-[58%] break-words text-right font-semibold ${isUltimaTheme ? '' : 'text-dark-100'}`}
                 style={isUltimaTheme ? detailValueStyle : undefined}
               >
                 {data.newTrafficLimitGb} GB
@@ -477,13 +490,15 @@ export default function SuccessNotificationModal() {
           {isBalanceTopup && formattedBalance && (
             <div className={detailCardClassName} style={detailCardStyle}>
               <span
-                className={isUltimaTheme ? undefined : 'text-dark-400'}
+                className={
+                  isUltimaTheme ? 'min-w-0 flex-1 pr-2' : 'min-w-0 flex-1 pr-2 text-dark-400'
+                }
                 style={detailLabelStyle}
               >
                 {t('successNotification.newBalance', 'New balance')}
               </span>
               <span
-                className={`text-lg font-bold ${isUltimaTheme ? '' : 'text-dark-100'}`}
+                className={`max-w-[58%] break-words text-right text-lg font-bold ${isUltimaTheme ? '' : 'text-dark-100'}`}
                 style={isUltimaTheme ? detailValueStyle : undefined}
               >
                 {formattedBalance}
@@ -495,13 +510,15 @@ export default function SuccessNotificationModal() {
           {data.tariffName && (
             <div className={detailCardClassName} style={detailCardStyle}>
               <span
-                className={isUltimaTheme ? undefined : 'text-dark-400'}
+                className={
+                  isUltimaTheme ? 'min-w-0 flex-1 pr-2' : 'min-w-0 flex-1 pr-2 text-dark-400'
+                }
                 style={detailLabelStyle}
               >
                 {t('successNotification.tariff', 'Tariff')}
               </span>
               <span
-                className={`font-semibold ${isUltimaTheme ? '' : 'text-dark-100'}`}
+                className={`max-w-[58%] break-words text-right font-semibold ${isUltimaTheme ? '' : 'text-dark-100'}`}
                 style={isUltimaTheme ? detailValueStyle : undefined}
               >
                 {data.tariffName}
@@ -513,13 +530,15 @@ export default function SuccessNotificationModal() {
           {formattedExpiry && (
             <div className={detailCardClassName} style={detailCardStyle}>
               <span
-                className={isUltimaTheme ? undefined : 'text-dark-400'}
+                className={
+                  isUltimaTheme ? 'min-w-0 flex-1 pr-2' : 'min-w-0 flex-1 pr-2 text-dark-400'
+                }
                 style={detailLabelStyle}
               >
                 {t('successNotification.validUntil', 'Valid until')}
               </span>
               <span
-                className={`font-semibold ${isUltimaTheme ? '' : 'text-dark-100'}`}
+                className={`max-w-[58%] break-words text-right font-semibold ${isUltimaTheme ? '' : 'text-dark-100'}`}
                 style={isUltimaTheme ? detailValueStyle : undefined}
               >
                 {formattedExpiry}
@@ -536,7 +555,7 @@ export default function SuccessNotificationModal() {
                 className={primaryButtonClassName}
               >
                 <ArrowRightIcon />
-                <span>
+                <span className="min-w-0 break-words">
                   {isUltimaBalanceTopup
                     ? t('successNotification.buySubscription', 'Buy subscription')
                     : t('successNotification.goToTariffs', 'Go to Tariffs')}
@@ -551,7 +570,9 @@ export default function SuccessNotificationModal() {
                 className={primaryButtonClassName}
               >
                 <ArrowRightIcon />
-                <span>{t('successNotification.goToSubscription', 'Go to Subscription')}</span>
+                <span className="min-w-0 break-words">
+                  {t('successNotification.goToSubscription', 'Go to Subscription')}
+                </span>
               </button>
             )}
 
@@ -562,14 +583,18 @@ export default function SuccessNotificationModal() {
                 className={secondaryButtonClassName}
               >
                 <InstallAppIcon />
-                <span>{t('successNotification.installApp', 'Install app')}</span>
+                <span className="min-w-0 break-words">
+                  {t('successNotification.installApp', 'Install app')}
+                </span>
               </button>
             )}
 
             {isBalanceTopup && !isUltimaBalanceTopup && (
               <button type="button" onClick={handleGoToBalance} className={balanceButtonClassName}>
                 <WalletIcon />
-                <span>{t('successNotification.goToBalance', 'Go to Balance')}</span>
+                <span className="min-w-0 break-words">
+                  {t('successNotification.goToBalance', 'Go to Balance')}
+                </span>
               </button>
             )}
 
@@ -580,7 +605,9 @@ export default function SuccessNotificationModal() {
                 className={devicesButtonClassName}
               >
                 <ArrowRightIcon />
-                <span>{t('successNotification.goToSubscription', 'Go to Subscription')}</span>
+                <span className="min-w-0 break-words">
+                  {t('successNotification.goToSubscription', 'Go to Subscription')}
+                </span>
               </button>
             )}
 
@@ -591,7 +618,9 @@ export default function SuccessNotificationModal() {
                 className={trafficButtonClassName}
               >
                 <ArrowRightIcon />
-                <span>{t('successNotification.goToSubscription', 'Go to Subscription')}</span>
+                <span className="min-w-0 break-words">
+                  {t('successNotification.goToSubscription', 'Go to Subscription')}
+                </span>
               </button>
             )}
 

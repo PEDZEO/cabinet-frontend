@@ -657,7 +657,7 @@ export function UltimaSubscription() {
         </div>
       );
     }
-    return <div className="h-[100svh] min-h-[100dvh] w-full bg-transparent" />;
+    return <div className="min-h-[100dvh] min-h-[100svh] w-full bg-transparent" />;
   }
 
   if (!selectedTariff || !selectedPeriod) {
@@ -674,7 +674,7 @@ export function UltimaSubscription() {
       );
     }
     return (
-      <div className="flex h-[100svh] min-h-[100dvh] items-center justify-center text-dark-200">
+      <div className="flex min-h-[100dvh] min-h-[100svh] items-center justify-center px-4 text-center text-dark-200">
         {t('subscription.noTariffsAvailable', { defaultValue: 'Тарифы недоступны' })}
       </div>
     );
@@ -904,14 +904,14 @@ export function UltimaSubscription() {
 
   return (
     <div
-      className={`relative h-[100svh] min-h-[100dvh] overflow-hidden bg-transparent ${
+      className={`relative min-h-[100dvh] min-h-[100svh] overflow-y-auto overflow-x-hidden bg-transparent ${
         isNarrowWidth ? 'px-3' : 'px-4'
-      } pb-[calc(16px+env(safe-area-inset-bottom,0px))] ${isUltraCompactHeight ? 'pt-3' : 'pt-4'} lg:h-auto lg:overflow-y-auto lg:px-6 lg:pb-6 lg:pt-6`}
+      } pb-[calc(16px+env(safe-area-inset-bottom,0px))] ${isUltraCompactHeight ? 'pt-3' : 'pt-4'} lg:px-6 lg:pb-6 lg:pt-6`}
     >
       <div className="ultima-shell-inner lg:max-w-[960px]">
         <header className={isUltraCompactHeight ? 'mb-2' : 'mb-3'}>
           <h1
-            className={`font-semibold leading-[0.95] text-white ${
+            className={`break-words font-semibold leading-[0.95] text-white ${
               isUltraCompactHeight
                 ? 'text-[32px]'
                 : isNarrowWidth
@@ -922,7 +922,7 @@ export function UltimaSubscription() {
             Покупка подписки
           </h1>
           <p
-            className={`leading-tight text-white/75 ${
+            className={`break-words leading-tight text-white/75 ${
               isUltraCompactHeight
                 ? 'mt-1 text-[12px]'
                 : isNarrowWidth
@@ -939,7 +939,9 @@ export function UltimaSubscription() {
             isUltraCompactHeight ? 'mb-2 p-2.5' : 'mb-3 p-2.5'
           }`}
         >
-          <div className={`flex items-center gap-3 ${isUltraCompactHeight ? 'mb-2' : 'mb-3'}`}>
+          <div
+            className={`flex flex-col gap-2 min-[360px]:flex-row min-[360px]:items-center ${isUltraCompactHeight ? 'mb-2' : 'mb-3'}`}
+          >
             <span
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border text-[18px] font-semibold text-white shadow-[0_0_18px_color-mix(in_srgb,var(--ultima-color-primary)_36%,transparent)]"
               style={{
@@ -950,7 +952,7 @@ export function UltimaSubscription() {
             >
               {selectedDeviceLimit}
             </span>
-            <div>
+            <div className="min-w-0">
               <p
                 className={`${
                   isUltraCompactHeight
@@ -1099,7 +1101,9 @@ export function UltimaSubscription() {
             isUltraCompactHeight ? 'pb-0' : 'pb-1'
           }`}
         >
-          <div className={`grid auto-rows-fr grid-cols-2 ${isCompactHeight ? 'gap-2.5' : 'gap-3'}`}>
+          <div
+            className={`grid auto-rows-fr grid-cols-1 min-[360px]:grid-cols-2 ${isCompactHeight ? 'gap-2.5' : 'gap-3'}`}
+          >
             {displayPeriods.map((period) => {
               const active = period.days === selectedPeriod.days;
               return (
@@ -1137,7 +1141,7 @@ export function UltimaSubscription() {
                   }
                 >
                   <div
-                    className={`${isUltraCompactHeight ? 'mb-2' : 'mb-3'} flex items-center justify-between`}
+                    className={`${isUltraCompactHeight ? 'mb-2' : 'mb-3'} flex flex-wrap items-center justify-between gap-2`}
                   >
                     <span
                       className={`font-medium text-white ${
@@ -1221,12 +1225,12 @@ export function UltimaSubscription() {
             disabled={
               purchaseMutation.isPending || createPaymentMutation.isPending || isFinalizingPending
             }
-            className={`ultima-btn-pill ultima-btn-primary flex w-full items-center justify-between px-5 ${
+            className={`ultima-btn-pill ultima-btn-primary flex w-full flex-col gap-1.5 px-5 min-[360px]:flex-row min-[360px]:items-center min-[360px]:justify-between ${
               isUltraCompactHeight ? 'py-2.5 text-[15px]' : 'py-3 text-[16px]'
             } disabled:cursor-not-allowed disabled:opacity-75`}
           >
-            <span>Оплатить подписку</span>
-            <span className="flex items-center gap-2 text-white/95">
+            <span className="min-w-0 break-words">Оплатить подписку</span>
+            <span className="flex flex-wrap items-center justify-center gap-2 text-white/95 min-[360px]:justify-end">
               {formatPrice(payableAmountKopeks)}
               {selectedPricePreview.original &&
               selectedPricePreview.original > selectedPriceKopeks ? (
