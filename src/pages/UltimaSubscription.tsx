@@ -26,6 +26,15 @@ type PendingUltimaPurchase = {
   createdAt: number;
 };
 
+type ValidationErrorDetail = {
+  loc?: Array<string | number>;
+  msg?: string;
+  ctx?: {
+    ge?: number;
+    le?: number;
+  };
+};
+
 const readPendingUltimaPurchase = (): PendingUltimaPurchase | null => {
   try {
     const raw = localStorage.getItem(ULTIMA_PENDING_PURCHASE_KEY);
@@ -44,6 +53,23 @@ const writePendingUltimaPurchase = (purchase: PendingUltimaPurchase): void => {
 
 const clearPendingUltimaPurchase = (): void => {
   localStorage.removeItem(ULTIMA_PENDING_PURCHASE_KEY);
+};
+
+const getTopUpAmountKopeks = (
+  amountKopeks: number,
+  method: PaymentMethod,
+): { requestedAmountKopeks: number; bumpsToMinimum: boolean } => {
+  const baseAmountKopeks = Math.max(1, Math.ceil(amountKopeks));
+  const minimumAmountKopeks = Math.max(1, method.min_amount_kopeks ?? 1);
+  const requestedAmountKopeks = Math.min(
+    Math.max(baseAmountKopeks, minimumAmountKopeks),
+    method.max_amount_kopeks ?? Number.MAX_SAFE_INTEGER,
+  );
+
+  return {
+    requestedAmountKopeks,
+    bumpsToMinimum: requestedAmountKopeks > baseAmountKopeks,
+  };
 };
 
 const resolveApiErrorMessage = (
@@ -74,6 +100,26 @@ const resolveApiErrorMessage = (
   const data = error.response?.data;
   const detail = data?.detail;
   if (typeof detail === 'string') return { message: detail };
+  if (Array.isArray(detail) && detail.length > 0) {
+    const firstDetail = detail[0] as ValidationErrorDetail;
+    const affectsAmount = firstDetail.loc?.some((part) => part === 'amount_kopeks');
+
+    if (affectsAmount && typeof firstDetail.ctx?.ge === 'number') {
+      return {
+        message: `Минимальная сумма пополнения: ${Math.ceil(firstDetail.ctx.ge / 100)} ₽`,
+      };
+    }
+
+    if (affectsAmount && typeof firstDetail.ctx?.le === 'number') {
+      return {
+        message: `Максимальная сумма пополнения: ${Math.floor(firstDetail.ctx.le / 100)} ₽`,
+      };
+    }
+
+    if (typeof firstDetail.msg === 'string' && firstDetail.msg.trim().length > 0) {
+      return { message: firstDetail.msg };
+    }
+  }
   if (detail && typeof detail === 'object') {
     const missingAmount =
       typeof detail.missing_amount === 'number'
@@ -731,6 +777,14 @@ export function UltimaSubscription() {
   const currentBalanceKopeks = Math.max(0, balanceData?.balance_kopeks ?? 0);
   const balanceAppliedKopeks = Math.min(currentBalanceKopeks, selectedPriceKopeks);
   const payableAmountKopeks = Math.max(0, selectedPriceKopeks - currentBalanceKopeks);
+  const topUpPreview =
+    payableAmountKopeks > 0 && defaultPaymentMethod
+      ? getTopUpAmountKopeks(payableAmountKopeks, defaultPaymentMethod)
+      : null;
+  const actionAmountKopeks =
+    payableAmountKopeks > 0 ? (topUpPreview?.requestedAmountKopeks ?? payableAmountKopeks) : 0;
+  const requiresMinTopUpBump =
+    payableAmountKopeks > 0 && !!topUpPreview && topUpPreview.bumpsToMinimum;
   const isCompactHeight = viewportHeight < 780;
   const isUltraCompactHeight = viewportHeight < 700;
   const isNarrowWidth = viewportWidth < 390;
@@ -818,10 +872,19 @@ export function UltimaSubscription() {
       typeof missingAmount === 'number' && missingAmount > 0
         ? Math.max(1, Math.ceil(missingAmount))
         : Math.max(1, payableAmountKopeks);
-    const topupAmountKopeks = Math.min(
-      Math.max(topupAmountKopeksBase, method.min_amount_kopeks ?? 1),
-      method.max_amount_kopeks ?? Number.MAX_SAFE_INTEGER,
+    const { requestedAmountKopeks: topupAmountKopeks, bumpsToMinimum } = getTopUpAmountKopeks(
+      topupAmountKopeksBase,
+      method,
     );
+
+    if (bumpsToMinimum) {
+      const params = new URLSearchParams();
+      params.set('amount', String(Math.ceil(topupAmountKopeks / 100)));
+      params.set('returnTo', '/subscription');
+      navigate(`/balance/top-up/${method.id}?${params.toString()}`);
+      return;
+    }
+
     const selectedOptionId = method.options?.find((option) => option.id)?.id;
     createPaymentMutation.mutate({
       amountKopeks: topupAmountKopeks,
@@ -1219,6 +1282,18 @@ export function UltimaSubscription() {
         </section>
 
         <div className={`ultima-mobile-dock-footer ${isUltraCompactHeight ? 'pt-2' : 'pt-3'}`}>
+          {!error && requiresMinTopUpBump && defaultPaymentMethod && (
+            <p className="mb-2 text-center text-[13px] leading-relaxed text-white/70">
+              {t(
+                'ultima.minimumTopUpHint',
+                'Не хватает {{missing}}. Минимальное пополнение этим способом — {{minimum}}. Остаток останется на балансе.',
+                {
+                  missing: formatPrice(payableAmountKopeks),
+                  minimum: formatPrice(actionAmountKopeks),
+                },
+              )}
+            </p>
+          )}
           {error && <p className="mb-2.5 text-center text-[16px] text-red-300">{error}</p>}
           <button
             type="button"
@@ -1232,9 +1307,13 @@ export function UltimaSubscription() {
               isUltraCompactHeight ? 'py-2.5 text-[15px]' : 'py-3 text-[16px]'
             } disabled:cursor-not-allowed disabled:opacity-75`}
           >
-            <span className="min-w-0 flex-1 break-words leading-tight">Оплатить подписку</span>
+            <span className="min-w-0 flex-1 break-words leading-tight">
+              {payableAmountKopeks > 0
+                ? t('ultima.topUpAndBuy', 'Пополнить и купить')
+                : t('ultima.buySubscription', 'Оплатить подписку')}
+            </span>
             <span className="flex shrink-0 flex-col items-end text-right leading-none text-white/95">
-              <span>{formatPrice(payableAmountKopeks)}</span>
+              <span>{formatPrice(actionAmountKopeks)}</span>
               {selectedPricePreview.original &&
               selectedPricePreview.original > selectedPriceKopeks ? (
                 <span className="mt-1 text-[13px] text-white/60 line-through">
