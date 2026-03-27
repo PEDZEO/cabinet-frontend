@@ -674,72 +674,53 @@ export function UltimaProfile() {
     <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner lg:max-w-[960px]">
-        <section
-          className="mb-3 rounded-3xl border p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md"
-          style={ULTIMA_SECTION_SURFACE_STYLE}
-        >
-          <div className="flex items-center gap-3">
-            {telegramPhotoUrl ? (
-              <img
-                src={telegramPhotoUrl}
-                alt="telegram-avatar"
-                className="h-11 w-11 rounded-full object-cover shadow-[0_6px_12px_rgba(0,0,0,0.22)]"
-                loading="lazy"
-              />
-            ) : (
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-300 text-sm font-semibold text-slate-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
-                {avatarFallbackLabel}
+        <section className="flex min-h-0 flex-1 flex-col pt-[clamp(8px,2vh,16px)]">
+          <section
+            className="mb-3 rounded-3xl border p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md"
+            style={ULTIMA_SECTION_SURFACE_STYLE}
+          >
+            <div className="flex items-center gap-3">
+              {telegramPhotoUrl ? (
+                <img
+                  src={telegramPhotoUrl}
+                  alt="telegram-avatar"
+                  className="h-11 w-11 rounded-full object-cover shadow-[0_6px_12px_rgba(0,0,0,0.22)]"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-300 text-sm font-semibold text-slate-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
+                  {avatarFallbackLabel}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="break-words text-[15px] font-medium leading-snug text-white/95">
+                  {user?.first_name || user?.username || 'Telegram user'}
+                </p>
+                <p className="text-white/64 mt-0.5 break-all text-[13px]">{userLabel}</p>
               </div>
-            )}
-            <div className="min-w-0 flex-1">
-              <p className="text-white/56 text-[12px] font-medium uppercase tracking-[0.14em]">
-                {t('nav.profile', { defaultValue: 'Профиль' })}
-              </p>
-              <p className="mt-1 break-words text-[15px] font-medium leading-snug text-white/95">
-                {user?.first_name || user?.username || 'Telegram user'}
-              </p>
-              <p className="text-white/64 mt-0.5 break-all text-[13px]">{userLabel}</p>
             </div>
-          </div>
 
-          <div className="mt-3 grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
             <button
               type="button"
-              onClick={() => void openPathFast(ULTIMA_TOP_UP_PATH)}
-              className="ultima-btn-pill ultima-btn-primary flex w-full items-center gap-3 px-4 py-3 text-left text-[15px] min-[360px]:px-5 min-[360px]:text-[16px]"
-            >
-              <span className="flex min-w-0 flex-1 items-center gap-2.5">
-                <PaymentIcon />
-                <span className="min-w-0 break-words leading-tight">
-                  {t('balance.topUp', { defaultValue: 'Пополнить баланс' })}
-                </span>
-              </span>
-            </button>
-            <button
-              type="button"
-              className="ultima-btn-pill ultima-btn-secondary flex w-full items-center gap-3 px-4 py-3 text-left text-[15px] min-[360px]:px-5 min-[360px]:text-[16px]"
+              className="ultima-btn-pill ultima-btn-secondary mt-3 flex w-full items-center justify-center gap-2 px-4 py-2.5 text-[14px]"
               onClick={() =>
                 void copyText(String(user?.telegram_id ?? user?.id ?? ''), setIdCopied)
               }
               aria-label="copy-user-id"
             >
-              <span className="flex min-w-0 flex-1 items-center gap-2.5">
-                <CopyIcon />
-                <span className="min-w-0 break-words leading-tight">
-                  {idCopied
-                    ? t('common.copied', { defaultValue: 'Скопировано' })
-                    : t('profile.copyAccountId', { defaultValue: 'Скопировать ID' })}
-                </span>
-              </span>
+              <CopyIcon />
+              {idCopied
+                ? t('common.copied', { defaultValue: 'Скопировано' })
+                : t('profile.copyAccountId', { defaultValue: 'Скопировать ID' })}
             </button>
+          </section>
+
+          <div className="min-h-0 flex-1 overflow-y-auto pr-1 lg:grid lg:grid-cols-2 lg:gap-4 lg:overflow-visible lg:pr-0">
+            {sectionsContent}
           </div>
         </section>
 
-        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0 lg:overflow-visible lg:pr-0">
-          {sectionsContent}
-        </div>
-
-        <section>
+        <section className="mt-auto pb-0">
           <div className="ultima-nav-dock">{bottomNav}</div>
         </section>
       </div>

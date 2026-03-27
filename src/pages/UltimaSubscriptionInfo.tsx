@@ -479,16 +479,18 @@ export function UltimaSubscriptionInfo() {
     <div className="ultima-shell ultima-shell-wide">
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner lg:max-w-[960px]">
-        {mobileInfoContent}
+        <section className="flex min-h-0 flex-1 flex-col pt-[clamp(8px,2vh,16px)]">
+          {mobileInfoContent}
+        </section>
 
-        <section className="mt-3 space-y-3 pb-0">
+        <section className="mt-auto pb-0">
           <button
             type="button"
             onClick={() => {
               haptic.impact('light');
               navigate('/ultima/devices');
             }}
-            className="ultima-btn-pill ultima-btn-primary flex w-full items-center gap-3 px-4 py-3 text-left text-[15px] min-[360px]:px-5 min-[360px]:text-[16px]"
+            className="ultima-btn-pill ultima-btn-primary mb-3 flex w-full items-center gap-3 px-4 py-3 text-left text-[15px] min-[360px]:px-5 min-[360px]:text-[16px]"
           >
             <span className="min-w-0 flex-1 break-words leading-tight">
               {t('subscription.manageDevices', { defaultValue: 'Управление устройствами' })}
@@ -499,7 +501,6 @@ export function UltimaSubscriptionInfo() {
               </span>
             ) : null}
           </button>
-
           <div className="ultima-nav-dock">{bottomNav}</div>
         </section>
       </div>
