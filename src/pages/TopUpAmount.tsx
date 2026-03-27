@@ -8,7 +8,6 @@ import { balanceApi } from '../api/balance';
 import { useCurrency } from '../hooks/useCurrency';
 import { checkRateLimit, getRateLimitResetTime, RATE_LIMIT_KEYS } from '../utils/rateLimit';
 import { useCloseOnSuccessNotification } from '../store/successNotification';
-import { usePendingTopUpFollowUp } from '@/hooks/usePendingTopUpFollowUp';
 import { useHaptic, usePlatform } from '@/platform';
 import { useAuthStore } from '@/store/auth';
 import { useUltimaMode } from '@/hooks/useUltimaMode';
@@ -135,7 +134,6 @@ function TopUpAmountContent() {
 
   // Auto-redirect when success notification appears (e.g., balance topped up via WebSocket)
   useCloseOnSuccessNotification(handleSuccess);
-  usePendingTopUpFollowUp();
 
   const { data: balanceData } = useQuery({
     queryKey: ['balance'],

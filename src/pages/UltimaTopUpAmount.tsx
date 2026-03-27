@@ -9,7 +9,6 @@ import {
 } from '@/components/ultima/desktop/UltimaDesktopSectionLayout';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
-import { usePendingTopUpFollowUp } from '@/hooks/usePendingTopUpFollowUp';
 import { usePlatform } from '@/platform';
 import { useCloseOnSuccessNotification } from '@/store/successNotification';
 import { useAuthStore } from '@/store/auth';
@@ -151,7 +150,6 @@ export function UltimaTopUpAmount() {
   }, [navigate, returnTo]);
 
   useCloseOnSuccessNotification(handleSuccess);
-  usePendingTopUpFollowUp();
 
   const topUpMutation = useMutation({
     mutationFn: async (amountKopeks: number) => {

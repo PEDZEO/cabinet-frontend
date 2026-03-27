@@ -13,6 +13,7 @@ import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 import { useLiteMode } from '@/hooks/useLiteMode';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { usePendingTopUpFollowUp } from '@/hooks/usePendingTopUpFollowUp';
 import { getCachedUltimaMode, useUltimaMode } from '@/hooks/useUltimaMode';
 import { themeColorsApi } from '@/api/themeColors';
 import { isLogoPreloaded } from '@/api/branding';
@@ -226,6 +227,7 @@ export function AppShell({ children }: AppShellProps) {
   const [desktopLogoLoaded, setDesktopLogoLoaded] = useState(() => isLogoPreloaded());
   const [desktopLogoShape, setDesktopLogoShape] = useState<'square' | 'wide' | 'tall'>('square');
   useScrollRestoration();
+  usePendingTopUpFollowUp();
 
   // Theme toggle visibility
   const { data: enabledThemes } = useQuery({

@@ -9,11 +9,19 @@ import {
   readPendingTopUpFollowUp,
 } from '@/utils/topUpFollowUp';
 
+const FOLLOW_UP_RETRY_DELAYS_MS = [1500, 4000, 8000];
+
 export function usePendingTopUpFollowUp() {
   const queryClient = useQueryClient();
   const userId = useAuthStore((state) => state.user?.id ?? null);
   const refreshUser = useAuthStore((state) => state.refreshUser);
   const isCheckingRef = useRef(false);
+  const retryTimeoutsRef = useRef<number[]>([]);
+
+  const clearScheduledRetries = useCallback(() => {
+    retryTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
+    retryTimeoutsRef.current = [];
+  }, []);
 
   const recoverPendingTopUpFollowUp = useCallback(async () => {
     const pending = readPendingTopUpFollowUp(userId);
@@ -43,6 +51,7 @@ export function usePendingTopUpFollowUp() {
       });
 
       await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['balance'] }),
         queryClient.invalidateQueries({ queryKey: ['purchase-options'] }),
         queryClient.invalidateQueries({ queryKey: ['transactions'] }),
       ]);
@@ -52,24 +61,56 @@ export function usePendingTopUpFollowUp() {
     }
   }, [queryClient, refreshUser, userId]);
 
-  useEffect(() => {
+  const scheduleRecoveryBurst = useCallback(() => {
+    clearScheduledRetries();
     void recoverPendingTopUpFollowUp();
 
+    if (!readPendingTopUpFollowUp(userId)) {
+      return;
+    }
+
+    FOLLOW_UP_RETRY_DELAYS_MS.forEach((delay) => {
+      const timeoutId = window.setTimeout(() => {
+        if (document.visibilityState !== 'visible') {
+          return;
+        }
+        void recoverPendingTopUpFollowUp();
+      }, delay);
+      retryTimeoutsRef.current.push(timeoutId);
+    });
+  }, [clearScheduledRetries, recoverPendingTopUpFollowUp, userId]);
+
+  useEffect(() => {
+    scheduleRecoveryBurst();
+
     const handleFocus = () => {
-      void recoverPendingTopUpFollowUp();
+      scheduleRecoveryBurst();
     };
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        void recoverPendingTopUpFollowUp();
+        scheduleRecoveryBurst();
       }
     };
 
+    const handlePageShow = () => {
+      scheduleRecoveryBurst();
+    };
+
+    const handleOnline = () => {
+      scheduleRecoveryBurst();
+    };
+
     window.addEventListener('focus', handleFocus);
+    window.addEventListener('pageshow', handlePageShow);
+    window.addEventListener('online', handleOnline);
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => {
+      clearScheduledRetries();
       window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('pageshow', handlePageShow);
+      window.removeEventListener('online', handleOnline);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [recoverPendingTopUpFollowUp]);
+  }, [clearScheduledRetries, scheduleRecoveryBurst]);
 }
