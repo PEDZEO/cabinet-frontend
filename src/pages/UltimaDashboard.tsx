@@ -947,8 +947,8 @@ export function UltimaDashboard() {
         </button>
       )}
 
-      <div className="ultima-shell-inner lg:max-w-[680px] lg:justify-between">
-        <section className="flex min-h-0 flex-1 flex-col pb-[clamp(14px,2.8vh,24px)] pt-[clamp(58px,13vh,126px)] lg:flex-none lg:pb-2 lg:pt-8">
+      <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[680px] lg:justify-between">
+        <section className="ultima-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto pb-[clamp(14px,2.8vh,24px)] pr-1 pt-[clamp(58px,13vh,126px)] lg:flex-none lg:overflow-visible lg:pb-2 lg:pr-0 lg:pt-8">
           {renderShieldButton('mb-[clamp(24px,5vh,56px)] lg:mb-5')}
 
           {hasSetupReminder && (
@@ -1107,7 +1107,7 @@ export function UltimaDashboard() {
           )}
         </section>
 
-        <section className="mt-auto pb-0 lg:mt-0 lg:pb-0">
+        <section className="ultima-mobile-dock-footer pb-0 lg:mt-0 lg:pb-0">
           <button
             type="button"
             onClick={openSubscriptionPurchase}
@@ -1122,7 +1122,7 @@ export function UltimaDashboard() {
             </span>
           </button>
 
-          <div className="relative mb-4">
+          <div className="relative mb-3">
             {showConnectionCtaHighlight && (
               <>
                 <span className="ultima-cta-highlight pointer-events-none absolute inset-[-2px] rounded-[999px]" />

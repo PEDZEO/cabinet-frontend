@@ -854,7 +854,7 @@ export function UltimaGift() {
       className={`ultima-shell ultima-shell-wide ultima-flat-frames${isDesktop ? 'ultima-shell-profile-desktop' : ''}`}
     >
       <div className="ultima-shell-aura" />
-      <div className="ultima-shell-inner lg:max-w-[960px]">
+      <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
         <header className="mb-3">
           <h1 className="text-[clamp(34px,9.5vw,44px)] font-semibold leading-[0.9] tracking-[-0.01em] text-white">
             {t('nav.gift', { defaultValue: 'Подарок' })}
@@ -1194,8 +1194,10 @@ export function UltimaGift() {
           {success ? <p className="mt-2 text-[12px] text-emerald-200">{success}</p> : null}
         </section>
 
-        <div className="ultima-nav-dock">
-          <UltimaBottomNav active="profile" />
+        <div className="ultima-mobile-dock-footer">
+          <div className="ultima-nav-dock">
+            <UltimaBottomNav active="profile" />
+          </div>
         </div>
       </div>
     </div>

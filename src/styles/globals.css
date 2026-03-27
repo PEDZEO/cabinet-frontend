@@ -544,6 +544,11 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   overflow: hidden;
 }
 
+.ultima-mobile-dock-footer {
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
 .ultima-shell-inner > * {
   min-width: 0;
 }

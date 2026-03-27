@@ -373,7 +373,7 @@ export default function UltimaAccountLinking() {
       className={`ultima-shell ultima-shell-wide ultima-flat-frames${isDesktop ? 'ultima-shell-profile-desktop' : ''}`}
     >
       <div className="ultima-shell-aura" />
-      <div className="ultima-shell-inner lg:max-w-[960px]">
+      <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
         <header className="mb-3">
           <h1 className="text-[clamp(32px,8.5vw,38px)] font-semibold leading-[0.95] tracking-[-0.01em] text-white">
             Привязка аккаунтов
@@ -731,8 +731,10 @@ export default function UltimaAccountLinking() {
           </div>
         </div>
 
-        <div className="ultima-nav-dock">
-          <UltimaBottomNav active="profile" />
+        <div className="ultima-mobile-dock-footer">
+          <div className="ultima-nav-dock">
+            <UltimaBottomNav active="profile" />
+          </div>
         </div>
       </div>
     </div>

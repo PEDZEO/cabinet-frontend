@@ -913,7 +913,7 @@ export function UltimaSubscription() {
   return (
     <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
       <div className="ultima-shell-aura" />
-      <div className="ultima-shell-inner lg:max-w-[960px]">
+      <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
         <header className={isUltraCompactHeight ? 'mb-2' : 'mb-3'}>
           <h1
             className={`break-words font-semibold leading-[0.95] text-white ${
@@ -1218,7 +1218,7 @@ export function UltimaSubscription() {
           </div>
         </section>
 
-        <div className={isUltraCompactHeight ? 'pt-2' : 'pt-3'}>
+        <div className={`ultima-mobile-dock-footer ${isUltraCompactHeight ? 'pt-2' : 'pt-3'}`}>
           {error && <p className="mb-2.5 text-center text-[16px] text-red-300">{error}</p>}
           <button
             type="button"

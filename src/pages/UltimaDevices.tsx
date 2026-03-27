@@ -515,7 +515,7 @@ export function UltimaDevices() {
   return (
     <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
       <div className="ultima-shell-aura" />
-      <div className="ultima-shell-inner lg:max-w-[960px]">
+      <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
         <header className="mb-3">
           <h1 className="text-[clamp(34px,9.5vw,44px)] font-semibold leading-[0.9] tracking-[-0.01em] text-white">
             Устройства
@@ -531,7 +531,9 @@ export function UltimaDevices() {
           {devicesContent}
         </div>
 
-        <div className="ultima-nav-dock">{bottomNav}</div>
+        <div className="ultima-mobile-dock-footer">
+          <div className="ultima-nav-dock">{bottomNav}</div>
+        </div>
       </div>
     </div>
   );
