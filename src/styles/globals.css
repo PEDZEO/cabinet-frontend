@@ -377,36 +377,77 @@
 
 .ultima-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--ultima-color-scrollbar-thumb) 80%, transparent)
-    color-mix(in srgb, var(--ultima-color-scrollbar-track) 36%, transparent);
+  scrollbar-color: color-mix(
+      in srgb,
+      var(--ultima-color-scrollbar-thumb) 82%,
+      var(--ultima-color-primary)
+    )
+    color-mix(in srgb, var(--ultima-color-scrollbar-track) 42%, transparent);
 }
 
 .ultima-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 7px;
 }
 
 .ultima-scrollbar::-webkit-scrollbar-track {
-  margin: 8px 0;
+  margin: 10px 0;
   border-radius: 9999px;
-  background: color-mix(in srgb, var(--ultima-color-scrollbar-track) 36%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ultima-color-scrollbar-track) 30%, transparent) 0%,
+    color-mix(in srgb, var(--ultima-color-surface) 48%, transparent) 100%
+  );
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--ultima-color-surface-border) 8%, transparent),
+    inset 0 10px 20px color-mix(in srgb, #01080c 16%, transparent);
 }
 
 .ultima-scrollbar::-webkit-scrollbar-thumb {
   border-radius: 9999px;
-  border: 1px solid color-mix(in srgb, var(--ultima-color-ring) 20%, transparent);
+  min-height: 36px;
+  border: 1px solid color-mix(in srgb, var(--ultima-color-surface-border) 22%, transparent);
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--ultima-color-scrollbar-thumb) 92%, transparent) 0%,
-    color-mix(in srgb, var(--ultima-color-scrollbar-thumb) 76%, #000000) 100%
+    color-mix(in srgb, var(--ultima-color-ring) 18%, var(--ultima-color-scrollbar-thumb)) 0%,
+    color-mix(in srgb, var(--ultima-color-scrollbar-thumb) 88%, var(--ultima-color-primary)) 44%,
+    color-mix(in srgb, var(--ultima-color-scrollbar-thumb) 74%, var(--ultima-color-nav-bg)) 100%
   );
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #ffffff 26%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--ultima-color-ring) 8%, transparent),
+    0 8px 18px color-mix(in srgb, var(--ultima-color-scrollbar-thumb) 18%, transparent);
+  transition:
+    background 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
 }
 
 .ultima-scrollbar::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--ultima-color-scrollbar-thumb) 98%, #ffffff) 0%,
-    color-mix(in srgb, var(--ultima-color-scrollbar-thumb) 88%, #000000) 100%
+    color-mix(in srgb, #ffffff 16%, var(--ultima-color-scrollbar-thumb)) 0%,
+    color-mix(in srgb, var(--ultima-color-scrollbar-thumb) 92%, var(--ultima-color-primary)) 42%,
+    color-mix(in srgb, var(--ultima-color-scrollbar-thumb) 80%, var(--ultima-color-nav-active)) 100%
   );
+  border-color: color-mix(in srgb, var(--ultima-color-ring) 24%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #ffffff 34%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--ultima-color-ring) 12%, transparent),
+    0 10px 20px color-mix(in srgb, var(--ultima-color-scrollbar-thumb) 24%, transparent);
+}
+
+@media (pointer: coarse) {
+  .ultima-scrollbar::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  .ultima-scrollbar::-webkit-scrollbar-track {
+    margin: 6px 0;
+  }
+
+  .ultima-scrollbar::-webkit-scrollbar-thumb {
+    min-height: 28px;
+  }
 }
 
 html:not(.ultima-frames-enabled) .ultima-flat-frames [class*='border'] {
