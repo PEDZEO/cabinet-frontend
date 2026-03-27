@@ -673,7 +673,7 @@ export function UltimaProfile() {
   return (
     <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
       <div className="ultima-shell-aura" />
-      <div className="ultima-shell-inner lg:max-w-[960px]">
+      <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
         <section className="flex min-h-0 flex-1 flex-col pt-[clamp(8px,2vh,16px)]">
           <section
             className="mb-3 rounded-3xl border p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md"
@@ -715,12 +715,12 @@ export function UltimaProfile() {
             </button>
           </section>
 
-          <div className="min-h-0 flex-1 overflow-y-auto pr-1 lg:grid lg:grid-cols-2 lg:gap-4 lg:overflow-visible lg:pr-0">
+          <div className="min-h-0 flex-1 overflow-y-auto pb-3 pr-1 lg:grid lg:grid-cols-2 lg:gap-4 lg:overflow-visible lg:pb-0 lg:pr-0">
             {sectionsContent}
           </div>
         </section>
 
-        <section className="mt-auto pb-0">
+        <section className="mt-auto shrink-0 pb-0">
           <div className="ultima-nav-dock">{bottomNav}</div>
         </section>
       </div>

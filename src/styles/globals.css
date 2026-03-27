@@ -414,6 +414,8 @@ html:not(.ultima-frames-enabled) .ultima-flat-frames [class*='border'] {
 }
 
 .ultima-shell {
+  --ultima-shell-top-gap: clamp(12px, 2.2vh, 16px);
+  --ultima-shell-bottom-gap: calc(14px + env(safe-area-inset-bottom, 0px));
   position: relative;
   height: auto;
   min-height: 100svh;
@@ -428,8 +430,8 @@ html:not(.ultima-frames-enabled) .ultima-flat-frames [class*='border'] {
   );
   padding-left: calc(clamp(12px, 3vw, 16px) + env(safe-area-inset-left, 0px));
   padding-right: calc(clamp(12px, 3vw, 16px) + env(safe-area-inset-right, 0px));
-  padding-top: clamp(12px, 2.2vh, 16px);
-  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  padding-top: var(--ultima-shell-top-gap);
+  padding-bottom: var(--ultima-shell-bottom-gap);
 }
 
 .ultima-shell-aura {
@@ -487,11 +489,18 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   margin-inline: auto;
   display: flex;
   height: auto;
-  min-height: calc(100dvh - 26px - env(safe-area-inset-bottom, 0px));
+  min-height: calc(100dvh - var(--ultima-shell-top-gap) - var(--ultima-shell-bottom-gap));
   min-width: 0;
   width: 100%;
   max-width: 420px;
   flex-direction: column;
+}
+
+.ultima-shell-mobile-docked {
+  height: calc(100dvh - var(--ultima-shell-top-gap) - var(--ultima-shell-bottom-gap));
+  min-height: calc(100dvh - var(--ultima-shell-top-gap) - var(--ultima-shell-bottom-gap));
+  max-height: calc(100dvh - var(--ultima-shell-top-gap) - var(--ultima-shell-bottom-gap));
+  overflow: hidden;
 }
 
 .ultima-shell-inner > * {
@@ -642,8 +651,8 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
 
 @media (max-height: 760px) {
   .ultima-shell {
-    padding-top: 10px;
-    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    --ultima-shell-top-gap: 10px;
+    --ultima-shell-bottom-gap: calc(10px + env(safe-area-inset-bottom, 0px));
   }
 
   .ultima-mobile-overlay {
@@ -727,6 +736,13 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
     min-height: calc(100dvh - 32px - env(safe-area-inset-bottom, 0px));
     max-height: none;
     padding-bottom: 28px;
+  }
+
+  .ultima-shell-mobile-docked {
+    height: auto;
+    min-height: calc(100dvh - 32px - env(safe-area-inset-bottom, 0px));
+    max-height: none;
+    overflow: visible;
   }
 
   .ultima-shell-wide .ultima-shell-inner {

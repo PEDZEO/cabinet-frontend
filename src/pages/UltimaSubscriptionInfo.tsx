@@ -377,7 +377,7 @@ export function UltimaSubscriptionInfo() {
         {emptyState}
       </>
     ) : (
-      <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto pr-1 lg:overflow-visible lg:pr-0">
+      <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto pb-3 pr-1 lg:overflow-visible lg:pb-0 lg:pr-0">
         {mobileOverview}
         {linkSection}
         {statGrid}
@@ -478,12 +478,12 @@ export function UltimaSubscriptionInfo() {
   return (
     <div className="ultima-shell ultima-shell-wide">
       <div className="ultima-shell-aura" />
-      <div className="ultima-shell-inner lg:max-w-[960px]">
+      <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
         <section className="flex min-h-0 flex-1 flex-col pt-[clamp(8px,2vh,16px)]">
           {mobileInfoContent}
         </section>
 
-        <section className="mt-auto pb-0">
+        <section className="mt-auto shrink-0 pb-0">
           <button
             type="button"
             onClick={() => {
