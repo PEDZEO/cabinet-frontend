@@ -1034,7 +1034,7 @@ export function UltimaDashboard() {
                     })}
               </p>
               {promoMessage && <p className="mt-1.5 text-[12px] text-white/85">{promoMessage}</p>}
-              <div className="mt-2.5 flex flex-col gap-2 min-[390px]:flex-row">
+              <div className="mt-2.5 flex flex-col gap-2 min-[360px]:flex-row">
                 {firstPromoOffer && (
                   <button
                     type="button"
@@ -1072,8 +1072,8 @@ export function UltimaDashboard() {
 
           {!showTrialSetupCard && (
             <>
-              <div className="mb-3 mt-auto flex flex-col items-start gap-3 text-white min-[390px]:flex-row min-[390px]:items-center min-[390px]:justify-between lg:mb-3 lg:mt-4 lg:flex-col lg:justify-center lg:gap-3 lg:text-center">
-                <div className="lg:flex lg:flex-col lg:items-center">
+              <div className="mb-3 mt-auto flex flex-wrap items-start justify-between gap-3 text-white lg:mb-3 lg:mt-4 lg:flex-col lg:justify-center lg:gap-3 lg:text-center">
+                <div className="min-w-0 flex-1 lg:flex lg:flex-col lg:items-center">
                   <button
                     type="button"
                     onClick={openSubscriptionInfo}
@@ -1091,7 +1091,7 @@ export function UltimaDashboard() {
                   </button>
                 </div>
                 <span
-                  className={`relative inline-flex max-w-full items-center gap-2 rounded-full border px-3 py-1 text-xs shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ${statusTone.pill}`}
+                  className={`relative inline-flex max-w-full shrink-0 items-center gap-2 rounded-full border px-3 py-1 text-xs shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ${statusTone.pill}`}
                 >
                   <span
                     className={`absolute left-1.5 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full blur-[4px] ${statusTone.halo}`}
@@ -1111,13 +1111,15 @@ export function UltimaDashboard() {
           <button
             type="button"
             onClick={openSubscriptionPurchase}
-            className="ultima-btn-pill ultima-btn-primary mb-3 flex w-full flex-col gap-2 px-5 py-3 text-[16px] min-[390px]:flex-row min-[390px]:items-center min-[390px]:justify-between"
+            className="ultima-btn-pill ultima-btn-primary mb-3 flex w-full items-center gap-3 px-4 py-3 text-left text-[15px] min-[360px]:px-5 min-[360px]:text-[16px]"
           >
-            <span className="flex min-w-0 items-center gap-2">
+            <span className="flex min-w-0 flex-1 items-center gap-2.5">
               <GlobeIcon />
-              <span className="break-words">{buyCtaLabel}</span>
+              <span className="min-w-0 break-words leading-tight">{buyCtaLabel}</span>
             </span>
-            <span className="text-[16px] text-white/90 min-[390px]:text-right">{buyFromLabel}</span>
+            <span className="shrink-0 whitespace-nowrap text-[15px] text-white/90 min-[360px]:text-[16px]">
+              {buyFromLabel}
+            </span>
           </button>
 
           <div className="relative mb-4">
@@ -1130,15 +1132,15 @@ export function UltimaDashboard() {
             <button
               type="button"
               onClick={() => openConnection()}
-              className="ultima-btn-pill ultima-btn-secondary relative flex w-full flex-col gap-2 px-5 py-3 text-[16px] min-[390px]:flex-row min-[390px]:items-center min-[390px]:justify-between"
+              className="ultima-btn-pill ultima-btn-secondary relative flex w-full items-center gap-3 px-4 py-3 text-left text-[15px] min-[360px]:px-5 min-[360px]:text-[16px]"
             >
-              <span className="flex min-w-0 items-center gap-2">
+              <span className="flex min-w-0 flex-1 items-center gap-2.5">
                 <SetupIcon />
-                <span className="break-words">
+                <span className="min-w-0 break-words leading-tight">
                   {t('lite.connectAndSetup', { defaultValue: 'Установка и настройка' })}
                 </span>
               </span>
-              <span className="text-white/70">
+              <span className="shrink-0 text-white/70">
                 <PhoneIcon />
               </span>
             </button>

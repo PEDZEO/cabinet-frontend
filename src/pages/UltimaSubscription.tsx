@@ -944,9 +944,7 @@ export function UltimaSubscription() {
             isUltraCompactHeight ? 'mb-2 p-2.5' : 'mb-3 p-2.5'
           }`}
         >
-          <div
-            className={`flex flex-col gap-2 min-[390px]:flex-row min-[390px]:items-center ${isUltraCompactHeight ? 'mb-2' : 'mb-3'}`}
-          >
+          <div className={`flex items-center gap-3 ${isUltraCompactHeight ? 'mb-2' : 'mb-3'}`}>
             <span
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border text-[18px] font-semibold text-white shadow-[0_0_18px_color-mix(in_srgb,var(--ultima-color-primary)_36%,transparent)]"
               style={{
@@ -1107,7 +1105,7 @@ export function UltimaSubscription() {
           }`}
         >
           <div
-            className={`grid auto-rows-fr grid-cols-1 min-[390px]:grid-cols-2 ${isCompactHeight ? 'gap-2.5' : 'gap-3'}`}
+            className={`grid auto-rows-fr grid-cols-1 min-[360px]:grid-cols-2 ${isCompactHeight ? 'gap-2.5' : 'gap-3'}`}
           >
             {displayPeriods.map((period) => {
               const active = period.days === selectedPeriod.days;
@@ -1230,16 +1228,16 @@ export function UltimaSubscription() {
             disabled={
               purchaseMutation.isPending || createPaymentMutation.isPending || isFinalizingPending
             }
-            className={`ultima-btn-pill ultima-btn-primary flex w-full flex-col gap-1.5 px-5 min-[390px]:flex-row min-[390px]:items-center min-[390px]:justify-between ${
+            className={`ultima-btn-pill ultima-btn-primary flex w-full items-center gap-3 px-4 text-left min-[360px]:px-5 ${
               isUltraCompactHeight ? 'py-2.5 text-[15px]' : 'py-3 text-[16px]'
             } disabled:cursor-not-allowed disabled:opacity-75`}
           >
-            <span className="min-w-0 break-words">Оплатить подписку</span>
-            <span className="flex flex-wrap items-center justify-center gap-2 text-white/95 min-[390px]:justify-end">
-              {formatPrice(payableAmountKopeks)}
+            <span className="min-w-0 flex-1 break-words leading-tight">Оплатить подписку</span>
+            <span className="flex shrink-0 flex-col items-end text-right leading-none text-white/95">
+              <span>{formatPrice(payableAmountKopeks)}</span>
               {selectedPricePreview.original &&
               selectedPricePreview.original > selectedPriceKopeks ? (
-                <span className="text-[13px] text-white/60 line-through">
+                <span className="mt-1 text-[13px] text-white/60 line-through">
                   {formatPrice(selectedPricePreview.original)}
                 </span>
               ) : null}

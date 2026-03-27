@@ -59,7 +59,7 @@ export function UltimaReferralCta({
         'group w-full text-left transition-transform duration-200 hover:translate-y-[-1px] active:translate-y-0',
         variant === 'desktop'
           ? 'flex items-center justify-between gap-4 rounded-[24px] border px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_18px_42px_rgba(3,14,24,0.18)] backdrop-blur-xl'
-          : 'flex flex-col gap-3 rounded-2xl border px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_24px_rgba(3,14,24,0.18)] backdrop-blur-md min-[390px]:flex-row min-[390px]:items-center min-[390px]:justify-between',
+          : 'flex flex-col gap-3 rounded-2xl border px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_24px_rgba(3,14,24,0.18)] backdrop-blur-md min-[360px]:flex-row min-[360px]:items-center min-[360px]:justify-between',
         className,
       )}
       style={{
@@ -108,7 +108,7 @@ export function UltimaReferralCta({
           'flex shrink-0 items-center gap-2',
           variant === 'desktop'
             ? ''
-            : 'w-full justify-between min-[390px]:w-auto min-[390px]:justify-end',
+            : 'w-full justify-between min-[360px]:w-auto min-[360px]:justify-end',
         )}
       >
         {showBadge ? (
