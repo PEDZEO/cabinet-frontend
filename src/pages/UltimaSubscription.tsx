@@ -657,7 +657,12 @@ export function UltimaSubscription() {
         </div>
       );
     }
-    return <div className="min-h-[100dvh] min-h-[100svh] w-full bg-transparent" />;
+    return (
+      <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
+        <div className="ultima-shell-aura" />
+        <div className="ultima-shell-inner lg:max-w-[960px]" />
+      </div>
+    );
   }
 
   if (!selectedTariff || !selectedPeriod) {
@@ -674,8 +679,11 @@ export function UltimaSubscription() {
       );
     }
     return (
-      <div className="flex min-h-[100dvh] min-h-[100svh] items-center justify-center px-4 text-center text-dark-200">
-        {t('subscription.noTariffsAvailable', { defaultValue: 'Тарифы недоступны' })}
+      <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
+        <div className="ultima-shell-aura" />
+        <div className="ultima-shell-inner items-center justify-center px-4 text-center text-dark-200 lg:max-w-[960px]">
+          {t('subscription.noTariffsAvailable', { defaultValue: 'Тарифы недоступны' })}
+        </div>
       </div>
     );
   }
@@ -903,11 +911,8 @@ export function UltimaSubscription() {
   }
 
   return (
-    <div
-      className={`relative min-h-[100dvh] min-h-[100svh] overflow-y-auto overflow-x-hidden bg-transparent ${
-        isNarrowWidth ? 'px-3' : 'px-4'
-      } pb-[calc(16px+env(safe-area-inset-bottom,0px))] ${isUltraCompactHeight ? 'pt-3' : 'pt-4'} lg:px-6 lg:pb-6 lg:pt-6`}
-    >
+    <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
+      <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner lg:max-w-[960px]">
         <header className={isUltraCompactHeight ? 'mb-2' : 'mb-3'}>
           <h1
@@ -935,12 +940,12 @@ export function UltimaSubscription() {
         </header>
 
         <section
-          className={`mx-auto w-full max-w-[336px] rounded-3xl border border-white/10 bg-white/5 backdrop-blur ${
+          className={`w-full rounded-3xl border border-white/10 bg-white/5 backdrop-blur ${
             isUltraCompactHeight ? 'mb-2 p-2.5' : 'mb-3 p-2.5'
           }`}
         >
           <div
-            className={`flex flex-col gap-2 min-[360px]:flex-row min-[360px]:items-center ${isUltraCompactHeight ? 'mb-2' : 'mb-3'}`}
+            className={`flex flex-col gap-2 min-[390px]:flex-row min-[390px]:items-center ${isUltraCompactHeight ? 'mb-2' : 'mb-3'}`}
           >
             <span
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border text-[18px] font-semibold text-white shadow-[0_0_18px_color-mix(in_srgb,var(--ultima-color-primary)_36%,transparent)]"
@@ -1102,7 +1107,7 @@ export function UltimaSubscription() {
           }`}
         >
           <div
-            className={`grid auto-rows-fr grid-cols-1 min-[360px]:grid-cols-2 ${isCompactHeight ? 'gap-2.5' : 'gap-3'}`}
+            className={`grid auto-rows-fr grid-cols-1 min-[390px]:grid-cols-2 ${isCompactHeight ? 'gap-2.5' : 'gap-3'}`}
           >
             {displayPeriods.map((period) => {
               const active = period.days === selectedPeriod.days;
@@ -1116,12 +1121,12 @@ export function UltimaSubscription() {
                   }}
                   className={`h-full rounded-3xl border text-left transition-colors ${
                     isUltraCompactHeight
-                      ? 'min-h-[128px] p-2.5'
+                      ? 'min-h-[124px] p-2.5'
                       : isNarrowWidth
-                        ? 'min-h-[136px] p-3'
+                        ? 'min-h-[132px] p-3'
                         : isCompactHeight
-                          ? 'min-h-[144px] p-3'
-                          : 'min-h-[152px] p-3.5'
+                          ? 'min-h-[140px] p-3'
+                          : 'min-h-[148px] p-3.5'
                   } ${
                     active
                       ? 'border bg-black/20'
@@ -1225,12 +1230,12 @@ export function UltimaSubscription() {
             disabled={
               purchaseMutation.isPending || createPaymentMutation.isPending || isFinalizingPending
             }
-            className={`ultima-btn-pill ultima-btn-primary flex w-full flex-col gap-1.5 px-5 min-[360px]:flex-row min-[360px]:items-center min-[360px]:justify-between ${
+            className={`ultima-btn-pill ultima-btn-primary flex w-full flex-col gap-1.5 px-5 min-[390px]:flex-row min-[390px]:items-center min-[390px]:justify-between ${
               isUltraCompactHeight ? 'py-2.5 text-[15px]' : 'py-3 text-[16px]'
             } disabled:cursor-not-allowed disabled:opacity-75`}
           >
             <span className="min-w-0 break-words">Оплатить подписку</span>
-            <span className="flex flex-wrap items-center justify-center gap-2 text-white/95 min-[360px]:justify-end">
+            <span className="flex flex-wrap items-center justify-center gap-2 text-white/95 min-[390px]:justify-end">
               {formatPrice(payableAmountKopeks)}
               {selectedPricePreview.original &&
               selectedPricePreview.original > selectedPriceKopeks ? (

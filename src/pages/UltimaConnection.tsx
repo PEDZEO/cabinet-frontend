@@ -501,11 +501,11 @@ export function UltimaConnection({
               className={`font-semibold leading-[0.96] text-white ${
                 isDoneStep
                   ? isVeryShortViewport
-                    ? 'text-[28px] sm:text-[32px]'
-                    : 'text-[34px] sm:text-[38px]'
+                    ? 'text-[clamp(26px,7.6vw,30px)]'
+                    : 'text-[clamp(30px,8.4vw,36px)]'
                   : isVeryShortViewport
-                    ? 'text-[34px] sm:text-[38px]'
-                    : 'text-[42px] sm:text-[46px]'
+                    ? 'text-[clamp(32px,9vw,38px)]'
+                    : 'text-[clamp(34px,10vw,42px)]'
               }`}
             >
               {title}
@@ -515,8 +515,8 @@ export function UltimaConnection({
                 isDoneStep
                   ? isVeryShortViewport
                     ? 'text-white/72 max-w-[280px] text-[13px]'
-                    : 'text-white/72 max-w-[300px] text-[14px] sm:max-w-[332px] sm:text-[15px]'
-                  : 'max-w-[360px] text-[17px] text-white/70'
+                    : 'text-white/72 max-w-[332px] text-[clamp(14px,3.8vw,15px)]'
+                  : 'max-w-[360px] text-[clamp(14px,4.4vw,17px)] text-white/70'
               }`}
             >
               {subtitle}
@@ -555,7 +555,7 @@ export function UltimaConnection({
               })}
             </div>
             <div
-              className={`mx-auto h-1 w-[168px] overflow-hidden rounded-full bg-white/15 lg:mt-1.5 ${isVeryShortViewport ? 'mt-1.5' : 'mt-2'}`}
+              className={`mx-auto h-1 w-full max-w-[168px] overflow-hidden rounded-full bg-white/15 lg:mt-1.5 ${isVeryShortViewport ? 'mt-1.5' : 'mt-2'}`}
             >
               <div
                 className="h-full rounded-full bg-gradient-to-r from-emerald-200/85 via-emerald-300/90 to-emerald-200/85 transition-[width] duration-500 ease-out"
@@ -749,49 +749,53 @@ export function UltimaConnection({
 
       {step === 1 && showInfo && (
         <>
-          <div className="bg-black/52 absolute inset-0 z-[18]" />
-          <div className="absolute inset-x-4 bottom-[252px] z-20 lg:inset-x-auto lg:bottom-[260px] lg:left-1/2 lg:w-[560px] lg:-translate-x-1/2">
-            <div className="ultima-step-enter border-white/24 rounded-[24px] border bg-[#05070B] p-4 text-white shadow-[0_26px_56px_rgba(0,0,0,0.72)] backdrop-blur-xl">
-              <div className="mb-2 flex items-start justify-between gap-3">
-                <h3 className="text-[24px] font-semibold leading-[1.06] text-white/95">
-                  {t('subscription.connection.importantInfo', {
-                    defaultValue: 'Важная информация',
-                  })}
-                </h3>
+          <div className="ultima-mobile-overlay-backdrop" />
+          <div className="ultima-mobile-overlay">
+            <div className="ultima-mobile-overlay-panel">
+              <div className="ultima-step-enter border-white/24 rounded-[24px] border bg-[#05070B] p-4 text-white shadow-[0_26px_56px_rgba(0,0,0,0.72)] backdrop-blur-xl">
+                <div className="mb-2 flex items-start justify-between gap-3">
+                  <h3 className="text-[24px] font-semibold leading-[1.06] text-white/95">
+                    {t('subscription.connection.importantInfo', {
+                      defaultValue: 'Важная информация',
+                    })}
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={dismissReminderForNow}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-white/90"
+                    aria-label="close-info-modal"
+                  >
+                    ×
+                  </button>
+                </div>
+                <p className="text-white/92 text-[15px] leading-[1.28]">
+                  {importantInfoDescription}
+                </p>
                 <button
                   type="button"
                   onClick={dismissReminderForNow}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-white/90"
-                  aria-label="close-info-modal"
+                  className="ultima-btn-pill ultima-btn-secondary mt-4 flex w-full items-center justify-center px-5 py-2.5 text-[15px]"
                 >
-                  ×
+                  {canPermanentlyHideReminder
+                    ? t('subscription.connection.remindLater', {
+                        defaultValue: 'Напомнить позже',
+                      })
+                    : t('subscription.connection.gotIt', {
+                        defaultValue: 'Все понятно',
+                      })}
                 </button>
-              </div>
-              <p className="text-white/92 text-[15px] leading-[1.28]">{importantInfoDescription}</p>
-              <button
-                type="button"
-                onClick={dismissReminderForNow}
-                className="ultima-btn-pill ultima-btn-secondary mt-4 flex w-full items-center justify-center px-5 py-2.5 text-[15px]"
-              >
-                {canPermanentlyHideReminder
-                  ? t('subscription.connection.remindLater', {
-                      defaultValue: 'Напомнить позже',
-                    })
-                  : t('subscription.connection.gotIt', {
-                      defaultValue: 'Все понятно',
+                {canPermanentlyHideReminder && (
+                  <button
+                    type="button"
+                    onClick={hideReminderPermanently}
+                    className="ultima-btn-pill ultima-btn-secondary mt-2 flex w-full items-center justify-center px-5 py-2.5 text-[15px]"
+                  >
+                    {t('subscription.connection.hideReminderPermanently', {
+                      defaultValue: 'Больше не показывать',
                     })}
-              </button>
-              {canPermanentlyHideReminder && (
-                <button
-                  type="button"
-                  onClick={hideReminderPermanently}
-                  className="ultima-btn-pill ultima-btn-secondary mt-2 flex w-full items-center justify-center px-5 py-2.5 text-[15px]"
-                >
-                  {t('subscription.connection.hideReminderPermanently', {
-                    defaultValue: 'Больше не показывать',
-                  })}
-                </button>
-              )}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </>

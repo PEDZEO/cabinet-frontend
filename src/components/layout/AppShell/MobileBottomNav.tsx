@@ -65,7 +65,7 @@ export function MobileBottomNav({
             to={item.path}
             onClick={handleNavClick}
             className={cn(
-              'relative flex min-w-[56px] flex-1 shrink-0 flex-col items-center justify-center rounded-2xl px-3 py-2.5 transition-all duration-200',
+              'relative flex min-w-0 flex-1 shrink-0 flex-col items-center justify-center rounded-2xl px-2 py-2.5 transition-all duration-200 sm:px-3',
               isActive(item.path) ? 'text-accent-400' : 'text-dark-500 hover:text-dark-300',
             )}
           >
@@ -77,7 +77,9 @@ export function MobileBottomNav({
               />
             )}
             <item.icon className="relative z-10 h-5 w-5" />
-            <span className="relative z-10 mt-1 whitespace-nowrap text-2xs">{item.label}</span>
+            <span className="relative z-10 mt-1 max-w-full text-center text-2xs leading-tight">
+              {item.label}
+            </span>
           </Link>
         ))}
       </div>

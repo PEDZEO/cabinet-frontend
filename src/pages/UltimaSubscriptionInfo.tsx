@@ -41,8 +41,10 @@ const StatCard = ({ label, value, hint }: { label: string; value: string; hint?:
     }}
   >
     <p className="text-white/62 text-[12px] leading-tight">{label}</p>
-    <p className="mt-1 text-[20px] font-semibold leading-none text-white">{value}</p>
-    {hint ? <p className="text-white/54 mt-1 text-[12px]">{hint}</p> : null}
+    <p className="mt-1 break-words text-[clamp(18px,5vw,20px)] font-semibold leading-tight text-white">
+      {value}
+    </p>
+    {hint ? <p className="text-white/54 mt-1 break-words text-[12px]">{hint}</p> : null}
   </article>
 );
 
@@ -170,9 +172,11 @@ export function UltimaSubscriptionInfo() {
             {t('profile.subscriptionLink', { defaultValue: 'Ваша ссылка на подписку' })}
           </p>
           <div className="rounded-xl border border-white/10 bg-black/15 px-3 py-2">
-            <p className="text-white/92 truncate text-[13px]">{subscriptionLink || '-'}</p>
+            <p className="text-white/92 break-all text-[13px] leading-snug">
+              {subscriptionLink || '-'}
+            </p>
           </div>
-          <div className="mt-2 grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
+          <div className="mt-2 grid grid-cols-1 gap-2 min-[390px]:grid-cols-2">
             <button
               type="button"
               onClick={() => void copySubscriptionLink()}
@@ -200,7 +204,7 @@ export function UltimaSubscriptionInfo() {
           </div>
         </section>
 
-        <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2 lg:grid-cols-4 lg:gap-4">
+        <div className="grid grid-cols-1 gap-2 min-[390px]:grid-cols-2 lg:grid-cols-4 lg:gap-4">
           <StatCard
             label={t('subscription.status', { defaultValue: 'Статус' })}
             value={
@@ -215,7 +219,7 @@ export function UltimaSubscriptionInfo() {
           />
         </div>
 
-        <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2 lg:grid-cols-4 lg:gap-4">
+        <div className="grid grid-cols-1 gap-2 min-[390px]:grid-cols-2 lg:grid-cols-4 lg:gap-4">
           <StatCard
             label={t('subscription.trafficUsed', { defaultValue: 'Трафик использован' })}
             value={`${trafficUsed.toFixed(1)} GB`}
@@ -243,7 +247,7 @@ export function UltimaSubscriptionInfo() {
           />
         </div>
 
-        <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
+        <div className="grid grid-cols-1 gap-2 min-[390px]:grid-cols-2">
           <StatCard
             label={t('subscription.devices', { defaultValue: 'Устройства' })}
             value={String(subscription.device_limit ?? 0)}
@@ -254,7 +258,7 @@ export function UltimaSubscriptionInfo() {
           />
         </div>
 
-        <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
+        <div className="grid grid-cols-1 gap-2 min-[390px]:grid-cols-2">
           <StatCard
             label={tariffLabel}
             value={

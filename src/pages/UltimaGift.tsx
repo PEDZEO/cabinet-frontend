@@ -1061,7 +1061,7 @@ export function UltimaGift() {
                             className="rounded-xl border border-white/10 bg-white/5 px-2.5 py-2"
                           >
                             <div className="mb-1 flex items-center justify-between gap-2">
-                              <p className="truncate text-[12px] text-white/90">
+                              <p className="line-clamp-2 break-words text-[12px] leading-snug text-white/90">
                                 {gift.tariff_name ?? 'Тариф'} • {gift.period_days} дн.
                               </p>
                               <span className={`rounded px-2 py-0.5 text-[10px] ${status.cls}`}>
@@ -1136,7 +1136,7 @@ export function UltimaGift() {
                             className="rounded-xl border border-white/10 bg-white/5 px-2.5 py-2"
                           >
                             <div className="mb-1 flex items-center justify-between gap-2">
-                              <p className="truncate text-[12px] text-white/90">
+                              <p className="line-clamp-2 break-words text-[12px] leading-snug text-white/90">
                                 {gift.tariff_name ?? 'Тариф'} • {gift.period_days} дн.
                               </p>
                               <span className={`rounded px-2 py-0.5 text-[10px] ${status.cls}`}>

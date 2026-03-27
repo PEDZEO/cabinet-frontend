@@ -140,7 +140,7 @@ export function UltimaTopUpMethodSelect() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
-                      <p className="truncate text-[15px] font-medium leading-tight text-white/95">
+                      <p className="line-clamp-2 break-words text-[15px] font-medium leading-tight text-white/95">
                         {translatedName || method.name}
                       </p>
                       <span className="mt-0.5 shrink-0 text-white/55 transition group-hover:translate-x-0.5 group-hover:text-white/80">

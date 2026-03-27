@@ -199,7 +199,7 @@ export function UltimaReferral() {
                 {t('referral.shareHint', { percent: info?.commission_percent || 0 })}
               </p>
               <div className="border-emerald-200/12 text-white/86 mt-2 rounded-xl border bg-emerald-950/40 px-3 py-2 text-[12px]">
-                <p className="truncate">{referralLink || '—'}</p>
+                <p className="break-all leading-snug">{referralLink || '—'}</p>
               </div>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 <button

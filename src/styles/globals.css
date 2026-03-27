@@ -426,7 +426,8 @@ html:not(.ultima-frames-enabled) .ultima-flat-frames [class*='border'] {
     color-mix(in srgb, var(--ultima-color-bg-top) 18%, transparent) 0%,
     color-mix(in srgb, var(--ultima-color-bg-bottom) 22%, transparent) 100%
   );
-  padding-inline: clamp(12px, 3vw, 16px);
+  padding-left: calc(clamp(12px, 3vw, 16px) + env(safe-area-inset-left, 0px));
+  padding-right: calc(clamp(12px, 3vw, 16px) + env(safe-area-inset-right, 0px));
   padding-top: clamp(12px, 2.2vh, 16px);
   padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
 }
@@ -505,6 +506,39 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   margin-top: auto;
   padding-top: 12px;
   padding-bottom: 2px;
+}
+
+.ultima-mobile-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 18;
+  background: rgba(0, 0, 0, 0.52);
+  backdrop-filter: blur(3px);
+}
+
+.ultima-mobile-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-top: calc(16px + env(safe-area-inset-top, 0px));
+  padding-right: calc(clamp(12px, 3vw, 16px) + env(safe-area-inset-right, 0px));
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  padding-left: calc(clamp(12px, 3vw, 16px) + env(safe-area-inset-left, 0px));
+  pointer-events: none;
+}
+
+.ultima-mobile-overlay-panel {
+  pointer-events: auto;
+  width: min(100%, 520px);
+  max-height: min(
+    calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 124px),
+    640px
+  );
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .ultima-btn-pill {
@@ -612,6 +646,10 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
     padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
   }
 
+  .ultima-mobile-overlay {
+    padding-bottom: calc(82px + env(safe-area-inset-bottom, 0px));
+  }
+
   .ultima-bottom-nav {
     gap: 4px;
     border-radius: 18px;
@@ -626,7 +664,14 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
 
 @media (max-width: 379px) {
   .ultima-shell {
-    padding-inline: 10px;
+    padding-left: calc(10px + env(safe-area-inset-left, 0px));
+    padding-right: calc(10px + env(safe-area-inset-right, 0px));
+  }
+
+  .ultima-mobile-overlay {
+    padding-right: calc(10px + env(safe-area-inset-right, 0px));
+    padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+    padding-left: calc(10px + env(safe-area-inset-left, 0px));
   }
 
   .ultima-bottom-nav {
@@ -638,6 +683,18 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   .ultima-bottom-nav [data-ultima-nav-btn='1'] {
     height: 40px;
     border-radius: 14px;
+  }
+}
+
+@media (max-width: 359px) {
+  .ultima-bottom-nav {
+    gap: 3px;
+    padding: 3px;
+  }
+
+  .ultima-bottom-nav [data-ultima-nav-btn='1'] {
+    height: 38px;
+    border-radius: 13px;
   }
 }
 
@@ -736,6 +793,17 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   .ultima-nav-dock .ultima-bottom-nav {
     margin-inline: auto;
     max-width: min(100%, var(--ultima-dock-max-width, 760px));
+  }
+
+  .ultima-mobile-overlay {
+    align-items: flex-start;
+    padding-top: 72px;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .ultima-mobile-overlay-panel {
+    width: min(100%, 560px);
+    max-height: min(calc(100dvh - 112px), 720px);
   }
 }
 
@@ -906,6 +974,37 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
     scrollbar-color: rgb(var(--color-dark-700)) transparent;
   }
 
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html,
+  body,
+  #root {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  img,
+  video,
+  canvas,
+  iframe {
+    display: block;
+    max-width: 100%;
+  }
+
+  img,
+  video,
+  canvas {
+    height: auto;
+  }
+
+  svg {
+    max-width: 100%;
+  }
+
   /* Hide scrollbar on mobile (iOS/Android) */
   @media (max-width: 1023px) {
     html,
@@ -968,6 +1067,7 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   #root {
     min-width: 0;
     min-height: 100dvh;
+    width: 100%;
   }
 
   /* Global Noise Texture — no mix-blend-mode to avoid fullscreen GPU compositing */

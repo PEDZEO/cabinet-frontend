@@ -851,8 +851,8 @@ export function UltimaDashboard() {
 
     return (
       <div className="ultima-shell pb-[calc(20px+env(safe-area-inset-bottom,0px))] pt-2">
-        <div className="relative z-10 mx-auto flex h-[calc(100dvh-26px)] w-full flex-col px-4 sm:px-6">
-          <section className="pt-[clamp(74px,16vh,160px)]">
+        <div className="relative z-10 mx-auto flex min-h-[calc(100dvh-26px)] w-full flex-col px-4 sm:px-6">
+          <section className="pt-[clamp(52px,12vh,112px)]">
             <div className="mx-auto mb-[clamp(24px,5vh,56px)] flex h-24 w-24 items-center justify-center rounded-full bg-black/15">
               {shouldHoldForHomeLogo ? (
                 <div className="h-[86px] w-[86px] animate-pulse rounded-full border border-white/10 bg-white/[0.06]" />
@@ -948,7 +948,7 @@ export function UltimaDashboard() {
       )}
 
       <div className="ultima-shell-inner lg:max-w-[680px] lg:justify-between">
-        <section className="flex min-h-0 flex-1 flex-col pb-[clamp(14px,2.8vh,24px)] pt-[clamp(86px,19vh,198px)] lg:flex-none lg:pb-2 lg:pt-8">
+        <section className="flex min-h-0 flex-1 flex-col pb-[clamp(14px,2.8vh,24px)] pt-[clamp(58px,13vh,126px)] lg:flex-none lg:pb-2 lg:pt-8">
           {renderShieldButton('mb-[clamp(24px,5vh,56px)] lg:mb-5')}
 
           {hasSetupReminder && (
@@ -1034,7 +1034,7 @@ export function UltimaDashboard() {
                     })}
               </p>
               {promoMessage && <p className="mt-1.5 text-[12px] text-white/85">{promoMessage}</p>}
-              <div className="mt-2.5 flex gap-2">
+              <div className="mt-2.5 flex flex-col gap-2 min-[390px]:flex-row">
                 {firstPromoOffer && (
                   <button
                     type="button"
@@ -1072,26 +1072,26 @@ export function UltimaDashboard() {
 
           {!showTrialSetupCard && (
             <>
-              <div className="mb-3 mt-auto flex items-center justify-between text-white lg:mb-3 lg:mt-4 lg:flex-col lg:justify-center lg:gap-3 lg:text-center">
+              <div className="mb-3 mt-auto flex flex-col items-start gap-3 text-white min-[390px]:flex-row min-[390px]:items-center min-[390px]:justify-between lg:mb-3 lg:mt-4 lg:flex-col lg:justify-center lg:gap-3 lg:text-center">
                 <div className="lg:flex lg:flex-col lg:items-center">
                   <button
                     type="button"
                     onClick={openSubscriptionInfo}
-                    className="text-left text-[32px] font-semibold leading-none tracking-[-0.02em] text-white transition hover:text-white/90 sm:text-[36px] lg:text-center lg:text-[38px]"
+                    className="max-w-full break-words text-left text-[clamp(28px,8.7vw,36px)] font-semibold leading-[0.95] tracking-[-0.02em] text-white transition hover:text-white/90 lg:text-center lg:text-[38px]"
                   >
                     {expiryLabel}
                   </button>
                   <button
                     type="button"
                     onClick={openDevices}
-                    className="mt-2 text-left text-base text-emerald-300/90 transition hover:text-emerald-200 lg:text-center"
+                    className="mt-2 text-left text-[15px] leading-snug text-emerald-300/90 transition hover:text-emerald-200 lg:text-center"
                   >
                     {t('lite.devicesTotal', { defaultValue: 'Устройств' })}:{' '}
                     {subscription?.device_limit ?? 0}
                   </button>
                 </div>
                 <span
-                  className={`relative inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ${statusTone.pill}`}
+                  className={`relative inline-flex max-w-full items-center gap-2 rounded-full border px-3 py-1 text-xs shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ${statusTone.pill}`}
                 >
                   <span
                     className={`absolute left-1.5 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full blur-[4px] ${statusTone.halo}`}
@@ -1111,13 +1111,13 @@ export function UltimaDashboard() {
           <button
             type="button"
             onClick={openSubscriptionPurchase}
-            className="ultima-btn-pill ultima-btn-primary mb-3 flex w-full items-center justify-between px-5 py-3 text-[16px]"
+            className="ultima-btn-pill ultima-btn-primary mb-3 flex w-full flex-col gap-2 px-5 py-3 text-[16px] min-[390px]:flex-row min-[390px]:items-center min-[390px]:justify-between"
           >
-            <span className="flex items-center gap-2">
+            <span className="flex min-w-0 items-center gap-2">
               <GlobeIcon />
-              {buyCtaLabel}
+              <span className="break-words">{buyCtaLabel}</span>
             </span>
-            <span className="text-[16px] text-white/90">{buyFromLabel}</span>
+            <span className="text-[16px] text-white/90 min-[390px]:text-right">{buyFromLabel}</span>
           </button>
 
           <div className="relative mb-4">
@@ -1130,11 +1130,13 @@ export function UltimaDashboard() {
             <button
               type="button"
               onClick={() => openConnection()}
-              className="ultima-btn-pill ultima-btn-secondary relative flex w-full items-center justify-between px-5 py-3 text-[16px]"
+              className="ultima-btn-pill ultima-btn-secondary relative flex w-full flex-col gap-2 px-5 py-3 text-[16px] min-[390px]:flex-row min-[390px]:items-center min-[390px]:justify-between"
             >
-              <span className="flex items-center gap-2">
+              <span className="flex min-w-0 items-center gap-2">
                 <SetupIcon />
-                {t('lite.connectAndSetup', { defaultValue: 'Установка и настройка' })}
+                <span className="break-words">
+                  {t('lite.connectAndSetup', { defaultValue: 'Установка и настройка' })}
+                </span>
               </span>
               <span className="text-white/70">
                 <PhoneIcon />

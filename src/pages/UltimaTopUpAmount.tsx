@@ -230,7 +230,9 @@ export function UltimaTopUpAmount() {
             <MethodIcon methodId={method.id} />
           </div>
           <div className="min-w-0">
-            <p className="truncate text-[15px] font-medium text-white/95">{methodName}</p>
+            <p className="line-clamp-2 break-words text-[15px] font-medium leading-tight text-white/95">
+              {methodName}
+            </p>
             <p className="text-[11px] text-white/55">
               {formatAmount(minRub, 0)} - {formatAmount(maxRub, 0)} {currencySymbol}
             </p>
@@ -238,13 +240,13 @@ export function UltimaTopUpAmount() {
         </div>
 
         {method.options && method.options.length > 0 ? (
-          <div className="mb-3 grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
+          <div className="mb-3 grid grid-cols-1 gap-2 min-[390px]:grid-cols-2">
             {method.options.map((option) => (
               <button
                 key={option.id}
                 type="button"
                 onClick={() => setSelectedOption(option.id)}
-                className={`rounded-xl border px-3 py-2 text-left text-sm ${
+                className={`min-w-0 rounded-xl border px-3 py-2 text-left text-sm ${
                   selectedOption === option.id
                     ? 'bg-emerald-500/12 border-emerald-300/45 text-white'
                     : 'border-emerald-200/10 bg-emerald-950/30 text-white/75'
@@ -257,7 +259,7 @@ export function UltimaTopUpAmount() {
         ) : null}
 
         <div className="text-white/62 mb-2 text-[12px]">{t('balance.enterAmount')}</div>
-        <div className="flex flex-col gap-2 min-[360px]:flex-row">
+        <div className="flex flex-col gap-2 min-[390px]:flex-row">
           <div className="border-emerald-200/12 relative flex-1 rounded-2xl border bg-emerald-950/35">
             <input
               ref={inputRef}
@@ -276,14 +278,14 @@ export function UltimaTopUpAmount() {
             type="button"
             onClick={handleCreatePayment}
             disabled={topUpMutation.isPending}
-            className="rounded-2xl border border-[#52ecc6]/40 bg-[#12cd97] px-4 py-3 text-sm font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] disabled:opacity-60 min-[360px]:py-0"
+            className="w-full rounded-2xl border border-[#52ecc6]/40 bg-[#12cd97] px-4 py-3 text-sm font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] disabled:opacity-60 min-[390px]:w-auto min-[390px]:py-0"
           >
             {t('balance.topUp')}
           </button>
         </div>
 
         {quickRubles.length > 0 ? (
-          <div className="mt-3 grid grid-cols-2 gap-2 min-[360px]:grid-cols-4">
+          <div className="mt-3 grid grid-cols-2 gap-2 min-[390px]:grid-cols-4">
             {quickRubles.map((value) => (
               <button
                 key={value}
@@ -323,7 +325,7 @@ export function UltimaTopUpAmount() {
             </button>
             <div className="mt-2 flex items-center gap-2">
               <div className="min-w-0 flex-1 rounded-lg border border-emerald-200/10 bg-emerald-950/30 px-2.5 py-2">
-                <p className="truncate text-[11px] text-white/55">{paymentUrl}</p>
+                <p className="break-all text-[11px] text-white/55">{paymentUrl}</p>
               </div>
               <button
                 type="button"

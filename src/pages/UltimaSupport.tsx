@@ -248,7 +248,7 @@ export function UltimaSupport() {
         </span>
       </div>
       {ticket.last_message?.message_text ? (
-        <p className="text-white/62 truncate text-[12px]">
+        <p className="text-white/62 line-clamp-2 break-words text-[12px] leading-snug">
           {ticket.last_message.is_from_admin
             ? `${t('support.supportTeam', { defaultValue: 'Администратор' })}: `
             : `${t('support.you', { defaultValue: 'Вы' })}: `}
@@ -417,7 +417,7 @@ export function UltimaSupport() {
           {selectedTicketId && ticketDetail ? (
             <div className="flex h-full min-h-0 flex-col gap-3">
               <div className="flex items-center justify-between gap-2">
-                <p className="truncate text-[14px] font-medium text-white/95 lg:text-[16px]">
+                <p className="line-clamp-2 break-words text-[14px] font-medium leading-snug text-white/95 lg:text-[16px]">
                   {selectedTicket?.title}
                 </p>
                 <div className="flex items-center gap-2">

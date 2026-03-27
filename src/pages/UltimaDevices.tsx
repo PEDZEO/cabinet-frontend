@@ -291,10 +291,10 @@ export function UltimaDevices() {
                     className="bg-emerald-950/28 flex items-center justify-between rounded-2xl border border-emerald-200/10 px-3 py-2"
                   >
                     <div className="min-w-0">
-                      <p className="text-white/92 truncate text-[13px]">
+                      <p className="text-white/92 line-clamp-2 break-words text-[13px] leading-snug">
                         {device.device_model || device.platform}
                       </p>
-                      <p className="text-white/52 truncate text-[11px]">
+                      <p className="text-white/52 break-all text-[11px] leading-snug">
                         {device.platform} • {device.hwid}
                       </p>
                     </div>

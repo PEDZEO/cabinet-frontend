@@ -136,8 +136,10 @@ function MenuItem({ item, onClick }: { item: SectionItem; onClick: () => void })
         {item.icon}
       </div>
       <div className="min-w-0">
-        <p className="truncate text-[16px] leading-tight text-white/95">{item.title}</p>
-        <p className="text-white/52 truncate text-[12px]">{item.subtitle}</p>
+        <p className="line-clamp-2 break-words text-[16px] leading-tight text-white/95">
+          {item.title}
+        </p>
+        <p className="text-white/52 line-clamp-2 break-words text-[12px]">{item.subtitle}</p>
       </div>
     </button>
   );
@@ -565,8 +567,8 @@ export function UltimaProfile() {
                         </div>
                       )}
                       <div className="min-w-0">
-                        <p className="text-white/92 truncate text-sm font-medium">{userLabel}</p>
-                        <p className="truncate text-xs text-white/55">
+                        <p className="text-white/92 break-all text-sm font-medium">{userLabel}</p>
+                        <p className="break-words text-xs text-white/55">
                           {user?.first_name || user?.username || 'Telegram user'}
                         </p>
                       </div>
@@ -643,7 +645,7 @@ export function UltimaProfile() {
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <p className="text-white/78 truncate text-[13px]">{userLabel}</p>
+            <p className="text-white/78 break-all text-[13px]">{userLabel}</p>
           </div>
           <button
             type="button"

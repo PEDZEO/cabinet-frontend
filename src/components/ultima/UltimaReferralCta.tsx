@@ -59,7 +59,7 @@ export function UltimaReferralCta({
         'group w-full text-left transition-transform duration-200 hover:translate-y-[-1px] active:translate-y-0',
         variant === 'desktop'
           ? 'flex items-center justify-between gap-4 rounded-[24px] border px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_18px_42px_rgba(3,14,24,0.18)] backdrop-blur-xl'
-          : 'flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_24px_rgba(3,14,24,0.18)] backdrop-blur-md',
+          : 'flex flex-col gap-3 rounded-2xl border px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_24px_rgba(3,14,24,0.18)] backdrop-blur-md min-[390px]:flex-row min-[390px]:items-center min-[390px]:justify-between',
         className,
       )}
       style={{
@@ -69,7 +69,7 @@ export function UltimaReferralCta({
       }}
       aria-label={title}
     >
-      <div className="flex min-w-0 items-center gap-3">
+      <div className="flex min-w-0 flex-1 items-start gap-3">
         <span
           className={cn(
             'flex shrink-0 items-center justify-center rounded-2xl border text-white/90',
@@ -83,10 +83,10 @@ export function UltimaReferralCta({
           <ReferralIcon />
         </span>
 
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p
             className={cn(
-              'text-white/96 truncate font-semibold',
+              'text-white/96 line-clamp-2 break-words font-semibold leading-tight',
               variant === 'desktop' ? 'text-[15px]' : 'text-[14px]',
             )}
           >
@@ -94,7 +94,7 @@ export function UltimaReferralCta({
           </p>
           <p
             className={cn(
-              'text-white/68 mt-1 [overflow-wrap:anywhere]',
+              'text-white/68 mt-1 break-words [overflow-wrap:anywhere]',
               variant === 'desktop' ? 'text-[13px] leading-snug' : 'text-[12px] leading-snug',
             )}
           >
@@ -103,7 +103,14 @@ export function UltimaReferralCta({
         </div>
       </div>
 
-      <div className="flex shrink-0 items-center gap-2">
+      <div
+        className={cn(
+          'flex shrink-0 items-center gap-2',
+          variant === 'desktop'
+            ? ''
+            : 'w-full justify-between min-[390px]:w-auto min-[390px]:justify-end',
+        )}
+      >
         {showBadge ? (
           <span
             className={cn(
