@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -7,11 +7,15 @@ import { authApi } from '@/api/auth';
 import { Button } from '@/components/primitives/Button';
 import { UltimaProviderAccountLinkingView } from '@/components/ultima/UltimaProviderAccountLinkingView';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+import { getLocalizedIdentityLinkMessage } from '@/features/account-linking/linkingMessages';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { getTelegramInitData, isInTelegramWebApp } from '@/hooks/useTelegramSDK';
 import { useUltimaAccountLinkingMode } from '@/hooks/useUltimaAccountLinkingMode';
 import { usePlatform } from '@/platform';
-import { showSuccessNotification } from '@/store/successNotification';
+import {
+  consumeStashedSuccessNotification,
+  showSuccessNotification,
+} from '@/store/successNotification';
 import { useAuthStore } from '@/store/auth';
 import type { AuthResponse, LinkCodePreviewResponse, LinkedIdentity, OAuthProvider } from '@/types';
 import { clearLinkOAuthState, saveLinkOAuthState } from '@/utils/oauthState';
@@ -54,6 +58,7 @@ export default function UltimaAccountLinking() {
   const [directLinkProvider, setDirectLinkProvider] = useState<string | null>(null);
   const [waitingExternalProvider, setWaitingExternalProvider] = useState<string | null>(null);
   const [telegramDirectLinkLoading, setTelegramDirectLinkLoading] = useState(false);
+  const consumedStashedSuccessRef = useRef(false);
 
   const parseApiError = (
     err: unknown,
@@ -112,7 +117,7 @@ export default function UltimaAccountLinking() {
       case 'link_code_target_inactive':
         return 'Один из аккаунтов неактивен';
       case 'manual_merge_required':
-        return 'Оба аккаунта содержат данные. Нужна ручная обработка support.';
+        return 'Оба аккаунта содержат данные. Нужна ручная обработка поддержки.';
       case 'support_disabled':
         return 'Тикеты поддержки отключены';
       case 'telegram_relink_requires_unlink':
@@ -278,7 +283,25 @@ export default function UltimaAccountLinking() {
   );
 
   useEffect(() => {
+    if (consumedStashedSuccessRef.current) return;
+    consumedStashedSuccessRef.current = true;
+
+    const stashedNotification = consumeStashedSuccessNotification();
+    if (!stashedNotification || stashedNotification.type !== 'account_linked') return;
+
+    setProviderLinkError(null);
+    setProviderLinkSuccess(null);
+    showSuccessNotification(stashedNotification, { dedupeMs: 0 });
+  }, []);
+
+  useEffect(() => {
     if (!pendingLinkResult?.pending) return;
+
+    const localizedMessage = getLocalizedIdentityLinkMessage(
+      t,
+      pendingLinkResult.code,
+      pendingLinkResult.message,
+    );
 
     setWaitingExternalProvider(null);
     queryClient.invalidateQueries({ queryKey: ['linked-identities'] });
@@ -290,18 +313,11 @@ export default function UltimaAccountLinking() {
 
     if (pendingLinkResult.status === 'success') {
       setProviderLinkError(null);
-      setProviderLinkSuccess(
-        pendingLinkResult.message || 'Привязка завершена. Теперь вход доступен через новый способ.',
-      );
+      setProviderLinkSuccess(null);
       showSuccessNotification({
         type: 'account_linked',
         title: t('successNotification.accountLinked.title', 'Аккаунты связаны!'),
-        message:
-          pendingLinkResult.message ||
-          t(
-            'successNotification.accountLinked.message',
-            'Привязка завершена. Теперь вы можете входить через связанные способы входа.',
-          ),
+        message: localizedMessage,
       });
       return;
     }
@@ -309,8 +325,8 @@ export default function UltimaAccountLinking() {
     setProviderLinkSuccess(null);
     setProviderLinkError(
       pendingLinkResult.code === 'manual_merge_required'
-        ? `${pendingLinkResult.message || 'Автоматическая привязка недоступна.'} Откройте поддержку, если нужно объединить профили вручную.`
-        : pendingLinkResult.message || t('common.error', 'Произошла ошибка'),
+        ? `${localizedMessage || 'Автоматическая привязка недоступна.'} Откройте поддержку, если нужно объединить профили вручную.`
+        : localizedMessage || t('common.error', 'Произошла ошибка'),
     );
   }, [applyAuthResponse, pendingLinkResult, queryClient, t]);
 
@@ -367,9 +383,7 @@ export default function UltimaAccountLinking() {
       await applyAuthResponse(response);
       queryClient.invalidateQueries({ queryKey: ['linked-identities'] });
       queryClient.invalidateQueries({ queryKey: ['user'] });
-      setProviderLinkSuccess(
-        'Telegram привязан. Теперь этот аккаунт можно использовать для входа.',
-      );
+      setProviderLinkSuccess(null);
       showSuccessNotification({
         type: 'account_linked',
         title: t('successNotification.accountLinked.title', 'Аккаунты связаны!'),

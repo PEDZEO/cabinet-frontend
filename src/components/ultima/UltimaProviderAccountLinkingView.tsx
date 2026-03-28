@@ -237,6 +237,13 @@ export function UltimaProviderAccountLinkingView({
   const hasAlternativeIdentity = linkedIdentities.length > 1;
   const canReplaceTelegram = Boolean(telegramIdentity && hasAlternativeIdentity);
   const showTelegramMiniAppHint = !isTelegramMiniApp && !telegramIdentity;
+  const shouldRenderConnectSection =
+    hasAnyAvailableProvider ||
+    showTelegramMiniAppHint ||
+    waitingExternalProvider !== null ||
+    providerLinkError !== null ||
+    providerLinkSuccess !== null ||
+    linkSuccess !== null;
 
   return (
     <div
@@ -326,126 +333,125 @@ export function UltimaProviderAccountLinkingView({
             </div>
           </section>
 
-          <section className="rounded-[30px] border border-white/10 bg-[rgba(7,18,33,0.88)] p-4 backdrop-blur-md">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <h2 className="text-lg font-semibold text-white">Подключить новый способ входа</h2>
-                <p className="text-white/58 mt-1 text-sm">
-                  {isTelegramMiniApp
-                    ? 'Выберите вход, который хотите добавить к текущему профилю. Yandex и VK откроются в браузере телефона.'
-                    : 'Выберите вход, который хотите добавить к текущему профилю. Для Telegram ниже есть отдельный переход в Mini App.'}
-                </p>
-              </div>
-              {!hasAnyAvailableProvider ? (
-                <span className="bg-white/6 text-white/52 rounded-full border border-white/10 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.14em]">
-                  Все доступные входы уже подключены
-                </span>
-              ) : null}
-            </div>
-
-            <div className="mt-4 grid gap-2 min-[360px]:grid-cols-2">
-              {!telegramIdentity && isTelegramMiniApp ? (
-                <ProviderCard
-                  title="Telegram"
-                  description={
-                    'Подключите Telegram как основной вход для Mini App и восстановления доступа.'
-                  }
-                  disabled={busyLinking}
-                  busy={telegramDirectLinkLoading}
-                  status={relinkStatusLabel}
-                  icon={<TelegramIcon />}
-                  onClick={onLinkTelegramDirect}
-                />
-              ) : null}
-
-              {availableOAuthProviders.map((provider) => (
-                <ProviderCard
-                  key={provider.name}
-                  title={provider.display_name}
-                  description={getProviderDescription(provider.name)}
-                  disabled={busyLinking}
-                  busy={directLinkProvider === provider.name}
-                  status={
-                    waitingExternalProvider === provider.name ? 'Ждем подтверждение' : undefined
-                  }
-                  icon={<OAuthProviderIcon provider={provider.name} className="h-5 w-5" />}
-                  onClick={() => onLinkOAuth(provider.name)}
-                />
-              ))}
-            </div>
-
-            {showTelegramMiniAppHint ? (
-              <div className="bg-white/6 mt-3 rounded-[24px] border border-white/10 p-3.5">
-                <div className="flex items-start gap-3">
-                  <div className="bg-white/8 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 text-white">
-                    <TelegramIcon />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-sm font-semibold text-white">
-                        Telegram подключается в Mini App
-                      </h3>
-                      <span className="bg-white/8 rounded-full border border-white/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-white/60">
-                        Только в Telegram
-                      </span>
-                    </div>
-                    <p className="text-white/62 mt-1 text-sm leading-relaxed">
-                      Чтобы привязать именно Telegram к этому профилю, откройте кабинет в Telegram
-                      Mini App и запустите привязку оттуда.
-                    </p>
-                    {telegramMiniAppLink ? (
-                      <Button
-                        asChild
-                        className="mt-3 h-10 rounded-full border border-[#76f5d5]/25 bg-[rgba(22,207,161,0.92)] px-4 text-sm font-medium text-slate-950 hover:bg-[rgba(39,220,176,0.96)]"
-                      >
-                        <a href={telegramMiniAppLink} target="_blank" rel="noopener noreferrer">
-                          Открыть Mini App
-                        </a>
-                      </Button>
-                    ) : (
-                      <p className="text-white/48 mt-3 text-xs leading-relaxed">
-                        Telegram-бот не настроен в переменных окружения фронтенда. Добавьте
-                        `VITE_TELEGRAM_BOT_USERNAME`, чтобы показать прямой переход.
-                      </p>
-                    )}
-                  </div>
+          {shouldRenderConnectSection ? (
+            <section className="rounded-[30px] border border-white/10 bg-[rgba(7,18,33,0.88)] p-4 backdrop-blur-md">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h2 className="text-lg font-semibold text-white">
+                    Подключить новый способ входа
+                  </h2>
+                  <p className="text-white/58 mt-1 text-sm">
+                    {isTelegramMiniApp
+                      ? 'Выберите вход, который хотите добавить к текущему профилю. Yandex и VK откроются в браузере телефона.'
+                      : 'Выберите вход, который хотите добавить к текущему профилю. Для Telegram ниже есть отдельный переход в Mini App.'}
+                  </p>
                 </div>
               </div>
-            ) : null}
 
-            {waitingExternalProvider ? (
-              <div className="border-[#59f0c9]/18 bg-[#27cda4]/8 mt-3 rounded-[24px] border p-3 text-sm text-[#aaf9e8]">
-                Вход через {getProviderLabel(waitingExternalProvider)} открыт во внешнем браузере.
-                Как только авторизация завершится, кабинет сам покажет результат.
-              </div>
-            ) : null}
+              <div className="mt-4 grid gap-2 min-[360px]:grid-cols-2">
+                {!telegramIdentity && isTelegramMiniApp ? (
+                  <ProviderCard
+                    title="Telegram"
+                    description={
+                      'Подключите Telegram как основной вход для Mini App и восстановления доступа.'
+                    }
+                    disabled={busyLinking}
+                    busy={telegramDirectLinkLoading}
+                    status={relinkStatusLabel}
+                    icon={<TelegramIcon />}
+                    onClick={onLinkTelegramDirect}
+                  />
+                ) : null}
 
-            {telegramIdentity ? (
-              <div className="bg-white/6 text-white/68 mt-3 rounded-[24px] border border-white/10 p-3 text-sm">
-                {hasAlternativeIdentity
-                  ? 'Чтобы заменить Telegram, сначала отвяжите текущий Telegram ниже, затем привяжите новый.'
-                  : 'Чтобы заменить Telegram, сначала подключите любой другой способ входа: например Yandex или VK.'}
+                {availableOAuthProviders.map((provider) => (
+                  <ProviderCard
+                    key={provider.name}
+                    title={provider.display_name}
+                    description={getProviderDescription(provider.name)}
+                    disabled={busyLinking}
+                    busy={directLinkProvider === provider.name}
+                    status={
+                      waitingExternalProvider === provider.name ? 'Ждем подтверждение' : undefined
+                    }
+                    icon={<OAuthProviderIcon provider={provider.name} className="h-5 w-5" />}
+                    onClick={() => onLinkOAuth(provider.name)}
+                  />
+                ))}
               </div>
-            ) : null}
 
-            {providerLinkError ? (
-              <div className="mt-3 rounded-[24px] border border-error-500/30 bg-error-500/10 p-3 text-sm text-error-300">
-                {providerLinkError}
-              </div>
-            ) : null}
+              {showTelegramMiniAppHint ? (
+                <div className="bg-white/6 mt-3 rounded-[24px] border border-white/10 p-3.5">
+                  <div className="flex items-start gap-3">
+                    <div className="bg-white/8 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 text-white">
+                      <TelegramIcon />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-sm font-semibold text-white">
+                          Telegram подключается в Mini App
+                        </h3>
+                        <span className="bg-white/8 rounded-full border border-white/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-white/60">
+                          Только в Telegram
+                        </span>
+                      </div>
+                      <p className="text-white/62 mt-1 text-sm leading-relaxed">
+                        Чтобы привязать именно Telegram к этому профилю, откройте кабинет в Telegram
+                        Mini App и запустите привязку оттуда.
+                      </p>
+                      {telegramMiniAppLink ? (
+                        <Button
+                          asChild
+                          className="mt-3 h-10 rounded-full border border-[#76f5d5]/25 bg-[rgba(22,207,161,0.92)] px-4 text-sm font-medium text-slate-950 hover:bg-[rgba(39,220,176,0.96)]"
+                        >
+                          <a href={telegramMiniAppLink} target="_blank" rel="noopener noreferrer">
+                            Открыть Mini App
+                          </a>
+                        </Button>
+                      ) : (
+                        <p className="text-white/48 mt-3 text-xs leading-relaxed">
+                          Telegram-бот не настроен в переменных окружения фронтенда. Добавьте
+                          `VITE_TELEGRAM_BOT_USERNAME`, чтобы показать прямой переход.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
 
-            {providerLinkSuccess ? (
-              <div className="mt-3 rounded-[24px] border border-success-500/30 bg-success-500/10 p-3 text-sm text-success-300">
-                {providerLinkSuccess}
-              </div>
-            ) : null}
+              {waitingExternalProvider ? (
+                <div className="border-[#59f0c9]/18 bg-[#27cda4]/8 mt-3 rounded-[24px] border p-3 text-sm text-[#aaf9e8]">
+                  Вход через {getProviderLabel(waitingExternalProvider)} открыт во внешнем браузере.
+                  Как только авторизация завершится, кабинет сам покажет результат.
+                </div>
+              ) : null}
 
-            {linkSuccess ? (
-              <div className="mt-3 rounded-[24px] border border-success-500/30 bg-success-500/10 p-3 text-sm text-success-300">
-                {linkSuccess}
-              </div>
-            ) : null}
-          </section>
+              {telegramIdentity ? (
+                <div className="bg-white/6 text-white/68 mt-3 rounded-[24px] border border-white/10 p-3 text-sm">
+                  {hasAlternativeIdentity
+                    ? 'Чтобы заменить Telegram, сначала отвяжите текущий Telegram ниже, затем привяжите новый.'
+                    : 'Чтобы заменить Telegram, сначала подключите любой другой способ входа: например Yandex или VK.'}
+                </div>
+              ) : null}
+
+              {providerLinkError ? (
+                <div className="mt-3 rounded-[24px] border border-error-500/30 bg-error-500/10 p-3 text-sm text-error-300">
+                  {providerLinkError}
+                </div>
+              ) : null}
+
+              {providerLinkSuccess ? (
+                <div className="mt-3 rounded-[24px] border border-success-500/30 bg-success-500/10 p-3 text-sm text-success-300">
+                  {providerLinkSuccess}
+                </div>
+              ) : null}
+
+              {linkSuccess ? (
+                <div className="mt-3 rounded-[24px] border border-success-500/30 bg-success-500/10 p-3 text-sm text-success-300">
+                  {linkSuccess}
+                </div>
+              ) : null}
+            </section>
+          ) : null}
 
           <section className="rounded-[30px] border border-white/10 bg-[rgba(7,18,33,0.88)] p-4 backdrop-blur-md">
             <div className="flex flex-wrap items-center justify-between gap-2">

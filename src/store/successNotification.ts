@@ -35,6 +35,16 @@ export interface SuccessNotificationData {
 }
 
 const RECENT_NOTIFICATION_TTL_MS = 4000;
+const PENDING_SUCCESS_NOTIFICATION_KEY = 'cabinet_pending_success_notification';
+const SUCCESS_NOTIFICATION_TYPES: SuccessNotificationType[] = [
+  'balance_topup',
+  'account_linked',
+  'subscription_activated',
+  'subscription_renewed',
+  'subscription_purchased',
+  'devices_purchased',
+  'traffic_purchased',
+];
 
 const getNotificationFingerprint = (data: SuccessNotificationData): string =>
   JSON.stringify({
@@ -95,6 +105,33 @@ export function showSuccessNotification(
   lastNotificationAt = now;
   useSuccessNotification.getState().show(data);
   return true;
+}
+
+export function stashSuccessNotification(data: SuccessNotificationData) {
+  try {
+    sessionStorage.setItem(PENDING_SUCCESS_NOTIFICATION_KEY, JSON.stringify(data));
+  } catch {
+    // ignore storage errors
+  }
+}
+
+export function consumeStashedSuccessNotification(): SuccessNotificationData | null {
+  try {
+    const raw = sessionStorage.getItem(PENDING_SUCCESS_NOTIFICATION_KEY);
+    if (!raw) return null;
+    sessionStorage.removeItem(PENDING_SUCCESS_NOTIFICATION_KEY);
+    const parsed = JSON.parse(raw) as SuccessNotificationData;
+    if (
+      !parsed ||
+      typeof parsed !== 'object' ||
+      !SUCCESS_NOTIFICATION_TYPES.includes(parsed.type as SuccessNotificationType)
+    ) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
 }
 
 /**

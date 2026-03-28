@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { authApi } from '@/api/auth';
+import { getLocalizedIdentityLinkMessage } from '@/features/account-linking/linkingMessages';
 import { UltimaAuthStatusScreen } from '@/features/auth/shared/UltimaAuthStatusScreen';
 import { useUltimaAuthBranding } from '@/features/auth/shared/useUltimaAuthBranding';
 import { useUltimaMode } from '@/hooks/useUltimaMode';
-import { showSuccessNotification } from '@/store/successNotification';
+import { stashSuccessNotification } from '@/store/successNotification';
 import { useAuthStore } from '@/store/auth';
 import {
   getAndClearLinkOAuthState,
@@ -39,6 +40,11 @@ export default function OAuthCallback() {
   const [errorMode, setErrorMode] = useState<CallbackMode>('login');
   const [serverResult, setServerResult] = useState<LinkOperationResponse | null>(null);
   const hasRun = useRef(false);
+  const accountLinkedTitle = t('successNotification.accountLinked.title', 'Аккаунты связаны!');
+  const accountLinkedMessage = t(
+    'successNotification.accountLinked.message',
+    'Привязка завершена. Теперь вы можете входить через связанные способы входа.',
+  );
 
   const { loginWithOAuth, setTokens, setUser, checkAdminStatus, isAuthenticated } = useAuthStore(
     (state) => ({
@@ -102,15 +108,12 @@ export default function OAuthCallback() {
           setTokens(response.access_token, response.refresh_token);
           setUser(response.user);
           await checkAdminStatus();
-          showSuccessNotification({
+          stashSuccessNotification({
             type: 'account_linked',
-            title: t('successNotification.accountLinked.title', 'Аккаунты связаны!'),
-            message: t(
-              'successNotification.accountLinked.message',
-              'Привязка завершена. Теперь вы можете входить через связанные способы входа.',
-            ),
+            title: accountLinkedTitle,
+            message: accountLinkedMessage,
           });
-          navigate(returnTo || '/account-linking', { replace: true });
+          window.location.replace(returnTo || '/account-linking');
         } catch (err) {
           setErrorMode('link-browser');
           setError(
@@ -162,6 +165,8 @@ export default function OAuthCallback() {
     setTokens,
     setUser,
     checkAdminStatus,
+    accountLinkedTitle,
+    accountLinkedMessage,
   ]);
 
   const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || '';
@@ -170,6 +175,11 @@ export default function OAuthCallback() {
 
   if (serverResult) {
     const success = serverResult.status === 'success';
+    const localizedServerMessage = getLocalizedIdentityLinkMessage(
+      t,
+      serverResult.code,
+      serverResult.message,
+    );
     const action = telegramLink ? (
       <a
         href={telegramLink}
@@ -195,12 +205,8 @@ export default function OAuthCallback() {
           logoUrl={logoUrl}
           showBrandLogo={showUltimaBrandLogo}
           tone={success ? 'success' : 'error'}
-          title={
-            success
-              ? t('successNotification.accountLinked.title', 'Аккаунты связаны!')
-              : t('auth.loginFailed')
-          }
-          message={serverResult.message}
+          title={success ? accountLinkedTitle : t('auth.loginFailed')}
+          message={localizedServerMessage}
           action={action}
         />
       );
@@ -235,11 +241,9 @@ export default function OAuthCallback() {
               </svg>
             </div>
             <h2 className="mb-2 text-lg font-semibold text-dark-50">
-              {success
-                ? t('successNotification.accountLinked.title', 'Аккаунты связаны!')
-                : t('auth.loginFailed')}
+              {success ? accountLinkedTitle : t('auth.loginFailed')}
             </h2>
-            <p className="mb-6 text-sm text-dark-400">{serverResult.message}</p>
+            <p className="mb-6 text-sm text-dark-400">{localizedServerMessage}</p>
             {telegramLink ? (
               <a
                 href={telegramLink}
