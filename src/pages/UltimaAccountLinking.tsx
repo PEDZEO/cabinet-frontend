@@ -334,8 +334,7 @@ export default function UltimaAccountLinking() {
       if (isInTelegramWebApp()) {
         clearLinkOAuthState();
         setWaitingExternalProvider(provider);
-        // Prefer the device browser app instead of Telegram's in-app browser.
-        openLink(authorize_url, { tryInstantView: false, tryBrowser: 'chrome' });
+        openLink(authorize_url, { tryInstantView: false });
       } else {
         saveLinkOAuthState(state, provider, { returnTo: '/account-linking' });
         setWaitingExternalProvider(null);
