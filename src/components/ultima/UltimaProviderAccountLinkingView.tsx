@@ -82,6 +82,18 @@ const getProviderLabel = (provider: string): string =>
 const getProviderDescription = (provider: string): string =>
   PROVIDER_DESCRIPTIONS[provider] ?? 'Дополнительный способ входа в этот же профиль.';
 
+const formatLinkedEntriesLabel = (count: number): string => {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+
+  if (mod10 === 1 && mod100 !== 11) return `${count} способ входа`;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+    return `${count} способа входа`;
+  }
+
+  return `${count} способов входа`;
+};
+
 const getManualMergeStatus = (request: ManualMergeTicketStatus): string => {
   if (request.decision === 'approve') return 'Запрос одобрен';
   if (request.decision === 'reject') return 'Запрос отклонен';
@@ -219,6 +231,8 @@ export function UltimaProviderAccountLinkingView({
 
   const hasAnyAvailableProvider = availableOAuthProviders.length > 0 || !telegramIdentity;
   const linkedProvidersCount = linkedIdentities.length;
+  const hasAlternativeIdentity = linkedIdentities.length > 1;
+  const canReplaceTelegram = Boolean(telegramIdentity && hasAlternativeIdentity);
 
   return (
     <div
@@ -238,9 +252,9 @@ export function UltimaProviderAccountLinkingView({
           </div>
           <Link
             to="/profile"
-            className="bg-white/6 text-white/72 hover:border-white/16 rounded-full border border-white/10 px-3 py-2 text-xs transition hover:bg-white/10 hover:text-white"
+            className="bg-white/6 text-white/72 hover:border-white/16 shrink-0 whitespace-nowrap rounded-full border border-white/10 px-3 py-2 text-xs transition hover:bg-white/10 hover:text-white"
           >
-            В профиль
+            Профиль
           </Link>
         </header>
 
@@ -262,21 +276,22 @@ export function UltimaProviderAccountLinkingView({
                   ) : null}
                 </div>
                 <p className="text-white/66 mt-1 text-sm leading-relaxed">
-                  В этом режиме не нужны коды и подтверждения с другого профиля. Просто выберите
-                  нужный способ входа, авторизуйтесь в нем, и кабинет сам привяжет его к текущему
-                  аккаунту.
+                  Выберите нужный способ входа, авторизуйтесь в нем, и кабинет привяжет его к
+                  текущему аккаунту.
                 </p>
               </div>
             </div>
 
-            <div className="mt-4 grid gap-2 min-[360px]:grid-cols-3">
+            <div className="mt-4 grid gap-2 min-[390px]:grid-cols-3">
               <div className="bg-white/6 rounded-[22px] border border-white/10 p-3">
                 <div className="flex items-center gap-2 text-[#8ff8de]">
                   <MergeIcon />
-                  <span className="text-xs font-medium uppercase tracking-[0.14em]">Без кода</span>
+                  <span className="text-xs font-medium uppercase tracking-[0.14em]">
+                    Быстрое подключение
+                  </span>
                 </div>
-                <p className="text-white/72 mt-2 text-sm">
-                  Привязка запускается прямо отсюда через доступные способы входа.
+                <p className="text-white/72 mt-2 text-[13px] leading-relaxed">
+                  Новый вход подключается прямо в кабинете без лишних шагов.
                 </p>
               </div>
               <div className="bg-white/6 rounded-[22px] border border-white/10 p-3">
@@ -286,7 +301,7 @@ export function UltimaProviderAccountLinkingView({
                     Общий доступ
                   </span>
                 </div>
-                <p className="text-white/72 mt-2 text-sm">
+                <p className="text-white/72 mt-2 text-[13px] leading-relaxed">
                   Баланс, подписка и старые привязки остаются в одном профиле.
                 </p>
               </div>
@@ -294,11 +309,11 @@ export function UltimaProviderAccountLinkingView({
                 <div className="flex items-center gap-2 text-[#8ff8de]">
                   <TelegramIcon />
                   <span className="text-xs font-medium uppercase tracking-[0.14em]">
-                    {linkedProvidersCount} входов
+                    {formatLinkedEntriesLabel(linkedProvidersCount)}
                   </span>
                 </div>
-                <p className="text-white/72 mt-2 text-sm">
-                  Чем больше привязанных входов, тем проще сохранить доступ к кабинету.
+                <p className="text-white/72 mt-2 text-[13px] leading-relaxed">
+                  Дополнительный вход помогает быстрее восстановить доступ к кабинету.
                 </p>
               </div>
             </div>
@@ -356,6 +371,14 @@ export function UltimaProviderAccountLinkingView({
               <div className="border-[#59f0c9]/18 bg-[#27cda4]/8 mt-3 rounded-[24px] border p-3 text-sm text-[#aaf9e8]">
                 Вход через {getProviderLabel(waitingExternalProvider)} открыт во внешнем браузере.
                 Как только авторизация завершится, кабинет сам покажет результат.
+              </div>
+            ) : null}
+
+            {telegramIdentity ? (
+              <div className="bg-white/6 text-white/68 mt-3 rounded-[24px] border border-white/10 p-3 text-sm">
+                {hasAlternativeIdentity
+                  ? 'Чтобы заменить Telegram, сначала отвяжите текущий Telegram ниже, затем привяжите новый.'
+                  : 'Чтобы заменить Telegram, сначала подключите любой другой способ входа: например Yandex или VK.'}
               </div>
             ) : null}
 
@@ -442,29 +465,43 @@ export function UltimaProviderAccountLinkingView({
 
           {telegramRelink ? (
             <section className="rounded-[30px] border border-white/10 bg-[rgba(7,18,33,0.88)] p-4 backdrop-blur-md">
-              <h2 className="text-lg font-semibold text-white">Статус Telegram</h2>
-              <p className="text-white/58 mt-1 text-sm">
-                Отдельный блок для смены Telegram и контроля ограничений по времени.
-              </p>
-              <div className="bg-white/6 mt-4 rounded-[24px] border border-white/10 p-3">
-                {telegramRelink.requires_unlink_first ? (
-                  <p className="text-sm text-warning-300">
-                    Чтобы привязать другой Telegram, сначала отвяжите текущий Telegram-аккаунт.
-                  </p>
-                ) : telegramRelink.retry_after_seconds ? (
-                  <p className="text-sm text-warning-300">
-                    Смена Telegram будет доступна через{' '}
-                    {formatDurationShort(telegramRelink.retry_after_seconds)}
-                    {telegramRelink.cooldown_until
-                      ? `, точное время: ${formatDateTime(telegramRelink.cooldown_until)}`
-                      : ''}
-                    .
-                  </p>
-                ) : (
-                  <p className="text-sm text-success-300">
-                    Telegram можно привязать или заменить прямо из этого экрана.
-                  </p>
-                )}
+              <div className="flex items-start gap-3">
+                <div className="bg-white/6 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 text-white">
+                  <TelegramIcon />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-base font-semibold text-white">Замена Telegram</h2>
+                  <div className="bg-white/6 mt-2 rounded-[22px] border border-white/10 p-3">
+                    {!hasAlternativeIdentity ? (
+                      <p className="text-sm text-warning-300">
+                        Сначала подключите любой другой способ входа. Без этого Telegram нельзя
+                        заменить безопасно.
+                      </p>
+                    ) : telegramRelink.requires_unlink_first ? (
+                      <p className="text-sm text-warning-300">
+                        Дополнительный вход уже подключен. Теперь можно отвязать текущий Telegram и
+                        затем привязать новый.
+                      </p>
+                    ) : telegramRelink.retry_after_seconds ? (
+                      <p className="text-sm text-warning-300">
+                        Смена Telegram будет доступна через{' '}
+                        {formatDurationShort(telegramRelink.retry_after_seconds)}
+                        {telegramRelink.cooldown_until
+                          ? `, точное время: ${formatDateTime(telegramRelink.cooldown_until)}`
+                          : ''}
+                        .
+                      </p>
+                    ) : canReplaceTelegram ? (
+                      <p className="text-sm text-success-300">
+                        Можно отвязать текущий Telegram и привязать новый прямо из этого экрана.
+                      </p>
+                    ) : (
+                      <p className="text-white/68 text-sm">
+                        Подключите еще один способ входа, если хотите в будущем заменить Telegram.
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
             </section>
           ) : null}
@@ -516,38 +553,32 @@ export function UltimaProviderAccountLinkingView({
             </section>
           ) : null}
 
-          <section className="rounded-[30px] border border-white/10 bg-[rgba(7,18,33,0.88)] p-4 backdrop-blur-md">
+          <section className="rounded-[28px] border border-white/10 bg-[rgba(7,18,33,0.88)] p-3.5 backdrop-blur-md">
             <div className="flex items-start gap-3">
-              <div className="bg-white/6 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 text-white">
+              <div className="bg-white/6 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 text-white">
                 <SupportIcon />
               </div>
               <div className="min-w-0 flex-1">
-                <h2 className="text-lg font-semibold text-white">
-                  Если автоматически не получилось
-                </h2>
+                <h2 className="text-base font-semibold text-white">Нужна помощь?</h2>
                 <p className="text-white/58 mt-1 text-sm leading-relaxed">
-                  Если у двух профилей уже есть баланс, активная подписка или спорные данные,
-                  кабинет может остановить автоматическое объединение. В таком случае поддержка
-                  поможет закончить перенос вручную.
+                  Если кабинет не сможет объединить профили автоматически, поддержка поможет
+                  завершить перенос вручную.
                 </p>
               </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Button asChild className="bg-emerald-400 text-slate-950 hover:bg-emerald-300">
-                <Link to="/support">Открыть поддержку</Link>
-              </Button>
+            <div className="mt-3 flex flex-wrap gap-2">
               <Button
                 asChild
-                variant="secondary"
-                className="border-white/12 bg-white/6 text-white hover:bg-white/10"
+                size="sm"
+                className="bg-emerald-400 text-slate-950 hover:bg-emerald-300"
               >
-                <Link to="/profile">Вернуться в профиль</Link>
+                <Link to="/support">Открыть поддержку</Link>
               </Button>
             </div>
 
             {latestManualMerge ? (
-              <div className="bg-white/6 mt-4 rounded-[24px] border border-white/10 p-3">
+              <div className="bg-white/6 mt-3 rounded-[22px] border border-white/10 p-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-sm font-semibold text-white">
                     Последний merge-запрос #{latestManualMerge.ticket_id}

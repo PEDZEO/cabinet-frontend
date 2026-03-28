@@ -10,7 +10,6 @@ import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { getTelegramInitData, isInTelegramWebApp } from '@/hooks/useTelegramSDK';
 import { useUltimaAccountLinkingMode } from '@/hooks/useUltimaAccountLinkingMode';
-import { usePlatform } from '@/platform';
 import { showSuccessNotification } from '@/store/successNotification';
 import { useAuthStore } from '@/store/auth';
 import type { AuthResponse, LinkCodePreviewResponse, LinkedIdentity, OAuthProvider } from '@/types';
@@ -33,7 +32,6 @@ export default function UltimaAccountLinking() {
   const { setUser, setTokens, checkAdminStatus, user } = useAuthStore();
   const queryClient = useQueryClient();
   const isDesktop = useMediaQuery('(min-width: 1024px)');
-  const { openLink } = usePlatform();
   const { isProviderAuthMode } = useUltimaAccountLinkingMode();
 
   const [linkCode, setLinkCode] = useState('');
@@ -331,13 +329,9 @@ export default function UltimaAccountLinking() {
         throw new Error('Invalid OAuth redirect URL');
       }
 
-      if (isInTelegramWebApp()) {
-        openLink(authorize_url);
-        setWaitingExternalProvider(provider);
-      } else {
-        saveLinkOAuthState(state, provider, { returnTo: '/account-linking' });
-        window.location.href = authorize_url;
-      }
+      saveLinkOAuthState(state, provider, { returnTo: '/account-linking' });
+      setWaitingExternalProvider(null);
+      window.location.assign(authorize_url);
     } catch (err: unknown) {
       setProviderLinkError(
         parseApiError(err).message || (err instanceof Error ? err.message : t('common.error')),
