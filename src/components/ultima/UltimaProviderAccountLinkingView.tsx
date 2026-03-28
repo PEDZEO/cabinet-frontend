@@ -214,6 +214,8 @@ export function UltimaProviderAccountLinkingView({
   formatDurationShort,
   formatDateTime,
 }: UltimaProviderAccountLinkingViewProps) {
+  const botUsername = (import.meta.env.VITE_TELEGRAM_BOT_USERNAME || '').replace(/^@+/, '').trim();
+  const telegramMiniAppLink = botUsername ? `https://t.me/${botUsername}/app` : '';
   const busyLinking =
     telegramDirectLinkLoading ||
     directLinkProvider !== null ||
@@ -229,10 +231,12 @@ export function UltimaProviderAccountLinkingView({
       ? 'Можно подключить сейчас'
       : 'Только в Telegram Mini App';
 
-  const hasAnyAvailableProvider = availableOAuthProviders.length > 0 || !telegramIdentity;
+  const hasAnyAvailableProvider =
+    availableOAuthProviders.length > 0 || (isTelegramMiniApp && !telegramIdentity);
   const linkedProvidersCount = linkedIdentities.length;
   const hasAlternativeIdentity = linkedIdentities.length > 1;
   const canReplaceTelegram = Boolean(telegramIdentity && hasAlternativeIdentity);
+  const showTelegramMiniAppHint = !isTelegramMiniApp && !telegramIdentity;
 
   return (
     <div
@@ -240,7 +244,7 @@ export function UltimaProviderAccountLinkingView({
     >
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
-        <header className="mb-3 flex items-start justify-between gap-3">
+        <header className="mb-3 flex flex-col gap-3 min-[390px]:flex-row min-[390px]:items-start min-[390px]:justify-between">
           <div className="min-w-0">
             <h1 className="text-[clamp(32px,8.5vw,38px)] font-semibold leading-[0.95] tracking-[-0.01em] text-white">
               Сохранение доступа
@@ -252,7 +256,7 @@ export function UltimaProviderAccountLinkingView({
           </div>
           <Link
             to="/profile"
-            className="bg-white/6 text-white/72 hover:border-white/16 shrink-0 whitespace-nowrap rounded-full border border-white/10 px-3 py-2 text-xs transition hover:bg-white/10 hover:text-white"
+            className="bg-white/6 text-white/72 hover:border-white/16 self-start whitespace-nowrap rounded-full border border-white/10 px-3 py-2 text-xs transition hover:bg-white/10 hover:text-white min-[390px]:shrink-0"
           >
             Профиль
           </Link>
@@ -282,8 +286,8 @@ export function UltimaProviderAccountLinkingView({
               </div>
             </div>
 
-            <div className="mt-4 grid gap-2 min-[390px]:grid-cols-3">
-              <div className="bg-white/6 rounded-[22px] border border-white/10 p-3">
+            <div className="mt-4 grid gap-2 min-[360px]:grid-cols-2 xl:grid-cols-3">
+              <div className="bg-white/6 rounded-[24px] border border-white/10 p-3.5 min-[360px]:min-h-[122px]">
                 <div className="flex items-center gap-2 text-[#8ff8de]">
                   <MergeIcon />
                   <span className="text-xs font-medium uppercase tracking-[0.14em]">
@@ -294,7 +298,7 @@ export function UltimaProviderAccountLinkingView({
                   Новый вход подключается прямо в кабинете без лишних шагов.
                 </p>
               </div>
-              <div className="bg-white/6 rounded-[22px] border border-white/10 p-3">
+              <div className="bg-white/6 rounded-[24px] border border-white/10 p-3.5 min-[360px]:min-h-[122px]">
                 <div className="flex items-center gap-2 text-[#8ff8de]">
                   <ShieldIcon />
                   <span className="text-xs font-medium uppercase tracking-[0.14em]">
@@ -305,15 +309,18 @@ export function UltimaProviderAccountLinkingView({
                   Баланс, подписка и старые привязки остаются в одном профиле.
                 </p>
               </div>
-              <div className="bg-white/6 rounded-[22px] border border-white/10 p-3">
-                <div className="flex items-center gap-2 text-[#8ff8de]">
+              <div className="bg-white/6 rounded-[24px] border border-white/10 p-3.5 min-[360px]:col-span-2 min-[360px]:min-h-[112px] xl:col-span-1 xl:min-h-[122px]">
+                <div className="flex flex-wrap items-center gap-2 text-[#8ff8de]">
                   <TelegramIcon />
                   <span className="text-xs font-medium uppercase tracking-[0.14em]">
+                    Запасной доступ
+                  </span>
+                  <span className="bg-white/8 rounded-full border border-white/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-white/60">
                     {formatLinkedEntriesLabel(linkedProvidersCount)}
                   </span>
                 </div>
                 <p className="text-white/72 mt-2 text-[13px] leading-relaxed">
-                  Дополнительный вход помогает быстрее восстановить доступ к кабинету.
+                  Чем больше привязанных способов входа, тем проще сохранить доступ к кабинету.
                 </p>
               </div>
             </div>
@@ -326,7 +333,7 @@ export function UltimaProviderAccountLinkingView({
                 <p className="text-white/58 mt-1 text-sm">
                   {isTelegramMiniApp
                     ? 'Выберите вход, который хотите добавить к текущему профилю. Yandex и VK откроются в браузере телефона.'
-                    : 'Выберите вход, который хотите добавить к текущему профилю.'}
+                    : 'Выберите вход, который хотите добавить к текущему профилю. Для Telegram ниже есть отдельный переход в Mini App.'}
                 </p>
               </div>
               {!hasAnyAvailableProvider ? (
@@ -337,15 +344,13 @@ export function UltimaProviderAccountLinkingView({
             </div>
 
             <div className="mt-4 grid gap-2 min-[360px]:grid-cols-2">
-              {!telegramIdentity ? (
+              {!telegramIdentity && isTelegramMiniApp ? (
                 <ProviderCard
                   title="Telegram"
                   description={
-                    isTelegramMiniApp
-                      ? 'Подключите Telegram как основной вход для Mini App и восстановления доступа.'
-                      : 'Telegram можно привязать только из Telegram Mini App.'
+                    'Подключите Telegram как основной вход для Mini App и восстановления доступа.'
                   }
-                  disabled={!isTelegramMiniApp || busyLinking}
+                  disabled={busyLinking}
                   busy={telegramDirectLinkLoading}
                   status={relinkStatusLabel}
                   icon={<TelegramIcon />}
@@ -368,6 +373,45 @@ export function UltimaProviderAccountLinkingView({
                 />
               ))}
             </div>
+
+            {showTelegramMiniAppHint ? (
+              <div className="bg-white/6 mt-3 rounded-[24px] border border-white/10 p-3.5">
+                <div className="flex items-start gap-3">
+                  <div className="bg-white/8 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 text-white">
+                    <TelegramIcon />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-sm font-semibold text-white">
+                        Telegram подключается в Mini App
+                      </h3>
+                      <span className="bg-white/8 rounded-full border border-white/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-white/60">
+                        Только в Telegram
+                      </span>
+                    </div>
+                    <p className="text-white/62 mt-1 text-sm leading-relaxed">
+                      Чтобы привязать именно Telegram к этому профилю, откройте кабинет в Telegram
+                      Mini App и запустите привязку оттуда.
+                    </p>
+                    {telegramMiniAppLink ? (
+                      <Button
+                        asChild
+                        className="mt-3 h-10 rounded-full border border-[#76f5d5]/25 bg-[rgba(22,207,161,0.92)] px-4 text-sm font-medium text-slate-950 hover:bg-[rgba(39,220,176,0.96)]"
+                      >
+                        <a href={telegramMiniAppLink} target="_blank" rel="noopener noreferrer">
+                          Открыть Mini App
+                        </a>
+                      </Button>
+                    ) : (
+                      <p className="text-white/48 mt-3 text-xs leading-relaxed">
+                        Telegram-бот не настроен в переменных окружения фронтенда. Добавьте
+                        `VITE_TELEGRAM_BOT_USERNAME`, чтобы показать прямой переход.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
             {waitingExternalProvider ? (
               <div className="border-[#59f0c9]/18 bg-[#27cda4]/8 mt-3 rounded-[24px] border p-3 text-sm text-[#aaf9e8]">
