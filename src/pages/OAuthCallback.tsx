@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { authApi } from '@/api/auth';
+import { UltimaAuthStatusScreen } from '@/features/auth/shared/UltimaAuthStatusScreen';
+import { useUltimaAuthBranding } from '@/features/auth/shared/useUltimaAuthBranding';
+import { useUltimaMode } from '@/hooks/useUltimaMode';
 import { showSuccessNotification } from '@/store/successNotification';
 import { useAuthStore } from '@/store/auth';
 import {
@@ -30,24 +33,22 @@ export default function OAuthCallback() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { isUltimaMode, isUltimaModeReady } = useUltimaMode();
+  const { appName, logoUrl, showUltimaBrandLogo } = useUltimaAuthBranding(isUltimaMode);
   const [error, setError] = useState('');
   const [errorMode, setErrorMode] = useState<CallbackMode>('login');
   const [serverResult, setServerResult] = useState<LinkOperationResponse | null>(null);
   const hasRun = useRef(false);
 
-  const {
-    loginWithOAuth,
-    setTokens,
-    setUser,
-    checkAdminStatus,
-    isAuthenticated,
-  } = useAuthStore((state) => ({
-    loginWithOAuth: state.loginWithOAuth,
-    setTokens: state.setTokens,
-    setUser: state.setUser,
-    checkAdminStatus: state.checkAdminStatus,
-    isAuthenticated: state.isAuthenticated,
-  }));
+  const { loginWithOAuth, setTokens, setUser, checkAdminStatus, isAuthenticated } = useAuthStore(
+    (state) => ({
+      loginWithOAuth: state.loginWithOAuth,
+      setTokens: state.setTokens,
+      setUser: state.setUser,
+      checkAdminStatus: state.checkAdminStatus,
+      isAuthenticated: state.isAuthenticated,
+    }),
+  );
 
   useEffect(() => {
     if (hasRun.current) return;
@@ -112,7 +113,9 @@ export default function OAuthCallback() {
           navigate(returnTo || '/account-linking', { replace: true });
         } catch (err) {
           setErrorMode('link-browser');
-          setError(getErrorDetail(err) || t('auth.oauthError', 'Authorization was denied or failed'));
+          setError(
+            getErrorDetail(err) || t('auth.oauthError', 'Authorization was denied or failed'),
+          );
         }
         return;
       }
@@ -130,7 +133,9 @@ export default function OAuthCallback() {
           navigate(returnTo || '/', { replace: true });
         } catch (err) {
           setErrorMode('login');
-          setError(getErrorDetail(err) || t('auth.oauthError', 'Authorization was denied or failed'));
+          setError(
+            getErrorDetail(err) || t('auth.oauthError', 'Authorization was denied or failed'),
+          );
         }
         return;
       }
@@ -161,9 +166,46 @@ export default function OAuthCallback() {
 
   const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || '';
   const telegramLink = botUsername ? `https://t.me/${botUsername}` : '';
+  const shouldRenderUltima = isUltimaModeReady && isUltimaMode;
 
   if (serverResult) {
     const success = serverResult.status === 'success';
+    const action = telegramLink ? (
+      <a
+        href={telegramLink}
+        className="inline-flex w-full items-center justify-center rounded-full border border-white/10 bg-[color:var(--ultima-color-primary)] px-4 py-3 text-sm font-medium text-[color:var(--ultima-color-primary-text)] no-underline transition hover:opacity-95"
+      >
+        {success
+          ? t('profile.linking.returnToTelegram', 'Вернуться в Telegram')
+          : t('profile.linking.openTelegram', 'Открыть Telegram')}
+      </a>
+    ) : (
+      <button
+        onClick={() => navigate('/login', { replace: true })}
+        className="inline-flex w-full items-center justify-center rounded-full border border-white/10 bg-[color:var(--ultima-color-primary)] px-4 py-3 text-sm font-medium text-[color:var(--ultima-color-primary-text)] transition hover:opacity-95"
+      >
+        {t('auth.backToLogin', 'Back to login')}
+      </button>
+    );
+
+    if (shouldRenderUltima) {
+      return (
+        <UltimaAuthStatusScreen
+          appName={appName}
+          logoUrl={logoUrl}
+          showBrandLogo={showUltimaBrandLogo}
+          tone={success ? 'success' : 'error'}
+          title={
+            success
+              ? t('successNotification.accountLinked.title', 'Аккаунты связаны!')
+              : t('auth.loginFailed')
+          }
+          message={serverResult.message}
+          action={action}
+        />
+      );
+    }
+
     return (
       <div className="flex min-h-screen items-center justify-center px-4 py-8">
         <div className="fixed inset-0 bg-gradient-to-br from-dark-950 via-dark-900 to-dark-950" />
@@ -208,7 +250,10 @@ export default function OAuthCallback() {
                   : t('profile.linking.openTelegram', 'Открыть Telegram')}
               </a>
             ) : (
-              <button onClick={() => navigate('/login', { replace: true })} className="btn-primary w-full">
+              <button
+                onClick={() => navigate('/login', { replace: true })}
+                className="btn-primary w-full"
+              >
                 {t('auth.backToLogin', 'Back to login')}
               </button>
             )}
@@ -235,10 +280,27 @@ export default function OAuthCallback() {
           {t('profile.linking.openTelegram', 'Открыть Telegram')}
         </a>
       ) : (
-        <button onClick={() => navigate('/login', { replace: true })} className="btn-primary w-full">
+        <button
+          onClick={() => navigate('/login', { replace: true })}
+          className="btn-primary w-full"
+        >
           {t('auth.backToLogin', 'Back to login')}
         </button>
       );
+
+    if (shouldRenderUltima) {
+      return (
+        <UltimaAuthStatusScreen
+          appName={appName}
+          logoUrl={logoUrl}
+          showBrandLogo={showUltimaBrandLogo}
+          tone={errorMode === 'link-server' ? 'warning' : 'error'}
+          title={t('auth.loginFailed')}
+          message={error}
+          action={action}
+        />
+      );
+    }
 
     return (
       <div className="flex min-h-screen items-center justify-center px-4 py-8">
@@ -266,6 +328,19 @@ export default function OAuthCallback() {
           </div>
         </div>
       </div>
+    );
+  }
+
+  if (shouldRenderUltima) {
+    return (
+      <UltimaAuthStatusScreen
+        appName={appName}
+        logoUrl={logoUrl}
+        showBrandLogo={showUltimaBrandLogo}
+        tone="loading"
+        title={t('auth.authenticating')}
+        message={t('common.loading')}
+      />
     );
   }
 

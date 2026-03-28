@@ -1,5 +1,7 @@
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import PageLoader from '@/components/common/PageLoader';
+import { UltimaAuthBrandMark } from '@/features/auth/shared/UltimaAuthBrandMark';
+import { useUltimaAuthBranding } from '@/features/auth/shared/useUltimaAuthBranding';
 import { useTranslation } from 'react-i18next';
 import { useUltimaMode } from '@/hooks/useUltimaMode';
 import {
@@ -11,28 +13,10 @@ import {
   useLoginPage,
 } from '@/features/auth/login';
 
-function UltimaLogoShield() {
-  return (
-    <svg viewBox="0 0 64 64" fill="none" className="h-12 w-12 text-white">
-      <path
-        d="M32 6.5c7 6 15.8 9 24 9v17.2c0 13.8-9.5 22.4-24 24.8-14.5-2.4-24-11-24-24.8V15.5c8.2 0 17-3 24-9Z"
-        stroke="currentColor"
-        strokeWidth="3.4"
-        strokeLinejoin="round"
-      />
-      <path
-        d="m22.5 33 6.2 6.2L42 25.8"
-        stroke="currentColor"
-        strokeWidth="3.4"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
 export default function Login() {
   const { t } = useTranslation();
   const { isUltimaMode, isUltimaModeReady } = useUltimaMode();
+  const { showUltimaBrandLogo } = useUltimaAuthBranding(isUltimaMode);
   const {
     safeTop,
     safeBottom,
@@ -120,16 +104,12 @@ export default function Login() {
 
         <div className="relative z-10 mx-auto flex w-full max-w-md flex-col px-4">
           <header className="mb-4 flex flex-col items-center pt-8 text-center">
-            <div
-              className="mb-3 flex h-20 w-20 items-center justify-center rounded-[28px] border"
-              style={{
-                borderColor:
-                  'color-mix(in srgb, var(--ultima-color-surface-border) 28%, transparent)',
-                background: 'color-mix(in srgb, var(--ultima-color-primary) 16%, transparent)',
-              }}
-            >
-              <UltimaLogoShield />
-            </div>
+            <UltimaAuthBrandMark
+              appName={appName}
+              logoUrl={logoUrl}
+              showBrandLogo={showUltimaBrandLogo}
+              className="mb-3"
+            />
             <h1 className="text-[34px] font-semibold leading-none tracking-[-0.01em] text-white">
               {appName}
             </h1>

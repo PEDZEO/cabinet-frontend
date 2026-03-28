@@ -1,15 +1,21 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { UltimaAuthStatusScreen } from '@/features/auth/shared/UltimaAuthStatusScreen';
+import { useUltimaAuthBranding } from '@/features/auth/shared/useUltimaAuthBranding';
+import { useUltimaMode } from '@/hooks/useUltimaMode';
 import { useAuthStore } from '../store/auth';
 
 export default function TelegramCallback() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { isUltimaMode, isUltimaModeReady } = useUltimaMode();
+  const { appName, logoUrl, showUltimaBrandLogo } = useUltimaAuthBranding(isUltimaMode);
   const [error, setError] = useState('');
   const loginWithTelegramWidget = useAuthStore((state) => state.loginWithTelegramWidget);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const shouldRenderUltima = isUltimaModeReady && isUltimaMode;
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -63,6 +69,27 @@ export default function TelegramCallback() {
   }, [searchParams, loginWithTelegramWidget, navigate, isAuthenticated, t]);
 
   if (error) {
+    if (shouldRenderUltima) {
+      return (
+        <UltimaAuthStatusScreen
+          appName={appName}
+          logoUrl={logoUrl}
+          showBrandLogo={showUltimaBrandLogo}
+          tone="error"
+          title={t('auth.loginFailed')}
+          message={error}
+          action={
+            <button
+              onClick={() => navigate('/login')}
+              className="inline-flex w-full items-center justify-center rounded-full border border-white/10 bg-[color:var(--ultima-color-primary)] px-4 py-3 text-sm font-medium text-[color:var(--ultima-color-primary-text)] transition hover:opacity-95"
+            >
+              {t('auth.tryAgain')}
+            </button>
+          }
+        />
+      );
+    }
+
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-8">
         <div className="w-full max-w-md text-center">
@@ -74,6 +101,19 @@ export default function TelegramCallback() {
           </button>
         </div>
       </div>
+    );
+  }
+
+  if (shouldRenderUltima) {
+    return (
+      <UltimaAuthStatusScreen
+        appName={appName}
+        logoUrl={logoUrl}
+        showBrandLogo={showUltimaBrandLogo}
+        tone="loading"
+        title={t('auth.authenticating')}
+        message={t('common.loading')}
+      />
     );
   }
 
