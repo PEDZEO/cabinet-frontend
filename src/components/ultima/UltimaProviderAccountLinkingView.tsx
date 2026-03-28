@@ -324,7 +324,9 @@ export function UltimaProviderAccountLinkingView({
               <div>
                 <h2 className="text-lg font-semibold text-white">Подключить новый способ входа</h2>
                 <p className="text-white/58 mt-1 text-sm">
-                  Выберите вход, который хотите добавить к текущему профилю.
+                  {isTelegramMiniApp
+                    ? 'Выберите вход, который хотите добавить к текущему профилю. Yandex и VK откроются в браузере телефона.'
+                    : 'Выберите вход, который хотите добавить к текущему профилю.'}
                 </p>
               </div>
               {!hasAnyAvailableProvider ? (

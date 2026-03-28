@@ -10,10 +10,11 @@ import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { getTelegramInitData, isInTelegramWebApp } from '@/hooks/useTelegramSDK';
 import { useUltimaAccountLinkingMode } from '@/hooks/useUltimaAccountLinkingMode';
+import { usePlatform } from '@/platform';
 import { showSuccessNotification } from '@/store/successNotification';
 import { useAuthStore } from '@/store/auth';
 import type { AuthResponse, LinkCodePreviewResponse, LinkedIdentity, OAuthProvider } from '@/types';
-import { saveLinkOAuthState } from '@/utils/oauthState';
+import { clearLinkOAuthState, saveLinkOAuthState } from '@/utils/oauthState';
 
 const LinkIcon = () => (
   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -33,6 +34,7 @@ export default function UltimaAccountLinking() {
   const queryClient = useQueryClient();
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   const { isProviderAuthMode } = useUltimaAccountLinkingMode();
+  const { openLink } = usePlatform();
 
   const [linkCode, setLinkCode] = useState('');
   const [activeLinkCode, setActiveLinkCode] = useState('');
@@ -329,9 +331,15 @@ export default function UltimaAccountLinking() {
         throw new Error('Invalid OAuth redirect URL');
       }
 
-      saveLinkOAuthState(state, provider, { returnTo: '/account-linking' });
-      setWaitingExternalProvider(null);
-      window.location.assign(authorize_url);
+      if (isInTelegramWebApp()) {
+        clearLinkOAuthState();
+        setWaitingExternalProvider(provider);
+        openLink(authorize_url, { tryInstantView: false });
+      } else {
+        saveLinkOAuthState(state, provider, { returnTo: '/account-linking' });
+        setWaitingExternalProvider(null);
+        window.location.assign(authorize_url);
+      }
     } catch (err: unknown) {
       setProviderLinkError(
         parseApiError(err).message || (err instanceof Error ? err.message : t('common.error')),

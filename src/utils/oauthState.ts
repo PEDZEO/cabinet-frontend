@@ -12,7 +12,11 @@ const LINK_OAUTH_STATE_KEY = 'link_oauth_state';
 const LINK_OAUTH_PROVIDER_KEY = 'link_oauth_provider';
 const LINK_OAUTH_RETURN_TO_KEY = 'link_oauth_return_to';
 
-function loadState(stateKey: string, providerKey: string, returnToKey: string): SavedOAuthState | null {
+function loadState(
+  stateKey: string,
+  providerKey: string,
+  returnToKey: string,
+): SavedOAuthState | null {
   const state = sessionStorage.getItem(stateKey);
   const provider = sessionStorage.getItem(providerKey);
   const returnTo = sessionStorage.getItem(returnToKey) || undefined;
@@ -26,7 +30,11 @@ function clearState(stateKey: string, providerKey: string, returnToKey: string):
   sessionStorage.removeItem(returnToKey);
 }
 
-export function saveOAuthState(state: string, provider: string, options?: { returnTo?: string }): void {
+export function saveOAuthState(
+  state: string,
+  provider: string,
+  options?: { returnTo?: string },
+): void {
   sessionStorage.setItem(OAUTH_STATE_KEY, state);
   sessionStorage.setItem(OAUTH_PROVIDER_KEY, provider);
   if (options?.returnTo) {
@@ -58,6 +66,10 @@ export function saveLinkOAuthState(
 
 export function peekLinkOAuthState(): SavedOAuthState | null {
   return loadState(LINK_OAUTH_STATE_KEY, LINK_OAUTH_PROVIDER_KEY, LINK_OAUTH_RETURN_TO_KEY);
+}
+
+export function clearLinkOAuthState(): void {
+  clearState(LINK_OAUTH_STATE_KEY, LINK_OAUTH_PROVIDER_KEY, LINK_OAUTH_RETURN_TO_KEY);
 }
 
 export function getAndClearLinkOAuthState(): SavedOAuthState | null {
