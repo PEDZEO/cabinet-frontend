@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -7,9 +7,13 @@ import { authApi } from '@/api/auth';
 import { Button } from '@/components/primitives/Button';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { getTelegramInitData, isInTelegramWebApp } from '@/hooks/useTelegramSDK';
+import { useUltimaAccountLinkingMode } from '@/hooks/useUltimaAccountLinkingMode';
+import { usePlatform } from '@/platform';
 import { showSuccessNotification } from '@/store/successNotification';
 import { useAuthStore } from '@/store/auth';
-import type { LinkCodePreviewResponse, LinkedIdentity } from '@/types';
+import type { AuthResponse, LinkCodePreviewResponse, LinkedIdentity, OAuthProvider } from '@/types';
+import { saveLinkOAuthState } from '@/utils/oauthState';
 
 const LinkIcon = () => (
   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -28,6 +32,8 @@ export default function UltimaAccountLinking() {
   const { setUser, setTokens, checkAdminStatus, user } = useAuthStore();
   const queryClient = useQueryClient();
   const isDesktop = useMediaQuery('(min-width: 1024px)');
+  const { openLink } = usePlatform();
+  const { isProviderAuthMode } = useUltimaAccountLinkingMode();
 
   const [linkCode, setLinkCode] = useState('');
   const [activeLinkCode, setActiveLinkCode] = useState('');
@@ -42,6 +48,11 @@ export default function UltimaAccountLinking() {
   const [unlinkOtpCode, setUnlinkOtpCode] = useState('');
   const [unlinkError, setUnlinkError] = useState<string | null>(null);
   const [showTips, setShowTips] = useState(false);
+  const [providerLinkError, setProviderLinkError] = useState<string | null>(null);
+  const [providerLinkSuccess, setProviderLinkSuccess] = useState<string | null>(null);
+  const [directLinkProvider, setDirectLinkProvider] = useState<string | null>(null);
+  const [waitingExternalProvider, setWaitingExternalProvider] = useState<string | null>(null);
+  const [telegramDirectLinkLoading, setTelegramDirectLinkLoading] = useState(false);
 
   const parseApiError = (
     err: unknown,
@@ -201,6 +212,12 @@ export default function UltimaAccountLinking() {
     setUnlinkError(null);
   };
 
+  const applyAuthResponse = useCallback(async (data: AuthResponse) => {
+    setTokens(data.access_token, data.refresh_token);
+    setUser(data.user);
+    await checkAdminStatus();
+  }, [checkAdminStatus, setTokens, setUser]);
+
   const { data: linkedIdentitiesData } = useQuery({
     queryKey: ['linked-identities'],
     queryFn: authApi.getLinkedIdentities,
@@ -213,7 +230,26 @@ export default function UltimaAccountLinking() {
     enabled: !!user,
   });
 
-  const linkedIdentities = linkedIdentitiesData?.identities || [];
+  const { data: oauthProvidersData } = useQuery({
+    queryKey: ['oauth-providers'],
+    queryFn: authApi.getOAuthProviders,
+    enabled: isProviderAuthMode,
+    staleTime: 60000,
+  });
+
+  const { data: pendingLinkResult } = useQuery({
+    queryKey: ['pending-link-result', user?.id, waitingExternalProvider],
+    queryFn: authApi.getPendingLinkResult,
+    enabled: isProviderAuthMode && !!user && !!waitingExternalProvider,
+    refetchInterval: 2000,
+    refetchIntervalInBackground: true,
+    staleTime: 0,
+  });
+
+  const linkedIdentities = useMemo(
+    () => linkedIdentitiesData?.identities || [],
+    [linkedIdentitiesData?.identities],
+  );
   const telegramRelink = linkedIdentitiesData?.telegram_relink;
   const telegramIdentity = linkedIdentities.find((identity) => identity.provider === 'telegram');
   const hasCurrentTelegramIdentity = linkedIdentities.some(
@@ -221,6 +257,127 @@ export default function UltimaAccountLinking() {
   );
   const previewHasTelegramIdentity = !!linkPreview?.source_identity_hints?.telegram;
   const shouldShowTelegramReplaceWarning = hasCurrentTelegramIdentity && previewHasTelegramIdentity;
+  const oauthProviders = useMemo(
+    () => (Array.isArray(oauthProvidersData?.providers) ? oauthProvidersData.providers : []),
+    [oauthProvidersData?.providers],
+  );
+  const linkedProvidersSet = useMemo(
+    () => new Set(linkedIdentities.map((identity) => identity.provider)),
+    [linkedIdentities],
+  );
+  const availableOAuthProviders = useMemo(
+    () =>
+      oauthProviders.filter(
+        (provider): provider is OAuthProvider => !linkedProvidersSet.has(provider.name),
+      ),
+    [linkedProvidersSet, oauthProviders],
+  );
+
+  useEffect(() => {
+    if (!pendingLinkResult?.pending) return;
+
+    setWaitingExternalProvider(null);
+    queryClient.invalidateQueries({ queryKey: ['linked-identities'] });
+    queryClient.invalidateQueries({ queryKey: ['user'] });
+
+    if (pendingLinkResult.auth_response) {
+      void applyAuthResponse(pendingLinkResult.auth_response);
+    }
+
+    if (pendingLinkResult.status === 'success') {
+      setProviderLinkError(null);
+      setProviderLinkSuccess(
+        pendingLinkResult.message || 'Привязка завершена. Теперь вход доступен через новый способ.',
+      );
+      showSuccessNotification({
+        type: 'account_linked',
+        title: t('successNotification.accountLinked.title', 'Аккаунты связаны!'),
+        message:
+          pendingLinkResult.message ||
+          t(
+            'successNotification.accountLinked.message',
+            'Привязка завершена. Теперь вы можете входить через связанные способы входа.',
+          ),
+      });
+      return;
+    }
+
+    setProviderLinkSuccess(null);
+    setProviderLinkError(
+      pendingLinkResult.code === 'manual_merge_required'
+        ? `${pendingLinkResult.message || 'Автоматическая привязка недоступна.'} Используйте резервный режим по коду ниже.`
+        : pendingLinkResult.message || t('common.error', 'Произошла ошибка'),
+    );
+  }, [applyAuthResponse, pendingLinkResult, queryClient, t]);
+
+  const handleLinkOAuth = async (provider: string) => {
+    if (directLinkProvider || telegramDirectLinkLoading) return;
+    setProviderLinkError(null);
+    setProviderLinkSuccess(null);
+    setDirectLinkProvider(provider);
+    try {
+      const { authorize_url, state } = await authApi.getLinkProviderAuthorizeUrl(provider);
+
+      try {
+        const parsed = new URL(authorize_url);
+        if (parsed.protocol !== 'https:') {
+          throw new Error('Invalid OAuth redirect URL');
+        }
+      } catch {
+        throw new Error('Invalid OAuth redirect URL');
+      }
+
+      if (isInTelegramWebApp()) {
+        openLink(authorize_url);
+        setWaitingExternalProvider(provider);
+      } else {
+        saveLinkOAuthState(state, provider, { returnTo: '/account-linking' });
+        window.location.href = authorize_url;
+      }
+    } catch (err: unknown) {
+      setProviderLinkError(
+        parseApiError(err).message || (err instanceof Error ? err.message : t('common.error')),
+      );
+    } finally {
+      setDirectLinkProvider(null);
+    }
+  };
+
+  const handleLinkTelegramDirect = async () => {
+    if (telegramDirectLinkLoading || directLinkProvider) return;
+    const initData = getTelegramInitData();
+    if (!isInTelegramWebApp() || !initData) {
+      setProviderLinkError(
+        'Telegram-привязка доступна внутри Telegram Mini App. В браузере используйте OAuth-кнопки или код ниже.',
+      );
+      return;
+    }
+
+    setProviderLinkError(null);
+    setProviderLinkSuccess(null);
+    setTelegramDirectLinkLoading(true);
+    try {
+      const response = await authApi.linkTelegramIdentity(initData);
+      await applyAuthResponse(response);
+      queryClient.invalidateQueries({ queryKey: ['linked-identities'] });
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+      setProviderLinkSuccess(
+        'Telegram привязан. Теперь этот аккаунт можно использовать для входа.',
+      );
+      showSuccessNotification({
+        type: 'account_linked',
+        title: t('successNotification.accountLinked.title', 'Аккаунты связаны!'),
+        message: t(
+          'successNotification.accountLinked.message',
+          'Привязка завершена. Теперь вы можете входить через связанные способы входа.',
+        ),
+      });
+    } catch (err: unknown) {
+      setProviderLinkError(getLocalizedLinkError(err));
+    } finally {
+      setTelegramDirectLinkLoading(false);
+    }
+  };
 
   const createLinkCodeMutation = useMutation({
     mutationFn: authApi.createLinkCode,
@@ -379,7 +536,9 @@ export default function UltimaAccountLinking() {
             Привязка аккаунтов
           </h1>
           <p className="text-white/62 mt-1.5 text-[13px]">
-            Единая страница для безопасной привязки и смены Telegram, Yandex и VK.
+            {isProviderAuthMode
+              ? 'Быстрая привязка через доступные способы входа. Кодовый режим ниже остается как резервный.'
+              : 'Единая страница для безопасной привязки и смены Telegram, Yandex и VK.'}
           </p>
         </header>
 
@@ -392,18 +551,36 @@ export default function UltimaAccountLinking() {
               <div className="flex-1">
                 <h1 className="text-2xl font-semibold text-white">Привязка аккаунтов</h1>
                 <p className="text-white/62 mt-1 text-sm">
-                  Единая страница для безопасной привязки и смены Telegram, Yandex и VK.
+                  {isProviderAuthMode
+                    ? 'Сначала используйте быстрые кнопки входа ниже. Если автоматически объединить аккаунты не получится, используйте кодовый режим.'
+                    : 'Единая страница для безопасной привязки и смены Telegram, Yandex и VK.'}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                  <span className="border-white/12 bg-white/6 rounded-xl border px-2 py-1 text-white/70">
-                    1. Введите код с другого аккаунта
-                  </span>
-                  <span className="border-white/12 bg-white/6 rounded-xl border px-2 py-1 text-white/70">
-                    2. Проверьте, что найден нужный аккаунт
-                  </span>
-                  <span className="border-white/12 bg-white/6 rounded-xl border px-2 py-1 text-white/70">
-                    3. Подтвердите привязку или отправьте в поддержку
-                  </span>
+                  {isProviderAuthMode ? (
+                    <>
+                      <span className="border-white/12 bg-white/6 rounded-xl border px-2 py-1 text-white/70">
+                        1. Нажмите нужный способ входа
+                      </span>
+                      <span className="border-white/12 bg-white/6 rounded-xl border px-2 py-1 text-white/70">
+                        2. Авторизуйтесь в нем
+                      </span>
+                      <span className="border-white/12 bg-white/6 rounded-xl border px-2 py-1 text-white/70">
+                        3. Если нужно, используйте резервный кодовый режим
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="border-white/12 bg-white/6 rounded-xl border px-2 py-1 text-white/70">
+                        1. Введите код с другого аккаунта
+                      </span>
+                      <span className="border-white/12 bg-white/6 rounded-xl border px-2 py-1 text-white/70">
+                        2. Проверьте, что найден нужный аккаунт
+                      </span>
+                      <span className="border-white/12 bg-white/6 rounded-xl border px-2 py-1 text-white/70">
+                        3. Подтвердите привязку или отправьте в поддержку
+                      </span>
+                    </>
+                  )}
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <Button variant="secondary" onClick={() => setShowTips((prev) => !prev)}>
@@ -439,6 +616,67 @@ export default function UltimaAccountLinking() {
               </div>
             </div>
           </section>
+
+          {isProviderAuthMode && (
+            <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.2)] p-3 backdrop-blur-md">
+              <h2 className="mb-2 text-lg font-semibold text-white/95">Быстрая привязка через вход</h2>
+              <p className="text-white/62 mb-3 text-sm">
+                Используйте доступные способы входа. Если аккаунт уже существует, старые привязки
+                и данные объединятся по тем же правилам безопасности, что и в кодовом режиме.
+              </p>
+
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  onClick={() => void handleLinkTelegramDirect()}
+                  loading={telegramDirectLinkLoading}
+                  disabled={!!directLinkProvider || waitingExternalProvider !== null || !!telegramIdentity}
+                  className="rounded-full border border-emerald-200/20 bg-[rgba(22,207,161,0.92)] px-4 py-2.5 text-[14px] font-medium text-slate-950 hover:bg-[rgba(39,220,176,0.96)] disabled:border-white/10 disabled:bg-white/8 disabled:text-white/45"
+                >
+                  {telegramIdentity ? 'Telegram уже привязан' : 'Привязать Telegram'}
+                </Button>
+
+                {availableOAuthProviders.map((provider) => (
+                  <Button
+                    key={provider.name}
+                    onClick={() => void handleLinkOAuth(provider.name)}
+                    loading={directLinkProvider === provider.name}
+                    disabled={telegramDirectLinkLoading || waitingExternalProvider !== null}
+                    variant="secondary"
+                    className="border-white/12 bg-white/6 text-white hover:bg-white/10"
+                  >
+                    {provider.display_name}
+                  </Button>
+                ))}
+              </div>
+
+              {waitingExternalProvider && (
+                <div className="border-white/12 bg-white/6 text-white/72 mt-3 rounded-2xl border p-3 text-sm">
+                  Завершите вход через {waitingExternalProvider} во внешнем браузере. Как только
+                  привязка завершится, кабинет покажет результат автоматически.
+                </div>
+              )}
+
+              {!isInTelegramWebApp() && !telegramIdentity && (
+                <div className="text-white/56 mt-3 text-xs">
+                  Telegram-привязка доступна внутри Telegram Mini App. В обычном браузере можно
+                  привязать Yandex, VK и другие OAuth-способы, а для Telegram использовать
+                  резервный кодовый режим ниже.
+                </div>
+              )}
+
+              {providerLinkError && (
+                <div className="mt-3 rounded-2xl border border-error-500/30 bg-error-500/10 p-3 text-sm text-error-400">
+                  {providerLinkError}
+                </div>
+              )}
+
+              {providerLinkSuccess && (
+                <div className="mt-3 rounded-2xl border border-success-500/30 bg-success-500/10 p-3 text-sm text-success-400">
+                  {providerLinkSuccess}
+                </div>
+              )}
+            </section>
+          )}
 
           <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.2)] p-3 backdrop-blur-md">
             <h2 className="mb-4 text-lg font-semibold text-white/95">Связанные способы входа</h2>
@@ -506,6 +744,12 @@ export default function UltimaAccountLinking() {
             )}
 
             <div className="space-y-3 border-t border-white/10 pt-4">
+              {isProviderAuthMode && (
+                <div className="text-white/62 rounded-2xl border border-white/10 bg-white/6 px-3 py-2 text-xs">
+                  Резервный режим по коду: используйте его, если автоматическая привязка через
+                  кнопки входа недоступна или support попросил код для ручной проверки.
+                </div>
+              )}
               <div className="flex flex-wrap items-center gap-3">
                 <Button
                   onClick={() => createLinkCodeMutation.mutate()}

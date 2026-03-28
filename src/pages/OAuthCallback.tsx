@@ -1,77 +1,245 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { useAuthStore } from '../store/auth';
-import { getAndClearOAuthState } from '../utils/oauthState';
+import { authApi } from '@/api/auth';
+import { showSuccessNotification } from '@/store/successNotification';
+import { useAuthStore } from '@/store/auth';
+import {
+  getAndClearLinkOAuthState,
+  getAndClearOAuthState,
+  peekLinkOAuthState,
+} from '@/utils/oauthState';
+import type { LinkOperationResponse } from '@/types';
+
+type CallbackMode = 'login' | 'link-browser' | 'link-server';
+
+function getErrorDetail(err: unknown): string | null {
+  if (err && typeof err === 'object' && 'response' in err) {
+    const detail = (err as { response?: { data?: { detail?: unknown } } }).response?.data?.detail;
+    if (typeof detail === 'string') return detail;
+    if (detail && typeof detail === 'object' && 'message' in detail) {
+      const message = (detail as Record<string, unknown>).message;
+      if (typeof message === 'string') return message;
+    }
+  }
+  if (err instanceof Error) return err.message;
+  return null;
+}
 
 export default function OAuthCallback() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [error, setError] = useState('');
-  const loginWithOAuth = useAuthStore((state) => state.loginWithOAuth);
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const [errorMode, setErrorMode] = useState<CallbackMode>('login');
+  const [serverResult, setServerResult] = useState<LinkOperationResponse | null>(null);
+  const hasRun = useRef(false);
+
+  const {
+    loginWithOAuth,
+    setTokens,
+    setUser,
+    checkAdminStatus,
+    isAuthenticated,
+  } = useAuthStore((state) => ({
+    loginWithOAuth: state.loginWithOAuth,
+    setTokens: state.setTokens,
+    setUser: state.setUser,
+    checkAdminStatus: state.checkAdminStatus,
+    isAuthenticated: state.isAuthenticated,
+  }));
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/', { replace: true });
+    if (hasRun.current) return;
+    hasRun.current = true;
+
+    const code = searchParams.get('code');
+    const urlState = searchParams.get('state');
+    const deviceId = searchParams.get('device_id');
+    const responseType = searchParams.get('type');
+    const oauthError = searchParams.get('error');
+    const oauthErrorDescription = searchParams.get('error_description');
+
+    if (oauthError) {
+      setError(oauthErrorDescription || oauthError);
       return;
     }
 
-    const authenticate = async () => {
-      const code = searchParams.get('code');
-      const urlState = searchParams.get('state');
-      const deviceId = searchParams.get('device_id');
-      const responseType = searchParams.get('type');
-      const oauthError = searchParams.get('error');
-      const oauthErrorDescription = searchParams.get('error_description');
+    if (!code || !urlState) {
+      setError(t('auth.oauthError', 'Authorization was denied or failed'));
+      return;
+    }
 
-      if (oauthError) {
-        setError(oauthErrorDescription || oauthError);
+    let mode: CallbackMode = 'link-server';
+    let provider: string | undefined;
+    let returnTo: string | undefined;
+
+    const linkSaved = peekLinkOAuthState();
+    if (linkSaved && linkSaved.state === urlState) {
+      const consumed = getAndClearLinkOAuthState();
+      mode = 'link-browser';
+      provider = consumed?.provider;
+      returnTo = consumed?.returnTo;
+    } else {
+      const loginSaved = getAndClearOAuthState();
+      if (loginSaved && loginSaved.state === urlState) {
+        mode = 'login';
+        provider = loginSaved.provider;
+        returnTo = loginSaved.returnTo;
+      }
+    }
+
+    const handle = async () => {
+      window.history.replaceState({}, '', '/auth/oauth/callback');
+
+      if (mode === 'link-browser' && provider) {
+        try {
+          const response = await authApi.linkProviderCallback(provider, code, urlState, {
+            device_id: deviceId || undefined,
+            type: responseType || undefined,
+          });
+          setTokens(response.access_token, response.refresh_token);
+          setUser(response.user);
+          await checkAdminStatus();
+          showSuccessNotification({
+            type: 'account_linked',
+            title: t('successNotification.accountLinked.title', 'Аккаунты связаны!'),
+            message: t(
+              'successNotification.accountLinked.message',
+              'Привязка завершена. Теперь вы можете входить через связанные способы входа.',
+            ),
+          });
+          navigate(returnTo || '/account-linking', { replace: true });
+        } catch (err) {
+          setErrorMode('link-browser');
+          setError(getErrorDetail(err) || t('auth.oauthError', 'Authorization was denied or failed'));
+        }
         return;
       }
 
-      if (!code || !urlState) {
-        setError(t('auth.oauthError', 'Authorization was denied or failed'));
-        return;
-      }
-
-      // Get saved state from sessionStorage
-      const saved = getAndClearOAuthState();
-      if (!saved) {
-        setError(t('auth.oauthExpired', 'OAuth session expired. Please try again.'));
-        return;
-      }
-
-      // Validate state match
-      if (saved.state !== urlState) {
-        setError(t('auth.oauthError', 'Authorization was denied or failed'));
+      if (mode === 'login' && provider) {
+        if (isAuthenticated) {
+          navigate(returnTo || '/', { replace: true });
+          return;
+        }
+        try {
+          await loginWithOAuth(provider, code, urlState, {
+            device_id: deviceId || undefined,
+            type: responseType || undefined,
+          });
+          navigate(returnTo || '/', { replace: true });
+        } catch (err) {
+          setErrorMode('login');
+          setError(getErrorDetail(err) || t('auth.oauthError', 'Authorization was denied or failed'));
+        }
         return;
       }
 
       try {
-        const payload =
-          saved.provider === 'vk'
-            ? {
-                device_id: deviceId || undefined,
-                type: responseType || undefined,
-              }
-            : undefined;
-        await loginWithOAuth(saved.provider, code, urlState, payload);
-        navigate('/', { replace: true });
-      } catch (err: unknown) {
-        const error = err as { response?: { data?: { detail?: string } } };
-        setError(
-          error.response?.data?.detail ||
-            t('auth.oauthError', 'Authorization was denied or failed'),
-        );
+        const response = await authApi.linkProviderServerComplete(code, urlState, {
+          device_id: deviceId || undefined,
+          type: responseType || undefined,
+        });
+        setServerResult(response);
+      } catch (err) {
+        setErrorMode('link-server');
+        setError(getErrorDetail(err) || t('auth.oauthError', 'Authorization was denied or failed'));
       }
     };
 
-    authenticate();
-  }, [searchParams, loginWithOAuth, navigate, isAuthenticated, t]);
+    void handle();
+  }, [
+    searchParams,
+    loginWithOAuth,
+    navigate,
+    isAuthenticated,
+    t,
+    setTokens,
+    setUser,
+    checkAdminStatus,
+  ]);
+
+  const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || '';
+  const telegramLink = botUsername ? `https://t.me/${botUsername}` : '';
+
+  if (serverResult) {
+    const success = serverResult.status === 'success';
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4 py-8">
+        <div className="fixed inset-0 bg-gradient-to-br from-dark-950 via-dark-900 to-dark-950" />
+        <div className="relative w-full max-w-md text-center">
+          <div className="card">
+            <div
+              className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl ${
+                success ? 'bg-success-500/20' : 'bg-error-500/20'
+              }`}
+            >
+              <svg
+                className={`h-8 w-8 ${success ? 'text-success-400' : 'text-error-400'}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.5}
+              >
+                {success ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                ) : (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+                  />
+                )}
+              </svg>
+            </div>
+            <h2 className="mb-2 text-lg font-semibold text-dark-50">
+              {success
+                ? t('successNotification.accountLinked.title', 'Аккаунты связаны!')
+                : t('auth.loginFailed')}
+            </h2>
+            <p className="mb-6 text-sm text-dark-400">{serverResult.message}</p>
+            {telegramLink ? (
+              <a
+                href={telegramLink}
+                className="btn-primary inline-block w-full rounded-lg bg-accent-500 px-6 py-3 text-center font-medium text-dark-950 no-underline transition-colors hover:bg-accent-400"
+              >
+                {success
+                  ? t('profile.linking.returnToTelegram', 'Вернуться в Telegram')
+                  : t('profile.linking.openTelegram', 'Открыть Telegram')}
+              </a>
+            ) : (
+              <button onClick={() => navigate('/login', { replace: true })} className="btn-primary w-full">
+                {t('auth.backToLogin', 'Back to login')}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (error) {
+    const action =
+      errorMode === 'link-browser' ? (
+        <button
+          onClick={() => navigate('/account-linking', { replace: true })}
+          className="btn-primary w-full"
+        >
+          {t('profile.linking.backToLinking', 'Вернуться к привязке')}
+        </button>
+      ) : telegramLink && errorMode === 'link-server' ? (
+        <a
+          href={telegramLink}
+          className="btn-primary inline-block w-full rounded-lg bg-accent-500 px-6 py-3 text-center font-medium text-dark-950 no-underline transition-colors hover:bg-accent-400"
+        >
+          {t('profile.linking.openTelegram', 'Открыть Telegram')}
+        </a>
+      ) : (
+        <button onClick={() => navigate('/login', { replace: true })} className="btn-primary w-full">
+          {t('auth.backToLogin', 'Back to login')}
+        </button>
+      );
+
     return (
       <div className="flex min-h-screen items-center justify-center px-4 py-8">
         <div className="fixed inset-0 bg-gradient-to-br from-dark-950 via-dark-900 to-dark-950" />
@@ -94,12 +262,7 @@ export default function OAuthCallback() {
             </div>
             <h2 className="mb-2 text-lg font-semibold text-dark-50">{t('auth.loginFailed')}</h2>
             <p className="mb-6 text-sm text-dark-400">{error}</p>
-            <button
-              onClick={() => navigate('/login', { replace: true })}
-              className="btn-primary w-full"
-            >
-              {t('auth.backToLogin', 'Back to login')}
-            </button>
+            {action}
           </div>
         </div>
       </div>

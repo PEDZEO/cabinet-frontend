@@ -31,6 +31,10 @@ export interface UltimaModeEnabled {
   enabled: boolean;
 }
 
+export interface UltimaAccountLinkingMode {
+  mode: 'code' | 'provider_auth';
+}
+
 export interface GiftEnabled {
   enabled: boolean;
 }
@@ -406,6 +410,30 @@ export const brandingApi = {
       enabled,
     });
     return response.data;
+  },
+
+  getUltimaAccountLinkingMode: async (): Promise<UltimaAccountLinkingMode> => {
+    try {
+      const response = await apiClient.get<UltimaAccountLinkingMode>(
+        '/cabinet/branding/ultima-account-linking-mode',
+      );
+      try {
+        localStorage.setItem('cabinet_ultima_account_linking_mode', response.data.mode);
+      } catch {
+        // localStorage not available
+      }
+      return response.data;
+    } catch {
+      try {
+        const cached = localStorage.getItem('cabinet_ultima_account_linking_mode');
+        if (cached === 'provider_auth' || cached === 'code') {
+          return { mode: cached };
+        }
+      } catch {
+        // localStorage not available
+      }
+      return { mode: 'code' };
+    }
   },
 
   // Get gift enabled (public, no auth required)

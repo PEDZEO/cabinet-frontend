@@ -1,9 +1,12 @@
 import apiClient from './client';
 import type {
   AuthResponse,
+  LinkOperationResponse,
+  LinkProviderAuthorizeResponse,
   LinkCodeCreateResponse,
   LinkCodePreviewResponse,
   ManualMergeTicketStatus,
+  PendingLinkResultResponse,
   UnlinkIdentityRequestResponse,
   UnlinkIdentityResponse,
   LinkedIdentitiesResponse,
@@ -182,6 +185,48 @@ export const authApi = {
     return response.data;
   },
 
+  getLinkProviderAuthorizeUrl: async (provider: string): Promise<LinkProviderAuthorizeResponse> => {
+    const response = await apiClient.get<LinkProviderAuthorizeResponse>(
+      `/cabinet/auth/link/oauth/${encodeURIComponent(provider)}/authorize`,
+    );
+    return response.data;
+  },
+
+  linkProviderCallback: async (
+    provider: string,
+    code: string,
+    state: string,
+    options?: { device_id?: string; type?: string },
+  ): Promise<AuthResponse> => {
+    const response = await apiClient.post<AuthResponse>(
+      `/cabinet/auth/link/oauth/${encodeURIComponent(provider)}/callback`,
+      {
+        code,
+        state,
+        device_id: options?.device_id,
+        type: options?.type,
+      },
+    );
+    return response.data;
+  },
+
+  linkProviderServerComplete: async (
+    code: string,
+    state: string,
+    options?: { device_id?: string; type?: string },
+  ): Promise<LinkOperationResponse> => {
+    const response = await apiClient.post<LinkOperationResponse>(
+      '/cabinet/auth/link/oauth/server-complete',
+      {
+        code,
+        state,
+        device_id: options?.device_id,
+        type: options?.type,
+      },
+    );
+    return response.data;
+  },
+
   // OAuth: callback (exchange code for tokens)
   oauthCallback: async (
     provider: string,
@@ -210,6 +255,18 @@ export const authApi = {
 
   getLinkedIdentities: async (): Promise<LinkedIdentitiesResponse> => {
     const response = await apiClient.get<LinkedIdentitiesResponse>('/cabinet/auth/identities');
+    return response.data;
+  },
+
+  getPendingLinkResult: async (): Promise<PendingLinkResultResponse> => {
+    const response = await apiClient.get<PendingLinkResultResponse>('/cabinet/auth/link/result');
+    return response.data;
+  },
+
+  linkTelegramIdentity: async (initData: string): Promise<AuthResponse> => {
+    const response = await apiClient.post<AuthResponse>('/cabinet/auth/link/telegram', {
+      init_data: initData,
+    });
     return response.data;
   },
 

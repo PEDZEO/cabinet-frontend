@@ -42,6 +42,29 @@ export interface LinkedIdentitiesResponse {
   telegram_relink: TelegramRelinkStatus;
 }
 
+export interface LinkProviderAuthorizeResponse {
+  provider: string;
+  authorize_url: string;
+  state: string;
+}
+
+export interface LinkOperationResponse {
+  status: 'success' | 'manual' | 'error';
+  provider: string;
+  message: string;
+  code: string | null;
+  switched_account: boolean;
+}
+
+export interface PendingLinkResultResponse {
+  pending: boolean;
+  status: 'success' | 'manual' | 'error' | null;
+  provider: string | null;
+  message: string | null;
+  code: string | null;
+  auth_response: AuthResponse | null;
+}
+
 export interface LinkCodeCreateResponse {
   code: string;
   expires_in_seconds: number;
