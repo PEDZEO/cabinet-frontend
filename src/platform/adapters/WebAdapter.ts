@@ -10,6 +10,7 @@ import type {
   InvoiceStatus,
   HapticImpactStyle,
   HapticNotificationType,
+  OpenLinkOptions,
 } from '@/platform/types';
 
 // Storage key for local storage fallback
@@ -202,7 +203,7 @@ export function createWebAdapter(): PlatformContext {
       return Promise.resolve('pending');
     },
 
-    openLink(url: string, _options?: { tryInstantView?: boolean }) {
+    openLink(url: string, _options?: OpenLinkOptions) {
       window.open(url, '_blank', 'noopener');
     },
 

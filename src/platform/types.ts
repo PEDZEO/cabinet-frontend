@@ -1,6 +1,34 @@
 // Platform type definitions
 
 export type PlatformType = 'telegram' | 'web';
+export type OpenLinkBrowser =
+  | 'google-chrome'
+  | 'chrome'
+  | 'mozilla-firefox'
+  | 'firefox'
+  | 'microsoft-edge'
+  | 'edge'
+  | 'opera'
+  | 'opera-mini'
+  | 'brave'
+  | 'brave-browser'
+  | 'duckduckgo'
+  | 'duckduckgo-browser'
+  | 'samsung'
+  | 'samsung-browser'
+  | 'vivaldi'
+  | 'vivaldi-browser'
+  | 'kiwi'
+  | 'kiwi-browser'
+  | 'uc'
+  | 'uc-browser'
+  | 'tor'
+  | 'tor-browser';
+
+export interface OpenLinkOptions {
+  tryInstantView?: boolean;
+  tryBrowser?: OpenLinkBrowser;
+}
 
 export type HapticImpactStyle = 'light' | 'medium' | 'heavy' | 'rigid' | 'soft';
 export type HapticNotificationType = 'success' | 'warning' | 'error';
@@ -102,7 +130,7 @@ export interface PlatformContext {
   openInvoice: (url: string) => Promise<InvoiceStatus>;
 
   // Links
-  openLink: (url: string, options?: { tryInstantView?: boolean }) => void;
+  openLink: (url: string, options?: OpenLinkOptions) => void;
   openTelegramLink: (url: string) => void;
 
   // Share

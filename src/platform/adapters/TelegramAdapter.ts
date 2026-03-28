@@ -35,6 +35,7 @@ import type {
   InvoiceStatus,
   HapticImpactStyle,
   HapticNotificationType,
+  OpenLinkOptions,
 } from '@/platform/types';
 
 function createCapabilities(): PlatformCapabilities {
@@ -336,9 +337,12 @@ export function createTelegramAdapter(): PlatformContext {
       }
     },
 
-    openLink(url: string, options?: { tryInstantView?: boolean }) {
+    openLink(url: string, options?: OpenLinkOptions) {
       try {
-        openLink(url, { tryInstantView: options?.tryInstantView });
+        openLink(url, {
+          tryInstantView: options?.tryInstantView,
+          tryBrowser: options?.tryBrowser,
+        });
       } catch {
         window.open(url, '_blank');
       }
