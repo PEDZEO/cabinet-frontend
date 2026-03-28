@@ -2,19 +2,6 @@
 import { lazy } from 'react';
 import { LazyPage, ProtectedRoute } from '../../components/routing/RouteShells';
 import type { RouteConfig } from './types';
-import Support from '../Support';
-import Profile from '../Profile';
-import TopUpMethodSelect from '../TopUpMethodSelect';
-import TopUpAmount from '../TopUpAmount';
-import Balance from '../Balance';
-import Referral from '../Referral';
-import AccountLinking from '../AccountLinking';
-import Connection from '../Connection';
-import { UltimaAgreement } from '../UltimaAgreement';
-import { UltimaDevices } from '../UltimaDevices';
-import { UltimaGift } from '../UltimaGift';
-import { UltimaPromocode } from '../UltimaPromocode';
-import { UltimaSubscriptionInfo } from '../UltimaSubscriptionInfo';
 
 const Dashboard = lazy(() => import('../Dashboard'));
 const Subscription = lazy(() => import('../Subscription'));
@@ -28,6 +15,34 @@ const Wheel = lazy(() => import('../Wheel'));
 const ConnectionQR = lazy(() => import('../ConnectionQR'));
 const ReferralPartnerApply = lazy(() => import('../ReferralPartnerApply'));
 const ReferralWithdrawalRequest = lazy(() => import('../ReferralWithdrawalRequest'));
+const Support = lazy(() => import('../Support'));
+const Profile = lazy(() => import('../Profile'));
+const TopUpMethodSelect = lazy(() => import('../TopUpMethodSelect'));
+const TopUpAmount = lazy(() => import('../TopUpAmount'));
+const Balance = lazy(() => import('../Balance'));
+const Referral = lazy(() => import('../Referral'));
+const AccountLinking = lazy(() => import('../AccountLinking'));
+const Connection = lazy(() => import('../Connection'));
+const UltimaAgreement = lazy(async () => {
+  const module = await import('../UltimaAgreement');
+  return { default: module.UltimaAgreement };
+});
+const UltimaDevices = lazy(async () => {
+  const module = await import('../UltimaDevices');
+  return { default: module.UltimaDevices };
+});
+const UltimaGift = lazy(async () => {
+  const module = await import('../UltimaGift');
+  return { default: module.UltimaGift };
+});
+const UltimaPromocode = lazy(async () => {
+  const module = await import('../UltimaPromocode');
+  return { default: module.UltimaPromocode };
+});
+const UltimaSubscriptionInfo = lazy(async () => {
+  const module = await import('../UltimaSubscriptionInfo');
+  return { default: module.UltimaSubscriptionInfo };
+});
 
 export const protectedRoutes: RouteConfig[] = [
   {
@@ -84,7 +99,9 @@ export const protectedRoutes: RouteConfig[] = [
     path: '/balance',
     element: (
       <ProtectedRoute>
-        <Balance />
+        <LazyPage>
+          <Balance />
+        </LazyPage>
       </ProtectedRoute>
     ),
   },
@@ -92,7 +109,9 @@ export const protectedRoutes: RouteConfig[] = [
     path: '/balance/top-up',
     element: (
       <ProtectedRoute>
-        <TopUpMethodSelect />
+        <LazyPage>
+          <TopUpMethodSelect />
+        </LazyPage>
       </ProtectedRoute>
     ),
   },
@@ -100,7 +119,9 @@ export const protectedRoutes: RouteConfig[] = [
     path: '/balance/top-up/:methodId',
     element: (
       <ProtectedRoute>
-        <TopUpAmount />
+        <LazyPage>
+          <TopUpAmount />
+        </LazyPage>
       </ProtectedRoute>
     ),
   },
@@ -108,7 +129,9 @@ export const protectedRoutes: RouteConfig[] = [
     path: '/referral',
     element: (
       <ProtectedRoute>
-        <Referral />
+        <LazyPage>
+          <Referral />
+        </LazyPage>
       </ProtectedRoute>
     ),
   },
@@ -136,7 +159,9 @@ export const protectedRoutes: RouteConfig[] = [
     path: '/support',
     element: (
       <ProtectedRoute>
-        <Support />
+        <LazyPage>
+          <Support />
+        </LazyPage>
       </ProtectedRoute>
     ),
   },
@@ -144,7 +169,9 @@ export const protectedRoutes: RouteConfig[] = [
     path: '/profile',
     element: (
       <ProtectedRoute>
-        <Profile />
+        <LazyPage>
+          <Profile />
+        </LazyPage>
       </ProtectedRoute>
     ),
   },
@@ -152,7 +179,9 @@ export const protectedRoutes: RouteConfig[] = [
     path: '/account-linking',
     element: (
       <ProtectedRoute>
-        <AccountLinking />
+        <LazyPage>
+          <AccountLinking />
+        </LazyPage>
       </ProtectedRoute>
     ),
   },
@@ -160,7 +189,9 @@ export const protectedRoutes: RouteConfig[] = [
     path: '/promocode',
     element: (
       <ProtectedRoute>
-        <UltimaPromocode />
+        <LazyPage>
+          <UltimaPromocode />
+        </LazyPage>
       </ProtectedRoute>
     ),
   },
@@ -168,7 +199,9 @@ export const protectedRoutes: RouteConfig[] = [
     path: '/ultima/gift',
     element: (
       <ProtectedRoute>
-        <UltimaGift />
+        <LazyPage>
+          <UltimaGift />
+        </LazyPage>
       </ProtectedRoute>
     ),
   },
@@ -176,7 +209,9 @@ export const protectedRoutes: RouteConfig[] = [
     path: '/ultima/devices',
     element: (
       <ProtectedRoute>
-        <UltimaDevices />
+        <LazyPage>
+          <UltimaDevices />
+        </LazyPage>
       </ProtectedRoute>
     ),
   },
@@ -184,7 +219,9 @@ export const protectedRoutes: RouteConfig[] = [
     path: '/ultima/subscription-info',
     element: (
       <ProtectedRoute>
-        <UltimaSubscriptionInfo />
+        <LazyPage>
+          <UltimaSubscriptionInfo />
+        </LazyPage>
       </ProtectedRoute>
     ),
   },
@@ -222,7 +259,9 @@ export const protectedRoutes: RouteConfig[] = [
     path: '/ultima/agreement',
     element: (
       <ProtectedRoute>
-        <UltimaAgreement />
+        <LazyPage>
+          <UltimaAgreement />
+        </LazyPage>
       </ProtectedRoute>
     ),
   },
@@ -250,7 +289,9 @@ export const protectedRoutes: RouteConfig[] = [
     path: '/connection',
     element: (
       <ProtectedRoute>
-        <Connection />
+        <LazyPage>
+          <Connection />
+        </LazyPage>
       </ProtectedRoute>
     ),
   },

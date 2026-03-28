@@ -1,3 +1,4 @@
+import { lazy } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -8,8 +9,13 @@ import { useCurrency } from '../hooks/useCurrency';
 import { useUltimaMode } from '@/hooks/useUltimaMode';
 import { Card } from '@/components/data-display/Card';
 import { staggerContainer, staggerItem } from '@/components/motion/transitions';
+import { LazyPage } from '@/components/routing/RouteShells';
 import PaymentMethodIcon from '@/components/PaymentMethodIcon';
-import { UltimaTopUpMethodSelect } from './UltimaTopUpMethodSelect';
+
+const UltimaTopUpMethodSelect = lazy(async () => {
+  const module = await import('./UltimaTopUpMethodSelect');
+  return { default: module.UltimaTopUpMethodSelect };
+});
 
 function TopUpMethodSelectContent() {
   const { t } = useTranslation();
@@ -104,7 +110,11 @@ export default function TopUpMethodSelect() {
   const { isUltimaMode } = useUltimaMode();
 
   if (isUltimaMode) {
-    return <UltimaTopUpMethodSelect />;
+    return (
+      <LazyPage>
+        <UltimaTopUpMethodSelect />
+      </LazyPage>
+    );
   }
 
   return <TopUpMethodSelectContent />;

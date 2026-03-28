@@ -36,7 +36,10 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes('/src/locales/')) return 'locales';
+          if (id.includes('/src/locales/')) {
+            const localeChunk = path.basename(id, path.extname(id));
+            return `locale-${localeChunk}`;
+          }
           if (!id.includes('node_modules')) return;
           if (
             id.includes('react-dom') ||
