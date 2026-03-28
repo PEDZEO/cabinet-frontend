@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { authApi } from '@/api/auth';
 import { Button } from '@/components/primitives/Button';
+import { UltimaProviderAccountLinkingView } from '@/components/ultima/UltimaProviderAccountLinkingView';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { getTelegramInitData, isInTelegramWebApp } from '@/hooks/useTelegramSDK';
@@ -212,11 +213,14 @@ export default function UltimaAccountLinking() {
     setUnlinkError(null);
   };
 
-  const applyAuthResponse = useCallback(async (data: AuthResponse) => {
-    setTokens(data.access_token, data.refresh_token);
-    setUser(data.user);
-    await checkAdminStatus();
-  }, [checkAdminStatus, setTokens, setUser]);
+  const applyAuthResponse = useCallback(
+    async (data: AuthResponse) => {
+      setTokens(data.access_token, data.refresh_token);
+      setUser(data.user);
+      await checkAdminStatus();
+    },
+    [checkAdminStatus, setTokens, setUser],
+  );
 
   const { data: linkedIdentitiesData } = useQuery({
     queryKey: ['linked-identities'],
@@ -305,7 +309,7 @@ export default function UltimaAccountLinking() {
     setProviderLinkSuccess(null);
     setProviderLinkError(
       pendingLinkResult.code === 'manual_merge_required'
-        ? `${pendingLinkResult.message || 'Автоматическая привязка недоступна.'} Используйте резервный режим по коду ниже.`
+        ? `${pendingLinkResult.message || 'Автоматическая привязка недоступна.'} Откройте поддержку, если нужно объединить профили вручную.`
         : pendingLinkResult.message || t('common.error', 'Произошла ошибка'),
     );
   }, [applyAuthResponse, pendingLinkResult, queryClient, t]);
@@ -348,7 +352,7 @@ export default function UltimaAccountLinking() {
     const initData = getTelegramInitData();
     if (!isInTelegramWebApp() || !initData) {
       setProviderLinkError(
-        'Telegram-привязка доступна внутри Telegram Mini App. В браузере используйте OAuth-кнопки или код ниже.',
+        'Telegram-привязка доступна внутри Telegram Mini App. В браузере используйте Yandex, VK или другой доступный способ входа.',
       );
       return;
     }
@@ -472,6 +476,8 @@ export default function UltimaAccountLinking() {
     mutationFn: (provider: string) => authApi.requestUnlinkIdentity(provider),
     onSuccess: (data) => {
       setUnlinkError(null);
+      setProviderLinkError(null);
+      setProviderLinkSuccess(null);
       setLinkError(null);
       setLinkSuccess(
         data.provider === 'telegram'
@@ -502,6 +508,8 @@ export default function UltimaAccountLinking() {
     }) => authApi.confirmUnlinkIdentity(provider, token, otpCode),
     onSuccess: (data) => {
       setUnlinkError(null);
+      setProviderLinkError(null);
+      setProviderLinkSuccess(null);
       setUnlinkProvider(null);
       setUnlinkRequestToken(null);
       setUnlinkOtpCode('');
@@ -524,6 +532,68 @@ export default function UltimaAccountLinking() {
   const isCodePreviewed = hasLinkCode && previewedCode === normalizedLinkCode && !!linkPreview;
   const canConfirmLink =
     isCodePreviewed && (linkFlowStep === 'preview' || linkFlowStep === 'warning');
+
+  const handleRequestUnlink = (provider: string) => {
+    setLinkError(null);
+    setLinkSuccess(null);
+    setProviderLinkError(null);
+    setProviderLinkSuccess(null);
+    requestUnlinkMutation.mutate(provider);
+  };
+
+  const handleCancelUnlink = () => {
+    resetUnlinkState();
+  };
+
+  const handleConfirmUnlink = () => {
+    if (!unlinkProvider || !unlinkRequestToken) return;
+    confirmUnlinkMutation.mutate({
+      provider: unlinkProvider,
+      token: unlinkRequestToken,
+      otpCode: unlinkOtpCode.trim(),
+    });
+  };
+
+  const handleUnlinkOtpCodeChange = (value: string) => {
+    setUnlinkError(null);
+    setUnlinkOtpCode(value.replace(/\D/g, '').slice(0, 6));
+  };
+
+  if (isProviderAuthMode) {
+    return (
+      <UltimaProviderAccountLinkingView
+        isDesktop={isDesktop}
+        userId={user?.id}
+        linkedIdentities={linkedIdentities}
+        telegramRelink={telegramRelink}
+        telegramIdentity={telegramIdentity}
+        latestManualMerge={latestManualMerge ?? null}
+        availableOAuthProviders={availableOAuthProviders}
+        isTelegramMiniApp={isInTelegramWebApp()}
+        directLinkProvider={directLinkProvider}
+        waitingExternalProvider={waitingExternalProvider}
+        telegramDirectLinkLoading={telegramDirectLinkLoading}
+        providerLinkError={providerLinkError}
+        providerLinkSuccess={providerLinkSuccess}
+        linkSuccess={linkSuccess}
+        unlinkProvider={unlinkProvider}
+        unlinkRequestToken={unlinkRequestToken}
+        unlinkOtpCode={unlinkOtpCode}
+        unlinkError={unlinkError}
+        requestUnlinkPending={requestUnlinkMutation.isPending}
+        confirmUnlinkPending={confirmUnlinkMutation.isPending}
+        onLinkTelegramDirect={() => void handleLinkTelegramDirect()}
+        onLinkOAuth={(provider) => void handleLinkOAuth(provider)}
+        onRequestUnlink={handleRequestUnlink}
+        onUnlinkOtpCodeChange={handleUnlinkOtpCodeChange}
+        onConfirmUnlink={handleConfirmUnlink}
+        onCancelUnlink={handleCancelUnlink}
+        getIdentityBlockedDetails={getIdentityBlockedDetails}
+        formatDurationShort={formatDurationShort}
+        formatDateTime={formatDateTime}
+      />
+    );
+  }
 
   return (
     <div
@@ -619,18 +689,22 @@ export default function UltimaAccountLinking() {
 
           {isProviderAuthMode && (
             <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.2)] p-3 backdrop-blur-md">
-              <h2 className="mb-2 text-lg font-semibold text-white/95">Быстрая привязка через вход</h2>
+              <h2 className="mb-2 text-lg font-semibold text-white/95">
+                Быстрая привязка через вход
+              </h2>
               <p className="text-white/62 mb-3 text-sm">
-                Используйте доступные способы входа. Если аккаунт уже существует, старые привязки
-                и данные объединятся по тем же правилам безопасности, что и в кодовом режиме.
+                Используйте доступные способы входа. Если аккаунт уже существует, старые привязки и
+                данные объединятся по тем же правилам безопасности, что и в кодовом режиме.
               </p>
 
               <div className="flex flex-wrap gap-2">
                 <Button
                   onClick={() => void handleLinkTelegramDirect()}
                   loading={telegramDirectLinkLoading}
-                  disabled={!!directLinkProvider || waitingExternalProvider !== null || !!telegramIdentity}
-                  className="rounded-full border border-emerald-200/20 bg-[rgba(22,207,161,0.92)] px-4 py-2.5 text-[14px] font-medium text-slate-950 hover:bg-[rgba(39,220,176,0.96)] disabled:border-white/10 disabled:bg-white/8 disabled:text-white/45"
+                  disabled={
+                    !!directLinkProvider || waitingExternalProvider !== null || !!telegramIdentity
+                  }
+                  className="disabled:bg-white/8 rounded-full border border-emerald-200/20 bg-[rgba(22,207,161,0.92)] px-4 py-2.5 text-[14px] font-medium text-slate-950 hover:bg-[rgba(39,220,176,0.96)] disabled:border-white/10 disabled:text-white/45"
                 >
                   {telegramIdentity ? 'Telegram уже привязан' : 'Привязать Telegram'}
                 </Button>
@@ -659,8 +733,8 @@ export default function UltimaAccountLinking() {
               {!isInTelegramWebApp() && !telegramIdentity && (
                 <div className="text-white/56 mt-3 text-xs">
                   Telegram-привязка доступна внутри Telegram Mini App. В обычном браузере можно
-                  привязать Yandex, VK и другие OAuth-способы, а для Telegram использовать
-                  резервный кодовый режим ниже.
+                  привязать Yandex, VK и другие OAuth-способы, а для Telegram использовать резервный
+                  кодовый режим ниже.
                 </div>
               )}
 
@@ -745,7 +819,7 @@ export default function UltimaAccountLinking() {
 
             <div className="space-y-3 border-t border-white/10 pt-4">
               {isProviderAuthMode && (
-                <div className="text-white/62 rounded-2xl border border-white/10 bg-white/6 px-3 py-2 text-xs">
+                <div className="text-white/62 bg-white/6 rounded-2xl border border-white/10 px-3 py-2 text-xs">
                   Резервный режим по коду: используйте его, если автоматическая привязка через
                   кнопки входа недоступна или support попросил код для ручной проверки.
                 </div>
