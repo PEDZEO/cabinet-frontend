@@ -636,7 +636,7 @@ export function UltimaSupport() {
   return (
     <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-muted-aura">
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[1100px]">
-        <section className="ultima-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto pb-3 pr-1">
+        <section className="ultima-scrollbar ultima-mobile-content-shared flex min-h-0 flex-1 flex-col overflow-y-auto pb-3 pr-1">
           <header className="mb-4">
             <h1 className="text-[clamp(34px,9vw,46px)] font-semibold leading-[0.92] tracking-[-0.01em] text-white">
               {t('support.title')}

@@ -1296,6 +1296,10 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
 }
 
+.ultima-mobile-content-shared {
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+}
+
 .ultima-shell-inner > * {
   min-width: 0;
 }
@@ -1492,6 +1496,10 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   .ultima-mobile-dock-footer-shared {
     padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
   }
+
+  .ultima-mobile-content-shared {
+    padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 @media (max-width: 379px) {
@@ -1524,6 +1532,10 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   }
 
   .ultima-mobile-dock-footer-shared {
+    padding-bottom: calc(66px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .ultima-mobile-content-shared {
     padding-bottom: calc(66px + env(safe-area-inset-bottom, 0px));
   }
 }
@@ -1655,6 +1667,10 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   }
 
   .ultima-mobile-dock-footer-shared {
+    padding-bottom: 0;
+  }
+
+  .ultima-mobile-content-shared {
     padding-bottom: 0;
   }
 
