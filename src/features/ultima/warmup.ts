@@ -21,7 +21,6 @@ export async function warmUltimaStartup(
   const tasks: Array<Promise<unknown>> = [
     import('@/pages/Balance'),
     import('@/pages/TopUpMethodSelect'),
-    import('@/pages/UltimaTopUpMethodSelect'),
     import('@/pages/TopUpAmount'),
     import('@/pages/Referral'),
     import('@/pages/AccountLinking'),

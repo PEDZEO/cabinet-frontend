@@ -631,7 +631,12 @@ html:not(.ultima-frames-enabled) .ultima-flat-frames [class*='border'] {
 
 .ultima-shell {
   --ultima-shell-top-gap: clamp(12px, 2.2vh, 16px);
-  --ultima-shell-bottom-gap: calc(14px + env(safe-area-inset-bottom, 0px));
+  --ultima-shell-frame-bottom-gap: calc(14px + env(safe-area-inset-bottom, 0px));
+  --ultima-shared-nav-clearance: 0px;
+  --ultima-shell-bottom-gap: max(
+    var(--ultima-shell-frame-bottom-gap),
+    var(--ultima-shared-nav-clearance)
+  );
   position: relative;
   height: auto;
   min-height: 100svh;
@@ -1293,11 +1298,11 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
 }
 
 .ultima-mobile-dock-footer-shared {
-  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: var(--ultima-shared-nav-clearance, calc(72px + env(safe-area-inset-bottom, 0px)));
 }
 
 .ultima-mobile-content-shared {
-  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: var(--ultima-shared-nav-clearance, calc(72px + env(safe-area-inset-bottom, 0px)));
 }
 
 .ultima-shell-inner > * {
@@ -1471,7 +1476,7 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
 @media (max-height: 760px) {
   .ultima-shell {
     --ultima-shell-top-gap: 10px;
-    --ultima-shell-bottom-gap: calc(10px + env(safe-area-inset-bottom, 0px));
+    --ultima-shell-frame-bottom-gap: calc(10px + env(safe-area-inset-bottom, 0px));
   }
 
   .ultima-mobile-overlay {
@@ -1494,11 +1499,17 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   }
 
   .ultima-mobile-dock-footer-shared {
-    padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: var(
+      --ultima-shared-nav-clearance,
+      calc(68px + env(safe-area-inset-bottom, 0px))
+    );
   }
 
   .ultima-mobile-content-shared {
-    padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: var(
+      --ultima-shared-nav-clearance,
+      calc(68px + env(safe-area-inset-bottom, 0px))
+    );
   }
 }
 
@@ -1532,11 +1543,17 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   }
 
   .ultima-mobile-dock-footer-shared {
-    padding-bottom: calc(66px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: var(
+      --ultima-shared-nav-clearance,
+      calc(66px + env(safe-area-inset-bottom, 0px))
+    );
   }
 
   .ultima-mobile-content-shared {
-    padding-bottom: calc(66px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: var(
+      --ultima-shared-nav-clearance,
+      calc(66px + env(safe-area-inset-bottom, 0px))
+    );
   }
 }
 

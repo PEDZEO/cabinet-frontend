@@ -491,8 +491,8 @@ export function UltimaConnection({
 
   return (
     <div className="ultima-shell ultima-shell-compact">
-      <div className="ultima-shell-inner lg:max-w-[560px] lg:justify-between">
-        <section className="ultima-mobile-content-shared flex min-h-0 flex-1 flex-col lg:flex-none lg:pb-2">
+      <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[560px] lg:justify-between">
+        <section className="ultima-scrollbar ultima-mobile-content-shared flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-none lg:pb-2">
           <div
             key={step}
             className={`ultima-step-enter text-center lg:pt-3 ${isVeryShortViewport ? 'pt-0.5' : 'pt-2'}`}

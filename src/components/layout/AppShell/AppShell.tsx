@@ -48,7 +48,7 @@ import { AppHeader } from './AppHeader';
 import { LiteModeHeader } from './LiteModeHeader';
 
 const ULTIMA_RING_DURATION_SEC = 18;
-const ULTIMA_SHARED_NAV_BOTTOM_GAP = 'calc(98px + env(safe-area-inset-bottom, 0px))';
+const ULTIMA_SHARED_NAV_CLEARANCE = 'calc(98px + env(safe-area-inset-bottom, 0px))';
 
 // Desktop nav icons
 const HomeIcon = ({ className }: { className?: string }) => (
@@ -642,7 +642,7 @@ export function AppShell({ children }: AppShellProps) {
         )}
         style={
           shouldShowUltimaSharedNav
-            ? { ['--ultima-shell-bottom-gap' as string]: ULTIMA_SHARED_NAV_BOTTOM_GAP }
+            ? { ['--ultima-shared-nav-clearance' as string]: ULTIMA_SHARED_NAV_CLEARANCE }
             : undefined
         }
       >
