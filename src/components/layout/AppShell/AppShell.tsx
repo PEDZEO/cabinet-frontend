@@ -220,6 +220,8 @@ export function AppShell({ children }: AppShellProps) {
   const isUltimaAnimatedRoute = isUltimaMode && !location.pathname.startsWith('/admin');
   const isUltimaSceneRoute =
     isUltimaMode && ['/', '/subscription', '/connection'].includes(location.pathname);
+  const isUltimaCalmBackdropRoute =
+    isUltimaMode && !isDesktopViewport && ['/profile', '/support'].includes(location.pathname);
   const ultimaWavePhaseShiftSecRef = useRef(-((Date.now() / 1000) % ULTIMA_RING_DURATION_SEC));
   const hasLiteHeader = isLiteMode;
   const hasRegularHeader = !isCompactMode;
@@ -367,7 +369,7 @@ export function AppShell({ children }: AppShellProps) {
     <div className="min-h-screen">
       {/* Animated background (disabled for Ultima mode) */}
       {(!isUltimaModeReady || !isUltimaMode) && <BackgroundRenderer />}
-      {isUltimaModeReady && isUltimaAnimatedRoute && (
+      {isUltimaModeReady && isUltimaAnimatedRoute && !isUltimaCalmBackdropRoute && (
         <div
           className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
           style={{
@@ -397,6 +399,30 @@ export function AppShell({ children }: AppShellProps) {
               style={{ animationDelay: `${ultimaWavePhaseShiftSecRef.current + delay}s` }}
             />
           ))}
+        </div>
+      )}
+      {isUltimaModeReady && isUltimaCalmBackdropRoute && (
+        <div
+          className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
+          style={{
+            background:
+              'linear-gradient(180deg, color-mix(in srgb, var(--ultima-color-bg-top) 92%, #000000) 0%, color-mix(in srgb, var(--ultima-color-bg-bottom) 88%, #000000) 100%)',
+          }}
+        >
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                'radial-gradient(circle at 78% 16%, color-mix(in srgb, var(--ultima-color-aura) 10%, transparent), transparent 42%), radial-gradient(circle at 18% 84%, color-mix(in srgb, var(--ultima-color-ring) 8%, transparent), transparent 44%)',
+            }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                'linear-gradient(180deg, color-mix(in srgb, #02070b 16%, transparent) 0%, color-mix(in srgb, #02070b 42%, transparent) 100%)',
+            }}
+          />
         </div>
       )}
 

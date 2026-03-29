@@ -530,6 +530,7 @@ export function UltimaProfile() {
   };
 
   const bottomNav = <UltimaBottomNav active="profile" onSupportClick={openSupportFast} />;
+  const sectionListClassName = isDesktop ? 'ultima-stagger-list space-y-2.5' : 'space-y-2.5';
 
   const sectionsContent = (
     <div className="grid gap-3 lg:gap-4 xl:grid-cols-2">
@@ -540,7 +541,7 @@ export function UltimaProfile() {
         <p className="text-white/56 mb-3 text-[12px] font-medium uppercase tracking-[0.14em]">
           {t('profile.profileSettings', { defaultValue: 'Настройки профиля' })}
         </p>
-        <div className="ultima-stagger-list space-y-2.5">
+        <div className={sectionListClassName}>
           {profileItems.map((item) => (
             <MenuItem key={item.key} item={item} onClick={() => openPathFast(item.path)} />
           ))}
@@ -554,7 +555,7 @@ export function UltimaProfile() {
         <p className="text-white/56 mb-3 text-[12px] font-medium uppercase tracking-[0.14em]">
           {t('nav.support', { defaultValue: 'Поддержка' })}
         </p>
-        <div className="ultima-stagger-list space-y-2.5">
+        <div className={sectionListClassName}>
           {supportItems.map((item) => (
             <MenuItem key={item.key} item={item} onClick={() => openPathFast(item.path)} />
           ))}
