@@ -611,15 +611,6 @@
     0 10px 20px color-mix(in srgb, var(--ultima-color-scrollbar-thumb) 24%, transparent);
 }
 
-.ultima-scroll-stable {
-  transform: translateZ(0);
-  contain: layout paint style;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-}
-
 @media (pointer: coarse) {
   .ultima-scrollbar::-webkit-scrollbar {
     width: 5px;
@@ -700,6 +691,14 @@ html:not(.ultima-frames-enabled) .ultima-flat-frames [class*='border'] {
 .ultima-shell-muted-aura .ultima-shell-aura::before,
 .ultima-shell-muted-aura .ultima-shell-aura::after {
   opacity: 0.58;
+}
+
+@media (max-width: 1023px) {
+  /* Mobile Ultima pages should rely on the shared AppShell backdrop only. */
+  .ultima-shell > .ultima-shell-aura,
+  .ultima-shell-muted-aura::after {
+    display: none;
+  }
 }
 
 .ultima-shell-aura::before,

@@ -530,7 +530,6 @@ export function UltimaProfile() {
   };
 
   const bottomNav = <UltimaBottomNav active="profile" onSupportClick={openSupportFast} />;
-  const sectionListClassName = isDesktop ? 'ultima-stagger-list space-y-2.5' : 'space-y-2.5';
 
   const sectionsContent = (
     <div className="grid gap-3 lg:gap-4 xl:grid-cols-2">
@@ -541,7 +540,7 @@ export function UltimaProfile() {
         <p className="text-white/56 mb-3 text-[12px] font-medium uppercase tracking-[0.14em]">
           {t('profile.profileSettings', { defaultValue: 'Настройки профиля' })}
         </p>
-        <div className={sectionListClassName}>
+        <div className="ultima-stagger-list space-y-2.5">
           {profileItems.map((item) => (
             <MenuItem key={item.key} item={item} onClick={() => openPathFast(item.path)} />
           ))}
@@ -555,7 +554,7 @@ export function UltimaProfile() {
         <p className="text-white/56 mb-3 text-[12px] font-medium uppercase tracking-[0.14em]">
           {t('nav.support', { defaultValue: 'Поддержка' })}
         </p>
-        <div className={sectionListClassName}>
+        <div className="ultima-stagger-list space-y-2.5">
           {supportItems.map((item) => (
             <MenuItem key={item.key} item={item} onClick={() => openPathFast(item.path)} />
           ))}
@@ -710,7 +709,7 @@ export function UltimaProfile() {
   return (
     <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-muted-aura">
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
-        <section className="ultima-scrollbar ultima-scroll-stable flex min-h-0 flex-1 flex-col overflow-y-auto pb-3 pr-1 pt-[clamp(8px,2vh,16px)]">
+        <section className="ultima-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto pb-3 pr-1 pt-[clamp(8px,2vh,16px)]">
           <section
             className={`${ultimaPanelClassName} mb-3 p-3.5`}
             style={ULTIMA_SECTION_SURFACE_STYLE}
