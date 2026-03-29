@@ -300,6 +300,72 @@ test.describe('Ultima account linking callback', () => {
     ).toHaveCount(0);
   });
 
+  test('maps telegram relink guard to yandex conflict after returning to account linking', async ({
+    page,
+  }) => {
+    await bootstrapUltimaAuth(page);
+    await mockUltimaLinkingApi(page);
+
+    await page.addInitScript(() => {
+      const payload = JSON.stringify({
+        status: 'error',
+        provider: 'yandex',
+        code: 'telegram_relink_requires_unlink',
+        message: 'To link another Telegram account, unlink current Telegram first',
+      });
+      sessionStorage.setItem('cabinet_account_linking_outcome', payload);
+      localStorage.setItem('cabinet_account_linking_outcome', payload);
+    });
+
+    await page.goto('/account-linking');
+
+    await expect(
+      page.getByText(
+        'Этот аккаунт Яндекса уже привязан к другому профилю. Войдите через него или отвяжите этот способ входа в том аккаунте.',
+      ),
+    ).toBeVisible();
+    await expect(
+      page.getByText('Чтобы привязать другой Telegram, сначала отвяжите текущий Telegram-аккаунт.'),
+    ).toHaveCount(0);
+  });
+
+  test('shows provider-specific yandex conflict on oauth link callback when backend returns telegram relink guard', async ({
+    page,
+  }) => {
+    await bootstrapUltimaAuth(page);
+    await mockUltimaLinkingApi(page);
+
+    await page.addInitScript(() => {
+      sessionStorage.setItem('link_oauth_state', 'oauth-link-yandex-state');
+      sessionStorage.setItem('link_oauth_provider', 'yandex');
+      sessionStorage.setItem('link_oauth_return_to', '/account-linking');
+    });
+
+    await page.route('**/api/cabinet/auth/link/oauth/yandex/callback', async (route: Route) => {
+      await route.fulfill({
+        status: 409,
+        json: {
+          detail: {
+            code: 'telegram_relink_requires_unlink',
+            message: 'To link another Telegram account, unlink current Telegram first',
+          },
+        },
+      });
+    });
+
+    await page.goto('/auth/oauth/callback?code=test-code&state=oauth-link-yandex-state');
+
+    await page.waitForURL('**/account-linking');
+    await expect(
+      page.getByText(
+        'Этот аккаунт Яндекса уже привязан к другому профилю. Войдите через него или отвяжите этот способ входа в том аккаунте.',
+      ),
+    ).toBeVisible();
+    await expect(
+      page.getByText('Чтобы привязать другой Telegram, сначала отвяжите текущий Telegram-аккаунт.'),
+    ).toHaveCount(0);
+  });
+
   test('shows provider-specific yandex conflict on oauth login callback', async ({ page }) => {
     await bootstrapUltimaModeOnly(page);
     await mockUltimaLinkingApi(page);

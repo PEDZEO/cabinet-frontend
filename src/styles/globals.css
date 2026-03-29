@@ -231,16 +231,16 @@
 
 @keyframes ultima-meteor-drift {
   from {
-    transform: translate3d(-8%, -10%, 0);
-    opacity: 0.82;
-  }
-  50% {
-    transform: translate3d(8%, 10%, 0);
-    opacity: 0.94;
+    background-position:
+      0 0,
+      0 0;
+    opacity: 0.88;
   }
   to {
-    transform: translate3d(-8%, -10%, 0);
-    opacity: 0.82;
+    background-position:
+      240px 240px,
+      320px 320px;
+    opacity: 0.88;
   }
 }
 
@@ -1163,10 +1163,15 @@ html[data-ultima-animation='meteor-stream'] .ultima-shell-aura::before,
   background-size:
     240px 240px,
     320px 320px;
+  background-position:
+    0 0,
+    0 0;
+  background-repeat: repeat;
   filter: blur(8px);
-  animation: ultima-meteor-drift calc(var(--ultima-animation-slider-glow-sec, 2.6) * 2.6s)
-    ease-in-out infinite;
-  opacity: 0.9;
+  will-change: background-position, opacity;
+  animation: ultima-meteor-drift calc(var(--ultima-animation-slider-glow-sec, 2.6) * 3s) linear
+    infinite;
+  opacity: 0.88;
 }
 
 html[data-ultima-animation='meteor-stream'] .ultima-shell-aura::after,

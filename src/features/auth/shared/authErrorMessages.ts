@@ -155,11 +155,14 @@ export function getLocalizedAuthErrorDetailMessage(
     inferProviderFromMessage(detail.fallback);
   const providerLabel = getAuthProviderLabel(provider);
   const providerAccountLabel = getProviderAccountLabel(provider);
-
-  if (
+  const shouldRenderProviderConflict =
     detail.code === 'link_code_identity_conflict' ||
-    /already linked to another account/i.test(message)
-  ) {
+    /already linked to another account/i.test(message) ||
+    (detail.code === 'telegram_relink_requires_unlink' &&
+      provider !== null &&
+      provider !== 'telegram');
+
+  if (shouldRenderProviderConflict) {
     if (providerAccountLabel) {
       return t('auth.errors.providerAlreadyLinked', {
         providerAccount: providerAccountLabel,
