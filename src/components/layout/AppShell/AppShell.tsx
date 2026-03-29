@@ -1,6 +1,13 @@
-import { useEffect, useState, useCallback, useRef, type SyntheticEvent } from 'react';
-import { useLocation, Link } from 'react-router';
-import { useQuery } from '@tanstack/react-query';
+import {
+  startTransition,
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  type SyntheticEvent,
+} from 'react';
+import { useLocation, Link, useNavigate } from 'react-router';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -28,12 +35,20 @@ import TicketNotificationBell from '@/components/TicketNotificationBell';
 import PageLoader from '@/components/common/PageLoader';
 import { BackgroundRenderer } from '@/components/backgrounds/BackgroundRenderer';
 import { SubscriptionIcon } from '@/components/icons';
+import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+import {
+  getUltimaTopLevelPath,
+  getUltimaTopLevelTab,
+  prefetchUltimaTopLevelTab,
+  type UltimaBottomNavTab,
+} from '@/features/ultima/navigation';
 
 import { MobileBottomNav } from './MobileBottomNav';
 import { AppHeader } from './AppHeader';
 import { LiteModeHeader } from './LiteModeHeader';
 
 const ULTIMA_RING_DURATION_SEC = 18;
+const ULTIMA_SHARED_NAV_BOTTOM_GAP = 'calc(98px + env(safe-area-inset-bottom, 0px))';
 
 // Desktop nav icons
 const HomeIcon = ({ className }: { className?: string }) => (
@@ -203,6 +218,8 @@ interface AppShellProps {
 export function AppShell({ children }: AppShellProps) {
   const { t } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const isMainPage = location.pathname === '/';
   const { isAdmin, logout } = useAuthStore();
   const { isFullscreen, safeAreaInset, contentSafeAreaInset, platform, isMobile } =
@@ -217,9 +234,12 @@ export function AppShell({ children }: AppShellProps) {
   const { isUltimaMode, isUltimaModeReady } = useUltimaMode();
   const isDesktopViewport = useMediaQuery('(min-width: 1024px)');
   const isCompactMode = isLiteMode || isUltimaMode;
+  const ultimaTopLevelTab = getUltimaTopLevelTab(location.pathname);
+  const isUltimaTopLevelRoute = isUltimaMode && ultimaTopLevelTab !== null;
   const isUltimaAnimatedRoute = isUltimaMode && !location.pathname.startsWith('/admin');
   const isUltimaSceneRoute =
     isUltimaMode && ['/', '/subscription', '/connection'].includes(location.pathname);
+  const shouldShowUltimaSharedNav = isUltimaTopLevelRoute && !isDesktopViewport;
   const ultimaWavePhaseShiftSecRef = useRef(-((Date.now() / 1000) % ULTIMA_RING_DURATION_SEC));
   const hasLiteHeader = isLiteMode;
   const hasRegularHeader = !isCompactMode;
@@ -294,6 +314,21 @@ export function AppShell({ children }: AppShellProps) {
   const handleNavClick = () => {
     haptic.impact('light');
   };
+
+  const handleUltimaTabChange = useCallback(
+    (tab: UltimaBottomNavTab) => {
+      if (!isUltimaMode || ultimaTopLevelTab === tab) {
+        return;
+      }
+
+      haptic.impact('light');
+      prefetchUltimaTopLevelTab(queryClient, tab);
+      startTransition(() => {
+        navigate(getUltimaTopLevelPath(tab));
+      });
+    },
+    [haptic, isUltimaMode, navigate, queryClient, ultimaTopLevelTab],
+  );
 
   // Calculate header height based on fullscreen mode (only on mobile Telegram)
   // On iOS: contentSafeAreaInset.top includes status bar + dynamic island + Telegram header
@@ -605,6 +640,11 @@ export function AppShell({ children }: AppShellProps) {
                 ? 'pt-2 sm:pt-3'
                 : 'pt-6',
         )}
+        style={
+          shouldShowUltimaSharedNav
+            ? { ['--ultima-shell-bottom-gap' as string]: ULTIMA_SHARED_NAV_BOTTOM_GAP }
+            : undefined
+        }
       >
         {isLiteModeReady &&
         isUltimaModeReady &&
@@ -626,6 +666,23 @@ export function AppShell({ children }: AppShellProps) {
           children
         )}
       </main>
+
+      {shouldShowUltimaSharedNav && ultimaTopLevelTab ? (
+        <div
+          className={cn(
+            'ultima-shared-nav-shell',
+            isKeyboardOpen && 'pointer-events-none translate-y-3 opacity-0',
+          )}
+        >
+          <UltimaBottomNav
+            active={ultimaTopLevelTab}
+            onHomeClick={() => handleUltimaTabChange('home')}
+            onConnectionClick={() => handleUltimaTabChange('connection')}
+            onProfileClick={() => handleUltimaTabChange('profile')}
+            onSupportClick={() => handleUltimaTabChange('support')}
+          />
+        </div>
+      ) : null}
 
       {/* Mobile Bottom Navigation (regular mode) */}
       {isLiteModeReady && isUltimaModeReady && !isCompactMode && (

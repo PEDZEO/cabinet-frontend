@@ -652,10 +652,6 @@ export function UltimaSupport() {
 
           {supportContent}
         </section>
-
-        <div className="ultima-mobile-dock-footer">
-          <div className="ultima-nav-dock">{bottomNav}</div>
-        </div>
       </div>
     </div>
   );

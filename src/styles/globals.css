@@ -1306,6 +1306,28 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   padding-bottom: 2px;
 }
 
+.ultima-shared-nav-shell {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 34;
+  display: flex;
+  justify-content: center;
+  padding-right: calc(clamp(12px, 3vw, 16px) + env(safe-area-inset-right, 0px));
+  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  padding-left: calc(clamp(12px, 3vw, 16px) + env(safe-area-inset-left, 0px));
+  pointer-events: none;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.ultima-shared-nav-shell .ultima-bottom-nav {
+  pointer-events: auto;
+  width: min(100%, 420px);
+}
+
 .ultima-mobile-overlay-backdrop {
   position: fixed;
   inset: 0;
@@ -1458,6 +1480,10 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
     height: 40px;
     border-radius: 14px;
   }
+
+  .ultima-shared-nav-shell {
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 @media (max-width: 379px) {
@@ -1482,6 +1508,12 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
     height: 40px;
     border-radius: 14px;
   }
+
+  .ultima-shared-nav-shell {
+    padding-right: calc(10px + env(safe-area-inset-right, 0px));
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    padding-left: calc(10px + env(safe-area-inset-left, 0px));
+  }
 }
 
 @media (max-width: 359px) {
@@ -1505,6 +1537,10 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
 }
 
 @media (min-width: 1024px) {
+  .ultima-shared-nav-shell {
+    display: none;
+  }
+
   .ultima-shell {
     display: flex;
     height: auto;

@@ -1124,8 +1124,6 @@ export function UltimaDashboard() {
               </span>
             </button>
           </div>
-
-          <div className="ultima-nav-dock">{bottomNav}</div>
         </section>
       </div>
 

@@ -18,6 +18,7 @@ import { TooltipProvider } from './components/primitives/Tooltip';
 import { isInTelegramWebApp } from './hooks/useTelegramSDK';
 import { getCachedUltimaMode } from './hooks/useUltimaMode';
 import { useUltimaThemeConfig } from './features/ultima/theme';
+import { isUltimaTopLevelPath, ULTIMA_TOP_LEVEL_PATHS } from './features/ultima/navigation';
 
 const TWEMOJI_OPTIONS = { className: 'twemoji', folder: 'svg', ext: '.svg' } as const;
 
@@ -26,9 +27,23 @@ const TWEMOJI_OPTIONS = { className: 'twemoji', folder: 'svg', ext: '.svg' } as 
  */
 function ScrollToTop() {
   const { pathname } = useLocation();
+  const previousPathRef = useRef<string | null>(null);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const previousPath = previousPathRef.current;
+    const isUltimaMode = getCachedUltimaMode() === true;
+    const shouldKeepScrollPosition =
+      isUltimaMode &&
+      previousPath !== null &&
+      previousPath !== pathname &&
+      isUltimaTopLevelPath(previousPath) &&
+      isUltimaTopLevelPath(pathname);
+
+    if (!shouldKeepScrollPosition) {
+      window.scrollTo(0, 0);
+    }
+
+    previousPathRef.current = pathname;
   }, [pathname]);
 
   return null;
@@ -40,7 +55,6 @@ function ScrollToTop() {
  */
 /** Pages reachable from bottom nav — treat as top-level (no back button). */
 const DEFAULT_TOP_LEVEL_PATHS = ['/', '/connection', '/balance', '/referral', '/support', '/wheel'];
-const ULTIMA_TOP_LEVEL_PATHS = ['/', '/connection', '/profile', '/support'];
 
 const getBackFallbackPath = (pathname: string): string | null => {
   if (pathname === '/admin/users') {

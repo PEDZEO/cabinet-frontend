@@ -754,8 +754,6 @@ export function UltimaConnection({
               </span>
             </button>
           )}
-
-          <div className="ultima-nav-dock">{bottomNav}</div>
         </section>
       </div>
 

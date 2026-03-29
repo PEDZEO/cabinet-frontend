@@ -760,10 +760,6 @@ export function UltimaProfile() {
 
           <div className="min-h-0 flex-1">{sectionsContent}</div>
         </section>
-
-        <section className="ultima-mobile-dock-footer">
-          <div className="ultima-nav-dock">{bottomNav}</div>
-        </section>
       </div>
     </div>
   );

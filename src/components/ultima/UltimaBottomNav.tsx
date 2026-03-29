@@ -1,7 +1,6 @@
 import { type CSSProperties, type PointerEvent, useState } from 'react';
 import { useNavigate } from 'react-router';
-
-type UltimaBottomNavTab = 'home' | 'connection' | 'profile' | 'support';
+import type { UltimaBottomNavTab } from '@/features/ultima/navigation';
 
 type UltimaBottomNavProps = {
   active: UltimaBottomNavTab;
