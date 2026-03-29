@@ -11,6 +11,11 @@ export function getLocalizedIdentityLinkMessage(
         'successNotification.accountLinked.message',
         'Привязка завершена. Теперь вы можете входить через связанные способы входа.',
       );
+    case 'link_code_identity_conflict':
+      return t(
+        'profile.linking.errors.identityConflict',
+        'Этот способ входа уже привязан к другому профилю. Сначала войдите в него или отвяжите вход там.',
+      );
     case 'manual_merge_required':
       return t(
         'profile.linking.errors.manualMergeRequired',

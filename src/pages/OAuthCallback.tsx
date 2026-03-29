@@ -7,6 +7,7 @@ import { UltimaAuthStatusScreen } from '@/features/auth/shared/UltimaAuthStatusS
 import { useUltimaAuthBranding } from '@/features/auth/shared/useUltimaAuthBranding';
 import { useUltimaMode } from '@/hooks/useUltimaMode';
 import { stashSuccessNotification } from '@/store/successNotification';
+import { markPendingAccountLinkRefresh } from '@/utils/accountLinkingFlow';
 import { useAuthStore } from '@/store/auth';
 import {
   getAndClearLinkOAuthState,
@@ -30,6 +31,17 @@ function getErrorDetail(err: unknown): string | null {
   return null;
 }
 
+function getErrorCode(err: unknown): string | null {
+  if (err && typeof err === 'object' && 'response' in err) {
+    const detail = (err as { response?: { data?: { detail?: unknown } } }).response?.data?.detail;
+    if (detail && typeof detail === 'object' && 'code' in detail) {
+      const code = (detail as Record<string, unknown>).code;
+      if (typeof code === 'string') return code;
+    }
+  }
+  return null;
+}
+
 export default function OAuthCallback() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -46,15 +58,10 @@ export default function OAuthCallback() {
     'Привязка завершена. Теперь вы можете входить через связанные способы входа.',
   );
 
-  const { loginWithOAuth, setTokens, setUser, checkAdminStatus, isAuthenticated } = useAuthStore(
-    (state) => ({
-      loginWithOAuth: state.loginWithOAuth,
-      setTokens: state.setTokens,
-      setUser: state.setUser,
-      checkAdminStatus: state.checkAdminStatus,
-      isAuthenticated: state.isAuthenticated,
-    }),
-  );
+  const { loginWithOAuth, isAuthenticated } = useAuthStore((state) => ({
+    loginWithOAuth: state.loginWithOAuth,
+    isAuthenticated: state.isAuthenticated,
+  }));
 
   useEffect(() => {
     if (hasRun.current) return;
@@ -101,13 +108,11 @@ export default function OAuthCallback() {
 
       if (mode === 'link-browser' && provider) {
         try {
-          const response = await authApi.linkProviderCallback(provider, code, urlState, {
+          await authApi.linkProviderCallback(provider, code, urlState, {
             device_id: deviceId || undefined,
             type: responseType || undefined,
           });
-          setTokens(response.access_token, response.refresh_token);
-          setUser(response.user);
-          await checkAdminStatus();
+          markPendingAccountLinkRefresh();
           stashSuccessNotification({
             type: 'account_linked',
             title: accountLinkedTitle,
@@ -117,7 +122,11 @@ export default function OAuthCallback() {
         } catch (err) {
           setErrorMode('link-browser');
           setError(
-            getErrorDetail(err) || t('auth.oauthError', 'Authorization was denied or failed'),
+            getLocalizedIdentityLinkMessage(
+              t,
+              getErrorCode(err),
+              getErrorDetail(err) || t('auth.oauthError', 'Authorization was denied or failed'),
+            ),
           );
         }
         return;
@@ -162,9 +171,6 @@ export default function OAuthCallback() {
     navigate,
     isAuthenticated,
     t,
-    setTokens,
-    setUser,
-    checkAdminStatus,
     accountLinkedTitle,
     accountLinkedMessage,
   ]);

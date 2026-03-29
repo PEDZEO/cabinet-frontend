@@ -8,6 +8,7 @@ import { Button } from '@/components/primitives/Button';
 import { UltimaProviderAccountLinkingView } from '@/components/ultima/UltimaProviderAccountLinkingView';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { getLocalizedIdentityLinkMessage } from '@/features/account-linking/linkingMessages';
+import { consumePendingAccountLinkRefresh } from '@/utils/accountLinkingFlow';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { getTelegramInitData, isInTelegramWebApp } from '@/hooks/useTelegramSDK';
 import { useUltimaAccountLinkingMode } from '@/hooks/useUltimaAccountLinkingMode';
@@ -34,7 +35,7 @@ type LinkFlowStep = 'idle' | 'preview' | 'warning' | 'manual' | 'done';
 
 export default function UltimaAccountLinking() {
   const { t } = useTranslation();
-  const { setUser, setTokens, checkAdminStatus, user } = useAuthStore();
+  const { setUser, setTokens, checkAdminStatus, refreshUser, user } = useAuthStore();
   const queryClient = useQueryClient();
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   const { isProviderAuthMode } = useUltimaAccountLinkingMode();
@@ -112,7 +113,7 @@ export default function UltimaAccountLinking() {
       case 'link_code_attempts_exceeded':
         return 'Слишком много попыток. Попробуйте позже';
       case 'link_code_identity_conflict':
-        return 'Конфликт идентификаторов. Нужна ручная проверка';
+        return 'Этот способ входа уже привязан к другому профилю. Сначала войдите в него или отвяжите вход там.';
       case 'link_code_source_inactive':
       case 'link_code_target_inactive':
         return 'Один из аккаунтов неактивен';
@@ -288,11 +289,27 @@ export default function UltimaAccountLinking() {
 
     const stashedNotification = consumeStashedSuccessNotification();
     if (!stashedNotification || stashedNotification.type !== 'account_linked') return;
+    const shouldRefreshUser = consumePendingAccountLinkRefresh();
 
     setProviderLinkError(null);
     setProviderLinkSuccess(null);
-    showSuccessNotification(stashedNotification, { dedupeMs: 0 });
-  }, []);
+    if (shouldRefreshUser) {
+      void refreshUser();
+      void queryClient.invalidateQueries({ queryKey: ['linked-identities'] });
+      void queryClient.invalidateQueries({ queryKey: ['user'] });
+    }
+
+    const showNotification = () => {
+      showSuccessNotification(stashedNotification, { dedupeMs: 0 });
+    };
+
+    if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
+      window.requestAnimationFrame(showNotification);
+      return;
+    }
+
+    showNotification();
+  }, [queryClient, refreshUser]);
 
   useEffect(() => {
     if (!pendingLinkResult?.pending) return;
