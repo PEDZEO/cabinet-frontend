@@ -805,7 +805,7 @@ export function UltimaDashboard() {
     ? 'absolute right-5 top-5 z-30 inline-flex h-10 items-center gap-2 rounded-full border border-white/10 bg-black/25 px-4 text-sm font-medium text-white/84 backdrop-blur'
     : 'absolute right-4 top-2 z-30 inline-flex h-9 items-center gap-1.5 rounded-full border border-amber-300/30 bg-black/30 px-3 text-xs font-medium text-amber-200 backdrop-blur';
   const shellClassName = cn(
-    'ultima-shell',
+    'ultima-shell ultima-shell-shared-nav-docked',
     isDesktopViewport && 'ultima-flat-frames ultima-shell-dashboard-desktop',
   );
   const bottomNav = <UltimaBottomNav active="home" onSupportClick={openSupport} />;
@@ -1086,7 +1086,7 @@ export function UltimaDashboard() {
           )}
         </section>
 
-        <section className="ultima-mobile-dock-footer ultima-mobile-dock-footer-shared lg:mt-0">
+        <section className="ultima-mobile-dock-footer lg:mt-0">
           <button
             type="button"
             onClick={openSubscriptionPurchase}

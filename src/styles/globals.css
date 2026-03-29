@@ -1292,6 +1292,14 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   overflow: hidden;
 }
 
+.ultima-shell-shared-nav-docked {
+  --ultima-shell-bottom-gap: var(--ultima-shell-frame-bottom-gap);
+}
+
+.ultima-shell-shared-nav-docked .ultima-shell-mobile-docked {
+  padding-bottom: var(--ultima-shared-nav-clearance, 0px);
+}
+
 .ultima-mobile-dock-footer {
   margin-top: auto;
   flex-shrink: 0;

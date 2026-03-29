@@ -707,9 +707,9 @@ export function UltimaProfile() {
   }
 
   return (
-    <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-muted-aura">
+    <div className="ultima-shell ultima-shell-shared-nav-docked ultima-shell-wide ultima-flat-frames ultima-shell-muted-aura">
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
-        <section className="ultima-scrollbar ultima-mobile-content-shared flex min-h-0 flex-1 flex-col overflow-y-auto pr-1 pt-[clamp(8px,2vh,16px)]">
+        <section className="ultima-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto pr-1 pt-[clamp(8px,2vh,16px)]">
           <section
             className={`${ultimaPanelClassName} mb-3 p-3.5`}
             style={ULTIMA_SECTION_SURFACE_STYLE}
