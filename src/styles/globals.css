@@ -611,6 +611,15 @@
     0 10px 20px color-mix(in srgb, var(--ultima-color-scrollbar-thumb) 24%, transparent);
 }
 
+.ultima-scroll-stable {
+  transform: translateZ(0);
+  contain: layout paint style;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
 @media (pointer: coarse) {
   .ultima-scrollbar::-webkit-scrollbar {
     width: 5px;
@@ -656,6 +665,10 @@ html:not(.ultima-frames-enabled) .ultima-flat-frames [class*='border'] {
   position: absolute;
   inset: 0;
   overflow: hidden;
+  transform: translateZ(0);
+  contain: paint;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   background: radial-gradient(
     95% 70% at 50% 45%,
     color-mix(in srgb, var(--ultima-color-aura) 16%, transparent),

@@ -344,7 +344,7 @@ export function UltimaSupport() {
 
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[380px_minmax(0,1fr)] lg:gap-4">
         <div
-          className={`${ultimaPaneClassName} max-h-[30vh] space-y-2 overflow-y-auto p-2 pr-1.5 lg:max-h-none lg:min-h-[500px] lg:p-3 lg:pr-2`}
+          className={`${ultimaPaneClassName} ultima-scrollbar ultima-scroll-stable max-h-[30vh] space-y-2 overflow-y-auto p-2 pr-1.5 lg:max-h-none lg:min-h-[500px] lg:p-3 lg:pr-2`}
           style={ULTIMA_SUPPORT_PANE_STYLE}
         >
           {ticketsLoading ? (
@@ -462,7 +462,7 @@ export function UltimaSupport() {
                   )}
                 </div>
               </div>
-              <div className="max-h-[24vh] space-y-2 overflow-y-auto pr-1 lg:max-h-[52vh] lg:space-y-2.5">
+              <div className="ultima-scrollbar ultima-scroll-stable max-h-[24vh] space-y-2 overflow-y-auto pr-1 lg:max-h-[52vh] lg:space-y-2.5">
                 {ticketLoading ? (
                   <p className="text-[12px] text-white/60">{t('common.loading')}</p>
                 ) : (
@@ -636,23 +636,27 @@ export function UltimaSupport() {
   return (
     <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
       <div className="ultima-shell-aura" />
-      <div className="ultima-shell-inner lg:max-w-[1100px]">
-        <header className="mb-4">
-          <h1 className="text-[clamp(34px,9vw,46px)] font-semibold leading-[0.92] tracking-[-0.01em] text-white">
-            {t('support.title')}
-          </h1>
-          <p className="mt-1.5 text-[16px] leading-tight text-white/60">
-            {ticketsDisabled
-              ? t('support.contactSupport', {
-                  username: supportConfig?.support_username || '@support',
-                })
-              : t('support.yourTickets')}
-          </p>
-        </header>
+      <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[1100px]">
+        <section className="ultima-scrollbar ultima-scroll-stable flex min-h-0 flex-1 flex-col overflow-y-auto pb-3 pr-1">
+          <header className="mb-4">
+            <h1 className="text-[clamp(34px,9vw,46px)] font-semibold leading-[0.92] tracking-[-0.01em] text-white">
+              {t('support.title')}
+            </h1>
+            <p className="mt-1.5 text-[16px] leading-tight text-white/60">
+              {ticketsDisabled
+                ? t('support.contactSupport', {
+                    username: supportConfig?.support_username || '@support',
+                  })
+                : t('support.yourTickets')}
+            </p>
+          </header>
 
-        {supportContent}
+          {supportContent}
+        </section>
 
-        <div className="ultima-nav-dock">{bottomNav}</div>
+        <div className="ultima-mobile-dock-footer">
+          <div className="ultima-nav-dock">{bottomNav}</div>
+        </div>
       </div>
     </div>
   );
