@@ -635,7 +635,6 @@ export function UltimaSupport() {
 
   return (
     <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-muted-aura">
-      <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[1100px]">
         <section className="ultima-scrollbar ultima-scroll-stable flex min-h-0 flex-1 flex-col overflow-y-auto pb-3 pr-1">
           <header className="mb-4">
