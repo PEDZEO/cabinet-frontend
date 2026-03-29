@@ -46,6 +46,8 @@ export interface AnalyticsCounters {
 }
 
 export interface UltimaThemeConfig {
+  themePresetId: string;
+  animationPresetId: string;
   primaryColor: string;
   primaryTextColor: string;
   secondaryColor: string;
@@ -73,6 +75,8 @@ export interface UltimaThemeConfig {
 }
 
 export const DEFAULT_ULTIMA_THEME_CONFIG: UltimaThemeConfig = {
+  themePresetId: 'emerald-classic',
+  animationPresetId: 'orbital-aura',
   primaryColor: '#1bd29f',
   primaryTextColor: '#ffffff',
   secondaryColor: '#0c2d2a',

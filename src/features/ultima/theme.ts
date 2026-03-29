@@ -1,40 +1,62 @@
-import { useEffect } from 'react';
+import { type CSSProperties, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { brandingApi, getCachedUltimaThemeConfig, type UltimaThemeConfig } from '@/api/branding';
+import { getDefaultUltimaThemeWithPresets } from './presets';
+
+function normalizeUltimaThemeConfig(config: UltimaThemeConfig): UltimaThemeConfig {
+  return {
+    ...getDefaultUltimaThemeWithPresets(),
+    ...config,
+  };
+}
+
+export function getUltimaThemeCssVarStyle(config: UltimaThemeConfig): CSSProperties {
+  const resolved = normalizeUltimaThemeConfig(config);
+
+  return {
+    ['--ultima-color-primary' as string]: resolved.primaryColor,
+    ['--ultima-color-primary-text' as string]: resolved.primaryTextColor,
+    ['--ultima-color-secondary' as string]: resolved.secondaryColor,
+    ['--ultima-color-secondary-text' as string]: resolved.secondaryTextColor,
+    ['--ultima-color-nav-bg' as string]: resolved.navBackgroundColor,
+    ['--ultima-color-nav-active' as string]: resolved.navActiveColor,
+    ['--ultima-color-nav-text' as string]: resolved.navTextColor,
+    ['--ultima-color-bg-top' as string]: resolved.backgroundTopColor,
+    ['--ultima-color-bg-bottom' as string]: resolved.backgroundBottomColor,
+    ['--ultima-color-aura' as string]: resolved.auraColor,
+    ['--ultima-color-ring' as string]: resolved.ringColor,
+    ['--ultima-color-surface' as string]: resolved.surfaceColor,
+    ['--ultima-color-surface-border' as string]: resolved.surfaceBorderColor,
+    ['--ultima-color-scrollbar-thumb' as string]: resolved.scrollbarThumbColor,
+    ['--ultima-color-scrollbar-track' as string]: resolved.scrollbarTrackColor,
+    ['--ultima-animation-content-enter-ms' as string]: String(resolved.contentEnterMs),
+    ['--ultima-animation-tap-ring-ms' as string]: String(resolved.tapRingMs),
+    ['--ultima-animation-ring-wave-sec' as string]: String(resolved.ringWaveSec),
+    ['--ultima-animation-slider-glow-sec' as string]: String(resolved.sliderGlowSec),
+    ['--ultima-animation-step-ring-sec' as string]: String(resolved.stepRingSec),
+    ['--ultima-animation-success-wave-ms' as string]: String(resolved.successWaveMs),
+    ['--ultima-animation-item-enter-ms' as string]: String(resolved.itemEnterMs),
+  };
+}
 
 export function applyUltimaThemeConfig(config: UltimaThemeConfig) {
   const root = document.documentElement;
-  root.style.setProperty('--ultima-color-primary', config.primaryColor);
-  root.style.setProperty('--ultima-color-primary-text', config.primaryTextColor);
-  root.style.setProperty('--ultima-color-secondary', config.secondaryColor);
-  root.style.setProperty('--ultima-color-secondary-text', config.secondaryTextColor);
-  root.style.setProperty('--ultima-color-nav-bg', config.navBackgroundColor);
-  root.style.setProperty('--ultima-color-nav-active', config.navActiveColor);
-  root.style.setProperty('--ultima-color-nav-text', config.navTextColor);
-  root.style.setProperty('--ultima-color-bg-top', config.backgroundTopColor);
-  root.style.setProperty('--ultima-color-bg-bottom', config.backgroundBottomColor);
-  root.style.setProperty('--ultima-color-aura', config.auraColor);
-  root.style.setProperty('--ultima-color-ring', config.ringColor);
-  root.style.setProperty('--ultima-color-surface', config.surfaceColor);
-  root.style.setProperty('--ultima-color-surface-border', config.surfaceBorderColor);
-  root.style.setProperty('--ultima-color-scrollbar-thumb', config.scrollbarThumbColor);
-  root.style.setProperty('--ultima-color-scrollbar-track', config.scrollbarTrackColor);
-  root.style.setProperty('--ultima-animation-content-enter-ms', String(config.contentEnterMs));
-  root.style.setProperty('--ultima-animation-tap-ring-ms', String(config.tapRingMs));
-  root.style.setProperty('--ultima-animation-ring-wave-sec', String(config.ringWaveSec));
-  root.style.setProperty('--ultima-animation-slider-glow-sec', String(config.sliderGlowSec));
-  root.style.setProperty('--ultima-animation-step-ring-sec', String(config.stepRingSec));
-  root.style.setProperty('--ultima-animation-success-wave-ms', String(config.successWaveMs));
-  root.style.setProperty('--ultima-animation-item-enter-ms', String(config.itemEnterMs));
-  root.classList.toggle('ultima-frames-enabled', config.framesEnabled === true);
+  const resolved = normalizeUltimaThemeConfig(config);
+  const themeVars = getUltimaThemeCssVarStyle(resolved);
+
+  for (const [key, value] of Object.entries(themeVars)) {
+    root.style.setProperty(key, String(value));
+  }
+  root.dataset.ultimaAnimation = resolved.animationPresetId;
+  root.classList.toggle('ultima-frames-enabled', resolved.framesEnabled === true);
 }
 
 export function useUltimaThemeConfig() {
-  const cachedThemeConfig = getCachedUltimaThemeConfig();
+  const cachedThemeConfig = getCachedUltimaThemeConfig() ?? getDefaultUltimaThemeWithPresets();
   const { data } = useQuery({
     queryKey: ['ultima-theme-config'],
     queryFn: brandingApi.getUltimaThemeConfig,
-    initialData: cachedThemeConfig ?? undefined,
+    initialData: cachedThemeConfig,
     placeholderData: (previousData) => previousData,
     staleTime: 60_000,
   });

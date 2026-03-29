@@ -123,12 +123,13 @@ export default function AdminUltimaSettings() {
             <span className="min-w-0">
               <span className="block text-sm font-medium text-dark-100">
                 {t('admin.ultimaSettings.themeTitle', {
-                  defaultValue: 'Тема и анимации Ultima',
+                  defaultValue: 'Темы и сцены Ultima',
                 })}
               </span>
               <span className="block text-xs text-dark-400">
                 {t('admin.ultimaSettings.themeDesc', {
-                  defaultValue: 'Полная кастомизация цветов и скорости анимаций Ultima режима.',
+                  defaultValue:
+                    'Каталог тем, отдельный выбор анимационных сцен и ручная доводка Ultima режима.',
                 })}
               </span>
             </span>

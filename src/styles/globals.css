@@ -107,6 +107,68 @@
   backface-visibility: hidden;
 }
 
+@keyframes ultima-orbit-rotate {
+  from {
+    transform: rotate(0deg) scale(1);
+  }
+  to {
+    transform: rotate(360deg) scale(1.04);
+  }
+}
+
+@keyframes ultima-nebula-shift {
+  0% {
+    transform: translate3d(-4%, -2%, 0) scale(0.96);
+  }
+  50% {
+    transform: translate3d(3%, 2%, 0) scale(1.06);
+  }
+  100% {
+    transform: translate3d(-2%, 4%, 0) scale(0.98);
+  }
+}
+
+@keyframes ultima-radar-sweep {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ultima-grid-pan {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, -24px, 0);
+  }
+}
+
+@keyframes ultima-pulse-wave {
+  0% {
+    transform: scale(0.86);
+    opacity: 0.12;
+  }
+  50% {
+    opacity: 0.34;
+  }
+  100% {
+    transform: scale(1.18);
+    opacity: 0;
+  }
+}
+
+@keyframes ultima-meteor-drift {
+  from {
+    transform: translate3d(-12%, -12%, 0);
+  }
+  to {
+    transform: translate3d(12%, 12%, 0);
+  }
+}
+
 @keyframes ultima-tap-ring {
   0% {
     transform: translate(-50%, -50%) scale(0.08);
@@ -475,16 +537,288 @@ html:not(.ultima-frames-enabled) .ultima-flat-frames [class*='border'] {
   padding-bottom: var(--ultima-shell-bottom-gap);
 }
 
-.ultima-shell-aura {
+.ultima-shell-aura,
+.ultima-preview-aura {
   pointer-events: none;
   position: absolute;
   inset: 0;
+  overflow: hidden;
   background: radial-gradient(
     95% 70% at 50% 45%,
     color-mix(in srgb, var(--ultima-color-aura) 16%, transparent),
     transparent 62%,
     transparent 100%
   );
+}
+
+.ultima-shell-aura::before,
+.ultima-shell-aura::after,
+.ultima-preview-aura::before,
+.ultima-preview-aura::after {
+  content: '';
+  position: absolute;
+  inset: -16%;
+  pointer-events: none;
+}
+
+html[data-ultima-animation='orbital-aura'] .ultima-shell-aura,
+.ultima-preview-shell[data-ultima-animation='orbital-aura'] .ultima-preview-aura {
+  background:
+    radial-gradient(
+      72% 66% at 50% 46%,
+      color-mix(in srgb, var(--ultima-color-aura) 20%, transparent),
+      transparent 68%
+    ),
+    radial-gradient(
+      90% 88% at 50% 32%,
+      color-mix(in srgb, var(--ultima-color-ring) 8%, transparent),
+      transparent 72%
+    );
+}
+
+html[data-ultima-animation='orbital-aura'] .ultima-shell-aura::before,
+.ultima-preview-shell[data-ultima-animation='orbital-aura'] .ultima-preview-aura::before {
+  inset: -22%;
+  background: conic-gradient(
+    from 30deg,
+    transparent 0deg 120deg,
+    color-mix(in srgb, var(--ultima-color-ring) 20%, transparent) 155deg,
+    color-mix(in srgb, var(--ultima-color-aura) 18%, transparent) 218deg,
+    transparent 300deg 360deg
+  );
+  border-radius: 9999px;
+  filter: blur(42px);
+  opacity: 0.9;
+  animation: ultima-orbit-rotate calc(var(--ultima-animation-ring-wave-sec, 18) * 1s) linear
+    infinite;
+}
+
+html[data-ultima-animation='orbital-aura'] .ultima-shell-aura::after,
+.ultima-preview-shell[data-ultima-animation='orbital-aura'] .ultima-preview-aura::after {
+  inset: -10%;
+  background: radial-gradient(
+    circle at 50% 44%,
+    color-mix(in srgb, var(--ultima-color-aura) 20%, transparent),
+    transparent 52%
+  );
+  filter: blur(28px);
+  animation: ultima-nebula-shift calc(var(--ultima-animation-step-ring-sec, 5.8) * 1s) ease-in-out
+    infinite;
+}
+
+html[data-ultima-animation='radar-sweep'] .ultima-shell-aura,
+.ultima-preview-shell[data-ultima-animation='radar-sweep'] .ultima-preview-aura {
+  background:
+    radial-gradient(
+      78% 76% at 50% 50%,
+      color-mix(in srgb, var(--ultima-color-aura) 12%, transparent),
+      transparent 64%
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      color-mix(in srgb, var(--ultima-color-ring) 12%, transparent) 0 2%,
+      transparent 2% 18%,
+      color-mix(in srgb, var(--ultima-color-ring) 10%, transparent) 18% 19%,
+      transparent 19% 32%,
+      color-mix(in srgb, var(--ultima-color-ring) 8%, transparent) 32% 33%,
+      transparent 33% 100%
+    );
+}
+
+html[data-ultima-animation='radar-sweep'] .ultima-shell-aura::before,
+.ultima-preview-shell[data-ultima-animation='radar-sweep'] .ultima-preview-aura::before {
+  inset: -8%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg 312deg,
+    color-mix(in srgb, var(--ultima-color-ring) 0%, transparent) 320deg,
+    color-mix(in srgb, var(--ultima-color-ring) 30%, transparent) 338deg,
+    color-mix(in srgb, var(--ultima-color-aura) 28%, transparent) 356deg,
+    transparent 360deg
+  );
+  border-radius: 9999px;
+  filter: blur(18px);
+  animation: ultima-radar-sweep calc(var(--ultima-animation-ring-wave-sec, 18) * 0.7s) linear
+    infinite;
+}
+
+html[data-ultima-animation='radar-sweep'] .ultima-shell-aura::after,
+.ultima-preview-shell[data-ultima-animation='radar-sweep'] .ultima-preview-aura::after {
+  inset: 14%;
+  border: 1px solid color-mix(in srgb, var(--ultima-color-ring) 16%, transparent);
+  border-radius: 9999px;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--ultima-color-ring) 8%, transparent),
+    0 0 40px color-mix(in srgb, var(--ultima-color-aura) 10%, transparent);
+}
+
+html[data-ultima-animation='nebula-drift'] .ultima-shell-aura,
+.ultima-preview-shell[data-ultima-animation='nebula-drift'] .ultima-preview-aura {
+  background:
+    radial-gradient(
+      62% 52% at 28% 30%,
+      color-mix(in srgb, var(--ultima-color-aura) 18%, transparent),
+      transparent 74%
+    ),
+    radial-gradient(
+      54% 48% at 72% 64%,
+      color-mix(in srgb, var(--ultima-color-ring) 16%, transparent),
+      transparent 78%
+    ),
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      color-mix(in srgb, var(--ultima-color-aura) 4%, transparent) 100%
+    );
+}
+
+html[data-ultima-animation='nebula-drift'] .ultima-shell-aura::before,
+.ultima-preview-shell[data-ultima-animation='nebula-drift'] .ultima-preview-aura::before {
+  inset: -24%;
+  background:
+    radial-gradient(
+      circle at 24% 28%,
+      color-mix(in srgb, var(--ultima-color-aura) 22%, transparent),
+      transparent 36%
+    ),
+    radial-gradient(
+      circle at 78% 34%,
+      color-mix(in srgb, var(--ultima-color-ring) 18%, transparent),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 54% 72%,
+      color-mix(in srgb, var(--ultima-color-primary) 14%, transparent),
+      transparent 28%
+    );
+  filter: blur(52px);
+  animation: ultima-nebula-shift calc(var(--ultima-animation-step-ring-sec, 5.8) * 1.8s) ease-in-out
+    infinite alternate;
+}
+
+html[data-ultima-animation='nebula-drift'] .ultima-shell-aura::after,
+.ultima-preview-shell[data-ultima-animation='nebula-drift'] .ultima-preview-aura::after {
+  inset: -12%;
+  background: linear-gradient(
+    135deg,
+    transparent 0%,
+    color-mix(in srgb, var(--ultima-color-ring) 10%, transparent) 48%,
+    transparent 100%
+  );
+  filter: blur(36px);
+  animation: ultima-orbit-rotate calc(var(--ultima-animation-ring-wave-sec, 18) * 1.4s) linear
+    infinite reverse;
+  opacity: 0.72;
+}
+
+html[data-ultima-animation='pulse-grid'] .ultima-shell-aura,
+.ultima-preview-shell[data-ultima-animation='pulse-grid'] .ultima-preview-aura {
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--ultima-color-ring) 8%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--ultima-color-ring) 8%, transparent) 1px,
+      transparent 1px
+    ),
+    radial-gradient(
+      70% 62% at 50% 48%,
+      color-mix(in srgb, var(--ultima-color-aura) 12%, transparent),
+      transparent 70%
+    );
+  background-size:
+    42px 42px,
+    42px 42px,
+    auto;
+}
+
+html[data-ultima-animation='pulse-grid'] .ultima-shell-aura::before,
+.ultima-preview-shell[data-ultima-animation='pulse-grid'] .ultima-preview-aura::before {
+  inset: -18%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--ultima-color-ring) 26%, transparent) 0%,
+    transparent 56%
+  );
+  filter: blur(10px);
+  animation: ultima-pulse-wave calc(var(--ultima-animation-step-ring-sec, 5.8) * 1s) ease-out
+    infinite;
+}
+
+html[data-ultima-animation='pulse-grid'] .ultima-shell-aura::after,
+.ultima-preview-shell[data-ultima-animation='pulse-grid'] .ultima-preview-aura::after {
+  inset: -6%;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ultima-color-ring) 6%, transparent) 0%,
+    transparent 100%
+  );
+  animation: ultima-grid-pan calc(var(--ultima-animation-ring-wave-sec, 18) * 0.9s) linear infinite;
+  opacity: 0.58;
+}
+
+html[data-ultima-animation='meteor-stream'] .ultima-shell-aura,
+.ultima-preview-shell[data-ultima-animation='meteor-stream'] .ultima-preview-aura {
+  background:
+    radial-gradient(
+      76% 62% at 50% 44%,
+      color-mix(in srgb, var(--ultima-color-aura) 14%, transparent),
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      color-mix(in srgb, var(--ultima-color-ring) 4%, transparent) 100%
+    );
+}
+
+html[data-ultima-animation='meteor-stream'] .ultima-shell-aura::before,
+.ultima-preview-shell[data-ultima-animation='meteor-stream'] .ultima-preview-aura::before {
+  inset: -30%;
+  background:
+    linear-gradient(
+      125deg,
+      transparent 18%,
+      color-mix(in srgb, var(--ultima-color-ring) 0%, transparent) 18% 45%,
+      color-mix(in srgb, var(--ultima-color-ring) 18%, transparent) 48%,
+      transparent 52% 100%
+    ),
+    linear-gradient(
+      125deg,
+      transparent 32%,
+      color-mix(in srgb, var(--ultima-color-aura) 0%, transparent) 32% 58%,
+      color-mix(in srgb, var(--ultima-color-aura) 16%, transparent) 62%,
+      transparent 66% 100%
+    );
+  background-size:
+    240px 240px,
+    320px 320px;
+  filter: blur(8px);
+  animation: ultima-meteor-drift calc(var(--ultima-animation-slider-glow-sec, 2.6) * 2.2s) linear
+    infinite;
+  opacity: 0.9;
+}
+
+html[data-ultima-animation='meteor-stream'] .ultima-shell-aura::after,
+.ultima-preview-shell[data-ultima-animation='meteor-stream'] .ultima-preview-aura::after {
+  inset: -14%;
+  background:
+    radial-gradient(
+      circle at 72% 28%,
+      color-mix(in srgb, var(--ultima-color-ring) 18%, transparent),
+      transparent 18%
+    ),
+    radial-gradient(
+      circle at 32% 62%,
+      color-mix(in srgb, var(--ultima-color-aura) 14%, transparent),
+      transparent 20%
+    );
+  filter: blur(30px);
+  animation: ultima-nebula-shift calc(var(--ultima-animation-step-ring-sec, 5.8) * 1.2s) ease-in-out
+    infinite alternate;
 }
 
 .ultima-shell [class*='bg-[rgba(12,45,42'],
