@@ -61,10 +61,8 @@ export default function OAuthCallback() {
     'Привязка завершена. Теперь вы можете входить через связанные способы входа.',
   );
 
-  const { loginWithOAuth, isAuthenticated } = useAuthStore((state) => ({
-    loginWithOAuth: state.loginWithOAuth,
-    isAuthenticated: state.isAuthenticated,
-  }));
+  const loginWithOAuth = useAuthStore((state) => state.loginWithOAuth);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const hasStoredSession =
     Boolean(tokenStorage.getAccessToken()) || Boolean(tokenStorage.getRefreshToken());
 
