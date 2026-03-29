@@ -630,8 +630,12 @@ html:not(.ultima-frames-enabled) .ultima-flat-frames [class*='border'] {
 }
 
 .ultima-shell {
+  --ultima-shell-viewport-height: 100dvh;
+  --ultima-shell-safe-bottom: env(safe-area-inset-bottom, 0px);
   --ultima-shell-top-gap: clamp(12px, 2.2vh, 16px);
-  --ultima-shell-frame-bottom-gap: calc(14px + env(safe-area-inset-bottom, 0px));
+  --ultima-shell-frame-bottom-gap: calc(14px + var(--ultima-shell-safe-bottom));
+  --ultima-shared-nav-height: 56px;
+  --ultima-shared-nav-offset: 14px;
   --ultima-shared-nav-clearance: 0px;
   --ultima-shell-bottom-gap: max(
     var(--ultima-shell-frame-bottom-gap),
@@ -640,7 +644,7 @@ html:not(.ultima-frames-enabled) .ultima-flat-frames [class*='border'] {
   position: relative;
   height: auto;
   min-height: 100svh;
-  min-height: 100dvh;
+  min-height: var(--ultima-shell-viewport-height);
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior-y: contain;
@@ -1278,7 +1282,10 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   margin-inline: auto;
   display: flex;
   height: auto;
-  min-height: calc(100dvh - var(--ultima-shell-top-gap) - var(--ultima-shell-bottom-gap));
+  min-height: calc(
+    var(--ultima-shell-viewport-height) - var(--ultima-shell-top-gap) -
+      var(--ultima-shell-bottom-gap)
+  );
   min-width: 0;
   width: 100%;
   max-width: 420px;
@@ -1286,14 +1293,27 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
 }
 
 .ultima-shell-mobile-docked {
-  height: calc(100dvh - var(--ultima-shell-top-gap) - var(--ultima-shell-bottom-gap));
-  min-height: calc(100dvh - var(--ultima-shell-top-gap) - var(--ultima-shell-bottom-gap));
-  max-height: calc(100dvh - var(--ultima-shell-top-gap) - var(--ultima-shell-bottom-gap));
+  height: calc(
+    var(--ultima-shell-viewport-height) - var(--ultima-shell-top-gap) -
+      var(--ultima-shell-bottom-gap)
+  );
+  min-height: calc(
+    var(--ultima-shell-viewport-height) - var(--ultima-shell-top-gap) -
+      var(--ultima-shell-bottom-gap)
+  );
+  max-height: calc(
+    var(--ultima-shell-viewport-height) - var(--ultima-shell-top-gap) -
+      var(--ultima-shell-bottom-gap)
+  );
   overflow: hidden;
 }
 
 .ultima-shell-shared-nav-docked {
   --ultima-shell-bottom-gap: var(--ultima-shell-frame-bottom-gap);
+  --ultima-shared-nav-clearance: calc(
+    var(--ultima-shared-nav-height) + var(--ultima-shared-nav-offset) +
+      var(--ultima-shell-safe-bottom)
+  );
 }
 
 .ultima-shell-shared-nav-docked .ultima-shell-mobile-docked {
@@ -1342,7 +1362,7 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   display: flex;
   justify-content: center;
   padding-right: calc(clamp(12px, 3vw, 16px) + env(safe-area-inset-right, 0px));
-  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(14px + var(--ultima-shell-safe-bottom, env(safe-area-inset-bottom, 0px)));
   padding-left: calc(clamp(12px, 3vw, 16px) + env(safe-area-inset-left, 0px));
   pointer-events: none;
   transition:
@@ -1490,7 +1510,9 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
 @media (max-height: 760px) {
   .ultima-shell {
     --ultima-shell-top-gap: 10px;
-    --ultima-shell-frame-bottom-gap: calc(10px + env(safe-area-inset-bottom, 0px));
+    --ultima-shell-frame-bottom-gap: calc(10px + var(--ultima-shell-safe-bottom));
+    --ultima-shared-nav-height: 48px;
+    --ultima-shared-nav-offset: 10px;
   }
 
   .ultima-mobile-overlay {
@@ -1509,21 +1531,15 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   }
 
   .ultima-shared-nav-shell {
-    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(10px + var(--ultima-shell-safe-bottom, env(safe-area-inset-bottom, 0px)));
   }
 
   .ultima-mobile-dock-footer-shared {
-    padding-bottom: var(
-      --ultima-shared-nav-clearance,
-      calc(68px + env(safe-area-inset-bottom, 0px))
-    ) !important;
+    padding-bottom: var(--ultima-shared-nav-clearance) !important;
   }
 
   .ultima-mobile-content-shared {
-    padding-bottom: var(
-      --ultima-shared-nav-clearance,
-      calc(68px + env(safe-area-inset-bottom, 0px))
-    ) !important;
+    padding-bottom: var(--ultima-shared-nav-clearance) !important;
   }
 }
 
@@ -1531,6 +1547,8 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   .ultima-shell {
     padding-left: calc(10px + env(safe-area-inset-left, 0px));
     padding-right: calc(10px + env(safe-area-inset-right, 0px));
+    --ultima-shared-nav-height: 48px;
+    --ultima-shared-nav-offset: 12px;
   }
 
   .ultima-mobile-overlay {
@@ -1552,26 +1570,24 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
 
   .ultima-shared-nav-shell {
     padding-right: calc(10px + env(safe-area-inset-right, 0px));
-    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(12px + var(--ultima-shell-safe-bottom, env(safe-area-inset-bottom, 0px)));
     padding-left: calc(10px + env(safe-area-inset-left, 0px));
   }
 
   .ultima-mobile-dock-footer-shared {
-    padding-bottom: var(
-      --ultima-shared-nav-clearance,
-      calc(66px + env(safe-area-inset-bottom, 0px))
-    ) !important;
+    padding-bottom: var(--ultima-shared-nav-clearance) !important;
   }
 
   .ultima-mobile-content-shared {
-    padding-bottom: var(
-      --ultima-shared-nav-clearance,
-      calc(66px + env(safe-area-inset-bottom, 0px))
-    ) !important;
+    padding-bottom: var(--ultima-shared-nav-clearance) !important;
   }
 }
 
 @media (max-width: 359px) {
+  .ultima-shell {
+    --ultima-shared-nav-height: 44px;
+  }
+
   .ultima-bottom-nav {
     gap: 3px;
     padding: 3px;
@@ -1599,13 +1615,13 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   .ultima-shell {
     display: flex;
     height: auto;
-    min-height: 100dvh;
+    min-height: var(--ultima-shell-viewport-height);
     overflow-x: hidden;
     overflow-y: auto;
     align-items: flex-start;
     justify-content: center;
     padding-top: 12px;
-    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(20px + var(--ultima-shell-safe-bottom));
   }
 
   .ultima-shell-inner {
@@ -1613,14 +1629,14 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
     width: min(100%, 760px);
     max-width: 760px;
     height: auto;
-    min-height: calc(100dvh - 32px - env(safe-area-inset-bottom, 0px));
+    min-height: calc(var(--ultima-shell-viewport-height) - 32px - var(--ultima-shell-safe-bottom));
     max-height: none;
     padding-bottom: 28px;
   }
 
   .ultima-shell-mobile-docked {
     height: auto;
-    min-height: calc(100dvh - 32px - env(safe-area-inset-bottom, 0px));
+    min-height: calc(var(--ultima-shell-viewport-height) - 32px - var(--ultima-shell-safe-bottom));
     max-height: none;
     overflow: visible;
   }
@@ -1671,12 +1687,12 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
     --ultima-dock-max-width: 520px;
     width: min(100%, 520px);
     max-width: 520px;
-    min-height: calc(100dvh - 32px - env(safe-area-inset-bottom, 0px));
+    min-height: calc(var(--ultima-shell-viewport-height) - 32px - var(--ultima-shell-safe-bottom));
   }
 
   .ultima-nav-dock {
     position: sticky;
-    bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(32px + var(--ultima-shell-safe-bottom));
     z-index: 24;
     width: 100%;
     transform: none;
@@ -1694,7 +1710,7 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   .ultima-mobile-overlay {
     align-items: flex-start;
     padding-top: 72px;
-    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(24px + var(--ultima-shell-safe-bottom));
   }
 
   .ultima-mobile-dock-footer-shared {
@@ -1707,7 +1723,7 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
 
   .ultima-mobile-overlay-panel {
     width: min(100%, 560px);
-    max-height: min(calc(100dvh - 112px), 720px);
+    max-height: min(calc(var(--ultima-shell-viewport-height) - 112px), 720px);
   }
 }
 

@@ -48,7 +48,6 @@ import { AppHeader } from './AppHeader';
 import { LiteModeHeader } from './LiteModeHeader';
 
 const ULTIMA_RING_DURATION_SEC = 18;
-const ULTIMA_SHARED_NAV_CLEARANCE = 'calc(98px + env(safe-area-inset-bottom, 0px))';
 
 // Desktop nav icons
 const HomeIcon = ({ className }: { className?: string }) => (
@@ -222,8 +221,14 @@ export function AppShell({ children }: AppShellProps) {
   const queryClient = useQueryClient();
   const isMainPage = location.pathname === '/';
   const { isAdmin, logout } = useAuthStore();
-  const { isFullscreen, safeAreaInset, contentSafeAreaInset, platform, isMobile } =
-    useTelegramSDK();
+  const {
+    isFullscreen,
+    safeAreaInset,
+    contentSafeAreaInset,
+    platform,
+    isMobile,
+    viewportStableHeight,
+  } = useTelegramSDK();
   const haptic = useHaptic();
   const { toggleTheme, isDark } = useTheme();
 
@@ -338,6 +343,23 @@ export function AppShell({ children }: AppShellProps) {
   const headerHeight = isMobileFullscreen
     ? 64 + Math.max(safeAreaInset.top, contentSafeAreaInset.top) + telegramHeaderHeight
     : 64;
+  const ultimaViewportHeight =
+    isMobile && isUltimaMode && viewportStableHeight > 0 ? `${viewportStableHeight}px` : undefined;
+  const ultimaSafeAreaBottom =
+    isMobile && isUltimaMode
+      ? `${Math.max(safeAreaInset.bottom, contentSafeAreaInset.bottom)}px`
+      : undefined;
+  const ultimaShellStyle =
+    isUltimaMode && (ultimaViewportHeight || ultimaSafeAreaBottom)
+      ? {
+          ...(ultimaViewportHeight
+            ? { ['--ultima-shell-viewport-height' as string]: ultimaViewportHeight }
+            : {}),
+          ...(ultimaSafeAreaBottom
+            ? { ['--ultima-shell-safe-bottom' as string]: ultimaSafeAreaBottom }
+            : {}),
+        }
+      : undefined;
 
   const handleDesktopLogoLoad = useCallback((event: SyntheticEvent<HTMLImageElement>) => {
     const { naturalWidth, naturalHeight } = event.currentTarget;
@@ -399,7 +421,7 @@ export function AppShell({ children }: AppShellProps) {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" style={ultimaShellStyle}>
       {/* Animated background (disabled for Ultima mode) */}
       {(!isUltimaModeReady || !isUltimaMode) && <BackgroundRenderer />}
       {isUltimaModeReady && isUltimaAnimatedRoute && (
@@ -640,11 +662,6 @@ export function AppShell({ children }: AppShellProps) {
                 ? 'pt-2 sm:pt-3'
                 : 'pt-6',
         )}
-        style={
-          shouldShowUltimaSharedNav
-            ? { ['--ultima-shared-nav-clearance' as string]: ULTIMA_SHARED_NAV_CLEARANCE }
-            : undefined
-        }
       >
         {isLiteModeReady &&
         isUltimaModeReady &&
