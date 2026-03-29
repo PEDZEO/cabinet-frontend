@@ -6,6 +6,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { authApi } from '@/api/auth';
 import { Card } from '@/components/data-display/Card';
 import { Button } from '@/components/primitives/Button';
+import {
+  getLocalizedAuthErrorDetailMessage,
+  parseApiErrorDetail,
+} from '@/features/auth/shared/authErrorMessages';
 import { useUltimaMode } from '@/hooks/useUltimaMode';
 import { showSuccessNotification } from '@/store/successNotification';
 import { useAuthStore } from '@/store/auth';
@@ -43,30 +47,6 @@ function AccountLinkingContent() {
   const [unlinkError, setUnlinkError] = useState<string | null>(null);
   const [showTips, setShowTips] = useState(false);
 
-  const parseApiError = (
-    err: unknown,
-  ): { code?: string; message?: string; reason?: string; retry_after_seconds?: number } => {
-    const error = err as { response?: { data?: { detail?: unknown } } };
-    const detail = error.response?.data?.detail;
-    if (!detail) return {};
-    if (typeof detail === 'string') return { message: detail };
-    if (typeof detail === 'object') {
-      const payload = detail as {
-        code?: string;
-        message?: string;
-        reason?: string;
-        retry_after_seconds?: number;
-      };
-      return {
-        code: payload.code,
-        message: payload.message,
-        reason: payload.reason,
-        retry_after_seconds: payload.retry_after_seconds,
-      };
-    }
-    return {};
-  };
-
   const formatDateTime = (value?: string | null): string => {
     if (!value) return '-';
     const parsed = new Date(value);
@@ -85,8 +65,8 @@ function AccountLinkingContent() {
     return `${totalSeconds}с`;
   };
 
-  const getLocalizedLinkError = (err: unknown): string => {
-    const { code, message, retry_after_seconds } = parseApiError(err);
+  const getLocalizedLinkError = (err: unknown, provider?: string | null): string => {
+    const { code, message, retryAfterSeconds } = parseApiErrorDetail(err);
     switch (code) {
       case 'link_code_invalid':
         return 'Код недействителен или истек';
@@ -95,7 +75,11 @@ function AccountLinkingContent() {
       case 'link_code_attempts_exceeded':
         return 'Слишком много попыток. Попробуйте позже';
       case 'link_code_identity_conflict':
-        return 'Конфликт идентификаторов. Нужна ручная проверка';
+        return getLocalizedAuthErrorDetailMessage(t, {
+          code,
+          message,
+          provider,
+        });
       case 'link_code_source_inactive':
       case 'link_code_target_inactive':
         return 'Один из аккаунтов неактивен';
@@ -108,9 +92,7 @@ function AccountLinkingContent() {
       case 'telegram_relink_cooldown_active':
         return (
           'Смена Telegram-аккаунта доступна не чаще одного раза в 30 дней.' +
-          (retry_after_seconds
-            ? ` Доступно через: ${formatDurationShort(retry_after_seconds)}.`
-            : '')
+          (retryAfterSeconds ? ` Доступно через: ${formatDurationShort(retryAfterSeconds)}.` : '')
         );
       default:
         return message || t('common.error', 'Произошла ошибка');
@@ -159,7 +141,7 @@ function AccountLinkingContent() {
   };
 
   const getLocalizedUnlinkError = (err: unknown) => {
-    const parsed = parseApiError(err);
+    const parsed = parseApiErrorDetail(err);
     if (parsed.reason) return getUnlinkReasonText(parsed.reason);
     if (parsed.code === 'unlink_otp_resend_cooldown')
       return t(
@@ -254,7 +236,7 @@ function AccountLinkingContent() {
     onError: (err: unknown) => {
       setLinkPreview(null);
       setLinkSuccess(null);
-      const parsed = parseApiError(err);
+      const parsed = parseApiErrorDetail(err);
       setLinkFlowStep(parsed.code === 'manual_merge_required' ? 'manual' : 'idle');
       setPreviewedCode('');
       setLinkError(getLocalizedLinkError(err));
@@ -289,7 +271,7 @@ function AccountLinkingContent() {
     },
     onError: (err: unknown) => {
       setLinkSuccess(null);
-      const parsed = parseApiError(err);
+      const parsed = parseApiErrorDetail(err);
       setLinkFlowStep(parsed.code === 'manual_merge_required' ? 'manual' : 'idle');
       setLinkError(getLocalizedLinkError(err));
     },

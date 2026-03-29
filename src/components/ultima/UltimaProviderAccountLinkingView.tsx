@@ -157,7 +157,7 @@ function ProviderCard({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'rounded-[26px] border border-white/10 bg-[linear-gradient(180deg,rgba(13,41,39,0.9),rgba(7,20,35,0.96))] p-4 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition duration-200',
+        'overflow-hidden rounded-[26px] border border-white/10 bg-[linear-gradient(180deg,rgba(13,41,39,0.9),rgba(7,20,35,0.96))] p-4 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition duration-200',
         disabled
           ? 'cursor-not-allowed opacity-65'
           : 'hover:border-[#59f0c9]/35 hover:bg-[linear-gradient(180deg,rgba(18,55,51,0.96),rgba(8,26,42,0.98))]',
@@ -171,7 +171,7 @@ function ProviderCard({
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-sm font-semibold text-white">{title}</h3>
             {status ? (
-              <span className="border-[#5cf2ca]/28 rounded-full border bg-[#27cda4]/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-[#95f7e1]">
+              <span className="border-[#5cf2ca]/28 max-w-full whitespace-normal break-words rounded-full border bg-[#27cda4]/10 px-2.5 py-1 text-[10px] font-medium leading-tight text-[#95f7e1]">
                 {status}
               </span>
             ) : null}
@@ -225,11 +225,11 @@ export function UltimaProviderAccountLinkingView({
 
   const relinkStatusLabel = telegramIdentity
     ? telegramRelink?.requires_unlink_first
-      ? 'Сначала отвяжите текущий Telegram'
-      : 'Telegram уже подключен'
+      ? 'Сначала отвяжите Telegram'
+      : 'Telegram подключен'
     : isTelegramMiniApp
-      ? 'Можно подключить сейчас'
-      : 'Только в Telegram Mini App';
+      ? 'Можно подключить'
+      : 'Только в Mini App';
 
   const hasAnyAvailableProvider =
     availableOAuthProviders.length > 0 || (isTelegramMiniApp && !telegramIdentity);
@@ -370,9 +370,7 @@ export function UltimaProviderAccountLinkingView({
                     description={getProviderDescription(provider.name)}
                     disabled={busyLinking}
                     busy={directLinkProvider === provider.name}
-                    status={
-                      waitingExternalProvider === provider.name ? 'Ждем подтверждение' : undefined
-                    }
+                    status={waitingExternalProvider === provider.name ? 'Ожидаем вход' : undefined}
                     icon={<OAuthProviderIcon provider={provider.name} className="h-5 w-5" />}
                     onClick={() => onLinkOAuth(provider.name)}
                   />

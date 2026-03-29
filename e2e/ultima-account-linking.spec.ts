@@ -96,6 +96,16 @@ async function bootstrapUltimaAuth(page: Page): Promise<void> {
   );
 }
 
+async function bootstrapUltimaModeOnly(page: Page): Promise<void> {
+  await page.addInitScript(
+    ({ themeConfig }) => {
+      localStorage.setItem('cabinet_ultima_mode', 'true');
+      localStorage.setItem('cabinet_ultima_theme_config', JSON.stringify(themeConfig));
+    },
+    { themeConfig: DEFAULT_THEME_CONFIG },
+  );
+}
+
 async function mockUltimaLinkingApi(page: Page): Promise<void> {
   await page.route('**/api/**', async (route: Route) => {
     const request = route.request();
@@ -257,5 +267,72 @@ test.describe('Ultima account linking callback', () => {
     await expect(
       page.getByText('To link another Telegram account, unlink current Telegram first'),
     ).toHaveCount(0);
+  });
+
+  test('shows provider-specific identity conflict for yandex after returning to account linking', async ({
+    page,
+  }) => {
+    await bootstrapUltimaAuth(page);
+    await mockUltimaLinkingApi(page);
+
+    await page.addInitScript(() => {
+      const payload = JSON.stringify({
+        status: 'error',
+        provider: 'yandex',
+        code: 'link_code_identity_conflict',
+        message: 'Yandex is already linked to another account',
+      });
+      sessionStorage.setItem('cabinet_account_linking_outcome', payload);
+      localStorage.setItem('cabinet_account_linking_outcome', payload);
+    });
+
+    await page.goto('/account-linking');
+
+    await expect(
+      page.getByText(
+        'Этот аккаунт Яндекса уже привязан к другому профилю. Войдите через него или отвяжите этот способ входа в том аккаунте.',
+      ),
+    ).toBeVisible();
+    await expect(
+      page.getByText(
+        'Этот способ входа уже привязан к другому профилю. Сначала войдите в него или отвяжите вход там.',
+      ),
+    ).toHaveCount(0);
+  });
+
+  test('shows provider-specific yandex conflict on oauth login callback', async ({ page }) => {
+    await bootstrapUltimaModeOnly(page);
+    await mockUltimaLinkingApi(page);
+
+    await page.addInitScript(() => {
+      sessionStorage.setItem('oauth_state', 'oauth-login-yandex-state');
+      sessionStorage.setItem('oauth_provider', 'yandex');
+    });
+
+    await page.route('**/api/cabinet/auth/oauth/yandex/callback', async (route: Route) => {
+      await route.fulfill({
+        status: 409,
+        json: {
+          detail: 'Yandex is already linked to another account',
+        },
+      });
+    });
+
+    await page.goto('/auth/oauth/callback?code=test-code&state=oauth-login-yandex-state');
+
+    await expect(
+      page.getByText(
+        'Этот аккаунт Яндекса уже привязан к другому профилю. Войдите через него или отвяжите этот способ входа в том аккаунте.',
+      ),
+    ).toBeVisible();
+  });
+
+  test('shows logout action in ultima profile card', async ({ page }) => {
+    await bootstrapUltimaAuth(page);
+    await mockUltimaLinkingApi(page);
+
+    await page.goto('/profile');
+
+    await expect(page.getByRole('button', { name: 'Выйти из аккаунта' })).toBeVisible();
   });
 });

@@ -3,6 +3,10 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { authApi } from '@/api/auth';
 import { getLocalizedIdentityLinkMessage } from '@/features/account-linking/linkingMessages';
+import {
+  getLocalizedAuthErrorDetailMessage,
+  parseApiErrorDetail,
+} from '@/features/auth/shared/authErrorMessages';
 import { UltimaAuthStatusScreen } from '@/features/auth/shared/UltimaAuthStatusScreen';
 import { useUltimaAuthBranding } from '@/features/auth/shared/useUltimaAuthBranding';
 import { useUltimaMode } from '@/hooks/useUltimaMode';
@@ -20,30 +24,6 @@ import {
 import type { LinkOperationResponse } from '@/types';
 
 type CallbackMode = 'login' | 'link-browser' | 'link-server';
-
-function getErrorDetail(err: unknown): string | null {
-  if (err && typeof err === 'object' && 'response' in err) {
-    const detail = (err as { response?: { data?: { detail?: unknown } } }).response?.data?.detail;
-    if (typeof detail === 'string') return detail;
-    if (detail && typeof detail === 'object' && 'message' in detail) {
-      const message = (detail as Record<string, unknown>).message;
-      if (typeof message === 'string') return message;
-    }
-  }
-  if (err instanceof Error) return err.message;
-  return null;
-}
-
-function getErrorCode(err: unknown): string | null {
-  if (err && typeof err === 'object' && 'response' in err) {
-    const detail = (err as { response?: { data?: { detail?: unknown } } }).response?.data?.detail;
-    if (detail && typeof detail === 'object' && 'code' in detail) {
-      const code = (detail as Record<string, unknown>).code;
-      if (typeof code === 'string') return code;
-    }
-  }
-  return null;
-}
 
 export default function OAuthCallback() {
   const { t } = useTranslation();
@@ -77,16 +57,6 @@ export default function OAuthCallback() {
     const oauthError = searchParams.get('error');
     const oauthErrorDescription = searchParams.get('error_description');
 
-    if (oauthError) {
-      setError(oauthErrorDescription || oauthError);
-      return;
-    }
-
-    if (!code || !urlState) {
-      setError(t('auth.oauthError', 'Authorization was denied or failed'));
-      return;
-    }
-
     let mode: CallbackMode = 'link-server';
     let provider: string | undefined;
     let returnTo: string | undefined;
@@ -106,6 +76,22 @@ export default function OAuthCallback() {
       }
     }
 
+    if (oauthError) {
+      setError(
+        getLocalizedAuthErrorDetailMessage(t, {
+          message: oauthErrorDescription || oauthError,
+          provider,
+          fallback: t('auth.oauthError', 'Authorization was denied or failed'),
+        }),
+      );
+      return;
+    }
+
+    if (!code || !urlState) {
+      setError(t('auth.oauthError', 'Authorization was denied or failed'));
+      return;
+    }
+
     const handle = async () => {
       window.history.replaceState({}, '', '/auth/oauth/callback');
 
@@ -120,23 +106,26 @@ export default function OAuthCallback() {
             status: 'success',
             code: 'identity_linked',
             message: accountLinkedMessage,
+            provider,
           });
           window.location.replace(returnTo || '/account-linking');
         } catch (err) {
+          const parsedError = parseApiErrorDetail(err);
           stashPendingAccountLinkOutcome({
             status: 'error',
-            code: getErrorCode(err),
+            code: parsedError.code,
             message:
-              getErrorDetail(err) || t('auth.oauthError', 'Authorization was denied or failed'),
+              parsedError.message || t('auth.oauthError', 'Authorization was denied or failed'),
+            provider: provider ?? parsedError.provider ?? null,
           });
           window.location.replace(returnTo || '/account-linking');
           setErrorMode('link-browser');
           setError(
-            getLocalizedIdentityLinkMessage(
-              t,
-              getErrorCode(err),
-              getErrorDetail(err) || t('auth.oauthError', 'Authorization was denied or failed'),
-            ),
+            getLocalizedAuthErrorDetailMessage(t, {
+              ...parsedError,
+              provider: provider ?? parsedError.provider,
+              fallback: t('auth.oauthError', 'Authorization was denied or failed'),
+            }),
           );
         }
         return;
@@ -154,9 +143,14 @@ export default function OAuthCallback() {
           });
           navigate(returnTo || '/', { replace: true });
         } catch (err) {
+          const parsedError = parseApiErrorDetail(err);
           setErrorMode('login');
           setError(
-            getErrorDetail(err) || t('auth.oauthError', 'Authorization was denied or failed'),
+            getLocalizedAuthErrorDetailMessage(t, {
+              ...parsedError,
+              provider: provider ?? parsedError.provider,
+              fallback: t('auth.oauthError', 'Authorization was denied or failed'),
+            }),
           );
         }
         return;
@@ -174,6 +168,7 @@ export default function OAuthCallback() {
             status: response.status,
             code: response.code,
             message: response.message,
+            provider: response.provider,
           });
           window.location.replace('/account-linking');
           return;
@@ -181,19 +176,26 @@ export default function OAuthCallback() {
 
         setServerResult(response);
       } catch (err) {
+        const parsedError = parseApiErrorDetail(err);
         if (hasStoredSession) {
           stashPendingAccountLinkOutcome({
             status: 'error',
-            code: getErrorCode(err),
+            code: parsedError.code,
             message:
-              getErrorDetail(err) || t('auth.oauthError', 'Authorization was denied or failed'),
+              parsedError.message || t('auth.oauthError', 'Authorization was denied or failed'),
+            provider: parsedError.provider ?? null,
           });
           window.location.replace('/account-linking');
           return;
         }
 
         setErrorMode('link-server');
-        setError(getErrorDetail(err) || t('auth.oauthError', 'Authorization was denied or failed'));
+        setError(
+          getLocalizedAuthErrorDetailMessage(t, {
+            ...parsedError,
+            fallback: t('auth.oauthError', 'Authorization was denied or failed'),
+          }),
+        );
       }
     };
 
@@ -219,6 +221,7 @@ export default function OAuthCallback() {
       t,
       serverResult.code,
       serverResult.message,
+      serverResult.provider,
     );
     const action = telegramLink ? (
       <a

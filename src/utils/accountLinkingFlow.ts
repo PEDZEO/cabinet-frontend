@@ -2,6 +2,7 @@ export type PendingAccountLinkOutcome = {
   status: 'success' | 'manual' | 'error';
   code?: string | null;
   message?: string | null;
+  provider?: string | null;
 };
 
 const ACCOUNT_LINKING_REFRESH_KEY = 'cabinet_account_linking_refresh_user';

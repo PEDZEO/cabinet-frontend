@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { getLocalizedAuthErrorMessage } from '@/features/auth/shared/authErrorMessages';
 import { UltimaAuthStatusScreen } from '@/features/auth/shared/UltimaAuthStatusScreen';
 import { useUltimaAuthBranding } from '@/features/auth/shared/useUltimaAuthBranding';
 import { useUltimaMode } from '@/hooks/useUltimaMode';
@@ -60,8 +61,11 @@ export default function TelegramCallback() {
         });
         navigate('/');
       } catch (err: unknown) {
-        const error = err as { response?: { data?: { detail?: string } } };
-        setError(error.response?.data?.detail || t('common.error'));
+        setError(
+          getLocalizedAuthErrorMessage(t, err, {
+            fallback: t('common.error'),
+          }),
+        );
       }
     };
 

@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, type SyntheticEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
+import { getLocalizedAuthErrorMessage } from '@/features/auth/shared/authErrorMessages';
 import { useAuthStore } from '../store/auth';
 import { useShallow } from 'zustand/shallow';
 import { brandingApi } from '../api/branding';
@@ -114,8 +115,11 @@ export default function TelegramRedirect() {
         }, 800);
       } catch (err: unknown) {
         console.error('Telegram auth failed:', err);
-        const error = err as { response?: { data?: { detail?: string } } };
-        setErrorMessage(error.response?.data?.detail || t('auth.telegramRequired'));
+        setErrorMessage(
+          getLocalizedAuthErrorMessage(t, err, {
+            fallback: t('auth.telegramRequired'),
+          }),
+        );
         setStatus('error');
       }
     };

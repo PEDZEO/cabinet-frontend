@@ -9,6 +9,10 @@ import { UltimaProviderAccountLinkingView } from '@/components/ultima/UltimaProv
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { getLocalizedIdentityLinkMessage } from '@/features/account-linking/linkingMessages';
 import {
+  getLocalizedAuthErrorDetailMessage,
+  parseApiErrorDetail,
+} from '@/features/auth/shared/authErrorMessages';
+import {
   consumePendingAccountLinkOutcome,
   consumePendingAccountLinkRefresh,
 } from '@/utils/accountLinkingFlow';
@@ -65,30 +69,6 @@ export default function UltimaAccountLinking() {
   const consumedStashedSuccessRef = useRef(false);
   const consumedPendingOutcomeRef = useRef(false);
 
-  const parseApiError = (
-    err: unknown,
-  ): { code?: string; message?: string; reason?: string; retry_after_seconds?: number } => {
-    const error = err as { response?: { data?: { detail?: unknown } } };
-    const detail = error.response?.data?.detail;
-    if (!detail) return {};
-    if (typeof detail === 'string') return { message: detail };
-    if (typeof detail === 'object') {
-      const payload = detail as {
-        code?: string;
-        message?: string;
-        reason?: string;
-        retry_after_seconds?: number;
-      };
-      return {
-        code: payload.code,
-        message: payload.message,
-        reason: payload.reason,
-        retry_after_seconds: payload.retry_after_seconds,
-      };
-    }
-    return {};
-  };
-
   const formatDateTime = (value?: string | null): string => {
     if (!value) return '-';
     const parsed = new Date(value);
@@ -107,8 +87,8 @@ export default function UltimaAccountLinking() {
     return `${totalSeconds}с`;
   };
 
-  const getLocalizedLinkError = (err: unknown): string => {
-    const { code, message, retry_after_seconds } = parseApiError(err);
+  const getLocalizedLinkError = (err: unknown, provider?: string | null): string => {
+    const { code, message, retryAfterSeconds } = parseApiErrorDetail(err);
     switch (code) {
       case 'link_code_invalid':
         return 'Код недействителен или истек';
@@ -117,7 +97,11 @@ export default function UltimaAccountLinking() {
       case 'link_code_attempts_exceeded':
         return 'Слишком много попыток. Попробуйте позже';
       case 'link_code_identity_conflict':
-        return 'Этот способ входа уже привязан к другому профилю. Сначала войдите в него или отвяжите вход там.';
+        return getLocalizedAuthErrorDetailMessage(t, {
+          code,
+          message,
+          provider,
+        });
       case 'link_code_source_inactive':
       case 'link_code_target_inactive':
         return 'Один из аккаунтов неактивен';
@@ -130,9 +114,7 @@ export default function UltimaAccountLinking() {
       case 'telegram_relink_cooldown_active':
         return (
           'Смена Telegram-аккаунта доступна не чаще одного раза в 30 дней.' +
-          (retry_after_seconds
-            ? ` Доступно через: ${formatDurationShort(retry_after_seconds)}.`
-            : '')
+          (retryAfterSeconds ? ` Доступно через: ${formatDurationShort(retryAfterSeconds)}.` : '')
         );
       default:
         return message || t('common.error', 'Произошла ошибка');
@@ -181,7 +163,7 @@ export default function UltimaAccountLinking() {
   };
 
   const getLocalizedUnlinkError = (err: unknown) => {
-    const parsed = parseApiError(err);
+    const parsed = parseApiErrorDetail(err);
     if (parsed.reason) return getUnlinkReasonText(parsed.reason);
     if (parsed.code === 'unlink_otp_resend_cooldown')
       return t(
@@ -327,6 +309,7 @@ export default function UltimaAccountLinking() {
       t,
       pendingOutcome.code,
       pendingOutcome.message || t('common.error', 'Произошла ошибка'),
+      pendingOutcome.provider,
     );
 
     setWaitingExternalProvider(null);
@@ -363,6 +346,7 @@ export default function UltimaAccountLinking() {
       t,
       pendingLinkResult.code,
       pendingLinkResult.message,
+      pendingLinkResult.provider,
     );
 
     setWaitingExternalProvider(null);
@@ -419,9 +403,7 @@ export default function UltimaAccountLinking() {
         window.location.assign(authorize_url);
       }
     } catch (err: unknown) {
-      setProviderLinkError(
-        parseApiError(err).message || (err instanceof Error ? err.message : t('common.error')),
-      );
+      setProviderLinkError(getLocalizedLinkError(err, provider));
     } finally {
       setDirectLinkProvider(null);
     }
@@ -455,7 +437,7 @@ export default function UltimaAccountLinking() {
         ),
       });
     } catch (err: unknown) {
-      setProviderLinkError(getLocalizedLinkError(err));
+      setProviderLinkError(getLocalizedLinkError(err, 'telegram'));
     } finally {
       setTelegramDirectLinkLoading(false);
     }
@@ -493,7 +475,7 @@ export default function UltimaAccountLinking() {
     onError: (err: unknown) => {
       setLinkPreview(null);
       setLinkSuccess(null);
-      const parsed = parseApiError(err);
+      const parsed = parseApiErrorDetail(err);
       setLinkFlowStep(parsed.code === 'manual_merge_required' ? 'manual' : 'idle');
       setPreviewedCode('');
       setLinkError(getLocalizedLinkError(err));
@@ -528,7 +510,7 @@ export default function UltimaAccountLinking() {
     },
     onError: (err: unknown) => {
       setLinkSuccess(null);
-      const parsed = parseApiError(err);
+      const parsed = parseApiErrorDetail(err);
       setLinkFlowStep(parsed.code === 'manual_merge_required' ? 'manual' : 'idle');
       setLinkError(getLocalizedLinkError(err));
     },

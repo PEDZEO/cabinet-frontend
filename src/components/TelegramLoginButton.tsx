@@ -72,7 +72,10 @@ export default function TelegramLoginButton({
   return (
     <div className="flex flex-col items-center space-y-4">
       {/* Telegram Widget will be inserted here */}
-      <div ref={containerRef} className="flex justify-center" />
+      <div
+        ref={containerRef}
+        className="flex min-h-[50px] w-full max-w-full justify-center overflow-hidden rounded-2xl"
+      />
       {widgetState === 'loading' && (
         <p className="text-center text-xs text-gray-400">
           {t('auth.telegramWidgetLoading', {

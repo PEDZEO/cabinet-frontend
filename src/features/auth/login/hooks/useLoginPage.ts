@@ -19,6 +19,7 @@ import {
   type BrandingInfo,
   type EmailAuthEnabled,
 } from '@/api/branding';
+import { getLocalizedAuthErrorMessage } from '@/features/auth/shared/authErrorMessages';
 import { useTelegramSDK, getTelegramInitData, isInTelegramWebApp } from '@/hooks/useTelegramSDK';
 import { useAuthStore } from '@/store/auth';
 import { saveOAuthState } from '@/utils/oauthState';
@@ -30,7 +31,7 @@ type AuthMode = 'login' | 'register';
 type LogoShape = 'square' | 'wide' | 'tall';
 
 interface ApiErrorPayload {
-  detail?: string;
+  detail?: unknown;
 }
 
 interface ApiError {
@@ -192,7 +193,11 @@ export function useLoginPage() {
             continue;
           }
 
-          setError(detail || t('auth.telegramRequired'));
+          setError(
+            getLocalizedAuthErrorMessage(t, err, {
+              fallback: t('auth.telegramRequired'),
+            }),
+          );
         }
       }
 
@@ -220,8 +225,13 @@ export function useLoginPage() {
 
         saveOAuthState(state, provider);
         window.location.href = authorize_url;
-      } catch {
-        setError(t('auth.oauthError', 'Authorization was denied or failed'));
+      } catch (err) {
+        setError(
+          getLocalizedAuthErrorMessage(t, err, {
+            provider,
+            fallback: t('auth.oauthError', 'Authorization was denied or failed'),
+          }),
+        );
         setOauthLoading(null);
       }
     },
@@ -248,8 +258,12 @@ export function useLoginPage() {
         console.warn('Telegram auth retry failed:', status, detail);
       }
       setError(
-        detail ||
-          t('auth.telegramRetryFailed', 'Authorization failed. Close the app and try again.'),
+        getLocalizedAuthErrorMessage(t, err, {
+          fallback: t(
+            'auth.telegramRetryFailed',
+            'Authorization failed. Close the app and try again.',
+          ),
+        }),
       );
     } finally {
       setIsLoading(false);
@@ -295,11 +309,12 @@ export function useLoginPage() {
         const apiError = err as ApiError;
         const status = apiError.response?.status;
         const detail = apiError.response?.data?.detail;
+        const detailText = typeof detail === 'string' ? detail : '';
 
-        if (status === 400 && detail?.includes('already registered')) {
+        if (status === 400 && detailText.includes('already registered')) {
           setError(t('auth.emailAlreadyRegistered', 'This email is already registered'));
         } else if (status === 401 || status === 403) {
-          if (detail?.includes('verify your email')) {
+          if (detailText.includes('verify your email')) {
             setError(t('auth.emailNotVerified', 'Please verify your email first'));
           } else {
             setError(t('auth.invalidCredentials', 'Invalid email or password'));
@@ -307,7 +322,11 @@ export function useLoginPage() {
         } else if (status === 429) {
           setError(t('auth.tooManyAttempts', 'Too many attempts. Please try again later'));
         } else {
-          setError(detail || t('common.error'));
+          setError(
+            getLocalizedAuthErrorMessage(t, err, {
+              fallback: t('common.error'),
+            }),
+          );
         }
       } finally {
         setIsLoading(false);
@@ -343,9 +362,11 @@ export function useLoginPage() {
         await authApi.forgotPassword(forgotPasswordEmail.trim());
         setForgotPasswordSent(true);
       } catch (err: unknown) {
-        const apiError = err as ApiError;
-        const detail = apiError.response?.data?.detail;
-        setForgotPasswordError(detail || t('common.error'));
+        setForgotPasswordError(
+          getLocalizedAuthErrorMessage(t, err, {
+            fallback: t('common.error'),
+          }),
+        );
       } finally {
         setForgotPasswordLoading(false);
       }

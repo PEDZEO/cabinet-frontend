@@ -30,6 +30,25 @@ const CopyIcon = () => (
   </svg>
 );
 
+const LogoutIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
+    <path
+      d="M10 7.5V6a2.5 2.5 0 0 1 2.5-2.5h4A2.5 2.5 0 0 1 19 6v12a2.5 2.5 0 0 1-2.5 2.5h-4A2.5 2.5 0 0 1 10 18v-1.5"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M5 12h10m-3-3 3 3-3 3"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 const PaymentIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
     <rect x="3.5" y="6" width="17" height="12" rx="2.5" stroke="currentColor" strokeWidth="1.8" />
@@ -187,6 +206,7 @@ export function UltimaProfile() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   const [idCopied, setIdCopied] = useState(false);
 
@@ -298,6 +318,16 @@ export function UltimaProfile() {
   useEffect(() => {
     void warmUltimaStartup(queryClient, { language: i18n.language || 'ru' });
   }, [i18n.language, queryClient]);
+
+  const handleCopyUserId = useCallback(() => {
+    void copyText(String(user?.telegram_id ?? user?.id ?? ''), setIdCopied);
+  }, [user?.id, user?.telegram_id]);
+
+  const handleLogout = useCallback(() => {
+    logout();
+    queryClient.clear();
+    navigate('/login', { replace: true });
+  }, [logout, navigate, queryClient]);
 
   const openPathFast = useCallback(
     async (path: string) => {
@@ -616,18 +646,26 @@ export function UltimaProfile() {
                         </p>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      className="ultima-btn-pill ultima-btn-secondary mt-4 flex w-full items-center justify-center gap-2 px-4 py-2.5 text-sm"
-                      onClick={() =>
-                        void copyText(String(user?.telegram_id ?? user?.id ?? ''), setIdCopied)
-                      }
-                    >
-                      <CopyIcon />
-                      {idCopied
-                        ? t('common.copied', { defaultValue: 'Скопировано' })
-                        : t('profile.copyAccountId', { defaultValue: 'Скопировать ID' })}
-                    </button>
+                    <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                      <button
+                        type="button"
+                        className="ultima-btn-pill ultima-btn-secondary flex w-full items-center justify-center gap-2 px-4 py-2.5 text-sm"
+                        onClick={handleCopyUserId}
+                      >
+                        <CopyIcon />
+                        {idCopied
+                          ? t('common.copied', { defaultValue: 'Скопировано' })
+                          : t('profile.copyAccountId', { defaultValue: 'Скопировать ID' })}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="border-rose-300/18 hover:bg-rose-500/18 flex w-full items-center justify-center gap-2 rounded-full border bg-rose-500/10 px-4 py-2.5 text-sm font-medium text-rose-50 transition"
+                      >
+                        <LogoutIcon />
+                        {t('profile.logoutButton', { defaultValue: 'Выйти из аккаунта' })}
+                      </button>
+                    </div>
                   </div>
 
                   <button
@@ -700,19 +738,27 @@ export function UltimaProfile() {
               </div>
             </div>
 
-            <button
-              type="button"
-              className="ultima-btn-pill ultima-btn-secondary mt-3 flex w-full items-center justify-center gap-2 px-4 py-2.5 text-[14px]"
-              onClick={() =>
-                void copyText(String(user?.telegram_id ?? user?.id ?? ''), setIdCopied)
-              }
-              aria-label="copy-user-id"
-            >
-              <CopyIcon />
-              {idCopied
-                ? t('common.copied', { defaultValue: 'Скопировано' })
-                : t('profile.copyAccountId', { defaultValue: 'Скопировать ID' })}
-            </button>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              <button
+                type="button"
+                className="ultima-btn-pill ultima-btn-secondary flex w-full items-center justify-center gap-2 px-4 py-2.5 text-[14px]"
+                onClick={handleCopyUserId}
+                aria-label="copy-user-id"
+              >
+                <CopyIcon />
+                {idCopied
+                  ? t('common.copied', { defaultValue: 'Скопировано' })
+                  : t('profile.copyAccountId', { defaultValue: 'Скопировать ID' })}
+              </button>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="border-rose-300/18 hover:bg-rose-500/18 flex w-full items-center justify-center gap-2 rounded-full border bg-rose-500/10 px-4 py-2.5 text-[14px] font-medium text-rose-50 transition"
+              >
+                <LogoutIcon />
+                {t('profile.logoutButton', { defaultValue: 'Выйти из аккаунта' })}
+              </button>
+            </div>
           </section>
 
           <div className="min-h-0 flex-1 overflow-y-auto pb-3 pr-1 lg:grid lg:grid-cols-2 lg:gap-4 lg:overflow-visible lg:pb-0 lg:pr-0">
