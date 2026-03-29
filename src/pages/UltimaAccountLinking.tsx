@@ -8,7 +8,10 @@ import { Button } from '@/components/primitives/Button';
 import { UltimaProviderAccountLinkingView } from '@/components/ultima/UltimaProviderAccountLinkingView';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { getLocalizedIdentityLinkMessage } from '@/features/account-linking/linkingMessages';
-import { consumePendingAccountLinkRefresh } from '@/utils/accountLinkingFlow';
+import {
+  consumePendingAccountLinkOutcome,
+  consumePendingAccountLinkRefresh,
+} from '@/utils/accountLinkingFlow';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { getTelegramInitData, isInTelegramWebApp } from '@/hooks/useTelegramSDK';
 import { useUltimaAccountLinkingMode } from '@/hooks/useUltimaAccountLinkingMode';
@@ -60,6 +63,7 @@ export default function UltimaAccountLinking() {
   const [waitingExternalProvider, setWaitingExternalProvider] = useState<string | null>(null);
   const [telegramDirectLinkLoading, setTelegramDirectLinkLoading] = useState(false);
   const consumedStashedSuccessRef = useRef(false);
+  const consumedPendingOutcomeRef = useRef(false);
 
   const parseApiError = (
     err: unknown,
@@ -310,6 +314,47 @@ export default function UltimaAccountLinking() {
 
     showNotification();
   }, [queryClient, refreshUser]);
+
+  useEffect(() => {
+    if (consumedPendingOutcomeRef.current) return;
+    consumedPendingOutcomeRef.current = true;
+
+    const pendingOutcome = consumePendingAccountLinkOutcome();
+    if (!pendingOutcome) return;
+
+    const shouldRefreshUser = consumePendingAccountLinkRefresh();
+    const localizedMessage = getLocalizedIdentityLinkMessage(
+      t,
+      pendingOutcome.code,
+      pendingOutcome.message || t('common.error', 'Произошла ошибка'),
+    );
+
+    setWaitingExternalProvider(null);
+    setDirectLinkProvider(null);
+    setProviderLinkSuccess(null);
+
+    if (shouldRefreshUser) {
+      void refreshUser();
+      void queryClient.invalidateQueries({ queryKey: ['linked-identities'] });
+      void queryClient.invalidateQueries({ queryKey: ['user'] });
+    }
+
+    if (pendingOutcome.status === 'success') {
+      setProviderLinkError(null);
+      showSuccessNotification({
+        type: 'account_linked',
+        title: t('successNotification.accountLinked.title', 'Аккаунты связаны!'),
+        message: localizedMessage,
+      });
+      return;
+    }
+
+    setProviderLinkError(
+      pendingOutcome.status === 'manual'
+        ? `${localizedMessage} Откройте поддержку, если нужно объединить профили вручную.`
+        : localizedMessage,
+    );
+  }, [queryClient, refreshUser, t]);
 
   useEffect(() => {
     if (!pendingLinkResult?.pending) return;

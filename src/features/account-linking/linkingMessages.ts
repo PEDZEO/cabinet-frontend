@@ -16,6 +16,16 @@ export function getLocalizedIdentityLinkMessage(
         'profile.linking.errors.identityConflict',
         'Этот способ входа уже привязан к другому профилю. Сначала войдите в него или отвяжите вход там.',
       );
+    case 'telegram_relink_requires_unlink':
+      return t(
+        'profile.linking.errors.telegramRelinkRequiresUnlink',
+        'Чтобы привязать другой Telegram, сначала отвяжите текущий Telegram-аккаунт.',
+      );
+    case 'telegram_relink_cooldown_active':
+      return t(
+        'profile.linking.errors.telegramRelinkCooldownActive',
+        'Смена Telegram-аккаунта доступна не чаще одного раза в 30 дней.',
+      );
     case 'manual_merge_required':
       return t(
         'profile.linking.errors.manualMergeRequired',

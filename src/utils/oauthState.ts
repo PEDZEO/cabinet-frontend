@@ -12,22 +12,65 @@ const LINK_OAUTH_STATE_KEY = 'link_oauth_state';
 const LINK_OAUTH_PROVIDER_KEY = 'link_oauth_provider';
 const LINK_OAUTH_RETURN_TO_KEY = 'link_oauth_return_to';
 
+function readStorageValue(key: string): string | null {
+  try {
+    const sessionValue = sessionStorage.getItem(key);
+    if (sessionValue !== null) return sessionValue;
+  } catch {
+    // ignore session storage errors
+  }
+
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeStorageValue(key: string, value: string): void {
+  try {
+    sessionStorage.setItem(key, value);
+  } catch {
+    // ignore session storage errors
+  }
+
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // ignore local storage errors
+  }
+}
+
+function removeStorageValue(key: string): void {
+  try {
+    sessionStorage.removeItem(key);
+  } catch {
+    // ignore session storage errors
+  }
+
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // ignore local storage errors
+  }
+}
+
 function loadState(
   stateKey: string,
   providerKey: string,
   returnToKey: string,
 ): SavedOAuthState | null {
-  const state = sessionStorage.getItem(stateKey);
-  const provider = sessionStorage.getItem(providerKey);
-  const returnTo = sessionStorage.getItem(returnToKey) || undefined;
+  const state = readStorageValue(stateKey);
+  const provider = readStorageValue(providerKey);
+  const returnTo = readStorageValue(returnToKey) || undefined;
   if (!state || !provider) return null;
   return { state, provider, returnTo };
 }
 
 function clearState(stateKey: string, providerKey: string, returnToKey: string): void {
-  sessionStorage.removeItem(stateKey);
-  sessionStorage.removeItem(providerKey);
-  sessionStorage.removeItem(returnToKey);
+  removeStorageValue(stateKey);
+  removeStorageValue(providerKey);
+  removeStorageValue(returnToKey);
 }
 
 export function saveOAuthState(
@@ -35,12 +78,12 @@ export function saveOAuthState(
   provider: string,
   options?: { returnTo?: string },
 ): void {
-  sessionStorage.setItem(OAUTH_STATE_KEY, state);
-  sessionStorage.setItem(OAUTH_PROVIDER_KEY, provider);
+  writeStorageValue(OAUTH_STATE_KEY, state);
+  writeStorageValue(OAUTH_PROVIDER_KEY, provider);
   if (options?.returnTo) {
-    sessionStorage.setItem(OAUTH_RETURN_TO_KEY, options.returnTo);
+    writeStorageValue(OAUTH_RETURN_TO_KEY, options.returnTo);
   } else {
-    sessionStorage.removeItem(OAUTH_RETURN_TO_KEY);
+    removeStorageValue(OAUTH_RETURN_TO_KEY);
   }
 }
 
@@ -55,12 +98,12 @@ export function saveLinkOAuthState(
   provider: string,
   options?: { returnTo?: string },
 ): void {
-  sessionStorage.setItem(LINK_OAUTH_STATE_KEY, state);
-  sessionStorage.setItem(LINK_OAUTH_PROVIDER_KEY, provider);
+  writeStorageValue(LINK_OAUTH_STATE_KEY, state);
+  writeStorageValue(LINK_OAUTH_PROVIDER_KEY, provider);
   if (options?.returnTo) {
-    sessionStorage.setItem(LINK_OAUTH_RETURN_TO_KEY, options.returnTo);
+    writeStorageValue(LINK_OAUTH_RETURN_TO_KEY, options.returnTo);
   } else {
-    sessionStorage.removeItem(LINK_OAUTH_RETURN_TO_KEY);
+    removeStorageValue(LINK_OAUTH_RETURN_TO_KEY);
   }
 }
 

@@ -6,8 +6,11 @@ import { getLocalizedIdentityLinkMessage } from '@/features/account-linking/link
 import { UltimaAuthStatusScreen } from '@/features/auth/shared/UltimaAuthStatusScreen';
 import { useUltimaAuthBranding } from '@/features/auth/shared/useUltimaAuthBranding';
 import { useUltimaMode } from '@/hooks/useUltimaMode';
-import { stashSuccessNotification } from '@/store/successNotification';
-import { markPendingAccountLinkRefresh } from '@/utils/accountLinkingFlow';
+import { tokenStorage } from '@/utils/token';
+import {
+  markPendingAccountLinkRefresh,
+  stashPendingAccountLinkOutcome,
+} from '@/utils/accountLinkingFlow';
 import { useAuthStore } from '@/store/auth';
 import {
   getAndClearLinkOAuthState,
@@ -62,6 +65,8 @@ export default function OAuthCallback() {
     loginWithOAuth: state.loginWithOAuth,
     isAuthenticated: state.isAuthenticated,
   }));
+  const hasStoredSession =
+    Boolean(tokenStorage.getAccessToken()) || Boolean(tokenStorage.getRefreshToken());
 
   useEffect(() => {
     if (hasRun.current) return;
@@ -113,13 +118,20 @@ export default function OAuthCallback() {
             type: responseType || undefined,
           });
           markPendingAccountLinkRefresh();
-          stashSuccessNotification({
-            type: 'account_linked',
-            title: accountLinkedTitle,
+          stashPendingAccountLinkOutcome({
+            status: 'success',
+            code: 'identity_linked',
             message: accountLinkedMessage,
           });
           window.location.replace(returnTo || '/account-linking');
         } catch (err) {
+          stashPendingAccountLinkOutcome({
+            status: 'error',
+            code: getErrorCode(err),
+            message:
+              getErrorDetail(err) || t('auth.oauthError', 'Authorization was denied or failed'),
+          });
+          window.location.replace(returnTo || '/account-linking');
           setErrorMode('link-browser');
           setError(
             getLocalizedIdentityLinkMessage(
@@ -157,8 +169,31 @@ export default function OAuthCallback() {
           device_id: deviceId || undefined,
           type: responseType || undefined,
         });
+
+        if (hasStoredSession) {
+          markPendingAccountLinkRefresh();
+          stashPendingAccountLinkOutcome({
+            status: response.status,
+            code: response.code,
+            message: response.message,
+          });
+          window.location.replace('/account-linking');
+          return;
+        }
+
         setServerResult(response);
       } catch (err) {
+        if (hasStoredSession) {
+          stashPendingAccountLinkOutcome({
+            status: 'error',
+            code: getErrorCode(err),
+            message:
+              getErrorDetail(err) || t('auth.oauthError', 'Authorization was denied or failed'),
+          });
+          window.location.replace('/account-linking');
+          return;
+        }
+
         setErrorMode('link-server');
         setError(getErrorDetail(err) || t('auth.oauthError', 'Authorization was denied or failed'));
       }
@@ -173,6 +208,7 @@ export default function OAuthCallback() {
     t,
     accountLinkedTitle,
     accountLinkedMessage,
+    hasStoredSession,
   ]);
 
   const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || '';
