@@ -565,7 +565,7 @@ export function UltimaProfile() {
 
   if (isDesktop) {
     return (
-      <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-profile-desktop">
+      <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-profile-desktop ultima-shell-muted-aura">
         <div className="ultima-shell-aura" />
         <UltimaDesktopSectionLayout
           icon={<AccessIcon />}
@@ -707,7 +707,7 @@ export function UltimaProfile() {
   }
 
   return (
-    <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
+    <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-muted-aura">
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
         <section className="ultima-scrollbar ultima-scroll-stable flex min-h-0 flex-1 flex-col overflow-y-auto pb-3 pr-1 pt-[clamp(8px,2vh,16px)]">

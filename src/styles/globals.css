@@ -659,6 +659,25 @@ html:not(.ultima-frames-enabled) .ultima-flat-frames [class*='border'] {
   padding-bottom: var(--ultima-shell-bottom-gap);
 }
 
+.ultima-shell-muted-aura::after {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, #03090d 30%, transparent) 0%,
+      color-mix(in srgb, #03090d 46%, transparent) 100%
+    ),
+    radial-gradient(
+      78% 60% at 50% 42%,
+      color-mix(in srgb, #061118 10%, transparent) 0%,
+      color-mix(in srgb, #03090d 32%, transparent) 74%
+    );
+}
+
 .ultima-shell-aura,
 .ultima-preview-aura {
   pointer-events: none;
@@ -675,6 +694,12 @@ html:not(.ultima-frames-enabled) .ultima-flat-frames [class*='border'] {
     transparent 62%,
     transparent 100%
   );
+}
+
+.ultima-shell-muted-aura .ultima-shell-aura,
+.ultima-shell-muted-aura .ultima-shell-aura::before,
+.ultima-shell-muted-aura .ultima-shell-aura::after {
+  opacity: 0.58;
 }
 
 .ultima-shell-aura::before,
