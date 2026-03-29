@@ -3,7 +3,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { brandingApi, type UltimaThemeConfig } from '@/api/branding';
 import { AdminBackButton } from '@/components/admin';
 import { ColorPicker } from '@/components/ColorPicker';
-import { UltimaThemeLivePreview } from '@/components/ultima/UltimaThemeLivePreview';
+import {
+  UltimaThemeLivePreview,
+  type UltimaThemePreviewScene,
+} from '@/components/ultima/UltimaThemeLivePreview';
 import {
   ULTIMA_ANIMATION_PRESETS,
   ULTIMA_THEME_PRESETS,
@@ -17,6 +20,12 @@ import { applyUltimaThemeConfig } from '@/features/ultima/theme';
 import { cn } from '@/lib/utils';
 
 type AdminUltimaTab = 'overview' | 'themes' | 'animations' | 'advanced';
+
+const PREVIEW_SCENE_LABELS: Record<UltimaThemePreviewScene, string> = {
+  dashboard: 'Главная',
+  connection: 'Подключение',
+  profile: 'Профиль',
+};
 
 function normalizeConfig(config?: Partial<UltimaThemeConfig> | null): UltimaThemeConfig {
   return {
@@ -121,6 +130,34 @@ function TabButton({
     >
       <div className="text-sm font-semibold text-dark-100">{title}</div>
       <div className="mt-1 text-xs leading-snug text-dark-400">{subtitle}</div>
+    </button>
+  );
+}
+
+function PreviewSceneButton({
+  active,
+  label,
+  description,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  description: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'rounded-2xl border px-3 py-2 text-left transition',
+        active
+          ? 'border-accent-500/45 bg-accent-500/10 shadow-[0_14px_28px_rgba(0,0,0,0.14)]'
+          : 'border-dark-700/60 bg-dark-900/35 hover:border-dark-600/70 hover:bg-dark-800/55',
+      )}
+    >
+      <div className="text-sm font-semibold text-dark-100">{label}</div>
+      <div className="mt-1 text-[11px] leading-snug text-dark-400">{description}</div>
     </button>
   );
 }
@@ -246,7 +283,8 @@ function AnimationPresetCard({
       <UltimaThemeLivePreview
         config={previewConfig}
         variant="card"
-        title="Animation"
+        scene={preset.id === 'classic-waves' ? 'connection' : 'dashboard'}
+        title="Motion"
         subtitle={preset.name}
       />
       <div className="mt-3 flex items-start justify-between gap-3">
@@ -267,6 +305,7 @@ function AnimationPresetCard({
 export default function AdminUltimaTheme() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<AdminUltimaTab>('overview');
+  const [previewScene, setPreviewScene] = useState<UltimaThemePreviewScene>('dashboard');
   const [draft, setDraft] = useState<UltimaThemeConfig>(getDefaultUltimaThemeWithPresets());
   const [saved, setSaved] = useState<UltimaThemeConfig>(getDefaultUltimaThemeWithPresets());
 
@@ -329,15 +368,45 @@ export default function AdminUltimaTheme() {
       </div>
 
       <div className="grid gap-3 xl:grid-cols-[minmax(0,1.2fr)_380px]">
-        <div className="rounded-[28px] border border-dark-700/60 bg-dark-900/40 p-4">
+        <div className="space-y-4 rounded-[28px] border border-dark-700/60 bg-dark-900/40 p-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <div className="text-xs uppercase tracking-[0.2em] text-dark-500">Live Preview</div>
+              <div className="mt-2 text-sm text-dark-300">
+                Сразу смотри, как выбранная motion-сцена ведет себя на главной, в подключении и в
+                профиле.
+              </div>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <PreviewSceneButton
+                active={previewScene === 'dashboard'}
+                label="Главная"
+                description="Фоновая сцена и CTA."
+                onClick={() => setPreviewScene('dashboard')}
+              />
+              <PreviewSceneButton
+                active={previewScene === 'connection'}
+                label="Подключение"
+                description="Кольца шага и центр."
+                onClick={() => setPreviewScene('connection')}
+              />
+              <PreviewSceneButton
+                active={previewScene === 'profile'}
+                label="Профиль"
+                description="Карточки и действия."
+                onClick={() => setPreviewScene('profile')}
+              />
+            </div>
+          </div>
           <UltimaThemeLivePreview
             config={draft}
+            scene={previewScene}
             title={currentThemePreset.name}
             subtitle={currentAnimationPreset.name}
           />
         </div>
 
-        <div className="space-y-3 rounded-[28px] border border-dark-700/60 bg-dark-900/40 p-4">
+        <div className="space-y-3 rounded-[28px] border border-dark-700/60 bg-dark-900/40 p-4 xl:sticky xl:top-6 xl:self-start">
           <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
             <div className="rounded-2xl border border-dark-700/60 bg-dark-900/45 p-4">
               <div className="text-xs uppercase tracking-[0.2em] text-dark-500">Тем</div>
@@ -361,6 +430,9 @@ export default function AdminUltimaTheme() {
                 {currentThemePreset.name}
               </div>
               <div className="mt-1 text-xs text-dark-400">{currentAnimationPreset.name}</div>
+              <div className="mt-2 text-[11px] uppercase tracking-[0.18em] text-dark-500">
+                Превью: {PREVIEW_SCENE_LABELS[previewScene]}
+              </div>
             </div>
           </div>
 

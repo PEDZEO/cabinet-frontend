@@ -13,6 +13,7 @@ export type UltimaThemePresetId =
   | 'citrus-pulse';
 
 export type UltimaAnimationPresetId =
+  | 'classic-waves'
   | 'orbital-aura'
   | 'radar-sweep'
   | 'nebula-drift'
@@ -285,6 +286,20 @@ export const ULTIMA_THEME_PRESETS: UltimaThemePreset[] = [
 ];
 
 export const ULTIMA_ANIMATION_PRESETS: UltimaAnimationPreset[] = [
+  {
+    id: 'classic-waves',
+    name: 'Classic Waves',
+    description: 'Старые фирменные круговые волны Ultima как отдельная самостоятельная сцена.',
+    config: {
+      contentEnterMs: 320,
+      tapRingMs: 780,
+      ringWaveSec: 18,
+      sliderGlowSec: 2.6,
+      stepRingSec: 5.8,
+      successWaveMs: 1050,
+      itemEnterMs: 280,
+    },
+  },
   {
     id: 'orbital-aura',
     name: 'Orbital Aura',

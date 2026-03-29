@@ -568,16 +568,28 @@ export function UltimaConnection({
             className={`relative flex flex-1 items-center justify-center lg:mt-8 lg:min-h-[320px] lg:flex-none ${isFinalStep ? 'mb-2' : ''} ${isVeryShortViewport ? 'mt-3' : isShortViewport ? 'mt-5' : 'mt-7'}`}
           >
             <div
-              className="ultima-step-ring border-emerald-200/22 pointer-events-none absolute rounded-full border"
-              style={{ width: ringSizes.outer, height: ringSizes.outer }}
+              className="ultima-step-ring pointer-events-none absolute rounded-full border"
+              style={{
+                width: ringSizes.outer,
+                height: ringSizes.outer,
+                borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 22%, transparent)',
+              }}
             />
             <div
-              className="ultima-step-ring ultima-step-ring-delay-1 pointer-events-none absolute rounded-full border border-emerald-200/20"
-              style={{ width: ringSizes.middle, height: ringSizes.middle }}
+              className="ultima-step-ring ultima-step-ring-delay-1 pointer-events-none absolute rounded-full border"
+              style={{
+                width: ringSizes.middle,
+                height: ringSizes.middle,
+                borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 18%, transparent)',
+              }}
             />
             <div
-              className="ultima-step-ring ultima-step-ring-delay-2 pointer-events-none absolute rounded-full border border-emerald-300/65"
-              style={{ width: ringSizes.inner, height: ringSizes.inner }}
+              className="ultima-step-ring ultima-step-ring-delay-2 pointer-events-none absolute rounded-full border"
+              style={{
+                width: ringSizes.inner,
+                height: ringSizes.inner,
+                borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 46%, transparent)',
+              }}
             />
             <svg
               viewBox="0 0 240 240"
@@ -590,20 +602,20 @@ export function UltimaConnection({
                 cy="120"
                 r={ringRadius}
                 fill="none"
-                stroke="rgba(180,255,235,0.22)"
                 strokeWidth="4"
+                style={{ stroke: 'color-mix(in srgb, var(--ultima-color-ring) 22%, transparent)' }}
               />
               <circle
                 cx="120"
                 cy="120"
                 r={ringRadius}
                 fill="none"
-                stroke="rgba(45,212,191,0.95)"
                 strokeWidth="4.5"
                 strokeLinecap="round"
                 strokeDasharray={ringCircumference}
                 strokeDashoffset={ringOffset}
                 style={{
+                  stroke: 'var(--ultima-color-primary)',
                   transition:
                     'stroke-dashoffset 880ms cubic-bezier(0.22,0.88,0.24,1), stroke 380ms ease',
                 }}

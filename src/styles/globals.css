@@ -25,6 +25,56 @@
   --ultima-animation-step-ring-sec: 5.8;
   --ultima-animation-success-wave-ms: 1050;
   --ultima-animation-item-enter-ms: 280;
+  --ultima-motion-ring-scale-start: 0.04;
+  --ultima-motion-ring-scale-mid: 0.82;
+  --ultima-motion-ring-scale-end: 1.56;
+  --ultima-motion-ring-rotate-start: 0deg;
+  --ultima-motion-ring-rotate-mid: 0deg;
+  --ultima-motion-ring-rotate-end: 0deg;
+  --ultima-motion-ring-opacity-low: 0.28;
+  --ultima-motion-ring-opacity-high: 0.52;
+  --ultima-motion-ring-opacity-mid: 0.3;
+  --ultima-motion-ring-border-color: color-mix(in srgb, var(--ultima-color-ring) 54%, transparent);
+  --ultima-motion-ring-border-style: solid;
+  --ultima-motion-ring-shadow:
+    0 0 0 1px color-mix(in srgb, var(--ultima-color-ring) 16%, transparent),
+    0 0 42px color-mix(in srgb, var(--ultima-color-ring) 8%, transparent);
+  --ultima-motion-ring-filter: none;
+  --ultima-motion-ring-duration-scale: 1;
+  --ultima-motion-step-scale-start: 0.985;
+  --ultima-motion-step-scale-mid: 1.015;
+  --ultima-motion-step-scale-end: 0.985;
+  --ultima-motion-step-rotate-start: 0deg;
+  --ultima-motion-step-rotate-mid: 0deg;
+  --ultima-motion-step-rotate-end: 0deg;
+  --ultima-motion-step-opacity-start: 0.28;
+  --ultima-motion-step-opacity-mid: 0.52;
+  --ultima-motion-step-opacity-end: 0.28;
+  --ultima-motion-step-border-color: color-mix(in srgb, var(--ultima-color-ring) 26%, transparent);
+  --ultima-motion-step-border-style: solid;
+  --ultima-motion-step-shadow: none;
+  --ultima-motion-step-filter: none;
+  --ultima-motion-step-duration-scale: 1;
+  --ultima-motion-step-easing: ease-in-out;
+  --ultima-motion-success-scale-start: 0.08;
+  --ultima-motion-success-scale-mid: 0.78;
+  --ultima-motion-success-scale-end: 1.26;
+  --ultima-motion-success-rotate-start: 0deg;
+  --ultima-motion-success-rotate-mid: 0deg;
+  --ultima-motion-success-rotate-end: 0deg;
+  --ultima-motion-success-opacity-mid: 0.58;
+  --ultima-motion-success-opacity-end: 0.28;
+  --ultima-motion-success-border-color: color-mix(
+    in srgb,
+    var(--ultima-color-ring) 48%,
+    transparent
+  );
+  --ultima-motion-success-border-style: solid;
+  --ultima-motion-success-shadow: 0 0 42px
+    color-mix(in srgb, var(--ultima-color-aura) 12%, transparent);
+  --ultima-motion-success-filter: none;
+  --ultima-motion-success-duration-scale: 1;
+  --ultima-motion-success-easing: cubic-bezier(0.16, 0.84, 0.24, 1);
 }
 
 /* Animated gradient border — @property enables CSS-only angle animation */
@@ -78,30 +128,40 @@
 
 @keyframes ultima-ring-wave {
   0% {
-    transform: scale(0.04);
+    transform: scale(var(--ultima-motion-ring-scale-start, 0.04))
+      rotate(var(--ultima-motion-ring-rotate-start, 0deg));
     opacity: 0;
   }
   8% {
-    opacity: 0.28;
+    opacity: var(--ultima-motion-ring-opacity-low, 0.28);
   }
   22% {
-    opacity: 0.52;
+    opacity: var(--ultima-motion-ring-opacity-high, 0.52);
   }
   56% {
-    opacity: 0.3;
+    transform: scale(var(--ultima-motion-ring-scale-mid, 0.82))
+      rotate(var(--ultima-motion-ring-rotate-mid, 0deg));
+    opacity: var(--ultima-motion-ring-opacity-mid, 0.3);
   }
   100% {
-    transform: scale(1.56);
+    transform: scale(var(--ultima-motion-ring-scale-end, 1.56))
+      rotate(var(--ultima-motion-ring-rotate-end, 0deg));
     opacity: 0;
   }
 }
 
-.ultima-ring-wave {
-  border-color: color-mix(in srgb, var(--ultima-color-ring) 54%, transparent);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--ultima-color-ring) 16%, transparent),
-    0 0 42px color-mix(in srgb, var(--ultima-color-ring) 8%, transparent);
-  animation: ultima-ring-wave calc(var(--ultima-animation-ring-wave-sec, 18) * 1s) linear infinite;
+.ultima-ring-wave,
+.ultima-preview-ring-wave {
+  border-color: var(--ultima-motion-ring-border-color);
+  border-style: var(--ultima-motion-ring-border-style);
+  box-shadow: var(--ultima-motion-ring-shadow);
+  filter: var(--ultima-motion-ring-filter);
+  animation-name: ultima-ring-wave;
+  animation-duration: calc(
+    var(--ultima-animation-ring-wave-sec, 18) * var(--ultima-motion-ring-duration-scale, 1) * 1s
+  );
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
   will-change: transform, opacity;
   transform-origin: center;
   backface-visibility: hidden;
@@ -325,22 +385,34 @@
 
 @keyframes ultima-step-ring-breathe {
   0% {
-    transform: scale(0.985);
-    opacity: 0.28;
+    transform: scale(var(--ultima-motion-step-scale-start, 0.985))
+      rotate(var(--ultima-motion-step-rotate-start, 0deg));
+    opacity: var(--ultima-motion-step-opacity-start, 0.28);
   }
   50% {
-    transform: scale(1.015);
-    opacity: 0.52;
+    transform: scale(var(--ultima-motion-step-scale-mid, 1.015))
+      rotate(var(--ultima-motion-step-rotate-mid, 0deg));
+    opacity: var(--ultima-motion-step-opacity-mid, 0.52);
   }
   100% {
-    transform: scale(0.985);
-    opacity: 0.28;
+    transform: scale(var(--ultima-motion-step-scale-end, 0.985))
+      rotate(var(--ultima-motion-step-rotate-end, 0deg));
+    opacity: var(--ultima-motion-step-opacity-end, 0.28);
   }
 }
 
-.ultima-step-ring {
-  animation: ultima-step-ring-breathe calc(var(--ultima-animation-step-ring-sec, 5.8) * 1s)
-    ease-in-out infinite;
+.ultima-step-ring,
+.ultima-preview-step-ring {
+  border-color: var(--ultima-motion-step-border-color);
+  border-style: var(--ultima-motion-step-border-style);
+  box-shadow: var(--ultima-motion-step-shadow);
+  filter: var(--ultima-motion-step-filter);
+  animation-name: ultima-step-ring-breathe;
+  animation-duration: calc(
+    var(--ultima-animation-step-ring-sec, 5.8) * var(--ultima-motion-step-duration-scale, 1) * 1s
+  );
+  animation-timing-function: var(--ultima-motion-step-easing, ease-in-out);
+  animation-iteration-count: infinite;
   transform-origin: center;
   will-change: transform, opacity;
 }
@@ -392,24 +464,38 @@
 
 @keyframes ultima-success-wave {
   0% {
-    transform: scale(0.08);
+    transform: scale(var(--ultima-motion-success-scale-start, 0.08))
+      rotate(var(--ultima-motion-success-rotate-start, 0deg));
     opacity: 0;
   }
   14% {
-    opacity: 0.58;
+    transform: scale(var(--ultima-motion-success-scale-mid, 0.78))
+      rotate(var(--ultima-motion-success-rotate-mid, 0deg));
+    opacity: var(--ultima-motion-success-opacity-mid, 0.58);
   }
   64% {
-    opacity: 0.28;
+    opacity: var(--ultima-motion-success-opacity-end, 0.28);
   }
   100% {
-    transform: scale(1.26);
+    transform: scale(var(--ultima-motion-success-scale-end, 1.26))
+      rotate(var(--ultima-motion-success-rotate-end, 0deg));
     opacity: 0;
   }
 }
 
-.ultima-success-wave {
-  animation: ultima-success-wave calc(var(--ultima-animation-success-wave-ms, 1380) * 1ms)
-    cubic-bezier(0.16, 0.84, 0.24, 1) forwards;
+.ultima-success-wave,
+.ultima-preview-success-wave {
+  border-color: var(--ultima-motion-success-border-color);
+  border-style: var(--ultima-motion-success-border-style);
+  box-shadow: var(--ultima-motion-success-shadow);
+  filter: var(--ultima-motion-success-filter);
+  animation-name: ultima-success-wave;
+  animation-duration: calc(
+    var(--ultima-animation-success-wave-ms, 1380) * var(--ultima-motion-success-duration-scale, 1) *
+      1ms
+  );
+  animation-timing-function: var(--ultima-motion-success-easing, cubic-bezier(0.16, 0.84, 0.24, 1));
+  animation-fill-mode: forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -425,6 +511,12 @@
   .ultima-success-wave {
     animation: none;
     opacity: 0;
+  }
+
+  .ultima-preview-ring-wave,
+  .ultima-preview-step-ring,
+  .ultima-preview-success-wave {
+    animation: none;
   }
 
   .ultima-step-ring {
@@ -559,6 +651,256 @@ html:not(.ultima-frames-enabled) .ultima-flat-frames [class*='border'] {
   position: absolute;
   inset: -16%;
   pointer-events: none;
+}
+
+html:not([data-ultima-animation='classic-waves']) .ultima-ring-wave,
+html:not([data-ultima-animation='classic-waves']) .ultima-step-ring,
+html:not([data-ultima-animation='classic-waves']) .ultima-success-wave,
+.ultima-preview-shell:not([data-ultima-animation='classic-waves']) .ultima-preview-ring-wave,
+.ultima-preview-shell:not([data-ultima-animation='classic-waves']) .ultima-preview-step-ring,
+.ultima-preview-shell:not([data-ultima-animation='classic-waves']) .ultima-preview-success-wave {
+  display: none;
+}
+
+html[data-ultima-animation='classic-waves'] .ultima-ring-wave,
+html[data-ultima-animation='classic-waves'] .ultima-step-ring,
+html[data-ultima-animation='classic-waves'] .ultima-success-wave,
+.ultima-preview-shell[data-ultima-animation='classic-waves'] .ultima-preview-ring-wave,
+.ultima-preview-shell[data-ultima-animation='classic-waves'] .ultima-preview-step-ring,
+.ultima-preview-shell[data-ultima-animation='classic-waves'] .ultima-preview-success-wave {
+  display: block;
+}
+
+html[data-ultima-animation='orbital-aura'],
+.ultima-preview-shell[data-ultima-animation='orbital-aura'] {
+  --ultima-motion-ring-scale-start: 0.04;
+  --ultima-motion-ring-scale-mid: 0.82;
+  --ultima-motion-ring-scale-end: 1.56;
+  --ultima-motion-ring-opacity-low: 0.28;
+  --ultima-motion-ring-opacity-high: 0.52;
+  --ultima-motion-ring-opacity-mid: 0.3;
+  --ultima-motion-ring-border-color: color-mix(in srgb, var(--ultima-color-ring) 54%, transparent);
+  --ultima-motion-ring-shadow:
+    0 0 0 1px color-mix(in srgb, var(--ultima-color-ring) 16%, transparent),
+    0 0 42px color-mix(in srgb, var(--ultima-color-ring) 8%, transparent);
+  --ultima-motion-ring-filter: none;
+  --ultima-motion-ring-duration-scale: 1;
+  --ultima-motion-step-scale-start: 0.985;
+  --ultima-motion-step-scale-mid: 1.015;
+  --ultima-motion-step-scale-end: 0.985;
+  --ultima-motion-step-opacity-start: 0.28;
+  --ultima-motion-step-opacity-mid: 0.52;
+  --ultima-motion-step-opacity-end: 0.28;
+  --ultima-motion-step-border-style: solid;
+  --ultima-motion-step-shadow: none;
+  --ultima-motion-step-filter: none;
+  --ultima-motion-step-duration-scale: 1;
+  --ultima-motion-step-easing: ease-in-out;
+  --ultima-motion-success-scale-start: 0.08;
+  --ultima-motion-success-scale-mid: 0.78;
+  --ultima-motion-success-scale-end: 1.26;
+  --ultima-motion-success-opacity-mid: 0.58;
+  --ultima-motion-success-opacity-end: 0.28;
+  --ultima-motion-success-border-style: solid;
+  --ultima-motion-success-shadow: 0 0 42px
+    color-mix(in srgb, var(--ultima-color-aura) 12%, transparent);
+  --ultima-motion-success-filter: none;
+  --ultima-motion-success-duration-scale: 1;
+  --ultima-motion-success-easing: cubic-bezier(0.16, 0.84, 0.24, 1);
+}
+
+html[data-ultima-animation='radar-sweep'],
+.ultima-preview-shell[data-ultima-animation='radar-sweep'] {
+  --ultima-motion-ring-scale-start: 0.16;
+  --ultima-motion-ring-scale-mid: 0.74;
+  --ultima-motion-ring-scale-end: 1.18;
+  --ultima-motion-ring-rotate-start: -8deg;
+  --ultima-motion-ring-rotate-mid: 2deg;
+  --ultima-motion-ring-rotate-end: 12deg;
+  --ultima-motion-ring-opacity-low: 0.24;
+  --ultima-motion-ring-opacity-high: 0.68;
+  --ultima-motion-ring-opacity-mid: 0.22;
+  --ultima-motion-ring-border-color: color-mix(in srgb, var(--ultima-color-ring) 42%, transparent);
+  --ultima-motion-ring-shadow:
+    0 0 0 1px color-mix(in srgb, var(--ultima-color-ring) 22%, transparent),
+    0 0 34px color-mix(in srgb, var(--ultima-color-aura) 14%, transparent);
+  --ultima-motion-ring-filter: saturate(1.1);
+  --ultima-motion-ring-duration-scale: 0.72;
+  --ultima-motion-step-scale-start: 0.992;
+  --ultima-motion-step-scale-mid: 1.022;
+  --ultima-motion-step-scale-end: 0.992;
+  --ultima-motion-step-rotate-start: -1deg;
+  --ultima-motion-step-rotate-mid: 1deg;
+  --ultima-motion-step-rotate-end: -1deg;
+  --ultima-motion-step-opacity-start: 0.2;
+  --ultima-motion-step-opacity-mid: 0.64;
+  --ultima-motion-step-opacity-end: 0.2;
+  --ultima-motion-step-border-style: solid;
+  --ultima-motion-step-shadow: 0 0 34px color-mix(in srgb, var(--ultima-color-ring) 8%, transparent);
+  --ultima-motion-step-filter: none;
+  --ultima-motion-step-duration-scale: 0.78;
+  --ultima-motion-step-easing: cubic-bezier(0.16, 0.84, 0.24, 1);
+  --ultima-motion-success-scale-start: 0.12;
+  --ultima-motion-success-scale-mid: 0.66;
+  --ultima-motion-success-scale-end: 1.1;
+  --ultima-motion-success-rotate-start: -4deg;
+  --ultima-motion-success-rotate-mid: 3deg;
+  --ultima-motion-success-rotate-end: 8deg;
+  --ultima-motion-success-opacity-mid: 0.66;
+  --ultima-motion-success-opacity-end: 0.16;
+  --ultima-motion-success-border-style: solid;
+  --ultima-motion-success-shadow:
+    0 0 54px color-mix(in srgb, var(--ultima-color-aura) 16%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--ultima-color-ring) 16%, transparent);
+  --ultima-motion-success-filter: none;
+  --ultima-motion-success-duration-scale: 0.82;
+  --ultima-motion-success-easing: cubic-bezier(0.18, 0.88, 0.26, 1);
+}
+
+html[data-ultima-animation='nebula-drift'],
+.ultima-preview-shell[data-ultima-animation='nebula-drift'] {
+  --ultima-motion-ring-scale-start: 0.1;
+  --ultima-motion-ring-scale-mid: 0.92;
+  --ultima-motion-ring-scale-end: 1.74;
+  --ultima-motion-ring-rotate-start: -6deg;
+  --ultima-motion-ring-rotate-mid: 4deg;
+  --ultima-motion-ring-rotate-end: 14deg;
+  --ultima-motion-ring-opacity-low: 0.18;
+  --ultima-motion-ring-opacity-high: 0.38;
+  --ultima-motion-ring-opacity-mid: 0.26;
+  --ultima-motion-ring-border-color: color-mix(in srgb, var(--ultima-color-ring) 26%, transparent);
+  --ultima-motion-ring-shadow:
+    0 0 0 1px color-mix(in srgb, var(--ultima-color-ring) 10%, transparent),
+    0 0 62px color-mix(in srgb, var(--ultima-color-aura) 20%, transparent);
+  --ultima-motion-ring-filter: blur(1.8px) saturate(1.06);
+  --ultima-motion-ring-duration-scale: 1.32;
+  --ultima-motion-step-scale-start: 0.976;
+  --ultima-motion-step-scale-mid: 1.03;
+  --ultima-motion-step-scale-end: 0.984;
+  --ultima-motion-step-rotate-start: -2deg;
+  --ultima-motion-step-rotate-mid: 2deg;
+  --ultima-motion-step-rotate-end: 1deg;
+  --ultima-motion-step-opacity-start: 0.18;
+  --ultima-motion-step-opacity-mid: 0.42;
+  --ultima-motion-step-opacity-end: 0.22;
+  --ultima-motion-step-border-style: solid;
+  --ultima-motion-step-shadow: 0 0 42px
+    color-mix(in srgb, var(--ultima-color-aura) 12%, transparent);
+  --ultima-motion-step-filter: blur(0.5px);
+  --ultima-motion-step-duration-scale: 1.24;
+  --ultima-motion-step-easing: ease-in-out;
+  --ultima-motion-success-scale-start: 0.1;
+  --ultima-motion-success-scale-mid: 0.88;
+  --ultima-motion-success-scale-end: 1.38;
+  --ultima-motion-success-rotate-start: -5deg;
+  --ultima-motion-success-rotate-mid: 2deg;
+  --ultima-motion-success-rotate-end: 10deg;
+  --ultima-motion-success-opacity-mid: 0.42;
+  --ultima-motion-success-opacity-end: 0.18;
+  --ultima-motion-success-border-style: solid;
+  --ultima-motion-success-shadow: 0 0 72px
+    color-mix(in srgb, var(--ultima-color-aura) 18%, transparent);
+  --ultima-motion-success-filter: blur(2px);
+  --ultima-motion-success-duration-scale: 1.18;
+  --ultima-motion-success-easing: ease-out;
+}
+
+html[data-ultima-animation='pulse-grid'],
+.ultima-preview-shell[data-ultima-animation='pulse-grid'] {
+  --ultima-motion-ring-scale-start: 0.12;
+  --ultima-motion-ring-scale-mid: 0.7;
+  --ultima-motion-ring-scale-end: 1.28;
+  --ultima-motion-ring-rotate-start: 0deg;
+  --ultima-motion-ring-rotate-mid: 7deg;
+  --ultima-motion-ring-rotate-end: 16deg;
+  --ultima-motion-ring-opacity-low: 0.24;
+  --ultima-motion-ring-opacity-high: 0.48;
+  --ultima-motion-ring-opacity-mid: 0.16;
+  --ultima-motion-ring-border-color: color-mix(in srgb, var(--ultima-color-ring) 36%, transparent);
+  --ultima-motion-ring-border-style: dashed;
+  --ultima-motion-ring-shadow:
+    0 0 0 1px color-mix(in srgb, var(--ultima-color-ring) 10%, transparent),
+    0 0 28px color-mix(in srgb, var(--ultima-color-primary) 12%, transparent);
+  --ultima-motion-ring-filter: none;
+  --ultima-motion-ring-duration-scale: 0.84;
+  --ultima-motion-step-scale-start: 0.99;
+  --ultima-motion-step-scale-mid: 1.04;
+  --ultima-motion-step-scale-end: 0.99;
+  --ultima-motion-step-rotate-start: 0deg;
+  --ultima-motion-step-rotate-mid: 4deg;
+  --ultima-motion-step-rotate-end: 0deg;
+  --ultima-motion-step-opacity-start: 0.24;
+  --ultima-motion-step-opacity-mid: 0.56;
+  --ultima-motion-step-opacity-end: 0.24;
+  --ultima-motion-step-border-style: dashed;
+  --ultima-motion-step-shadow: 0 0 28px
+    color-mix(in srgb, var(--ultima-color-primary) 10%, transparent);
+  --ultima-motion-step-filter: none;
+  --ultima-motion-step-duration-scale: 0.9;
+  --ultima-motion-step-easing: cubic-bezier(0.22, 0.88, 0.24, 1);
+  --ultima-motion-success-scale-start: 0.14;
+  --ultima-motion-success-scale-mid: 0.74;
+  --ultima-motion-success-scale-end: 1.18;
+  --ultima-motion-success-rotate-start: 0deg;
+  --ultima-motion-success-rotate-mid: 8deg;
+  --ultima-motion-success-rotate-end: 14deg;
+  --ultima-motion-success-opacity-mid: 0.52;
+  --ultima-motion-success-opacity-end: 0.14;
+  --ultima-motion-success-border-style: dashed;
+  --ultima-motion-success-shadow: 0 0 48px
+    color-mix(in srgb, var(--ultima-color-primary) 12%, transparent);
+  --ultima-motion-success-filter: none;
+  --ultima-motion-success-duration-scale: 0.9;
+  --ultima-motion-success-easing: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+html[data-ultima-animation='meteor-stream'],
+.ultima-preview-shell[data-ultima-animation='meteor-stream'] {
+  --ultima-motion-ring-scale-start: 0.08;
+  --ultima-motion-ring-scale-mid: 0.8;
+  --ultima-motion-ring-scale-end: 1.44;
+  --ultima-motion-ring-rotate-start: -14deg;
+  --ultima-motion-ring-rotate-mid: -4deg;
+  --ultima-motion-ring-rotate-end: 18deg;
+  --ultima-motion-ring-opacity-low: 0.2;
+  --ultima-motion-ring-opacity-high: 0.44;
+  --ultima-motion-ring-opacity-mid: 0.2;
+  --ultima-motion-ring-border-color: color-mix(in srgb, var(--ultima-color-ring) 34%, transparent);
+  --ultima-motion-ring-shadow:
+    0 0 0 1px color-mix(in srgb, var(--ultima-color-ring) 12%, transparent),
+    0 0 56px color-mix(in srgb, var(--ultima-color-aura) 14%, transparent);
+  --ultima-motion-ring-filter: blur(0.6px);
+  --ultima-motion-ring-duration-scale: 0.92;
+  --ultima-motion-step-scale-start: 0.982;
+  --ultima-motion-step-scale-mid: 1.02;
+  --ultima-motion-step-scale-end: 0.992;
+  --ultima-motion-step-rotate-start: -3deg;
+  --ultima-motion-step-rotate-mid: 3deg;
+  --ultima-motion-step-rotate-end: 1deg;
+  --ultima-motion-step-opacity-start: 0.18;
+  --ultima-motion-step-opacity-mid: 0.5;
+  --ultima-motion-step-opacity-end: 0.22;
+  --ultima-motion-step-border-style: solid;
+  --ultima-motion-step-shadow: 0 0 36px
+    color-mix(in srgb, var(--ultima-color-aura) 10%, transparent);
+  --ultima-motion-step-filter: blur(0.2px);
+  --ultima-motion-step-duration-scale: 0.96;
+  --ultima-motion-step-easing: cubic-bezier(0.22, 0.88, 0.24, 1);
+  --ultima-motion-success-scale-start: 0.1;
+  --ultima-motion-success-scale-mid: 0.7;
+  --ultima-motion-success-scale-end: 1.3;
+  --ultima-motion-success-rotate-start: -16deg;
+  --ultima-motion-success-rotate-mid: -6deg;
+  --ultima-motion-success-rotate-end: 14deg;
+  --ultima-motion-success-opacity-mid: 0.56;
+  --ultima-motion-success-opacity-end: 0.18;
+  --ultima-motion-success-border-style: solid;
+  --ultima-motion-success-shadow:
+    0 0 60px color-mix(in srgb, var(--ultima-color-aura) 16%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--ultima-color-ring) 10%, transparent);
+  --ultima-motion-success-filter: blur(0.7px);
+  --ultima-motion-success-duration-scale: 0.94;
+  --ultima-motion-success-easing: cubic-bezier(0.18, 0.84, 0.28, 1);
 }
 
 html[data-ultima-animation='orbital-aura'] .ultima-shell-aura,

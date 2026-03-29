@@ -375,6 +375,7 @@ export function AppShell({ children }: AppShellProps) {
               'radial-gradient(circle at 74% 58%, color-mix(in srgb, var(--ultima-color-aura) 26%, transparent), color-mix(in srgb, var(--ultima-color-bg-top) 98%, #000000) 56%)',
           }}
         >
+          <div className="ultima-shell-aura" />
           <div
             className="absolute inset-0"
             style={{
