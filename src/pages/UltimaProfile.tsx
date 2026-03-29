@@ -21,6 +21,7 @@ import {
 import { useAuthStore } from '@/store/auth';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { warmUltimaStartup } from '@/features/ultima/warmup';
+import { ultimaPanelClassName, ultimaSurfaceStyle } from '@/features/ultima/surfaces';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 const CopyIcon = () => (
@@ -155,10 +156,7 @@ type SectionItem = {
 };
 
 const ULTIMA_TOP_UP_PATH = '/balance/top-up?returnTo=/subscription';
-const ULTIMA_SECTION_SURFACE_STYLE = {
-  borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
-  background: 'color-mix(in srgb, var(--ultima-color-surface) 36%, transparent)',
-};
+const ULTIMA_SECTION_SURFACE_STYLE = ultimaSurfaceStyle;
 const ULTIMA_MENU_ITEM_STYLE = {
   borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
   background:
@@ -536,7 +534,7 @@ export function UltimaProfile() {
   const sectionsContent = (
     <div className="grid gap-3 lg:gap-4 xl:grid-cols-2">
       <section
-        className="rounded-3xl border p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md lg:p-4"
+        className={`${ultimaPanelClassName} p-3.5 lg:p-4`}
         style={ULTIMA_SECTION_SURFACE_STYLE}
       >
         <p className="text-white/56 mb-3 text-[12px] font-medium uppercase tracking-[0.14em]">
@@ -550,7 +548,7 @@ export function UltimaProfile() {
       </section>
 
       <section
-        className="rounded-3xl border p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md lg:p-4"
+        className={`${ultimaPanelClassName} p-3.5 lg:p-4`}
         style={ULTIMA_SECTION_SURFACE_STYLE}
       >
         <p className="text-white/56 mb-3 text-[12px] font-medium uppercase tracking-[0.14em]">
@@ -714,7 +712,7 @@ export function UltimaProfile() {
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
         <section className="flex min-h-0 flex-1 flex-col pt-[clamp(8px,2vh,16px)]">
           <section
-            className="mb-3 rounded-3xl border p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md"
+            className={`${ultimaPanelClassName} mb-3 p-3.5`}
             style={ULTIMA_SECTION_SURFACE_STYLE}
           >
             <div className="flex items-center gap-3">

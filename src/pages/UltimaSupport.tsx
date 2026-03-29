@@ -9,6 +9,12 @@ import {
   UltimaDesktopPanel,
   UltimaDesktopSectionLayout,
 } from '@/components/ultima/desktop/UltimaDesktopSectionLayout';
+import {
+  ultimaPaneClassName,
+  ultimaPaneSurfaceStyle,
+  ultimaPanelClassName,
+  ultimaSurfaceStyle,
+} from '@/features/ultima/surfaces';
 import { usePlatform } from '@/platform';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
@@ -25,6 +31,8 @@ const SendIcon = () => (
 );
 
 const TICKETS_BATCH_SIZE = 5;
+const ULTIMA_SUPPORT_SECTION_STYLE: CSSProperties = ultimaSurfaceStyle;
+const ULTIMA_SUPPORT_PANE_STYLE: CSSProperties = ultimaPaneSurfaceStyle;
 
 export function UltimaSupport() {
   const { t } = useTranslation();
@@ -262,11 +270,14 @@ export function UltimaSupport() {
   const bottomNav = <UltimaBottomNav active="support" onProfileClick={openProfileFast} />;
 
   const supportContent = configLoading ? (
-    <section className="flex min-h-0 flex-1 items-center justify-center rounded-3xl bg-[rgba(12,45,42,0.2)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md">
+    <section
+      className={`${ultimaPanelClassName} flex min-h-0 flex-1 items-center justify-center p-4`}
+      style={ULTIMA_SUPPORT_SECTION_STYLE}
+    >
       <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-300/35 border-t-transparent" />
     </section>
   ) : ticketsDisabled ? (
-    <section className="rounded-3xl bg-[rgba(12,45,42,0.2)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md">
+    <section className={`${ultimaPanelClassName} p-4`} style={ULTIMA_SUPPORT_SECTION_STYLE}>
       <button
         type="button"
         onClick={() => supportContact?.action()}
@@ -276,7 +287,10 @@ export function UltimaSupport() {
       </button>
     </section>
   ) : showCreate ? (
-    <section className="space-y-3 rounded-3xl bg-[rgba(12,45,42,0.2)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md">
+    <section
+      className={`${ultimaPanelClassName} space-y-3 p-4`}
+      style={ULTIMA_SUPPORT_SECTION_STYLE}
+    >
       <input
         value={newTitle}
         onChange={(event) => setNewTitle(event.target.value)}
@@ -313,7 +327,10 @@ export function UltimaSupport() {
       </div>
     </section>
   ) : (
-    <section className="flex min-h-0 flex-1 flex-col gap-3 rounded-3xl bg-[rgba(12,45,42,0.2)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md lg:rounded-[28px] lg:p-5">
+    <section
+      className={`${ultimaPanelClassName} flex min-h-0 flex-1 flex-col gap-3 p-4 lg:rounded-[28px] lg:p-5`}
+      style={ULTIMA_SUPPORT_SECTION_STYLE}
+    >
       <div className="flex items-center justify-between">
         <p className="text-[13px] leading-none text-white/70">{t('support.yourTickets')}</p>
         <button
@@ -326,7 +343,10 @@ export function UltimaSupport() {
       </div>
 
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[380px_minmax(0,1fr)] lg:gap-4">
-        <div className="bg-emerald-950/26 max-h-[30vh] space-y-2 overflow-y-auto rounded-2xl p-2 pr-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] lg:max-h-none lg:min-h-[500px] lg:p-3 lg:pr-2">
+        <div
+          className={`${ultimaPaneClassName} max-h-[30vh] space-y-2 overflow-y-auto p-2 pr-1.5 lg:max-h-none lg:min-h-[500px] lg:p-3 lg:pr-2`}
+          style={ULTIMA_SUPPORT_PANE_STYLE}
+        >
           {ticketsLoading ? (
             <p className="px-2 py-1 text-[13px] text-white/70">{t('common.loading')}</p>
           ) : tickets?.items?.length ? (
@@ -413,7 +433,10 @@ export function UltimaSupport() {
           )}
         </div>
 
-        <div className="bg-emerald-950/26 min-h-0 flex-1 rounded-2xl p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] lg:min-h-[500px] lg:p-4">
+        <div
+          className={`${ultimaPaneClassName} min-h-0 flex-1 p-3 lg:min-h-[500px] lg:p-4`}
+          style={ULTIMA_SUPPORT_PANE_STYLE}
+        >
           {selectedTicketId && ticketDetail ? (
             <div className="flex h-full min-h-0 flex-col gap-3">
               <div className="flex items-center justify-between gap-2">

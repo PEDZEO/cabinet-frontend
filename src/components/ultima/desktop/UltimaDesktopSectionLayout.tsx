@@ -1,4 +1,9 @@
 import { type CSSProperties, type ReactNode } from 'react';
+import {
+  ultimaAccentSurfaceStyle,
+  ultimaCardClassName,
+  ultimaSurfaceStyle,
+} from '@/features/ultima/surfaces';
 import { cn } from '@/lib/utils';
 
 type UltimaDesktopMetric = {
@@ -27,22 +32,8 @@ type UltimaDesktopPanelProps = {
   className?: string;
 };
 
-const sharedCardClassName =
-  'rounded-[30px] border p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_22px_48px_rgba(3,14,24,0.24)] backdrop-blur-xl';
-
-const defaultCardStyle: CSSProperties = {
-  borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 22%, transparent)',
-  background:
-    'linear-gradient(180deg, color-mix(in srgb, var(--ultima-color-surface) 30%, transparent), color-mix(in srgb, var(--ultima-color-secondary) 66%, transparent))',
-};
-
-const accentCardStyle: CSSProperties = {
-  borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 32%, transparent)',
-  background:
-    'linear-gradient(145deg, color-mix(in srgb, var(--ultima-color-aura) 22%, transparent), color-mix(in srgb, var(--ultima-color-secondary) 72%, transparent))',
-  boxShadow:
-    'inset 0 1px 0 rgba(255,255,255,0.08), 0 28px 56px color-mix(in srgb, var(--ultima-color-aura) 12%, transparent)',
-};
+const defaultCardStyle: CSSProperties = ultimaSurfaceStyle;
+const accentCardStyle: CSSProperties = ultimaAccentSurfaceStyle;
 
 export function UltimaDesktopPanel({
   title,
@@ -51,7 +42,7 @@ export function UltimaDesktopPanel({
   className,
 }: UltimaDesktopPanelProps) {
   return (
-    <section className={cn(sharedCardClassName, className)} style={defaultCardStyle}>
+    <section className={cn(ultimaCardClassName, className)} style={defaultCardStyle}>
       {title ? (
         <div className="mb-4">
           <h2 className="text-[22px] font-semibold leading-[1.02] tracking-[-0.03em] text-white">
@@ -87,7 +78,7 @@ export function UltimaDesktopSectionLayout({
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
         <div className={cn('space-y-4', contentClassName)}>
           <section
-            className={cn(sharedCardClassName, 'relative overflow-hidden p-6 lg:p-7')}
+            className={cn(ultimaCardClassName, 'relative overflow-hidden p-6 lg:p-7')}
             style={accentCardStyle}
           >
             <div className="absolute inset-y-0 right-[-10%] w-[34%] rounded-full bg-white/[0.05] blur-3xl" />

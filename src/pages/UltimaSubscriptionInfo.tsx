@@ -9,6 +9,12 @@ import {
   UltimaDesktopPanel,
   UltimaDesktopSectionLayout,
 } from '@/components/ultima/desktop/UltimaDesktopSectionLayout';
+import {
+  ultimaPaneClassName,
+  ultimaPaneSurfaceStyle,
+  ultimaPanelClassName,
+  ultimaSurfaceStyle,
+} from '@/features/ultima/surfaces';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useHaptic } from '@/platform';
@@ -32,20 +38,11 @@ const ShareIcon = () => (
   </svg>
 );
 
-const ULTIMA_INFO_SURFACE_STYLE = {
-  borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
-  background: 'color-mix(in srgb, var(--ultima-color-surface) 36%, transparent)',
-};
-const ULTIMA_INFO_INNER_STYLE = {
-  borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 18%, transparent)',
-  background: 'color-mix(in srgb, var(--ultima-color-secondary) 56%, transparent)',
-};
+const ULTIMA_INFO_SURFACE_STYLE = ultimaSurfaceStyle;
+const ULTIMA_INFO_INNER_STYLE = ultimaPaneSurfaceStyle;
 
 const StatCard = ({ label, value, hint }: { label: string; value: string; hint?: string }) => (
-  <article
-    className="rounded-[22px] border p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md"
-    style={ULTIMA_INFO_SURFACE_STYLE}
-  >
+  <article className={`${ultimaPaneClassName} p-3.5`} style={ULTIMA_INFO_SURFACE_STYLE}>
     <p className="text-white/54 text-[11px] font-medium uppercase tracking-[0.12em]">{label}</p>
     <p className="mt-2 break-words text-[clamp(18px,5vw,20px)] font-semibold leading-tight text-white">
       {value}
@@ -231,7 +228,7 @@ export function UltimaSubscriptionInfo() {
 
   const emptyState = (
     <section
-      className="text-white/82 rounded-2xl border p-4 text-sm backdrop-blur-md"
+      className={`${ultimaPanelClassName} text-white/82 p-4 text-sm`}
       style={ULTIMA_INFO_SURFACE_STYLE}
     >
       {t('subscription.connection.needSubscription', {
@@ -241,15 +238,12 @@ export function UltimaSubscriptionInfo() {
   );
 
   const linkSection = hasSubscription && subscription && (
-    <section
-      className="rounded-3xl border p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md"
-      style={ULTIMA_INFO_SURFACE_STYLE}
-    >
+    <section className={`${ultimaPanelClassName} p-3.5`} style={ULTIMA_INFO_SURFACE_STYLE}>
       <p className="text-white/56 mb-2 text-[12px] font-medium uppercase tracking-[0.14em]">
         {t('profile.subscriptionLink', { defaultValue: 'Ваша ссылка на подписку' })}
       </p>
       <div
-        className="rounded-[20px] border px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+        className={`${ultimaPaneClassName} rounded-[20px] px-3 py-2.5`}
         style={ULTIMA_INFO_INNER_STYLE}
       >
         <p className="text-white/92 break-all text-[13px] leading-snug">
@@ -298,10 +292,7 @@ export function UltimaSubscriptionInfo() {
   );
 
   const mobileOverview = hasSubscription && subscription && (
-    <section
-      className="rounded-3xl border p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md"
-      style={ULTIMA_INFO_SURFACE_STYLE}
-    >
+    <section className={`${ultimaPanelClassName} p-3.5`} style={ULTIMA_INFO_SURFACE_STYLE}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <p className="text-white/56 text-[12px] font-medium uppercase tracking-[0.14em]">
@@ -326,7 +317,7 @@ export function UltimaSubscriptionInfo() {
       </div>
       <div className="mt-3 grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
         <div
-          className="rounded-[20px] border px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+          className={`${ultimaPaneClassName} rounded-[20px] px-3 py-2.5`}
           style={ULTIMA_INFO_INNER_STYLE}
         >
           <p className="text-white/52 text-[11px] font-medium uppercase tracking-[0.12em]">
@@ -337,7 +328,7 @@ export function UltimaSubscriptionInfo() {
           </p>
         </div>
         <div
-          className="rounded-[20px] border px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+          className={`${ultimaPaneClassName} rounded-[20px] px-3 py-2.5`}
           style={ULTIMA_INFO_INNER_STYLE}
         >
           <p className="text-white/52 text-[11px] font-medium uppercase tracking-[0.12em]">

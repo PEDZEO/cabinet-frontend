@@ -1,5 +1,10 @@
 import { type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  ultimaAccentSurfaceStyle,
+  ultimaCardClassName,
+  ultimaSurfaceStyle,
+} from '@/features/ultima/surfaces';
 import { cn } from '@/lib/utils';
 
 type Step = 1 | 2 | 3;
@@ -22,22 +27,8 @@ type UltimaDesktopConnectionProps = {
   onHideReminderPermanently: () => void;
 };
 
-const sharedCardClassName =
-  'rounded-[30px] border p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_22px_48px_rgba(3,14,24,0.24)] backdrop-blur-xl';
-
-const defaultCardStyle: CSSProperties = {
-  borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 22%, transparent)',
-  background:
-    'linear-gradient(180deg, color-mix(in srgb, var(--ultima-color-surface) 30%, transparent), color-mix(in srgb, var(--ultima-color-secondary) 66%, transparent))',
-};
-
-const accentCardStyle: CSSProperties = {
-  borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 32%, transparent)',
-  background:
-    'linear-gradient(145deg, color-mix(in srgb, var(--ultima-color-aura) 22%, transparent), color-mix(in srgb, var(--ultima-color-secondary) 72%, transparent))',
-  boxShadow:
-    'inset 0 1px 0 rgba(255,255,255,0.08), 0 28px 56px color-mix(in srgb, var(--ultima-color-aura) 12%, transparent)',
-};
+const defaultCardStyle: CSSProperties = ultimaSurfaceStyle;
+const accentCardStyle: CSSProperties = ultimaAccentSurfaceStyle;
 
 const DownloadIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-16 w-16 text-white/90">
@@ -181,7 +172,7 @@ export function UltimaDesktopConnection({
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
         <div className="space-y-4">
           <section
-            className={cn(sharedCardClassName, 'relative overflow-hidden p-6 lg:p-7')}
+            className={cn(ultimaCardClassName, 'relative overflow-hidden p-6 lg:p-7')}
             style={accentCardStyle}
           >
             <div className="absolute inset-y-0 right-[-10%] w-[34%] rounded-full bg-white/[0.05] blur-3xl" />
@@ -308,7 +299,7 @@ export function UltimaDesktopConnection({
             )}
           </section>
 
-          <section className={cn(sharedCardClassName, 'p-5')} style={defaultCardStyle}>
+          <section className={cn(ultimaCardClassName, 'p-5')} style={defaultCardStyle}>
             <div className="grid gap-3 md:grid-cols-3">
               {stepCards.map((card) => {
                 const done = step > card.step;
@@ -348,7 +339,7 @@ export function UltimaDesktopConnection({
 
         <aside className="ultima-desktop-aside space-y-4 lg:sticky lg:top-4">
           {showInfo && step === 1 && (
-            <section className={cn(sharedCardClassName, 'p-5')} style={defaultCardStyle}>
+            <section className={cn(ultimaCardClassName, 'p-5')} style={defaultCardStyle}>
               <div className="flex items-start justify-between gap-3">
                 <h2 className="text-[28px] font-semibold leading-[1.02] tracking-[-0.03em] text-white">
                   {t('subscription.connection.importantInfo', {
@@ -394,7 +385,7 @@ export function UltimaDesktopConnection({
             </section>
           )}
 
-          <section className={cn(sharedCardClassName, 'p-5')} style={defaultCardStyle}>
+          <section className={cn(ultimaCardClassName, 'p-5')} style={defaultCardStyle}>
             <div className="text-[30px] font-semibold leading-[0.98] tracking-[-0.04em] text-white">
               {title}
             </div>

@@ -1,6 +1,11 @@
 import { type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ActiveDiscount, PromoOffer } from '@/api/promo';
+import {
+  ultimaAccentSurfaceStyle,
+  ultimaCardClassName,
+  ultimaSurfaceStyle,
+} from '@/features/ultima/surfaces';
 import { cn } from '@/lib/utils';
 import type { Subscription } from '@/types';
 
@@ -48,22 +53,8 @@ type DesktopQuickActionProps = {
   onClick: () => void;
 };
 
-const sharedCardClassName =
-  'rounded-[30px] border p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_22px_48px_rgba(3,14,24,0.24)] backdrop-blur-xl';
-
-const defaultCardStyle: CSSProperties = {
-  borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 22%, transparent)',
-  background:
-    'linear-gradient(180deg, color-mix(in srgb, var(--ultima-color-surface) 30%, transparent), color-mix(in srgb, var(--ultima-color-secondary) 66%, transparent))',
-};
-
-const accentCardStyle: CSSProperties = {
-  borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 32%, transparent)',
-  background:
-    'linear-gradient(145deg, color-mix(in srgb, var(--ultima-color-aura) 22%, transparent), color-mix(in srgb, var(--ultima-color-secondary) 72%, transparent))',
-  boxShadow:
-    'inset 0 1px 0 rgba(255,255,255,0.08), 0 28px 56px color-mix(in srgb, var(--ultima-color-aura) 12%, transparent)',
-};
+const defaultCardStyle: CSSProperties = ultimaSurfaceStyle;
+const accentCardStyle: CSSProperties = ultimaAccentSurfaceStyle;
 
 const toneMap: Record<
   UltimaDashboardStatusTone,
@@ -182,7 +173,7 @@ function clampPercent(value: number): number {
 
 function DesktopMetricCard({ icon, label, value, meta }: DesktopMetricCardProps) {
   return (
-    <div className={cn(sharedCardClassName, 'p-4')} style={defaultCardStyle}>
+    <div className={cn(ultimaCardClassName, 'p-4')} style={defaultCardStyle}>
       <div className="text-white/84 mb-2.5 flex h-9 w-9 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06]">
         {icon}
       </div>
@@ -215,7 +206,7 @@ export function UltimaDesktopDashboardSkeleton({ bottomNav }: { bottomNav: React
     <div className="ultima-shell-inner lg:max-w-[1240px]">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
         <div className="space-y-4">
-          <section className={cn(sharedCardClassName, 'min-h-[236px]')} style={accentCardStyle}>
+          <section className={cn(ultimaCardClassName, 'min-h-[236px]')} style={accentCardStyle}>
             <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_160px] lg:items-center">
               <div>
                 <div className="h-14 w-[74%] animate-pulse rounded-[24px] bg-white/10" />
@@ -233,7 +224,7 @@ export function UltimaDesktopDashboardSkeleton({ bottomNav }: { bottomNav: React
             {Array.from({ length: 4 }).map((_, index) => (
               <div
                 key={index}
-                className={cn(sharedCardClassName, 'min-h-[136px] animate-pulse')}
+                className={cn(ultimaCardClassName, 'min-h-[136px] animate-pulse')}
                 style={defaultCardStyle}
               />
             ))}
@@ -241,11 +232,11 @@ export function UltimaDesktopDashboardSkeleton({ bottomNav }: { bottomNav: React
 
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_400px]">
             <div
-              className={cn(sharedCardClassName, 'min-h-[220px] animate-pulse')}
+              className={cn(ultimaCardClassName, 'min-h-[220px] animate-pulse')}
               style={defaultCardStyle}
             />
             <div
-              className={cn(sharedCardClassName, 'min-h-[220px] animate-pulse')}
+              className={cn(ultimaCardClassName, 'min-h-[220px] animate-pulse')}
               style={defaultCardStyle}
             />
           </div>
@@ -253,7 +244,7 @@ export function UltimaDesktopDashboardSkeleton({ bottomNav }: { bottomNav: React
 
         <aside className="space-y-4">
           <div
-            className={cn(sharedCardClassName, 'min-h-[236px] animate-pulse')}
+            className={cn(ultimaCardClassName, 'min-h-[236px] animate-pulse')}
             style={defaultCardStyle}
           />
           <div className="ultima-nav-dock mt-0">{bottomNav}</div>
@@ -378,7 +369,7 @@ export function UltimaDesktopDashboard({
     }
 
     return (
-      <section className={cn(sharedCardClassName, 'h-full')} style={defaultCardStyle}>
+      <section className={cn(ultimaCardClassName, 'h-full')} style={defaultCardStyle}>
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="text-[24px] font-semibold leading-[1.04] tracking-[-0.03em] text-white">
@@ -437,7 +428,7 @@ export function UltimaDesktopDashboard({
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
         <div className="space-y-4">
           <section
-            className={cn(sharedCardClassName, 'relative overflow-hidden p-5 lg:p-6')}
+            className={cn(ultimaCardClassName, 'relative overflow-hidden p-5 lg:p-6')}
             style={accentCardStyle}
           >
             <div className="absolute inset-y-0 right-[-12%] w-[42%] rounded-full bg-white/[0.05] blur-3xl" />
@@ -560,7 +551,7 @@ export function UltimaDesktopDashboard({
           </div>
 
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_400px]">
-            <section className={cn(sharedCardClassName, 'p-5')} style={defaultCardStyle}>
+            <section className={cn(ultimaCardClassName, 'p-5')} style={defaultCardStyle}>
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h2 className="text-[24px] font-semibold leading-[1.04] tracking-[-0.03em] text-white">
@@ -648,7 +639,7 @@ export function UltimaDesktopDashboard({
         </div>
 
         <aside className="ultima-desktop-aside space-y-4 lg:sticky lg:top-4">
-          <section className={cn(sharedCardClassName, 'p-5')} style={defaultCardStyle}>
+          <section className={cn(ultimaCardClassName, 'p-5')} style={defaultCardStyle}>
             <h2 className="text-[24px] font-semibold leading-[1.04] tracking-[-0.03em] text-white">
               {asideTitle}
             </h2>
