@@ -45,7 +45,7 @@ export function UltimaReferralCta({
   const description = showBadge
     ? t('ultima.referralCtaDescription', {
         percent: normalizedCommission,
-        defaultValue: 'Получайте {{percent}}% комиссии за приглашения',
+        defaultValue: 'До {{percent}}% за приглашения',
       })
     : t('profile.referralDescription', {
         defaultValue: 'Получайте бонусы за приглашения',
@@ -56,28 +56,36 @@ export function UltimaReferralCta({
       type="button"
       onClick={onClick}
       className={cn(
-        'group w-full text-left transition-transform duration-200 hover:translate-y-[-1px] active:translate-y-0',
+        'group relative isolate w-full overflow-hidden text-left transition-transform duration-200 hover:translate-y-[-1px] active:translate-y-0',
         variant === 'desktop'
-          ? 'flex items-center justify-between gap-4 rounded-[24px] border px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_18px_42px_rgba(3,14,24,0.18)] backdrop-blur-xl'
-          : 'flex flex-col gap-3 rounded-2xl border px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_24px_rgba(3,14,24,0.18)] backdrop-blur-md min-[360px]:flex-row min-[360px]:items-center min-[360px]:justify-between',
+          ? 'rounded-[22px] border px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_14px_32px_rgba(3,14,24,0.16)] backdrop-blur-xl'
+          : 'rounded-[20px] border px-3.5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_22px_rgba(3,14,24,0.16)] backdrop-blur-md',
         className,
       )}
       style={{
-        borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 30%, transparent)',
+        borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
         background:
-          'linear-gradient(140deg, color-mix(in srgb, var(--ultima-color-aura) 16%, transparent), color-mix(in srgb, var(--ultima-color-surface) 36%, transparent) 42%, color-mix(in srgb, var(--ultima-color-secondary) 68%, transparent) 100%)',
+          'linear-gradient(180deg, color-mix(in srgb, var(--ultima-color-surface) 50%, transparent), color-mix(in srgb, var(--ultima-color-secondary) 68%, transparent))',
       }}
       aria-label={title}
     >
-      <div className="flex min-w-0 flex-1 items-start gap-3">
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -right-5 -top-5 h-24 w-24 rounded-full opacity-70 blur-2xl"
+        style={{
+          background: 'color-mix(in srgb, var(--ultima-color-aura) 16%, transparent)',
+        }}
+      />
+
+      <div className="relative flex min-w-0 items-center gap-3">
         <span
           className={cn(
-            'flex shrink-0 items-center justify-center rounded-2xl border text-white/90',
-            variant === 'desktop' ? 'h-11 w-11' : 'h-10 w-10',
+            'text-white/88 flex shrink-0 items-center justify-center rounded-[18px] border',
+            variant === 'desktop' ? 'h-10 w-10' : 'h-9 w-9',
           )}
           style={{
-            borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 24%, transparent)',
-            background: 'color-mix(in srgb, var(--ultima-color-surface) 44%, transparent)',
+            borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 18%, transparent)',
+            background: 'color-mix(in srgb, var(--ultima-color-surface) 42%, transparent)',
           }}
         >
           <ReferralIcon />
@@ -86,7 +94,7 @@ export function UltimaReferralCta({
         <div className="min-w-0 flex-1">
           <p
             className={cn(
-              'text-white/96 line-clamp-2 break-words font-semibold leading-tight',
+              'text-white/96 truncate font-semibold leading-tight',
               variant === 'desktop' ? 'text-[15px]' : 'text-[14px]',
             )}
           >
@@ -94,47 +102,41 @@ export function UltimaReferralCta({
           </p>
           <p
             className={cn(
-              'text-white/68 mt-1 break-words [overflow-wrap:anywhere]',
-              variant === 'desktop' ? 'text-[13px] leading-snug' : 'text-[12px] leading-snug',
+              'text-white/62 mt-0.5 truncate',
+              variant === 'desktop' ? 'text-[12px] leading-tight' : 'text-[11px] leading-tight',
             )}
           >
             {description}
           </p>
         </div>
-      </div>
 
-      <div
-        className={cn(
-          'flex shrink-0 items-center gap-2',
-          variant === 'desktop'
-            ? ''
-            : 'w-full justify-between min-[360px]:w-auto min-[360px]:justify-end',
-        )}
-      >
-        {showBadge ? (
+        <div className="flex shrink-0 items-center gap-2 pl-1">
+          {showBadge ? (
+            <span
+              className={cn(
+                'text-white/94 rounded-full border px-2 py-1 text-center font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]',
+                variant === 'desktop' ? 'min-w-[54px] text-[11px]' : 'text-[10px]',
+              )}
+              style={{
+                borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 22%, transparent)',
+                background: 'color-mix(in srgb, var(--ultima-color-primary) 16%, transparent)',
+              }}
+            >
+              {normalizedCommission}%
+            </span>
+          ) : null}
+
           <span
-            className={cn(
-              'text-white/96 rounded-full border px-2.5 py-1 font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]',
-              variant === 'desktop' ? 'text-[13px]' : 'text-[12px]',
-            )}
+            className="text-white/72 group-hover:text-white/92 flex h-8 w-8 items-center justify-center rounded-full border transition-colors"
             style={{
-              borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 28%, transparent)',
-              background: 'color-mix(in srgb, var(--ultima-color-primary) 24%, transparent)',
+              borderColor:
+                'color-mix(in srgb, var(--ultima-color-surface-border) 18%, transparent)',
+              background: 'color-mix(in srgb, #ffffff 4%, transparent)',
             }}
           >
-            {normalizedCommission}%
+            <ArrowUpRightIcon />
           </span>
-        ) : null}
-
-        <span
-          className="text-white/72 group-hover:text-white/92 flex h-8 w-8 items-center justify-center rounded-full border transition-colors"
-          style={{
-            borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 20%, transparent)',
-            background: 'color-mix(in srgb, #ffffff 4%, transparent)',
-          }}
-        >
-          <ArrowUpRightIcon />
-        </span>
+        </div>
       </div>
     </button>
   );

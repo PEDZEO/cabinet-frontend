@@ -3629,7 +3629,7 @@
     "finishSetup": "تکمیل نصب",
     "setupCompactTitle": "VPN هنوز تنظیم نشده است",
     "setupCompactDesc": "هر زمان آماده بودید، نصب را باز کنید و اتصال را کامل کنید.",
-    "referralCtaDescription": "از دعوت‌ها {{percent}}٪ کمیسیون دریافت کنید",
+    "referralCtaDescription": "تا {{percent}}٪ از دعوت‌ها",
     "trialGuide": {
       "badge": "دوره آزمایشی فعال شد",
       "title": "الان می‌توانید متصل شوید",

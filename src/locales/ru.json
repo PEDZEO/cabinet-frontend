@@ -4996,7 +4996,7 @@
     "finishSetup": "Завершить установку",
     "setupCompactTitle": "VPN ещё не настроен",
     "setupCompactDesc": "Откройте установку и завершите подключение, когда будет удобно.",
-    "referralCtaDescription": "Получайте {{percent}}% комиссии за приглашения",
+    "referralCtaDescription": "До {{percent}}% за приглашения",
     "trialGuide": {
       "badge": "Триал активирован",
       "title": "Можно подключаться прямо сейчас",

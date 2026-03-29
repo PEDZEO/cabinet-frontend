@@ -3628,7 +3628,7 @@
     "finishSetup": "完成安装",
     "setupCompactTitle": "VPN 尚未设置",
     "setupCompactDesc": "方便时打开安装流程并完成连接。",
-    "referralCtaDescription": "通过邀请可获得 {{percent}}% 佣金",
+    "referralCtaDescription": "邀请最高返 {{percent}}%",
     "trialGuide": {
       "badge": "试用已激活",
       "title": "现在就可以开始连接",

@@ -504,7 +504,9 @@ export function UltimaDesktopDashboard({
                   </button>
                 </div>
 
-                {referralCta ? <div className="mt-3 max-w-[460px]">{referralCta}</div> : null}
+                {referralCta ? (
+                  <div className="mt-3 max-w-[400px] xl:max-w-[420px]">{referralCta}</div>
+                ) : null}
               </div>
 
               <div className="mx-auto flex items-center justify-center lg:justify-self-end">
