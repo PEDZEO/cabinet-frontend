@@ -107,6 +107,18 @@ const BRANDING_CACHE_KEY = 'cabinet_branding';
 const LOGO_PRELOADED_KEY = 'cabinet_logo_preloaded';
 export const ULTIMA_THEME_CONFIG_CACHE_KEY = 'cabinet_ultima_theme_config';
 
+const parseCachedBranding = (raw: string | null): BrandingInfo | null => {
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(raw) as BrandingInfo;
+  } catch {
+    return null;
+  }
+};
+
 // In-memory blob URL cache to avoid exposing backend URL
 let _logoBlobUrl: string | null = null;
 
@@ -125,19 +137,27 @@ export const isLogoPreloaded = (): boolean => {
   }
 };
 
-// Get cached branding from sessionStorage
+// Get cached public branding, preferring the warm session copy and falling back to localStorage.
 export const getCachedBranding = (): BrandingInfo | null => {
   try {
-    const cached = sessionStorage.getItem(BRANDING_CACHE_KEY);
+    const cached = parseCachedBranding(sessionStorage.getItem(BRANDING_CACHE_KEY));
     if (cached) {
-      return JSON.parse(cached);
+      return cached;
     }
-    // One-time migration: move stale localStorage value to sessionStorage
-    const legacy = localStorage.getItem(BRANDING_CACHE_KEY);
-    if (legacy) {
-      localStorage.removeItem(BRANDING_CACHE_KEY);
-      sessionStorage.setItem(BRANDING_CACHE_KEY, legacy);
-      return JSON.parse(legacy);
+  } catch {
+    // storage not available or invalid JSON
+  }
+
+  try {
+    const cachedRaw = localStorage.getItem(BRANDING_CACHE_KEY);
+    const cached = parseCachedBranding(cachedRaw);
+    if (cached && cachedRaw) {
+      try {
+        sessionStorage.setItem(BRANDING_CACHE_KEY, cachedRaw);
+      } catch {
+        // sessionStorage not available
+      }
+      return cached;
     }
   } catch {
     // storage not available or invalid JSON
@@ -145,12 +165,20 @@ export const getCachedBranding = (): BrandingInfo | null => {
   return null;
 };
 
-// Update branding cache in sessionStorage
+// Update branding cache in both storages so the public logo survives cold starts.
 export const setCachedBranding = (branding: BrandingInfo) => {
+  const serialized = JSON.stringify(branding);
+
   try {
-    sessionStorage.setItem(BRANDING_CACHE_KEY, JSON.stringify(branding));
+    sessionStorage.setItem(BRANDING_CACHE_KEY, serialized);
   } catch {
     // sessionStorage not available
+  }
+
+  try {
+    localStorage.setItem(BRANDING_CACHE_KEY, serialized);
+  } catch {
+    // localStorage not available
   }
 };
 

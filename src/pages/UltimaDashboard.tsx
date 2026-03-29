@@ -27,6 +27,7 @@ import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { UltimaTrialGuide } from '@/components/ultima/UltimaTrialGuide';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useBrandLogoImage } from '@/hooks/useBrandLogoImage';
 import { useBranding } from '@/hooks/useBranding';
 import { cn } from '@/lib/utils';
 import { useHaptic } from '@/platform';
@@ -127,7 +128,6 @@ type ShieldDigit = {
   scale: number;
 };
 
-const loadedHomeLogoUrls = new Set<string>();
 const shieldTapResetDelayMs = 1400;
 
 export function UltimaDashboard() {
@@ -135,7 +135,7 @@ export function UltimaDashboard() {
   const queryClient = useQueryClient();
   const { t, i18n } = useTranslation();
   const { currencySymbol } = useCurrency();
-  const { hasCustomLogo, logoUrl } = useBranding();
+  const { hasCustomLogo, logoUrl, hasCachedBranding, isBrandingLoading } = useBranding();
   const haptic = useHaptic();
   const isAdmin = useAuthStore((state) => state.isAdmin);
   const user = useAuthStore((state) => state.user);
@@ -153,8 +153,7 @@ export function UltimaDashboard() {
   const [isReminderHidden, setIsReminderHidden] = useState(false);
   const [isTrialGuideVisible, setIsTrialGuideVisible] = useState(false);
   const [promoMessage, setPromoMessage] = useState<string | null>(null);
-  const [displayHomeLogoUrl, setDisplayHomeLogoUrl] = useState<string | null>(null);
-  const [hasHomeLogoLoadError, setHasHomeLogoLoadError] = useState(false);
+  const hasCachedThemeConfig = useMemo(() => getCachedUltimaThemeConfig() !== null, []);
 
   const {
     data: subscriptionResponse,
@@ -192,6 +191,12 @@ export function UltimaDashboard() {
     staleTime: 60000,
     placeholderData: (previousData) => previousData,
   });
+  const {
+    isLoaded: isHomeLogoLoaded,
+    hasError: hasHomeLogoLoadError,
+    handleLoad: handleHomeLogoLoad,
+    handleError: handleHomeLogoError,
+  } = useBrandLogoImage(logoUrl);
   const { data: referralInfo } = useQuery({
     queryKey: ['referral-info'],
     queryFn: referralApi.getReferralInfo,
@@ -686,9 +691,59 @@ export function UltimaDashboard() {
   const referralCommissionPercent =
     referralInfo?.commission_percent ?? referralTerms?.commission_percent ?? 0;
   const showBrandLogoOnHome = Boolean(
-    ultimaThemeConfig?.homeUseBrandLogo && hasCustomLogo && logoUrl,
+    ultimaThemeConfig?.homeUseBrandLogo && hasCustomLogo && logoUrl && !hasHomeLogoLoadError,
   );
-  const shouldHoldForHomeLogo = showBrandLogoOnHome && !displayHomeLogoUrl && !hasHomeLogoLoadError;
+  const isHomeLogoDecisionPending =
+    (!hasCachedThemeConfig && !ultimaThemeConfig) || (!hasCachedBranding && isBrandingLoading);
+  const shouldReserveHomeLogoSlot =
+    !hasHomeLogoLoadError &&
+    (Boolean(ultimaThemeConfig?.homeUseBrandLogo) || isHomeLogoDecisionPending);
+
+  const renderHomeBrandMark = useCallback(() => {
+    if (!shouldReserveHomeLogoSlot) {
+      return <ShieldIcon />;
+    }
+
+    return (
+      <span
+        className="relative flex h-[86px] w-[86px] items-center justify-center overflow-hidden rounded-full border bg-black/20 p-3 backdrop-blur"
+        style={{
+          borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 34%, transparent)',
+          boxShadow:
+            '0 0 20px color-mix(in srgb, var(--ultima-color-ring) 24%, transparent), inset 0 1px 0 rgba(255,255,255,0.12)',
+        }}
+      >
+        {showBrandLogoOnHome ? (
+          <img
+            src={logoUrl ?? undefined}
+            alt="project-logo"
+            className={cn(
+              'absolute inset-0 h-full w-full rounded-full object-contain p-3 transition-opacity duration-200',
+              isHomeLogoLoaded ? 'opacity-100' : 'opacity-0',
+            )}
+            loading="eager"
+            decoding="sync"
+            onLoad={handleHomeLogoLoad}
+            onError={handleHomeLogoError}
+          />
+        ) : null}
+        <span
+          aria-hidden
+          className={cn(
+            'absolute inset-[3px] rounded-full border border-white/10 bg-white/[0.06] transition-opacity duration-200',
+            showBrandLogoOnHome && isHomeLogoLoaded ? 'opacity-0' : 'animate-pulse opacity-100',
+          )}
+        />
+      </span>
+    );
+  }, [
+    handleHomeLogoError,
+    handleHomeLogoLoad,
+    isHomeLogoLoaded,
+    logoUrl,
+    shouldReserveHomeLogoSlot,
+    showBrandLogoOnHome,
+  ]);
 
   const renderShieldButton = useCallback(
     (className?: string) => (
@@ -740,41 +795,10 @@ export function UltimaDashboard() {
             );
           })}
         </span>
-        {showBrandLogoOnHome && displayHomeLogoUrl ? (
-          <span
-            className="flex h-[86px] w-[86px] items-center justify-center rounded-full border bg-black/20 p-3 backdrop-blur"
-            style={{
-              borderColor:
-                'color-mix(in srgb, var(--ultima-color-surface-border) 34%, transparent)',
-              boxShadow:
-                '0 0 20px color-mix(in srgb, var(--ultima-color-ring) 24%, transparent), inset 0 1px 0 rgba(255,255,255,0.12)',
-            }}
-          >
-            <img
-              src={displayHomeLogoUrl}
-              alt="project-logo"
-              className="h-full w-full rounded-full object-contain"
-              loading="eager"
-              decoding="sync"
-              onLoad={() => {
-                if (!displayHomeLogoUrl) {
-                  return;
-                }
-                loadedHomeLogoUrls.add(displayHomeLogoUrl);
-                setHasHomeLogoLoadError(false);
-              }}
-              onError={() => {
-                setDisplayHomeLogoUrl(null);
-                setHasHomeLogoLoadError(true);
-              }}
-            />
-          </span>
-        ) : (
-          <ShieldIcon />
-        )}
+        {renderHomeBrandMark()}
       </button>
     ),
-    [displayHomeLogoUrl, handleShieldTap, shieldDigits, shieldRipples, showBrandLogoOnHome, t],
+    [handleShieldTap, renderHomeBrandMark, shieldDigits, shieldRipples, t],
   );
 
   const adminButtonClassName = isDesktopViewport
@@ -798,48 +822,7 @@ export function UltimaDashboard() {
       />
     ) : null;
 
-  useEffect(() => {
-    if (!logoUrl) {
-      setDisplayHomeLogoUrl(null);
-      setHasHomeLogoLoadError(false);
-      return;
-    }
-    if (loadedHomeLogoUrls.has(logoUrl)) {
-      setDisplayHomeLogoUrl(logoUrl);
-      setHasHomeLogoLoadError(false);
-      return;
-    }
-
-    let isCancelled = false;
-    const image = new Image();
-
-    setHasHomeLogoLoadError(false);
-
-    image.decoding = 'async';
-    image.onload = () => {
-      if (isCancelled) {
-        return;
-      }
-      loadedHomeLogoUrls.add(logoUrl);
-      setDisplayHomeLogoUrl(logoUrl);
-      setHasHomeLogoLoadError(false);
-    };
-    image.onerror = () => {
-      if (isCancelled) {
-        return;
-      }
-      setHasHomeLogoLoadError(true);
-    };
-    image.src = logoUrl;
-
-    return () => {
-      isCancelled = true;
-      image.onload = null;
-      image.onerror = null;
-    };
-  }, [displayHomeLogoUrl, logoUrl]);
-
-  if (!isI18nReady || !isSubscriptionReady || shouldHoldForAutoTrial || shouldHoldForHomeLogo) {
+  if (!isI18nReady || !isSubscriptionReady || shouldHoldForAutoTrial) {
     if (isDesktopViewport) {
       return (
         <div className={shellClassName}>
@@ -854,11 +837,7 @@ export function UltimaDashboard() {
         <div className="relative z-10 mx-auto flex min-h-[calc(100dvh-26px)] w-full flex-col px-4 sm:px-6">
           <section className="pt-[clamp(52px,12vh,112px)]">
             <div className="mx-auto mb-[clamp(24px,5vh,56px)] flex h-24 w-24 items-center justify-center rounded-full bg-black/15">
-              {shouldHoldForHomeLogo ? (
-                <div className="h-[86px] w-[86px] animate-pulse rounded-full border border-white/10 bg-white/[0.06]" />
-              ) : (
-                <ShieldIcon />
-              )}
+              {renderHomeBrandMark()}
             </div>
             <div className="mb-5 h-16 animate-pulse rounded-2xl bg-white/10" />
           </section>

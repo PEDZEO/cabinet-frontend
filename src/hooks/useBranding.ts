@@ -16,9 +16,10 @@ const FALLBACK_LOGO = import.meta.env.VITE_APP_LOGO || 'V';
 export function useBranding() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const { isTelegramWebApp, requestFullscreen, isMobile } = useTelegramSDK();
+  const cachedBranding = getCachedBranding();
 
   // Branding data
-  const { data: branding } = useQuery({
+  const { data: branding, isLoading: isBrandingLoading } = useQuery({
     queryKey: ['branding'],
     queryFn: async () => {
       const data = await brandingApi.getBranding();
@@ -26,7 +27,7 @@ export function useBranding() {
       await preloadLogo(data);
       return data;
     },
-    initialData: getCachedBranding() ?? undefined,
+    initialData: cachedBranding ?? undefined,
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 30, // 30 minutes - keep in memory longer
     retry: 2,
@@ -82,5 +83,7 @@ export function useBranding() {
     hasCustomLogo,
     logoUrl,
     isLogoPreloaded,
+    hasCachedBranding: Boolean(cachedBranding),
+    isBrandingLoading,
   };
 }
