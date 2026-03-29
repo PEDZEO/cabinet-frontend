@@ -144,6 +144,21 @@ export function getLocalizedAuthErrorMessage(
   });
 }
 
+export function shouldShowSupportCtaForAuthError(error: unknown): boolean {
+  return shouldShowSupportCtaForAuthErrorDetail(parseApiErrorDetail(error));
+}
+
+export function shouldShowSupportCtaForAuthErrorDetail(detail: ParsedAuthErrorDetail): boolean {
+  const code = detail.code?.trim().toLowerCase() ?? '';
+  const message = detail.message?.trim().toLowerCase() ?? '';
+
+  return (
+    code === 'account_inactive' ||
+    code === 'manual_merge_required' ||
+    /user account is not active/i.test(message)
+  );
+}
+
 export function getLocalizedAuthErrorDetailMessage(
   t: TFunction,
   detail: ParsedAuthErrorDetail,

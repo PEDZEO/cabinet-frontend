@@ -19,7 +19,10 @@ import {
   type BrandingInfo,
   type EmailAuthEnabled,
 } from '@/api/branding';
-import { getLocalizedAuthErrorMessage } from '@/features/auth/shared/authErrorMessages';
+import {
+  getLocalizedAuthErrorMessage,
+  shouldShowSupportCtaForAuthError,
+} from '@/features/auth/shared/authErrorMessages';
 import { useTelegramSDK, getTelegramInitData, isInTelegramWebApp } from '@/hooks/useTelegramSDK';
 import { useAuthStore } from '@/store/auth';
 import { saveOAuthState } from '@/utils/oauthState';
@@ -62,6 +65,7 @@ export function useLoginPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [error, setError] = useState('');
+  const [errorNeedsSupport, setErrorNeedsSupport] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isTelegramWebApp, setIsTelegramWebApp] = useState(false);
   const [logoLoaded, setLogoLoaded] = useState(() => isLogoPreloaded());
@@ -173,6 +177,7 @@ export function useLoginPage() {
 
       setIsTelegramWebApp(true);
       setIsLoading(true);
+      setErrorNeedsSupport(false);
 
       const maxRetries = 1;
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -193,6 +198,7 @@ export function useLoginPage() {
             continue;
           }
 
+          setErrorNeedsSupport(shouldShowSupportCtaForAuthError(err));
           setError(
             getLocalizedAuthErrorMessage(t, err, {
               fallback: t('auth.telegramRequired'),
@@ -210,6 +216,7 @@ export function useLoginPage() {
   const handleOAuthLogin = useCallback(
     async (provider: string) => {
       setError('');
+      setErrorNeedsSupport(false);
       setOauthLoading(provider);
       try {
         const { authorize_url, state } = await authApi.getOAuthAuthorizeUrl(provider);
@@ -226,6 +233,7 @@ export function useLoginPage() {
         saveOAuthState(state, provider);
         window.location.href = authorize_url;
       } catch (err) {
+        setErrorNeedsSupport(shouldShowSupportCtaForAuthError(err));
         setError(
           getLocalizedAuthErrorMessage(t, err, {
             provider,
@@ -246,6 +254,7 @@ export function useLoginPage() {
     }
 
     setError('');
+    setErrorNeedsSupport(false);
     setIsLoading(true);
     try {
       await loginWithTelegram(initData);
@@ -257,6 +266,7 @@ export function useLoginPage() {
       if (import.meta.env.DEV) {
         console.warn('Telegram auth retry failed:', status, detail);
       }
+      setErrorNeedsSupport(shouldShowSupportCtaForAuthError(err));
       setError(
         getLocalizedAuthErrorMessage(t, err, {
           fallback: t(
@@ -274,6 +284,7 @@ export function useLoginPage() {
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
       setError('');
+      setErrorNeedsSupport(false);
 
       if (!email.trim() || !isValidEmail(email.trim())) {
         setError(t('auth.invalidEmail', 'Please enter a valid email address'));
@@ -310,6 +321,7 @@ export function useLoginPage() {
         const status = apiError.response?.status;
         const detail = apiError.response?.data?.detail;
         const detailText = typeof detail === 'string' ? detail : '';
+        setErrorNeedsSupport(shouldShowSupportCtaForAuthError(err));
 
         if (status === 400 && detailText.includes('already registered')) {
           setError(t('auth.emailAlreadyRegistered', 'This email is already registered'));
@@ -407,6 +419,7 @@ export function useLoginPage() {
     isEmailAuthEnabled,
     registeredEmail,
     error,
+    errorNeedsSupport,
     isLoading,
     isTelegramWebApp,
     botUsername,

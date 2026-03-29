@@ -1,6 +1,7 @@
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import PageLoader from '@/components/common/PageLoader';
 import { UltimaAuthBrandMark } from '@/features/auth/shared/UltimaAuthBrandMark';
+import { AuthSupportAction } from '@/features/auth/shared/AuthSupportAction';
 import { useUltimaAuthBranding } from '@/features/auth/shared/useUltimaAuthBranding';
 import { useTranslation } from 'react-i18next';
 import { useUltimaMode } from '@/hooks/useUltimaMode';
@@ -30,6 +31,7 @@ export default function Login() {
     isEmailAuthEnabled,
     registeredEmail,
     error,
+    errorNeedsSupport,
     isLoading,
     isTelegramWebApp,
     botUsername,
@@ -139,9 +141,17 @@ export default function Login() {
               }}
             >
               {error && (
-                <div className="bg-rose-500/12 mb-4 rounded-xl border border-rose-300/35 px-4 py-2.5 text-sm text-rose-100">
-                  {error}
-                </div>
+                <>
+                  <div className="bg-rose-500/12 mb-3 rounded-xl border border-rose-300/35 px-4 py-2.5 text-sm text-rose-100">
+                    {error}
+                  </div>
+                  <AuthSupportAction
+                    visible={errorNeedsSupport}
+                    containerClassName="mb-4"
+                    buttonClassName="border-white/10 bg-white/6 text-white hover:bg-white/10 hover:text-white"
+                    usernameClassName="text-white/55"
+                  />
+                </>
               )}
 
               <div
@@ -267,9 +277,12 @@ export default function Login() {
         ) : (
           <div className="card">
             {error && (
-              <div className="mb-4 rounded-xl border border-error-500/30 bg-error-500/10 px-4 py-2.5 text-sm text-error-400">
-                {error}
-              </div>
+              <>
+                <div className="mb-3 rounded-xl border border-error-500/30 bg-error-500/10 px-4 py-2.5 text-sm text-error-400">
+                  {error}
+                </div>
+                <AuthSupportAction visible={errorNeedsSupport} containerClassName="mb-4" />
+              </>
             )}
 
             <div className="space-y-3">
