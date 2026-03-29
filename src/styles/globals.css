@@ -1298,11 +1298,17 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
 }
 
 .ultima-mobile-dock-footer-shared {
-  padding-bottom: var(--ultima-shared-nav-clearance, calc(72px + env(safe-area-inset-bottom, 0px)));
+  padding-bottom: var(
+    --ultima-shared-nav-clearance,
+    calc(72px + env(safe-area-inset-bottom, 0px))
+  ) !important;
 }
 
 .ultima-mobile-content-shared {
-  padding-bottom: var(--ultima-shared-nav-clearance, calc(72px + env(safe-area-inset-bottom, 0px)));
+  padding-bottom: var(
+    --ultima-shared-nav-clearance,
+    calc(72px + env(safe-area-inset-bottom, 0px))
+  ) !important;
 }
 
 .ultima-shell-inner > * {
@@ -1502,14 +1508,14 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
     padding-bottom: var(
       --ultima-shared-nav-clearance,
       calc(68px + env(safe-area-inset-bottom, 0px))
-    );
+    ) !important;
   }
 
   .ultima-mobile-content-shared {
     padding-bottom: var(
       --ultima-shared-nav-clearance,
       calc(68px + env(safe-area-inset-bottom, 0px))
-    );
+    ) !important;
   }
 }
 
@@ -1546,14 +1552,14 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
     padding-bottom: var(
       --ultima-shared-nav-clearance,
       calc(66px + env(safe-area-inset-bottom, 0px))
-    );
+    ) !important;
   }
 
   .ultima-mobile-content-shared {
     padding-bottom: var(
       --ultima-shared-nav-clearance,
       calc(66px + env(safe-area-inset-bottom, 0px))
-    );
+    ) !important;
   }
 }
 
@@ -1684,11 +1690,11 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   }
 
   .ultima-mobile-dock-footer-shared {
-    padding-bottom: 0;
+    padding-bottom: 0 !important;
   }
 
   .ultima-mobile-content-shared {
-    padding-bottom: 0;
+    padding-bottom: 0 !important;
   }
 
   .ultima-mobile-overlay-panel {

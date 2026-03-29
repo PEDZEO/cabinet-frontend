@@ -1086,7 +1086,7 @@ export function UltimaDashboard() {
           )}
         </section>
 
-        <section className="ultima-mobile-dock-footer ultima-mobile-dock-footer-shared pb-0 lg:mt-0 lg:pb-0">
+        <section className="ultima-mobile-dock-footer ultima-mobile-dock-footer-shared lg:mt-0">
           <button
             type="button"
             onClick={openSubscriptionPurchase}
