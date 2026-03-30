@@ -4,7 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { newsApi } from '../../api/news';
-import { ultimaPanelClassName, ultimaSurfaceStyle } from '../../features/ultima/surfaces';
+import {
+  ultimaPaneClassName,
+  ultimaPaneSurfaceStyle,
+  ultimaPanelClassName,
+  ultimaSurfaceStyle,
+} from '../../features/ultima/surfaces';
 import { useHapticFeedback } from '../../platform/hooks/useHaptic';
 import { cn } from '../../lib/utils';
 import type { NewsListItem } from '../../types/news';
@@ -108,11 +113,18 @@ interface FilterTabsProps {
   categories: string[];
   active: string;
   onChange: (category: string) => void;
+  variant?: 'default' | 'ultima';
 }
 
-const FilterTabs = memo(function FilterTabs({ categories, active, onChange }: FilterTabsProps) {
+const FilterTabs = memo(function FilterTabs({
+  categories,
+  active,
+  onChange,
+  variant = 'default',
+}: FilterTabsProps) {
   const { t } = useTranslation();
   const haptic = useHapticFeedback();
+  const isUltimaVariant = variant === 'ultima';
 
   return (
     <div className="flex flex-wrap gap-1.5" role="tablist" aria-label={t('news.title')}>
@@ -126,10 +138,28 @@ const FilterTabs = memo(function FilterTabs({ categories, active, onChange }: Fi
         }}
         className={cn(
           'min-h-[44px] rounded-lg px-4 py-2.5 text-xs font-semibold tracking-wide transition-all duration-300',
-          active === ''
+          active === '' && !isUltimaVariant
             ? 'border border-accent-400 bg-accent-400 text-dark-950'
-            : 'border border-dark-700 bg-dark-800 text-dark-400 hover:border-accent-400/30 hover:text-accent-400',
+            : !isUltimaVariant
+              ? 'border border-dark-700 bg-dark-800 text-dark-400 hover:border-accent-400/30 hover:text-accent-400'
+              : '',
         )}
+        style={
+          isUltimaVariant
+            ? active === ''
+              ? {
+                  borderColor: 'transparent',
+                  background: 'var(--ultima-color-primary)',
+                  color: 'var(--ultima-color-primary-text)',
+                }
+              : {
+                  borderColor:
+                    'color-mix(in srgb, var(--ultima-color-surface-border) 28%, transparent)',
+                  background: 'color-mix(in srgb, var(--ultima-color-secondary) 72%, transparent)',
+                  color: 'rgba(255,255,255,0.82)',
+                }
+            : undefined
+        }
       >
         {t('news.filterAll')}
       </button>
@@ -146,10 +176,29 @@ const FilterTabs = memo(function FilterTabs({ categories, active, onChange }: Fi
             }}
             className={cn(
               'min-h-[44px] rounded-lg px-4 py-2.5 text-xs font-semibold tracking-wide transition-all duration-300',
-              isActive
+              isActive && !isUltimaVariant
                 ? 'border border-accent-400 bg-accent-400 text-dark-950'
-                : 'border border-dark-700 bg-dark-800 text-dark-400 hover:border-accent-400/30 hover:text-accent-400',
+                : !isUltimaVariant
+                  ? 'border border-dark-700 bg-dark-800 text-dark-400 hover:border-accent-400/30 hover:text-accent-400'
+                  : '',
             )}
+            style={
+              isUltimaVariant
+                ? isActive
+                  ? {
+                      borderColor: 'transparent',
+                      background: 'var(--ultima-color-primary)',
+                      color: 'var(--ultima-color-primary-text)',
+                    }
+                  : {
+                      borderColor:
+                        'color-mix(in srgb, var(--ultima-color-surface-border) 28%, transparent)',
+                      background:
+                        'color-mix(in srgb, var(--ultima-color-secondary) 72%, transparent)',
+                      color: 'rgba(255,255,255,0.82)',
+                    }
+                : undefined
+            }
           >
             {cat}
           </button>
@@ -162,10 +211,16 @@ const FilterTabs = memo(function FilterTabs({ categories, active, onChange }: Fi
 interface FeaturedCardProps {
   item: NewsListItem;
   onClick: () => void;
+  variant?: 'default' | 'ultima';
 }
 
-const FeaturedCard = memo(function FeaturedCard({ item, onClick }: FeaturedCardProps) {
+const FeaturedCard = memo(function FeaturedCard({
+  item,
+  onClick,
+  variant = 'default',
+}: FeaturedCardProps) {
   const { t, i18n } = useTranslation();
+  const isUltimaVariant = variant === 'ultima';
 
   return (
     <motion.article
@@ -182,17 +237,33 @@ const FeaturedCard = memo(function FeaturedCard({ item, onClick }: FeaturedCardP
         }
       }}
       className="group col-span-full cursor-pointer rounded-2xl p-px transition-all duration-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-950"
-      style={{
-        background:
-          'linear-gradient(135deg, rgba(var(--color-accent-400), 0.2), rgba(var(--color-dark-900), 0.2), rgba(var(--color-accent-400), 0.2))',
-      }}
+      style={
+        isUltimaVariant
+          ? {
+              borderColor:
+                'color-mix(in srgb, var(--ultima-color-surface-border) 32%, transparent)',
+              background:
+                'linear-gradient(145deg, color-mix(in srgb, var(--ultima-color-aura) 16%, transparent), color-mix(in srgb, var(--ultima-color-secondary) 80%, transparent))',
+            }
+          : {
+              background:
+                'linear-gradient(135deg, rgba(var(--color-accent-400), 0.2), rgba(var(--color-dark-900), 0.2), rgba(var(--color-accent-400), 0.2))',
+            }
+      }
       whileHover={{
-        background:
-          'linear-gradient(135deg, rgba(var(--color-accent-400), 0.4), rgba(var(--color-accent-500), 0.4), rgba(var(--color-accent-400), 0.4))',
+        background: isUltimaVariant
+          ? 'linear-gradient(145deg, color-mix(in srgb, var(--ultima-color-aura) 24%, transparent), color-mix(in srgb, var(--ultima-color-secondary) 74%, transparent))'
+          : 'linear-gradient(135deg, rgba(var(--color-accent-400), 0.4), rgba(var(--color-accent-500), 0.4), rgba(var(--color-accent-400), 0.4))',
       }}
       onClick={onClick}
     >
-      <div className="relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-[15px] bg-dark-900 p-7 sm:p-10">
+      <div
+        className={cn(
+          'relative flex min-h-[236px] flex-col justify-between overflow-hidden rounded-[15px] p-7 sm:p-10',
+          isUltimaVariant ? ultimaPaneClassName : 'bg-dark-900',
+        )}
+        style={isUltimaVariant ? ultimaPaneSurfaceStyle : undefined}
+      >
         {/* Corner decoration */}
         <div
           className="pointer-events-none absolute right-0 top-0 h-[200px] w-[200px]"
@@ -216,27 +287,51 @@ const FeaturedCard = memo(function FeaturedCard({ item, onClick }: FeaturedCardP
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <CategoryBadge category={item.category} color={item.category_color} />
             {item.tag && <TagBadge text={item.tag} color={item.category_color} />}
-            <span className="ml-auto font-mono text-[11px] text-dark-500">
+            <span
+              className={cn(
+                'ml-auto font-mono text-[11px]',
+                isUltimaVariant ? 'text-white/45' : 'text-dark-500',
+              )}
+            >
               {item.read_time_minutes} {t('news.readTime')}
             </span>
           </div>
 
-          <h2 className="mb-3 max-w-[700px] break-words text-2xl font-extrabold leading-tight text-dark-50 transition-colors duration-300 group-hover:text-white sm:text-[28px]">
+          <h2
+            className={cn(
+              'mb-3 max-w-[700px] break-words text-2xl font-extrabold leading-tight transition-colors duration-300 sm:text-[28px]',
+              isUltimaVariant
+                ? 'text-white/94 group-hover:text-white'
+                : 'text-dark-50 group-hover:text-white',
+            )}
+          >
             {item.title}
           </h2>
 
           {item.excerpt && (
-            <p className="max-w-[600px] text-[15px] leading-relaxed text-dark-400">
+            <p
+              className={cn(
+                'max-w-[600px] text-[15px] leading-relaxed',
+                isUltimaVariant ? 'text-white/66' : 'text-dark-400',
+              )}
+            >
               {item.excerpt}
             </p>
           )}
         </div>
 
         <div className="mt-6 flex items-center justify-between">
-          <span className="font-mono text-xs text-dark-600">
+          <span
+            className={cn('font-mono text-xs', isUltimaVariant ? 'text-white/42' : 'text-dark-600')}
+          >
             {item.published_at ? new Date(item.published_at).toLocaleDateString(i18n.language) : ''}
           </span>
-          <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-accent-400 transition-all duration-300 group-hover:gap-2.5">
+          <span
+            className={cn(
+              'inline-flex items-center gap-1.5 text-[13px] font-semibold transition-all duration-300 group-hover:gap-2.5',
+              isUltimaVariant ? 'text-white/82' : 'text-accent-400',
+            )}
+          >
             {t('news.readMore')}
             <ArrowIcon />
           </span>
@@ -250,11 +345,18 @@ interface NewsCardProps {
   item: NewsListItem;
   index: number;
   onClick: () => void;
+  variant?: 'default' | 'ultima';
 }
 
-const NewsCard = memo(function NewsCard({ item, index, onClick }: NewsCardProps) {
+const NewsCard = memo(function NewsCard({
+  item,
+  index,
+  onClick,
+  variant = 'default',
+}: NewsCardProps) {
   const { t, i18n } = useTranslation();
   const color = safeColor(item.category_color);
+  const isUltimaVariant = variant === 'ultima';
 
   return (
     <motion.article
@@ -271,17 +373,34 @@ const NewsCard = memo(function NewsCard({ item, index, onClick }: NewsCardProps)
         }
       }}
       className="group cursor-pointer rounded-[14px] p-px transition-all duration-[450ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-950"
-      style={{
-        background:
-          'linear-gradient(160deg, rgba(var(--color-dark-700), 0.25), rgba(var(--color-dark-900), 0.25))',
-      }}
+      style={
+        isUltimaVariant
+          ? {
+              borderColor:
+                'color-mix(in srgb, var(--ultima-color-surface-border) 26%, transparent)',
+              background:
+                'linear-gradient(160deg, color-mix(in srgb, var(--ultima-color-secondary) 78%, transparent), color-mix(in srgb, var(--ultima-color-surface) 52%, transparent))',
+            }
+          : {
+              background:
+                'linear-gradient(160deg, rgba(var(--color-dark-700), 0.25), rgba(var(--color-dark-900), 0.25))',
+            }
+      }
       whileHover={{
         y: -4,
-        background: `linear-gradient(160deg, ${color}55, transparent 60%)`,
+        background: isUltimaVariant
+          ? `linear-gradient(160deg, ${color}28, color-mix(in srgb, var(--ultima-color-secondary) 74%, transparent) 60%)`
+          : `linear-gradient(160deg, ${color}55, transparent 60%)`,
       }}
       onClick={onClick}
     >
-      <div className="relative flex h-full min-h-[210px] flex-col justify-between overflow-hidden rounded-[13px] bg-dark-900 p-7">
+      <div
+        className={cn(
+          'relative flex h-full min-h-[220px] flex-col justify-between overflow-hidden rounded-[13px] p-7',
+          isUltimaVariant ? ultimaPaneClassName : 'bg-dark-900',
+        )}
+        style={isUltimaVariant ? ultimaPaneSurfaceStyle : undefined}
+      >
         {/* Subtle corner glow on hover */}
         <div
           className="pointer-events-none absolute -bottom-5 -right-5 h-[100px] w-[100px] opacity-0 transition-opacity duration-500 group-hover:opacity-100"
@@ -308,20 +427,49 @@ const NewsCard = memo(function NewsCard({ item, index, onClick }: NewsCardProps)
             {item.tag && <TagBadge text={item.tag} color={color} />}
           </div>
 
-          <h3 className="mb-2.5 break-words text-[17px] font-bold leading-snug text-dark-100 transition-colors duration-300 group-hover:text-white">
+          <h3
+            className={cn(
+              'mb-2.5 break-words text-[17px] font-bold leading-snug transition-colors duration-300',
+              isUltimaVariant
+                ? 'text-white/92 group-hover:text-white'
+                : 'text-dark-100 group-hover:text-white',
+            )}
+          >
             {item.title}
           </h3>
 
           {item.excerpt && (
-            <p className="text-[13px] leading-relaxed text-dark-400">{item.excerpt}</p>
+            <p
+              className={cn(
+                'text-[13px] leading-[1.75]',
+                isUltimaVariant ? 'text-white/62' : 'text-dark-400',
+              )}
+            >
+              {item.excerpt}
+            </p>
           )}
         </div>
 
-        <div className="mt-5 flex items-center justify-between border-t border-dark-700/50 pt-3.5">
-          <span className="font-mono text-[11px] text-dark-600">
+        <div
+          className={cn(
+            'mt-5 flex items-center justify-between pt-3.5',
+            isUltimaVariant ? 'border-white/8 border-t' : 'border-t border-dark-700/50',
+          )}
+        >
+          <span
+            className={cn(
+              'font-mono text-[11px]',
+              isUltimaVariant ? 'text-white/42' : 'text-dark-600',
+            )}
+          >
             {item.published_at ? new Date(item.published_at).toLocaleDateString(i18n.language) : ''}
           </span>
-          <span className="font-mono text-[11px] text-dark-500">
+          <span
+            className={cn(
+              'font-mono text-[11px]',
+              isUltimaVariant ? 'text-white/42' : 'text-dark-500',
+            )}
+          >
             {item.read_time_minutes} {t('news.readTime')}
           </span>
         </div>
@@ -337,15 +485,17 @@ interface NewsCardWrapperProps {
   item: NewsListItem;
   index: number;
   onCardClick: (slug: string) => void;
+  variant?: 'default' | 'ultima';
 }
 
 const NewsCardWrapper = memo(function NewsCardWrapper({
   item,
   index,
   onCardClick,
+  variant = 'default',
 }: NewsCardWrapperProps) {
   const handleClick = useCallback(() => onCardClick(item.slug), [item.slug, onCardClick]);
-  return <NewsCard item={item} index={index} onClick={handleClick} />;
+  return <NewsCard item={item} index={index} onClick={handleClick} variant={variant} />;
 });
 
 // --- Main Component ---
@@ -455,15 +605,16 @@ export default function NewsSection({
           ) : null}
           <div
             className={cn(
-              'rounded-[24px] px-5 py-5',
+              'rounded-[26px] px-6 py-6',
               isUltimaVariant
-                ? 'max-w-xl border border-white/10 bg-white/[0.045] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
+                ? `${ultimaPaneClassName} max-w-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]`
                 : '',
             )}
+            style={isUltimaVariant ? ultimaPaneSurfaceStyle : undefined}
           >
             <p
               className={cn(
-                'text-sm leading-relaxed',
+                'text-sm leading-[1.8]',
                 isUltimaVariant ? 'text-white/76' : 'text-dark-300',
               )}
             >
@@ -486,7 +637,9 @@ export default function NewsSection({
       style={sectionStyle}
     >
       <div
-        className={cn(isUltimaVariant ? 'px-6 py-7 sm:px-7 sm:py-8' : 'px-5 py-8 sm:px-6 sm:py-10')}
+        className={cn(
+          isUltimaVariant ? 'px-6 py-9 sm:px-8 sm:py-10' : 'px-5 py-8 sm:px-6 sm:py-10',
+        )}
       >
         {showHeader ? (
           <motion.div
@@ -543,16 +696,29 @@ export default function NewsSection({
             animate="visible"
             className={showHeader ? 'mb-8' : isUltimaVariant ? 'mb-7' : 'mb-6'}
           >
-            <FilterTabs categories={categories} active={filter} onChange={handleFilterChange} />
+            <FilterTabs
+              categories={categories}
+              active={filter}
+              onChange={handleFilterChange}
+              variant={variant}
+            />
           </motion.div>
         )}
 
         {/* Grid */}
         {items.length > 0 && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {featured && <FeaturedCard item={featured} onClick={handleFeaturedClick} />}
+            {featured && (
+              <FeaturedCard item={featured} onClick={handleFeaturedClick} variant={variant} />
+            )}
             {regular.map((item, i) => (
-              <NewsCardWrapper key={item.id} item={item} index={i} onCardClick={handleCardClick} />
+              <NewsCardWrapper
+                key={item.id}
+                item={item}
+                index={i}
+                onCardClick={handleCardClick}
+                variant={variant}
+              />
             ))}
           </div>
         )}
@@ -568,7 +734,12 @@ export default function NewsSection({
           >
             <button
               onClick={handleLoadMore}
-              className="min-h-[44px] rounded-xl border border-dark-700 bg-transparent px-8 py-3 text-[13px] font-semibold tracking-wide text-dark-400 transition-all duration-300 hover:border-accent-400/30 hover:text-accent-400"
+              className={cn(
+                'min-h-[44px] rounded-xl px-8 py-3 text-[13px] font-semibold tracking-wide transition-all duration-300',
+                isUltimaVariant
+                  ? 'text-white/76 border border-white/10 bg-white/[0.05] hover:bg-white/[0.075] hover:text-white'
+                  : 'border border-dark-700 bg-transparent text-dark-400 hover:border-accent-400/30 hover:text-accent-400',
+              )}
             >
               {t('news.loadMore')}
             </button>
