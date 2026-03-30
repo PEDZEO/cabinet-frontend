@@ -1,14 +1,16 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { infoApi } from '@/api/info';
+import { newsApi } from '@/api/news';
 import { subscriptionApi } from '@/api/subscription';
 import { ticketsApi } from '@/api/tickets';
 
-export type UltimaBottomNavTab = 'home' | 'connection' | 'profile' | 'support';
-export type UltimaTopLevelPath = '/' | '/connection' | '/profile' | '/support';
+export type UltimaBottomNavTab = 'home' | 'connection' | 'news' | 'profile' | 'support';
+export type UltimaTopLevelPath = '/' | '/connection' | '/ultima/news' | '/profile' | '/support';
 
 const ULTIMA_TAB_BY_PATH: Record<UltimaTopLevelPath, UltimaBottomNavTab> = {
   '/': 'home',
   '/connection': 'connection',
+  '/ultima/news': 'news',
   '/profile': 'profile',
   '/support': 'support',
 };
@@ -16,6 +18,7 @@ const ULTIMA_TAB_BY_PATH: Record<UltimaTopLevelPath, UltimaBottomNavTab> = {
 const ULTIMA_PATH_BY_TAB: Record<UltimaBottomNavTab, UltimaTopLevelPath> = {
   home: '/',
   connection: '/connection',
+  news: '/ultima/news',
   profile: '/profile',
   support: '/support',
 };
@@ -48,6 +51,16 @@ export const prefetchUltimaTopLevelTab = (queryClient: QueryClient, tab: UltimaB
       queryKey: ['appConfig'],
       queryFn: () => subscriptionApi.getAppConfig(),
       staleTime: 15000,
+    });
+    return;
+  }
+
+  if (tab === 'news') {
+    void import('@/pages/UltimaNews');
+    void queryClient.prefetchQuery({
+      queryKey: ['news', 'list', undefined, 6],
+      queryFn: () => newsApi.getNews({ limit: 6, offset: 0 }),
+      staleTime: 2 * 60_000,
     });
     return;
   }

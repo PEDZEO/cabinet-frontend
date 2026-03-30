@@ -403,6 +403,7 @@ export function AppShell({ children }: AppShellProps) {
     void import('@/pages/Subscription');
     void import('@/pages/Support');
     void import('@/pages/Connection');
+    void import('@/pages/UltimaNews');
     void import('@/pages/Profile');
     void import('@/pages/Referral');
     void import('@/pages/Balance');
@@ -695,6 +696,7 @@ export function AppShell({ children }: AppShellProps) {
             active={ultimaTopLevelTab}
             onHomeClick={() => handleUltimaTabChange('home')}
             onConnectionClick={() => handleUltimaTabChange('connection')}
+            onNewsClick={() => handleUltimaTabChange('news')}
             onProfileClick={() => handleUltimaTabChange('profile')}
             onSupportClick={() => handleUltimaTabChange('support')}
           />

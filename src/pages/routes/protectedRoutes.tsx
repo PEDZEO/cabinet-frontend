@@ -24,6 +24,7 @@ const Referral = lazy(() => import('../Referral'));
 const AccountLinking = lazy(() => import('../AccountLinking'));
 const Connection = lazy(() => import('../Connection'));
 const NewsArticle = lazy(() => import('../NewsArticle'));
+const UltimaNews = lazy(() => import('../UltimaNews'));
 const UltimaAgreement = lazy(async () => {
   const module = await import('../UltimaAgreement');
   return { default: module.UltimaAgreement };
@@ -262,6 +263,16 @@ export const protectedRoutes: RouteConfig[] = [
       <ProtectedRoute>
         <LazyPage>
           <UltimaAgreement />
+        </LazyPage>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/ultima/news',
+    element: (
+      <ProtectedRoute>
+        <LazyPage>
+          <UltimaNews />
         </LazyPage>
       </ProtectedRoute>
     ),

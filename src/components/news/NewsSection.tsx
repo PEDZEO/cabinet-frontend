@@ -351,7 +351,17 @@ const NewsCardWrapper = memo(function NewsCardWrapper({
 
 const NEWS_LIMIT = 6;
 
-export default function NewsSection() {
+type NewsSectionProps = {
+  showHeader?: boolean;
+  showEmptyState?: boolean;
+  className?: string;
+};
+
+export default function NewsSection({
+  showHeader = true,
+  showEmptyState = false,
+  className,
+}: NewsSectionProps = {}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const haptic = useHapticFeedback();
@@ -408,64 +418,96 @@ export default function NewsSection() {
     if (featuredSlug) handleCardClick(featuredSlug);
   }, [featuredSlug, handleCardClick]);
 
-  // Don't render until we know there are news items.
-  // This prevents the skeleton from briefly flashing when there are no articles.
   if (items.length === 0) {
-    return null;
+    if (!showEmptyState) {
+      return null;
+    }
+
+    return (
+      <section
+        className={cn(
+          'relative overflow-hidden rounded-2xl bg-dark-850/80 px-5 py-8 text-center backdrop-blur-xl sm:px-6 sm:py-10',
+          className,
+        )}
+      >
+        <div className="mx-auto max-w-md">
+          {showHeader ? (
+            <p className="mb-2 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-dark-500">
+              {t('news.title')}
+            </p>
+          ) : null}
+          <p className="text-sm leading-relaxed text-dark-300">{t('news.noNews')}</p>
+        </div>
+      </section>
+    );
   }
 
   return (
-    <section className="relative overflow-hidden rounded-2xl bg-dark-850/80 backdrop-blur-xl">
+    <section
+      className={cn(
+        'relative overflow-hidden rounded-2xl bg-dark-850/80 backdrop-blur-xl',
+        className,
+      )}
+    >
       <div className="px-5 py-8 sm:px-6 sm:py-10">
-        {/* Header */}
-        <motion.div
-          variants={fadeSlideUp}
-          custom={0}
-          initial="hidden"
-          animate="visible"
-          className="mb-8"
-        >
-          <div className="mb-2 flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-accent-400 to-accent-600">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path
-                  d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"
-                  fill="currentColor"
-                  className="text-dark-950/20"
-                />
-                <path
-                  d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  className="text-dark-950"
-                />
-                <path
-                  d="M7 8h4M7 11h10M7 14h10M7 17h6"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  className="text-dark-950"
-                />
-                <rect
-                  x="14"
-                  y="7"
-                  width="4"
-                  height="4"
-                  rx="0.5"
-                  fill="currentColor"
-                  className="text-dark-950"
-                />
-              </svg>
+        {showHeader ? (
+          <motion.div
+            variants={fadeSlideUp}
+            custom={0}
+            initial="hidden"
+            animate="visible"
+            className="mb-8"
+          >
+            <div className="mb-2 flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-accent-400 to-accent-600">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"
+                    fill="currentColor"
+                    className="text-dark-950/20"
+                  />
+                  <path
+                    d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    className="text-dark-950"
+                  />
+                  <path
+                    d="M7 8h4M7 11h10M7 14h10M7 17h6"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    className="text-dark-950"
+                  />
+                  <rect
+                    x="14"
+                    y="7"
+                    width="4"
+                    height="4"
+                    rx="0.5"
+                    fill="currentColor"
+                    className="text-dark-950"
+                  />
+                </svg>
+              </div>
+              <span className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-dark-500">
+                {t('news.title')}
+              </span>
             </div>
-            <span className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-dark-500">
-              {t('news.title')}
-            </span>
-          </div>
+          </motion.div>
+        ) : null}
 
-          {categories.length > 0 && (
+        {categories.length > 0 && (
+          <motion.div
+            variants={fadeSlideUp}
+            custom={0}
+            initial="hidden"
+            animate="visible"
+            className={showHeader ? 'mb-8' : 'mb-6'}
+          >
             <FilterTabs categories={categories} active={filter} onChange={handleFilterChange} />
-          )}
-        </motion.div>
+          </motion.div>
+        )}
 
         {/* Grid */}
         {items.length > 0 && (

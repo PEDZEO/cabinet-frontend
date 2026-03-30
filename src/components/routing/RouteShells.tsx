@@ -20,7 +20,10 @@ const resolveLoaderVariant = (pathname: string): 'dark' | 'light' | 'ultima' => 
   }
 
   // For first-open in Ultima flow there may be no cache yet.
-  if (cachedUltima === null && ['/', '/subscription', '/connection'].includes(pathname)) {
+  if (
+    cachedUltima === null &&
+    ['/', '/subscription', '/connection', '/ultima/news'].includes(pathname)
+  ) {
     return 'ultima';
   }
 

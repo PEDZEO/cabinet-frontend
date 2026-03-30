@@ -6,6 +6,7 @@ type UltimaBottomNavProps = {
   active: UltimaBottomNavTab;
   onHomeClick?: () => void;
   onConnectionClick?: () => void;
+  onNewsClick?: () => void;
   onProfileClick?: () => void;
   onSupportClick?: () => void;
 };
@@ -51,10 +52,30 @@ const SupportIcon = () => (
   </svg>
 );
 
+const NewspaperIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
+    <path
+      d="M6 5.5h11.25A1.75 1.75 0 0 1 19 7.25V18a2.5 2.5 0 0 1-2.5 2.5H8A3 3 0 0 1 5 17.5V7.5A2 2 0 0 1 7 5.5h.5"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M8.5 9h7M8.5 12h7M8.5 15h4.5"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+    />
+    <rect x="14.5" y="8.5" width="2.5" height="2.5" rx="0.4" fill="currentColor" />
+  </svg>
+);
+
 export function UltimaBottomNav({
   active,
   onHomeClick,
   onConnectionClick,
+  onNewsClick,
   onProfileClick,
   onSupportClick,
 }: UltimaBottomNavProps) {
@@ -64,6 +85,7 @@ export function UltimaBottomNav({
   >({
     home: { x: 0, y: 0 },
     connection: { x: 0, y: 0 },
+    news: { x: 0, y: 0 },
     profile: { x: 0, y: 0 },
     support: { x: 0, y: 0 },
   });
@@ -107,7 +129,7 @@ export function UltimaBottomNav({
 
   return (
     <nav
-      className="ultima-bottom-nav grid grid-cols-4 gap-1.5 rounded-[22px] p-1.5 shadow-[0_14px_34px_rgba(3,9,18,0.45),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-xl"
+      className="ultima-bottom-nav grid grid-cols-5 items-center gap-1.5 rounded-[22px] p-1.5 shadow-[0_14px_34px_rgba(3,9,18,0.45),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-xl"
       style={{
         background: `linear-gradient(
           180deg,
@@ -142,6 +164,32 @@ export function UltimaBottomNav({
         aria-label="ultima-nav-connection"
       >
         <GearIcon />
+      </button>
+      <button
+        type="button"
+        data-ultima-nav-btn="1"
+        className={getButtonClassName(active === 'news')}
+        style={{
+          ...getButtonStyle('news', active === 'news'),
+          minHeight: '52px',
+          borderRadius: '20px',
+          background:
+            active === 'news'
+              ? 'linear-gradient(180deg, color-mix(in srgb, var(--ultima-color-nav-active) 96%, #fff), color-mix(in srgb, var(--ultima-color-nav-active) 72%, #000))'
+              : 'linear-gradient(180deg, color-mix(in srgb, var(--ultima-color-primary) 20%, transparent), color-mix(in srgb, var(--ultima-color-secondary) 72%, transparent))',
+          border: '1px solid color-mix(in srgb, var(--ultima-color-ring) 28%, transparent)',
+          boxShadow:
+            active === 'news'
+              ? '0 12px 28px color-mix(in srgb, var(--ultima-color-nav-active) 38%, transparent), inset 0 1px 0 rgba(255,255,255,0.26)'
+              : '0 10px 24px rgba(3,9,18,0.28), inset 0 1px 0 rgba(255,255,255,0.12)',
+        }}
+        onClick={onNewsClick ?? (() => navigate('/ultima/news'))}
+        onPointerMove={handlePointerMove('news')}
+        onPointerLeave={resetMagnet('news')}
+        onPointerUp={resetMagnet('news')}
+        aria-label="ultima-nav-news"
+      >
+        <NewspaperIcon />
       </button>
       <button
         type="button"
