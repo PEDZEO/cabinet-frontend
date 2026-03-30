@@ -5,16 +5,7 @@ import { infoApi } from '@/api/info';
 import { ticketsApi } from '@/api/tickets';
 import NewsSection from '@/components/news/NewsSection';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
-import {
-  UltimaDesktopPanel,
-  UltimaDesktopSectionLayout,
-} from '@/components/ultima/desktop/UltimaDesktopSectionLayout';
-import {
-  ultimaPanelClassName,
-  ultimaPaneClassName,
-  ultimaPaneSurfaceStyle,
-  ultimaSurfaceStyle,
-} from '@/features/ultima/surfaces';
+import { UltimaDesktopSectionLayout } from '@/components/ultima/desktop/UltimaDesktopSectionLayout';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 const NewspaperIcon = () => (
@@ -33,17 +24,6 @@ const NewspaperIcon = () => (
       strokeLinecap="round"
     />
     <rect x="14.5" y="8.5" width="2.5" height="2.5" rx="0.4" fill="currentColor" />
-  </svg>
-);
-
-const SparkIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
-    <path
-      d="M12 3 9.8 9.3 3 12l6.8 2.7L12 21l2.2-6.3L21 12l-6.8-2.7L12 3Z"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinejoin="round"
-    />
   </svg>
 );
 
@@ -91,31 +71,6 @@ export default function UltimaNews() {
               }),
             },
           ]}
-          aside={
-            <UltimaDesktopPanel
-              title={t('ultima.newsAsideTitle', { defaultValue: 'Что внутри' })}
-              subtitle={t('ultima.newsAsideSubtitle', {
-                defaultValue: 'Следите за релизами, обновлениями приложений и сервисными анонсами.',
-              })}
-            >
-              <div className="space-y-3">
-                <div
-                  className={`${ultimaPaneClassName} flex items-start gap-3 p-3.5`}
-                  style={ultimaPaneSurfaceStyle}
-                >
-                  <span className="text-white/78 mt-0.5">
-                    <SparkIcon />
-                  </span>
-                  <p className="text-white/72 text-sm leading-relaxed">
-                    {t('ultima.newsAsideBody', {
-                      defaultValue:
-                        'Главная Ultima остаётся сфокусированной на подписке и подключении, а новости живут отдельным экраном.',
-                    })}
-                  </p>
-                </div>
-              </div>
-            </UltimaDesktopPanel>
-          }
           bottomNav={bottomNav}
         >
           <NewsSection showHeader={false} showEmptyState variant="ultima" />
@@ -125,64 +80,33 @@ export default function UltimaNews() {
   }
 
   return (
-    <div className="ultima-shell ultima-shell-shared-nav-docked">
-      <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[680px] lg:justify-between">
-        <section className="ultima-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto pb-[calc(16px+env(safe-area-inset-bottom,0px))] pr-1 pt-[clamp(40px,9vh,72px)] lg:flex-none lg:overflow-visible lg:pb-2 lg:pr-0 lg:pt-8">
-          <section
-            className={`${ultimaPanelClassName} min-h-[284px] px-6 py-7 sm:min-h-[304px] sm:px-7 sm:py-8`}
-            style={ultimaSurfaceStyle}
-          >
-            <div className="flex h-full min-h-[272px] flex-col justify-between sm:min-h-[286px]">
-              <div className="max-w-[34rem]">
-                <div className="text-white/88 mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.08]">
-                  <NewspaperIcon />
-                </div>
-                <p className="text-white/48 text-[11px] uppercase tracking-[0.2em]">
-                  {t('news.title')}
-                </p>
-                <h1 className="mt-4 text-[clamp(38px,10vw,48px)] font-semibold leading-[0.9] tracking-[-0.035em] text-white">
-                  {t('ultima.newsPageTitle', { defaultValue: 'Новости' })}
-                </h1>
-                <p className="text-white/74 mt-4 max-w-[32rem] text-[15px] leading-[1.75]">
-                  {t('ultima.newsPageSubtitle', {
-                    defaultValue:
-                      'Отдельная лента новостей проекта: обновления, анонсы и важные изменения в одном месте.',
-                  })}
-                </p>
-              </div>
-
-              <div
-                className={`${ultimaPaneClassName} mt-6 max-w-[33rem] px-4 py-3.5`}
-                style={ultimaPaneSurfaceStyle}
-              >
-                <div className="flex items-start gap-3">
-                  <span className="text-white/78 mt-0.5">
-                    <SparkIcon />
-                  </span>
-                  <div>
-                    <p className="text-white/88 text-[13px] font-medium leading-snug">
-                      {t('ultima.newsAsideTitle', { defaultValue: 'Что внутри' })}
-                    </p>
-                    <p className="mt-1 text-[12px] leading-relaxed text-white/60">
-                      {t('ultima.newsAsideBody', {
-                        defaultValue:
-                          'Главная остаётся про подписку и доступ, а новости собраны на отдельном экране без перегруза.',
-                      })}
-                    </p>
-                  </div>
-                </div>
-              </div>
+    <div className="ultima-shell ultima-shell-shared-nav-docked ultima-shell-wide ultima-flat-frames ultima-shell-muted-aura">
+      <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
+        <section className="ultima-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto pb-[calc(16px+env(safe-area-inset-bottom,0px))] pr-1 pt-[clamp(8px,2vh,16px)]">
+          <header className="mb-4 px-1">
+            <div className="text-white/88 mb-3 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.08]">
+              <NewspaperIcon />
             </div>
-          </section>
+            <p className="text-white/44 text-[11px] uppercase tracking-[0.2em]">
+              {t('news.title')}
+            </p>
+            <h1 className="mt-3 text-[clamp(34px,9vw,46px)] font-semibold leading-[0.92] tracking-[-0.02em] text-white">
+              {t('ultima.newsPageTitle', { defaultValue: 'Новости' })}
+            </h1>
+            <p className="text-white/64 mt-2 max-w-[32rem] text-[15px] leading-[1.7]">
+              {t('ultima.newsPageSubtitle', {
+                defaultValue:
+                  'Отдельная лента новостей проекта: обновления, анонсы и важные изменения в одном месте.',
+              })}
+            </p>
+          </header>
 
-          <div className="mt-4">
-            <NewsSection
-              showHeader={false}
-              showEmptyState
-              variant="ultima"
-              className="shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_22px_48px_rgba(3,14,24,0.24)]"
-            />
-          </div>
+          <NewsSection
+            showHeader={false}
+            showEmptyState
+            variant="ultima"
+            className="shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_22px_48px_rgba(3,14,24,0.24)]"
+          />
         </section>
       </div>
     </div>

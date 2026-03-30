@@ -127,7 +127,7 @@ const FilterTabs = memo(function FilterTabs({
   const isUltimaVariant = variant === 'ultima';
 
   return (
-    <div className="flex flex-wrap gap-1.5" role="tablist" aria-label={t('news.title')}>
+    <div className="flex flex-wrap gap-2" role="tablist" aria-label={t('news.title')}>
       {/* "All" tab — empty string means no filter */}
       <button
         role="tab"
@@ -137,7 +137,7 @@ const FilterTabs = memo(function FilterTabs({
           onChange('');
         }}
         className={cn(
-          'min-h-[44px] rounded-lg px-4 py-2.5 text-xs font-semibold tracking-wide transition-all duration-300',
+          'min-h-[40px] rounded-full px-3.5 py-2 text-[12px] font-semibold tracking-wide transition-all duration-300',
           active === '' && !isUltimaVariant
             ? 'border border-accent-400 bg-accent-400 text-dark-950'
             : !isUltimaVariant
@@ -175,7 +175,7 @@ const FilterTabs = memo(function FilterTabs({
               onChange(cat);
             }}
             className={cn(
-              'min-h-[44px] rounded-lg px-4 py-2.5 text-xs font-semibold tracking-wide transition-all duration-300',
+              'min-h-[40px] rounded-full px-3.5 py-2 text-[12px] font-semibold tracking-wide transition-all duration-300',
               isActive && !isUltimaVariant
                 ? 'border border-accent-400 bg-accent-400 text-dark-950'
                 : !isUltimaVariant
@@ -586,7 +586,7 @@ export default function NewsSection({
       <section
         className={cn(
           isUltimaVariant
-            ? `${ultimaPanelClassName} relative overflow-hidden px-6 py-10 text-left sm:px-7 sm:py-12`
+            ? `${ultimaPanelClassName} relative overflow-hidden p-4 text-left sm:p-5`
             : 'relative overflow-hidden rounded-2xl bg-dark-850/80 px-5 py-8 text-center backdrop-blur-xl sm:px-6 sm:py-10',
           className,
         )}
@@ -607,7 +607,7 @@ export default function NewsSection({
             className={cn(
               'rounded-[26px] px-6 py-6',
               isUltimaVariant
-                ? `${ultimaPaneClassName} max-w-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]`
+                ? `${ultimaPaneClassName} mt-3 max-w-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]`
                 : '',
             )}
             style={isUltimaVariant ? ultimaPaneSurfaceStyle : undefined}
@@ -636,11 +636,7 @@ export default function NewsSection({
       )}
       style={sectionStyle}
     >
-      <div
-        className={cn(
-          isUltimaVariant ? 'px-6 py-9 sm:px-8 sm:py-10' : 'px-5 py-8 sm:px-6 sm:py-10',
-        )}
-      >
+      <div className={cn(isUltimaVariant ? 'p-4 sm:p-5' : 'px-5 py-8 sm:px-6 sm:py-10')}>
         {showHeader ? (
           <motion.div
             variants={fadeSlideUp}
@@ -694,7 +690,7 @@ export default function NewsSection({
             custom={0}
             initial="hidden"
             animate="visible"
-            className={showHeader ? 'mb-8' : isUltimaVariant ? 'mb-7' : 'mb-6'}
+            className={showHeader ? 'mb-8' : isUltimaVariant ? 'mb-4' : 'mb-6'}
           >
             <FilterTabs
               categories={categories}
@@ -707,7 +703,7 @@ export default function NewsSection({
 
         {/* Grid */}
         {items.length > 0 && (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
             {featured && (
               <FeaturedCard item={featured} onClick={handleFeaturedClick} variant={variant} />
             )}
@@ -730,7 +726,7 @@ export default function NewsSection({
             custom={6}
             initial="hidden"
             animate="visible"
-            className="mt-10 text-center"
+            className="mt-6 text-center"
           >
             <button
               onClick={handleLoadMore}
