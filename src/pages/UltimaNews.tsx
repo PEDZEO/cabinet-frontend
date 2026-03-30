@@ -118,7 +118,7 @@ export default function UltimaNews() {
           }
           bottomNav={bottomNav}
         >
-          <NewsSection showHeader={false} showEmptyState />
+          <NewsSection showHeader={false} showEmptyState variant="ultima" />
         </UltimaDesktopSectionLayout>
       </div>
     );
@@ -147,7 +147,7 @@ export default function UltimaNews() {
           </section>
 
           <div className="mt-4">
-            <NewsSection showHeader={false} showEmptyState />
+            <NewsSection showHeader={false} showEmptyState variant="ultima" />
           </div>
         </section>
       </div>

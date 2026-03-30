@@ -1,9 +1,10 @@
-import { useState, useCallback, useMemo, memo } from 'react';
+import { type CSSProperties, useState, useCallback, useMemo, memo } from 'react';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { newsApi } from '../../api/news';
+import { ultimaSurfaceStyle } from '../../features/ultima/surfaces';
 import { useHapticFeedback } from '../../platform/hooks/useHaptic';
 import { cn } from '../../lib/utils';
 import type { NewsListItem } from '../../types/news';
@@ -355,12 +356,14 @@ type NewsSectionProps = {
   showHeader?: boolean;
   showEmptyState?: boolean;
   className?: string;
+  variant?: 'default' | 'ultima';
 };
 
 export default function NewsSection({
   showHeader = true,
   showEmptyState = false,
   className,
+  variant = 'default',
 }: NewsSectionProps = {}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -418,6 +421,11 @@ export default function NewsSection({
     if (featuredSlug) handleCardClick(featuredSlug);
   }, [featuredSlug, handleCardClick]);
 
+  const isUltimaVariant = variant === 'ultima';
+  const emptyStateStyle: CSSProperties | undefined = isUltimaVariant
+    ? ultimaSurfaceStyle
+    : undefined;
+
   if (items.length === 0) {
     if (!showEmptyState) {
       return null;
@@ -426,17 +434,41 @@ export default function NewsSection({
     return (
       <section
         className={cn(
-          'relative overflow-hidden rounded-2xl bg-dark-850/80 px-5 py-8 text-center backdrop-blur-xl sm:px-6 sm:py-10',
+          isUltimaVariant
+            ? 'relative overflow-hidden rounded-[28px] border px-5 py-8 text-center backdrop-blur-xl sm:px-6 sm:py-10'
+            : 'relative overflow-hidden rounded-2xl bg-dark-850/80 px-5 py-8 text-center backdrop-blur-xl sm:px-6 sm:py-10',
           className,
         )}
+        style={emptyStateStyle}
       >
         <div className="mx-auto max-w-md">
           {showHeader ? (
-            <p className="mb-2 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-dark-500">
+            <p
+              className={cn(
+                'mb-2 font-mono text-[11px] font-bold uppercase tracking-[0.18em]',
+                isUltimaVariant ? 'text-white/48' : 'text-dark-500',
+              )}
+            >
               {t('news.title')}
             </p>
           ) : null}
-          <p className="text-sm leading-relaxed text-dark-300">{t('news.noNews')}</p>
+          <div
+            className={cn(
+              'mx-auto max-w-sm rounded-[22px] px-5 py-4',
+              isUltimaVariant
+                ? 'border border-white/10 bg-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
+                : '',
+            )}
+          >
+            <p
+              className={cn(
+                'text-sm leading-relaxed',
+                isUltimaVariant ? 'text-white/76' : 'text-dark-300',
+              )}
+            >
+              {t('news.noNews')}
+            </p>
+          </div>
         </div>
       </section>
     );
