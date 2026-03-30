@@ -128,17 +128,20 @@ export default function UltimaNews() {
     <div className="ultima-shell ultima-shell-shared-nav-docked">
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[680px] lg:justify-between">
         <section className="ultima-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto pb-[calc(16px+env(safe-area-inset-bottom,0px))] pr-1 pt-[clamp(40px,9vh,72px)] lg:flex-none lg:overflow-visible lg:pb-2 lg:pr-0 lg:pt-8">
-          <section className={`${ultimaPanelClassName} p-4`} style={ultimaSurfaceStyle}>
+          <section
+            className={`${ultimaPanelClassName} min-h-[236px] px-5 py-6 sm:min-h-[250px] sm:px-6 sm:py-7`}
+            style={ultimaSurfaceStyle}
+          >
             <div className="text-white/88 mb-3 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.08]">
               <NewspaperIcon />
             </div>
             <p className="text-white/48 text-[11px] uppercase tracking-[0.2em]">
               {t('news.title')}
             </p>
-            <h1 className="mt-3 text-[clamp(32px,9vw,40px)] font-semibold leading-[0.94] tracking-[-0.04em] text-white">
+            <h1 className="mt-4 text-[clamp(34px,9.3vw,44px)] font-semibold leading-[0.92] tracking-[-0.03em] text-white">
               {t('ultima.newsPageTitle', { defaultValue: 'Новости' })}
             </h1>
-            <p className="text-white/72 mt-3 text-[14px] leading-[1.65]">
+            <p className="text-white/72 mt-3 max-w-[32rem] text-[14px] leading-[1.7]">
               {t('ultima.newsPageSubtitle', {
                 defaultValue:
                   'Отдельная лента новостей проекта: обновления, анонсы и важные изменения в одном месте.',
@@ -147,7 +150,12 @@ export default function UltimaNews() {
           </section>
 
           <div className="mt-4">
-            <NewsSection showHeader={false} showEmptyState variant="ultima" />
+            <NewsSection
+              showHeader={false}
+              showEmptyState
+              variant="ultima"
+              className="shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_22px_48px_rgba(3,14,24,0.24)]"
+            />
           </div>
         </section>
       </div>

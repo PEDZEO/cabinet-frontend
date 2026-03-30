@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { newsApi } from '../../api/news';
-import { ultimaSurfaceStyle } from '../../features/ultima/surfaces';
+import { ultimaPanelClassName, ultimaSurfaceStyle } from '../../features/ultima/surfaces';
 import { useHapticFeedback } from '../../platform/hooks/useHaptic';
 import { cn } from '../../lib/utils';
 import type { NewsListItem } from '../../types/news';
@@ -425,6 +425,7 @@ export default function NewsSection({
   const emptyStateStyle: CSSProperties | undefined = isUltimaVariant
     ? ultimaSurfaceStyle
     : undefined;
+  const sectionStyle: CSSProperties | undefined = isUltimaVariant ? ultimaSurfaceStyle : undefined;
 
   if (items.length === 0) {
     if (!showEmptyState) {
@@ -435,13 +436,13 @@ export default function NewsSection({
       <section
         className={cn(
           isUltimaVariant
-            ? 'relative overflow-hidden rounded-[28px] border px-5 py-8 text-center backdrop-blur-xl sm:px-6 sm:py-10'
+            ? `${ultimaPanelClassName} relative overflow-hidden px-6 py-10 text-left sm:px-7 sm:py-12`
             : 'relative overflow-hidden rounded-2xl bg-dark-850/80 px-5 py-8 text-center backdrop-blur-xl sm:px-6 sm:py-10',
           className,
         )}
         style={emptyStateStyle}
       >
-        <div className="mx-auto max-w-md">
+        <div className={cn('mx-auto', isUltimaVariant ? 'max-w-2xl' : 'max-w-md')}>
           {showHeader ? (
             <p
               className={cn(
@@ -454,9 +455,9 @@ export default function NewsSection({
           ) : null}
           <div
             className={cn(
-              'mx-auto max-w-sm rounded-[22px] px-5 py-4',
+              'rounded-[24px] px-5 py-5',
               isUltimaVariant
-                ? 'border border-white/10 bg-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
+                ? 'max-w-xl border border-white/10 bg-white/[0.045] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
                 : '',
             )}
           >
@@ -477,11 +478,16 @@ export default function NewsSection({
   return (
     <section
       className={cn(
-        'relative overflow-hidden rounded-2xl bg-dark-850/80 backdrop-blur-xl',
+        isUltimaVariant
+          ? `${ultimaPanelClassName} relative overflow-hidden`
+          : 'relative overflow-hidden rounded-2xl bg-dark-850/80 backdrop-blur-xl',
         className,
       )}
+      style={sectionStyle}
     >
-      <div className="px-5 py-8 sm:px-6 sm:py-10">
+      <div
+        className={cn(isUltimaVariant ? 'px-6 py-7 sm:px-7 sm:py-8' : 'px-5 py-8 sm:px-6 sm:py-10')}
+      >
         {showHeader ? (
           <motion.div
             variants={fadeSlideUp}
@@ -535,7 +541,7 @@ export default function NewsSection({
             custom={0}
             initial="hidden"
             animate="visible"
-            className={showHeader ? 'mb-8' : 'mb-6'}
+            className={showHeader ? 'mb-8' : isUltimaVariant ? 'mb-7' : 'mb-6'}
           >
             <FilterTabs categories={categories} active={filter} onChange={handleFilterChange} />
           </motion.div>
