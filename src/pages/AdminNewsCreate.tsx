@@ -296,11 +296,11 @@ export default function AdminNewsCreate() {
       attributes: {
         class: 'prose max-w-none min-h-[300px] p-4 focus:outline-none',
       },
-      handlePaste: (_view, event) => {
+      handlePaste: (_view: unknown, event: ClipboardEvent) => {
         const items = event.clipboardData?.items;
         if (!items) return false;
 
-        for (const item of Array.from(items)) {
+        for (const item of Array.from(items as DataTransferItemList)) {
           if (item.type.startsWith('image/') || item.type.startsWith('video/')) {
             const file = item.getAsFile();
             if (file) {
@@ -311,7 +311,7 @@ export default function AdminNewsCreate() {
         }
         return false;
       },
-      handleDrop: (_view, event) => {
+      handleDrop: (_view: unknown, event: DragEvent) => {
         const file = event.dataTransfer?.files[0];
         if (file && (file.type.startsWith('image/') || file.type.startsWith('video/'))) {
           event.preventDefault();
