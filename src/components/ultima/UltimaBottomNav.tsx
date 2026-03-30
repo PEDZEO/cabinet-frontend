@@ -92,8 +92,8 @@ export function UltimaBottomNav({
 
   const getButtonClassName = (isActive: boolean) =>
     isActive
-      ? 'flex h-11 items-center justify-center rounded-[16px] border text-[var(--ultima-color-primary-text)] shadow-[0_8px_20px_rgba(20,209,157,0.32),inset_0_1px_0_rgba(255,255,255,0.24)] translate-y-[-1px] transition-all duration-200 active:translate-y-0 active:scale-[0.985]'
-      : 'flex h-11 items-center justify-center rounded-[16px] text-[var(--ultima-color-nav-text)]/78 transition-all duration-200 hover:bg-white/8 hover:translate-y-[-1px] active:translate-y-0 active:scale-[0.985]';
+      ? 'flex h-10 items-center justify-center rounded-[15px] border text-[var(--ultima-color-primary-text)] shadow-[0_8px_20px_rgba(20,209,157,0.32),inset_0_1px_0_rgba(255,255,255,0.24)] translate-y-[-1px] transition-all duration-200 active:translate-y-0 active:scale-[0.985]'
+      : 'flex h-10 items-center justify-center rounded-[15px] text-[var(--ultima-color-nav-text)]/78 transition-all duration-200 hover:bg-white/8 hover:translate-y-[-1px] active:translate-y-0 active:scale-[0.985]';
 
   const handlePointerMove =
     (tab: UltimaBottomNavTab) => (event: PointerEvent<HTMLButtonElement>) => {
@@ -129,7 +129,7 @@ export function UltimaBottomNav({
 
   return (
     <nav
-      className="ultima-bottom-nav grid grid-cols-5 items-center gap-1.5 rounded-[22px] p-1.5 shadow-[0_14px_34px_rgba(3,9,18,0.45),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-xl"
+      className="ultima-bottom-nav grid grid-cols-5 items-center gap-1 rounded-[20px] p-1 shadow-[0_14px_34px_rgba(3,9,18,0.45),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-xl"
       style={{
         background: `linear-gradient(
           180deg,
@@ -171,8 +171,8 @@ export function UltimaBottomNav({
         className={getButtonClassName(active === 'news')}
         style={{
           ...getButtonStyle('news', active === 'news'),
-          minHeight: '52px',
-          borderRadius: '20px',
+          minHeight: '46px',
+          borderRadius: '17px',
           background:
             active === 'news'
               ? 'linear-gradient(180deg, color-mix(in srgb, var(--ultima-color-nav-active) 96%, #fff), color-mix(in srgb, var(--ultima-color-nav-active) 72%, #000))'
