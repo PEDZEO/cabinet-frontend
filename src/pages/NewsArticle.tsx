@@ -1,21 +1,22 @@
-import { useEffect, useMemo, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router';
+import { type ReactNode, useEffect, useMemo, useRef } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import DOMPurify from 'dompurify';
 import { newsApi } from '../api/news';
+import { UltimaBottomNav } from '../components/ultima/UltimaBottomNav';
+import {
+  ultimaPaneClassName,
+  ultimaPaneSurfaceStyle,
+  ultimaPanelClassName,
+  ultimaSurfaceStyle,
+} from '../features/ultima/surfaces';
 import { usePlatform } from '../platform/hooks/usePlatform';
 
 // Icons
 const BackIcon = () => (
-  <svg
-    className="h-5 w-5 text-dark-400"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-  >
+  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
   </svg>
 );
@@ -247,7 +248,10 @@ export default function NewsArticlePage() {
   const { slug } = useParams<{ slug: string }>();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { capabilities, backButton } = usePlatform();
+  const isUltimaRoute = location.pathname.startsWith('/ultima/news');
+  const backPath = isUltimaRoute ? '/ultima/news' : '/';
 
   // Show Telegram native back button (use ref to avoid effect re-runs)
   const navigateRef = useRef(navigate);
@@ -257,9 +261,9 @@ export default function NewsArticlePage() {
 
   useEffect(() => {
     if (!capabilities.hasBackButton) return;
-    backButton.show(() => navigateRef.current(-1));
+    backButton.show(() => navigateRef.current(backPath, { replace: true }));
     return () => backButton.hide();
-  }, [capabilities.hasBackButton, backButton]);
+  }, [backButton, backPath, capabilities.hasBackButton]);
 
   const {
     data: article,
@@ -277,7 +281,42 @@ export default function NewsArticlePage() {
 
   const sanitizedContent = useMemo(() => (article ? sanitizeHtml(article.content) : ''), [article]);
 
+  const renderUltimaLayout = (content: ReactNode) => (
+    <div className="ultima-shell ultima-shell-shared-nav-docked ultima-shell-wide ultima-flat-frames ultima-shell-muted-aura">
+      <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
+        <section className="ultima-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto pb-[calc(16px+env(safe-area-inset-bottom,0px))] pr-1 pt-[clamp(8px,2vh,16px)]">
+          {content}
+        </section>
+        <div className="ultima-mobile-dock-footer lg:hidden">
+          <div className="ultima-nav-dock">
+            <UltimaBottomNav active="news" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   if (isLoading) {
+    if (isUltimaRoute) {
+      return renderUltimaLayout(
+        <div className="space-y-3">
+          <section className={`${ultimaPanelClassName} p-4 sm:p-5`} style={ultimaSurfaceStyle}>
+            <div className="skeleton mb-3 h-9 w-24 rounded-full" />
+            <div className="skeleton h-10 w-3/4 rounded-2xl" />
+            <div className="skeleton mt-3 h-5 w-48 rounded-xl" />
+          </section>
+          <section className={`${ultimaPanelClassName} p-4 sm:p-5`} style={ultimaSurfaceStyle}>
+            <div className="skeleton mb-4 h-52 w-full rounded-[24px]" />
+            <div className="space-y-3">
+              <div className="skeleton h-4 w-full rounded" />
+              <div className="skeleton h-4 w-5/6 rounded" />
+              <div className="skeleton h-4 w-4/6 rounded" />
+            </div>
+          </section>
+        </div>,
+      );
+    }
+
     return (
       <div className="space-y-6">
         <div className="skeleton h-8 w-32 rounded-lg" />
@@ -294,11 +333,35 @@ export default function NewsArticlePage() {
   }
 
   if (isError || !article) {
+    if (isUltimaRoute) {
+      return renderUltimaLayout(
+        <section
+          className={`${ultimaPanelClassName} p-4 text-left sm:p-5`}
+          style={ultimaSurfaceStyle}
+        >
+          <button
+            onClick={() => navigate(backPath)}
+            className="text-white/78 mb-4 flex min-h-[40px] items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 text-sm transition-colors hover:bg-white/[0.08] hover:text-white"
+            aria-label={t('news.backToHome')}
+          >
+            <BackIcon />
+            <span>{t('news.title', { defaultValue: 'Новости' })}</span>
+          </button>
+          <div
+            className={`${ultimaPaneClassName} text-white/62 p-5 text-center`}
+            style={ultimaPaneSurfaceStyle}
+          >
+            {t('news.noNews')}
+          </div>
+        </section>,
+      );
+    }
+
     return (
       <div className="space-y-6">
         {!capabilities.hasBackButton && (
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate(backPath)}
             className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-dark-700 bg-dark-800 transition-colors hover:border-dark-600"
             aria-label={t('news.backToHome')}
           >
@@ -312,12 +375,102 @@ export default function NewsArticlePage() {
     );
   }
 
+  if (isUltimaRoute) {
+    const color = safeColor(article.category_color);
+
+    return renderUltimaLayout(
+      <div className="space-y-3">
+        <section className={`${ultimaPanelClassName} p-4 sm:p-5`} style={ultimaSurfaceStyle}>
+          <button
+            onClick={() => navigate(backPath)}
+            className="text-white/78 mb-4 flex min-h-[40px] items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 text-sm transition-colors hover:bg-white/[0.08] hover:text-white"
+            aria-label={t('news.title', { defaultValue: 'Новости' })}
+          >
+            <BackIcon />
+            <span>{t('news.title', { defaultValue: 'Новости' })}</span>
+          </button>
+
+          <div className="mb-4 flex flex-wrap items-center gap-2.5">
+            <span
+              className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-widest"
+              style={{
+                color,
+                background: `${color}15`,
+                border: `1px solid ${color}30`,
+              }}
+            >
+              <span
+                className="h-1.5 w-1.5 rounded-full"
+                style={{
+                  background: color,
+                  boxShadow: `0 0 8px ${color}`,
+                }}
+              />
+              {article.category}
+            </span>
+            {article.tag && (
+              <span
+                className="inline-block rounded-full px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider"
+                style={{
+                  color,
+                  border: `1px solid ${color}33`,
+                  background: `${color}11`,
+                }}
+              >
+                {article.tag}
+              </span>
+            )}
+          </div>
+
+          <h1 className="text-[clamp(30px,8.6vw,42px)] font-semibold leading-[0.96] tracking-[-0.02em] text-white">
+            {article.title}
+          </h1>
+
+          <div className="text-white/52 mt-3 flex flex-wrap items-center gap-4 text-xs">
+            {article.published_at && (
+              <span className="inline-flex items-center gap-1.5 font-mono">
+                <CalendarIcon />
+                {new Date(article.published_at).toLocaleDateString(i18n.language)}
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1.5 font-mono">
+              <ClockIcon />
+              {article.read_time_minutes} {t('news.readTime')}
+            </span>
+          </div>
+        </section>
+
+        <section
+          className={`${ultimaPanelClassName} overflow-hidden p-4 sm:p-5`}
+          style={ultimaSurfaceStyle}
+        >
+          {isSafeUrl(article.featured_image_url) ? (
+            <div className="mb-4 overflow-hidden rounded-[24px]">
+              <img
+                src={article.featured_image_url!}
+                alt={article.title}
+                className="h-auto w-full rounded-[24px] object-cover"
+                loading="eager"
+                fetchPriority="high"
+              />
+            </div>
+          ) : null}
+
+          <div
+            className="text-white/86 prose prose-invert [&_blockquote]:text-white/72 [&_figcaption]:text-white/54 [&_td]:border-white/8 max-w-none text-[15px] leading-[1.78] [&_a]:break-all [&_a]:text-[#74f0d0] [&_a]:underline [&_blockquote]:rounded-[20px] [&_blockquote]:border [&_blockquote]:border-white/10 [&_blockquote]:bg-white/[0.04] [&_blockquote]:px-4 [&_blockquote]:py-3 [&_figcaption]:mt-2 [&_figcaption]:text-sm [&_figure]:my-5 [&_h1]:mb-3 [&_h1]:text-[30px] [&_h1]:font-semibold [&_h1]:leading-[1] [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:text-[24px] [&_h2]:font-semibold [&_h2]:leading-[1.1] [&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:text-[20px] [&_h3]:font-semibold [&_h3]:leading-[1.15] [&_img]:my-5 [&_img]:rounded-[24px] [&_li]:mb-2 [&_ol]:mb-5 [&_ol]:pl-5 [&_p]:mb-4 [&_pre]:overflow-x-auto [&_pre]:rounded-[20px] [&_pre]:border [&_pre]:border-white/10 [&_pre]:bg-black/20 [&_pre]:p-4 [&_table]:block [&_table]:w-full [&_table]:overflow-x-auto [&_td]:border-b [&_td]:px-3 [&_td]:py-2 [&_th]:border-b [&_th]:border-white/10 [&_th]:px-3 [&_th]:py-2 [&_ul]:mb-5 [&_ul]:pl-5"
+            dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+          />
+        </section>
+      </div>,
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Back button */}
       {!capabilities.hasBackButton && (
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate(backPath)}
           className="flex min-h-[44px] items-center gap-2 rounded-xl border border-dark-700 bg-dark-800 px-4 text-sm text-dark-400 transition-colors hover:border-dark-600 hover:text-dark-200"
           aria-label={t('news.backToHome')}
         >

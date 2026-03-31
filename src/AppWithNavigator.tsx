@@ -65,6 +65,14 @@ const getBackFallbackPath = (pathname: string): string | null => {
     return '/admin/users';
   }
 
+  if (/^\/ultima\/news\/[^/]+$/.test(pathname)) {
+    return '/ultima/news';
+  }
+
+  if (/^\/news\/[^/]+$/.test(pathname)) {
+    return '/';
+  }
+
   return null;
 };
 

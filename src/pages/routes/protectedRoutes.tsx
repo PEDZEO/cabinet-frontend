@@ -278,6 +278,16 @@ export const protectedRoutes: RouteConfig[] = [
     ),
   },
   {
+    path: '/ultima/news/:slug',
+    element: (
+      <ProtectedRoute>
+        <LazyPage>
+          <NewsArticle />
+        </LazyPage>
+      </ProtectedRoute>
+    ),
+  },
+  {
     path: '/wheel',
     element: (
       <ProtectedRoute>

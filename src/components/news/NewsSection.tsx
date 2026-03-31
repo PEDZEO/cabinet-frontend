@@ -1,7 +1,7 @@
 import { type CSSProperties, useState, useCallback, useMemo, memo } from 'react';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { newsApi } from '../../api/news';
 import {
@@ -517,6 +517,7 @@ export default function NewsSection({
 }: NewsSectionProps = {}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const haptic = useHapticFeedback();
   const [filter, setFilter] = useState<string>('');
   const [limit, setLimit] = useState(NEWS_LIMIT);
@@ -549,9 +550,15 @@ export default function NewsSection({
   const handleCardClick = useCallback(
     (slug: string) => {
       haptic.buttonPress();
-      navigate(`/news/${slug}`);
+      const articlePath = variant === 'ultima' ? `/ultima/news/${slug}` : `/news/${slug}`;
+      void queryClient.prefetchQuery({
+        queryKey: ['news', 'article', slug],
+        queryFn: () => newsApi.getArticle(slug),
+        staleTime: 60_000,
+      });
+      navigate(articlePath);
     },
-    [haptic, navigate],
+    [haptic, navigate, queryClient, variant],
   );
 
   const handleLoadMore = useCallback(() => {
