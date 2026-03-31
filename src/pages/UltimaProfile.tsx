@@ -21,7 +21,7 @@ import {
 import { useAuthStore } from '@/store/auth';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { warmUltimaStartup } from '@/features/ultima/warmup';
-import { ultimaPanelClassName, ultimaSurfaceStyle } from '@/features/ultima/surfaces';
+import { ultimaSurfaceStyle } from '@/features/ultima/surfaces';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 const CopyIcon = () => (
@@ -157,18 +157,22 @@ type SectionItem = {
 
 const ULTIMA_TOP_UP_PATH = '/balance/top-up?returnTo=/subscription';
 const ULTIMA_SECTION_SURFACE_STYLE = ultimaSurfaceStyle;
+const ULTIMA_SECTION_CLASS_NAME =
+  'rounded-3xl border shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_18px_38px_rgba(3,14,24,0.2)]';
 const ULTIMA_MENU_ITEM_STYLE = {
   borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
   background:
     'linear-gradient(180deg, color-mix(in srgb, var(--ultima-color-secondary) 56%, transparent) 0%, color-mix(in srgb, var(--ultima-color-surface) 52%, transparent) 100%)',
 };
+const ULTIMA_MENU_ITEM_CLASS_NAME =
+  'group flex w-full transform-gpu items-center gap-3 rounded-[22px] border px-3.5 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-transform duration-150 hover:translate-y-[-1px] active:translate-y-0';
 
 function MenuItem({ item, onClick }: { item: SectionItem; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="group flex w-full items-center gap-3 rounded-[22px] border px-3.5 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md transition hover:translate-y-[-1px] active:translate-y-0"
+      className={ULTIMA_MENU_ITEM_CLASS_NAME}
       style={ULTIMA_MENU_ITEM_STYLE}
     >
       <div
@@ -314,7 +318,31 @@ export function UltimaProfile() {
   };
 
   useEffect(() => {
-    void warmUltimaStartup(queryClient, { language: i18n.language || 'ru' });
+    let cancelled = false;
+
+    const runWarmup = () => {
+      if (cancelled) {
+        return;
+      }
+
+      void warmUltimaStartup(queryClient, { language: i18n.language || 'ru' });
+    };
+
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      const idleId = window.requestIdleCallback(runWarmup, { timeout: 1200 });
+
+      return () => {
+        cancelled = true;
+        window.cancelIdleCallback(idleId);
+      };
+    }
+
+    const timeoutId = setTimeout(runWarmup, 180);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+    };
   }, [i18n.language, queryClient]);
 
   const handleCopyUserId = useCallback(() => {
@@ -534,7 +562,7 @@ export function UltimaProfile() {
   const sectionsContent = (
     <div className="grid gap-3 lg:gap-4 xl:grid-cols-2">
       <section
-        className={`${ultimaPanelClassName} p-3.5 lg:p-4`}
+        className={`${ULTIMA_SECTION_CLASS_NAME} p-3.5 lg:p-4`}
         style={ULTIMA_SECTION_SURFACE_STYLE}
       >
         <p className="text-white/56 mb-3 text-[12px] font-medium uppercase tracking-[0.14em]">
@@ -548,7 +576,7 @@ export function UltimaProfile() {
       </section>
 
       <section
-        className={`${ultimaPanelClassName} p-3.5 lg:p-4`}
+        className={`${ULTIMA_SECTION_CLASS_NAME} p-3.5 lg:p-4`}
         style={ULTIMA_SECTION_SURFACE_STYLE}
       >
         <p className="text-white/56 mb-3 text-[12px] font-medium uppercase tracking-[0.14em]">
@@ -711,7 +739,7 @@ export function UltimaProfile() {
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
         <section className="ultima-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto pr-1 pt-[clamp(8px,2vh,16px)]">
           <section
-            className={`${ultimaPanelClassName} mb-3 p-3.5`}
+            className={`${ULTIMA_SECTION_CLASS_NAME} mb-3 p-3.5`}
             style={ULTIMA_SECTION_SURFACE_STYLE}
           >
             <div className="flex items-center gap-3">
