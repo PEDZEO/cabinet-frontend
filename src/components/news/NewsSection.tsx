@@ -341,6 +341,147 @@ const FeaturedCard = memo(function FeaturedCard({
   );
 });
 
+interface FeedContinuationTeaserProps {
+  remainingCount: number;
+  onReveal: () => void;
+  variant?: 'default' | 'ultima';
+  isLoading?: boolean;
+}
+
+const FeedContinuationTeaser = memo(function FeedContinuationTeaser({
+  remainingCount,
+  onReveal,
+  variant = 'default',
+  isLoading = false,
+}: FeedContinuationTeaserProps) {
+  const { t } = useTranslation();
+  const isUltimaVariant = variant === 'ultima';
+  const previewCount = Math.min(2, remainingCount);
+
+  return (
+    <motion.div
+      variants={fadeSlideUp}
+      custom={6}
+      initial="hidden"
+      animate="visible"
+      className="mt-6"
+    >
+      <div
+        className={cn(
+          'relative overflow-hidden rounded-[26px] p-4 sm:p-5',
+          isUltimaVariant ? ultimaPaneClassName : 'border border-dark-700/60 bg-dark-900/70',
+        )}
+        style={isUltimaVariant ? ultimaPaneSurfaceStyle : undefined}
+      >
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-24"
+          style={{
+            background: isUltimaVariant
+              ? 'linear-gradient(180deg, color-mix(in srgb, var(--ultima-color-aura) 16%, transparent), transparent)'
+              : 'linear-gradient(180deg, rgba(var(--color-accent-400),0.08), transparent)',
+          }}
+        />
+
+        <div className="relative flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p
+                className={cn(
+                  'font-mono text-[11px] font-bold uppercase tracking-[0.22em]',
+                  isUltimaVariant ? 'text-white/42' : 'text-dark-500',
+                )}
+              >
+                {t('ultima.newsFeedContinuationTitle', { defaultValue: 'Продолжение ленты' })}
+              </p>
+              <h3
+                className={cn(
+                  'mt-2 text-[20px] font-semibold leading-[1.05]',
+                  isUltimaVariant ? 'text-white/92' : 'text-dark-100',
+                )}
+              >
+                {t('ultima.newsFeedContinuationCount', {
+                  count: remainingCount,
+                  defaultValue: `Еще ${remainingCount} новостей`,
+                })}
+              </h3>
+              <p
+                className={cn(
+                  'mt-2 max-w-[34rem] text-[13px] leading-[1.7]',
+                  isUltimaVariant ? 'text-white/58' : 'text-dark-400',
+                )}
+              >
+                {t('ultima.newsFeedContinuationHint', {
+                  defaultValue:
+                    'Лента раскрывается следующей пачкой, чтобы экран не превращался в бесконечную простыню.',
+                })}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={onReveal}
+              disabled={isLoading}
+              className={cn(
+                'min-h-[46px] rounded-full px-5 py-2.5 text-[13px] font-semibold tracking-wide transition disabled:cursor-not-allowed disabled:opacity-60',
+                isUltimaVariant
+                  ? 'text-white/84 border border-white/10 bg-white/[0.06] hover:bg-white/[0.1]'
+                  : 'border border-dark-600 bg-dark-800 text-dark-100 hover:border-accent-400/30 hover:text-accent-300',
+              )}
+            >
+              {isLoading
+                ? t('common.loading', { defaultValue: 'Загрузка...' })
+                : t('news.loadMore')}
+            </button>
+          </div>
+
+          <div className="relative h-[124px] overflow-hidden rounded-[22px]">
+            <div
+              className="absolute inset-0"
+              style={{
+                background: isUltimaVariant
+                  ? 'linear-gradient(180deg, rgba(3,15,22,0.12), rgba(3,15,22,0.38))'
+                  : 'linear-gradient(180deg, rgba(8,12,20,0.08), rgba(8,12,20,0.34))',
+              }}
+            />
+            {Array.from({ length: previewCount }).map((_, index) => (
+              <div
+                key={index}
+                aria-hidden
+                className={cn(
+                  'absolute inset-x-3 rounded-[20px] border p-4 shadow-[0_18px_40px_rgba(3,14,24,0.18)] backdrop-blur-xl',
+                  isUltimaVariant ? 'border-white/8' : 'border-dark-700/70 bg-dark-900/70',
+                )}
+                style={{
+                  top: `${index * 34}px`,
+                  opacity: 1 - index * 0.22,
+                  transform: `scale(${1 - index * 0.04}) translateY(${index * 6}px)`,
+                  transformOrigin: 'top center',
+                  background: isUltimaVariant
+                    ? 'linear-gradient(180deg, color-mix(in srgb, var(--ultima-color-secondary) 78%, transparent), color-mix(in srgb, var(--ultima-color-surface) 42%, transparent))'
+                    : undefined,
+                }}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="h-2.5 w-20 rounded-full bg-white/10" />
+                  <div className="h-2.5 w-12 rounded-full bg-white/10" />
+                </div>
+                <div className="bg-white/14 mt-4 h-4 w-[78%] rounded-full" />
+                <div className="mt-2 h-4 w-[56%] rounded-full bg-white/10" />
+                <div className="mt-5 flex items-center justify-between">
+                  <div className="h-2.5 w-16 rounded-full bg-white/10" />
+                  <div className="h-2.5 w-14 rounded-full bg-white/10" />
+                </div>
+              </div>
+            ))}
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[rgba(2,10,16,0.92)] to-transparent" />
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+});
+
 interface NewsCardProps {
   item: NewsListItem;
   index: number;
@@ -524,7 +665,7 @@ export default function NewsSection({
 
   const categoryParam = filter || undefined;
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isFetching } = useQuery({
     queryKey: ['news', 'list', categoryParam, limit],
     queryFn: () => newsApi.getNews({ category: categoryParam, limit, offset: 0 }),
     // staleTime: serve cached data for 2 min before background re-fetch.
@@ -536,6 +677,7 @@ export default function NewsSection({
   const items = useMemo(() => data?.items ?? [], [data?.items]);
   const total = data?.total ?? 0;
   const categories = data?.categories ?? [];
+  const remainingCount = Math.max(total - items.length, 0);
 
   // Memoized so FeaturedCard/NewsCard receive stable object references when
   // parent state unrelated to the list changes (e.g. load-more button state).
@@ -727,26 +869,13 @@ export default function NewsSection({
         )}
 
         {/* Load more */}
-        {!isLoading && items.length < total && (
-          <motion.div
-            variants={fadeSlideUp}
-            custom={6}
-            initial="hidden"
-            animate="visible"
-            className="mt-6 text-center"
-          >
-            <button
-              onClick={handleLoadMore}
-              className={cn(
-                'min-h-[44px] rounded-xl px-8 py-3 text-[13px] font-semibold tracking-wide transition-all duration-300',
-                isUltimaVariant
-                  ? 'text-white/76 border border-white/10 bg-white/[0.05] hover:bg-white/[0.075] hover:text-white'
-                  : 'border border-dark-700 bg-transparent text-dark-400 hover:border-accent-400/30 hover:text-accent-400',
-              )}
-            >
-              {t('news.loadMore')}
-            </button>
-          </motion.div>
+        {!isLoading && remainingCount > 0 && (
+          <FeedContinuationTeaser
+            remainingCount={remainingCount}
+            onReveal={handleLoadMore}
+            variant={variant}
+            isLoading={isFetching}
+          />
         )}
       </div>
     </section>
