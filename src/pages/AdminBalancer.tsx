@@ -22,6 +22,7 @@ type MetricItem = {
 };
 
 type BalancerAdvancedSettings = {
+  stickyNewConnectionsOnly: boolean;
   autoQuarantineEnabled: boolean;
   autoQuarantineFailures: number;
   autoQuarantineReleaseSuccesses: number;
@@ -39,6 +40,7 @@ type BalancerAdvancedSettings = {
 };
 
 const DEFAULT_ADVANCED_SETTINGS: BalancerAdvancedSettings = {
+  stickyNewConnectionsOnly: false,
   autoQuarantineEnabled: false,
   autoQuarantineFailures: 3,
   autoQuarantineReleaseSuccesses: 2,
@@ -176,6 +178,10 @@ function normalizeAdvancedSettings(
     typeof value === 'number' && Number.isFinite(value) ? value : fallback;
 
   return {
+    stickyNewConnectionsOnly:
+      typeof source?.sticky_new_connections_only === 'boolean'
+        ? source.sticky_new_connections_only
+        : DEFAULT_ADVANCED_SETTINGS.stickyNewConnectionsOnly,
     autoQuarantineEnabled:
       typeof source?.auto_quarantine_enabled === 'boolean'
         ? source.auto_quarantine_enabled
@@ -606,6 +612,7 @@ export default function AdminBalancer() {
     const normalizedFastestName = fastestGroupName.trim() || DEFAULT_FASTEST_GROUP_NAME;
     const nextAdvanced = {
       auto_quarantine_enabled: advancedSettings.autoQuarantineEnabled,
+      sticky_new_connections_only: advancedSettings.stickyNewConnectionsOnly,
       auto_quarantine_failures: Math.max(1, Math.round(advancedSettings.autoQuarantineFailures)),
       auto_quarantine_release_successes: Math.max(
         1,
@@ -673,6 +680,10 @@ export default function AdminBalancer() {
       {
         label: t('admin.balancer.labels.quarantineCount', 'Quarantine nodes'),
         value: prettyValue(healthRecord.quarantine_count),
+      },
+      {
+        label: t('admin.balancer.labels.newConnectionsOnly', 'New connections only'),
+        value: prettyValue(healthRecord.sticky_new_connections_only),
       },
       {
         label: t('admin.balancer.labels.panelAuth', 'Panel auth'),
@@ -775,6 +786,7 @@ export default function AdminBalancer() {
       fastest_group: fastestEnabled,
       fastest_group_name: fastestGroupName.trim() || DEFAULT_FASTEST_GROUP_NAME,
       fastest_exclude_groups: excludeGroups.filter((name) => availableNames.has(name)),
+      sticky_new_connections_only: advancedSettings.stickyNewConnectionsOnly,
       auto_quarantine_enabled: advancedSettings.autoQuarantineEnabled,
       auto_quarantine_failures: Math.max(1, Math.round(advancedSettings.autoQuarantineFailures)),
       auto_quarantine_release_successes: Math.max(
@@ -1197,6 +1209,41 @@ export default function AdminBalancer() {
           </p>
 
           <div className="space-y-3">
+            <details className="rounded-lg border border-dark-700 bg-dark-900/30 p-3">
+              <summary className="cursor-pointer text-sm font-semibold text-dark-100">
+                {t('admin.balancer.groups.sectionSticky', 'Sticky behavior')}
+              </summary>
+              <p className="mt-2 text-xs text-dark-500">
+                {t(
+                  'admin.balancer.groups.sectionStickyHint',
+                  'Controls whether active clients keep their current node assignment while they continue using the service.',
+                )}
+              </p>
+              <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <label className="flex items-center gap-2 text-sm text-dark-200 md:col-span-2 xl:col-span-3">
+                  <input
+                    type="checkbox"
+                    checked={advancedSettings.stickyNewConnectionsOnly}
+                    onChange={(event) =>
+                      updateAdvancedSetting('stickyNewConnectionsOnly', event.target.checked)
+                    }
+                  />
+                  <span>
+                    {t(
+                      'admin.balancer.groups.stickyNewConnectionsOnly',
+                      'Balance only new connections',
+                    )}
+                    <span className="mt-1 block text-xs text-dark-500">
+                      {t(
+                        'admin.balancer.groups.stickyNewConnectionsOnlyDesc',
+                        'If enabled, active sticky sessions keep extending their TTL, so old active users are not reassigned just because time passed.',
+                      )}
+                    </span>
+                  </span>
+                </label>
+              </div>
+            </details>
+
             <details className="rounded-lg border border-dark-700 bg-dark-900/30 p-3">
               <summary className="cursor-pointer text-sm font-semibold text-dark-100">
                 {t('admin.balancer.groups.sectionAutoQuarantine', 'Auto-quarantine')}
