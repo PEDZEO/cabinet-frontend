@@ -682,7 +682,7 @@ export default function AdminBalancer() {
         value: prettyValue(healthRecord.quarantine_count),
       },
       {
-        label: t('admin.balancer.labels.newConnectionsOnly', 'New connections only'),
+        label: t('admin.balancer.labels.newConnectionsOnly', 'Только новые подключения'),
         value: prettyValue(healthRecord.sticky_new_connections_only),
       },
       {
@@ -1211,12 +1211,12 @@ export default function AdminBalancer() {
           <div className="space-y-3">
             <details className="rounded-lg border border-dark-700 bg-dark-900/30 p-3">
               <summary className="cursor-pointer text-sm font-semibold text-dark-100">
-                {t('admin.balancer.groups.sectionSticky', 'Sticky behavior')}
+                {t('admin.balancer.groups.sectionSticky', 'Поведение привязки')}
               </summary>
               <p className="mt-2 text-xs text-dark-500">
                 {t(
                   'admin.balancer.groups.sectionStickyHint',
-                  'Controls whether active clients keep their current node assignment while they continue using the service.',
+                  'Управляет тем, сохраняют ли активные клиенты свой текущий сервер, пока продолжают пользоваться подключением.',
                 )}
               </p>
               <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -1231,12 +1231,12 @@ export default function AdminBalancer() {
                   <span>
                     {t(
                       'admin.balancer.groups.stickyNewConnectionsOnly',
-                      'Balance only new connections',
+                      'Балансировать только новые подключения',
                     )}
                     <span className="mt-1 block text-xs text-dark-500">
                       {t(
                         'admin.balancer.groups.stickyNewConnectionsOnlyDesc',
-                        'If enabled, active sticky sessions keep extending their TTL, so old active users are not reassigned just because time passed.',
+                        'Если включено, активные старые подключения продлевают свою привязку и не перекидываются на другой сервер просто из-за времени.',
                       )}
                     </span>
                   </span>
