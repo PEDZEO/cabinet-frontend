@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 :root {
-  --app-animation-budget-ms: 320;
   --ultima-color-primary: #1bd29f;
   --ultima-color-primary-text: #ffffff;
   --ultima-color-secondary: #0c2d2a;
@@ -76,45 +75,6 @@
   --ultima-motion-success-filter: none;
   --ultima-motion-success-duration-scale: 1;
   --ultima-motion-success-easing: cubic-bezier(0.16, 0.84, 0.24, 1);
-}
-
-html[data-performance-mode='balanced'] {
-  --app-animation-budget-ms: 240;
-  --ultima-animation-content-enter-ms: 240;
-  --ultima-animation-tap-ring-ms: 620;
-  --ultima-animation-ring-wave-sec: 24;
-  --ultima-animation-slider-glow-sec: 3.4;
-  --ultima-animation-step-ring-sec: 7.2;
-  --ultima-animation-success-wave-ms: 820;
-  --ultima-animation-item-enter-ms: 220;
-  --ultima-motion-ring-duration-scale: 1.2;
-  --ultima-motion-step-duration-scale: 1.18;
-  --ultima-motion-success-duration-scale: 0.9;
-  --ultima-motion-ring-shadow:
-    0 0 0 1px color-mix(in srgb, var(--ultima-color-ring) 12%, transparent),
-    0 0 24px color-mix(in srgb, var(--ultima-color-ring) 6%, transparent);
-  --ultima-motion-success-shadow: 0 0 24px
-    color-mix(in srgb, var(--ultima-color-aura) 8%, transparent);
-}
-
-html[data-performance-mode='efficient'] {
-  --app-animation-budget-ms: 180;
-  --ultima-animation-content-enter-ms: 180;
-  --ultima-animation-tap-ring-ms: 520;
-  --ultima-animation-ring-wave-sec: 30;
-  --ultima-animation-slider-glow-sec: 4.2;
-  --ultima-animation-step-ring-sec: 8.4;
-  --ultima-animation-success-wave-ms: 680;
-  --ultima-animation-item-enter-ms: 180;
-  --ultima-motion-ring-duration-scale: 1.38;
-  --ultima-motion-step-duration-scale: 1.3;
-  --ultima-motion-success-duration-scale: 0.82;
-  --ultima-motion-ring-shadow: none;
-  --ultima-motion-step-shadow: none;
-  --ultima-motion-success-shadow: none;
-  --ultima-motion-ring-filter: none;
-  --ultima-motion-step-filter: none;
-  --ultima-motion-success-filter: none;
 }
 
 /* Animated gradient border — @property enables CSS-only angle animation */
@@ -342,22 +302,6 @@ html[data-performance-mode='efficient'] {
   will-change: transform, opacity, filter;
 }
 
-@keyframes ultima-float-number-optimized {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) translate3d(0, 6px, 0) scale(0.9);
-  }
-  18% {
-    opacity: var(--ultima-digit-opacity, 0.88);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%)
-      translate3d(var(--ultima-digit-drift-x, 0px), var(--ultima-digit-drift-y, -30px), 0)
-      scale(var(--ultima-digit-scale, 1.03));
-  }
-}
-
 @keyframes ultima-content-enter {
   0% {
     opacity: 0.01;
@@ -374,17 +318,6 @@ html[data-performance-mode='efficient'] {
 .ultima-content-enter {
   animation: ultima-content-enter calc(var(--ultima-animation-content-enter-ms, 320) * 1ms)
     cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-
-@keyframes ultima-content-enter-optimized {
-  0% {
-    opacity: 0.01;
-    transform: translateY(8px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 @keyframes ultima-slider-glow {
@@ -615,42 +548,6 @@ html[data-performance-mode='efficient'] {
     animation: none;
     opacity: 0.48;
   }
-}
-
-html[data-performance-mode='balanced'] .ultima-content-enter,
-html[data-performance-mode='efficient'] .ultima-content-enter {
-  animation-name: ultima-content-enter-optimized;
-  will-change: transform, opacity;
-}
-
-html[data-performance-mode='balanced'] .ultima-float-number,
-html[data-performance-mode='efficient'] .ultima-float-number {
-  animation-name: ultima-float-number-optimized;
-  will-change: transform, opacity;
-}
-
-html[data-performance-mode='balanced'] .ultima-shell-aura::before,
-html[data-performance-mode='balanced'] .ultima-shell-aura::after,
-html[data-performance-mode='balanced'] .ultima-preview-aura::before,
-html[data-performance-mode='balanced'] .ultima-preview-aura::after {
-  opacity: 0.72;
-}
-
-html[data-performance-mode='efficient'] .ultima-shell-aura::before,
-html[data-performance-mode='efficient'] .ultima-shell-aura::after,
-html[data-performance-mode='efficient'] .ultima-preview-aura::before,
-html[data-performance-mode='efficient'] .ultima-preview-aura::after {
-  animation: none !important;
-  filter: none !important;
-  opacity: 0.44;
-}
-
-html[data-performance-mode='efficient'] .hover-border-gradient,
-html[data-performance-mode='efficient'] .ultima-slider-glow,
-html[data-performance-mode='efficient'] .ultima-ring-wave,
-html[data-performance-mode='efficient'] .ultima-preview-ring-wave,
-html[data-performance-mode='efficient'] .ultima-cta-highlight {
-  animation-play-state: paused;
 }
 
 .ultima-scrollbar {
@@ -2514,30 +2411,6 @@ img.twemoji {
   .bottom-nav-item-active {
     @apply flex min-w-[56px] flex-1 shrink-0 flex-col items-center justify-center rounded-2xl bg-accent-500/15 px-3 py-2.5 text-accent-400 duration-200;
     transition-property: color, background-color;
-  }
-
-  html[data-performance-mode='balanced'] .backdrop-blur,
-  html[data-performance-mode='balanced'] .backdrop-blur-sm,
-  html[data-performance-mode='balanced'] .backdrop-blur-md,
-  html[data-performance-mode='balanced'] .backdrop-blur-lg,
-  html[data-performance-mode='balanced'] .backdrop-blur-xl,
-  html[data-performance-mode='balanced'] .backdrop-blur-2xl,
-  html[data-performance-mode='balanced'] .backdrop-blur-3xl,
-  html[data-performance-mode='balanced'] .backdrop-blur-linear {
-    backdrop-filter: blur(8px) !important;
-    -webkit-backdrop-filter: blur(8px) !important;
-  }
-
-  html[data-performance-mode='efficient'] .backdrop-blur,
-  html[data-performance-mode='efficient'] .backdrop-blur-sm,
-  html[data-performance-mode='efficient'] .backdrop-blur-md,
-  html[data-performance-mode='efficient'] .backdrop-blur-lg,
-  html[data-performance-mode='efficient'] .backdrop-blur-xl,
-  html[data-performance-mode='efficient'] .backdrop-blur-2xl,
-  html[data-performance-mode='efficient'] .backdrop-blur-3xl,
-  html[data-performance-mode='efficient'] .backdrop-blur-linear {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
   }
 
   /* Divider - Dark */

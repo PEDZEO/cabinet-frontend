@@ -16,7 +16,6 @@ import { WebSocketProvider } from './providers/WebSocketProvider';
 import { ToastProvider } from './components/Toast';
 import { TooltipProvider } from './components/primitives/Tooltip';
 import { isInTelegramWebApp } from './hooks/useTelegramSDK';
-import { usePerformanceMode } from './hooks/usePerformanceMode';
 import { getCachedUltimaMode } from './hooks/useUltimaMode';
 import { useUltimaThemeConfig } from './features/ultima/theme';
 import { isUltimaTopLevelPath, ULTIMA_TOP_LEVEL_PATHS } from './features/ultima/navigation';
@@ -126,11 +125,6 @@ function TelegramBackButton() {
   return null;
 }
 
-function PerformanceModeSync() {
-  usePerformanceMode();
-  return null;
-}
-
 export function AppWithNavigator() {
   const isTelegram = isInTelegramWebApp();
   const { ready } = useTranslation();
@@ -138,7 +132,6 @@ export function AppWithNavigator() {
 
   return (
     <BrowserRouter>
-      <PerformanceModeSync />
       <ScrollToTop />
       {isTelegram && <TelegramBackButton />}
       <ErrorBoundary level="page">
