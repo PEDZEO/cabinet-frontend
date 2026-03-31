@@ -33,6 +33,18 @@ export function normalizeNewsMediaUrl(url: string | null | undefined): string | 
     if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
       return null;
     }
+
+    // Uploaded news media can be stored as absolute HTTP URLs from a backend
+    // running behind TLS termination. Upgrade them client-side to avoid mixed
+    // content blocking in secure mobile webviews.
+    if (
+      parsed.protocol === 'http:' &&
+      typeof window !== 'undefined' &&
+      window.location.protocol === 'https:'
+    ) {
+      parsed.protocol = 'https:';
+    }
+
     return parsed.toString();
   } catch {
     return null;
