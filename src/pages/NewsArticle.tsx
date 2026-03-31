@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useMemo, useRef } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
@@ -219,6 +219,34 @@ function sanitizeHtml(html: string): string {
   return DOMPurify.sanitize(html, SANITIZE_CONFIG);
 }
 
+function normalizeArticleHtmlMediaUrls(html: string): string {
+  if (typeof window === 'undefined' || !html) return html;
+
+  const parser = new DOMParser();
+  const document = parser.parseFromString(html, 'text/html');
+
+  for (const element of document.querySelectorAll('img, video, source')) {
+    const source = element.getAttribute('src');
+    const normalized = normalizeNewsMediaUrl(source);
+
+    if (source && !normalized) {
+      element.remove();
+      continue;
+    }
+
+    if (normalized) {
+      element.setAttribute('src', normalized);
+    }
+
+    if (element.tagName === 'IMG') {
+      element.setAttribute('loading', 'lazy');
+      element.setAttribute('decoding', 'async');
+    }
+  }
+
+  return document.body.innerHTML;
+}
+
 /**
  * Validates that a color string is a safe hex color.
  * Prevents CSS injection via malicious category_color values.
@@ -238,6 +266,9 @@ export default function NewsArticlePage() {
   const { capabilities, backButton } = usePlatform();
   const isUltimaRoute = location.pathname.startsWith('/ultima/news');
   const backPath = isUltimaRoute ? '/ultima/news' : '/';
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const [featuredImageFailed, setFeaturedImageFailed] = useState(false);
+  const [expandedImage, setExpandedImage] = useState<{ src: string; alt: string } | null>(null);
 
   // Show Telegram native back button (use ref to avoid effect re-runs)
   const navigateRef = useRef(navigate);
@@ -265,8 +296,80 @@ export default function NewsArticlePage() {
     staleTime: 60_000,
   });
 
-  const sanitizedContent = useMemo(() => (article ? sanitizeHtml(article.content) : ''), [article]);
+  const sanitizedContent = useMemo(() => {
+    if (!article) return '';
+    return sanitizeHtml(normalizeArticleHtmlMediaUrls(article.content));
+  }, [article]);
   const featuredImageUrl = normalizeNewsMediaUrl(article?.featured_image_url);
+
+  useEffect(() => {
+    setFeaturedImageFailed(false);
+  }, [featuredImageUrl]);
+
+  useEffect(() => {
+    const container = contentRef.current;
+    if (!container) return;
+
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof HTMLImageElement)) return;
+
+      const src = normalizeNewsMediaUrl(target.currentSrc || target.src);
+      if (!src) return;
+
+      setExpandedImage({
+        src,
+        alt: target.alt || article?.title || 'News image',
+      });
+    };
+
+    const handleError = (event: Event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLImageElement)) return;
+
+      const figure = target.closest('figure');
+      if (figure instanceof HTMLElement) {
+        figure.style.display = 'none';
+        return;
+      }
+
+      target.style.display = 'none';
+    };
+
+    container.addEventListener('click', handleClick);
+    container.addEventListener('error', handleError, true);
+
+    return () => {
+      container.removeEventListener('click', handleClick);
+      container.removeEventListener('error', handleError, true);
+    };
+  }, [article?.title, sanitizedContent]);
+
+  const renderExpandedImage = () =>
+    expandedImage ? (
+      <div
+        className="bg-black/88 fixed inset-0 z-[90] flex items-center justify-center p-4 backdrop-blur-sm"
+        onClick={() => setExpandedImage(null)}
+        role="dialog"
+        aria-modal="true"
+        aria-label={expandedImage.alt}
+      >
+        <button
+          type="button"
+          className="text-white/92 absolute right-4 top-4 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/15 bg-white/10"
+          onClick={() => setExpandedImage(null)}
+          aria-label={t('common.close', { defaultValue: 'Close' })}
+        >
+          ×
+        </button>
+        <img
+          src={expandedImage.src}
+          alt={expandedImage.alt}
+          className="max-h-[82svh] w-auto max-w-full rounded-[24px] object-contain shadow-[0_24px_80px_rgba(0,0,0,0.45)]"
+          onClick={(event) => event.stopPropagation()}
+        />
+      </div>
+    ) : null;
 
   const renderUltimaLayout = (content: ReactNode) => (
     <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-muted-aura">
@@ -432,23 +535,32 @@ export default function NewsArticlePage() {
           className={`${ultimaPanelClassName} overflow-hidden p-4 sm:p-5`}
           style={ultimaSurfaceStyle}
         >
-          {featuredImageUrl ? (
-            <div className="mb-4 overflow-hidden rounded-[24px]">
+          {featuredImageUrl && !featuredImageFailed ? (
+            <button
+              type="button"
+              className="mb-4 block w-full overflow-hidden rounded-[24px] bg-black/10 text-left"
+              onClick={() => setExpandedImage({ src: featuredImageUrl, alt: article.title })}
+              aria-label={t('news.openImage', { defaultValue: 'Open image' })}
+            >
               <img
                 src={featuredImageUrl}
                 alt={article.title}
-                className="h-auto w-full rounded-[24px] object-cover"
+                className="h-auto max-h-[min(48svh,420px)] w-full rounded-[24px] object-contain"
                 loading="eager"
                 fetchPriority="high"
+                decoding="async"
+                onError={() => setFeaturedImageFailed(true)}
               />
-            </div>
+            </button>
           ) : null}
 
           <div
-            className="text-white/86 prose prose-invert [&_blockquote]:text-white/72 [&_figcaption]:text-white/54 [&_td]:border-white/8 max-w-none text-[15px] leading-[1.78] [&_a]:break-all [&_a]:text-[#74f0d0] [&_a]:underline [&_blockquote]:rounded-[20px] [&_blockquote]:border [&_blockquote]:border-white/10 [&_blockquote]:bg-white/[0.04] [&_blockquote]:px-4 [&_blockquote]:py-3 [&_figcaption]:mt-2 [&_figcaption]:text-sm [&_figure]:my-5 [&_h1]:mb-3 [&_h1]:text-[30px] [&_h1]:font-semibold [&_h1]:leading-[1] [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:text-[24px] [&_h2]:font-semibold [&_h2]:leading-[1.1] [&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:text-[20px] [&_h3]:font-semibold [&_h3]:leading-[1.15] [&_img]:my-5 [&_img]:rounded-[24px] [&_li]:mb-2 [&_ol]:mb-5 [&_ol]:pl-5 [&_p]:mb-4 [&_pre]:overflow-x-auto [&_pre]:rounded-[20px] [&_pre]:border [&_pre]:border-white/10 [&_pre]:bg-black/20 [&_pre]:p-4 [&_table]:block [&_table]:w-full [&_table]:overflow-x-auto [&_td]:border-b [&_td]:px-3 [&_td]:py-2 [&_th]:border-b [&_th]:border-white/10 [&_th]:px-3 [&_th]:py-2 [&_ul]:mb-5 [&_ul]:pl-5"
+            ref={contentRef}
+            className="text-white/86 prose prose-invert [&_blockquote]:text-white/72 [&_figcaption]:text-white/54 [&_td]:border-white/8 max-w-none text-[15px] leading-[1.78] [&_a]:break-all [&_a]:text-[#74f0d0] [&_a]:underline [&_blockquote]:rounded-[20px] [&_blockquote]:border [&_blockquote]:border-white/10 [&_blockquote]:bg-white/[0.04] [&_blockquote]:px-4 [&_blockquote]:py-3 [&_figcaption]:mt-2 [&_figcaption]:text-sm [&_figure]:my-5 [&_h1]:mb-3 [&_h1]:text-[30px] [&_h1]:font-semibold [&_h1]:leading-[1] [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:text-[24px] [&_h2]:font-semibold [&_h2]:leading-[1.1] [&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:text-[20px] [&_h3]:font-semibold [&_h3]:leading-[1.15] [&_img]:my-5 [&_img]:max-h-[min(52svh,480px)] [&_img]:w-full [&_img]:cursor-zoom-in [&_img]:rounded-[24px] [&_img]:object-contain [&_li]:mb-2 [&_ol]:mb-5 [&_ol]:pl-5 [&_p]:mb-4 [&_pre]:overflow-x-auto [&_pre]:rounded-[20px] [&_pre]:border [&_pre]:border-white/10 [&_pre]:bg-black/20 [&_pre]:p-4 [&_table]:block [&_table]:w-full [&_table]:overflow-x-auto [&_td]:border-b [&_td]:px-3 [&_td]:py-2 [&_th]:border-b [&_th]:border-white/10 [&_th]:px-3 [&_th]:py-2 [&_ul]:mb-5 [&_ul]:pl-5 [&_video]:my-5 [&_video]:max-h-[min(52svh,480px)] [&_video]:w-full [&_video]:rounded-[24px] [&_video]:bg-black/20"
             dangerouslySetInnerHTML={{ __html: sanitizedContent }}
           />
         </section>
+        {renderExpandedImage()}
       </div>,
     );
   }
@@ -534,20 +646,29 @@ export default function NewsArticlePage() {
       </motion.div>
 
       {/* Featured image - only render if URL uses safe protocol */}
-      {featuredImageUrl && (
+      {featuredImageUrl && !featuredImageFailed && (
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.1 }}
           className="overflow-hidden rounded-xl"
         >
-          <img
-            src={featuredImageUrl}
-            alt={article.title}
-            className="h-auto w-full rounded-xl object-cover"
-            loading="eager"
-            fetchPriority="high"
-          />
+          <button
+            type="button"
+            className="block w-full overflow-hidden rounded-xl"
+            onClick={() => setExpandedImage({ src: featuredImageUrl, alt: article.title })}
+            aria-label={t('news.openImage', { defaultValue: 'Open image' })}
+          >
+            <img
+              src={featuredImageUrl}
+              alt={article.title}
+              className="h-auto max-h-[min(56svh,560px)] w-full rounded-xl object-contain"
+              loading="eager"
+              fetchPriority="high"
+              decoding="async"
+              onError={() => setFeaturedImageFailed(true)}
+            />
+          </button>
         </motion.div>
       )}
 
@@ -556,9 +677,11 @@ export default function NewsArticlePage() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="prose max-w-none lg:max-w-3xl"
+        ref={contentRef}
+        className="prose max-w-none lg:max-w-3xl [&_img]:max-h-[min(56svh,560px)] [&_img]:w-full [&_img]:cursor-zoom-in [&_img]:object-contain [&_video]:max-h-[min(56svh,560px)] [&_video]:w-full"
         dangerouslySetInnerHTML={{ __html: sanitizedContent }}
       />
+      {renderExpandedImage()}
     </div>
   );
 }
