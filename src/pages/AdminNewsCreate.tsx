@@ -10,7 +10,7 @@ import PlaceholderExtension from '@tiptap/extension-placeholder';
 import TextAlignExtension from '@tiptap/extension-text-align';
 import UnderlineExtension from '@tiptap/extension-underline';
 import HighlightExtension from '@tiptap/extension-highlight';
-import { newsApi } from '../api/news';
+import { newsApi, normalizeNewsMediaUrl } from '../api/news';
 import { AdminBackButton } from '../components/admin';
 import { Toggle } from '../components/admin/Toggle';
 import { useHapticFeedback } from '../platform/hooks/useHaptic';
@@ -153,13 +153,7 @@ function ToolbarButton({ onClick, isActive, disabled, title, children }: Toolbar
 
 // --- Security: URL scheme validation ---
 function isSafeUrl(url: string | null | undefined): boolean {
-  if (!url) return false;
-  try {
-    const parsed = new URL(url);
-    return parsed.protocol === 'https:' || parsed.protocol === 'http:';
-  } catch {
-    return false;
-  }
+  return normalizeNewsMediaUrl(url) !== null;
 }
 
 // --- Slug utility ---
@@ -532,7 +526,7 @@ export default function AdminNewsCreate() {
       category: category.trim(),
       category_color: categoryColor,
       tag: tag.trim() || null,
-      featured_image_url: isSafeUrl(featuredImageUrl.trim()) ? featuredImageUrl.trim() : null,
+      featured_image_url: normalizeNewsMediaUrl(featuredImageUrl.trim()),
       is_published: isPublished,
       is_featured: isFeatured,
       read_time_minutes: readTimeMinutes,
@@ -733,10 +727,10 @@ export default function AdminNewsCreate() {
             className="hidden"
             aria-hidden="true"
           />
-          {isSafeUrl(featuredImageUrl) && (
+          {normalizeNewsMediaUrl(featuredImageUrl) && (
             <div className="mt-2 overflow-hidden rounded-xl">
               <img
-                src={featuredImageUrl}
+                src={normalizeNewsMediaUrl(featuredImageUrl)!}
                 alt=""
                 className="h-auto max-h-48 w-full object-cover"
                 loading="lazy"

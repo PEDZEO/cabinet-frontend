@@ -82,7 +82,7 @@ export default function UltimaNews() {
   return (
     <div className="ultima-shell ultima-shell-shared-nav-docked ultima-shell-wide ultima-flat-frames ultima-shell-muted-aura">
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
-        <section className="ultima-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto pb-[calc(16px+env(safe-area-inset-bottom,0px))] pr-1 pt-[clamp(8px,2vh,16px)]">
+        <div className="ultima-scrollbar ultima-mobile-content-shared min-h-0 flex-1 overflow-y-auto pr-1 pt-[clamp(8px,2vh,16px)] lg:overflow-visible lg:pr-0">
           <header className="mb-4 px-1">
             <div className="text-white/88 mb-3 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.08]">
               <NewspaperIcon />
@@ -105,9 +105,9 @@ export default function UltimaNews() {
             showHeader={false}
             showEmptyState
             variant="ultima"
-            className="shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_22px_48px_rgba(3,14,24,0.24)]"
+            className="overflow-visible shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_22px_48px_rgba(3,14,24,0.24)]"
           />
-        </section>
+        </div>
       </div>
     </div>
   );

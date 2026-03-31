@@ -637,7 +637,7 @@ export default function NewsSection({
     <section
       className={cn(
         isUltimaVariant
-          ? `${ultimaPanelClassName} relative overflow-hidden`
+          ? `${ultimaPanelClassName} relative overflow-visible`
           : 'relative overflow-hidden rounded-2xl bg-dark-850/80 backdrop-blur-xl',
         className,
       )}

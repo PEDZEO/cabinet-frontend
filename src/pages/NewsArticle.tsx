@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import DOMPurify from 'dompurify';
-import { newsApi } from '../api/news';
+import { newsApi, normalizeNewsMediaUrl } from '../api/news';
 import { UltimaBottomNav } from '../components/ultima/UltimaBottomNav';
 import {
   ultimaPaneClassName,
@@ -230,20 +230,6 @@ function safeColor(color: string | null | undefined, fallback = '#888888'): stri
   return color;
 }
 
-/**
- * Validates that a URL uses a safe protocol (https or http only).
- * Prevents javascript:, data:, and other dangerous URI schemes.
- */
-function isSafeUrl(url: string | null | undefined): url is string {
-  if (!url) return false;
-  try {
-    const parsed = new URL(url);
-    return parsed.protocol === 'https:' || parsed.protocol === 'http:';
-  } catch {
-    return false;
-  }
-}
-
 export default function NewsArticlePage() {
   const { slug } = useParams<{ slug: string }>();
   const { t, i18n } = useTranslation();
@@ -280,6 +266,7 @@ export default function NewsArticlePage() {
   });
 
   const sanitizedContent = useMemo(() => (article ? sanitizeHtml(article.content) : ''), [article]);
+  const featuredImageUrl = normalizeNewsMediaUrl(article?.featured_image_url);
 
   const renderUltimaLayout = (content: ReactNode) => (
     <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-muted-aura">
@@ -445,10 +432,10 @@ export default function NewsArticlePage() {
           className={`${ultimaPanelClassName} overflow-hidden p-4 sm:p-5`}
           style={ultimaSurfaceStyle}
         >
-          {isSafeUrl(article.featured_image_url) ? (
+          {featuredImageUrl ? (
             <div className="mb-4 overflow-hidden rounded-[24px]">
               <img
-                src={article.featured_image_url!}
+                src={featuredImageUrl}
                 alt={article.title}
                 className="h-auto w-full rounded-[24px] object-cover"
                 loading="eager"
@@ -547,7 +534,7 @@ export default function NewsArticlePage() {
       </motion.div>
 
       {/* Featured image - only render if URL uses safe protocol */}
-      {isSafeUrl(article.featured_image_url) && (
+      {featuredImageUrl && (
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -555,7 +542,7 @@ export default function NewsArticlePage() {
           className="overflow-hidden rounded-xl"
         >
           <img
-            src={article.featured_image_url!}
+            src={featuredImageUrl}
             alt={article.title}
             className="h-auto w-full rounded-xl object-cover"
             loading="eager"
