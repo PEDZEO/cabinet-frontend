@@ -159,6 +159,8 @@ const ULTIMA_TOP_UP_PATH = '/balance/top-up?returnTo=/subscription';
 const ULTIMA_SECTION_SURFACE_STYLE = ultimaSurfaceStyle;
 const ULTIMA_SECTION_CLASS_NAME =
   'rounded-3xl border shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_18px_38px_rgba(3,14,24,0.2)]';
+const ULTIMA_SECTION_CLASS_NAME_MOBILE =
+  'rounded-3xl border shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]';
 const ULTIMA_MENU_ITEM_STYLE = {
   borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
   background:
@@ -166,13 +168,23 @@ const ULTIMA_MENU_ITEM_STYLE = {
 };
 const ULTIMA_MENU_ITEM_CLASS_NAME =
   'group flex w-full transform-gpu items-center gap-3 rounded-[22px] border px-3.5 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-transform duration-150 hover:translate-y-[-1px] active:translate-y-0';
+const ULTIMA_MENU_ITEM_CLASS_NAME_MOBILE =
+  'group flex w-full items-center gap-3 rounded-[22px] border px-3.5 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-colors duration-150';
 
-function MenuItem({ item, onClick }: { item: SectionItem; onClick: () => void }) {
+function MenuItem({
+  item,
+  onClick,
+  compact,
+}: {
+  item: SectionItem;
+  onClick: () => void;
+  compact: boolean;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={ULTIMA_MENU_ITEM_CLASS_NAME}
+      className={compact ? ULTIMA_MENU_ITEM_CLASS_NAME_MOBILE : ULTIMA_MENU_ITEM_CLASS_NAME}
       style={ULTIMA_MENU_ITEM_STYLE}
     >
       <div
@@ -558,33 +570,38 @@ export function UltimaProfile() {
   };
 
   const bottomNav = <UltimaBottomNav active="profile" onSupportClick={openSupportFast} />;
+  const sectionClassName = isDesktop ? ULTIMA_SECTION_CLASS_NAME : ULTIMA_SECTION_CLASS_NAME_MOBILE;
 
   const sectionsContent = (
     <div className="grid gap-3 lg:gap-4 xl:grid-cols-2">
-      <section
-        className={`${ULTIMA_SECTION_CLASS_NAME} p-3.5 lg:p-4`}
-        style={ULTIMA_SECTION_SURFACE_STYLE}
-      >
+      <section className={`${sectionClassName} p-3.5 lg:p-4`} style={ULTIMA_SECTION_SURFACE_STYLE}>
         <p className="text-white/56 mb-3 text-[12px] font-medium uppercase tracking-[0.14em]">
           {t('profile.profileSettings', { defaultValue: 'Настройки профиля' })}
         </p>
         <div className="ultima-stagger-list space-y-2.5">
           {profileItems.map((item) => (
-            <MenuItem key={item.key} item={item} onClick={() => openPathFast(item.path)} />
+            <MenuItem
+              key={item.key}
+              item={item}
+              onClick={() => openPathFast(item.path)}
+              compact={!isDesktop}
+            />
           ))}
         </div>
       </section>
 
-      <section
-        className={`${ULTIMA_SECTION_CLASS_NAME} p-3.5 lg:p-4`}
-        style={ULTIMA_SECTION_SURFACE_STYLE}
-      >
+      <section className={`${sectionClassName} p-3.5 lg:p-4`} style={ULTIMA_SECTION_SURFACE_STYLE}>
         <p className="text-white/56 mb-3 text-[12px] font-medium uppercase tracking-[0.14em]">
           {t('nav.support', { defaultValue: 'Поддержка' })}
         </p>
         <div className="ultima-stagger-list space-y-2.5">
           {supportItems.map((item) => (
-            <MenuItem key={item.key} item={item} onClick={() => openPathFast(item.path)} />
+            <MenuItem
+              key={item.key}
+              item={item}
+              onClick={() => openPathFast(item.path)}
+              compact={!isDesktop}
+            />
           ))}
         </div>
       </section>
@@ -739,7 +756,7 @@ export function UltimaProfile() {
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
         <section className="ultima-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto pr-1 pt-[clamp(8px,2vh,16px)]">
           <section
-            className={`${ULTIMA_SECTION_CLASS_NAME} mb-3 p-3.5`}
+            className={`${sectionClassName} mb-3 p-3.5`}
             style={ULTIMA_SECTION_SURFACE_STYLE}
           >
             <div className="flex items-center gap-3">
@@ -749,6 +766,7 @@ export function UltimaProfile() {
                   alt="telegram-avatar"
                   className="h-11 w-11 rounded-full object-cover shadow-[0_6px_12px_rgba(0,0,0,0.22)]"
                   loading="lazy"
+                  decoding="async"
                 />
               ) : (
                 <div className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-300 text-sm font-semibold text-slate-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
