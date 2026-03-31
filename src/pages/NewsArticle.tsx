@@ -282,11 +282,12 @@ export default function NewsArticlePage() {
   const sanitizedContent = useMemo(() => (article ? sanitizeHtml(article.content) : ''), [article]);
 
   const renderUltimaLayout = (content: ReactNode) => (
-    <div className="ultima-shell ultima-shell-shared-nav-docked ultima-shell-wide ultima-flat-frames ultima-shell-muted-aura">
+    <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-muted-aura">
+      <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
-        <section className="ultima-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto pb-[calc(16px+env(safe-area-inset-bottom,0px))] pr-1 pt-[clamp(8px,2vh,16px)]">
+        <div className="min-h-0 flex-1 overflow-y-auto pr-1 pt-[clamp(8px,2vh,16px)] lg:overflow-visible lg:pr-0">
           {content}
-        </section>
+        </div>
         <div className="ultima-mobile-dock-footer lg:hidden">
           <div className="ultima-nav-dock">
             <UltimaBottomNav active="news" />
