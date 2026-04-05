@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { RemnawaveIcon, ArrowPathIcon } from '../components/icons';
 import { usePermissionStore } from '@/store/permissions';
 import { adminSettingsApi, SettingDefinition } from '../api/adminSettings';
-import { MENU_SECTIONS, formatSettingKey } from '../components/admin';
+import { MENU_SECTIONS, StarIcon, formatSettingKey } from '../components/admin';
+import { useFavoriteAdminLinks } from '../hooks/useFavoriteAdminLinks';
 import { useFavoriteSettings } from '../hooks/useFavoriteSettings';
 import { useFavoriteSettingCategories } from '../hooks/useFavoriteSettingCategories';
 
@@ -375,31 +376,57 @@ function AdminCard({
   description,
   iconBg,
   iconColor,
-}: AdminItem & { iconBg: string; iconColor: string }) {
+  isFavorite,
+  onToggleFavorite,
+}: AdminItem & {
+  iconBg: string;
+  iconColor: string;
+  isFavorite: boolean;
+  onToggleFavorite: (path: string) => void;
+}) {
   return (
-    <Link
-      to={to}
-      className="group flex items-center gap-3 rounded-xl border border-dark-700/50 bg-dark-800/40 p-3 transition-all duration-200 hover:border-dark-600 hover:bg-dark-800/80"
-    >
-      <div
-        className={`h-10 w-10 rounded-lg ${iconBg} ${iconColor} flex shrink-0 items-center justify-center transition-transform group-hover:scale-105`}
+    <div className="group flex items-center gap-2 rounded-xl border border-dark-700/50 bg-dark-800/40 p-2.5 transition-all duration-200 hover:border-dark-600 hover:bg-dark-800/80">
+      <Link to={to} className="flex min-w-0 flex-1 items-center gap-3">
+        <div
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${iconBg} ${iconColor} transition-transform group-hover:scale-105`}
+        >
+          {icon}
+        </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="text-sm font-medium text-dark-100 transition-colors group-hover:text-white">
+            {title}
+          </h3>
+          <p className="truncate text-xs text-dark-500">{description}</p>
+        </div>
+        <div className="text-dark-600 transition-colors group-hover:text-dark-400">
+          <ChevronRightIcon />
+        </div>
+      </Link>
+      <button
+        type="button"
+        onClick={() => onToggleFavorite(to)}
+        className={`rounded-lg p-2 transition-colors ${
+          isFavorite
+            ? 'bg-warning-500/15 text-warning-400'
+            : 'text-dark-500 hover:bg-dark-700/60 hover:text-warning-400'
+        }`}
+        title={isFavorite ? title : title}
       >
-        {icon}
-      </div>
-      <div className="min-w-0 flex-1">
-        <h3 className="text-sm font-medium text-dark-100 transition-colors group-hover:text-white">
-          {title}
-        </h3>
-        <p className="truncate text-xs text-dark-500">{description}</p>
-      </div>
-      <div className="text-dark-600 transition-colors group-hover:text-dark-400">
-        <ChevronRightIcon />
-      </div>
-    </Link>
+        <StarIcon filled={isFavorite} />
+      </button>
+    </div>
   );
 }
 
-function GroupSection({ group }: { group: AdminGroup }) {
+function GroupSection({
+  group,
+  isFavoriteLink,
+  toggleFavoriteLink,
+}: {
+  group: AdminGroup;
+  isFavoriteLink: (path: string) => boolean;
+  toggleFavoriteLink: (path: string) => void;
+}) {
   const hasPermission = usePermissionStore((state) => state.hasPermission);
   const visibleItems = group.items.filter((item) => hasPermission(item.permission));
 
@@ -418,7 +445,14 @@ function GroupSection({ group }: { group: AdminGroup }) {
       {/* Group Items */}
       <div className="space-y-1.5 p-2">
         {visibleItems.map((item) => (
-          <AdminCard key={item.to} {...item} iconBg={group.iconBg} iconColor={group.iconColor} />
+          <AdminCard
+            key={item.to}
+            {...item}
+            iconBg={group.iconBg}
+            iconColor={group.iconColor}
+            isFavorite={isFavoriteLink(item.to)}
+            onToggleFavorite={toggleFavoriteLink}
+          />
         ))}
       </div>
     </div>
@@ -428,6 +462,11 @@ function GroupSection({ group }: { group: AdminGroup }) {
 export default function AdminPanel() {
   const { t } = useTranslation();
   const hasPermission = usePermissionStore((state) => state.hasPermission);
+  const {
+    favorites: favoriteAdminLinks,
+    isFavoriteLink,
+    toggleFavoriteLink,
+  } = useFavoriteAdminLinks();
   const { favorites } = useFavoriteSettings();
   const { favorites: favoriteCategoryKeys } = useFavoriteSettingCategories();
 
@@ -764,6 +803,21 @@ export default function AdminPanel() {
     },
   ];
 
+  const adminFavorites = groups
+    .flatMap((group) =>
+      group.items
+        .filter((item) => hasPermission(item.permission))
+        .map((item) => ({
+          ...item,
+          groupId: group.id,
+          groupTitle: group.title,
+          iconBg: group.iconBg,
+          iconColor: group.iconColor,
+        })),
+    )
+    .filter((item) => favoriteAdminLinks.includes(item.to))
+    .slice(0, 6);
+
   const favoriteCards = [
     ...favoriteCategories.map((category) => ({
       to: `/admin/settings?section=${encodeURIComponent(category.sectionId)}&category=${encodeURIComponent(category.key)}`,
@@ -801,6 +855,52 @@ export default function AdminPanel() {
           {t('admin.panel.backToCabinet', { defaultValue: 'Вернуться в кабинет' })}
         </Link>
       </div>
+
+      {adminFavorites.length > 0 && (
+        <div className="overflow-hidden rounded-2xl border border-warning-500/20 bg-dark-900/30 backdrop-blur">
+          <div className="border-b border-warning-500/20 bg-gradient-to-r from-warning-500/10 to-warning-500/5 px-4 py-3">
+            <div className="flex items-center gap-2.5">
+              <div className="rounded-lg bg-warning-500/20 p-1.5 text-warning-400">
+                <StarIcon filled />
+              </div>
+              <div>
+                <h2 className="text-sm font-semibold text-dark-100">
+                  {t('admin.panel.favoriteSectionsTitle', { defaultValue: 'Избранные разделы' })}
+                </h2>
+                <p className="text-xs text-dark-400">
+                  {t('admin.panel.favoriteSectionsSubtitle', {
+                    defaultValue: 'Закреплённые экраны админки для быстрого доступа',
+                  })}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-2 p-2 lg:grid-cols-2">
+            {adminFavorites.map((item) => (
+              <Link
+                key={`favorite-admin-${item.to}`}
+                to={item.to}
+                className="group flex items-center gap-3 rounded-xl border border-dark-700/50 bg-dark-800/40 p-3 transition-all duration-200 hover:border-warning-500/30 hover:bg-dark-800/80"
+              >
+                <div
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${item.iconBg} ${item.iconColor} transition-transform group-hover:scale-105`}
+                >
+                  {item.icon}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="truncate text-sm font-medium text-dark-100 transition-colors group-hover:text-white">
+                    {item.title}
+                  </h3>
+                  <p className="truncate text-xs text-dark-500">{item.groupTitle}</p>
+                </div>
+                <div className="text-dark-600 transition-colors group-hover:text-dark-400">
+                  <ChevronRightIcon />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {hasPermission('settings:read') && favoriteCards.length > 0 && (
         <div className="overflow-hidden rounded-2xl border border-warning-500/20 bg-dark-900/30 backdrop-blur">
@@ -862,7 +962,12 @@ export default function AdminPanel() {
       {/* Groups Grid */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {groups.map((group) => (
-          <GroupSection key={group.id} group={group} />
+          <GroupSection
+            key={group.id}
+            group={group}
+            isFavoriteLink={isFavoriteLink}
+            toggleFavoriteLink={toggleFavoriteLink}
+          />
         ))}
       </div>
     </div>

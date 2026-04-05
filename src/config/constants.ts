@@ -4,6 +4,7 @@ export const STORAGE_KEYS = {
   ENABLED_THEMES: 'cabinet-enabled-themes',
   FAVORITE_SETTINGS: 'admin_favorite_settings',
   FAVORITE_SETTING_CATEGORIES: 'admin_favorite_setting_categories',
+  FAVORITE_ADMIN_LINKS: 'admin_favorite_links',
   USER_THEME_PREFS: 'user_theme_preferences',
 } as const;
 
