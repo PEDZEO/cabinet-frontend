@@ -1,7 +1,12 @@
 import { Link } from 'react-router';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { RemnawaveIcon, ArrowPathIcon } from '../components/icons';
 import { usePermissionStore } from '@/store/permissions';
+import { adminSettingsApi, SettingDefinition } from '../api/adminSettings';
+import { MENU_SECTIONS, formatSettingKey } from '../components/admin';
+import { useFavoriteSettings } from '../hooks/useFavoriteSettings';
+import { useFavoriteSettingCategories } from '../hooks/useFavoriteSettingCategories';
 
 // Group header icons
 const AnalyticsGroupIcon = () => (
@@ -352,6 +357,17 @@ interface AdminGroup {
   items: AdminItem[];
 }
 
+function findSectionByCategory(categoryKey: string): string | null {
+  for (const section of MENU_SECTIONS) {
+    for (const item of section.items) {
+      if (item.categories?.includes(categoryKey)) {
+        return item.id;
+      }
+    }
+  }
+  return null;
+}
+
 function AdminCard({
   to,
   icon,
@@ -411,6 +427,40 @@ function GroupSection({ group }: { group: AdminGroup }) {
 
 export default function AdminPanel() {
   const { t } = useTranslation();
+  const hasPermission = usePermissionStore((state) => state.hasPermission);
+  const { favorites } = useFavoriteSettings();
+  const { favorites: favoriteCategoryKeys } = useFavoriteSettingCategories();
+
+  const { data: allSettings } = useQuery({
+    queryKey: ['admin-settings'],
+    queryFn: () => adminSettingsApi.getSettings(),
+    enabled: hasPermission('settings:read'),
+  });
+
+  const favoriteSettings = (allSettings || [])
+    .filter((setting) => favorites.includes(setting.key))
+    .slice(0, 4);
+  const favoriteCategories = favoriteCategoryKeys
+    .map((categoryKey) => {
+      const settings = (allSettings || []).filter(
+        (setting) => setting.category.key === categoryKey,
+      );
+      if (settings.length === 0) return null;
+
+      const sectionId = findSectionByCategory(categoryKey);
+      if (!sectionId) return null;
+
+      return {
+        key: categoryKey,
+        label: t(`admin.settings.categories.${categoryKey}`, categoryKey),
+        count: settings.length,
+        sectionId,
+      };
+    })
+    .filter((item): item is { key: string; label: string; count: number; sectionId: string } =>
+      Boolean(item),
+    )
+    .slice(0, 4);
 
   const groups: AdminGroup[] = [
     {
@@ -714,6 +764,28 @@ export default function AdminPanel() {
     },
   ];
 
+  const favoriteCards = [
+    ...favoriteCategories.map((category) => ({
+      to: `/admin/settings?section=${encodeURIComponent(category.sectionId)}&category=${encodeURIComponent(category.key)}`,
+      icon: <CogIcon />,
+      title: category.label,
+      description: t('admin.panel.favoriteCategoryHint', {
+        defaultValue: '{{count}} настроек в категории',
+        count: category.count,
+      }),
+    })),
+    ...favoriteSettings.map((setting: SettingDefinition) => {
+      const sectionId = findSectionByCategory(setting.category.key) || 'favorites';
+      const formattedKey = formatSettingKey(setting.name || setting.key);
+      return {
+        to: `/admin/settings?section=${encodeURIComponent(sectionId)}&category=${encodeURIComponent(setting.category.key)}&search=${encodeURIComponent(setting.key)}`,
+        icon: <CogIcon />,
+        title: t(`admin.settings.settingNames.${formattedKey}`, formattedKey),
+        description: t(`admin.settings.categories.${setting.category.key}`, setting.category.key),
+      };
+    }),
+  ].slice(0, 6);
+
   return (
     <div className="animate-fade-in space-y-4">
       {/* Header */}
@@ -729,6 +801,63 @@ export default function AdminPanel() {
           {t('admin.panel.backToCabinet', { defaultValue: 'Вернуться в кабинет' })}
         </Link>
       </div>
+
+      {hasPermission('settings:read') && favoriteCards.length > 0 && (
+        <div className="overflow-hidden rounded-2xl border border-warning-500/20 bg-dark-900/30 backdrop-blur">
+          <div className="border-b border-warning-500/20 bg-gradient-to-r from-warning-500/10 to-warning-500/5 px-4 py-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="rounded-lg bg-warning-500/20 p-1.5 text-warning-400">
+                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.922-.755 1.688-1.539 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.196-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-sm font-semibold text-dark-100">
+                    {t('admin.panel.favoriteSettingsTitle', {
+                      defaultValue: 'Быстрый доступ к настройкам',
+                    })}
+                  </h2>
+                  <p className="text-xs text-dark-400">
+                    {t('admin.panel.favoriteSettingsSubtitle', {
+                      defaultValue:
+                        'Закреплённые настройки и категории открываются сразу из панели',
+                    })}
+                  </p>
+                </div>
+              </div>
+              <Link
+                to="/admin/settings?section=favorites"
+                className="rounded-lg border border-dark-600/70 bg-dark-800/50 px-3 py-1.5 text-xs font-medium text-dark-200 transition-colors hover:border-warning-500/40 hover:text-warning-300"
+              >
+                {t('admin.nav.settings')}
+              </Link>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-2 p-2 lg:grid-cols-2">
+            {favoriteCards.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className="group flex items-center gap-3 rounded-xl border border-dark-700/50 bg-dark-800/40 p-3 transition-all duration-200 hover:border-warning-500/30 hover:bg-dark-800/80"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-warning-500/20 text-warning-400 transition-transform group-hover:scale-105">
+                  {item.icon}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="truncate text-sm font-medium text-dark-100 transition-colors group-hover:text-white">
+                    {item.title}
+                  </h3>
+                  <p className="truncate text-xs text-dark-500">{item.description}</p>
+                </div>
+                <div className="text-dark-600 transition-colors group-hover:text-dark-400">
+                  <ChevronRightIcon />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Groups Grid */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">

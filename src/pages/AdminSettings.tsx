@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { adminSettingsApi, SettingDefinition } from '../api/adminSettings';
@@ -49,6 +49,7 @@ function findSectionByCategory(categoryKey: string): string | null {
 export default function AdminSettings() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { capabilities } = usePlatform();
 
   // State
@@ -79,6 +80,22 @@ export default function AdminSettings() {
     queryKey: ['admin-settings'],
     queryFn: () => adminSettingsApi.getSettings(),
   });
+
+  useEffect(() => {
+    const section = searchParams.get('section');
+    const category = searchParams.get('category');
+    const search = searchParams.get('search');
+
+    if (section) {
+      setActiveSection(section);
+    }
+    if (category) {
+      setFocusedCategoryKey(category);
+    }
+    if (search) {
+      setSearchQuery(search);
+    }
+  }, [searchParams]);
 
   // Get current menu item configuration
   const currentMenuItem = useMemo(() => {
@@ -196,8 +213,13 @@ export default function AdminSettings() {
       }
       setSearchQuery('');
       setFocusedCategoryKey(categoryKey);
+      setSearchParams(
+        resolvedSectionId
+          ? { section: resolvedSectionId, category: categoryKey }
+          : { category: categoryKey },
+      );
     },
-    [setActiveSection, setFocusedCategoryKey, setSearchQuery],
+    [setActiveSection, setFocusedCategoryKey, setSearchParams, setSearchQuery],
   );
 
   // Handle setting selection from autocomplete
@@ -210,8 +232,13 @@ export default function AdminSettings() {
       setFocusedCategoryKey(setting.category.key);
       // Set search to setting key to filter to just this setting
       setSearchQuery(setting.key);
+      setSearchParams(
+        sectionId
+          ? { section: sectionId, category: setting.category.key, search: setting.key }
+          : { category: setting.category.key, search: setting.key },
+      );
     },
-    [setActiveSection, setFocusedCategoryKey, setSearchQuery],
+    [setActiveSection, setFocusedCategoryKey, setSearchParams, setSearchQuery],
   );
 
   // Render content based on active section
