@@ -77,7 +77,7 @@ export function SettingRow({
           className={`flex-shrink-0 rounded-xl p-2 transition-all ${
             isFavorite
               ? 'bg-warning-500/15 text-warning-400 hover:bg-warning-500/25'
-              : 'text-dark-500 opacity-0 hover:bg-dark-700/50 hover:text-warning-400 group-hover:opacity-100'
+              : 'text-dark-500 opacity-100 hover:bg-dark-700/50 hover:text-warning-400 sm:opacity-0 sm:group-hover:opacity-100'
           }`}
           title={
             isFavorite

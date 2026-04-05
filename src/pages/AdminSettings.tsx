@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { adminSettingsApi, SettingDefinition } from '../api/adminSettings';
 import { themeColorsApi } from '../api/themeColors';
 import { useFavoriteSettings } from '../hooks/useFavoriteSettings';
+import { useFavoriteSettingCategories } from '../hooks/useFavoriteSettingCategories';
 import { MENU_SECTIONS, MenuItem, formatSettingKey } from '../components/admin';
 import { usePlatform } from '../platform/hooks/usePlatform';
 import { AnalyticsTab } from '../components/admin/AnalyticsTab';
@@ -12,7 +13,7 @@ import { BrandingTab } from '../components/admin/BrandingTab';
 import { MenuEditorTab } from '../components/admin/MenuEditorTab';
 import { ThemeTab } from '../components/admin/ThemeTab';
 import { FavoritesTab } from '../components/admin/FavoritesTab';
-import { SettingsTab } from '../components/admin/SettingsTab';
+import { CategoryGroup, SettingsTab } from '../components/admin/SettingsTab';
 import { SettingsMobileTabs } from '../components/admin/SettingsMobileTabs';
 import {
   SettingsSearch,
@@ -53,9 +54,15 @@ export default function AdminSettings() {
   // State
   const [activeSection, setActiveSection] = useState('branding');
   const [searchQuery, setSearchQuery] = useState('');
+  const [focusedCategoryKey, setFocusedCategoryKey] = useState<string | null>(null);
 
   // Favorites hook
   const { favorites, toggleFavorite, isFavorite } = useFavoriteSettings();
+  const {
+    favorites: favoriteCategoryKeys,
+    toggleFavoriteCategory,
+    isFavoriteCategory,
+  } = useFavoriteSettingCategories();
 
   // Scroll to top on section change
   useEffect(() => {
@@ -104,6 +111,42 @@ export default function AdminSettings() {
     }));
   }, [currentMenuItem, allSettings, t]);
 
+  const allCategoryGroups = useMemo(() => {
+    if (!allSettings || !Array.isArray(allSettings)) return [];
+
+    const categoryMap = new Map<
+      string,
+      CategoryGroup & {
+        sectionId: string;
+        sectionLabel: string;
+      }
+    >();
+
+    for (const setting of allSettings) {
+      const categoryKey = setting.category.key;
+      const sectionId = findSectionByCategory(categoryKey);
+      if (!sectionId) continue;
+
+      const sectionLabel = t(`admin.settings.${sectionId}`, sectionId);
+      const existing = categoryMap.get(categoryKey);
+
+      if (existing) {
+        existing.settings.push(setting);
+        continue;
+      }
+
+      categoryMap.set(categoryKey, {
+        key: categoryKey,
+        label: t(`admin.settings.categories.${categoryKey}`, categoryKey),
+        settings: [setting],
+        sectionId,
+        sectionLabel,
+      });
+    }
+
+    return Array.from(categoryMap.values());
+  }, [allSettings, t]);
+
   // Filter settings for search - GLOBAL search across all settings
   const filteredSettings = useMemo(() => {
     if (!allSettings || !Array.isArray(allSettings) || !searchQuery) return [];
@@ -140,6 +183,23 @@ export default function AdminSettings() {
     return allSettings.filter((s: SettingDefinition) => favorites.includes(s.key));
   }, [allSettings, favorites]);
 
+  const favoriteCategories = useMemo(
+    () => allCategoryGroups.filter((category) => favoriteCategoryKeys.includes(category.key)),
+    [allCategoryGroups, favoriteCategoryKeys],
+  );
+
+  const handleOpenCategory = useCallback(
+    (categoryKey: string, sectionId?: string) => {
+      const resolvedSectionId = sectionId || findSectionByCategory(categoryKey);
+      if (resolvedSectionId) {
+        setActiveSection(resolvedSectionId);
+      }
+      setSearchQuery('');
+      setFocusedCategoryKey(categoryKey);
+    },
+    [setActiveSection, setFocusedCategoryKey, setSearchQuery],
+  );
+
   // Handle setting selection from autocomplete
   const handleSelectSetting = useCallback(
     (setting: SettingDefinition) => {
@@ -147,10 +207,11 @@ export default function AdminSettings() {
       if (sectionId) {
         setActiveSection(sectionId);
       }
+      setFocusedCategoryKey(setting.category.key);
       // Set search to setting key to filter to just this setting
       setSearchQuery(setting.key);
     },
-    [setActiveSection, setSearchQuery],
+    [setActiveSection, setFocusedCategoryKey, setSearchQuery],
   );
 
   // Render content based on active section
@@ -164,6 +225,8 @@ export default function AdminSettings() {
           filteredSettings={filteredSettings}
           isFavorite={isFavorite}
           toggleFavorite={toggleFavorite}
+          isFavoriteCategory={isFavoriteCategory}
+          toggleFavoriteCategory={toggleFavoriteCategory}
         />
       );
     }
@@ -180,9 +243,12 @@ export default function AdminSettings() {
       case 'favorites':
         return (
           <FavoritesTab
+            categories={favoriteCategories}
             settings={favoriteSettings}
             isFavorite={isFavorite}
             toggleFavorite={toggleFavorite}
+            toggleFavoriteCategory={toggleFavoriteCategory}
+            onOpenCategory={handleOpenCategory}
           />
         );
       default:
@@ -204,6 +270,10 @@ export default function AdminSettings() {
               filteredSettings={filteredSettings}
               isFavorite={isFavorite}
               toggleFavorite={toggleFavorite}
+              isFavoriteCategory={isFavoriteCategory}
+              toggleFavoriteCategory={toggleFavoriteCategory}
+              focusedCategoryKey={focusedCategoryKey}
+              onFocusedCategoryHandled={() => setFocusedCategoryKey(null)}
             />
           );
         }
