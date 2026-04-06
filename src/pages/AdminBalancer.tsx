@@ -372,9 +372,11 @@ export default function AdminBalancer() {
   const [excludeGroups, setExcludeGroups] = useState<string[]>([]);
   const [fallbackGroups, setFallbackGroups] = useState<string[]>([]);
   const [nodeStatsExcludeGroups, setNodeStatsExcludeGroups] = useState<string[]>([]);
+  const [expandGroupsToNodes, setExpandGroupsToNodes] = useState<string[]>([]);
   const [excludeExpanded, setExcludeExpanded] = useState(false);
   const [fallbackExpanded, setFallbackExpanded] = useState(false);
   const [nodeStatsExcludeExpanded, setNodeStatsExcludeExpanded] = useState(false);
+  const [expandGroupsToNodesExpanded, setExpandGroupsToNodesExpanded] = useState(false);
   const [advancedSettings, setAdvancedSettings] =
     useState<BalancerAdvancedSettings>(DEFAULT_ADVANCED_SETTINGS);
   const [groupsDirty, setGroupsDirty] = useState(false);
@@ -459,6 +461,7 @@ export default function AdminBalancer() {
     setExcludeGroups(groupsData.fastest_exclude_groups || []);
     setFallbackGroups(groupsData.fastest_fallback || []);
     setNodeStatsExcludeGroups(groupsData.node_stats_exclude || []);
+    setExpandGroupsToNodes(groupsData.expand_groups_to_nodes || []);
     setAdvancedSettings(normalizeAdvancedSettings(groupsData));
   }, [groupsData, groupsDirty]);
 
@@ -505,6 +508,7 @@ export default function AdminBalancer() {
       setExcludeGroups(data.fastest_exclude_groups || []);
       setFallbackGroups(data.fastest_fallback || []);
       setNodeStatsExcludeGroups(data.node_stats_exclude || []);
+      setExpandGroupsToNodes(data.expand_groups_to_nodes || []);
       setAdvancedSettings(normalizeAdvancedSettings(data));
       await refetchGroups();
     },
@@ -695,6 +699,13 @@ export default function AdminBalancer() {
     );
   };
 
+  const toggleExpandGroupToNodes = (groupName: string) => {
+    setGroupsDirty(true);
+    setExpandGroupsToNodes((prev) =>
+      prev.includes(groupName) ? prev.filter((value) => value !== groupName) : [...prev, groupName],
+    );
+  };
+
   const toggleNodeQuarantine = (nodeName: string, quarantined: boolean) => {
     if (quarantined) {
       void removeQuarantineMutation.mutateAsync(nodeName);
@@ -759,6 +770,9 @@ export default function AdminBalancer() {
     const filteredNodeStatsExclude = nodeStatsExcludeGroups.filter((value) =>
       availableNames.has(value),
     );
+    const filteredExpandGroupsToNodes = expandGroupsToNodes.filter((value) =>
+      availableNames.has(value),
+    );
     const normalizedFastestName = fastestGroupName.trim() || DEFAULT_FASTEST_GROUP_NAME;
     const nextAdvanced = {
       auto_quarantine_enabled: advancedSettings.autoQuarantineEnabled,
@@ -791,6 +805,7 @@ export default function AdminBalancer() {
       fastest_exclude_groups: filteredExclude,
       fastest_fallback: filteredFallback,
       node_stats_exclude: filteredNodeStatsExclude,
+      expand_groups_to_nodes: filteredExpandGroupsToNodes,
       ...nextAdvanced,
     });
   };
@@ -940,6 +955,7 @@ export default function AdminBalancer() {
       fastest_exclude_groups: excludeGroups.filter((name) => availableNames.has(name)),
       fastest_fallback: fallbackGroups.filter((name) => availableNames.has(name)),
       node_stats_exclude: nodeStatsExcludeGroups.filter((name) => availableNames.has(name)),
+      expand_groups_to_nodes: expandGroupsToNodes.filter((name) => availableNames.has(name)),
       sticky_new_connections_only: advancedSettings.stickyNewConnectionsOnly,
       auto_quarantine_enabled: advancedSettings.autoQuarantineEnabled,
       auto_quarantine_failures: Math.max(1, Math.round(advancedSettings.autoQuarantineFailures)),
@@ -965,6 +981,7 @@ export default function AdminBalancer() {
   }, [
     advancedSettings,
     excludeGroups,
+    expandGroupsToNodes,
     fallbackGroups,
     fastestEnabled,
     fastestGroupName,
@@ -1100,6 +1117,7 @@ export default function AdminBalancer() {
                 setExcludeGroups(groupsData.fastest_exclude_groups || []);
                 setFallbackGroups(groupsData.fastest_fallback || []);
                 setNodeStatsExcludeGroups(groupsData.node_stats_exclude || []);
+                setExpandGroupsToNodes(groupsData.expand_groups_to_nodes || []);
                 setAdvancedSettings(normalizeAdvancedSettings(groupsData));
                 setGroupsDirty(false);
                 setAlert(
@@ -1134,6 +1152,7 @@ export default function AdminBalancer() {
                 setExcludeGroups(groupsData.fastest_exclude_groups || []);
                 setFallbackGroups(groupsData.fastest_fallback || []);
                 setNodeStatsExcludeGroups(groupsData.node_stats_exclude || []);
+                setExpandGroupsToNodes(groupsData.expand_groups_to_nodes || []);
                 setAdvancedSettings(normalizeAdvancedSettings(groupsData));
                 setGroupsDirty(false);
                 setAlert(
@@ -1224,6 +1243,20 @@ export default function AdminBalancer() {
               {t(
                 'admin.balancer.groups.summaryFixedDesc',
                 'Servers inside these groups keep your original order and are not auto-rebalanced.',
+              )}
+            </p>
+          </div>
+          <div className="rounded-xl border border-dark-700 bg-dark-900/40 p-4">
+            <p className="text-xs uppercase tracking-wide text-dark-500">
+              {t('admin.balancer.groups.summaryExpanded', 'Separate servers in subscription')}
+            </p>
+            <p className="mt-2 text-2xl font-semibold text-dark-100">
+              {expandGroupsToNodes.length}
+            </p>
+            <p className="mt-1 text-xs text-dark-400">
+              {t(
+                'admin.balancer.groups.summaryExpandedDesc',
+                'For these groups, the subscription shows separate servers instead of one shared group.',
               )}
             </p>
           </div>
@@ -1475,6 +1508,38 @@ export default function AdminBalancer() {
                 setNodeStatsExcludeGroups([]);
               }}
               onToggleOption={toggleNodeStatsExclude}
+              emptyText={t(
+                'admin.balancer.groups.emptySelection',
+                'Nothing selected yet. Add groups above to configure this list.',
+              )}
+              selectedLabel={t(
+                'admin.balancer.groups.excludeCounter',
+                'Selected {{selected}} / {{total}}',
+              )}
+              clearLabel={t('admin.balancer.groups.clearSelection', 'Clear selection')}
+              expandLabel={t('admin.balancer.groups.expandList', 'Show full list')}
+              collapseLabel={t('admin.balancer.groups.collapseList', 'Collapse list')}
+              hiddenCountLabel={t(
+                'admin.balancer.groups.hiddenCount',
+                '{{count}} more items are hidden until you expand the list.',
+              )}
+            />
+
+            <ChecklistCard
+              title={t('admin.balancer.groups.expandGroupsTitle', 'Show servers separately')}
+              description={t(
+                'admin.balancer.groups.expandGroupsDesc',
+                'For selected groups, the subscription will show separate server entries instead of one shared group. If a group contains two Germany servers, the client will see two separate Germany entries.',
+              )}
+              selected={expandGroupsToNodes}
+              options={availableGroupNames}
+              expanded={expandGroupsToNodesExpanded}
+              onToggleExpanded={() => setExpandGroupsToNodesExpanded((prev) => !prev)}
+              onClear={() => {
+                setGroupsDirty(true);
+                setExpandGroupsToNodes([]);
+              }}
+              onToggleOption={toggleExpandGroupToNodes}
               emptyText={t(
                 'admin.balancer.groups.emptySelection',
                 'Nothing selected yet. Add groups above to configure this list.',
