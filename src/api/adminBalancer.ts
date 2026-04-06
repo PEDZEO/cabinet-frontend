@@ -20,6 +20,8 @@ export interface BalancerGroupsResponse {
   fastest_group: boolean;
   fastest_group_name?: string;
   fastest_exclude_groups: string[];
+  fastest_fallback?: string[];
+  node_stats_exclude?: string[];
   sticky_new_connections_only?: boolean;
   quarantine_nodes?: string[];
   auto_quarantine_enabled?: boolean;
@@ -49,6 +51,8 @@ export interface UpdateBalancerGroupsPayload {
   fastest_group: boolean;
   fastest_group_name?: string;
   fastest_exclude_groups: string[];
+  fastest_fallback?: string[];
+  node_stats_exclude?: string[];
   sticky_new_connections_only?: boolean;
   auto_quarantine_enabled?: boolean;
   auto_quarantine_failures?: number;

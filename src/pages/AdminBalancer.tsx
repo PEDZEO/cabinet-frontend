@@ -251,6 +251,8 @@ export default function AdminBalancer() {
   const [fastestEnabled, setFastestEnabled] = useState(true);
   const [fastestGroupName, setFastestGroupName] = useState(DEFAULT_FASTEST_GROUP_NAME);
   const [excludeGroups, setExcludeGroups] = useState<string[]>([]);
+  const [fallbackGroups, setFallbackGroups] = useState<string[]>([]);
+  const [nodeStatsExcludeGroups, setNodeStatsExcludeGroups] = useState<string[]>([]);
   const [advancedSettings, setAdvancedSettings] =
     useState<BalancerAdvancedSettings>(DEFAULT_ADVANCED_SETTINGS);
   const [groupsDirty, setGroupsDirty] = useState(false);
@@ -333,6 +335,8 @@ export default function AdminBalancer() {
     setFastestEnabled(Boolean(groupsData.fastest_group));
     setFastestGroupName((groupsData.fastest_group_name || DEFAULT_FASTEST_GROUP_NAME).trim());
     setExcludeGroups(groupsData.fastest_exclude_groups || []);
+    setFallbackGroups(groupsData.fastest_fallback || []);
+    setNodeStatsExcludeGroups(groupsData.node_stats_exclude || []);
     setAdvancedSettings(normalizeAdvancedSettings(groupsData));
   }, [groupsData, groupsDirty]);
 
@@ -377,6 +381,8 @@ export default function AdminBalancer() {
       setFastestEnabled(Boolean(data.fastest_group));
       setFastestGroupName((data.fastest_group_name || DEFAULT_FASTEST_GROUP_NAME).trim());
       setExcludeGroups(data.fastest_exclude_groups || []);
+      setFallbackGroups(data.fastest_fallback || []);
+      setNodeStatsExcludeGroups(data.node_stats_exclude || []);
       setAdvancedSettings(normalizeAdvancedSettings(data));
       await refetchGroups();
     },
@@ -549,6 +555,20 @@ export default function AdminBalancer() {
     );
   };
 
+  const toggleFallback = (groupName: string) => {
+    setGroupsDirty(true);
+    setFallbackGroups((prev) =>
+      prev.includes(groupName) ? prev.filter((value) => value !== groupName) : [...prev, groupName],
+    );
+  };
+
+  const toggleNodeStatsExclude = (groupName: string) => {
+    setGroupsDirty(true);
+    setNodeStatsExcludeGroups((prev) =>
+      prev.includes(groupName) ? prev.filter((value) => value !== groupName) : [...prev, groupName],
+    );
+  };
+
   const toggleNodeQuarantine = (nodeName: string, quarantined: boolean) => {
     if (quarantined) {
       void removeQuarantineMutation.mutateAsync(nodeName);
@@ -609,6 +629,10 @@ export default function AdminBalancer() {
 
     const availableNames = new Set(groupsDraft.map((item) => item.name.trim()).filter(Boolean));
     const filteredExclude = excludeGroups.filter((value) => availableNames.has(value));
+    const filteredFallback = fallbackGroups.filter((value) => availableNames.has(value));
+    const filteredNodeStatsExclude = nodeStatsExcludeGroups.filter((value) =>
+      availableNames.has(value),
+    );
     const normalizedFastestName = fastestGroupName.trim() || DEFAULT_FASTEST_GROUP_NAME;
     const nextAdvanced = {
       auto_quarantine_enabled: advancedSettings.autoQuarantineEnabled,
@@ -639,6 +663,8 @@ export default function AdminBalancer() {
       fastest_group: fastestEnabled,
       fastest_group_name: normalizedFastestName,
       fastest_exclude_groups: filteredExclude,
+      fastest_fallback: filteredFallback,
+      node_stats_exclude: filteredNodeStatsExclude,
       ...nextAdvanced,
     });
   };
@@ -786,6 +812,8 @@ export default function AdminBalancer() {
       fastest_group: fastestEnabled,
       fastest_group_name: fastestGroupName.trim() || DEFAULT_FASTEST_GROUP_NAME,
       fastest_exclude_groups: excludeGroups.filter((name) => availableNames.has(name)),
+      fastest_fallback: fallbackGroups.filter((name) => availableNames.has(name)),
+      node_stats_exclude: nodeStatsExcludeGroups.filter((name) => availableNames.has(name)),
       sticky_new_connections_only: advancedSettings.stickyNewConnectionsOnly,
       auto_quarantine_enabled: advancedSettings.autoQuarantineEnabled,
       auto_quarantine_failures: Math.max(1, Math.round(advancedSettings.autoQuarantineFailures)),
@@ -808,7 +836,15 @@ export default function AdminBalancer() {
       balancer_smoothing_alpha: Math.max(0, advancedSettings.balancerSmoothingAlpha),
       balancer_hysteresis_delta: Math.max(0, advancedSettings.balancerHysteresisDelta),
     };
-  }, [advancedSettings, excludeGroups, fastestEnabled, fastestGroupName, groupsDraft]);
+  }, [
+    advancedSettings,
+    excludeGroups,
+    fallbackGroups,
+    fastestEnabled,
+    fastestGroupName,
+    groupsDraft,
+    nodeStatsExcludeGroups,
+  ]);
 
   return (
     <div className="animate-fade-in space-y-4 overflow-x-hidden pb-28 md:pb-0">
@@ -936,6 +972,8 @@ export default function AdminBalancer() {
                   (groupsData.fastest_group_name || DEFAULT_FASTEST_GROUP_NAME).trim(),
                 );
                 setExcludeGroups(groupsData.fastest_exclude_groups || []);
+                setFallbackGroups(groupsData.fastest_fallback || []);
+                setNodeStatsExcludeGroups(groupsData.node_stats_exclude || []);
                 setAdvancedSettings(normalizeAdvancedSettings(groupsData));
                 setGroupsDirty(false);
                 setAlert(
@@ -968,6 +1006,8 @@ export default function AdminBalancer() {
                   (groupsData.fastest_group_name || DEFAULT_FASTEST_GROUP_NAME).trim(),
                 );
                 setExcludeGroups(groupsData.fastest_exclude_groups || []);
+                setFallbackGroups(groupsData.fastest_fallback || []);
+                setNodeStatsExcludeGroups(groupsData.node_stats_exclude || []);
                 setAdvancedSettings(normalizeAdvancedSettings(groupsData));
                 setGroupsDirty(false);
                 setAlert(
@@ -1189,6 +1229,110 @@ export default function AdminBalancer() {
                     type="checkbox"
                     checked={excludeGroups.includes(name)}
                     onChange={() => toggleExclude(name)}
+                  />
+                  <span className="truncate">{name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="mb-2 mt-4 flex items-center justify-between">
+            <div>
+              <p className="text-xs text-dark-400">
+                {t(
+                  'admin.balancer.groups.fallbackLabel',
+                  'Use these groups as fallback for fastest:',
+                )}
+              </p>
+              <p className="text-xs text-dark-500">
+                {t('admin.balancer.groups.excludeCounter', 'Selected {{selected}} / {{total}}', {
+                  selected: fallbackGroups.length,
+                  total: availableGroupNames.length,
+                })}
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setGroupsDirty(true);
+                setFallbackGroups([]);
+              }}
+              className="text-xs text-dark-300 underline hover:text-dark-100"
+            >
+              {t('admin.balancer.groups.clearSelection', 'Clear selection')}
+            </button>
+          </div>
+
+          <div className="max-h-40 overflow-auto rounded-md border border-dark-700 bg-dark-900/40 p-2">
+            {availableGroupNames.length === 0 && (
+              <p className="text-xs text-dark-500">
+                {t(
+                  'admin.balancer.groups.emptyExcludeHint',
+                  'Add at least one group to manage exclusions.',
+                )}
+              </p>
+            )}
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+              {availableGroupNames.map((name) => (
+                <label
+                  key={`fallback-${name}`}
+                  className="inline-flex items-center gap-2 text-xs text-dark-200"
+                >
+                  <input
+                    type="checkbox"
+                    checked={fallbackGroups.includes(name)}
+                    onChange={() => toggleFallback(name)}
+                  />
+                  <span className="truncate">{name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="mb-2 mt-4 flex items-center justify-between">
+            <div>
+              <p className="text-xs text-dark-400">
+                {t(
+                  'admin.balancer.groups.nodeStatsExcludeLabel',
+                  'Keep these groups out of node_stats filtering:',
+                )}
+              </p>
+              <p className="text-xs text-dark-500">
+                {t('admin.balancer.groups.excludeCounter', 'Selected {{selected}} / {{total}}', {
+                  selected: nodeStatsExcludeGroups.length,
+                  total: availableGroupNames.length,
+                })}
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setGroupsDirty(true);
+                setNodeStatsExcludeGroups([]);
+              }}
+              className="text-xs text-dark-300 underline hover:text-dark-100"
+            >
+              {t('admin.balancer.groups.clearSelection', 'Clear selection')}
+            </button>
+          </div>
+
+          <div className="max-h-40 overflow-auto rounded-md border border-dark-700 bg-dark-900/40 p-2">
+            {availableGroupNames.length === 0 && (
+              <p className="text-xs text-dark-500">
+                {t(
+                  'admin.balancer.groups.emptyExcludeHint',
+                  'Add at least one group to manage exclusions.',
+                )}
+              </p>
+            )}
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+              {availableGroupNames.map((name) => (
+                <label
+                  key={`node-stats-${name}`}
+                  className="inline-flex items-center gap-2 text-xs text-dark-200"
+                >
+                  <input
+                    type="checkbox"
+                    checked={nodeStatsExcludeGroups.includes(name)}
+                    onChange={() => toggleNodeStatsExclude(name)}
                   />
                   <span className="truncate">{name}</span>
                 </label>
