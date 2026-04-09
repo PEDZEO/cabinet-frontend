@@ -60,6 +60,7 @@ export default function OAuthCallback() {
     const responseType = searchParams.get('type');
     const oauthError = searchParams.get('error');
     const oauthErrorDescription = searchParams.get('error_description');
+    const isAppFlow = searchParams.get('app') === '1';
 
     let mode: CallbackMode = 'link-server';
     let provider: string | undefined;
@@ -160,7 +161,7 @@ export default function OAuthCallback() {
         return;
       }
 
-      if (mode === 'link-server' && !hasStoredSession) {
+      if (isAppFlow || (mode === 'link-server' && !hasStoredSession)) {
         window.location.replace(buildAppOAuthCallbackUrl(window.location.search));
         return;
       }
