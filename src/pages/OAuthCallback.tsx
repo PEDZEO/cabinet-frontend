@@ -53,6 +53,7 @@ export default function OAuthCallback() {
   useEffect(() => {
     if (hasRun.current) return;
     hasRun.current = true;
+    const originalSearch = window.location.search;
 
     const code = searchParams.get('code');
     const urlState = searchParams.get('state');
@@ -162,7 +163,7 @@ export default function OAuthCallback() {
       }
 
       if (isAppFlow || (mode === 'link-server' && !hasStoredSession)) {
-        window.location.replace(buildAppOAuthCallbackUrl(window.location.search));
+        window.location.replace(buildAppOAuthCallbackUrl(originalSearch));
         return;
       }
 
@@ -219,6 +220,7 @@ export default function OAuthCallback() {
     accountLinkedTitle,
     accountLinkedMessage,
     hasStoredSession,
+    isAuthenticated,
   ]);
 
   const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || '';
