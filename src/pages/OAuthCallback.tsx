@@ -25,6 +25,10 @@ import type { LinkOperationResponse } from '@/types';
 
 type CallbackMode = 'login' | 'link-browser' | 'link-server';
 
+function buildAppOAuthCallbackUrl(search: string): string {
+  return `ultimteamvpn://auth/oauth/callback${search}`;
+}
+
 export default function OAuthCallback() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -153,6 +157,11 @@ export default function OAuthCallback() {
             }),
           );
         }
+        return;
+      }
+
+      if (mode === 'link-server' && !hasStoredSession) {
+        window.location.replace(buildAppOAuthCallbackUrl(window.location.search));
         return;
       }
 
