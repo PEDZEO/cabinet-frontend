@@ -49,6 +49,13 @@ export function UltimaDevices() {
   const [addCount, setAddCount] = useState(1);
   const [reduceLimit, setReduceLimit] = useState(1);
 
+  const { data: purchaseOptions } = useQuery({
+    queryKey: ['purchase-options'],
+    queryFn: subscriptionApi.getPurchaseOptions,
+    staleTime: 60000,
+    placeholderData: (previousData) => previousData,
+  });
+
   const { data: subscriptionData, isLoading: subscriptionLoading } = useQuery({
     queryKey: ['subscription'],
     queryFn: subscriptionApi.getSubscription,
@@ -89,6 +96,29 @@ export function UltimaDevices() {
   });
 
   const maxAdd = Math.max(1, devicePrice?.can_add ?? 10);
+  const currentTariff =
+    purchaseOptions?.sales_mode === 'tariffs'
+      ? (purchaseOptions.tariffs.find(
+          (tariff) => tariff.id === subscriptionData?.subscription?.tariff_id || tariff.is_current,
+        ) ?? null)
+      : null;
+  const baseDeviceLimit = Math.max(
+    reductionInfo?.min_device_limit ?? 1,
+    currentTariff?.base_device_limit ?? 1,
+  );
+  const legacyExtraDevices = Math.max(0, currentLimit - baseDeviceLimit);
+  const legacyDeviceNotice =
+    legacyExtraDevices > 0
+      ? t(
+          'ultima.legacyDeviceDevicesPageNotice',
+          'В тариф теперь входит {{base}} устройства, а у вас сейчас {{current}}. Уменьшите лимит на {{extra}}, чтобы вернуться к новой базовой цене.',
+          {
+            base: baseDeviceLimit,
+            current: currentLimit,
+            extra: legacyExtraDevices,
+          },
+        )
+      : null;
 
   useEffect(() => {
     if (reductionInfo?.current_device_limit) {
@@ -258,8 +288,28 @@ export function UltimaDevices() {
                 <p className="text-white/58 text-[12px]">
                   {t('lite.connectedDevices', { defaultValue: 'Подключено' })}: {connectedCount}
                 </p>
+                <p className="text-white/48 mt-1 text-[11px]">
+                  {t('ultima.baseDeviceLimitLabel', 'База тарифа: {{count}} устройства', {
+                    count: baseDeviceLimit,
+                  })}
+                </p>
               </div>
             </div>
+            {legacyDeviceNotice ? (
+              <div className="border-amber-200/24 text-amber-50/92 mt-3 rounded-2xl border bg-amber-300/10 px-3 py-2.5 text-[12px] leading-[1.55]">
+                <p>{legacyDeviceNotice}</p>
+                <button
+                  type="button"
+                  onClick={() => setReduceLimit(baseDeviceLimit)}
+                  className="ultima-btn-pill ultima-btn-secondary mt-3 w-full rounded-xl px-4 py-2.5 text-sm"
+                  disabled={isBusy || !canReduce}
+                >
+                  {t('ultima.reduceToBaseDevices', 'Уменьшить до {{count}} устройств', {
+                    count: baseDeviceLimit,
+                  })}
+                </button>
+              </div>
+            ) : null}
           </section>
 
           <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">

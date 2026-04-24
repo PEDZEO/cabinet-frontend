@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { balanceApi } from '@/api/balance';
 import { subscriptionApi } from '@/api/subscription';
 import { ticketsApi } from '@/api/tickets';
 import { infoApi } from '@/api/info';
@@ -16,9 +17,11 @@ import {
   ultimaSurfaceStyle,
 } from '@/features/ultima/surfaces';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+import { UltimaTrafficTopUpSection } from '@/components/ultima/UltimaTrafficTopUpSection';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useHaptic } from '@/platform';
 import { usePlatform } from '@/platform';
+import { isUltimaTariffUnlimited } from '@/features/ultima/subscription';
 
 const CopyIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
@@ -61,21 +64,56 @@ export function UltimaSubscriptionInfo() {
   const { openTelegramLink } = usePlatform();
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   const [linkCopied, setLinkCopied] = useState(false);
+  const [selectedTrafficPackage, setSelectedTrafficPackage] = useState<number | null>(null);
 
+  const { data: purchaseOptions } = useQuery({
+    queryKey: ['purchase-options'],
+    queryFn: subscriptionApi.getPurchaseOptions,
+    staleTime: 60000,
+    placeholderData: (previousData) => previousData,
+  });
+  const { data: balanceData } = useQuery({
+    queryKey: ['balance'],
+    queryFn: balanceApi.getBalance,
+    staleTime: 15000,
+    placeholderData: (previousData) => previousData,
+  });
   const { data: subscriptionResponse, isLoading } = useQuery({
     queryKey: ['subscription'],
     queryFn: subscriptionApi.getSubscription,
     staleTime: 15000,
     placeholderData: (previousData) => previousData,
   });
+  const { data: trafficPackages } = useQuery({
+    queryKey: ['traffic-packages', 'ultima-info'],
+    queryFn: subscriptionApi.getTrafficPackages,
+    enabled: subscriptionResponse?.has_subscription === true,
+    staleTime: 60000,
+    placeholderData: (previousData) => previousData,
+  });
 
   const subscription = subscriptionResponse?.subscription ?? null;
   const hasSubscription = subscriptionResponse?.has_subscription === true;
+  const currentTariff =
+    purchaseOptions?.sales_mode === 'tariffs'
+      ? (purchaseOptions.tariffs.find(
+          (tariff) => tariff.id === subscription?.tariff_id || tariff.is_current,
+        ) ?? null)
+      : null;
+  const isUnlimitedTraffic = currentTariff
+    ? isUltimaTariffUnlimited(currentTariff)
+    : (subscription?.traffic_limit_gb ?? 0) <= 0;
+  const canOpenTariffs = purchaseOptions?.sales_mode === 'tariffs';
+  const canTopUpTraffic =
+    hasSubscription &&
+    !!subscription &&
+    (subscription.is_active || !isUnlimitedTraffic) &&
+    !isUnlimitedTraffic &&
+    (trafficPackages?.length ?? 0) > 0;
   const subscriptionLink = subscription?.subscription_url ?? '';
   const trafficTotal = subscription?.traffic_limit_gb ?? 0;
   const trafficUsed = subscription?.traffic_used_gb ?? 0;
   const trafficLeft = Math.max(0, trafficTotal - trafficUsed);
-  const isUnlimitedTraffic = trafficTotal <= 0;
   const endDateLabel = (() => {
     if (!subscription?.end_date) return t('subscription.notActive', { defaultValue: 'Не активна' });
     const date = new Date(subscription.end_date);
@@ -179,6 +217,86 @@ export function UltimaSubscriptionInfo() {
           },
         ]
       : [];
+
+  const purchaseTrafficMutation = useMutation({
+    mutationFn: (gb: number) => subscriptionApi.purchaseTraffic(gb),
+    onSuccess: async () => {
+      setSelectedTrafficPackage(null);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['subscription'] }),
+        queryClient.invalidateQueries({ queryKey: ['balance'] }),
+        queryClient.invalidateQueries({ queryKey: ['traffic-packages', 'ultima-info'] }),
+      ]);
+    },
+  });
+
+  const trafficPurchaseError = purchaseTrafficMutation.error;
+  const trafficPurchaseErrorMessage =
+    trafficPurchaseError instanceof Error ? trafficPurchaseError.message : null;
+
+  const formatPrice = (kopeks: number) => `${(kopeks / 100).toFixed(kopeks % 100 === 0 ? 0 : 2)} ₽`;
+
+  const openTopUpForTraffic = async (gb: number) => {
+    await subscriptionApi.saveTrafficCart(gb);
+    navigate('/balance/top-up?returnTo=/ultima/subscription-info');
+  };
+
+  const actionSection =
+    hasSubscription && subscription ? (
+      <section
+        className={`${ultimaPanelClassName} space-y-3 p-3.5`}
+        style={ULTIMA_INFO_SURFACE_STYLE}
+      >
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-white/56 text-[12px] font-medium uppercase tracking-[0.14em]">
+              {t('subscription.title')}
+            </p>
+            <h2 className="mt-1 text-[20px] font-semibold leading-tight text-white">
+              {subscription.tariff_name || t('subscription.currentPlan')}
+            </h2>
+            <p className="text-white/66 mt-1.5 text-[13px] leading-snug">
+              {subscription.traffic_limit_gb > 0
+                ? t('subscription.additionalOptions.currentTrafficLimit', {
+                    limit: subscription.traffic_limit_gb,
+                    used: subscription.traffic_used_gb.toFixed(1),
+                  })
+                : t('subscription.unlimited')}
+            </p>
+          </div>
+          {canOpenTariffs ? (
+            <button
+              type="button"
+              onClick={() => {
+                haptic.impact('light');
+                navigate('/subscription');
+              }}
+              className="ultima-btn-pill ultima-btn-secondary px-4 py-2.5 text-sm"
+            >
+              {t('dashboard.expired.tariffs')}
+            </button>
+          ) : null}
+        </div>
+        {canTopUpTraffic ? (
+          <UltimaTrafficTopUpSection
+            t={t}
+            formatPrice={formatPrice}
+            trafficLimitGb={subscription.traffic_limit_gb}
+            trafficUsedGb={subscription.traffic_used_gb}
+            trafficPackages={trafficPackages}
+            selectedTrafficPackage={selectedTrafficPackage}
+            setSelectedTrafficPackage={setSelectedTrafficPackage}
+            purchaseBalanceKopeks={Math.max(0, balanceData?.balance_kopeks ?? 0)}
+            isPending={purchaseTrafficMutation.isPending}
+            error={trafficPurchaseErrorMessage}
+            onPurchaseTraffic={(gb) => purchaseTrafficMutation.mutate(gb)}
+            onTopUpBalance={(gb) => {
+              void openTopUpForTraffic(gb);
+            }}
+          />
+        ) : null}
+      </section>
+    ) : null;
 
   const openSupport = () => {
     void queryClient.prefetchQuery({
@@ -347,6 +465,7 @@ export function UltimaSubscriptionInfo() {
       emptyState
     ) : (
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1 lg:overflow-visible lg:pr-0">
+        {actionSection}
         {linkSection}
         {statGrid}
       </div>
@@ -370,6 +489,7 @@ export function UltimaSubscriptionInfo() {
     ) : (
       <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto pb-3 pr-1 lg:overflow-visible lg:pb-0 lg:pr-0">
         {mobileOverview}
+        {actionSection}
         {linkSection}
         {statGrid}
       </div>

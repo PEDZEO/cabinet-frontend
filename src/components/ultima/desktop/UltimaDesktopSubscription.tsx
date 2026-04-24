@@ -18,12 +18,17 @@ type UltimaDesktopSubscriptionPeriod = {
 };
 
 type UltimaDesktopSubscriptionProps = {
+  planSelector?: ReactNode;
   title: string;
   subtitle: string;
   selectedDeviceLimit: number;
   deviceLimits: number[];
   periods: UltimaDesktopSubscriptionPeriod[];
   selectedPeriodLabel: string;
+  baseDeviceLimitLabel?: string | null;
+  extraDeviceChargeLabel?: string | null;
+  legacyDeviceNotice?: string | null;
+  onReduceDevices?: (() => void) | null;
   totalPriceLabel: string;
   balanceAppliedLabel: string;
   payablePriceLabel: string;
@@ -42,12 +47,17 @@ const defaultCardStyle: CSSProperties = ultimaSurfaceStyle;
 const accentCardStyle: CSSProperties = ultimaAccentSurfaceStyle;
 
 export function UltimaDesktopSubscription({
+  planSelector,
   title,
   subtitle,
   selectedDeviceLimit,
   deviceLimits,
   periods,
   selectedPeriodLabel,
+  baseDeviceLimitLabel,
+  extraDeviceChargeLabel,
+  legacyDeviceNotice,
+  onReduceDevices,
   totalPriceLabel,
   balanceAppliedLabel,
   payablePriceLabel,
@@ -67,6 +77,8 @@ export function UltimaDesktopSubscription({
     <div className="ultima-shell-inner lg:max-w-[1200px]">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
         <div className="space-y-4">
+          {planSelector}
+
           <section
             className={cn(ultimaCardClassName, 'relative overflow-hidden p-6 lg:p-7')}
             style={accentCardStyle}
@@ -162,6 +174,16 @@ export function UltimaDesktopSubscription({
                   </span>
                   <span className="font-medium text-white/90">{selectedDeviceLimit}</span>
                 </div>
+                {baseDeviceLimitLabel ? (
+                  <div className="text-white/56 mt-1 text-xs leading-[1.5]">
+                    {baseDeviceLimitLabel}
+                  </div>
+                ) : null}
+                {extraDeviceChargeLabel ? (
+                  <div className="text-amber-100/86 mt-1 text-xs leading-[1.5]">
+                    {extraDeviceChargeLabel}
+                  </div>
+                ) : null}
               </div>
               <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
                 <div className="flex items-center justify-between gap-3 text-sm">
@@ -208,6 +230,21 @@ export function UltimaDesktopSubscription({
                 {error}
               </div>
             )}
+
+            {legacyDeviceNotice ? (
+              <div className="border-amber-200/24 text-amber-50/92 mt-4 rounded-[22px] border bg-amber-300/10 px-4 py-3 text-sm leading-[1.55]">
+                <p>{legacyDeviceNotice}</p>
+                {onReduceDevices ? (
+                  <button
+                    type="button"
+                    onClick={onReduceDevices}
+                    className="ultima-btn-pill ultima-btn-secondary mt-3 w-full px-4 py-2.5 text-sm"
+                  >
+                    {t('subscription.manageDevices', { defaultValue: 'Управление устройствами' })}
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
 
             <button
               type="button"

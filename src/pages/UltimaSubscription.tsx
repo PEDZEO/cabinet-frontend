@@ -6,7 +6,14 @@ import { balanceApi } from '@/api/balance';
 import { promoApi } from '@/api/promo';
 import { subscriptionApi } from '@/api/subscription';
 import { UltimaDesktopSubscription } from '@/components/ultima/desktop/UltimaDesktopSubscription';
+import { UltimaTariffSelector } from '@/components/ultima/UltimaTariffSelector';
 import { createApplyPromoDiscount } from '@/features/subscription/utils/pricing';
+import {
+  getSortedUltimaTariffs,
+  getUltimaBaseDeviceLimit,
+  getUltimaDeviceLimitsForTariff,
+  getUltimaPeriodsForDeviceLimit,
+} from '@/features/ultima/subscription';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import {
@@ -14,7 +21,7 @@ import {
   useCloseOnSuccessNotification,
 } from '@/store/successNotification';
 import { useHaptic, usePlatform } from '@/platform';
-import type { PaymentMethod, Tariff, TariffPeriod } from '@/types';
+import type { PaymentMethod, TariffPeriod } from '@/types';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 
 const ULTIMA_PENDING_PURCHASE_KEY = 'ultima_pending_purchase_v1';
@@ -168,7 +175,7 @@ export function UltimaSubscription() {
   const [viewportWidth, setViewportWidth] = useState<number>(() =>
     typeof window === 'undefined' ? 420 : window.innerWidth,
   );
-  const didInitDevice = useRef(false);
+  const lastTariffIdRef = useRef<number | null>(null);
   const lastHapticDeviceIndexRef = useRef<number | null>(null);
   const deviceTrackRef = useRef<HTMLDivElement | null>(null);
   const autoPurchaseAttemptRef = useRef<string | null>(null);
@@ -186,11 +193,6 @@ export function UltimaSubscription() {
     queryFn: subscriptionApi.getSubscription,
     staleTime: 15000,
     placeholderData: (previousData) => previousData,
-  });
-  const { data: devicePriceMeta } = useQuery({
-    queryKey: ['device-price', 'ultima-max'],
-    queryFn: () => subscriptionApi.getDevicePrice(1),
-    retry: false,
   });
   const { data: paymentMethods } = useQuery({
     queryKey: ['payment-methods'],
@@ -224,122 +226,84 @@ export function UltimaSubscription() {
     });
   }, [queryClient]);
 
+  const subscription = subscriptionResponse?.subscription ?? null;
+
   const tariffs = useMemo(() => {
-    if (!purchaseOptions || purchaseOptions.sales_mode !== 'tariffs') return [] as Tariff[];
-    return purchaseOptions.tariffs.filter((tariff) => tariff.is_available);
-  }, [purchaseOptions]);
+    if (!purchaseOptions || purchaseOptions.sales_mode !== 'tariffs') return [];
+    return getSortedUltimaTariffs(purchaseOptions.tariffs, subscription);
+  }, [purchaseOptions, subscription]);
 
-  type DisplayPeriod = TariffPeriod & { tariffId: number; deviceLimit: number };
+  const currentTariffId = useMemo(
+    () => subscription?.tariff_id ?? tariffs.find((tariff) => tariff.is_current)?.id ?? null,
+    [subscription, tariffs],
+  );
 
-  const periodsByDevice = useMemo(() => {
-    const map = new Map<number, DisplayPeriod[]>();
-    tariffs.forEach((tariff) => {
-      const baseDeviceLimit = Math.max(1, tariff.base_device_limit ?? tariff.device_limit ?? 1);
-      const tariffExtraFallback = Math.max(
-        0,
-        (tariff.device_limit ?? baseDeviceLimit) - baseDeviceLimit,
-      );
-      tariff.periods
-        .filter((period) => period.days > 0)
-        .forEach((period) => {
-          const extraDevices = Math.max(
-            0,
-            period.extra_devices_count ?? tariff.extra_devices_count ?? tariffExtraFallback,
-          );
-          const deviceLimit = baseDeviceLimit + extraDevices;
-          const list = map.get(deviceLimit) ?? [];
-          list.push({ ...period, tariffId: tariff.id, deviceLimit });
-          map.set(deviceLimit, list);
-        });
+  const [selectedTariffId, setSelectedTariffId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!tariffs.length) {
+      setSelectedTariffId(null);
+      return;
+    }
+
+    setSelectedTariffId((previous) => {
+      if (previous && tariffs.some((tariff) => tariff.id === previous)) {
+        return previous;
+      }
+      return currentTariffId ?? tariffs[0].id;
     });
-    return map;
-  }, [tariffs]);
+  }, [tariffs, currentTariffId]);
 
-  const availableDeviceLimits = useMemo(() => {
-    return [...periodsByDevice.keys()].sort((a, b) => a - b);
-  }, [periodsByDevice]);
+  const selectedTariff = useMemo(() => {
+    if (!tariffs.length) return null;
+    if (selectedTariffId) {
+      return tariffs.find((tariff) => tariff.id === selectedTariffId) ?? tariffs[0];
+    }
+    return tariffs[0];
+  }, [tariffs, selectedTariffId]);
 
   const deviceLimits = useMemo(() => {
-    if (!tariffs.length) return availableDeviceLimits.length ? availableDeviceLimits : [1];
-    const withMaxLimit = (tariff: Tariff) => tariff as Tariff & { max_device_limit?: number };
-    const currentSubscriptionLimit = Math.max(
-      1,
-      subscriptionResponse?.subscription?.device_limit ?? 1,
-    );
-
-    const minBaseFromTariffs = Math.max(
-      1,
-      Math.min(...tariffs.map((tariff) => tariff.base_device_limit ?? tariff.device_limit ?? 1)),
-    );
-    const minBase = Math.max(
-      minBaseFromTariffs,
-      currentSubscriptionLimit,
-      devicePriceMeta?.current_device_limit ?? minBaseFromTariffs,
-    );
-    const maxLimit = Math.max(
-      minBase,
-      devicePriceMeta?.max_device_limit ?? minBase,
-      ...tariffs.map(
-        (tariff) => withMaxLimit(tariff).max_device_limit ?? tariff.device_limit ?? minBase,
-      ),
-    );
-    const fullRange = Array.from({ length: maxLimit - minBase + 1 }, (_, i) => minBase + i);
-    return fullRange.length ? fullRange : availableDeviceLimits;
-  }, [
-    tariffs,
-    availableDeviceLimits,
-    devicePriceMeta,
-    subscriptionResponse?.subscription?.device_limit,
-  ]);
+    if (!selectedTariff) return [1];
+    return getUltimaDeviceLimitsForTariff(selectedTariff, subscription);
+  }, [selectedTariff, subscription]);
 
   const closestDeviceIndex = useMemo(() => {
-    if (!deviceLimits.length) return 0;
-    const hasSubscription = subscriptionResponse?.has_subscription === true;
-    if (!hasSubscription && availableDeviceLimits.length) {
-      const minAvailable = availableDeviceLimits[0];
-      const index = deviceLimits.findIndex((value) => value === minAvailable);
-      if (index >= 0) return index;
-    }
-    const subscriptionLimit = subscriptionResponse?.subscription?.device_limit;
-    if (typeof subscriptionLimit === 'number' && subscriptionLimit > 0) {
-      const exactSubscriptionMatch = deviceLimits.findIndex((value) => value === subscriptionLimit);
-      if (exactSubscriptionMatch >= 0) return exactSubscriptionMatch;
-    }
-    const current = tariffs.find((tariff) => tariff.is_current) ?? tariffs[0];
-    if (!current) return 0;
-    const currentLimit = Math.max(1, current.device_limit);
-    const exact = deviceLimits.findIndex((value) => value === currentLimit);
-    if (exact >= 0) return exact;
-    let best = 0;
-    let bestDistance = Infinity;
-    deviceLimits.forEach((limit, index) => {
-      const distance = Math.abs(limit - currentLimit);
+    if (!selectedTariff || !deviceLimits.length) return 0;
+    const preferredLimit = selectedTariff.is_current
+      ? Math.max(1, subscription?.device_limit ?? getUltimaBaseDeviceLimit(selectedTariff))
+      : getUltimaBaseDeviceLimit(selectedTariff);
+    const exactIndex = deviceLimits.findIndex((value) => value === preferredLimit);
+    if (exactIndex >= 0) return exactIndex;
+
+    let bestIndex = 0;
+    let bestDistance = Number.POSITIVE_INFINITY;
+    deviceLimits.forEach((value, index) => {
+      const distance = Math.abs(value - preferredLimit);
       if (distance < bestDistance) {
-        best = index;
+        bestIndex = index;
         bestDistance = distance;
       }
     });
-    return best;
-  }, [
-    tariffs,
-    deviceLimits,
-    availableDeviceLimits,
-    subscriptionResponse?.has_subscription,
-    subscriptionResponse?.subscription?.device_limit,
-  ]);
+    return bestIndex;
+  }, [selectedTariff, deviceLimits, subscription?.device_limit]);
 
   useEffect(() => {
     if (!deviceLimits.length) {
       setSelectedDeviceIndex(0);
+      lastTariffIdRef.current = null;
       return;
     }
-    if (!didInitDevice.current) {
-      didInitDevice.current = true;
+
+    if (selectedTariff?.id !== lastTariffIdRef.current) {
+      lastTariffIdRef.current = selectedTariff?.id ?? null;
       setSelectedDeviceIndex(closestDeviceIndex);
       return;
     }
-    setSelectedDeviceIndex((prev) => Math.min(Math.max(0, prev), deviceLimits.length - 1));
-  }, [deviceLimits, closestDeviceIndex]);
+
+    setSelectedDeviceIndex((previous) =>
+      Math.min(Math.max(0, previous), Math.max(0, deviceLimits.length - 1)),
+    );
+  }, [deviceLimits, closestDeviceIndex, selectedTariff?.id]);
 
   const selectedDeviceLimit =
     deviceLimits[Math.min(selectedDeviceIndex, Math.max(0, deviceLimits.length - 1))] ?? 1;
@@ -367,46 +331,12 @@ export function UltimaSubscription() {
     applyDeviceIndex(index);
   };
 
-  const allPeriodsForDevice = useMemo(() => {
-    if (!availableDeviceLimits.length) return [] as DisplayPeriod[];
-    const exact = periodsByDevice.get(selectedDeviceLimit) ?? [];
-    const source =
-      exact.length > 0
-        ? exact
-        : (periodsByDevice.get(
-            [...availableDeviceLimits].sort(
-              (a, b) => Math.abs(a - selectedDeviceLimit) - Math.abs(b - selectedDeviceLimit),
-            )[0] ?? selectedDeviceLimit,
-          ) ?? []);
-
-    const bestByDays = new Map<number, DisplayPeriod>();
-    source.forEach((period) => {
-      const existing = bestByDays.get(period.days);
-      if (!existing || period.price_kopeks < existing.price_kopeks) {
-        bestByDays.set(period.days, period);
-      }
-    });
-    return [...bestByDays.values()].sort(
-      (a, b) => a.months - b.months || a.days - b.days || a.price_kopeks - b.price_kopeks,
-    );
-  }, [periodsByDevice, availableDeviceLimits, selectedDeviceLimit]);
-
-  const selectedTariff = useMemo(() => {
-    if (!tariffs.length) return null;
-    return tariffs.find((tariff) => tariff.is_current) ?? tariffs[0];
-  }, [tariffs]);
-
   const displayPeriods = useMemo(() => {
-    if (!allPeriodsForDevice.length) return [] as DisplayPeriod[];
-    const bestByDays = new Map<number, DisplayPeriod>();
-    allPeriodsForDevice.forEach((period) => {
-      const existing = bestByDays.get(period.days);
-      if (!existing || period.price_kopeks < existing.price_kopeks) {
-        bestByDays.set(period.days, period);
-      }
-    });
-    return [...bestByDays.values()].sort((a, b) => a.days - b.days);
-  }, [allPeriodsForDevice]);
+    if (!selectedTariff) return [];
+    return getUltimaPeriodsForDeviceLimit(selectedTariff, selectedDeviceLimit).sort(
+      (left, right) => left.days - right.days,
+    );
+  }, [selectedTariff, selectedDeviceLimit]);
 
   const selectedPeriod = useMemo(() => {
     if (!displayPeriods.length) return null;
@@ -431,7 +361,7 @@ export function UltimaSubscription() {
     );
   }, [displayPeriods, selectedPeriodDays]);
 
-  const selectedTariffIdForPurchase = selectedPeriod?.tariffId ?? selectedTariff?.id ?? null;
+  const selectedTariffIdForPurchase = selectedTariff?.id ?? selectedPeriod?.tariffId ?? null;
   const sliderProgressPercent =
     deviceLimits.length > 1 ? (selectedDeviceIndex / (deviceLimits.length - 1)) * 100 : 0;
   const sliderVisualPower = 0.28 + sliderProgressPercent / 130;
@@ -746,12 +676,48 @@ export function UltimaSubscription() {
     selectedTariff.base_device_limit ?? selectedTariff.device_limit ?? 1,
   );
   const extraDevicePricePerMonth = Math.max(0, selectedTariff.device_price_kopeks ?? 0);
-  const calculateRawPeriodPrice = (period: DisplayPeriod): number => {
+  const calculateRawPeriodPrice = (period: TariffPeriod): number => {
     const months = Math.max(1, period.months);
     const selectedExtraDevices = Math.max(0, selectedDeviceLimit - baseDeviceLimit);
     const baseTariffPrice = period.base_tariff_price_kopeks ?? period.price_kopeks;
     return baseTariffPrice + selectedExtraDevices * extraDevicePricePerMonth * months;
   };
+  const currentTariffBaseDeviceLimit = selectedTariff
+    ? getUltimaBaseDeviceLimit(selectedTariff)
+    : 1;
+  const selectedExtraDevices = Math.max(0, selectedDeviceLimit - currentTariffBaseDeviceLimit);
+  const extraDeviceChargeKopeks =
+    selectedExtraDevices * extraDevicePricePerMonth * Math.max(1, selectedPeriod?.months ?? 1);
+  const hasLegacyDeviceOverhang =
+    !!subscription &&
+    !!selectedTariff &&
+    selectedTariff.id === subscription.tariff_id &&
+    subscription.device_limit > currentTariffBaseDeviceLimit;
+  const legacyDeviceNotice =
+    hasLegacyDeviceOverhang && selectedExtraDevices > 0
+      ? t(
+          'ultima.legacyDeviceNotice',
+          'В тариф теперь входит {{base}} устройства, а у вас активно {{current}}. {{extra}} устройство влияет на цену как дополнительное, пока вы не уменьшите лимит.',
+          {
+            base: currentTariffBaseDeviceLimit,
+            current: subscription?.device_limit ?? selectedDeviceLimit,
+            extra: selectedExtraDevices,
+          },
+        )
+      : null;
+  const baseDeviceLimitLabel = t(
+    'ultima.baseDeviceLimitLabel',
+    'База тарифа: {{count}} устройства',
+    { count: currentTariffBaseDeviceLimit },
+  );
+  const extraDeviceChargeLabel =
+    selectedExtraDevices > 0 && extraDeviceChargeKopeks > 0
+      ? t('ultima.extraDeviceChargeLabel', 'Доп. устройства: {{count}} · +{{price}}', {
+          count: selectedExtraDevices,
+          price: formatPrice(extraDeviceChargeKopeks),
+        })
+      : null;
+
   const bestDealPeriodDays = (() => {
     if (displayPeriods.length < 2) return null;
     let bestDays: number | null = null;
@@ -901,6 +867,33 @@ export function UltimaSubscription() {
     return 'месяцев';
   };
 
+  const selectedTariffSubtitle =
+    selectedTariff?.description?.trim() ||
+    [
+      selectedTariff?.traffic_limit_label,
+      selectedTariff ? t('subscription.devices', { count: selectedTariff.device_limit }) : '',
+    ]
+      .filter(Boolean)
+      .join(' · ');
+  const showTariffSelector = tariffs.length > 1;
+  const tariffSelector = showTariffSelector ? (
+    <UltimaTariffSelector
+      tariffs={tariffs}
+      selectedTariffId={selectedTariff?.id ?? tariffs[0]?.id ?? 0}
+      currentTariffId={currentTariffId}
+      t={t}
+      formatPrice={formatPrice}
+      applyPromoDiscount={applyPromoDiscount}
+      onSelectTariff={(tariffId) => {
+        haptic.selection();
+        setError(null);
+        setSelectedTariffId(tariffId);
+        setSelectedPeriodDays(null);
+      }}
+      compact={!isDesktopViewport}
+    />
+  ) : null;
+
   const periodLabel = (period: TariffPeriod) => {
     if (period.days === 365) return '1 год';
     if (period.days > 0 && period.days % 30 === 0) {
@@ -936,15 +929,26 @@ export function UltimaSubscription() {
       <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-subscription-desktop">
         <div className="ultima-shell-aura" />
         <UltimaDesktopSubscription
-          title={t('subscription.purchaseTitle', { defaultValue: 'Покупка подписки' })}
-          subtitle={t('subscription.purchaseSubtitle', {
-            defaultValue:
-              'Выберите количество устройств и подходящий период, а итоговая оплата пересчитается автоматически.',
-          })}
+          planSelector={tariffSelector}
+          title={
+            selectedTariff?.name ??
+            t('subscription.purchaseTitle', { defaultValue: 'Покупка подписки' })
+          }
+          subtitle={
+            selectedTariffSubtitle ||
+            t('subscription.purchaseSubtitle', {
+              defaultValue:
+                'Выберите количество устройств и подходящий период, а итоговая оплата пересчитается автоматически.',
+            })
+          }
           selectedDeviceLimit={selectedDeviceLimit}
           deviceLimits={deviceLimits}
           periods={desktopPeriods}
           selectedPeriodLabel={periodLabel(selectedPeriod)}
+          baseDeviceLimitLabel={baseDeviceLimitLabel}
+          extraDeviceChargeLabel={extraDeviceChargeLabel}
+          legacyDeviceNotice={legacyDeviceNotice}
+          onReduceDevices={legacyDeviceNotice ? () => navigate('/ultima/devices') : null}
           totalPriceLabel={formatPrice(selectedPriceKopeks)}
           balanceAppliedLabel={formatPrice(balanceAppliedKopeks)}
           payablePriceLabel={formatPrice(payableAmountKopeks)}
@@ -987,7 +991,7 @@ export function UltimaSubscription() {
                   : 'text-[clamp(32px,8.4vw,40px)]'
             }`}
           >
-            Покупка подписки
+            {selectedTariff?.name ?? 'Покупка подписки'}
           </h1>
           <p
             className={`break-words leading-tight text-white/75 ${
@@ -998,9 +1002,12 @@ export function UltimaSubscription() {
                   : 'mt-1.5 text-[clamp(13px,3.8vw,15px)]'
             }`}
           >
-            Подключайте больше устройств и пользуйтесь сервисом вместе с друзьями и близкими
+            {selectedTariffSubtitle ||
+              'Подключайте больше устройств и пользуйтесь сервисом вместе с друзьями и близкими'}
           </p>
         </header>
+
+        {tariffSelector}
 
         <section
           className={`w-full rounded-3xl border border-white/10 bg-white/5 backdrop-blur ${
@@ -1028,12 +1035,12 @@ export function UltimaSubscription() {
                       : 'text-[22px]'
                 } font-medium leading-none text-white`}
               >
-                Устройства
+                {t('subscription.devices')}
               </p>
               <p
                 className={`${isUltraCompactHeight ? 'mt-0.5 text-[13px]' : 'mt-1 text-[14px]'} text-white/70`}
               >
-                Одновременно в подписке
+                {selectedTariff?.traffic_limit_label ?? 'Одновременно в подписке'}
               </p>
             </div>
           </div>
@@ -1282,6 +1289,18 @@ export function UltimaSubscription() {
         </section>
 
         <div className={`ultima-mobile-dock-footer ${isUltraCompactHeight ? 'pt-2' : 'pt-3'}`}>
+          {legacyDeviceNotice ? (
+            <div className="border-amber-200/24 text-amber-50/92 mb-3 rounded-[22px] border bg-amber-300/10 px-4 py-3 text-[13px] leading-[1.55]">
+              <p>{legacyDeviceNotice}</p>
+              <button
+                type="button"
+                onClick={() => navigate('/ultima/devices')}
+                className="ultima-btn-pill ultima-btn-secondary mt-3 w-full px-4 py-2.5 text-sm"
+              >
+                {t('subscription.manageDevices', { defaultValue: 'Управление устройствами' })}
+              </button>
+            </div>
+          ) : null}
           {!error && requiresMinTopUpBump && defaultPaymentMethod && (
             <p className="mb-2 text-center text-[13px] leading-relaxed text-white/70">
               {t(
