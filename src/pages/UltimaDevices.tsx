@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { balanceApi } from '@/api/balance';
 import { subscriptionApi } from '@/api/subscription';
 import {
   UltimaDesktopPanel,
@@ -56,6 +57,12 @@ export function UltimaDevices() {
     placeholderData: (previousData) => previousData,
   });
 
+  const { data: balanceData } = useQuery({
+    queryKey: ['balance'],
+    queryFn: balanceApi.getBalance,
+    staleTime: 15000,
+    placeholderData: (previousData) => previousData,
+  });
   const { data: subscriptionData, isLoading: subscriptionLoading } = useQuery({
     queryKey: ['subscription'],
     queryFn: subscriptionApi.getSubscription,
@@ -96,6 +103,10 @@ export function UltimaDevices() {
   });
 
   const maxAdd = Math.max(1, devicePrice?.can_add ?? 10);
+  const canAffordDevicePurchase =
+    !devicePrice?.total_price_kopeks ||
+    balanceData?.balance_kopeks === undefined ||
+    devicePrice.total_price_kopeks <= balanceData.balance_kopeks;
   const currentTariff =
     purchaseOptions?.sales_mode === 'tariffs'
       ? (purchaseOptions.tariffs.find(
@@ -156,6 +167,39 @@ export function UltimaDevices() {
       return 'Новый лимит должен быть меньше текущего.';
     }
     return reason ?? 'Сейчас уменьшить количество устройств нельзя.';
+  };
+
+  const handlePurchaseDevices = async () => {
+    if (isBusy) return;
+
+    if (!devicePrice?.available) {
+      setSuccess(null);
+      setError(
+        devicePrice?.reason ||
+          t('lite.devicesNotAvailable', {
+            defaultValue: 'Покупка устройств недоступна',
+          }),
+      );
+      return;
+    }
+
+    if (
+      devicePrice.total_price_kopeks &&
+      balanceData?.balance_kopeks !== undefined &&
+      devicePrice.total_price_kopeks > balanceData.balance_kopeks
+    ) {
+      await subscriptionApi.saveDevicesCart(addCount);
+      navigate('/balance/top-up?returnTo=/ultima/devices');
+      return;
+    }
+
+    purchaseMutation.mutate(addCount);
+  };
+
+  const handleReduceToBaseDevices = () => {
+    if (isBusy || !canReduce || baseDeviceLimit >= currentLimit) return;
+    setReduceLimit(baseDeviceLimit);
+    reduceMutation.mutate(baseDeviceLimit);
   };
 
   const invalidateDevicesData = async () => {
@@ -235,11 +279,9 @@ export function UltimaDevices() {
     deleteMutation.isPending ||
     deleteAllMutation.isPending;
 
-  const canReduce = useMemo(() => {
-    if (!reductionInfo?.available) return false;
-    if (typeof reductionInfo.can_reduce === 'number' && reductionInfo.can_reduce <= 0) return false;
-    return true;
-  }, [reductionInfo]);
+  const canReduce =
+    !!reductionInfo?.available &&
+    !(typeof reductionInfo.can_reduce === 'number' && reductionInfo.can_reduce <= 0);
 
   const minReduceLimit = reductionInfo?.min_device_limit ?? 1;
   const maxReduceLimit = reductionInfo?.current_device_limit ?? currentLimit ?? 1;
@@ -300,9 +342,9 @@ export function UltimaDevices() {
                 <p>{legacyDeviceNotice}</p>
                 <button
                   type="button"
-                  onClick={() => setReduceLimit(baseDeviceLimit)}
+                  onClick={handleReduceToBaseDevices}
                   className="ultima-btn-pill ultima-btn-secondary mt-3 w-full rounded-xl px-4 py-2.5 text-sm"
-                  disabled={isBusy || !canReduce}
+                  disabled={isBusy || !canReduce || baseDeviceLimit >= currentLimit}
                 >
                   {t('ultima.reduceToBaseDevices', 'Уменьшить до {{count}} устройств', {
                     count: baseDeviceLimit,
@@ -409,10 +451,14 @@ export function UltimaDevices() {
               <button
                 type="button"
                 className="ultima-btn-pill ultima-btn-primary mt-2 w-full rounded-xl px-4 py-2.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50"
-                onClick={() => purchaseMutation.mutate(addCount)}
+                onClick={() => {
+                  void handlePurchaseDevices();
+                }}
                 disabled={isBusy || !devicePrice?.available}
               >
-                {t('lite.buyDevices', { defaultValue: 'Купить устройства' })}
+                {devicePrice?.total_price_kopeks && !canAffordDevicePurchase
+                  ? t('ultima.topUpAndBuy', 'Пополнить и купить')
+                  : t('lite.buyDevices', { defaultValue: 'Купить устройства' })}
               </button>
             </section>
           ) : null}
