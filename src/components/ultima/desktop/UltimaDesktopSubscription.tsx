@@ -232,13 +232,13 @@ export function UltimaDesktopSubscription({
             )}
 
             {legacyDeviceNotice ? (
-              <div className="border-amber-200/24 text-amber-50/92 mt-4 rounded-[22px] border bg-amber-300/10 px-4 py-3 text-sm leading-[1.55]">
+              <div className="border-amber-200/24 text-amber-50/92 mt-4 rounded-[18px] border bg-amber-300/10 px-3 py-2.5 text-[13px] leading-[1.45]">
                 <p>{legacyDeviceNotice}</p>
                 {onReduceDevices ? (
                   <button
                     type="button"
                     onClick={onReduceDevices}
-                    className="ultima-btn-pill ultima-btn-secondary mt-3 w-full px-4 py-2.5 text-sm"
+                    className="ultima-btn-pill ultima-btn-secondary mt-2 w-full px-3 py-2 text-[13px]"
                   >
                     {t('subscription.manageDevices', { defaultValue: 'Управление устройствами' })}
                   </button>
