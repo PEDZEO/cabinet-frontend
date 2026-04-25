@@ -239,6 +239,7 @@ export function UltimaSubscription() {
   );
 
   const [selectedTariffId, setSelectedTariffId] = useState<number | null>(null);
+  const [isMobileTariffChooserOpen, setIsMobileTariffChooserOpen] = useState(true);
 
   useEffect(() => {
     if (!tariffs.length) {
@@ -253,6 +254,14 @@ export function UltimaSubscription() {
       return currentTariffId ?? tariffs[0].id;
     });
   }, [tariffs, currentTariffId]);
+
+  useEffect(() => {
+    if (isDesktopViewport || tariffs.length <= 1) {
+      setIsMobileTariffChooserOpen(false);
+      return;
+    }
+    setIsMobileTariffChooserOpen(true);
+  }, [isDesktopViewport, tariffs.length]);
 
   const selectedTariff = useMemo(() => {
     if (!tariffs.length) return null;
@@ -876,7 +885,24 @@ export function UltimaSubscription() {
       .filter(Boolean)
       .join(' · ');
   const showTariffSelector = tariffs.length > 1;
-  const tariffSelector = showTariffSelector ? (
+  const desktopTariffSelector =
+    showTariffSelector && isDesktopViewport ? (
+      <UltimaTariffSelector
+        tariffs={tariffs}
+        selectedTariffId={selectedTariff?.id ?? tariffs[0]?.id ?? 0}
+        currentTariffId={currentTariffId}
+        t={t}
+        formatPrice={formatPrice}
+        applyPromoDiscount={applyPromoDiscount}
+        onSelectTariff={(tariffId) => {
+          haptic.selection();
+          setError(null);
+          setSelectedTariffId(tariffId);
+          setSelectedPeriodDays(null);
+        }}
+      />
+    ) : null;
+  const mobileTariffSelector = showTariffSelector ? (
     <UltimaTariffSelector
       tariffs={tariffs}
       selectedTariffId={selectedTariff?.id ?? tariffs[0]?.id ?? 0}
@@ -889,8 +915,8 @@ export function UltimaSubscription() {
         setError(null);
         setSelectedTariffId(tariffId);
         setSelectedPeriodDays(null);
+        setIsMobileTariffChooserOpen(false);
       }}
-      compact={!isDesktopViewport}
     />
   ) : null;
 
@@ -929,7 +955,7 @@ export function UltimaSubscription() {
       <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-subscription-desktop">
         <div className="ultima-shell-aura" />
         <UltimaDesktopSubscription
-          planSelector={tariffSelector}
+          planSelector={desktopTariffSelector}
           title={
             selectedTariff?.name ??
             t('subscription.purchaseTitle', { defaultValue: 'Покупка подписки' })
@@ -977,6 +1003,33 @@ export function UltimaSubscription() {
     );
   }
 
+  if (showTariffSelector && isMobileTariffChooserOpen) {
+    return (
+      <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
+        <div className="ultima-shell-aura" />
+        <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
+          <section className="ultima-scrollbar min-h-0 flex-1 overflow-y-auto pr-1">
+            <header className="mb-3">
+              <h1 className="break-words text-[clamp(32px,8.4vw,42px)] font-semibold leading-[0.95] text-white">
+                {t('dashboard.expired.tariffs')}
+              </h1>
+              <p className="text-white/72 mt-1.5 text-[14px] leading-snug">
+                {t('subscription.selectTariffDescription', {
+                  defaultValue: 'Выберите тариф, затем настройте устройства и период оплаты.',
+                })}
+              </p>
+            </header>
+            {mobileTariffSelector}
+          </section>
+
+          <div className="ultima-mobile-dock-footer pt-3">
+            <div className="ultima-nav-dock">{bottomNav}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
       <div className="ultima-shell-aura" />
@@ -1005,9 +1058,19 @@ export function UltimaSubscription() {
             {selectedTariffSubtitle ||
               'Подключайте больше устройств и пользуйтесь сервисом вместе с друзьями и близкими'}
           </p>
+          {showTariffSelector ? (
+            <button
+              type="button"
+              onClick={() => {
+                haptic.selection();
+                setIsMobileTariffChooserOpen(true);
+              }}
+              className="border-white/12 text-white/78 mt-2 rounded-full border bg-white/[0.06] px-3 py-1.5 text-[12px] font-medium"
+            >
+              {t('subscription.changeTariff', { defaultValue: 'Сменить тариф' })}
+            </button>
+          ) : null}
         </header>
-
-        {tariffSelector}
 
         <section
           className={`w-full rounded-3xl border border-white/10 bg-white/5 backdrop-blur ${
@@ -1290,14 +1353,14 @@ export function UltimaSubscription() {
 
         <div className={`ultima-mobile-dock-footer ${isUltraCompactHeight ? 'pt-2' : 'pt-3'}`}>
           {legacyDeviceNotice ? (
-            <div className="border-amber-200/24 text-amber-50/92 mb-2 rounded-[18px] border bg-amber-300/10 px-3 py-2.5 text-[12px] leading-[1.4]">
-              <p>{legacyDeviceNotice}</p>
+            <div className="border-amber-200/24 text-amber-50/92 mb-2 flex items-center gap-2 rounded-[16px] border bg-amber-300/10 px-3 py-2 text-[11px] leading-[1.3]">
+              <p className="line-clamp-2 min-w-0 flex-1">{legacyDeviceNotice}</p>
               <button
                 type="button"
                 onClick={() => navigate('/ultima/devices')}
-                className="ultima-btn-pill ultima-btn-secondary mt-2 w-full px-3 py-2 text-[13px]"
+                className="ultima-btn-pill ultima-btn-secondary shrink-0 px-3 py-1.5 text-[12px]"
               >
-                {t('subscription.manageDevices', { defaultValue: 'Управление устройствами' })}
+                {t('subscription.manageDevices', { defaultValue: 'Устройства' })}
               </button>
             </div>
           ) : null}
