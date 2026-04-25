@@ -7,12 +7,14 @@ import { promoApi } from '@/api/promo';
 import { subscriptionApi } from '@/api/subscription';
 import { UltimaDesktopSubscription } from '@/components/ultima/desktop/UltimaDesktopSubscription';
 import { UltimaTariffSelector } from '@/components/ultima/UltimaTariffSelector';
+import { UltimaTrafficTopUpSection } from '@/components/ultima/UltimaTrafficTopUpSection';
 import { createApplyPromoDiscount } from '@/features/subscription/utils/pricing';
 import {
   getSortedUltimaTariffs,
   getUltimaBaseDeviceLimit,
   getUltimaDeviceLimitsForTariff,
   getUltimaPeriodsForDeviceLimit,
+  isUltimaTariffUnlimited,
 } from '@/features/ultima/subscription';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
@@ -166,6 +168,7 @@ export function UltimaSubscription() {
 
   const [selectedDeviceIndex, setSelectedDeviceIndex] = useState(0);
   const [selectedPeriodDays, setSelectedPeriodDays] = useState<number | null>(null);
+  const [selectedTrafficPackage, setSelectedTrafficPackage] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [awaitingPaymentCompletion, setAwaitingPaymentCompletion] = useState(false);
   const [isFinalizingPending, setIsFinalizingPending] = useState(false);
@@ -270,6 +273,22 @@ export function UltimaSubscription() {
     }
     return tariffs[0];
   }, [tariffs, selectedTariffId]);
+  const selectedTariffIsCurrent =
+    !!selectedTariff && (selectedTariff.id === currentTariffId || selectedTariff.is_current);
+  const selectedTariffHasTopUp =
+    !!selectedTariff &&
+    selectedTariffIsCurrent &&
+    !isUltimaTariffUnlimited(selectedTariff) &&
+    selectedTariff.traffic_topup_enabled !== false &&
+    subscription?.is_active === true;
+
+  const { data: trafficPackages } = useQuery({
+    queryKey: ['traffic-packages', 'ultima-purchase', selectedTariff?.id],
+    queryFn: subscriptionApi.getTrafficPackages,
+    enabled: selectedTariffHasTopUp,
+    staleTime: 60000,
+    placeholderData: (previousData) => previousData,
+  });
 
   const deviceLimits = useMemo(() => {
     if (!selectedTariff) return [1];
@@ -462,6 +481,20 @@ export function UltimaSubscription() {
       clearPendingUltimaPurchase();
       setAwaitingPaymentCompletion(false);
       setError(resolveApiErrorMessage(err, t('common.error')).message);
+    },
+  });
+
+  const purchaseTrafficMutation = useMutation({
+    mutationFn: (gb: number) => subscriptionApi.purchaseTraffic(gb),
+    onSuccess: async () => {
+      setSelectedTrafficPackage(null);
+      setError(null);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['subscription'] }),
+        queryClient.invalidateQueries({ queryKey: ['balance'] }),
+        queryClient.invalidateQueries({ queryKey: ['traffic-packages'] }),
+        queryClient.invalidateQueries({ queryKey: ['purchase-options'] }),
+      ]);
     },
   });
 
@@ -760,10 +793,19 @@ export function UltimaSubscription() {
     payableAmountKopeks > 0 ? (topUpPreview?.requestedAmountKopeks ?? payableAmountKopeks) : 0;
   const requiresMinTopUpBump =
     payableAmountKopeks > 0 && !!topUpPreview && topUpPreview.bumpsToMinimum;
+  const canTopUpSelectedTariffTraffic =
+    selectedTariffHasTopUp && (trafficPackages?.length ?? 0) > 0;
+  const trafficPurchaseErrorMessage =
+    purchaseTrafficMutation.error instanceof Error ? purchaseTrafficMutation.error.message : null;
   const isCompactHeight = viewportHeight < 780;
   const isUltraCompactHeight = viewportHeight < 700;
   const isNarrowWidth = viewportWidth < 390;
   const bottomNav = <UltimaBottomNav active="home" />;
+
+  const openTopUpForTraffic = async (gb: number) => {
+    await subscriptionApi.saveTrafficCart(gb);
+    navigate('/balance/top-up?returnTo=/subscription');
+  };
 
   const openTopUpForSubscription = async () => {
     setError(null);
@@ -1237,6 +1279,27 @@ export function UltimaSubscription() {
             isUltraCompactHeight ? 'pb-0' : 'pb-1'
           }`}
         >
+          {canTopUpSelectedTariffTraffic && subscription ? (
+            <div className={isCompactHeight ? 'mb-2.5' : 'mb-3'}>
+              <UltimaTrafficTopUpSection
+                t={t}
+                formatPrice={formatPrice}
+                trafficLimitGb={subscription.traffic_limit_gb}
+                trafficUsedGb={subscription.traffic_used_gb}
+                trafficPackages={trafficPackages}
+                selectedTrafficPackage={selectedTrafficPackage}
+                setSelectedTrafficPackage={setSelectedTrafficPackage}
+                purchaseBalanceKopeks={currentBalanceKopeks}
+                isPending={purchaseTrafficMutation.isPending}
+                error={trafficPurchaseErrorMessage}
+                onPurchaseTraffic={(gb) => purchaseTrafficMutation.mutate(gb)}
+                onTopUpBalance={(gb) => {
+                  void openTopUpForTraffic(gb);
+                }}
+              />
+            </div>
+          ) : null}
+
           <div
             className={`grid auto-rows-fr grid-cols-1 min-[360px]:grid-cols-2 ${isCompactHeight ? 'gap-2.5' : 'gap-3'}`}
           >
