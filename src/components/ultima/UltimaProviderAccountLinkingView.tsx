@@ -160,23 +160,23 @@ function ProviderCard({
         'overflow-hidden rounded-[26px] border border-white/10 bg-[linear-gradient(180deg,rgba(13,41,39,0.9),rgba(7,20,35,0.96))] p-4 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition duration-200',
         disabled
           ? 'cursor-not-allowed opacity-65'
-          : 'hover:border-[#59f0c9]/35 hover:bg-[linear-gradient(180deg,rgba(18,55,51,0.96),rgba(8,26,42,0.98))]',
+          : 'hover:border-[#59f0c9]/[0.35] hover:bg-[linear-gradient(180deg,rgba(18,55,51,0.96),rgba(8,26,42,0.98))]',
       )}
     >
       <div className="flex items-start gap-3">
-        <div className="bg-white/6 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 text-white">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-white">
           {busy ? <SpinnerIcon /> : icon}
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-sm font-semibold text-white">{title}</h3>
             {status ? (
-              <span className="border-[#5cf2ca]/28 max-w-full whitespace-normal break-words rounded-full border bg-[#27cda4]/10 px-2.5 py-1 text-[10px] font-medium leading-tight text-[#95f7e1]">
+              <span className="max-w-full whitespace-normal break-words rounded-full border border-[#5cf2ca]/[0.28] bg-[#27cda4]/10 px-2.5 py-1 text-[10px] font-medium leading-tight text-[#95f7e1]">
                 {status}
               </span>
             ) : null}
           </div>
-          <p className="text-white/58 mt-1 text-xs leading-relaxed">{description}</p>
+          <p className="mt-1 text-xs leading-relaxed text-white/[0.58]">{description}</p>
         </div>
       </div>
     </button>
@@ -256,23 +256,23 @@ export function UltimaProviderAccountLinkingView({
             <h1 className="text-[clamp(32px,8.5vw,38px)] font-semibold leading-[0.95] tracking-[-0.01em] text-white">
               Сохранение доступа
             </h1>
-            <p className="text-white/62 mt-1.5 max-w-[620px] text-[13px]">
+            <p className="mt-1.5 max-w-[620px] text-[13px] text-white/[0.62]">
               Подключите несколько способов входа к одному профилю, чтобы не потерять подписку,
               баланс и доступ при смене способа авторизации.
             </p>
           </div>
           <Link
             to="/profile"
-            className="bg-white/6 text-white/72 hover:border-white/16 self-start whitespace-nowrap rounded-full border border-white/10 px-3 py-2 text-xs transition hover:bg-white/10 hover:text-white min-[390px]:shrink-0"
+            className="self-start whitespace-nowrap rounded-full border border-white/10 bg-white/[0.06] px-3 py-2 text-xs text-white/[0.72] transition hover:border-white/[0.16] hover:bg-white/10 hover:text-white min-[390px]:shrink-0"
           >
             Профиль
           </Link>
         </header>
 
         <div className="ultima-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto pr-1 lg:overflow-visible lg:pr-0">
-          <section className="border-emerald-200/12 rounded-[30px] border bg-[linear-gradient(180deg,rgba(64,180,140,0.16),rgba(8,33,36,0.94))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md">
+          <section className="rounded-[30px] border border-emerald-200/[0.12] bg-[linear-gradient(180deg,rgba(64,180,140,0.16),rgba(8,33,36,0.94))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md">
             <div className="flex items-start gap-3">
-              <div className="bg-white/8 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 text-white">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.08] text-white">
                 <ShieldIcon />
               </div>
               <div className="min-w-0 flex-1">
@@ -281,12 +281,12 @@ export function UltimaProviderAccountLinkingView({
                     Один профиль, несколько входов
                   </h2>
                   {userId ? (
-                    <span className="bg-white/8 text-white/56 rounded-full border border-white/10 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.14em]">
+                    <span className="rounded-full border border-white/10 bg-white/[0.08] px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-white/[0.56]">
                       ID {userId}
                     </span>
                   ) : null}
                 </div>
-                <p className="text-white/66 mt-1 text-sm leading-relaxed">
+                <p className="mt-1 text-sm leading-relaxed text-white/[0.66]">
                   Выберите нужный способ входа, авторизуйтесь в нем, и кабинет привяжет его к
                   текущему аккаунту.
                 </p>
@@ -294,39 +294,39 @@ export function UltimaProviderAccountLinkingView({
             </div>
 
             <div className="mt-4 grid gap-2 min-[360px]:grid-cols-2 xl:grid-cols-3">
-              <div className="bg-white/6 rounded-[24px] border border-white/10 p-3.5 min-[360px]:min-h-[122px]">
+              <div className="rounded-[24px] border border-white/10 bg-white/[0.06] p-3.5 min-[360px]:min-h-[122px]">
                 <div className="flex items-center gap-2 text-[#8ff8de]">
                   <MergeIcon />
                   <span className="text-xs font-medium uppercase tracking-[0.14em]">
                     Быстрое подключение
                   </span>
                 </div>
-                <p className="text-white/72 mt-2 text-[13px] leading-relaxed">
+                <p className="mt-2 text-[13px] leading-relaxed text-white/[0.72]">
                   Новый вход подключается прямо в кабинете без лишних шагов.
                 </p>
               </div>
-              <div className="bg-white/6 rounded-[24px] border border-white/10 p-3.5 min-[360px]:min-h-[122px]">
+              <div className="rounded-[24px] border border-white/10 bg-white/[0.06] p-3.5 min-[360px]:min-h-[122px]">
                 <div className="flex items-center gap-2 text-[#8ff8de]">
                   <ShieldIcon />
                   <span className="text-xs font-medium uppercase tracking-[0.14em]">
                     Общий доступ
                   </span>
                 </div>
-                <p className="text-white/72 mt-2 text-[13px] leading-relaxed">
+                <p className="mt-2 text-[13px] leading-relaxed text-white/[0.72]">
                   Баланс, подписка и старые привязки остаются в одном профиле.
                 </p>
               </div>
-              <div className="bg-white/6 rounded-[24px] border border-white/10 p-3.5 min-[360px]:col-span-2 min-[360px]:min-h-[112px] xl:col-span-1 xl:min-h-[122px]">
+              <div className="rounded-[24px] border border-white/10 bg-white/[0.06] p-3.5 min-[360px]:col-span-2 min-[360px]:min-h-[112px] xl:col-span-1 xl:min-h-[122px]">
                 <div className="flex flex-wrap items-center gap-2 text-[#8ff8de]">
                   <TelegramIcon />
                   <span className="text-xs font-medium uppercase tracking-[0.14em]">
                     Запасной доступ
                   </span>
-                  <span className="bg-white/8 rounded-full border border-white/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-white/60">
+                  <span className="rounded-full border border-white/10 bg-white/[0.08] px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-white/60">
                     {formatLinkedEntriesLabel(linkedProvidersCount)}
                   </span>
                 </div>
-                <p className="text-white/72 mt-2 text-[13px] leading-relaxed">
+                <p className="mt-2 text-[13px] leading-relaxed text-white/[0.72]">
                   Чем больше привязанных способов входа, тем проще сохранить доступ к кабинету.
                 </p>
               </div>
@@ -340,7 +340,7 @@ export function UltimaProviderAccountLinkingView({
                   <h2 className="text-lg font-semibold text-white">
                     Подключить новый способ входа
                   </h2>
-                  <p className="text-white/58 mt-1 text-sm">
+                  <p className="mt-1 text-sm text-white/[0.58]">
                     {isTelegramMiniApp
                       ? 'Выберите вход, который хотите добавить к текущему профилю. Yandex и VK откроются в браузере телефона.'
                       : 'Выберите вход, который хотите добавить к текущему профилю. Для Telegram ниже есть отдельный переход в Mini App.'}
@@ -378,9 +378,9 @@ export function UltimaProviderAccountLinkingView({
               </div>
 
               {showTelegramMiniAppHint ? (
-                <div className="bg-white/6 mt-3 rounded-[24px] border border-white/10 p-3.5">
+                <div className="mt-3 rounded-[24px] border border-white/10 bg-white/[0.06] p-3.5">
                   <div className="flex items-start gap-3">
-                    <div className="bg-white/8 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 text-white">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.08] text-white">
                       <TelegramIcon />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -388,11 +388,11 @@ export function UltimaProviderAccountLinkingView({
                         <h3 className="text-sm font-semibold text-white">
                           Telegram подключается в Mini App
                         </h3>
-                        <span className="bg-white/8 rounded-full border border-white/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-white/60">
+                        <span className="rounded-full border border-white/10 bg-white/[0.08] px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-white/60">
                           Только в Telegram
                         </span>
                       </div>
-                      <p className="text-white/62 mt-1 text-sm leading-relaxed">
+                      <p className="mt-1 text-sm leading-relaxed text-white/[0.62]">
                         Чтобы привязать именно Telegram к этому профилю, откройте кабинет в Telegram
                         Mini App и запустите привязку оттуда.
                       </p>
@@ -406,7 +406,7 @@ export function UltimaProviderAccountLinkingView({
                           </a>
                         </Button>
                       ) : (
-                        <p className="text-white/48 mt-3 text-xs leading-relaxed">
+                        <p className="mt-3 text-xs leading-relaxed text-white/[0.48]">
                           Telegram-бот не настроен в переменных окружения фронтенда. Добавьте
                           `VITE_TELEGRAM_BOT_USERNAME`, чтобы показать прямой переход.
                         </p>
@@ -417,14 +417,14 @@ export function UltimaProviderAccountLinkingView({
               ) : null}
 
               {waitingExternalProvider ? (
-                <div className="border-[#59f0c9]/18 bg-[#27cda4]/8 mt-3 rounded-[24px] border p-3 text-sm text-[#aaf9e8]">
+                <div className="mt-3 rounded-[24px] border border-[#59f0c9]/[0.18] bg-[#27cda4]/[0.08] p-3 text-sm text-[#aaf9e8]">
                   Вход через {getProviderLabel(waitingExternalProvider)} открыт во внешнем браузере.
                   Как только авторизация завершится, кабинет сам покажет результат.
                 </div>
               ) : null}
 
               {telegramIdentity ? (
-                <div className="bg-white/6 text-white/68 mt-3 rounded-[24px] border border-white/10 p-3 text-sm">
+                <div className="mt-3 rounded-[24px] border border-white/10 bg-white/[0.06] p-3 text-sm text-white/[0.68]">
                   {hasAlternativeIdentity
                     ? 'Чтобы заменить Telegram, сначала отвяжите текущий Telegram ниже, затем привяжите новый.'
                     : 'Чтобы заменить Telegram, сначала подключите любой другой способ входа: например Yandex или VK.'}
@@ -455,7 +455,7 @@ export function UltimaProviderAccountLinkingView({
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <h2 className="text-lg font-semibold text-white">Уже подключено</h2>
-                <p className="text-white/58 mt-1 text-sm">
+                <p className="mt-1 text-sm text-white/[0.58]">
                   Здесь видно, через какие входы уже можно открыть этот профиль.
                 </p>
               </div>
@@ -466,7 +466,7 @@ export function UltimaProviderAccountLinkingView({
                 {linkedIdentities.map((identity) => (
                   <div
                     key={`${identity.provider}-${identity.provider_user_id_masked}`}
-                    className="bg-white/6 rounded-[24px] border border-white/10 p-3"
+                    className="rounded-[24px] border border-white/10 bg-white/[0.06] p-3"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
@@ -474,12 +474,12 @@ export function UltimaProviderAccountLinkingView({
                           <span className="text-sm font-semibold text-white">
                             {getProviderLabel(identity.provider)}
                           </span>
-                          <span className="bg-white/6 text-white/52 rounded-full border border-white/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.14em]">
+                          <span className="rounded-full border border-white/10 bg-white/[0.06] px-2 py-0.5 text-[10px] uppercase tracking-[0.14em] text-white/[0.52]">
                             {identity.provider_user_id_masked}
                           </span>
                         </div>
                         {!identity.can_unlink ? (
-                          <p className="text-white/56 mt-2 text-xs leading-relaxed">
+                          <p className="mt-2 text-xs leading-relaxed text-white/[0.56]">
                             {getIdentityBlockedDetails(identity)}
                           </p>
                         ) : null}
@@ -489,13 +489,13 @@ export function UltimaProviderAccountLinkingView({
                           type="button"
                           onClick={() => onRequestUnlink(identity.provider)}
                           disabled={requestUnlinkPending || confirmUnlinkPending}
-                          className="hover:bg-error-500/16 disabled:bg-white/8 disabled:text-white/38 shrink-0 rounded-full border border-error-500/35 bg-error-500/10 px-3 py-1.5 text-xs font-medium text-error-300 transition disabled:cursor-not-allowed disabled:border-white/10"
+                          className="shrink-0 rounded-full border border-error-500/[0.35] bg-error-500/10 px-3 py-1.5 text-xs font-medium text-error-300 transition hover:bg-error-500/[0.16] disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/[0.08] disabled:text-white/[0.38]"
                         >
                           Отвязать
                         </button>
                       ) : (
                         <span
-                          className="bg-white/6 text-white/48 shrink-0 rounded-full border border-white/10 px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.14em]"
+                          className="shrink-0 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.14em] text-white/[0.48]"
                           title={getIdentityBlockedDetails(identity)}
                         >
                           Защищено
@@ -506,7 +506,7 @@ export function UltimaProviderAccountLinkingView({
                 ))}
               </div>
             ) : (
-              <div className="border-white/12 bg-white/4 text-white/52 mt-4 rounded-[24px] border border-dashed px-4 py-5 text-sm">
+              <div className="mt-4 rounded-[24px] border border-dashed border-white/[0.12] bg-white/[0.04] px-4 py-5 text-sm text-white/[0.52]">
                 Пока привязан только текущий способ входа. Подключите еще один вариант выше, чтобы
                 доступ было проще восстановить.
               </div>
@@ -516,12 +516,12 @@ export function UltimaProviderAccountLinkingView({
           {telegramRelink ? (
             <section className="rounded-[30px] border border-white/10 bg-[rgba(7,18,33,0.88)] p-4 backdrop-blur-md">
               <div className="flex items-start gap-3">
-                <div className="bg-white/6 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 text-white">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-white">
                   <TelegramIcon />
                 </div>
                 <div className="min-w-0 flex-1">
                   <h2 className="text-base font-semibold text-white">Замена Telegram</h2>
-                  <div className="bg-white/6 mt-2 rounded-[22px] border border-white/10 p-3">
+                  <div className="mt-2 rounded-[22px] border border-white/10 bg-white/[0.06] p-3">
                     {!hasAlternativeIdentity ? (
                       <p className="text-sm text-warning-300">
                         Сначала подключите любой другой способ входа. Без этого Telegram нельзя
@@ -546,7 +546,7 @@ export function UltimaProviderAccountLinkingView({
                         Можно отвязать текущий Telegram и привязать новый прямо из этого экрана.
                       </p>
                     ) : (
-                      <p className="text-white/68 text-sm">
+                      <p className="text-sm text-white/[0.68]">
                         Подключите еще один способ входа, если хотите в будущем заменить Telegram.
                       </p>
                     )}
@@ -559,7 +559,7 @@ export function UltimaProviderAccountLinkingView({
           {unlinkProvider && unlinkRequestToken ? (
             <section className="rounded-[30px] border border-warning-500/30 bg-warning-500/10 p-4 backdrop-blur-md">
               <h2 className="text-lg font-semibold text-white">Подтвердите отвязку</h2>
-              <p className="mt-1 text-sm text-warning-100/85">
+              <p className="mt-1 text-sm text-warning-100/[0.85]">
                 Код подтверждения уже отправлен в Telegram. Введите его, чтобы завершить отвязку{' '}
                 {getProviderLabel(unlinkProvider)}.
               </p>
@@ -570,7 +570,7 @@ export function UltimaProviderAccountLinkingView({
                 value={unlinkOtpCode}
                 onChange={(event) => onUnlinkOtpCodeChange(event.target.value)}
                 placeholder="Введите 6 цифр"
-                className="border-white/12 mt-4 w-full rounded-[22px] border bg-[rgba(7,18,33,0.75)] px-3 py-3 text-center tracking-[0.38em] text-white placeholder:text-white/35 focus:border-[#59f0c9]/45 focus:outline-none"
+                className="mt-4 w-full rounded-[22px] border border-white/[0.12] bg-[rgba(7,18,33,0.75)] px-3 py-3 text-center tracking-[0.38em] text-white placeholder:text-white/[0.35] focus:border-[#59f0c9]/[0.45] focus:outline-none"
               />
 
               <div className="mt-3 flex flex-wrap gap-2">
@@ -584,7 +584,7 @@ export function UltimaProviderAccountLinkingView({
                 </Button>
                 <Button
                   variant="secondary"
-                  className="border-white/12 bg-white/6 text-white hover:bg-white/10"
+                  className="border-white/[0.12] bg-white/[0.06] text-white hover:bg-white/10"
                   onClick={onCancelUnlink}
                 >
                   Отмена
@@ -605,12 +605,12 @@ export function UltimaProviderAccountLinkingView({
 
           <section className="rounded-[28px] border border-white/10 bg-[rgba(7,18,33,0.88)] p-3.5 backdrop-blur-md">
             <div className="flex items-start gap-3">
-              <div className="bg-white/6 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 text-white">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-white">
                 <SupportIcon />
               </div>
               <div className="min-w-0 flex-1">
                 <h2 className="text-base font-semibold text-white">Нужна помощь?</h2>
-                <p className="text-white/58 mt-1 text-sm leading-relaxed">
+                <p className="mt-1 text-sm leading-relaxed text-white/[0.58]">
                   Если кабинет не сможет объединить профили автоматически, поддержка поможет
                   завершить перенос вручную.
                 </p>
@@ -628,21 +628,21 @@ export function UltimaProviderAccountLinkingView({
             </div>
 
             {latestManualMerge ? (
-              <div className="bg-white/6 mt-3 rounded-[22px] border border-white/10 p-3">
+              <div className="mt-3 rounded-[22px] border border-white/10 bg-white/[0.06] p-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-sm font-semibold text-white">
                     Последний merge-запрос #{latestManualMerge.ticket_id}
                   </span>
-                  <span className="bg-white/6 text-white/52 rounded-full border border-white/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.14em]">
+                  <span className="rounded-full border border-white/10 bg-white/[0.06] px-2 py-0.5 text-[10px] uppercase tracking-[0.14em] text-white/[0.52]">
                     {getManualMergeStatus(latestManualMerge)}
                   </span>
                 </div>
                 {latestManualMerge.resolution_comment ? (
-                  <p className="text-white/66 mt-2 text-sm">
+                  <p className="mt-2 text-sm text-white/[0.66]">
                     {latestManualMerge.resolution_comment}
                   </p>
                 ) : null}
-                <p className="text-white/48 mt-2 text-xs">
+                <p className="mt-2 text-xs text-white/[0.48]">
                   Обновлено {new Date(latestManualMerge.updated_at).toLocaleString()}
                 </p>
               </div>

@@ -178,7 +178,7 @@ export function UltimaDesktopConnection({
             <div className="absolute inset-y-0 right-[-10%] w-[34%] rounded-full bg-white/[0.05] blur-3xl" />
             <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-center xl:grid-cols-[minmax(0,1fr)_320px]">
               <div>
-                <div className="border-emerald-200/28 bg-emerald-300/12 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm text-emerald-50">
+                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200/[0.28] bg-emerald-300/[0.12] px-3 py-1 text-sm text-emerald-50">
                   <span className="h-2 w-2 rounded-full bg-current" />
                   {t('ultima.desktop.stepShort', {
                     step,
@@ -188,7 +188,7 @@ export function UltimaDesktopConnection({
                 <h1 className="mt-4 max-w-[18ch] text-[clamp(34px,3.8vw,52px)] font-semibold leading-[0.98] tracking-[-0.038em] text-white">
                   {title}
                 </h1>
-                <p className="text-white/72 mt-3 max-w-[48ch] text-[15px] leading-[1.6]">
+                <p className="mt-3 max-w-[48ch] text-[15px] leading-[1.6] text-white/[0.72]">
                   {subtitle}
                 </p>
               </div>
@@ -254,7 +254,7 @@ export function UltimaDesktopConnection({
                           ? onStartAddSubscription
                           : onToggleVpn
                     }
-                    className="bg-black/8 group relative z-10 inline-flex h-[104px] w-[104px] items-center justify-center rounded-full transition-transform duration-200 hover:scale-[1.02] active:scale-[0.97]"
+                    className="group relative z-10 inline-flex h-[104px] w-[104px] items-center justify-center rounded-full bg-black/[0.08] transition-transform duration-200 hover:scale-[1.02] active:scale-[0.97]"
                     aria-label={step === 3 ? toggleVpnLabel : primaryAction.label}
                   >
                     {icon}
@@ -275,8 +275,8 @@ export function UltimaDesktopConnection({
                       active
                         ? 'border-emerald-200/70 bg-emerald-300/20 text-white'
                         : done
-                          ? 'border-emerald-200/55 bg-emerald-400/35 text-emerald-50'
-                          : 'border-white/18 bg-white/8 text-white/60',
+                          ? 'border-emerald-200/[0.55] bg-emerald-400/[0.35] text-emerald-50'
+                          : 'border-white/[0.18] bg-white/[0.08] text-white/60',
                     )}
                   >
                     {done ? <StepDoneIcon /> : index}
@@ -284,14 +284,14 @@ export function UltimaDesktopConnection({
                 );
               })}
             </div>
-            <div className="mx-auto mt-2 h-1 w-[188px] overflow-hidden rounded-full bg-white/15">
+            <div className="mx-auto mt-2 h-1 w-[188px] overflow-hidden rounded-full bg-white/[0.15]">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-emerald-200/85 via-emerald-300/90 to-emerald-200/85 transition-[width] duration-500 ease-out"
+                className="h-full rounded-full bg-gradient-to-r from-emerald-200/[0.85] via-emerald-300/90 to-emerald-200/[0.85] transition-[width] duration-500 ease-out"
                 style={{ width: `${stepProgressPercent}%` }}
               />
             </div>
             {isDoneStep && (
-              <p className="text-emerald-50/82 mt-4 text-center text-sm">
+              <p className="mt-4 text-center text-sm text-emerald-50/[0.82]">
                 {t('subscription.connection.tapCheckHint', {
                   defaultValue: 'Кнопка в центре тоже включает VPN в приложении.',
                 })}
@@ -310,9 +310,9 @@ export function UltimaDesktopConnection({
                     className={cn(
                       'rounded-[20px] border px-4 py-4 transition-colors',
                       active
-                        ? 'border-emerald-200/34 bg-emerald-300/10'
+                        ? 'border-emerald-200/[0.34] bg-emerald-300/10'
                         : done
-                          ? 'border-emerald-200/24 bg-emerald-300/[0.08]'
+                          ? 'border-emerald-200/[0.24] bg-emerald-300/[0.08]'
                           : 'border-white/10 bg-white/[0.04]',
                     )}
                   >
@@ -322,14 +322,14 @@ export function UltimaDesktopConnection({
                         className={cn(
                           'inline-flex h-7 min-w-7 items-center justify-center rounded-full border px-2 text-xs',
                           done || active
-                            ? 'bg-emerald-300/18 border-emerald-200/45 text-emerald-50'
-                            : 'border-white/12 bg-white/8 text-white/60',
+                            ? 'border-emerald-200/[0.45] bg-emerald-300/[0.18] text-emerald-50'
+                            : 'border-white/[0.12] bg-white/[0.08] text-white/60',
                         )}
                       >
                         {done ? <StepDoneIcon /> : card.step}
                       </span>
                     </div>
-                    <p className="text-white/66 mt-2 text-sm leading-[1.55]">{card.subtitle}</p>
+                    <p className="mt-2 text-sm leading-[1.55] text-white/[0.66]">{card.subtitle}</p>
                   </div>
                 );
               })}
@@ -355,7 +355,9 @@ export function UltimaDesktopConnection({
                   ×
                 </button>
               </div>
-              <p className="text-white/74 mt-3 text-sm leading-[1.6]">{importantInfoDescription}</p>
+              <p className="mt-3 text-sm leading-[1.6] text-white/[0.74]">
+                {importantInfoDescription}
+              </p>
               <div className="mt-5 space-y-2.5">
                 <button
                   type="button"
@@ -389,7 +391,7 @@ export function UltimaDesktopConnection({
             <div className="text-[28px] font-semibold leading-[1] tracking-[-0.035em] text-white">
               {title}
             </div>
-            <p className="text-white/68 mt-3 text-sm leading-[1.6]">{subtitle}</p>
+            <p className="mt-3 text-sm leading-[1.6] text-white/[0.68]">{subtitle}</p>
 
             <div className="mt-5 space-y-3">
               <button

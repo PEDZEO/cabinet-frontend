@@ -514,8 +514,8 @@ export function UltimaConnection({
               className={`mx-auto mt-2 leading-[1.2] ${
                 isDoneStep
                   ? isVeryShortViewport
-                    ? 'text-white/72 max-w-[280px] text-[13px]'
-                    : 'text-white/72 max-w-[332px] text-[clamp(14px,3.8vw,15px)]'
+                    ? 'max-w-[280px] text-[13px] text-white/[0.72]'
+                    : 'max-w-[332px] text-[clamp(14px,3.8vw,15px)] text-white/[0.72]'
                   : 'max-w-[360px] text-[clamp(14px,4.4vw,17px)] text-white/70'
               }`}
             >
@@ -523,7 +523,7 @@ export function UltimaConnection({
             </p>
             {step === 3 && (
               <div
-                className={`border-emerald-200/28 mx-auto w-full max-w-[332px] rounded-2xl border bg-[linear-gradient(130deg,rgba(28,171,142,0.30),rgba(8,27,24,0.58))] px-3.5 shadow-[0_10px_24px_rgba(4,16,14,0.35),inset_0_1px_0_rgba(255,255,255,0.16)] backdrop-blur-md ${isVeryShortViewport ? 'mt-1.5 py-1.5' : 'mt-2 py-2'}`}
+                className={`mx-auto w-full max-w-[332px] rounded-2xl border border-emerald-200/[0.28] bg-[linear-gradient(130deg,rgba(28,171,142,0.30),rgba(8,27,24,0.58))] px-3.5 shadow-[0_10px_24px_rgba(4,16,14,0.35),inset_0_1px_0_rgba(255,255,255,0.16)] backdrop-blur-md ${isVeryShortViewport ? 'mt-1.5 py-1.5' : 'mt-2 py-2'}`}
               >
                 <p className="text-[12px] font-medium leading-[1.22] text-emerald-50/95">
                   {t('subscription.connection.tapCheckHint', {
@@ -545,8 +545,8 @@ export function UltimaConnection({
                       active
                         ? 'border-emerald-200/70 bg-emerald-300/20 text-white'
                         : done
-                          ? 'border-emerald-200/55 bg-emerald-400/35 text-emerald-50'
-                          : 'border-white/18 bg-white/8 text-white/60'
+                          ? 'border-emerald-200/[0.55] bg-emerald-400/[0.35] text-emerald-50'
+                          : 'border-white/[0.18] bg-white/[0.08] text-white/60'
                     } ${done ? 'ultima-step-done-pop' : ''}`}
                   >
                     {done ? <StepDoneIcon /> : index}
@@ -555,10 +555,10 @@ export function UltimaConnection({
               })}
             </div>
             <div
-              className={`mx-auto h-1 w-full max-w-[168px] overflow-hidden rounded-full bg-white/15 lg:mt-1.5 ${isVeryShortViewport ? 'mt-1.5' : 'mt-2'}`}
+              className={`mx-auto h-1 w-full max-w-[168px] overflow-hidden rounded-full bg-white/[0.15] lg:mt-1.5 ${isVeryShortViewport ? 'mt-1.5' : 'mt-2'}`}
             >
               <div
-                className="h-full rounded-full bg-gradient-to-r from-emerald-200/85 via-emerald-300/90 to-emerald-200/85 transition-[width] duration-500 ease-out"
+                className="h-full rounded-full bg-gradient-to-r from-emerald-200/[0.85] via-emerald-300/90 to-emerald-200/[0.85] transition-[width] duration-500 ease-out"
                 style={{ width: `${stepProgressPercent}%` }}
               />
             </div>
@@ -623,7 +623,7 @@ export function UltimaConnection({
             </svg>
             <div
               ref={centerActionRef}
-              className="bg-black/8 relative flex items-center justify-center rounded-full"
+              className="relative flex items-center justify-center rounded-full bg-black/[0.08]"
               style={{ width: ringSizes.center, height: ringSizes.center }}
             >
               {step === 3 ? (
@@ -762,7 +762,7 @@ export function UltimaConnection({
           <div className="ultima-mobile-overlay-backdrop" />
           <div className="ultima-mobile-overlay">
             <div className="ultima-mobile-overlay-panel">
-              <div className="ultima-step-enter border-white/24 rounded-[24px] border bg-[#05070B] p-4 text-white shadow-[0_26px_56px_rgba(0,0,0,0.72)] backdrop-blur-xl">
+              <div className="ultima-step-enter rounded-[24px] border border-white/[0.24] bg-[#05070B] p-4 text-white shadow-[0_26px_56px_rgba(0,0,0,0.72)] backdrop-blur-xl">
                 <div className="mb-2 flex items-start justify-between gap-3">
                   <h3 className="text-[24px] font-semibold leading-[1.06] text-white/95">
                     {t('subscription.connection.importantInfo', {
@@ -778,7 +778,7 @@ export function UltimaConnection({
                     ×
                   </button>
                 </div>
-                <p className="text-white/92 text-[15px] leading-[1.28]">
+                <p className="text-[15px] leading-[1.28] text-white/[0.92]">
                   {importantInfoDescription}
                 </p>
                 <button

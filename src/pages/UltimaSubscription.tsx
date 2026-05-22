@@ -669,7 +669,7 @@ export function UltimaSubscription() {
           <div className="ultima-shell-aura" />
           <div className="ultima-shell-inner lg:max-w-[1200px]">
             <div className="flex min-h-[calc(100dvh-48px)] items-center justify-center">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-300/35 border-t-transparent" />
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-300/[0.35] border-t-transparent" />
             </div>
           </div>
         </div>
@@ -1055,7 +1055,7 @@ export function UltimaSubscription() {
               <h1 className="break-words text-[clamp(32px,8.4vw,42px)] font-semibold leading-[0.95] text-white">
                 {t('dashboard.expired.tariffs')}
               </h1>
-              <p className="text-white/72 mt-1.5 text-[14px] leading-snug">
+              <p className="mt-1.5 text-[14px] leading-snug text-white/[0.72]">
                 {t('subscription.selectTariffDescription', {
                   defaultValue: 'Выберите тариф, затем настройте устройства и период оплаты.',
                 })}
@@ -1107,7 +1107,7 @@ export function UltimaSubscription() {
                 haptic.selection();
                 setIsMobileTariffChooserOpen(true);
               }}
-              className="border-white/12 text-white/78 mt-2 rounded-full border bg-white/[0.06] px-3 py-1.5 text-[12px] font-medium"
+              className="mt-2 rounded-full border border-white/[0.12] bg-white/[0.06] px-3 py-1.5 text-[12px] font-medium text-white/[0.78]"
             >
               {t('subscription.changeTariff', { defaultValue: 'Сменить тариф' })}
             </button>
@@ -1324,7 +1324,7 @@ export function UltimaSubscription() {
                   } ${
                     active
                       ? 'border bg-black/20'
-                      : 'border-white/12 bg-black/20 hover:border-white/25'
+                      : 'border-white/[0.12] bg-black/20 hover:border-white/25'
                   }`}
                   style={
                     active
@@ -1416,7 +1416,7 @@ export function UltimaSubscription() {
 
         <div className={`ultima-mobile-dock-footer ${isUltraCompactHeight ? 'pt-2' : 'pt-3'}`}>
           {legacyDeviceNotice ? (
-            <div className="border-amber-200/24 text-amber-50/92 mb-2 flex items-center gap-2 rounded-[16px] border bg-amber-300/10 px-3 py-2 text-[11px] leading-[1.3]">
+            <div className="mb-2 flex items-center gap-2 rounded-[16px] border border-amber-200/[0.24] bg-amber-300/10 px-3 py-2 text-[11px] leading-[1.3] text-amber-50/[0.92]">
               <p className="line-clamp-2 min-w-0 flex-1">{legacyDeviceNotice}</p>
               <button
                 type="button"

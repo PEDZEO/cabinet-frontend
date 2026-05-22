@@ -173,7 +173,7 @@ const formatContent = (content: string): string => {
 function LoadingState() {
   return (
     <div className="flex min-h-[180px] items-center justify-center">
-      <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-300/35 border-t-transparent" />
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-300/[0.35] border-t-transparent" />
     </div>
   );
 }
@@ -206,11 +206,11 @@ function HtmlContent({
   return (
     <div className="space-y-4">
       <div
-        className="prose prose-invert text-white/84 max-w-none text-[14px] leading-[1.7] [&_a]:break-all [&_a]:text-[#5de8c3] [&_a]:underline [&_blockquote]:rounded-[20px] [&_blockquote]:border [&_blockquote]:border-white/10 [&_blockquote]:bg-white/[0.04] [&_blockquote]:px-4 [&_blockquote]:py-3 [&_h1]:mb-3 [&_h1]:text-[30px] [&_h1]:font-semibold [&_h1]:leading-[1.05] [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:text-[24px] [&_h2]:font-semibold [&_h2]:leading-[1.1] [&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:text-[20px] [&_h3]:font-semibold [&_li]:mb-2 [&_p]:mb-4 [&_strong]:font-semibold"
+        className="prose prose-invert max-w-none text-[14px] leading-[1.7] text-white/[0.84] [&_a]:break-all [&_a]:text-[#5de8c3] [&_a]:underline [&_blockquote]:rounded-[20px] [&_blockquote]:border [&_blockquote]:border-white/10 [&_blockquote]:bg-white/[0.04] [&_blockquote]:px-4 [&_blockquote]:py-3 [&_h1]:mb-3 [&_h1]:text-[30px] [&_h1]:font-semibold [&_h1]:leading-[1.05] [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:text-[24px] [&_h2]:font-semibold [&_h2]:leading-[1.1] [&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:text-[20px] [&_h3]:font-semibold [&_li]:mb-2 [&_p]:mb-4 [&_strong]:font-semibold"
         dangerouslySetInnerHTML={{ __html: html }}
       />
       {dateLabel ? (
-        <p className="text-white/48 border-t border-white/10 pt-3 text-[12px]">{dateLabel}</p>
+        <p className="border-t border-white/10 pt-3 text-[12px] text-white/[0.48]">{dateLabel}</p>
       ) : null}
     </div>
   );
@@ -388,8 +388,8 @@ export function UltimaInfo() {
               'flex min-h-[44px] shrink-0 items-center gap-2 rounded-[18px] border px-3 py-2 text-left text-[13px] font-medium transition',
               vertical ? 'w-full' : 'whitespace-nowrap',
               isActive
-                ? 'border-emerald-200/32 bg-emerald-300/12 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
-                : 'text-white/62 hover:border-white/18 hover:text-white/84 border-white/10 bg-white/[0.04] hover:bg-white/[0.07]',
+                ? 'border-emerald-200/[0.32] bg-emerald-300/[0.12] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
+                : 'border-white/10 bg-white/[0.04] text-white/[0.62] hover:border-white/[0.18] hover:bg-white/[0.07] hover:text-white/[0.84]',
             )}
           >
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.05]">
@@ -516,7 +516,7 @@ export function UltimaInfo() {
           <div className="p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-white/46 text-[11px] font-medium uppercase">
+                <p className="text-[11px] font-medium uppercase text-white/[0.46]">
                   {t('info.statusCurrent', { defaultValue: 'Текущий статус' })}
                 </p>
                 <p className="mt-1 text-[22px] font-semibold leading-none text-white">
@@ -525,7 +525,7 @@ export function UltimaInfo() {
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-white/46 text-[11px] font-medium uppercase">
+                <p className="text-[11px] font-medium uppercase text-white/[0.46]">
                   {t('info.loyaltySpent', { defaultValue: 'Потрачено' })}
                 </p>
                 <p className="mt-1 text-[18px] font-semibold text-white/90">
@@ -540,7 +540,7 @@ export function UltimaInfo() {
               />
             </div>
             {loyaltyData.next_tier_name ? (
-              <p className="text-white/58 mt-2 text-[12px]">
+              <p className="mt-2 text-[12px] text-white/[0.58]">
                 {t('info.nextTier', {
                   defaultValue: 'Следующий уровень: {{name}}',
                   name: loyaltyData.next_tier_name,
@@ -561,7 +561,7 @@ export function UltimaInfo() {
                       <h3 className="break-words text-[17px] font-semibold leading-tight text-white">
                         {tier.name}
                       </h3>
-                      <p className="text-white/54 mt-1 text-[12px]">
+                      <p className="mt-1 text-[12px] text-white/[0.54]">
                         {formatCurrency(tier.threshold_rubles)}
                       </p>
                     </div>
@@ -569,10 +569,10 @@ export function UltimaInfo() {
                       className={cn(
                         'shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-medium',
                         tier.is_current
-                          ? 'border-emerald-200/24 bg-emerald-300/12 text-emerald-50'
+                          ? 'border-emerald-200/[0.24] bg-emerald-300/[0.12] text-emerald-50'
                           : tier.is_achieved
-                            ? 'border-white/12 bg-white/[0.06] text-white/70'
-                            : 'text-white/42 border-white/10 bg-white/[0.04]',
+                            ? 'border-white/[0.12] bg-white/[0.06] text-white/70'
+                            : 'border-white/10 bg-white/[0.04] text-white/[0.42]',
                       )}
                     >
                       {tier.is_current
@@ -587,14 +587,14 @@ export function UltimaInfo() {
                       {discounts.map((discount) => (
                         <span
                           key={`${tier.id}-${discount}`}
-                          className="text-white/66 rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 text-[11px]"
+                          className="rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 text-[11px] text-white/[0.66]"
                         >
                           {discount}
                         </span>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-white/48 mt-3 text-[12px]">
+                    <p className="mt-3 text-[12px] text-white/[0.48]">
                       {t('ultimaInfo.noDiscounts', { defaultValue: 'Скидки для уровня не заданы' })}
                     </p>
                   )}
@@ -693,13 +693,13 @@ export function UltimaInfo() {
               'linear-gradient(180deg, color-mix(in srgb, var(--ultima-color-aura) 18%, transparent), color-mix(in srgb, var(--ultima-color-secondary) 68%, transparent))',
           }}
         >
-          <div className="text-white/82 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.07]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.07] text-white/[0.82]">
             <InfoIcon className="h-6 w-6" />
           </div>
           <h1 className="mt-3 text-[clamp(29px,7.6vw,36px)] font-semibold leading-[1] text-white">
             {title}
           </h1>
-          <p className="text-white/62 mt-2 text-[13px] leading-[1.45]">{subtitle}</p>
+          <p className="mt-2 text-[13px] leading-[1.45] text-white/[0.62]">{subtitle}</p>
         </section>
 
         <section

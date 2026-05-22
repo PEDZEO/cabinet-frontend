@@ -107,13 +107,13 @@ export function UltimaBalanceHistory() {
 
   const historyContent = (
     <>
-      <section className="border-emerald-200/12 mb-3 rounded-2xl border bg-[rgba(12,45,42,0.2)] p-3 backdrop-blur-md">
+      <section className="mb-3 rounded-2xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.2)] p-3 backdrop-blur-md">
         <div className="mb-1 flex items-center justify-between">
-          <p className="text-[12px] text-white/55">{t('balance.currentBalance')}</p>
+          <p className="text-[12px] text-white/[0.55]">{t('balance.currentBalance')}</p>
           <button
             type="button"
             onClick={toggleBalanceVisibility}
-            className="border-emerald-200/12 flex items-center gap-1 rounded-lg border bg-emerald-900/30 px-2 py-1 text-[11px] text-white/75"
+            className="flex items-center gap-1 rounded-lg border border-emerald-200/[0.12] bg-emerald-900/30 px-2 py-1 text-[11px] text-white/75"
           >
             <EyeIcon hidden={hiddenBalance} />
             {hiddenBalance
@@ -123,11 +123,11 @@ export function UltimaBalanceHistory() {
         </div>
         <p className="text-[30px] font-semibold leading-none text-white">
           {hiddenBalance ? '•••••' : formatAmount(balanceData?.balance_rubles || 0)}
-          <span className="ml-2 text-[18px] text-white/55">{currencySymbol}</span>
+          <span className="ml-2 text-[18px] text-white/[0.55]">{currencySymbol}</span>
         </p>
       </section>
 
-      <section className="border-emerald-200/12 min-h-0 flex-1 overflow-hidden rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:p-4">
+      <section className="min-h-0 flex-1 overflow-hidden rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:p-4">
         <div className="ultima-scrollbar h-full overflow-y-auto pr-1 lg:h-auto lg:overflow-visible lg:pr-0">
           {txLoading ? (
             <div className="flex h-40 items-center justify-center">
@@ -138,7 +138,7 @@ export function UltimaBalanceHistory() {
               <div className="mb-3 flex justify-center">
                 <WalletIcon />
               </div>
-              <p className="text-white/58 text-sm">{t('balance.noTransactions')}</p>
+              <p className="text-sm text-white/[0.58]">{t('balance.noTransactions')}</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -157,15 +157,15 @@ export function UltimaBalanceHistory() {
                     className="rounded-2xl border border-emerald-200/10 bg-emerald-950/30 px-3 py-2.5"
                   >
                     <div className="mb-1 flex items-center justify-between gap-2">
-                      <span className="rounded-full border border-emerald-200/15 bg-emerald-900/35 px-2 py-0.5 text-[10px] text-white/70">
+                      <span className="rounded-full border border-emerald-200/[0.15] bg-emerald-900/[0.35] px-2 py-0.5 text-[10px] text-white/70">
                         {getTypeLabel(tx.type)}
                       </span>
-                      <span className="text-[11px] text-white/45">
+                      <span className="text-[11px] text-white/[0.45]">
                         {new Date(tx.created_at).toLocaleDateString()}
                       </span>
                     </div>
                     {localizedDescription ? (
-                      <p className="text-white/58 mb-1 text-[12px]">{localizedDescription}</p>
+                      <p className="mb-1 text-[12px] text-white/[0.58]">{localizedDescription}</p>
                     ) : null}
                     <p
                       className={`text-[15px] font-medium ${isPositive ? 'text-emerald-200' : 'text-rose-200'}`}
@@ -183,7 +183,7 @@ export function UltimaBalanceHistory() {
             <div className="mt-3 flex items-center gap-2">
               <button
                 type="button"
-                className="border-emerald-200/12 rounded-xl border bg-emerald-900/30 px-3 py-2 text-[12px] text-white/80 disabled:opacity-40"
+                className="rounded-xl border border-emerald-200/[0.12] bg-emerald-900/30 px-3 py-2 text-[12px] text-white/80 disabled:opacity-40"
                 onClick={() => setPage((prev) => Math.max(1, prev - 1))}
                 disabled={transactions.page <= 1}
               >
@@ -194,7 +194,7 @@ export function UltimaBalanceHistory() {
               </p>
               <button
                 type="button"
-                className="border-emerald-200/12 rounded-xl border bg-emerald-900/30 px-3 py-2 text-[12px] text-white/80 disabled:opacity-40"
+                className="rounded-xl border border-emerald-200/[0.12] bg-emerald-900/30 px-3 py-2 text-[12px] text-white/80 disabled:opacity-40"
                 onClick={() =>
                   setPage((prev) =>
                     transactions.pages ? Math.min(transactions.pages, prev + 1) : prev + 1,
@@ -266,7 +266,7 @@ export function UltimaBalanceHistory() {
                     ? t('common.show', { defaultValue: 'Показать баланс' })
                     : t('common.hide', { defaultValue: 'Скрыть баланс' })}
                 </button>
-                <div className="text-white/72 rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-[1.6]">
+                <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-[1.6] text-white/[0.72]">
                   {t('history.desktopTypesHint', {
                     defaultValue:
                       'Зачисления, оплаты подписки, реферальные бонусы и вывод средств отображаются в одном журнале.',
@@ -291,7 +291,7 @@ export function UltimaBalanceHistory() {
           <h1 className="text-[clamp(34px,9vw,42px)] font-semibold leading-[0.9] tracking-[-0.01em] text-white">
             {t('profile.transactionsTitle', { defaultValue: 'История операций' })}
           </h1>
-          <p className="text-white/62 mt-1.5 text-[13px]">
+          <p className="mt-1.5 text-[13px] text-white/[0.62]">
             {t('profile.transactionsDescription', { defaultValue: 'Список ваших транзакций' })}
           </p>
         </header>

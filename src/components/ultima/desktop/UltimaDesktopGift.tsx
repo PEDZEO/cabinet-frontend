@@ -140,12 +140,12 @@ function MessageBlock({
 }) {
   const toneClassName =
     tone === 'success'
-      ? 'border-emerald-200/24 bg-emerald-300/10 text-emerald-50/90'
+      ? 'border-emerald-200/[0.24] bg-emerald-300/10 text-emerald-50/90'
       : tone === 'error'
-        ? 'border-rose-200/24 bg-rose-400/10 text-rose-100'
+        ? 'border-rose-200/[0.24] bg-rose-400/10 text-rose-100'
         : tone === 'warning'
-          ? 'border-amber-200/24 bg-amber-400/10 text-amber-100'
-          : 'border-sky-200/24 bg-sky-400/10 text-sky-100';
+          ? 'border-amber-200/[0.24] bg-amber-400/10 text-amber-100'
+          : 'border-sky-200/[0.24] bg-sky-400/10 text-sky-100';
 
   return (
     <div className={cn('rounded-[22px] border px-4 py-3 text-sm leading-[1.6]', toneClassName)}>
@@ -167,7 +167,7 @@ function HistoryColumn({
     <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4">
       <div className="mb-4">
         <div className="text-[16px] font-medium text-white">{title}</div>
-        <div className="text-white/58 mt-1 text-sm leading-[1.55]">{subtitle}</div>
+        <div className="mt-1 text-sm leading-[1.55] text-white/[0.58]">{subtitle}</div>
       </div>
       <div className="max-h-[420px] space-y-3 overflow-y-auto pr-1">{children}</div>
     </div>
@@ -225,8 +225,8 @@ export function UltimaDesktopGift({
               className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3"
             >
               <div className="flex items-center justify-between gap-3 text-sm">
-                <span className="text-white/62">{row.label}</span>
-                <span className="text-white/92 text-right font-medium">{row.value}</span>
+                <span className="text-white/[0.62]">{row.label}</span>
+                <span className="text-right font-medium text-white/[0.92]">{row.value}</span>
               </div>
             </div>
           ))}
@@ -255,7 +255,7 @@ export function UltimaDesktopGift({
           className="ultima-btn-pill ultima-btn-primary mt-5 flex min-h-[50px] w-full items-center justify-between px-5 text-[15px] disabled:cursor-not-allowed disabled:opacity-75"
         >
           <span>{primaryActionLabel}</span>
-          <span className="text-white/85">→</span>
+          <span className="text-white/[0.85]">→</span>
         </button>
       </UltimaDesktopPanel>
 
@@ -268,7 +268,7 @@ export function UltimaDesktopGift({
             defaultValue: 'Код можно сразу отправить получателю или сохранить.',
           })}
         >
-          <div className="border-emerald-200/14 bg-emerald-950/22 rounded-[24px] border px-4 py-4">
+          <div className="rounded-[24px] border border-emerald-200/[0.14] bg-emerald-950/[0.22] px-4 py-4">
             <div className="break-all font-mono text-[16px] font-medium tracking-[0.02em] text-emerald-100">
               {generatedGiftCode}
             </div>
@@ -310,7 +310,7 @@ export function UltimaDesktopGift({
               {t('common.cancel', { defaultValue: 'Отмена' })}
             </button>
           </div>
-          <div className="text-white/46 mt-3 text-xs">{pendingExtend.tokenLabel}</div>
+          <div className="mt-3 text-xs text-white/[0.46]">{pendingExtend.tokenLabel}</div>
         </UltimaDesktopPanel>
       ) : null}
     </>
@@ -354,7 +354,7 @@ export function UltimaDesktopGift({
             <MessageBlock tone="info">{purchaseHint}</MessageBlock>
 
             <div>
-              <div className="text-white/42 mb-3 text-[12px] uppercase tracking-[0.22em]">
+              <div className="mb-3 text-[12px] uppercase tracking-[0.22em] text-white/[0.42]">
                 {t('subscription.tariff', { defaultValue: 'Тариф' })}
               </div>
               <div className="grid gap-3 md:grid-cols-2">
@@ -366,18 +366,18 @@ export function UltimaDesktopGift({
                     className={cn(
                       'rounded-[24px] border p-4 text-left transition-colors',
                       tariff.isSelected
-                        ? 'border-emerald-200/36 bg-emerald-300/[0.08]'
+                        ? 'border-emerald-200/[0.36] bg-emerald-300/[0.08]'
                         : 'border-white/10 bg-white/[0.04] hover:bg-white/[0.08]',
                     )}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="text-[18px] font-medium text-white">{tariff.name}</div>
-                        <div className="text-white/62 mt-2 text-sm leading-[1.6]">
+                        <div className="mt-2 text-sm leading-[1.6] text-white/[0.62]">
                           {tariff.description}
                         </div>
                       </div>
-                      <div className="text-white/72 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs">
+                      <div className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs text-white/[0.72]">
                         {tariff.deviceLimit}
                       </div>
                     </div>
@@ -387,7 +387,7 @@ export function UltimaDesktopGift({
             </div>
 
             <div>
-              <div className="text-white/42 mb-3 text-[12px] uppercase tracking-[0.22em]">
+              <div className="mb-3 text-[12px] uppercase tracking-[0.22em] text-white/[0.42]">
                 {t('subscription.period', { defaultValue: 'Период' })}
               </div>
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -399,14 +399,14 @@ export function UltimaDesktopGift({
                     className={cn(
                       'rounded-[24px] border p-4 text-left transition-colors',
                       period.isSelected
-                        ? 'border-emerald-200/36 bg-emerald-300/[0.08]'
+                        ? 'border-emerald-200/[0.36] bg-emerald-300/[0.08]'
                         : 'border-white/10 bg-white/[0.04] hover:bg-white/[0.08]',
                     )}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="text-[17px] font-medium text-white">{period.label}</div>
                       {period.badge ? (
-                        <span className="border-emerald-200/26 bg-emerald-300/14 rounded-full border px-2.5 py-1 text-[11px] font-medium text-emerald-50">
+                        <span className="rounded-full border border-emerald-200/[0.26] bg-emerald-300/[0.14] px-2.5 py-1 text-[11px] font-medium text-emerald-50">
                           {period.badge}
                         </span>
                       ) : null}
@@ -424,7 +424,7 @@ export function UltimaDesktopGift({
                 {gatewayHint ? <MessageBlock tone="warning">{gatewayHint}</MessageBlock> : null}
 
                 <div>
-                  <div className="text-white/42 mb-3 text-[12px] uppercase tracking-[0.22em]">
+                  <div className="mb-3 text-[12px] uppercase tracking-[0.22em] text-white/[0.42]">
                     {t('balance.topUp.paymentMethodTitle', { defaultValue: 'Способ оплаты' })}
                   </div>
                   <div className="grid gap-3 md:grid-cols-2">
@@ -436,7 +436,7 @@ export function UltimaDesktopGift({
                         className={cn(
                           'rounded-[24px] border p-4 text-left transition-colors',
                           method.isSelected
-                            ? 'border-emerald-200/36 bg-emerald-300/[0.08]'
+                            ? 'border-emerald-200/[0.36] bg-emerald-300/[0.08]'
                             : 'border-white/10 bg-white/[0.04] hover:bg-white/[0.08]',
                         )}
                       >
@@ -453,7 +453,7 @@ export function UltimaDesktopGift({
 
                 {paymentSubOptions.length > 0 ? (
                   <div>
-                    <div className="text-white/42 mb-3 text-[12px] uppercase tracking-[0.22em]">
+                    <div className="mb-3 text-[12px] uppercase tracking-[0.22em] text-white/[0.42]">
                       {t('balance.topUp.paymentOptionTitle', { defaultValue: 'Вариант оплаты' })}
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -465,8 +465,8 @@ export function UltimaDesktopGift({
                           className={cn(
                             'rounded-full border px-4 py-2 text-sm transition-colors',
                             option.isSelected
-                              ? 'border-emerald-200/36 bg-emerald-300/[0.08] text-emerald-50'
-                              : 'text-white/72 border-white/10 bg-white/[0.04] hover:bg-white/[0.08]',
+                              ? 'border-emerald-200/[0.36] bg-emerald-300/[0.08] text-emerald-50'
+                              : 'border-white/10 bg-white/[0.04] text-white/[0.72] hover:bg-white/[0.08]',
                           )}
                         >
                           {option.name}
@@ -495,7 +495,7 @@ export function UltimaDesktopGift({
             })}
           >
             {sentItems.length === 0 ? (
-              <div className="border-white/12 text-white/46 rounded-[20px] border border-dashed px-4 py-5 text-sm">
+              <div className="rounded-[20px] border border-dashed border-white/[0.12] px-4 py-5 text-sm text-white/[0.46]">
                 {t('gift.desktopEmptySent', { defaultValue: 'Отправленных подарков пока нет.' })}
               </div>
             ) : (
@@ -507,7 +507,7 @@ export function UltimaDesktopGift({
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="text-[16px] font-medium text-white">{gift.title}</div>
-                      <div className="text-white/56 mt-1 text-sm leading-[1.55]">
+                      <div className="mt-1 text-sm leading-[1.55] text-white/[0.56]">
                         {gift.subtitle}
                       </div>
                     </div>
@@ -521,8 +521,10 @@ export function UltimaDesktopGift({
                     </span>
                   </div>
 
-                  <div className="border-white/8 mt-4 rounded-[18px] border bg-black/10 px-4 py-3">
-                    <div className="text-white/36 text-xs uppercase tracking-[0.18em]">Code</div>
+                  <div className="mt-4 rounded-[18px] border border-white/[0.08] bg-black/10 px-4 py-3">
+                    <div className="text-xs uppercase tracking-[0.18em] text-white/[0.36]">
+                      Code
+                    </div>
                     <button
                       type="button"
                       onClick={gift.onCopyCode}
@@ -532,13 +534,13 @@ export function UltimaDesktopGift({
                     </button>
                   </div>
 
-                  <div className="text-white/58 mt-3 text-sm leading-[1.6]">{gift.detail}</div>
+                  <div className="mt-3 text-sm leading-[1.6] text-white/[0.58]">{gift.detail}</div>
 
                   <div className="mt-4 flex items-center gap-3">
                     <select
                       value={gift.selectedPeriodDays}
                       onChange={(event) => gift.onPeriodChange(Number(event.target.value))}
-                      className="border-white/12 h-11 min-w-0 flex-1 rounded-[16px] border bg-white/[0.06] px-3 text-sm text-white"
+                      className="h-11 min-w-0 flex-1 rounded-[16px] border border-white/[0.12] bg-white/[0.06] px-3 text-sm text-white"
                     >
                       {gift.periodOptions.map((option) => (
                         <option key={`${gift.token}-${option.days}`} value={option.days}>
@@ -571,7 +573,7 @@ export function UltimaDesktopGift({
             })}
           >
             {receivedItems.length === 0 ? (
-              <div className="border-white/12 text-white/46 rounded-[20px] border border-dashed px-4 py-5 text-sm">
+              <div className="rounded-[20px] border border-dashed border-white/[0.12] px-4 py-5 text-sm text-white/[0.46]">
                 {t('gift.desktopEmptyReceived', {
                   defaultValue: 'Полученных подарков пока нет.',
                 })}
@@ -585,7 +587,7 @@ export function UltimaDesktopGift({
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="text-[16px] font-medium text-white">{gift.title}</div>
-                      <div className="text-white/56 mt-1 text-sm leading-[1.55]">
+                      <div className="mt-1 text-sm leading-[1.55] text-white/[0.56]">
                         {gift.subtitle}
                       </div>
                     </div>
@@ -598,7 +600,7 @@ export function UltimaDesktopGift({
                       {gift.statusLabel}
                     </span>
                   </div>
-                  <div className="text-white/58 mt-4 text-sm leading-[1.6]">{gift.detail}</div>
+                  <div className="mt-4 text-sm leading-[1.6] text-white/[0.58]">{gift.detail}</div>
                 </article>
               ))
             )}

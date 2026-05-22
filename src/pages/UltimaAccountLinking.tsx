@@ -665,7 +665,7 @@ export default function UltimaAccountLinking() {
           <h1 className="text-[clamp(32px,8.5vw,38px)] font-semibold leading-[0.95] tracking-[-0.01em] text-white">
             Привязка аккаунтов
           </h1>
-          <p className="text-white/62 mt-1.5 text-[13px]">
+          <p className="mt-1.5 text-[13px] text-white/[0.62]">
             {isProviderAuthMode
               ? 'Быстрая привязка через доступные способы входа. Кодовый режим ниже остается как резервный.'
               : 'Единая страница для безопасной привязки и смены Telegram, Yandex и VK.'}
@@ -673,14 +673,14 @@ export default function UltimaAccountLinking() {
         </header>
 
         <div className="ultima-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto pr-1 lg:overflow-visible lg:pr-0">
-          <section className="border-emerald-200/12 mb-1 rounded-[28px] border bg-[linear-gradient(180deg,rgba(69,186,142,0.16),rgba(18,79,64,0.28))] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md">
+          <section className="mb-1 rounded-[28px] border border-emerald-200/[0.12] bg-[linear-gradient(180deg,rgba(69,186,142,0.16),rgba(18,79,64,0.28))] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md">
             <div className="flex items-start gap-3">
-              <div className="border-white/12 bg-white/8 flex h-10 w-10 items-center justify-center rounded-2xl border text-white/85">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/[0.12] bg-white/[0.08] text-white/[0.85]">
                 <LinkIcon />
               </div>
               <div className="flex-1">
                 <h1 className="text-2xl font-semibold text-white">Привязка аккаунтов</h1>
-                <p className="text-white/62 mt-1 text-sm">
+                <p className="mt-1 text-sm text-white/[0.62]">
                   {isProviderAuthMode
                     ? 'Сначала используйте быстрые кнопки входа ниже. Если автоматически объединить аккаунты не получится, используйте кодовый режим.'
                     : 'Единая страница для безопасной привязки и смены Telegram, Yandex и VK.'}
@@ -688,25 +688,25 @@ export default function UltimaAccountLinking() {
                 <div className="mt-3 flex flex-wrap gap-2 text-xs">
                   {isProviderAuthMode ? (
                     <>
-                      <span className="border-white/12 bg-white/6 rounded-xl border px-2 py-1 text-white/70">
+                      <span className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-2 py-1 text-white/70">
                         1. Нажмите нужный способ входа
                       </span>
-                      <span className="border-white/12 bg-white/6 rounded-xl border px-2 py-1 text-white/70">
+                      <span className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-2 py-1 text-white/70">
                         2. Авторизуйтесь в нем
                       </span>
-                      <span className="border-white/12 bg-white/6 rounded-xl border px-2 py-1 text-white/70">
+                      <span className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-2 py-1 text-white/70">
                         3. Если нужно, используйте резервный кодовый режим
                       </span>
                     </>
                   ) : (
                     <>
-                      <span className="border-white/12 bg-white/6 rounded-xl border px-2 py-1 text-white/70">
+                      <span className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-2 py-1 text-white/70">
                         1. Введите код с другого аккаунта
                       </span>
-                      <span className="border-white/12 bg-white/6 rounded-xl border px-2 py-1 text-white/70">
+                      <span className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-2 py-1 text-white/70">
                         2. Проверьте, что найден нужный аккаунт
                       </span>
-                      <span className="border-white/12 bg-white/6 rounded-xl border px-2 py-1 text-white/70">
+                      <span className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-2 py-1 text-white/70">
                         3. Подтвердите привязку или отправьте в поддержку
                       </span>
                     </>
@@ -724,7 +724,7 @@ export default function UltimaAccountLinking() {
                   </Link>
                 </div>
                 {showTips && (
-                  <div className="border-white/12 bg-white/6 text-white/72 mt-3 rounded-2xl border p-3 text-xs">
+                  <div className="mt-3 rounded-2xl border border-white/[0.12] bg-white/[0.06] p-3 text-xs text-white/[0.72]">
                     <p>
                       Код нужно брать на втором аккаунте: нажмите там "Сгенерировать код", затем
                       введите его здесь.
@@ -748,11 +748,11 @@ export default function UltimaAccountLinking() {
           </section>
 
           {isProviderAuthMode && (
-            <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.2)] p-3 backdrop-blur-md">
+            <section className="rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.2)] p-3 backdrop-blur-md">
               <h2 className="mb-2 text-lg font-semibold text-white/95">
                 Быстрая привязка через вход
               </h2>
-              <p className="text-white/62 mb-3 text-sm">
+              <p className="mb-3 text-sm text-white/[0.62]">
                 Используйте доступные способы входа. Если аккаунт уже существует, старые привязки и
                 данные объединятся по тем же правилам безопасности, что и в кодовом режиме.
               </p>
@@ -764,7 +764,7 @@ export default function UltimaAccountLinking() {
                   disabled={
                     !!directLinkProvider || waitingExternalProvider !== null || !!telegramIdentity
                   }
-                  className="disabled:bg-white/8 rounded-full border border-emerald-200/20 bg-[rgba(22,207,161,0.92)] px-4 py-2.5 text-[14px] font-medium text-slate-950 hover:bg-[rgba(39,220,176,0.96)] disabled:border-white/10 disabled:text-white/45"
+                  className="rounded-full border border-emerald-200/20 bg-[rgba(22,207,161,0.92)] px-4 py-2.5 text-[14px] font-medium text-slate-950 hover:bg-[rgba(39,220,176,0.96)] disabled:border-white/10 disabled:bg-white/[0.08] disabled:text-white/[0.45]"
                 >
                   {telegramIdentity ? 'Telegram уже привязан' : 'Привязать Telegram'}
                 </Button>
@@ -776,7 +776,7 @@ export default function UltimaAccountLinking() {
                     loading={directLinkProvider === provider.name}
                     disabled={telegramDirectLinkLoading || waitingExternalProvider !== null}
                     variant="secondary"
-                    className="border-white/12 bg-white/6 text-white hover:bg-white/10"
+                    className="border-white/[0.12] bg-white/[0.06] text-white hover:bg-white/10"
                   >
                     {provider.display_name}
                   </Button>
@@ -784,14 +784,14 @@ export default function UltimaAccountLinking() {
               </div>
 
               {waitingExternalProvider && (
-                <div className="border-white/12 bg-white/6 text-white/72 mt-3 rounded-2xl border p-3 text-sm">
+                <div className="mt-3 rounded-2xl border border-white/[0.12] bg-white/[0.06] p-3 text-sm text-white/[0.72]">
                   Завершите вход через {waitingExternalProvider} во внешнем браузере. Как только
                   привязка завершится, кабинет покажет результат автоматически.
                 </div>
               )}
 
               {!isInTelegramWebApp() && !telegramIdentity && (
-                <div className="text-white/56 mt-3 text-xs">
+                <div className="mt-3 text-xs text-white/[0.56]">
                   Telegram-привязка доступна внутри Telegram Mini App. В обычном браузере можно
                   привязать Yandex, VK и другие OAuth-способы, а для Telegram использовать резервный
                   кодовый режим ниже.
@@ -812,7 +812,7 @@ export default function UltimaAccountLinking() {
             </section>
           )}
 
-          <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.2)] p-3 backdrop-blur-md">
+          <section className="rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.2)] p-3 backdrop-blur-md">
             <h2 className="mb-4 text-lg font-semibold text-white/95">Связанные способы входа</h2>
 
             <div className="mb-4 flex flex-wrap gap-2">
@@ -820,7 +820,7 @@ export default function UltimaAccountLinking() {
                 linkedIdentities.map((identity) => (
                   <div
                     key={`${identity.provider}-${identity.provider_user_id_masked}`}
-                    className="border-white/12 bg-white/6 text-white/82 flex items-center gap-2 rounded-xl border px-3 py-1 text-xs"
+                    className="flex items-center gap-2 rounded-xl border border-white/[0.12] bg-white/[0.06] px-3 py-1 text-xs text-white/[0.82]"
                   >
                     <span>
                       {identity.provider}: {identity.provider_user_id_masked}
@@ -837,15 +837,15 @@ export default function UltimaAccountLinking() {
                   </div>
                 ))
               ) : (
-                <span className="text-sm text-white/55">
+                <span className="text-sm text-white/[0.55]">
                   {t('profile.linking.none', 'Нет привязанных способов входа')}
                 </span>
               )}
             </div>
 
             {telegramRelink && (
-              <div className="border-white/12 bg-white/6 mb-4 rounded-2xl border p-3">
-                <p className="text-white/92 text-sm font-medium">Статус смены Telegram</p>
+              <div className="mb-4 rounded-2xl border border-white/[0.12] bg-white/[0.06] p-3">
+                <p className="text-sm font-medium text-white/[0.92]">Статус смены Telegram</p>
                 {linkedIdentities.length <= 1 && (
                   <p className="mt-1 text-xs text-warning-300">
                     Важно: если привязан только Telegram, сменить его не получится. Сначала
@@ -870,7 +870,7 @@ export default function UltimaAccountLinking() {
                   </p>
                 )}
                 {telegramIdentity && (
-                  <p className="text-white/62 mt-2 text-xs">
+                  <p className="mt-2 text-xs text-white/[0.62]">
                     Текущий Telegram: {telegramIdentity.provider_user_id_masked}
                   </p>
                 )}
@@ -879,7 +879,7 @@ export default function UltimaAccountLinking() {
 
             <div className="space-y-3 border-t border-white/10 pt-4">
               {isProviderAuthMode && (
-                <div className="text-white/62 bg-white/6 rounded-2xl border border-white/10 px-3 py-2 text-xs">
+                <div className="rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-2 text-xs text-white/[0.62]">
                   Резервный режим по коду: используйте его, если автоматическая привязка через
                   кнопки входа недоступна или support попросил код для ручной проверки.
                 </div>
@@ -893,7 +893,7 @@ export default function UltimaAccountLinking() {
                   Сгенерировать код привязки
                 </Button>
                 {activeLinkCode && (
-                  <span className="bg-[#1bd29f]/12 rounded-xl border border-[#59f0c9]/35 px-3 py-2 font-mono text-sm text-[#8ff8de]">
+                  <span className="rounded-xl border border-[#59f0c9]/[0.35] bg-[#1bd29f]/[0.12] px-3 py-2 font-mono text-sm text-[#8ff8de]">
                     {activeLinkCode}
                   </span>
                 )}
@@ -914,10 +914,10 @@ export default function UltimaAccountLinking() {
                   }
                 }}
                 placeholder="Введите код привязки"
-                className="border-white/12 bg-white/6 w-full rounded-2xl border px-3 py-2.5 text-white placeholder:text-white/45 focus:border-[#59f0c9]/45 focus:outline-none"
+                className="w-full rounded-2xl border border-white/[0.12] bg-white/[0.06] px-3 py-2.5 text-white placeholder:text-white/[0.45] focus:border-[#59f0c9]/[0.45] focus:outline-none"
               />
 
-              <div className="border-white/12 bg-white/6 text-white/72 rounded-2xl border px-3 py-2 text-xs">
+              <div className="rounded-2xl border border-white/[0.12] bg-white/[0.06] px-3 py-2 text-xs text-white/[0.72]">
                 {linkFlowStep === 'idle' &&
                   'Шаг 1 из 3: вставьте код со второго аккаунта и нажмите "Проверить".'}
                 {linkFlowStep === 'preview' &&
@@ -931,8 +931,8 @@ export default function UltimaAccountLinking() {
               </div>
 
               {linkPreview && (
-                <div className="border-white/12 bg-white/6 rounded-2xl border p-3">
-                  <p className="text-white/74 mb-2 text-sm">
+                <div className="rounded-2xl border border-white/[0.12] bg-white/[0.06] p-3">
+                  <p className="mb-2 text-sm text-white/[0.74]">
                     Будет привязан к аккаунту #{' '}
                     <span className="font-semibold text-white">{linkPreview.source_user_id}</span>
                   </p>
@@ -940,7 +940,7 @@ export default function UltimaAccountLinking() {
                     {Object.entries(linkPreview.source_identity_hints).map(([provider, value]) => (
                       <span
                         key={`${provider}-${value}`}
-                        className="border-white/12 bg-white/6 text-white/82 rounded-xl border px-2 py-1 text-xs"
+                        className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-2 py-1 text-xs text-white/[0.82]"
                       >
                         {provider}: {value}
                       </span>
@@ -964,7 +964,7 @@ export default function UltimaAccountLinking() {
                   <textarea
                     value={manualMergeComment}
                     onChange={(e) => setManualMergeComment(e.target.value)}
-                    className="border-white/12 bg-white/6 mb-3 min-h-[88px] w-full rounded-2xl border px-3 py-2.5 text-white placeholder:text-white/45 focus:border-[#59f0c9]/45 focus:outline-none"
+                    className="mb-3 min-h-[88px] w-full rounded-2xl border border-white/[0.12] bg-white/[0.06] px-3 py-2.5 text-white placeholder:text-white/[0.45] focus:border-[#59f0c9]/[0.45] focus:outline-none"
                     placeholder="Опишите, какой аккаунт основной и почему нужно объединение"
                     maxLength={1000}
                   />
@@ -1023,7 +1023,7 @@ export default function UltimaAccountLinking() {
                       'profile.linking.unlink.otpPlaceholder',
                       'Введите код подтверждения',
                     )}
-                    className="border-white/12 bg-white/6 mt-3 w-full rounded-2xl border px-3 py-2.5 text-center tracking-[0.4em] text-white placeholder:text-white/45 focus:border-[#59f0c9]/45 focus:outline-none"
+                    className="mt-3 w-full rounded-2xl border border-white/[0.12] bg-white/[0.06] px-3 py-2.5 text-center tracking-[0.4em] text-white placeholder:text-white/[0.45] focus:border-[#59f0c9]/[0.45] focus:outline-none"
                   />
                 </div>
               )}
@@ -1041,8 +1041,8 @@ export default function UltimaAccountLinking() {
               )}
 
               {latestManualMerge && (
-                <div className="border-white/12 bg-white/6 rounded-2xl border p-3">
-                  <div className="text-white/92 mb-1 text-sm font-medium">
+                <div className="rounded-2xl border border-white/[0.12] bg-white/[0.06] p-3">
+                  <div className="mb-1 text-sm font-medium text-white/[0.92]">
                     Последний спорный merge-запрос #{latestManualMerge.ticket_id}
                   </div>
                   <div className="text-sm text-white/75">
@@ -1053,11 +1053,11 @@ export default function UltimaAccountLinking() {
                         : 'Запрос на рассмотрении'}
                   </div>
                   {latestManualMerge.resolution_comment && (
-                    <div className="text-white/62 mt-2 text-xs">
+                    <div className="mt-2 text-xs text-white/[0.62]">
                       Комментарий: {latestManualMerge.resolution_comment}
                     </div>
                   )}
-                  <div className="text-white/52 mt-1 text-xs">
+                  <div className="mt-1 text-xs text-white/[0.52]">
                     Обновлено {new Date(latestManualMerge.updated_at).toLocaleString()}
                   </div>
                   <Link
@@ -1072,11 +1072,11 @@ export default function UltimaAccountLinking() {
           </section>
         </div>
 
-        <div className="border-white/12 mb-2 rounded-2xl border bg-[rgba(7,18,33,0.9)] p-2 backdrop-blur-xl">
+        <div className="mb-2 rounded-2xl border border-white/[0.12] bg-[rgba(7,18,33,0.9)] p-2 backdrop-blur-xl">
           <div className="flex flex-wrap gap-2">
             <Button
               variant="secondary"
-              className="border-emerald-200/20 bg-emerald-950/45 text-emerald-100 hover:bg-emerald-900/45"
+              className="border-emerald-200/20 bg-emerald-950/[0.45] text-emerald-100 hover:bg-emerald-900/[0.45]"
               onClick={() => previewLinkCodeMutation.mutate(normalizedLinkCode)}
               loading={previewLinkCodeMutation.isPending}
               disabled={!hasLinkCode}

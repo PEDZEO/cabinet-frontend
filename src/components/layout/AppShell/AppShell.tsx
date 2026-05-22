@@ -427,7 +427,7 @@ export function AppShell({ children }: AppShellProps) {
       {(!isUltimaModeReady || !isUltimaMode) && <BackgroundRenderer />}
       {isUltimaModeReady && isUltimaAnimatedRoute && (
         <div
-          className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
+          className="ultima-app-backdrop pointer-events-none fixed inset-0 z-0 overflow-hidden"
           style={{
             background: isDesktopViewport
               ? 'var(--ultima-bg-page-desktop)'
@@ -451,7 +451,7 @@ export function AppShell({ children }: AppShellProps) {
                 : 'var(--ultima-bg-page-scrim-mobile)',
             }}
           />
-          {[0, 1.8, 3.6, 5.4, 7.2, 9, 10.8, 12.6, 14.4].map((delay) => (
+          {[0, 3, 6, 9, 12, 15].map((delay) => (
             <div
               key={delay}
               className="ultima-ring-wave absolute left-1/2 top-1/2 h-[170vmax] w-[170vmax] -translate-x-1/2 -translate-y-1/2 transform-gpu rounded-full border"
@@ -656,7 +656,7 @@ export function AppShell({ children }: AppShellProps) {
       <main
         className={cn(
           'relative z-10 mx-auto max-w-6xl px-4 lg:px-6 lg:pb-8',
-          isUltimaMode && 'max-w-none px-0 lg:px-0',
+          isUltimaMode && 'ultima-app-main max-w-none px-0 lg:px-0',
           isUltimaMode ? 'pb-0' : isCompactMode ? 'pb-8' : 'pb-28',
           isUltimaMode
             ? 'pt-0'

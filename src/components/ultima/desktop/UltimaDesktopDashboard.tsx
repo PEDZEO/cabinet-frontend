@@ -61,25 +61,25 @@ const toneMap: Record<
   { chip: string; glow: string; accent: string; soft: string }
 > = {
   active: {
-    chip: 'border-emerald-200/30 bg-emerald-300/12 text-emerald-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]',
+    chip: 'border-emerald-200/30 bg-emerald-300/[0.12] text-emerald-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]',
     glow: 'bg-emerald-300/40',
     accent: 'text-emerald-100',
     soft: 'text-emerald-200/80',
   },
   trial: {
-    chip: 'border-cyan-200/30 bg-cyan-300/12 text-cyan-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]',
-    glow: 'bg-cyan-300/42',
+    chip: 'border-cyan-200/30 bg-cyan-300/[0.12] text-cyan-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]',
+    glow: 'bg-cyan-300/[0.42]',
     accent: 'text-cyan-100',
-    soft: 'text-cyan-200/82',
+    soft: 'text-cyan-200/[0.82]',
   },
   warning: {
-    chip: 'border-amber-200/30 bg-amber-300/12 text-amber-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]',
-    glow: 'bg-amber-300/42',
+    chip: 'border-amber-200/30 bg-amber-300/[0.12] text-amber-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]',
+    glow: 'bg-amber-300/[0.42]',
     accent: 'text-amber-100',
-    soft: 'text-amber-200/82',
+    soft: 'text-amber-200/[0.82]',
   },
   expired: {
-    chip: 'border-rose-200/28 bg-rose-300/12 text-rose-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]',
+    chip: 'border-rose-200/[0.28] bg-rose-300/[0.12] text-rose-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]',
     glow: 'bg-rose-300/40',
     accent: 'text-rose-100',
     soft: 'text-rose-200/80',
@@ -174,14 +174,14 @@ function clampPercent(value: number): number {
 function DesktopMetricCard({ icon, label, value, meta }: DesktopMetricCardProps) {
   return (
     <div className={cn(ultimaCardClassName, 'p-4 xl:p-5')} style={defaultCardStyle}>
-      <div className="text-white/84 mb-3 flex h-9 w-9 items-center justify-center rounded-[14px] border border-white/10 bg-white/[0.06]">
+      <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-[14px] border border-white/10 bg-white/[0.06] text-white/[0.84]">
         {icon}
       </div>
-      <div className="text-white/42 text-[10px] uppercase tracking-[0.18em]">{label}</div>
+      <div className="text-[10px] uppercase tracking-[0.18em] text-white/[0.42]">{label}</div>
       <div className="mt-2 text-[24px] font-semibold leading-none tracking-[-0.025em] text-white">
         {value}
       </div>
-      <div className="text-white/62 mt-1.5 text-[13px] leading-snug">{meta}</div>
+      <div className="mt-1.5 text-[13px] leading-snug text-white/[0.62]">{meta}</div>
     </div>
   );
 }
@@ -193,8 +193,8 @@ function DesktopQuickAction({ label, onClick }: DesktopQuickActionProps) {
       onClick={onClick}
       className="flex min-h-[54px] items-center justify-between gap-3 rounded-[18px] border border-white/10 bg-white/[0.05] px-4 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition hover:bg-white/[0.08]"
     >
-      <div className="text-white/92 text-sm font-medium leading-snug">{label}</div>
-      <span className="text-white/68 rounded-full border border-white/10 p-1">
+      <div className="text-sm font-medium leading-snug text-white/[0.92]">{label}</div>
+      <span className="rounded-full border border-white/10 p-1 text-white/[0.68]">
         <ArrowUpRightIcon />
       </span>
     </button>
@@ -378,9 +378,9 @@ export function UltimaDesktopDashboard({
             <p className="mt-2 max-w-[42ch] text-[14px] leading-[1.5] text-white/70">
               {supportCardDescription}
             </p>
-            {promoMessage && <p className="text-white/88 mt-2 text-sm">{promoMessage}</p>}
+            {promoMessage && <p className="mt-2 text-sm text-white/[0.88]">{promoMessage}</p>}
           </div>
-          <div className="text-white/84 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-white/[0.84]">
             {firstPromoOffer || activeDiscount?.is_active ? <TrafficIcon /> : <SupportIcon />}
           </div>
         </div>
@@ -464,7 +464,7 @@ export function UltimaDesktopDashboard({
                         })}
                   </span>
                 </div>
-                {promoMessage && <p className="text-white/88 mt-3 text-sm">{promoMessage}</p>}
+                {promoMessage && <p className="mt-3 text-sm text-white/[0.88]">{promoMessage}</p>}
 
                 <div className="mt-6 flex flex-wrap gap-3">
                   <button
@@ -473,7 +473,7 @@ export function UltimaDesktopDashboard({
                     className="ultima-btn-pill ultima-btn-primary inline-flex min-h-[48px] items-center justify-between gap-4 px-5 text-[15px]"
                   >
                     <span>{buyCtaLabel}</span>
-                    <span className="text-white/84">{buyFromLabel}</span>
+                    <span className="text-white/[0.84]">{buyFromLabel}</span>
                   </button>
                   <button
                     type="button"
@@ -486,7 +486,7 @@ export function UltimaDesktopDashboard({
                     <span>
                       {t('lite.connectAndSetup', { defaultValue: 'Установка и настройка' })}
                     </span>
-                    <span className="text-white/68">
+                    <span className="text-white/[0.68]">
                       {t('ultima.desktop.stepShort', {
                         step: isConnectionCompleted ? 3 : connectionStep,
                         defaultValue: `Шаг ${isConnectionCompleted ? 3 : connectionStep}/3`,
@@ -561,14 +561,14 @@ export function UltimaDesktopDashboard({
                     })}
                   </h2>
                 </div>
-                <div className="text-white/84 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06]">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-white/[0.84]">
                   <ConnectionIcon />
                 </div>
               </div>
 
               <div className="mt-5 space-y-4">
                 <div>
-                  <div className="text-white/74 mb-2 flex items-center justify-between gap-3 text-sm">
+                  <div className="mb-2 flex items-center justify-between gap-3 text-sm text-white/[0.74]">
                     <span>
                       {t('ultima.desktop.connectionProgress', {
                         defaultValue: 'Прогресс подключения',
@@ -596,9 +596,9 @@ export function UltimaDesktopDashboard({
                 </div>
 
                 <div>
-                  <div className="text-white/74 mb-2 flex items-center justify-between gap-3 text-sm">
+                  <div className="mb-2 flex items-center justify-between gap-3 text-sm text-white/[0.74]">
                     <span>{t('subscription.traffic', { defaultValue: 'Трафик' })}</span>
-                    <span className="text-white/92">
+                    <span className="text-white/[0.92]">
                       {trafficLimitGb > 0
                         ? `${trafficUsedGb.toFixed(1)} / ${trafficLimitGb} ${t('common.units.gb', {
                             defaultValue: 'ГБ',
@@ -644,24 +644,24 @@ export function UltimaDesktopDashboard({
             <h2 className="text-[22px] font-semibold leading-[1.06] tracking-[-0.025em] text-white">
               {asideTitle}
             </h2>
-            <p className="text-white/68 mt-2 text-sm leading-[1.6]">{asideSubtitle}</p>
+            <p className="mt-2 text-sm leading-[1.6] text-white/[0.68]">{asideSubtitle}</p>
 
             <div className="mt-5 space-y-3">
               <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-white/62 text-sm">
+                  <span className="text-sm text-white/[0.62]">
                     {t('subscription.infoTitle', { defaultValue: 'Подписка' })}
                   </span>
-                  <span className="text-white/88 text-sm font-medium">{expiryLabel}</span>
+                  <span className="text-sm font-medium text-white/[0.88]">{expiryLabel}</span>
                 </div>
-                <div className="text-white/54 mt-1 text-xs">{statusLabel}</div>
+                <div className="mt-1 text-xs text-white/[0.54]">{statusLabel}</div>
               </div>
               <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-white/62 text-sm">
+                  <span className="text-sm text-white/[0.62]">
                     {t('ultima.desktop.connectionState', { defaultValue: 'Подключение' })}
                   </span>
-                  <span className="text-white/88 text-sm font-medium">
+                  <span className="text-sm font-medium text-white/[0.88]">
                     {isConnectionCompleted
                       ? t('common.done', { defaultValue: 'Готово' })
                       : t('ultima.desktop.stepCounter', {
@@ -673,14 +673,14 @@ export function UltimaDesktopDashboard({
               </div>
               <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-white/62 text-sm">
+                  <span className="text-sm text-white/[0.62]">
                     {t('subscription.traffic', { defaultValue: 'Трафик' })}
                   </span>
-                  <span className="text-white/88 text-sm font-medium">
+                  <span className="text-sm font-medium text-white/[0.88]">
                     {trafficLimitGb > 0 ? `${trafficUsedPercent}%` : '∞'}
                   </span>
                 </div>
-                <div className="text-white/54 mt-1 text-xs">
+                <div className="mt-1 text-xs text-white/[0.54]">
                   {trafficLimitGb > 0
                     ? `${trafficUsedGb.toFixed(1)} / ${trafficLimitGb} ${t('common.units.gb', {
                         defaultValue: 'ГБ',
@@ -691,7 +691,7 @@ export function UltimaDesktopDashboard({
             </div>
 
             {promoMessage ? (
-              <div className="text-white/74 mt-4 rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3 text-sm leading-[1.6]">
+              <div className="mt-4 rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3 text-sm leading-[1.6] text-white/[0.74]">
                 {promoMessage}
               </div>
             ) : null}

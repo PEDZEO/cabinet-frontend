@@ -32,7 +32,7 @@ export function UltimaTariffSelector({
   return (
     <section className="mb-3 space-y-2.5">
       <div>
-        <p className="text-white/52 text-[12px] font-medium uppercase tracking-[0.14em]">
+        <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-white/[0.52]">
           {t('dashboard.expired.tariffs')}
         </p>
       </div>
@@ -88,39 +88,39 @@ export function UltimaTariffSelector({
                       {tariff.name}
                     </div>
                     {description ? (
-                      <p className="text-white/68 mt-1.5 line-clamp-2 max-w-[34ch] whitespace-pre-line text-[12px] leading-[1.35]">
+                      <p className="mt-1.5 line-clamp-2 max-w-[34ch] whitespace-pre-line text-[12px] leading-[1.35] text-white/[0.68]">
                         {description}
                       </p>
                     ) : null}
                   </div>
                   <div className="flex flex-wrap justify-end gap-1.5">
                     {current ? (
-                      <span className="border-emerald-200/28 bg-emerald-300/12 rounded-full border px-2 py-0.5 text-[10px] font-medium text-emerald-50">
+                      <span className="rounded-full border border-emerald-200/[0.28] bg-emerald-300/[0.12] px-2 py-0.5 text-[10px] font-medium text-emerald-50">
                         {t('subscription.currentTariff')}
                       </span>
                     ) : null}
                     {isUnlimited ? (
-                      <span className="border-white/12 text-white/78 rounded-full border bg-white/[0.06] px-2 py-0.5 text-[10px] font-medium">
+                      <span className="rounded-full border border-white/[0.12] bg-white/[0.06] px-2 py-0.5 text-[10px] font-medium text-white/[0.78]">
                         {t('subscription.unlimited')}
                       </span>
                     ) : null}
                   </div>
                 </div>
 
-                <div className="text-white/74 grid gap-1.5 text-[12px] sm:grid-cols-2">
+                <div className="grid gap-1.5 text-[12px] text-white/[0.74] sm:grid-cols-2">
                   <div className="rounded-[16px] border border-white/10 bg-black/10 px-3 py-1.5">
-                    <span className="text-white/44 block text-[10px] uppercase tracking-[0.12em]">
+                    <span className="block text-[10px] uppercase tracking-[0.12em] text-white/[0.44]">
                       {t('subscription.traffic')}
                     </span>
-                    <span className="text-white/92 mt-0.5 block font-medium">
+                    <span className="mt-0.5 block font-medium text-white/[0.92]">
                       {tariff.traffic_limit_label}
                     </span>
                   </div>
                   <div className="rounded-[16px] border border-white/10 bg-black/10 px-3 py-1.5">
-                    <span className="text-white/44 block text-[10px] uppercase tracking-[0.12em]">
+                    <span className="block text-[10px] uppercase tracking-[0.12em] text-white/[0.44]">
                       {t('subscription.devices')}
                     </span>
-                    <span className="text-white/92 mt-0.5 block font-medium">
+                    <span className="mt-0.5 block font-medium text-white/[0.92]">
                       {t('subscription.devices', { count: tariff.device_limit })}
                     </span>
                   </div>
@@ -132,11 +132,11 @@ export function UltimaTariffSelector({
                       {priceLabel}
                     </div>
                     {pricePreview?.original && pricePreview.original > pricePreview.price ? (
-                      <div className="text-white/42 mt-1 text-[12px] line-through">
+                      <div className="mt-1 text-[12px] text-white/[0.42] line-through">
                         {formatPrice(pricePreview.original)}
                       </div>
                     ) : null}
-                    <div className="text-white/58 mt-1 text-[12px]">
+                    <div className="mt-1 text-[12px] text-white/[0.58]">
                       {dailyPrice > 0
                         ? t('subscription.tariff.perDay')
                         : firstPeriod

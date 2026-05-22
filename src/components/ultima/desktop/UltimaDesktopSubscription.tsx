@@ -86,13 +86,13 @@ export function UltimaDesktopSubscription({
             <div className="absolute inset-y-0 right-[-10%] w-[36%] rounded-full bg-white/[0.05] blur-3xl" />
             <div className="relative flex flex-wrap items-start justify-between gap-6">
               <div className="max-w-[56ch]">
-                <div className="border-white/12 inline-flex h-12 min-w-12 items-center justify-center rounded-[18px] border bg-white/[0.08] px-4 text-[20px] font-semibold text-white">
+                <div className="inline-flex h-12 min-w-12 items-center justify-center rounded-[18px] border border-white/[0.12] bg-white/[0.08] px-4 text-[20px] font-semibold text-white">
                   {selectedDeviceLimit}
                 </div>
                 <h1 className="mt-4 max-w-[18ch] text-[clamp(34px,3.6vw,50px)] font-semibold leading-[0.98] tracking-[-0.038em] text-white">
                   {title}
                 </h1>
-                <p className="text-white/72 mt-3 text-[15px] leading-[1.6]">{subtitle}</p>
+                <p className="mt-3 text-[15px] leading-[1.6] text-white/[0.72]">{subtitle}</p>
               </div>
 
               <div className="flex max-w-[420px] flex-wrap gap-2 lg:justify-end">
@@ -106,8 +106,8 @@ export function UltimaDesktopSubscription({
                       className={cn(
                         'rounded-full border px-4 py-2 text-sm font-medium transition-colors',
                         active
-                          ? 'bg-emerald-300/16 border-emerald-200/45 text-emerald-50'
-                          : 'border-white/12 text-white/72 bg-white/[0.04] hover:bg-white/[0.08]',
+                          ? 'border-emerald-200/[0.45] bg-emerald-300/[0.16] text-emerald-50'
+                          : 'border-white/[0.12] bg-white/[0.04] text-white/[0.72] hover:bg-white/[0.08]',
                       )}
                     >
                       {limit}
@@ -128,14 +128,14 @@ export function UltimaDesktopSubscription({
                   className={cn(
                     'rounded-[20px] border p-4 text-left transition-colors',
                     period.isSelected
-                      ? 'border-emerald-200/36 bg-emerald-300/[0.08]'
+                      ? 'border-emerald-200/[0.36] bg-emerald-300/[0.08]'
                       : 'border-white/10 bg-white/[0.04] hover:bg-white/[0.08]',
                   )}
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="text-[18px] font-medium text-white">{period.label}</div>
                     {period.isBestDeal ? (
-                      <span className="border-emerald-200/32 bg-emerald-300/16 rounded-full border px-2.5 py-1 text-[11px] font-semibold text-emerald-50">
+                      <span className="rounded-full border border-emerald-200/[0.32] bg-emerald-300/[0.16] px-2.5 py-1 text-[11px] font-semibold text-emerald-50">
                         {t('subscription.bestDeal', { defaultValue: 'Выгодно' })}
                       </span>
                     ) : null}
@@ -143,9 +143,9 @@ export function UltimaDesktopSubscription({
                   <div className="mt-4 text-[30px] font-semibold leading-none tracking-[-0.03em] text-white">
                     {period.priceLabel}
                   </div>
-                  <div className="text-white/68 mt-2 text-sm">{period.monthlyLabel}</div>
+                  <div className="mt-2 text-sm text-white/[0.68]">{period.monthlyLabel}</div>
                   {period.originalPriceLabel ? (
-                    <div className="text-white/48 mt-2 text-sm line-through">
+                    <div className="mt-2 text-sm text-white/[0.48] line-through">
                       {period.originalPriceLabel}
                     </div>
                   ) : null}
@@ -160,7 +160,7 @@ export function UltimaDesktopSubscription({
             <div className="text-[28px] font-semibold leading-[1] tracking-[-0.035em] text-white">
               {payablePriceLabel}
             </div>
-            <p className="text-white/68 mt-2 text-sm leading-[1.6]">
+            <p className="mt-2 text-sm leading-[1.6] text-white/[0.68]">
               {t('subscription.purchaseSummary', {
                 defaultValue: 'Итоговая сумма к оплате после списания баланса.',
               })}
@@ -169,25 +169,25 @@ export function UltimaDesktopSubscription({
             <div className="mt-5 space-y-3">
               <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
                 <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-white/62">
+                  <span className="text-white/[0.62]">
                     {t('lite.devicesTotal', { defaultValue: 'Устройства' })}
                   </span>
                   <span className="font-medium text-white/90">{selectedDeviceLimit}</span>
                 </div>
                 {baseDeviceLimitLabel ? (
-                  <div className="text-white/56 mt-1 text-xs leading-[1.5]">
+                  <div className="mt-1 text-xs leading-[1.5] text-white/[0.56]">
                     {baseDeviceLimitLabel}
                   </div>
                 ) : null}
                 {extraDeviceChargeLabel ? (
-                  <div className="text-amber-100/86 mt-1 text-xs leading-[1.5]">
+                  <div className="mt-1 text-xs leading-[1.5] text-amber-100/[0.86]">
                     {extraDeviceChargeLabel}
                   </div>
                 ) : null}
               </div>
               <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
                 <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-white/62">
+                  <span className="text-white/[0.62]">
                     {t('subscription.period', { defaultValue: 'Период' })}
                   </span>
                   <span className="font-medium text-white/90">{selectedPeriodLabel}</span>
@@ -195,20 +195,20 @@ export function UltimaDesktopSubscription({
               </div>
               <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
                 <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-white/62">
+                  <span className="text-white/[0.62]">
                     {t('subscription.price', { defaultValue: 'Стоимость' })}
                   </span>
                   <span className="font-medium text-white/90">{totalPriceLabel}</span>
                 </div>
                 {originalPriceLabel ? (
-                  <div className="text-white/48 mt-1 text-right text-xs line-through">
+                  <div className="mt-1 text-right text-xs text-white/[0.48] line-through">
                     {originalPriceLabel}
                   </div>
                 ) : null}
               </div>
               <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
                 <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-white/62">
+                  <span className="text-white/[0.62]">
                     {t('balance.title', { defaultValue: 'С баланса' })}
                   </span>
                   <span className="font-medium text-white/90">{balanceAppliedLabel}</span>
@@ -217,7 +217,7 @@ export function UltimaDesktopSubscription({
             </div>
 
             {(awaitingPaymentCompletion || isFinalizingPending) && (
-              <div className="border-emerald-200/24 mt-4 rounded-[22px] border bg-emerald-300/10 px-4 py-3 text-sm leading-[1.55] text-emerald-50/90">
+              <div className="mt-4 rounded-[22px] border border-emerald-200/[0.24] bg-emerald-300/10 px-4 py-3 text-sm leading-[1.55] text-emerald-50/90">
                 {t('subscription.paymentPending', {
                   defaultValue:
                     'Ожидаем подтверждение оплаты. После возврата подписка обновится автоматически.',
@@ -226,13 +226,13 @@ export function UltimaDesktopSubscription({
             )}
 
             {error && (
-              <div className="border-rose-200/24 mt-4 rounded-[22px] border bg-rose-400/10 px-4 py-3 text-sm leading-[1.55] text-rose-100">
+              <div className="mt-4 rounded-[22px] border border-rose-200/[0.24] bg-rose-400/10 px-4 py-3 text-sm leading-[1.55] text-rose-100">
                 {error}
               </div>
             )}
 
             {legacyDeviceNotice ? (
-              <div className="border-amber-200/24 text-amber-50/92 mt-4 rounded-[18px] border bg-amber-300/10 px-3 py-2.5 text-[13px] leading-[1.45]">
+              <div className="mt-4 rounded-[18px] border border-amber-200/[0.24] bg-amber-300/10 px-3 py-2.5 text-[13px] leading-[1.45] text-amber-50/[0.92]">
                 <p>{legacyDeviceNotice}</p>
                 {onReduceDevices ? (
                   <button
@@ -253,7 +253,7 @@ export function UltimaDesktopSubscription({
               className="ultima-btn-pill ultima-btn-primary mt-5 flex w-full items-center justify-between px-5 py-3 text-[15px] disabled:cursor-not-allowed disabled:opacity-75"
             >
               <span>{t('subscription.pay', { defaultValue: 'Оплатить подписку' })}</span>
-              <span className="text-white/92">{payablePriceLabel}</span>
+              <span className="text-white/[0.92]">{payablePriceLabel}</span>
             </button>
           </section>
 

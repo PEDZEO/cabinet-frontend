@@ -188,7 +188,7 @@ function MenuItem({
       style={ULTIMA_MENU_ITEM_STYLE}
     >
       <div
-        className="text-white/88 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border text-white/[0.88]"
         style={{
           borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 18%, transparent)',
           background: 'color-mix(in srgb, var(--ultima-color-surface) 44%, transparent)',
@@ -200,10 +200,12 @@ function MenuItem({
         <p className="break-words text-[15px] font-medium leading-snug text-white/95">
           {item.title}
         </p>
-        <p className="text-white/56 mt-0.5 break-words text-[12px] leading-snug">{item.subtitle}</p>
+        <p className="mt-0.5 break-words text-[12px] leading-snug text-white/[0.56]">
+          {item.subtitle}
+        </p>
       </div>
       <span
-        className="text-white/56 group-hover:text-white/86 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-white/[0.56] transition-colors group-hover:text-white/[0.86]"
         style={{
           borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 20%, transparent)',
           background: 'color-mix(in srgb, #ffffff 4%, transparent)',
@@ -591,7 +593,7 @@ export function UltimaProfile() {
   const sectionsContent = (
     <div className="grid gap-3 lg:gap-4 xl:grid-cols-2">
       <section className={`${sectionClassName} p-3.5 lg:p-4`} style={ULTIMA_SECTION_SURFACE_STYLE}>
-        <p className="text-white/56 mb-3 text-[12px] font-medium uppercase tracking-[0.14em]">
+        <p className="mb-3 text-[12px] font-medium uppercase tracking-[0.14em] text-white/[0.56]">
           {t('profile.profileSettings', { defaultValue: 'Настройки профиля' })}
         </p>
         <div className="ultima-stagger-list space-y-2.5">
@@ -607,7 +609,7 @@ export function UltimaProfile() {
       </section>
 
       <section className={`${sectionClassName} p-3.5 lg:p-4`} style={ULTIMA_SECTION_SURFACE_STYLE}>
-        <p className="text-white/56 mb-3 text-[12px] font-medium uppercase tracking-[0.14em]">
+        <p className="mb-3 text-[12px] font-medium uppercase tracking-[0.14em] text-white/[0.56]">
           {t('nav.support', { defaultValue: 'Поддержка' })}
         </p>
         <div className="ultima-stagger-list space-y-2.5">
@@ -699,8 +701,10 @@ export function UltimaProfile() {
                         </div>
                       )}
                       <div className="min-w-0">
-                        <p className="text-white/92 break-all text-sm font-medium">{userLabel}</p>
-                        <p className="break-words text-xs text-white/55">
+                        <p className="break-all text-sm font-medium text-white/[0.92]">
+                          {userLabel}
+                        </p>
+                        <p className="break-words text-xs text-white/[0.55]">
                           {user?.first_name || user?.username || 'Telegram user'}
                         </p>
                       </div>
@@ -719,7 +723,7 @@ export function UltimaProfile() {
                       <button
                         type="button"
                         onClick={handleLogout}
-                        className="border-rose-300/18 hover:bg-rose-500/18 flex w-full items-center justify-center gap-2 rounded-full border bg-rose-500/10 px-4 py-2.5 text-sm font-medium text-rose-50 transition"
+                        className="flex w-full items-center justify-center gap-2 rounded-full border border-rose-300/[0.18] bg-rose-500/10 px-4 py-2.5 text-sm font-medium text-rose-50 transition hover:bg-rose-500/[0.18]"
                       >
                         <LogoutIcon />
                         {t('profile.logoutButton', { defaultValue: 'Выйти из аккаунта' })}
@@ -735,7 +739,7 @@ export function UltimaProfile() {
                     <span className="text-sm font-medium text-white/90">
                       {t('lite.connectedDevices', { defaultValue: 'Устройства' })}
                     </span>
-                    <span className="text-white/58 text-xs">
+                    <span className="text-xs text-white/[0.58]">
                       {t('profile.devicesDescription', {
                         defaultValue: 'Управление лимитом и подключениями',
                       })}
@@ -749,7 +753,7 @@ export function UltimaProfile() {
                     <span className="text-sm font-medium text-white/90">
                       {t('nav.gift', { defaultValue: 'Подарок' })}
                     </span>
-                    <span className="text-white/58 text-xs">
+                    <span className="text-xs text-white/[0.58]">
                       {t('profile.giftDescription', {
                         defaultValue: 'Подарочные подписки и история кодов',
                       })}
@@ -793,7 +797,7 @@ export function UltimaProfile() {
                 <p className="break-words text-[15px] font-medium leading-snug text-white/95">
                   {user?.first_name || user?.username || 'Telegram user'}
                 </p>
-                <p className="text-white/64 mt-0.5 break-all text-[13px]">{userLabel}</p>
+                <p className="mt-0.5 break-all text-[13px] text-white/[0.64]">{userLabel}</p>
               </div>
             </div>
 
@@ -812,7 +816,7 @@ export function UltimaProfile() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="border-rose-300/18 hover:bg-rose-500/18 flex w-full items-center justify-center gap-2 rounded-full border bg-rose-500/10 px-4 py-2.5 text-[14px] font-medium text-rose-50 transition"
+                className="flex w-full items-center justify-center gap-2 rounded-full border border-rose-300/[0.18] bg-rose-500/10 px-4 py-2.5 text-[14px] font-medium text-rose-50 transition hover:bg-rose-500/[0.18]"
               >
                 <LogoutIcon />
                 {t('profile.logoutButton', { defaultValue: 'Выйти из аккаунта' })}

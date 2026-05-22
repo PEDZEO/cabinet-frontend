@@ -50,7 +50,9 @@ export function UltimaDesktopPanel({
               {title}
             </h2>
             {subtitle ? (
-              <p className="text-white/62 mt-1.5 max-w-[64ch] text-sm leading-[1.55]">{subtitle}</p>
+              <p className="mt-1.5 max-w-[64ch] text-sm leading-[1.55] text-white/[0.62]">
+                {subtitle}
+              </p>
             ) : null}
           </div>
         </div>
@@ -89,11 +91,11 @@ export function UltimaDesktopSectionLayout({
             <div className="relative">
               <div className="flex flex-wrap items-start justify-between gap-6">
                 <div className="max-w-[54ch]">
-                  <div className="text-white/84 flex h-11 w-11 items-center justify-center rounded-[16px] border border-white/10 bg-white/[0.08]">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-[16px] border border-white/10 bg-white/[0.08] text-white/[0.84]">
                     {icon}
                   </div>
                   {displayEyebrow ? (
-                    <div className="text-white/48 mt-4 text-[11px] uppercase tracking-[0.22em]">
+                    <div className="mt-4 text-[11px] uppercase tracking-[0.22em] text-white/[0.48]">
                       {displayEyebrow}
                     </div>
                   ) : null}
@@ -112,9 +114,9 @@ export function UltimaDesktopSectionLayout({
                   {metrics.map((metric) => (
                     <div
                       key={`${metric.label}-${metric.value}`}
-                      className="bg-black/16 rounded-[18px] border border-white/10 px-4 py-3"
+                      className="rounded-[18px] border border-white/10 bg-black/[0.16] px-4 py-3"
                     >
-                      <div className="text-white/42 text-[10px] uppercase tracking-[0.18em]">
+                      <div className="text-[10px] uppercase tracking-[0.18em] text-white/[0.42]">
                         {metric.label}
                       </div>
                       <div className="mt-2 text-[22px] font-semibold leading-none tracking-[-0.025em] text-white">

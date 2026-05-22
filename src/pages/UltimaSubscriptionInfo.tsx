@@ -46,12 +46,12 @@ const ULTIMA_INFO_INNER_STYLE = ultimaPaneSurfaceStyle;
 
 const StatCard = ({ label, value, hint }: { label: string; value: string; hint?: string }) => (
   <article className={`${ultimaPaneClassName} p-3.5`} style={ULTIMA_INFO_SURFACE_STYLE}>
-    <p className="text-white/54 text-[11px] font-medium uppercase tracking-[0.12em]">{label}</p>
+    <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-white/[0.54]">{label}</p>
     <p className="mt-2 break-words text-[clamp(18px,5vw,20px)] font-semibold leading-tight text-white">
       {value}
     </p>
     {hint ? (
-      <p className="text-white/56 mt-1.5 break-words text-[12px] leading-snug">{hint}</p>
+      <p className="mt-1.5 break-words text-[12px] leading-snug text-white/[0.56]">{hint}</p>
     ) : null}
   </article>
 );
@@ -149,12 +149,12 @@ export function UltimaSubscriptionInfo() {
   const statusTone =
     subscription?.is_active && !subscription?.is_expired
       ? {
-          pill: 'border-emerald-200/18 bg-emerald-300/10 text-emerald-50',
+          pill: 'border-emerald-200/[0.18] bg-emerald-300/10 text-emerald-50',
           halo: 'bg-emerald-300/75',
           dot: 'bg-emerald-300',
         }
       : {
-          pill: 'border-rose-200/18 bg-rose-300/10 text-rose-50',
+          pill: 'border-rose-200/[0.18] bg-rose-300/10 text-rose-50',
           halo: 'bg-rose-300/75',
           dot: 'bg-rose-300',
         };
@@ -249,13 +249,13 @@ export function UltimaSubscriptionInfo() {
       >
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-white/56 text-[12px] font-medium uppercase tracking-[0.14em]">
+            <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-white/[0.56]">
               {t('subscription.title')}
             </p>
             <h2 className="mt-1 text-[20px] font-semibold leading-tight text-white">
               {subscription.tariff_name || t('subscription.currentPlan')}
             </h2>
-            <p className="text-white/66 mt-1.5 text-[13px] leading-snug">
+            <p className="mt-1.5 text-[13px] leading-snug text-white/[0.66]">
               {subscription.traffic_limit_gb > 0
                 ? t('subscription.additionalOptions.currentTrafficLimit', {
                     limit: subscription.traffic_limit_gb,
@@ -346,7 +346,7 @@ export function UltimaSubscriptionInfo() {
 
   const emptyState = (
     <section
-      className={`${ultimaPanelClassName} text-white/82 p-4 text-sm`}
+      className={`${ultimaPanelClassName} p-4 text-sm text-white/[0.82]`}
       style={ULTIMA_INFO_SURFACE_STYLE}
     >
       {t('subscription.connection.needSubscription', {
@@ -357,14 +357,14 @@ export function UltimaSubscriptionInfo() {
 
   const linkSection = hasSubscription && subscription && (
     <section className={`${ultimaPanelClassName} p-3.5`} style={ULTIMA_INFO_SURFACE_STYLE}>
-      <p className="text-white/56 mb-2 text-[12px] font-medium uppercase tracking-[0.14em]">
+      <p className="mb-2 text-[12px] font-medium uppercase tracking-[0.14em] text-white/[0.56]">
         {t('profile.subscriptionLink', { defaultValue: 'Ваша ссылка на подписку' })}
       </p>
       <div
         className={`${ultimaPaneClassName} rounded-[20px] px-3 py-2.5`}
         style={ULTIMA_INFO_INNER_STYLE}
       >
-        <p className="text-white/92 break-all text-[13px] leading-snug">
+        <p className="break-all text-[13px] leading-snug text-white/[0.92]">
           {subscriptionLink || '-'}
         </p>
       </div>
@@ -413,13 +413,13 @@ export function UltimaSubscriptionInfo() {
     <section className={`${ultimaPanelClassName} p-3.5`} style={ULTIMA_INFO_SURFACE_STYLE}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-white/56 text-[12px] font-medium uppercase tracking-[0.14em]">
+          <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-white/[0.56]">
             {t('subscription.infoTitle', { defaultValue: 'Инфо о подписке' })}
           </p>
           <h1 className="mt-1 break-words text-[clamp(30px,8.4vw,36px)] font-semibold leading-[0.94] tracking-[-0.02em] text-white">
             {subscriptionTitle}
           </h1>
-          <p className="text-white/68 mt-1.5 break-words text-[13px] leading-snug">
+          <p className="mt-1.5 break-words text-[13px] leading-snug text-white/[0.68]">
             {endDateLabel}
           </p>
         </div>
@@ -438,7 +438,7 @@ export function UltimaSubscriptionInfo() {
           className={`${ultimaPaneClassName} rounded-[20px] px-3 py-2.5`}
           style={ULTIMA_INFO_INNER_STYLE}
         >
-          <p className="text-white/52 text-[11px] font-medium uppercase tracking-[0.12em]">
+          <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-white/[0.52]">
             {t('subscription.timeLeft', { defaultValue: 'Осталось времени' })}
           </p>
           <p className="mt-1 break-words text-[15px] font-medium leading-snug text-white">
@@ -449,7 +449,7 @@ export function UltimaSubscriptionInfo() {
           className={`${ultimaPaneClassName} rounded-[20px] px-3 py-2.5`}
           style={ULTIMA_INFO_INNER_STYLE}
         >
-          <p className="text-white/52 text-[11px] font-medium uppercase tracking-[0.12em]">
+          <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-white/[0.52]">
             {t('subscription.devices', { defaultValue: 'Устройства' })}
           </p>
           <p className="mt-1 break-words text-[15px] font-medium leading-snug text-white">
@@ -478,7 +478,7 @@ export function UltimaSubscriptionInfo() {
           <h1 className="break-words text-[clamp(34px,9.2vw,42px)] font-semibold leading-[0.92] tracking-[-0.01em] text-white">
             {t('subscription.infoTitle', { defaultValue: 'Инфо о подписке' })}
           </h1>
-          <p className="text-white/62 mt-1.5 break-words text-[14px] leading-tight">
+          <p className="mt-1.5 break-words text-[14px] leading-tight text-white/[0.62]">
             {t('subscription.infoDescription', {
               defaultValue: 'Ключевые параметры подписки и управления устройствами.',
             })}

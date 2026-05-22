@@ -93,8 +93,8 @@ export function UltimaPromocode() {
   const bottomNav = <UltimaBottomNav active="profile" />;
 
   const promocodeContent = (
-    <section className="border-emerald-200/12 min-h-0 flex-1 overflow-y-auto rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:overflow-visible lg:p-4">
-      <p className="text-white/68 mb-2 text-[13px]">
+    <section className="min-h-0 flex-1 overflow-y-auto rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:overflow-visible lg:p-4">
+      <p className="mb-2 text-[13px] text-white/[0.68]">
         {t('balance.promocode.inputLabel', { defaultValue: 'Введите промокод' })}
       </p>
       <div className="flex flex-col gap-2 min-[390px]:flex-row">
@@ -109,7 +109,7 @@ export function UltimaPromocode() {
           }}
           placeholder={t('balance.promocode.placeholder')}
           disabled={activateMutation.isPending}
-          className="border-emerald-200/12 h-11 min-w-0 flex-1 rounded-xl border bg-emerald-950/35 px-3 text-[14px] text-white placeholder:text-white/35 focus:border-emerald-200/30 focus:outline-none disabled:opacity-60"
+          className="h-11 min-w-0 flex-1 rounded-xl border border-emerald-200/[0.12] bg-emerald-950/[0.35] px-3 text-[14px] text-white placeholder:text-white/[0.35] focus:border-emerald-200/30 focus:outline-none disabled:opacity-60"
         />
         <button
           type="button"
@@ -125,7 +125,7 @@ export function UltimaPromocode() {
       {success ? <p className="mt-2 text-[12px] text-emerald-200">{success}</p> : null}
 
       <div className="mt-3 rounded-2xl border border-emerald-200/10 bg-emerald-950/20 px-3 py-2.5">
-        <p className="text-white/58 text-[11px] leading-snug">
+        <p className="text-[11px] leading-snug text-white/[0.58]">
           {t('balance.promocode.ultimaHint', {
             defaultValue:
               'Если промокод действителен, бонус применится сразу и отразится в истории операций.',
@@ -188,14 +188,14 @@ export function UltimaPromocode() {
               })}
             >
               <div className="space-y-3">
-                <div className="text-white/72 rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-[1.6]">
+                <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-[1.6] text-white/[0.72]">
                   {t('balance.promocode.ultimaHint', {
                     defaultValue:
                       'Если промокод действителен, бонус применится сразу и отразится в истории операций.',
                   })}
                 </div>
                 <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3">
-                  <div className="text-white/42 text-[11px] uppercase tracking-[0.2em]">
+                  <div className="text-[11px] uppercase tracking-[0.2em] text-white/[0.42]">
                     {t('common.result', { defaultValue: 'Результат' })}
                   </div>
                   <div className="mt-2 text-sm font-medium text-white/90">
@@ -214,10 +214,10 @@ export function UltimaPromocode() {
 
         {giftActivationNotice && (
           <>
-            <div className="bg-black/52 absolute inset-0 z-[18]" />
+            <div className="absolute inset-0 z-[18] bg-black/[0.52]" />
             <div className="absolute inset-x-0 top-24 z-20 flex justify-center px-6">
               <div className="w-full max-w-[520px]">
-                <div className="ultima-step-enter border-white/24 rounded-[24px] border bg-[#05070B] p-4 text-white shadow-[0_26px_56px_rgba(0,0,0,0.72)] backdrop-blur-xl">
+                <div className="ultima-step-enter rounded-[24px] border border-white/[0.24] bg-[#05070B] p-4 text-white shadow-[0_26px_56px_rgba(0,0,0,0.72)] backdrop-blur-xl">
                   <div className="mb-2 flex items-start justify-between gap-3">
                     <h3 className="text-[24px] font-semibold leading-[1.06] text-white/95">
                       {t('balance.promocode.giftNoticeTitle', {
@@ -233,22 +233,22 @@ export function UltimaPromocode() {
                       ×
                     </button>
                   </div>
-                  <p className="text-white/88 text-[14px] leading-[1.28]">
+                  <p className="text-[14px] leading-[1.28] text-white/[0.88]">
                     {t('balance.promocode.giftNoticeDesc', {
                       defaultValue:
                         'Подарочная подписка успешно активирована. Данные подарка уже применены к вашему аккаунту.',
                     })}
                   </p>
-                  <div className="text-white/92 mt-3 space-y-2 text-[14px]">
+                  <div className="mt-3 space-y-2 text-[14px] text-white/[0.92]">
                     <p>
-                      <span className="text-white/65">
+                      <span className="text-white/[0.65]">
                         {t('balance.promocode.giftSender', { defaultValue: 'Отправитель:' })}
                       </span>{' '}
                       {giftActivationNotice.senderDisplay ??
                         t('common.notSpecified', { defaultValue: 'Не указан' })}
                     </p>
                     <p>
-                      <span className="text-white/65">
+                      <span className="text-white/[0.65]">
                         {t('balance.promocode.giftPeriod', { defaultValue: 'Срок подарка:' })}
                       </span>{' '}
                       {giftActivationNotice.periodDays != null
@@ -257,7 +257,7 @@ export function UltimaPromocode() {
                     </p>
                     {giftActivationNotice.tariffName ? (
                       <p>
-                        <span className="text-white/65">
+                        <span className="text-white/[0.65]">
                           {t('balance.promocode.giftTariff', { defaultValue: 'Тариф:' })}
                         </span>{' '}
                         {giftActivationNotice.tariffName}
@@ -267,7 +267,7 @@ export function UltimaPromocode() {
                   <button
                     type="button"
                     onClick={() => setGiftActivationNotice(null)}
-                    className="border-emerald-200/22 mt-4 flex w-full items-center justify-center rounded-full border bg-[rgba(12,45,42,0.34)] px-5 py-2.5 text-[15px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] backdrop-blur-md"
+                    className="mt-4 flex w-full items-center justify-center rounded-full border border-emerald-200/[0.22] bg-[rgba(12,45,42,0.34)] px-5 py-2.5 text-[15px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] backdrop-blur-md"
                   >
                     {t('subscription.connection.gotIt', {
                       defaultValue: 'Все понятно',
@@ -290,7 +290,7 @@ export function UltimaPromocode() {
           <h1 className="break-words text-[clamp(32px,9vw,42px)] font-semibold leading-[0.9] tracking-[-0.01em] text-white">
             {t('balance.promocode.title', { defaultValue: 'Промокод' })}
           </h1>
-          <p className="text-white/62 mt-1.5 text-[14px] leading-tight">
+          <p className="mt-1.5 text-[14px] leading-tight text-white/[0.62]">
             {t('balance.promocode.ultimaDescription', {
               defaultValue:
                 'Активируйте промокод для бонусов. Скидки и бонусы будут учтены в подписке автоматически.',
@@ -310,7 +310,7 @@ export function UltimaPromocode() {
           <div className="ultima-mobile-overlay-backdrop" />
           <div className="ultima-mobile-overlay">
             <div className="ultima-mobile-overlay-panel">
-              <div className="ultima-step-enter border-white/24 rounded-[24px] border bg-[#05070B] p-4 text-white shadow-[0_26px_56px_rgba(0,0,0,0.72)] backdrop-blur-xl">
+              <div className="ultima-step-enter rounded-[24px] border border-white/[0.24] bg-[#05070B] p-4 text-white shadow-[0_26px_56px_rgba(0,0,0,0.72)] backdrop-blur-xl">
                 <div className="mb-2 flex items-start justify-between gap-3">
                   <h3 className="text-[24px] font-semibold leading-[1.06] text-white/95">
                     {t('balance.promocode.giftNoticeTitle', {
@@ -326,22 +326,22 @@ export function UltimaPromocode() {
                     ×
                   </button>
                 </div>
-                <p className="text-white/88 text-[14px] leading-[1.28]">
+                <p className="text-[14px] leading-[1.28] text-white/[0.88]">
                   {t('balance.promocode.giftNoticeDesc', {
                     defaultValue:
                       'Подарочная подписка успешно активирована. Данные подарка уже применены к вашему аккаунту.',
                   })}
                 </p>
-                <div className="text-white/92 mt-3 space-y-2 break-words text-[14px]">
+                <div className="mt-3 space-y-2 break-words text-[14px] text-white/[0.92]">
                   <p>
-                    <span className="text-white/65">
+                    <span className="text-white/[0.65]">
                       {t('balance.promocode.giftSender', { defaultValue: 'Отправитель:' })}
                     </span>{' '}
                     {giftActivationNotice.senderDisplay ??
                       t('common.notSpecified', { defaultValue: 'Не указан' })}
                   </p>
                   <p>
-                    <span className="text-white/65">
+                    <span className="text-white/[0.65]">
                       {t('balance.promocode.giftPeriod', { defaultValue: 'Срок подарка:' })}
                     </span>{' '}
                     {giftActivationNotice.periodDays != null
@@ -350,7 +350,7 @@ export function UltimaPromocode() {
                   </p>
                   {giftActivationNotice.tariffName ? (
                     <p>
-                      <span className="text-white/65">
+                      <span className="text-white/[0.65]">
                         {t('balance.promocode.giftTariff', { defaultValue: 'Тариф:' })}
                       </span>{' '}
                       {giftActivationNotice.tariffName}
@@ -360,7 +360,7 @@ export function UltimaPromocode() {
                 <button
                   type="button"
                   onClick={() => setGiftActivationNotice(null)}
-                  className="border-emerald-200/22 mt-4 flex w-full items-center justify-center rounded-full border bg-[rgba(12,45,42,0.34)] px-5 py-2.5 text-[15px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] backdrop-blur-md"
+                  className="mt-4 flex w-full items-center justify-center rounded-full border border-emerald-200/[0.22] bg-[rgba(12,45,42,0.34)] px-5 py-2.5 text-[15px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] backdrop-blur-md"
                 >
                   {t('subscription.connection.gotIt', {
                     defaultValue: 'Все понятно',

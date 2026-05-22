@@ -239,7 +239,7 @@ export function UltimaSupport() {
     }
     return {
       label: t('support.statusOpen', { defaultValue: 'Открыт' }),
-      classes: 'border-sky-300/35 bg-sky-400/15 text-sky-100',
+      classes: 'border-sky-300/[0.35] bg-sky-400/[0.15] text-sky-100',
       style: undefined as CSSProperties | undefined,
     };
   };
@@ -300,14 +300,14 @@ export function UltimaSupport() {
         </span>
       </div>
       {ticket.last_message?.message_text ? (
-        <p className="text-white/62 line-clamp-2 break-words text-[12px] leading-snug">
+        <p className="line-clamp-2 break-words text-[12px] leading-snug text-white/[0.62]">
           {ticket.last_message.is_from_admin
             ? `${t('support.supportTeam', { defaultValue: 'Администратор' })}: `
             : `${t('support.you', { defaultValue: 'Вы' })}: `}
           {ticket.last_message.message_text}
         </p>
       ) : null}
-      <p className="text-white/48 mt-1 text-[11px]">{formatDate(ticket.updated_at)}</p>
+      <p className="mt-1 text-[11px] text-white/[0.48]">{formatDate(ticket.updated_at)}</p>
     </button>
   );
 
@@ -318,7 +318,7 @@ export function UltimaSupport() {
       className={`${ultimaPanelClassName} flex min-h-0 flex-1 items-center justify-center p-4`}
       style={ULTIMA_SUPPORT_SECTION_STYLE}
     >
-      <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-300/35 border-t-transparent" />
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-300/[0.35] border-t-transparent" />
     </section>
   ) : ticketsDisabled ? (
     <section className={`${ultimaPanelClassName} p-4`} style={ULTIMA_SUPPORT_SECTION_STYLE}>
@@ -341,7 +341,7 @@ export function UltimaSupport() {
             key={topic.key}
             type="button"
             onClick={() => applyQuickTopic(topic)}
-            className="text-emerald-50/78 rounded-full border border-emerald-200/15 bg-emerald-950/35 px-3 py-1.5 text-[12px] font-medium transition hover:border-emerald-200/30 hover:bg-emerald-900/40"
+            className="rounded-full border border-emerald-200/[0.15] bg-emerald-950/[0.35] px-3 py-1.5 text-[12px] font-medium text-emerald-50/[0.78] transition hover:border-emerald-200/30 hover:bg-emerald-900/40"
           >
             {topic.label}
           </button>
@@ -351,14 +351,14 @@ export function UltimaSupport() {
         value={newTitle}
         onChange={(event) => setNewTitle(event.target.value)}
         placeholder={t('support.subjectPlaceholder')}
-        className="w-full rounded-2xl bg-emerald-950/30 px-4 py-2.5 text-sm text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] placeholder:text-emerald-100/35"
+        className="w-full rounded-2xl bg-emerald-950/30 px-4 py-2.5 text-sm text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] placeholder:text-emerald-100/[0.35]"
         maxLength={255}
       />
       <textarea
         value={newMessage}
         onChange={(event) => setNewMessage(event.target.value)}
         placeholder={t('support.messagePlaceholder')}
-        className="min-h-[160px] w-full rounded-2xl bg-emerald-950/30 px-4 py-3 text-sm text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] placeholder:text-emerald-100/35"
+        className="min-h-[160px] w-full rounded-2xl bg-emerald-950/30 px-4 py-3 text-sm text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] placeholder:text-emerald-100/[0.35]"
         maxLength={4000}
       />
       <div className="flex gap-2">
@@ -391,10 +391,10 @@ export function UltimaSupport() {
         >
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <p className="text-white/56 text-[11px] font-medium uppercase tracking-[0.16em]">
+              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-white/[0.56]">
                 {t('support.desktopChannelLabel', { defaultValue: 'Канал связи' })}
               </p>
-              <p className="text-white/88 mt-1 break-words text-[14px] font-medium">
+              <p className="mt-1 break-words text-[14px] font-medium text-white/[0.88]">
                 {supportChannelHint}
               </p>
             </div>
@@ -435,7 +435,7 @@ export function UltimaSupport() {
               <>
                 {ticketBuckets.recent.length > 0 && (
                   <div className="space-y-2">
-                    <p className="px-1 text-[10px] uppercase tracking-[0.18em] text-white/45">
+                    <p className="px-1 text-[10px] uppercase tracking-[0.18em] text-white/[0.45]">
                       {t('support.recentTickets', { defaultValue: 'Новые и активные' })}
                     </p>
                     {visibleRecentTickets.map((ticket) => renderTicketCard(ticket))}
@@ -554,11 +554,11 @@ export function UltimaSupport() {
                         className={`rounded-xl px-3 py-2 text-sm lg:px-3.5 lg:py-2.5 ${
                           msg.is_from_admin
                             ? 'bg-emerald-500/10 text-emerald-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
-                            : 'bg-emerald-950/35 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]'
+                            : 'bg-emerald-950/[0.35] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]'
                         }`}
                       >
                         <div className="mb-1 flex items-center justify-between gap-2">
-                          <span className="text-white/68 text-[11px] font-medium">
+                          <span className="text-[11px] font-medium text-white/[0.68]">
                             {msg.is_from_admin
                               ? t('support.supportTeam', { defaultValue: 'Администратор' })
                               : t('support.you', { defaultValue: 'Вы' })}
@@ -579,7 +579,7 @@ export function UltimaSupport() {
                       value={replyMessage}
                       onChange={(event) => setReplyMessage(event.target.value)}
                       placeholder={t('support.replyPlaceholder')}
-                      className="w-full rounded-xl bg-emerald-950/35 px-3 py-2 text-sm text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] placeholder:text-emerald-100/35 lg:h-11 lg:text-[14px]"
+                      className="w-full rounded-xl bg-emerald-950/[0.35] px-3 py-2 text-sm text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] placeholder:text-emerald-100/[0.35] lg:h-11 lg:text-[14px]"
                       maxLength={4000}
                     />
                     <button
@@ -680,7 +680,7 @@ export function UltimaSupport() {
             >
               <div className="space-y-3">
                 <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3">
-                  <div className="text-white/42 text-[11px] uppercase tracking-[0.2em]">
+                  <div className="text-[11px] uppercase tracking-[0.2em] text-white/[0.42]">
                     {t('support.desktopChannelLabel', { defaultValue: 'Канал связи' })}
                   </div>
                   <div className="mt-2 text-sm font-medium text-white/90">
@@ -701,7 +701,7 @@ export function UltimaSupport() {
                 </div>
 
                 <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3">
-                  <div className="text-white/42 text-[11px] uppercase tracking-[0.2em]">
+                  <div className="text-[11px] uppercase tracking-[0.2em] text-white/[0.42]">
                     {t('support.selectedTicket', { defaultValue: 'Выбранный тикет' })}
                   </div>
                   <div className="mt-2 text-sm font-medium text-white/90">

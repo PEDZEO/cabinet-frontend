@@ -80,7 +80,7 @@ export function UltimaReferralCta({
       <div className="relative flex min-w-0 items-center gap-3">
         <span
           className={cn(
-            'text-white/88 flex shrink-0 items-center justify-center rounded-[18px] border',
+            'flex shrink-0 items-center justify-center rounded-[18px] border text-white/[0.88]',
             variant === 'desktop' ? 'h-10 w-10' : 'h-9 w-9',
           )}
           style={{
@@ -94,7 +94,7 @@ export function UltimaReferralCta({
         <div className="min-w-0 flex-1">
           <p
             className={cn(
-              'text-white/96 truncate font-semibold leading-tight',
+              'truncate font-semibold leading-tight text-white/[0.96]',
               variant === 'desktop' ? 'text-[15px]' : 'text-[14px]',
             )}
           >
@@ -102,7 +102,7 @@ export function UltimaReferralCta({
           </p>
           <p
             className={cn(
-              'text-white/62 mt-0.5 truncate',
+              'mt-0.5 truncate text-white/[0.62]',
               variant === 'desktop' ? 'text-[12px] leading-tight' : 'text-[11px] leading-tight',
             )}
           >
@@ -114,7 +114,7 @@ export function UltimaReferralCta({
           {showBadge ? (
             <span
               className={cn(
-                'text-white/94 rounded-full border px-2 py-1 text-center font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]',
+                'rounded-full border px-2 py-1 text-center font-semibold text-white/[0.94] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]',
                 variant === 'desktop' ? 'min-w-[54px] text-[11px]' : 'text-[10px]',
               )}
               style={{
@@ -127,7 +127,7 @@ export function UltimaReferralCta({
           ) : null}
 
           <span
-            className="text-white/72 group-hover:text-white/92 flex h-8 w-8 items-center justify-center rounded-full border transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-full border text-white/[0.72] transition-colors group-hover:text-white/[0.92]"
             style={{
               borderColor:
                 'color-mix(in srgb, var(--ultima-color-surface-border) 18%, transparent)',

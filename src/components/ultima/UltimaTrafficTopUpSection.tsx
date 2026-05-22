@@ -50,13 +50,13 @@ export function UltimaTrafficTopUpSection({
     <section className={cn(ultimaPaneClassName, 'p-3.5')} style={ultimaSurfaceStyle}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-white/56 text-[12px] font-medium uppercase tracking-[0.14em]">
+          <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-white/[0.56]">
             {t('subscription.additionalOptions.buyTraffic')}
           </p>
           <h2 className="mt-1 text-[20px] font-semibold leading-tight text-white">
             {t('subscription.additionalOptions.buyTrafficTitle')}
           </h2>
-          <p className="text-white/66 mt-1.5 text-[13px] leading-snug">
+          <p className="mt-1.5 text-[13px] leading-snug text-white/[0.66]">
             {t('subscription.additionalOptions.currentTrafficLimit', {
               limit: trafficLimitGb,
               used: trafficUsedGb.toFixed(1),
@@ -66,7 +66,7 @@ export function UltimaTrafficTopUpSection({
       </div>
 
       {!trafficPackages || trafficPackages.length === 0 ? (
-        <div className="text-white/64 mt-3 rounded-[20px] border border-white/10 bg-black/10 px-4 py-3 text-[13px]">
+        <div className="mt-3 rounded-[20px] border border-white/10 bg-black/10 px-4 py-3 text-[13px] text-white/[0.64]">
           {t('subscription.additionalOptions.trafficUnavailable')}
         </div>
       ) : (
@@ -83,7 +83,7 @@ export function UltimaTrafficTopUpSection({
                     'rounded-[22px] border px-4 py-3 text-left transition-colors',
                     active
                       ? 'border-white/25 bg-white/[0.08]'
-                      : 'hover:border-white/18 border-white/10 bg-black/10 hover:bg-white/[0.04]',
+                      : 'border-white/10 bg-black/10 hover:border-white/[0.18] hover:bg-white/[0.04]',
                   )}
                   style={active ? ultimaPaneSurfaceStyle : undefined}
                 >
@@ -94,12 +94,12 @@ export function UltimaTrafficTopUpSection({
                           ? t('subscription.additionalOptions.unlimited')
                           : `${pkg.gb} ${t('common.units.gb')}`}
                       </div>
-                      <div className="text-white/66 mt-1 text-[13px]">
+                      <div className="mt-1 text-[13px] text-white/[0.66]">
                         {formatPrice(pkg.price_kopeks)}
                       </div>
                     </div>
                     {pkg.discount_percent && pkg.discount_percent > 0 ? (
-                      <span className="border-emerald-200/24 bg-emerald-300/12 rounded-full border px-2 py-1 text-[11px] font-medium text-emerald-50">
+                      <span className="rounded-full border border-emerald-200/[0.24] bg-emerald-300/[0.12] px-2 py-1 text-[11px] font-medium text-emerald-50">
                         -{pkg.discount_percent}%
                       </span>
                     ) : null}
@@ -111,7 +111,7 @@ export function UltimaTrafficTopUpSection({
 
           {selectedPackage ? (
             <div className="mt-3 rounded-[22px] border border-white/10 bg-black/10 px-4 py-3">
-              <div className="text-white/78 flex items-center justify-between gap-3 text-[14px]">
+              <div className="flex items-center justify-between gap-3 text-[14px] text-white/[0.78]">
                 <span>{t('subscription.total')}</span>
                 <span className="font-medium text-white">
                   {formatPrice(selectedPackage.price_kopeks)}
@@ -119,7 +119,7 @@ export function UltimaTrafficTopUpSection({
               </div>
               {missingAmountKopeks > 0 ? (
                 <div className="mt-3 space-y-3">
-                  <p className="text-amber-100/88 text-[13px] leading-snug">
+                  <p className="text-[13px] leading-snug text-amber-100/[0.88]">
                     {t('subscription.insufficientBalance', {
                       missing: formatPrice(missingAmountKopeks),
                     })}

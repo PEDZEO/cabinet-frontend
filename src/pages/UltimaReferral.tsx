@@ -40,11 +40,11 @@ const ShareIcon = () => (
 );
 
 const statusClassMap: Record<string, string> = {
-  completed: 'text-emerald-200 border-emerald-200/30 bg-emerald-500/15',
-  approved: 'text-sky-200 border-sky-200/30 bg-sky-500/15',
-  pending: 'text-amber-200 border-amber-200/30 bg-amber-500/15',
-  rejected: 'text-rose-200 border-rose-200/30 bg-rose-500/15',
-  cancelled: 'text-rose-200 border-rose-200/30 bg-rose-500/15',
+  completed: 'text-emerald-200 border-emerald-200/30 bg-emerald-500/[0.15]',
+  approved: 'text-sky-200 border-sky-200/30 bg-sky-500/[0.15]',
+  pending: 'text-amber-200 border-amber-200/30 bg-amber-500/[0.15]',
+  rejected: 'text-rose-200 border-rose-200/30 bg-rose-500/[0.15]',
+  cancelled: 'text-rose-200 border-rose-200/30 bg-rose-500/[0.15]',
 };
 
 const getStatusClass = (status: string) =>
@@ -160,45 +160,49 @@ export function UltimaReferral() {
   const bottomNav = <UltimaBottomNav active="profile" />;
 
   const referralContent = (
-    <section className="border-emerald-200/12 min-h-0 flex-1 overflow-hidden rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:p-4">
+    <section className="min-h-0 flex-1 overflow-hidden rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:p-4">
       <div className="ultima-scrollbar h-full space-y-3 overflow-y-auto pr-1 lg:overflow-visible lg:pr-0">
         {isLoading ? (
           <div className="flex h-40 items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-300/40 border-t-transparent" />
           </div>
         ) : terms && !terms.is_enabled ? (
-          <div className="border-emerald-200/12 text-white/72 rounded-2xl border bg-emerald-950/25 px-3 py-5 text-center">
+          <div className="rounded-2xl border border-emerald-200/[0.12] bg-emerald-950/25 px-3 py-5 text-center text-white/[0.72]">
             {t('referral.disabled')}
           </div>
         ) : (
           <>
             <div className="grid grid-cols-3 gap-2">
-              <div className="border-emerald-200/12 bg-emerald-950/28 rounded-2xl border px-2.5 py-2.5">
-                <p className="text-white/52 text-[10px]">{t('referral.stats.totalReferrals')}</p>
+              <div className="rounded-2xl border border-emerald-200/[0.12] bg-emerald-950/[0.28] px-2.5 py-2.5">
+                <p className="text-[10px] text-white/[0.52]">
+                  {t('referral.stats.totalReferrals')}
+                </p>
                 <p className="mt-1 text-[19px] font-semibold leading-none text-white">
                   {info?.total_referrals || 0}
                 </p>
               </div>
-              <div className="border-emerald-200/12 bg-emerald-950/28 rounded-2xl border px-2.5 py-2.5">
-                <p className="text-white/52 text-[10px]">{t('referral.stats.totalEarnings')}</p>
+              <div className="rounded-2xl border border-emerald-200/[0.12] bg-emerald-950/[0.28] px-2.5 py-2.5">
+                <p className="text-[10px] text-white/[0.52]">{t('referral.stats.totalEarnings')}</p>
                 <p className="mt-1 text-[16px] font-semibold leading-none text-emerald-200">
                   {formatPositive(info?.total_earnings_rubles || 0)}
                 </p>
               </div>
-              <div className="border-emerald-200/12 bg-emerald-950/28 rounded-2xl border px-2.5 py-2.5">
-                <p className="text-white/52 text-[10px]">{t('referral.stats.commissionRate')}</p>
+              <div className="rounded-2xl border border-emerald-200/[0.12] bg-emerald-950/[0.28] px-2.5 py-2.5">
+                <p className="text-[10px] text-white/[0.52]">
+                  {t('referral.stats.commissionRate')}
+                </p>
                 <p className="mt-1 text-[19px] font-semibold leading-none text-sky-200">
                   {info?.commission_percent || 0}%
                 </p>
               </div>
             </div>
 
-            <div className="border-emerald-200/12 bg-emerald-950/28 rounded-2xl border p-3">
-              <p className="text-white/74 text-[12px]">{t('referral.yourLink')}</p>
-              <p className="text-white/52 mt-1 text-[11px]">
+            <div className="rounded-2xl border border-emerald-200/[0.12] bg-emerald-950/[0.28] p-3">
+              <p className="text-[12px] text-white/[0.74]">{t('referral.yourLink')}</p>
+              <p className="mt-1 text-[11px] text-white/[0.52]">
                 {t('referral.shareHint', { percent: info?.commission_percent || 0 })}
               </p>
-              <div className="border-emerald-200/12 text-white/86 mt-2 rounded-xl border bg-emerald-950/40 px-3 py-2 text-[12px]">
+              <div className="mt-2 rounded-xl border border-emerald-200/[0.12] bg-emerald-950/40 px-3 py-2 text-[12px] text-white/[0.86]">
                 <p className="break-all leading-snug">{referralLink || '—'}</p>
               </div>
               <div className="mt-2 grid grid-cols-2 gap-2">
@@ -206,7 +210,7 @@ export function UltimaReferral() {
                   type="button"
                   onClick={copyLink}
                   disabled={!referralLink}
-                  className="flex h-10 items-center justify-center gap-1.5 rounded-xl border border-emerald-200/15 bg-emerald-900/45 text-[12px] text-white/90 disabled:opacity-45"
+                  className="flex h-10 items-center justify-center gap-1.5 rounded-xl border border-emerald-200/[0.15] bg-emerald-900/[0.45] text-[12px] text-white/90 disabled:opacity-45"
                 >
                   {copied ? <CheckIcon /> : <CopyIcon />}
                   {copied ? t('referral.copied') : t('referral.copyLink')}
@@ -215,7 +219,7 @@ export function UltimaReferral() {
                   type="button"
                   onClick={shareLink}
                   disabled={!referralLink}
-                  className="border-sky-200/22 bg-sky-500/78 flex h-10 items-center justify-center gap-1.5 rounded-xl border text-[12px] font-medium text-white disabled:opacity-45"
+                  className="flex h-10 items-center justify-center gap-1.5 rounded-xl border border-sky-200/[0.22] bg-sky-500/[0.78] text-[12px] font-medium text-white disabled:opacity-45"
                 >
                   <ShareIcon />
                   {t('referral.shareButton')}
@@ -223,8 +227,8 @@ export function UltimaReferral() {
               </div>
             </div>
 
-            <div className="border-emerald-200/12 bg-emerald-950/28 rounded-2xl border p-3">
-              <p className="text-white/88 mb-2 text-[13px]">{t('referral.yourReferrals')}</p>
+            <div className="rounded-2xl border border-emerald-200/[0.12] bg-emerald-950/[0.28] p-3">
+              <p className="mb-2 text-[13px] text-white/[0.88]">{t('referral.yourReferrals')}</p>
               {referralList?.items && referralList.items.length > 0 ? (
                 <div className="space-y-2">
                   {referralList.items.slice(0, 10).map((ref) => (
@@ -233,15 +237,15 @@ export function UltimaReferral() {
                       className="flex items-center justify-between rounded-xl border border-emerald-200/10 bg-emerald-950/40 px-2.5 py-2"
                     >
                       <div>
-                        <p className="text-white/92 text-[13px]">
+                        <p className="text-[13px] text-white/[0.92]">
                           {ref.first_name || ref.username || `User #${ref.id}`}
                         </p>
-                        <p className="text-[11px] text-white/45">
+                        <p className="text-[11px] text-white/[0.45]">
                           {new Date(ref.created_at).toLocaleDateString()}
                         </p>
                       </div>
                       <span
-                        className={`rounded-full border px-2 py-0.5 text-[10px] ${ref.has_paid ? 'border-emerald-200/30 bg-emerald-500/15 text-emerald-200' : 'border-white/20 bg-white/10 text-white/75'}`}
+                        className={`rounded-full border px-2 py-0.5 text-[10px] ${ref.has_paid ? 'border-emerald-200/30 bg-emerald-500/[0.15] text-emerald-200' : 'border-white/20 bg-white/10 text-white/75'}`}
                       >
                         {ref.has_paid ? t('referral.status.paid') : t('referral.status.pending')}
                       </span>
@@ -249,13 +253,15 @@ export function UltimaReferral() {
                   ))}
                 </div>
               ) : (
-                <p className="text-[12px] text-white/55">{t('referral.noReferrals')}</p>
+                <p className="text-[12px] text-white/[0.55]">{t('referral.noReferrals')}</p>
               )}
             </div>
 
             {earnings?.items && earnings.items.length > 0 ? (
-              <div className="border-emerald-200/12 bg-emerald-950/28 rounded-2xl border p-3">
-                <p className="text-white/88 mb-2 text-[13px]">{t('referral.earningsHistory')}</p>
+              <div className="rounded-2xl border border-emerald-200/[0.12] bg-emerald-950/[0.28] p-3">
+                <p className="mb-2 text-[13px] text-white/[0.88]">
+                  {t('referral.earningsHistory')}
+                </p>
                 <div className="space-y-2">
                   {earnings.items.slice(0, 10).map((earning) => (
                     <div
@@ -263,10 +269,10 @@ export function UltimaReferral() {
                       className="flex items-center justify-between rounded-xl border border-emerald-200/10 bg-emerald-950/40 px-2.5 py-2"
                     >
                       <div>
-                        <p className="text-white/88 text-[12px]">
+                        <p className="text-[12px] text-white/[0.88]">
                           {earning.referral_first_name || earning.referral_username || 'Referral'}
                         </p>
-                        <p className="text-[11px] text-white/45">
+                        <p className="text-[11px] text-white/[0.45]">
                           {new Date(earning.created_at).toLocaleDateString()}
                         </p>
                       </div>
@@ -280,17 +286,17 @@ export function UltimaReferral() {
             ) : null}
 
             {terms?.partner_section_visible !== false && showApplySection ? (
-              <div className="border-emerald-200/12 bg-emerald-950/28 rounded-2xl border p-3">
-                <p className="text-white/92 text-[14px] font-medium">
+              <div className="rounded-2xl border border-emerald-200/[0.12] bg-emerald-950/[0.28] p-3">
+                <p className="text-[14px] font-medium text-white/[0.92]">
                   {t('referral.partner.becomePartner')}
                 </p>
-                <p className="text-white/58 mt-1 text-[12px]">
+                <p className="mt-1 text-[12px] text-white/[0.58]">
                   {t('referral.partner.becomePartnerDesc')}
                 </p>
                 <button
                   type="button"
                   onClick={() => navigate('/referral/partner/apply')}
-                  className="mt-2 h-10 rounded-xl border border-emerald-200/20 bg-emerald-500/85 px-4 text-[12px] font-medium text-white"
+                  className="mt-2 h-10 rounded-xl border border-emerald-200/20 bg-emerald-500/[0.85] px-4 text-[12px] font-medium text-white"
                 >
                   {t('referral.partner.applyButton')}
                 </button>
@@ -324,21 +330,23 @@ export function UltimaReferral() {
             ) : null}
 
             {terms?.partner_section_visible !== false && isPartner && withdrawalBalance ? (
-              <div className="border-emerald-200/12 bg-emerald-950/28 rounded-2xl border p-3">
-                <p className="text-white/92 text-[14px] font-medium">
+              <div className="rounded-2xl border border-emerald-200/[0.12] bg-emerald-950/[0.28] p-3">
+                <p className="text-[14px] font-medium text-white/[0.92]">
                   {t('referral.withdrawal.title')}
                 </p>
                 <div className="mt-2 grid grid-cols-2 gap-2">
-                  <div className="border-emerald-200/12 rounded-xl border bg-emerald-950/35 p-2">
-                    <p className="text-white/48 text-[10px]">
+                  <div className="rounded-xl border border-emerald-200/[0.12] bg-emerald-950/[0.35] p-2">
+                    <p className="text-[10px] text-white/[0.48]">
                       {t('referral.withdrawal.available')}
                     </p>
                     <p className="mt-1 text-[16px] font-semibold text-emerald-200">
                       {formatWithCurrency(withdrawalBalance.available_total / 100)}
                     </p>
                   </div>
-                  <div className="border-emerald-200/12 rounded-xl border bg-emerald-950/35 p-2">
-                    <p className="text-white/48 text-[10px]">{t('referral.withdrawal.pending')}</p>
+                  <div className="rounded-xl border border-emerald-200/[0.12] bg-emerald-950/[0.35] p-2">
+                    <p className="text-[10px] text-white/[0.48]">
+                      {t('referral.withdrawal.pending')}
+                    </p>
                     <p className="mt-1 text-[14px] font-semibold text-amber-200">
                       {formatWithCurrency(withdrawalBalance.pending / 100)}
                     </p>
@@ -348,7 +356,7 @@ export function UltimaReferral() {
                   type="button"
                   onClick={() => navigate('/referral/withdrawal/request')}
                   disabled={!withdrawalBalance.can_request}
-                  className="mt-2 h-10 w-full rounded-xl border border-emerald-200/20 bg-emerald-500/85 text-[12px] font-medium text-white disabled:opacity-45"
+                  className="mt-2 h-10 w-full rounded-xl border border-emerald-200/20 bg-emerald-500/[0.85] text-[12px] font-medium text-white disabled:opacity-45"
                 >
                   {t('referral.withdrawal.requestButton')}
                 </button>
@@ -359,8 +367,10 @@ export function UltimaReferral() {
             isPartner &&
             withdrawalHistory?.items &&
             withdrawalHistory.items.length > 0 ? (
-              <div className="border-emerald-200/12 bg-emerald-950/28 rounded-2xl border p-3">
-                <p className="text-white/88 mb-2 text-[13px]">{t('referral.withdrawal.history')}</p>
+              <div className="rounded-2xl border border-emerald-200/[0.12] bg-emerald-950/[0.28] p-3">
+                <p className="mb-2 text-[13px] text-white/[0.88]">
+                  {t('referral.withdrawal.history')}
+                </p>
                 <div className="space-y-2">
                   {withdrawalHistory.items.slice(0, 10).map((item) => (
                     <div
@@ -368,7 +378,7 @@ export function UltimaReferral() {
                       className="rounded-xl border border-emerald-200/10 bg-emerald-950/40 px-2.5 py-2"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <p className="text-white/92 text-[12px] font-medium">
+                        <p className="text-[12px] font-medium text-white/[0.92]">
                           {formatWithCurrency(item.amount_rubles)}
                         </p>
                         <span
@@ -377,7 +387,7 @@ export function UltimaReferral() {
                           {t(`referral.withdrawal.status.${item.status}`, item.status)}
                         </span>
                       </div>
-                      <p className="mt-0.5 text-[11px] text-white/45">
+                      <p className="mt-0.5 text-[11px] text-white/[0.45]">
                         {new Date(item.created_at).toLocaleDateString()}
                       </p>
                       {item.status === 'pending' ? (
@@ -446,7 +456,7 @@ export function UltimaReferral() {
             >
               <div className="space-y-3">
                 <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3">
-                  <div className="text-white/42 text-[11px] uppercase tracking-[0.2em]">
+                  <div className="text-[11px] uppercase tracking-[0.2em] text-white/[0.42]">
                     {t('common.status', { defaultValue: 'Статус' })}
                   </div>
                   <div className="mt-2 text-sm font-medium text-white/90">{partnerStatusValue}</div>
@@ -489,7 +499,7 @@ export function UltimaReferral() {
           <h1 className="text-[clamp(34px,9vw,42px)] font-semibold leading-[0.9] tracking-[-0.01em] text-white">
             {t('referral.title')}
           </h1>
-          <p className="text-white/62 mt-1.5 text-[13px]">
+          <p className="mt-1.5 text-[13px] text-white/[0.62]">
             {t('profile.referralDescription', { defaultValue: 'Получайте бонусы за приглашения' })}
           </p>
         </header>

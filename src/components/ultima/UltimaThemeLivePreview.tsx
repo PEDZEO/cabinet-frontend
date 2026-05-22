@@ -56,7 +56,7 @@ function MetricCard({ label, value }: { label: string; value: string }) {
         background: 'var(--ultima-bg-surface-soft)',
       }}
     >
-      <div className="text-white/46 truncate text-[10px] font-medium uppercase tracking-wide">
+      <div className="truncate text-[10px] font-medium uppercase tracking-wide text-white/[0.46]">
         {label}
       </div>
       <div className="mt-1 truncate text-sm font-semibold text-white/95">{value}</div>
@@ -121,13 +121,13 @@ function DashboardScene({ device }: { device: UltimaThemePreviewDevice }) {
       >
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <div className="text-white/48 text-xs font-medium uppercase tracking-wide">
+            <div className="text-xs font-medium uppercase tracking-wide text-white/[0.48]">
               Подписка
             </div>
             <div className={cn('font-semibold text-white/95', isDesktop ? 'text-lg' : 'text-base')}>
               до 6 августа
             </div>
-            <div className="text-white/62 mt-1 text-xs">Активна, 4 устройства</div>
+            <div className="mt-1 text-xs text-white/[0.62]">Активна, 4 устройства</div>
           </div>
           <div
             className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border"
@@ -206,7 +206,7 @@ function ConnectionScene({ device }: { device: UltimaThemePreviewDevice }) {
             }}
           >
             <div className="text-xs font-semibold text-white/95">Шаг 2</div>
-            <div className="text-white/66 mt-1 text-[10px]">Конфиг</div>
+            <div className="mt-1 text-[10px] text-white/[0.66]">Конфиг</div>
           </div>
         </div>
       </div>
@@ -366,12 +366,12 @@ export function UltimaThemeLivePreview({
       <div className={cn('relative z-10 flex h-full flex-col', compact ? 'p-3.5' : 'p-5')}>
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <div className="text-white/54 truncate text-[10px] font-medium uppercase tracking-[0.22em]">
+            <div className="truncate text-[10px] font-medium uppercase tracking-[0.22em] text-white/[0.54]">
               {title}
             </div>
             <div
               className={cn(
-                'text-white/94 truncate font-semibold',
+                'truncate font-semibold text-white/[0.94]',
                 compact ? 'text-sm' : 'text-lg',
               )}
             >

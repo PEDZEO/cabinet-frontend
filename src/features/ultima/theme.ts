@@ -15,15 +15,15 @@ export function getUltimaThemeDerivedCssVarStyle(): CSSProperties {
     ['--ultima-bg-page-desktop' as string]:
       'radial-gradient(circle at 78% 12%, color-mix(in srgb, var(--ultima-color-aura) 16%, transparent), transparent 44%), radial-gradient(circle at 16% 86%, color-mix(in srgb, var(--ultima-color-ring) 9%, transparent), transparent 50%), linear-gradient(145deg, color-mix(in srgb, #020617 80%, var(--ultima-color-bg-top) 20%) 0%, color-mix(in srgb, #06101b 68%, var(--ultima-color-bg-bottom) 32%) 46%, color-mix(in srgb, #020617 84%, var(--ultima-color-secondary) 16%) 100%)',
     ['--ultima-bg-page-mobile' as string]:
-      'radial-gradient(circle at 74% 58%, color-mix(in srgb, var(--ultima-color-aura) 22%, transparent), color-mix(in srgb, var(--ultima-color-bg-top) 86%, #000000) 58%, color-mix(in srgb, #020617 82%, var(--ultima-color-bg-bottom) 18%) 100%)',
+      'radial-gradient(70% 42% at 50% 18%, color-mix(in srgb, var(--ultima-color-ring) 10%, transparent), transparent 66%), radial-gradient(92% 68% at 76% 62%, color-mix(in srgb, var(--ultima-color-aura) 26%, transparent), transparent 62%), linear-gradient(180deg, color-mix(in srgb, #020617 78%, var(--ultima-color-bg-top) 22%) 0%, color-mix(in srgb, var(--ultima-color-bg-top) 82%, #000000) 38%, color-mix(in srgb, #020617 72%, var(--ultima-color-bg-bottom) 28%) 100%)',
     ['--ultima-bg-page-overlay-desktop' as string]:
       'radial-gradient(circle at 34% 82%, color-mix(in srgb, var(--ultima-color-aura) 9%, transparent), transparent 54%), radial-gradient(circle at 86% 18%, color-mix(in srgb, var(--ultima-color-ring) 8%, transparent), transparent 50%)',
     ['--ultima-bg-page-overlay-mobile' as string]:
-      'radial-gradient(circle at 30% 84%, color-mix(in srgb, var(--ultima-color-aura) 18%, transparent), transparent 52%), radial-gradient(circle at 84% 18%, color-mix(in srgb, var(--ultima-color-ring) 12%, transparent), transparent 48%)',
+      'radial-gradient(82% 48% at 28% 80%, color-mix(in srgb, var(--ultima-color-aura) 18%, transparent), transparent 58%), radial-gradient(66% 38% at 84% 22%, color-mix(in srgb, var(--ultima-color-ring) 13%, transparent), transparent 56%)',
     ['--ultima-bg-page-scrim-desktop' as string]:
       'linear-gradient(160deg, rgba(2,6,23,0.72) 0%, rgba(2,8,18,0.50) 44%, rgba(2,6,23,0.86) 100%)',
     ['--ultima-bg-page-scrim-mobile' as string]:
-      'linear-gradient(160deg, color-mix(in srgb, var(--ultima-color-bg-top) 58%, #000000) 0%, color-mix(in srgb, var(--ultima-color-bg-bottom) 38%, transparent) 44%, color-mix(in srgb, #020617 72%, var(--ultima-color-bg-top) 28%) 100%)',
+      'linear-gradient(180deg, color-mix(in srgb, #020617 22%, transparent) 0%, color-mix(in srgb, var(--ultima-color-bg-top) 12%, transparent) 42%, color-mix(in srgb, #020617 46%, transparent) 100%)',
     ['--ultima-bg-shell' as string]:
       'linear-gradient(160deg, color-mix(in srgb, #030712 70%, var(--ultima-color-bg-top) 30%) 0%, color-mix(in srgb, #050b14 66%, var(--ultima-color-bg-bottom) 34%) 100%)',
     ['--ultima-bg-surface' as string]:

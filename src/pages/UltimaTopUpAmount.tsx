@@ -222,16 +222,16 @@ export function UltimaTopUpAmount() {
 
   const amountContent = (
     <>
-      <section className="border-emerald-200/12 min-h-0 flex-1 overflow-y-auto rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:overflow-visible lg:p-4">
+      <section className="min-h-0 flex-1 overflow-y-auto rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:overflow-visible lg:p-4">
         <div className="mb-3 flex items-center gap-3 rounded-2xl border border-emerald-200/10 bg-emerald-950/30 px-3 py-2.5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-200/15 bg-emerald-900/45 text-emerald-100">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-200/[0.15] bg-emerald-900/[0.45] text-emerald-100">
             <MethodIcon methodId={method.id} />
           </div>
           <div className="min-w-0">
             <p className="line-clamp-2 break-words text-[15px] font-medium leading-tight text-white/95">
               {methodName}
             </p>
-            <p className="text-[11px] text-white/55">
+            <p className="text-[11px] text-white/[0.55]">
               {formatAmount(minRub, 0)} - {formatAmount(maxRub, 0)} {currencySymbol}
             </p>
           </div>
@@ -246,7 +246,7 @@ export function UltimaTopUpAmount() {
                 onClick={() => setSelectedOption(option.id)}
                 className={`min-w-0 rounded-xl border px-3 py-2 text-left text-sm ${
                   selectedOption === option.id
-                    ? 'bg-emerald-500/12 border-emerald-300/45 text-white'
+                    ? 'border-emerald-300/[0.45] bg-emerald-500/[0.12] text-white'
                     : 'border-emerald-200/10 bg-emerald-950/30 text-white/75'
                 }`}
               >
@@ -256,9 +256,9 @@ export function UltimaTopUpAmount() {
           </div>
         ) : null}
 
-        <div className="text-white/62 mb-2 text-[12px]">{t('balance.enterAmount')}</div>
+        <div className="mb-2 text-[12px] text-white/[0.62]">{t('balance.enterAmount')}</div>
         <div className="flex flex-col gap-2 min-[390px]:flex-row">
-          <div className="border-emerald-200/12 relative flex-1 rounded-2xl border bg-emerald-950/35">
+          <div className="relative flex-1 rounded-2xl border border-emerald-200/[0.12] bg-emerald-950/[0.35]">
             <input
               ref={inputRef}
               type="number"
@@ -293,8 +293,8 @@ export function UltimaTopUpAmount() {
                   (targetCurrency === 'RUB' || targetCurrency === 'IRR'
                     ? String(Math.round(convertAmount(value)))
                     : convertAmount(value).toFixed(2))
-                    ? 'bg-emerald-500/12 border-emerald-300/45 text-white'
-                    : 'border-emerald-200/10 bg-emerald-950/30 text-white/85 hover:border-emerald-200/25'
+                    ? 'border-emerald-300/[0.45] bg-emerald-500/[0.12] text-white'
+                    : 'border-emerald-200/10 bg-emerald-950/30 text-white/[0.85] hover:border-emerald-200/25'
                 }`}
                 onClick={() => handleQuick(value)}
               >
@@ -305,7 +305,7 @@ export function UltimaTopUpAmount() {
         ) : null}
 
         {error ? (
-          <div className="bg-red-500/12 mt-3 rounded-xl border border-red-400/30 px-3 py-2 text-sm text-red-200">
+          <div className="mt-3 rounded-xl border border-red-400/30 bg-red-500/[0.12] px-3 py-2 text-sm text-red-200">
             {error}
           </div>
         ) : null}
@@ -323,12 +323,12 @@ export function UltimaTopUpAmount() {
             </button>
             <div className="mt-2 flex items-center gap-2">
               <div className="min-w-0 flex-1 rounded-lg border border-emerald-200/10 bg-emerald-950/30 px-2.5 py-2">
-                <p className="break-all text-[11px] text-white/55">{paymentUrl}</p>
+                <p className="break-all text-[11px] text-white/[0.55]">{paymentUrl}</p>
               </div>
               <button
                 type="button"
                 onClick={() => void handleCopyUrl()}
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-emerald-200/15 bg-emerald-900/40 text-white/80"
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-emerald-200/[0.15] bg-emerald-900/40 text-white/80"
               >
                 {copied ? <CheckIcon /> : <CopyIcon />}
               </button>
@@ -338,7 +338,7 @@ export function UltimaTopUpAmount() {
       </section>
 
       <section className="rounded-2xl border border-emerald-200/10 bg-emerald-950/20 px-3 py-2.5">
-        <p className="text-white/58 text-[11px] leading-snug">
+        <p className="text-[11px] leading-snug text-white/[0.58]">
           {t('balance.ultimaBalanceNotice', {
             defaultValue:
               'После пополнения сумма попадает на баланс и затем списывается в оплату подписки.',
@@ -400,7 +400,7 @@ export function UltimaTopUpAmount() {
               <div className="space-y-3">
                 {quickRubles.length > 0 ? (
                   <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3">
-                    <div className="text-white/42 text-[11px] uppercase tracking-[0.2em]">
+                    <div className="text-[11px] uppercase tracking-[0.2em] text-white/[0.42]">
                       {t('balance.quickAmounts', { defaultValue: 'Быстрые суммы' })}
                     </div>
                     <div className="mt-2 text-sm font-medium text-white/90">
@@ -408,7 +408,7 @@ export function UltimaTopUpAmount() {
                     </div>
                   </div>
                 ) : null}
-                <div className="text-white/72 rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-[1.6]">
+                <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-[1.6] text-white/[0.72]">
                   {t('balance.ultimaBalanceNotice', {
                     defaultValue:
                       'После пополнения сумма попадает на баланс и затем списывается в оплату подписки.',
@@ -433,13 +433,13 @@ export function UltimaTopUpAmount() {
           <h1 className="text-[clamp(32px,8.5vw,36px)] font-semibold leading-[0.9] tracking-[-0.01em] text-white [overflow-wrap:anywhere]">
             {methodName}
           </h1>
-          <p className="text-white/62 mt-1.5 text-[13px] leading-tight">
+          <p className="mt-1.5 text-[13px] leading-tight text-white/[0.62]">
             {t('balance.ultimaBalanceNotice', {
               defaultValue:
                 'Средства поступят на баланс и автоматически учтутся в стоимости подписки.',
             })}
           </p>
-          <p className="mt-1 text-[11px] text-white/45">
+          <p className="mt-1 text-[11px] text-white/[0.45]">
             {formatAmount(minRub, 0)} - {formatAmount(maxRub, 0)} {currencySymbol}
           </p>
         </header>

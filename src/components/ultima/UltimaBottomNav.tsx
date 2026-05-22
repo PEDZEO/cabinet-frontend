@@ -102,8 +102,8 @@ export function UltimaBottomNav({
 
   const getButtonClassName = (isActive: boolean) =>
     isActive
-      ? 'flex h-10 items-center justify-center rounded-[15px] border text-[var(--ultima-color-primary-text)] shadow-[0_8px_20px_rgba(20,209,157,0.32),inset_0_1px_0_rgba(255,255,255,0.24)] translate-y-[-1px] transition-all duration-200 active:translate-y-0 active:scale-[0.985] lg:h-11 lg:justify-start lg:gap-3 lg:px-3'
-      : 'flex h-10 items-center justify-center rounded-[15px] text-[var(--ultima-color-nav-text)]/78 transition-all duration-200 hover:bg-white/8 hover:translate-y-[-1px] active:translate-y-0 active:scale-[0.985] lg:h-11 lg:justify-start lg:gap-3 lg:px-3';
+      ? 'flex h-10 items-center justify-center rounded-[15px] border shadow-[0_8px_20px_rgba(20,209,157,0.32),inset_0_1px_0_rgba(255,255,255,0.24)] translate-y-[-1px] transition-all duration-200 active:translate-y-0 active:scale-[0.985] lg:h-11 lg:justify-start lg:gap-3 lg:px-3'
+      : 'flex h-10 items-center justify-center rounded-[15px] transition-all duration-200 hover:bg-white/[0.08] hover:translate-y-[-1px] active:translate-y-0 active:scale-[0.985] lg:h-11 lg:justify-start lg:gap-3 lg:px-3';
 
   const handlePointerMove =
     (tab: UltimaBottomNavTab) => (event: PointerEvent<HTMLButtonElement>) => {
@@ -133,7 +133,9 @@ export function UltimaBottomNav({
             boxShadow:
               '0 8px 20px color-mix(in srgb, var(--ultima-color-nav-active) 34%, transparent), inset 0 1px 0 rgba(255,255,255,0.24)',
           }
-        : null),
+        : {
+            color: 'color-mix(in srgb, var(--ultima-color-nav-text) 78%, transparent)',
+          }),
     };
   };
 

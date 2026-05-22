@@ -296,13 +296,13 @@ export function UltimaDevices() {
         </div>
       ) : null}
       {success ? (
-        <div className="rounded-2xl border border-emerald-200/20 bg-emerald-900/35 px-3 py-2 text-sm text-emerald-100">
+        <div className="rounded-2xl border border-emerald-200/20 bg-emerald-900/[0.35] px-3 py-2 text-sm text-emerald-100">
           {success}
         </div>
       ) : null}
 
       {!subscriptionLoading && !hasSubscription ? (
-        <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-4 backdrop-blur-md">
+        <section className="rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.18)] p-4 backdrop-blur-md">
           <p className="text-sm text-white/80">
             {t('subscription.connection.needSubscription', {
               defaultValue: 'Для управления устройствами нужна активная подписка.',
@@ -318,19 +318,19 @@ export function UltimaDevices() {
         </section>
       ) : (
         <>
-          <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
+          <section className="rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-900/45 text-white/85">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-900/[0.45] text-white/[0.85]">
                 <DeviceIcon />
               </div>
               <div>
                 <p className="text-[14px] text-white/95">
                   {t('lite.devicesTotal', { defaultValue: 'Лимит устройств' })}: {currentLimit}
                 </p>
-                <p className="text-white/58 text-[12px]">
+                <p className="text-[12px] text-white/[0.58]">
                   {t('lite.connectedDevices', { defaultValue: 'Подключено' })}: {connectedCount}
                 </p>
-                <p className="text-white/48 mt-1 text-[11px]">
+                <p className="mt-1 text-[11px] text-white/[0.48]">
                   {t('ultima.baseDeviceLimitLabel', 'База тарифа: {{count}} устройства', {
                     count: baseDeviceLimit,
                   })}
@@ -338,7 +338,7 @@ export function UltimaDevices() {
               </div>
             </div>
             {legacyDeviceNotice ? (
-              <div className="border-amber-200/24 text-amber-50/92 mt-3 rounded-2xl border bg-amber-300/10 px-3 py-2.5 text-[12px] leading-[1.55]">
+              <div className="mt-3 rounded-2xl border border-amber-200/[0.24] bg-amber-300/10 px-3 py-2.5 text-[12px] leading-[1.55] text-amber-50/[0.92]">
                 <p>{legacyDeviceNotice}</p>
                 <button
                   type="button"
@@ -354,7 +354,7 @@ export function UltimaDevices() {
             ) : null}
           </section>
 
-          <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
+          <section className="rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
             <div className="mb-2 flex items-center justify-between">
               <p className="text-[14px] text-white/90">
                 {t('lite.connectedDevices', { defaultValue: 'Подключенные устройства' })}
@@ -380,13 +380,13 @@ export function UltimaDevices() {
                 {devicesData.devices.map((device) => (
                   <div
                     key={device.hwid}
-                    className="bg-emerald-950/28 flex items-center justify-between rounded-2xl border border-emerald-200/10 px-3 py-2"
+                    className="flex items-center justify-between rounded-2xl border border-emerald-200/10 bg-emerald-950/[0.28] px-3 py-2"
                   >
                     <div className="min-w-0">
-                      <p className="text-white/92 line-clamp-2 break-words text-[13px] leading-snug">
+                      <p className="line-clamp-2 break-words text-[13px] leading-snug text-white/[0.92]">
                         {device.device_model || device.platform}
                       </p>
-                      <p className="text-white/52 break-all text-[11px] leading-snug">
+                      <p className="break-all text-[11px] leading-snug text-white/[0.52]">
                         {device.platform} • {device.hwid}
                       </p>
                     </div>
@@ -405,14 +405,14 @@ export function UltimaDevices() {
                 ))}
               </div>
             ) : (
-              <p className="text-white/56 text-sm">
+              <p className="text-sm text-white/[0.56]">
                 {t('lite.noDevices', { defaultValue: 'Устройств пока нет' })}
               </p>
             )}
           </section>
 
           {!isActiveTrial ? (
-            <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
+            <section className="rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
               <p className="mb-2 text-[14px] text-white/90">
                 {t('lite.addDevices', { defaultValue: 'Добавить устройства' })}
               </p>
@@ -425,7 +425,7 @@ export function UltimaDevices() {
                 >
                   -
                 </button>
-                <div className="min-w-[68px] rounded-lg border border-emerald-200/15 bg-emerald-950/30 px-3 py-1.5 text-center text-sm text-white">
+                <div className="min-w-[68px] rounded-lg border border-emerald-200/[0.15] bg-emerald-950/30 px-3 py-1.5 text-center text-sm text-white">
                   {addCount}
                 </div>
                 <button
@@ -436,11 +436,11 @@ export function UltimaDevices() {
                 >
                   +
                 </button>
-                <span className="text-[12px] text-white/55">
+                <span className="text-[12px] text-white/[0.55]">
                   {t('lite.max', { defaultValue: 'макс.' })}: {maxAdd}
                 </span>
               </div>
-              <p className="text-white/58 text-[12px]">
+              <p className="text-[12px] text-white/[0.58]">
                 {devicePrice?.available && devicePrice.total_price_kopeks
                   ? `${t('balance.amount', { defaultValue: 'Сумма' })}: ${formatAmount(devicePrice.total_price_kopeks / 100)} ${currencySymbol}`
                   : devicePrice?.reason ||
@@ -463,7 +463,7 @@ export function UltimaDevices() {
             </section>
           ) : null}
 
-          <section className="border-emerald-200/12 rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
+          <section className="rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
             <p className="mb-2 text-[14px] text-white/90">Уменьшить количество устройств</p>
             {canReduce ? (
               <>
@@ -476,7 +476,7 @@ export function UltimaDevices() {
                   >
                     -
                   </button>
-                  <div className="min-w-[68px] rounded-lg border border-emerald-200/15 bg-emerald-950/30 px-3 py-1.5 text-center text-sm text-white">
+                  <div className="min-w-[68px] rounded-lg border border-emerald-200/[0.15] bg-emerald-950/30 px-3 py-1.5 text-center text-sm text-white">
                     {reduceLimit}
                   </div>
                   <button
@@ -487,7 +487,7 @@ export function UltimaDevices() {
                   >
                     +
                   </button>
-                  <span className="text-[12px] text-white/55">
+                  <span className="text-[12px] text-white/[0.55]">
                     {minReduceLimit}-{maxReduceLimit}
                   </span>
                 </div>
@@ -501,7 +501,7 @@ export function UltimaDevices() {
                 </button>
               </>
             ) : (
-              <p className="text-[12px] text-white/55">
+              <p className="text-[12px] text-white/[0.55]">
                 {getReductionReasonText(reductionInfo?.reason)}
               </p>
             )}
@@ -571,7 +571,7 @@ export function UltimaDevices() {
             >
               <div className="space-y-3">
                 <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3">
-                  <div className="text-white/42 text-[11px] uppercase tracking-[0.2em]">
+                  <div className="text-[11px] uppercase tracking-[0.2em] text-white/[0.42]">
                     {t('lite.max', { defaultValue: 'Максимум' })}
                   </div>
                   <div className="mt-2 text-sm font-medium text-white/90">{maxAdd}</div>
@@ -583,7 +583,7 @@ export function UltimaDevices() {
                   </div>
                 </div>
                 <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3">
-                  <div className="text-white/42 text-[11px] uppercase tracking-[0.2em]">
+                  <div className="text-[11px] uppercase tracking-[0.2em] text-white/[0.42]">
                     {t('devices.desktopReduceTitle', { defaultValue: 'Диапазон уменьшения' })}
                   </div>
                   <div className="mt-2 text-sm font-medium text-white/90">
@@ -616,7 +616,7 @@ export function UltimaDevices() {
           <h1 className="text-[clamp(34px,9.5vw,44px)] font-semibold leading-[0.9] tracking-[-0.01em] text-white">
             Устройства
           </h1>
-          <p className="text-white/62 mt-1.5 text-[14px] leading-tight">
+          <p className="mt-1.5 text-[14px] leading-tight text-white/[0.62]">
             {t('lite.devicesDescription', {
               defaultValue: 'Удаление подключений и управление лимитом устройств подписки.',
             })}

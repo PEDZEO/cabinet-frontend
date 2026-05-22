@@ -243,29 +243,29 @@ export function UltimaDashboard() {
     statusToneKey === 'expired'
       ? {
           dot: 'bg-rose-300/95',
-          halo: 'bg-rose-400/45',
-          pill: 'border-rose-200/25 bg-rose-400/16 text-rose-100/95',
-          pulse: 'from-rose-400/32 via-rose-300/22 to-transparent',
+          halo: 'bg-rose-400/[0.45]',
+          pill: 'border-rose-200/25 bg-rose-400/[0.16] text-rose-100/95',
+          pulse: 'from-rose-400/[0.32] via-rose-300/[0.22] to-transparent',
         }
       : statusToneKey === 'trial'
         ? {
             dot: 'bg-emerald-200/95',
-            halo: 'bg-emerald-300/45',
-            pill: 'border-emerald-200/28 bg-emerald-300/16 text-emerald-50/95',
-            pulse: 'from-emerald-300/34 via-emerald-200/24 to-transparent',
+            halo: 'bg-emerald-300/[0.45]',
+            pill: 'border-emerald-200/[0.28] bg-emerald-300/[0.16] text-emerald-50/95',
+            pulse: 'from-emerald-300/[0.34] via-emerald-200/[0.24] to-transparent',
           }
         : statusToneKey === 'warning'
           ? {
               dot: 'bg-amber-200/95',
-              halo: 'bg-amber-300/42',
-              pill: 'border-amber-200/30 bg-amber-300/16 text-amber-50/95',
+              halo: 'bg-amber-300/[0.42]',
+              pill: 'border-amber-200/30 bg-amber-300/[0.16] text-amber-50/95',
               pulse: 'from-amber-300/30 via-amber-200/20 to-transparent',
             }
           : {
               dot: 'bg-emerald-200/95',
-              halo: 'bg-emerald-300/45',
-              pill: 'border-emerald-200/28 bg-emerald-300/16 text-emerald-50/95',
-              pulse: 'from-emerald-300/34 via-emerald-200/24 to-transparent',
+              halo: 'bg-emerald-300/[0.45]',
+              pill: 'border-emerald-200/[0.28] bg-emerald-300/[0.16] text-emerald-50/95',
+              pulse: 'from-emerald-300/[0.34] via-emerald-200/[0.24] to-transparent',
             };
   const buyCtaLabel = useMemo(() => {
     if (!hasAnySubscription) {
@@ -752,7 +752,7 @@ export function UltimaDashboard() {
         aria-label={t('nav.dashboard')}
         onPointerDown={handleShieldTap}
         className={cn(
-          'relative mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-black/15 focus-visible:outline-none',
+          'relative mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-black/[0.15] focus-visible:outline-none',
           className,
         )}
         style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -802,7 +802,7 @@ export function UltimaDashboard() {
   );
 
   const adminButtonClassName = isDesktopViewport
-    ? 'absolute right-5 top-5 z-30 inline-flex h-10 items-center gap-2 rounded-full border border-white/10 bg-black/25 px-4 text-sm font-medium text-white/84 backdrop-blur'
+    ? 'absolute right-5 top-5 z-30 inline-flex h-10 items-center gap-2 rounded-full border border-white/10 bg-black/25 px-4 text-sm font-medium text-white/[0.84] backdrop-blur'
     : 'absolute right-4 top-2 z-30 inline-flex h-9 items-center gap-1.5 rounded-full border border-amber-300/30 bg-black/30 px-3 text-xs font-medium text-amber-200 backdrop-blur';
   const shellClassName = cn(
     'ultima-shell ultima-shell-shared-nav-docked',
@@ -836,7 +836,7 @@ export function UltimaDashboard() {
       <div className="ultima-shell pb-[calc(20px+env(safe-area-inset-bottom,0px))] pt-2">
         <div className="relative z-10 mx-auto flex min-h-[calc(100dvh-26px)] w-full flex-col px-4 sm:px-6">
           <section className="pt-[clamp(52px,12vh,112px)]">
-            <div className="mx-auto mb-[clamp(24px,5vh,56px)] flex h-24 w-24 items-center justify-center rounded-full bg-black/15">
+            <div className="mx-auto mb-[clamp(24px,5vh,56px)] flex h-24 w-24 items-center justify-center rounded-full bg-black/[0.15]">
               {renderHomeBrandMark()}
             </div>
             <div className="mb-5 h-16 animate-pulse rounded-2xl bg-white/10" />
@@ -931,7 +931,7 @@ export function UltimaDashboard() {
           {renderShieldButton('mb-[clamp(24px,5vh,56px)] lg:mb-5')}
 
           {hasSetupReminder && (
-            <div className="border-emerald-200/24 mb-4 rounded-2xl border bg-[rgba(12,45,42,0.38)] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_24px_rgba(3,14,24,0.28)] backdrop-blur-md">
+            <div className="mb-4 rounded-2xl border border-emerald-200/[0.24] bg-[rgba(12,45,42,0.38)] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_24px_rgba(3,14,24,0.28)] backdrop-blur-md">
               <p className="text-[16px] font-semibold leading-tight text-white/95">
                 {t('ultima.setupNotFinishedTitle', { defaultValue: 'Установка не завершена' })}
               </p>
@@ -954,13 +954,13 @@ export function UltimaDashboard() {
             <button
               type="button"
               onClick={() => openConnection()}
-              className="border-emerald-200/16 mb-4 flex w-full items-center justify-between gap-3 rounded-2xl border bg-[rgba(12,45,42,0.28)] px-4 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_24px_rgba(3,14,24,0.18)] backdrop-blur-md transition hover:bg-[rgba(16,58,54,0.34)]"
+              className="mb-4 flex w-full items-center justify-between gap-3 rounded-2xl border border-emerald-200/[0.16] bg-[rgba(12,45,42,0.28)] px-4 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_24px_rgba(3,14,24,0.18)] backdrop-blur-md transition hover:bg-[rgba(16,58,54,0.34)]"
             >
               <div className="min-w-0">
                 <p className="text-[14px] font-semibold leading-tight text-white/95">
                   {t('ultima.setupCompactTitle', { defaultValue: 'VPN ещё не настроен' })}
                 </p>
-                <p className="text-white/68 mt-1 text-[12px] leading-snug">
+                <p className="mt-1 text-[12px] leading-snug text-white/[0.68]">
                   {t('ultima.setupCompactDesc', {
                     defaultValue: 'Откройте установку и завершите подключение, когда будет удобно.',
                   })}
@@ -1012,7 +1012,9 @@ export function UltimaDashboard() {
                       defaultValue: 'Активируйте предложение, чтобы получить выгоду.',
                     })}
               </p>
-              {promoMessage && <p className="mt-1.5 text-[12px] text-white/85">{promoMessage}</p>}
+              {promoMessage && (
+                <p className="mt-1.5 text-[12px] text-white/[0.85]">{promoMessage}</p>
+              )}
               <div className="mt-2.5 flex flex-col gap-2 min-[360px]:flex-row">
                 {firstPromoOffer && (
                   <button

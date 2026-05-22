@@ -104,13 +104,13 @@ export function UltimaTopUpMethodSelect() {
 
   const methodsContent = (
     <>
-      <section className="border-emerald-200/12 min-h-0 flex-1 overflow-y-auto rounded-3xl border bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:overflow-visible lg:p-4">
+      <section className="min-h-0 flex-1 overflow-y-auto rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:overflow-visible lg:p-4">
         {isLoading ? (
           <div className="flex h-40 items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-300/40 border-t-transparent" />
           </div>
         ) : !paymentMethods || paymentMethods.length === 0 ? (
-          <div className="text-white/62 py-8 text-center text-sm">
+          <div className="py-8 text-center text-sm text-white/[0.62]">
             {t('balance.noPaymentMethods')}
           </div>
         ) : (
@@ -143,20 +143,20 @@ export function UltimaTopUpMethodSelect() {
                       <p className="line-clamp-2 break-words text-[15px] font-medium leading-tight text-white/95">
                         {translatedName || method.name}
                       </p>
-                      <span className="mt-0.5 shrink-0 text-white/55 transition group-hover:translate-x-0.5 group-hover:text-white/80">
+                      <span className="mt-0.5 shrink-0 text-white/[0.55] transition group-hover:translate-x-0.5 group-hover:text-white/80">
                         <ArrowIcon />
                       </span>
                     </div>
                     {(translatedDesc || method.description) && (
-                      <p className="text-white/58 mt-1 line-clamp-2 text-[12px]">
+                      <p className="mt-1 line-clamp-2 text-[12px] text-white/[0.58]">
                         {translatedDesc || method.description}
                       </p>
                     )}
                     <div className="mt-2 flex items-center gap-1.5">
-                      <span className="rounded-full border border-emerald-200/15 bg-emerald-900/45 px-2 py-0.5 text-[10px] text-white/60">
+                      <span className="rounded-full border border-emerald-200/[0.15] bg-emerald-900/[0.45] px-2 py-0.5 text-[10px] text-white/60">
                         {t('balance.amount', { defaultValue: 'Сумма' })}
                       </span>
-                      <span className="text-[11px] text-white/55">
+                      <span className="text-[11px] text-white/[0.55]">
                         {formatAmount(method.min_amount_kopeks / 100, 0)} -{' '}
                         {formatAmount(method.max_amount_kopeks / 100, 0)} {currencySymbol}
                       </span>
@@ -170,7 +170,7 @@ export function UltimaTopUpMethodSelect() {
       </section>
 
       <section className="rounded-2xl border border-emerald-200/10 bg-emerald-950/20 px-3 py-2.5">
-        <p className="text-white/58 text-[11px] leading-snug">
+        <p className="text-[11px] leading-snug text-white/[0.58]">
           {t('balance.ultimaBalanceNotice', {
             defaultValue:
               'Деньги зачисляются на баланс, а затем автоматически учитываются в оплате подписки.',
@@ -179,13 +179,13 @@ export function UltimaTopUpMethodSelect() {
       </section>
 
       <section className="rounded-2xl border border-emerald-200/10 bg-emerald-950/20 p-3">
-        <p className="text-white/72 mb-2 text-[12px]">
+        <p className="mb-2 text-[12px] text-white/[0.72]">
           {t('profile.transactionsTitle', { defaultValue: 'История операций' })}
         </p>
         <button
           type="button"
           onClick={() => navigate('/balance')}
-          className="border-emerald-200/12 w-full rounded-xl border bg-emerald-900/35 px-3 py-2 text-left text-[13px] text-white/85 transition hover:bg-emerald-900/50"
+          className="w-full rounded-xl border border-emerald-200/[0.12] bg-emerald-900/[0.35] px-3 py-2 text-left text-[13px] text-white/[0.85] transition hover:bg-emerald-900/50"
         >
           {t('profile.transactionsDescription', {
             defaultValue: 'Открыть страницу истории операций',
@@ -244,7 +244,7 @@ export function UltimaTopUpMethodSelect() {
                 >
                   {t('profile.transactionsTitle', { defaultValue: 'История операций' })}
                 </button>
-                <div className="text-white/72 rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-[1.6]">
+                <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-[1.6] text-white/[0.72]">
                   {t('balance.ultimaBalanceNotice', {
                     defaultValue:
                       'Деньги зачисляются на баланс, а затем автоматически учитываются в оплате подписки.',
@@ -269,7 +269,7 @@ export function UltimaTopUpMethodSelect() {
           <h1 className="text-[clamp(34px,9.5vw,44px)] font-semibold leading-[0.9] tracking-[-0.01em] text-white">
             {t('balance.selectPaymentMethod', { defaultValue: 'Способ оплаты' })}
           </h1>
-          <p className="text-white/62 mt-1.5 text-[14px] leading-tight">
+          <p className="mt-1.5 text-[14px] leading-tight text-white/[0.62]">
             {t('balance.ultimaBalanceNotice', {
               defaultValue:
                 'При пополнении средства зачисляются на баланс и затем учитываются в стоимости подписки.',
