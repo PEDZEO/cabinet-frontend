@@ -343,6 +343,7 @@ interface SortableRowProps {
   rowIndex: number;
   expandedButtons: Set<string>;
   usedBuiltinIds: Set<string>;
+  availableBuiltinButtons: MenuButtonConfig[];
   onToggleExpand: (buttonId: string) => void;
   onUpdateRow: (rowId: string, updates: Partial<MenuRowConfig>) => void;
   onRemoveRow: (rowId: string) => void;
@@ -358,6 +359,7 @@ function SortableRow({
   rowIndex,
   expandedButtons,
   usedBuiltinIds,
+  availableBuiltinButtons,
   onToggleExpand,
   onUpdateRow,
   onRemoveRow,
@@ -441,6 +443,7 @@ function SortableRow({
         <InlineAddPanel
           rowId={row.id}
           usedBuiltinIds={usedBuiltinIds}
+          availableBuiltinButtons={availableBuiltinButtons}
           onAddBuiltin={onAddBuiltin}
           onAddCustom={onAddCustom}
         />
@@ -454,15 +457,31 @@ function SortableRow({
 interface InlineAddPanelProps {
   rowId: string;
   usedBuiltinIds: Set<string>;
+  availableBuiltinButtons: MenuButtonConfig[];
   onAddBuiltin: (rowId: string, sectionId: string) => void;
   onAddCustom: (rowId: string) => void;
 }
 
-function InlineAddPanel({ rowId, usedBuiltinIds, onAddBuiltin, onAddCustom }: InlineAddPanelProps) {
+function InlineAddPanel({
+  rowId,
+  usedBuiltinIds,
+  availableBuiltinButtons,
+  onAddBuiltin,
+  onAddCustom,
+}: InlineAddPanelProps) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
-  const availableBuiltins = BUILTIN_SECTIONS.filter((id) => !usedBuiltinIds.has(id));
+  const fallbackBuiltins = BUILTIN_SECTIONS.filter((id) => !usedBuiltinIds.has(id)).map((id) => ({
+    id,
+    labels: {},
+  }));
+  const availableBuiltins =
+    availableBuiltinButtons.length > 0 ? availableBuiltinButtons : fallbackBuiltins;
+  const getBuiltinName = (button: Pick<MenuButtonConfig, 'id' | 'labels'>) =>
+    button.labels.ru ||
+    button.labels.en ||
+    t(`admin.buttons.sections.${button.id}`, { defaultValue: button.id.replace(/_/g, ' ') });
 
   if (!isOpen) {
     return (
@@ -483,16 +502,16 @@ function InlineAddPanel({ rowId, usedBuiltinIds, onAddBuiltin, onAddCustom }: In
           <p className="px-2 pb-0.5 text-xs font-medium text-dark-500">
             {t('admin.menuEditor.builtinButtons')}
           </p>
-          {availableBuiltins.map((id) => (
+          {availableBuiltins.map((button) => (
             <button
-              key={id}
+              key={button.id}
               onClick={() => {
-                onAddBuiltin(rowId, id);
+                onAddBuiltin(rowId, button.id);
                 setIsOpen(false);
               }}
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-dark-200 transition-colors hover:bg-dark-700/50"
             >
-              {t(`admin.buttons.sections.${id}`)}
+              {getBuiltinName(button)}
             </button>
           ))}
           <div className="my-1 border-t border-dark-700/30" />
@@ -657,15 +676,28 @@ export function MenuEditorTab() {
   }, []);
 
   const addBuiltinButton = useCallback((rowId: string, sectionId: string) => {
-    const newButton: MenuButtonConfig = {
-      id: sectionId,
-      type: 'builtin',
-      style: 'default',
-      icon_custom_emoji_id: '',
-      enabled: true,
-      labels: {},
-      url: null,
-    };
+    const catalogButton = draftConfigRef.current.buttonCatalog?.find(
+      (button) => button.id === sectionId,
+    );
+    const newButton: MenuButtonConfig = catalogButton
+      ? { ...catalogButton, labels: { ...catalogButton.labels } }
+      : {
+          id: sectionId,
+          type: 'builtin',
+          style: 'default',
+          icon_custom_emoji_id: '',
+          enabled: true,
+          labels: {},
+          url: null,
+          actionType: 'builtin',
+          action: '',
+          builtin_id: sectionId,
+          visibility: 'all',
+          conditions: null,
+          dynamic_text: false,
+          open_mode: 'callback',
+          webapp_url: null,
+        };
     setDraftConfig((prev) => ({
       ...prev,
       rows: prev.rows.map((r) =>
@@ -683,6 +715,13 @@ export function MenuEditorTab() {
       enabled: true,
       labels: {},
       url: '',
+      actionType: 'url',
+      action: '',
+      visibility: 'all',
+      conditions: null,
+      dynamic_text: false,
+      open_mode: 'callback',
+      webapp_url: null,
     };
     setDraftConfig((prev) => ({
       ...prev,
@@ -730,6 +769,13 @@ export function MenuEditorTab() {
       ),
     [draftConfig.rows],
   );
+  const availableBuiltinButtons = useMemo(
+    () =>
+      (draftConfig.buttonCatalog || []).filter(
+        (button) => button.type === 'builtin' && !usedBuiltinIds.has(button.id),
+      ),
+    [draftConfig.buttonCatalog, usedBuiltinIds],
+  );
 
   // Handlers
   const handleSave = useCallback(() => {
@@ -737,8 +783,9 @@ export function MenuEditorTab() {
     const currentDraft = draftConfigRef.current;
     for (const row of currentDraft.rows) {
       for (const btn of row.buttons) {
-        if (btn.type === 'custom') {
-          if (!btn.url || (!btn.url.startsWith('http://') && !btn.url.startsWith('https://'))) {
+        if (btn.type === 'custom' && (btn.actionType || 'url') !== 'callback') {
+          const url = btn.url || btn.action || '';
+          if (!url.startsWith('http://') && !url.startsWith('https://')) {
             notify.error(t('admin.menuEditor.invalidUrl'));
             return;
           }
@@ -805,6 +852,7 @@ export function MenuEditorTab() {
                 rowIndex={index}
                 expandedButtons={expandedButtons}
                 usedBuiltinIds={usedBuiltinIds}
+                availableBuiltinButtons={availableBuiltinButtons}
                 onToggleExpand={toggleExpand}
                 onUpdateRow={updateRow}
                 onRemoveRow={removeRow}
