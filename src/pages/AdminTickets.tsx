@@ -1,8 +1,14 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { adminApi, AdminTicket, AdminTicketDetail, AdminTicketMessage } from '../api/admin';
+import {
+  adminApi,
+  AdminTicket,
+  AdminTicketDetail,
+  AdminTicketMessage,
+  AdminTicketUserContext,
+} from '../api/admin';
 import { ticketsApi } from '../api/tickets';
 import { usePlatform } from '../platform/hooks/usePlatform';
 
@@ -163,6 +169,80 @@ const BackIcon = () => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
   </svg>
 );
+
+type OperatorHintLevel = 'info' | 'warning' | 'error';
+
+interface OperatorHint {
+  level: OperatorHintLevel;
+  title: string;
+  text: string;
+}
+
+const operatorHintClasses: Record<OperatorHintLevel, string> = {
+  info: 'border-accent-500/25 bg-accent-500/10 text-accent-200',
+  warning: 'border-warning-500/25 bg-warning-500/10 text-warning-200',
+  error: 'border-error-500/25 bg-error-500/10 text-error-200',
+};
+
+const getDaysSince = (value: string | null) => {
+  if (!value) return null;
+  const time = new Date(value).getTime();
+  if (!Number.isFinite(time)) return null;
+  return Math.floor((Date.now() - time) / 86_400_000);
+};
+
+const buildOperatorHints = (context: AdminTicketUserContext): OperatorHint[] => {
+  const hints: OperatorHint[] = [];
+  const subscriptionStatus = context.subscription_actual_status || context.subscription_status;
+
+  if (!subscriptionStatus || !['active', 'trial'].includes(subscriptionStatus)) {
+    hints.push({
+      level: 'warning',
+      title: 'Подписка не активна',
+      text: subscriptionStatus
+        ? `Статус: ${subscriptionStatus}`
+        : 'У пользователя нет активной подписки.',
+    });
+  }
+
+  if (
+    context.subscription_traffic_used_percent !== null &&
+    context.subscription_traffic_used_percent >= 90
+  ) {
+    hints.push({
+      level: context.subscription_traffic_used_percent >= 100 ? 'error' : 'warning',
+      title: 'Трафик почти исчерпан',
+      text: `${Math.round(context.subscription_traffic_used_percent)}% лимита уже использовано.`,
+    });
+  }
+
+  if (context.restriction_topup || context.restriction_subscription) {
+    hints.push({
+      level: 'error',
+      title: 'Есть ограничения',
+      text: context.restriction_reason || 'Проверьте ограничения пополнения или подписки.',
+    });
+  }
+
+  const inactiveDays = getDaysSince(context.last_activity);
+  if (inactiveDays !== null && inactiveDays >= 14) {
+    hints.push({
+      level: 'info',
+      title: 'Давно не было активности',
+      text: `Последняя активность примерно ${inactiveDays} дн. назад.`,
+    });
+  }
+
+  if (!context.cabinet_last_login) {
+    hints.push({
+      level: 'info',
+      title: 'Нет входа в кабинет',
+      text: 'Возможно, пользователь работает только через Telegram.',
+    });
+  }
+
+  return hints.slice(0, 4);
+};
 
 export default function AdminTickets() {
   const { t } = useTranslation();
@@ -385,6 +465,11 @@ export default function AdminTickets() {
       document.body.removeChild(textarea);
     });
   };
+
+  const operatorHints = useMemo(
+    () => (selectedTicket?.user_context ? buildOperatorHints(selectedTicket.user_context) : []),
+    [selectedTicket],
+  );
 
   return (
     <div className="space-y-6">
@@ -652,6 +737,25 @@ export default function AdminTickets() {
                   ))}
                 </div>
               </div>
+
+              {operatorHints.length > 0 && (
+                <div className="mb-4 rounded-xl border border-dark-700/50 bg-dark-900/35 p-3">
+                  <div className="mb-2 text-sm font-semibold text-dark-100">
+                    Подсказки оператору
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                    {operatorHints.map((hint) => (
+                      <div
+                        key={`${hint.title}-${hint.text}`}
+                        className={`rounded-lg border px-3 py-2 text-xs ${operatorHintClasses[hint.level]}`}
+                      >
+                        <div className="font-semibold">{hint.title}</div>
+                        <div className="mt-0.5 leading-5 opacity-80">{hint.text}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {selectedTicket.user_context && (
                 <div className="mb-4 rounded-xl border border-dark-700/50 bg-dark-900/35 p-3">
