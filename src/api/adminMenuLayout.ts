@@ -121,12 +121,14 @@ export interface UserClickSequencesResponse {
 }
 
 export interface UltimaStartConfigResponse {
+  enabled: boolean;
   message_text: string;
   button_text: string;
   button_url: string;
 }
 
 export interface UltimaStartConfigUpdateRequest {
+  enabled: boolean;
   message_text: string;
   button_text: string;
   button_url: string;

@@ -26,6 +26,7 @@ export default function AdminUltimaStartMessage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
+  const [startEnabled, setStartEnabled] = useState(true);
   const [messageText, setMessageText] = useState('');
   const [buttonText, setButtonText] = useState('');
   const [buttonUrl, setButtonUrl] = useState('');
@@ -50,6 +51,7 @@ export default function AdminUltimaStartMessage() {
     if (!ultimaStartConfig) {
       return;
     }
+    setStartEnabled(ultimaStartConfig.enabled ?? true);
     setMessageText(ultimaStartConfig.message_text || '');
     setButtonText(ultimaStartConfig.button_text || '');
     setButtonUrl(ultimaStartConfig.button_url || '');
@@ -84,8 +86,8 @@ export default function AdminUltimaStartMessage() {
   );
 
   const onSave = async () => {
-    const nextMessageText = messageText.trim();
-    const nextButtonText = buttonText.trim();
+    let nextMessageText = messageText.trim();
+    let nextButtonText = buttonText.trim();
     const nextButtonUrl = buttonUrl.trim();
     const nextNotificationButtons = notificationButtons
       .map((button) => ({
@@ -94,10 +96,15 @@ export default function AdminUltimaStartMessage() {
       }))
       .filter((button) => button.text.length > 0 && button.path.length > 0);
 
-    if (!nextMessageText || !nextButtonText) {
+    if (startEnabled && (!nextMessageText || !nextButtonText)) {
       setSuccess(null);
       setError(t('admin.mainMenuButtons.ultimaStartValidationError'));
       return;
+    }
+
+    if (!startEnabled) {
+      nextMessageText = nextMessageText || ultimaStartConfig?.message_text?.trim() || ' ';
+      nextButtonText = nextButtonText || ultimaStartConfig?.button_text?.trim() || ' ';
     }
 
     if (notificationsEnabled && nextNotificationButtons.length === 0) {
@@ -112,6 +119,7 @@ export default function AdminUltimaStartMessage() {
     try {
       await Promise.all([
         updateStartMutation.mutateAsync({
+          enabled: startEnabled,
           message_text: nextMessageText,
           button_text: nextButtonText,
           button_url: nextButtonUrl,
@@ -137,6 +145,7 @@ export default function AdminUltimaStartMessage() {
 
   const resetForm = () => {
     if (ultimaStartConfig) {
+      setStartEnabled(ultimaStartConfig.enabled ?? true);
       setMessageText(ultimaStartConfig.message_text || '');
       setButtonText(ultimaStartConfig.button_text || '');
       setButtonUrl(ultimaStartConfig.button_url || '');
@@ -177,6 +186,36 @@ export default function AdminUltimaStartMessage() {
           </div>
         )}
 
+        <div className="rounded-lg border border-dark-700/50 bg-dark-800/40 p-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-dark-100">
+                {t('admin.mainMenuButtons.ultimaStartEnabledTitle', {
+                  defaultValue: 'Ultima /start сообщение',
+                })}
+              </h3>
+              <p className="text-xs text-dark-400">
+                {t('admin.mainMenuButtons.ultimaStartEnabledSubtitle', {
+                  defaultValue:
+                    'Если выключить, бот в режиме Ultima будет показывать обычное главное меню.',
+                })}
+              </p>
+            </div>
+            <label className="inline-flex cursor-pointer items-center gap-2 text-xs text-dark-300">
+              <input
+                type="checkbox"
+                className="h-4 w-4 rounded border-dark-600 bg-dark-900 text-accent-400"
+                checked={startEnabled}
+                onChange={(event) => setStartEnabled(event.target.checked)}
+                disabled={isLoading || isSaving}
+              />
+              {startEnabled
+                ? t('admin.mainMenuButtons.ultimaStartEnabledOn', { defaultValue: 'Включено' })
+                : t('admin.mainMenuButtons.ultimaStartEnabledOff', { defaultValue: 'Выключено' })}
+            </label>
+          </div>
+        </div>
+
         <label className="space-y-1">
           <span className="text-xs text-dark-400">
             {t('admin.mainMenuButtons.ultimaStartMessageLabel')}
@@ -186,7 +225,7 @@ export default function AdminUltimaStartMessage() {
             onChange={(event) => setMessageText(event.target.value)}
             className="input min-h-[180px] resize-y"
             maxLength={4096}
-            disabled={isLoading || isSaving}
+            disabled={isLoading || isSaving || !startEnabled}
           />
         </label>
 
@@ -200,7 +239,7 @@ export default function AdminUltimaStartMessage() {
               onChange={(event) => setButtonText(event.target.value)}
               className="input"
               maxLength={64}
-              disabled={isLoading || isSaving}
+              disabled={isLoading || isSaving || !startEnabled}
             />
           </label>
           <label className="space-y-1">
@@ -213,7 +252,7 @@ export default function AdminUltimaStartMessage() {
               className="input"
               maxLength={1024}
               placeholder="https://..."
-              disabled={isLoading || isSaving}
+              disabled={isLoading || isSaving || !startEnabled}
             />
           </label>
         </div>
