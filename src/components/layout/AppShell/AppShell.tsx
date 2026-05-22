@@ -429,23 +429,26 @@ export function AppShell({ children }: AppShellProps) {
         <div
           className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
           style={{
-            background:
-              'radial-gradient(circle at 74% 58%, color-mix(in srgb, var(--ultima-color-aura) 26%, transparent), color-mix(in srgb, var(--ultima-color-bg-top) 98%, #000000) 56%)',
+            background: isDesktopViewport
+              ? 'radial-gradient(circle at 78% 12%, color-mix(in srgb, var(--ultima-color-aura) 18%, transparent), transparent 44%), radial-gradient(circle at 16% 86%, color-mix(in srgb, var(--ultima-color-ring) 10%, transparent), transparent 50%), linear-gradient(145deg, color-mix(in srgb, #020617 86%, var(--ultima-color-bg-top) 14%) 0%, color-mix(in srgb, #07111d 72%, var(--ultima-color-bg-bottom) 28%) 46%, #020617 100%)'
+              : 'radial-gradient(circle at 74% 58%, color-mix(in srgb, var(--ultima-color-aura) 26%, transparent), color-mix(in srgb, var(--ultima-color-bg-top) 98%, #000000) 56%)',
           }}
         >
           <div className="ultima-shell-aura" />
           <div
             className="absolute inset-0"
             style={{
-              background:
-                'radial-gradient(circle at 30% 84%, color-mix(in srgb, var(--ultima-color-aura) 22%, transparent), transparent 52%), radial-gradient(circle at 84% 18%, color-mix(in srgb, var(--ultima-color-ring) 14%, transparent), transparent 48%)',
+              background: isDesktopViewport
+                ? 'radial-gradient(circle at 34% 82%, color-mix(in srgb, var(--ultima-color-aura) 10%, transparent), transparent 54%), radial-gradient(circle at 86% 18%, color-mix(in srgb, var(--ultima-color-ring) 8%, transparent), transparent 50%)'
+                : 'radial-gradient(circle at 30% 84%, color-mix(in srgb, var(--ultima-color-aura) 22%, transparent), transparent 52%), radial-gradient(circle at 84% 18%, color-mix(in srgb, var(--ultima-color-ring) 14%, transparent), transparent 48%)',
             }}
           />
           <div
             className="absolute inset-0"
             style={{
-              background:
-                'linear-gradient(160deg, color-mix(in srgb, var(--ultima-color-bg-top) 68%, #000000) 0%, color-mix(in srgb, var(--ultima-color-bg-bottom) 42%, transparent) 44%, color-mix(in srgb, var(--ultima-color-bg-top) 80%, #000000) 100%)',
+              background: isDesktopViewport
+                ? 'linear-gradient(160deg, rgba(2,6,23,0.76) 0%, rgba(2,8,18,0.52) 44%, rgba(2,6,23,0.88) 100%)'
+                : 'linear-gradient(160deg, color-mix(in srgb, var(--ultima-color-bg-top) 68%, #000000) 0%, color-mix(in srgb, var(--ultima-color-bg-bottom) 42%, transparent) 44%, color-mix(in srgb, var(--ultima-color-bg-top) 80%, #000000) 100%)',
             }}
           />
           {[0, 1.8, 3.6, 5.4, 7.2, 9, 10.8, 12.6, 14.4].map((delay) => (

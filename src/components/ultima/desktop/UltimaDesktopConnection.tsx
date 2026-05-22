@@ -168,15 +168,15 @@ export function UltimaDesktopConnection({
         };
 
   return (
-    <div className="ultima-shell-inner lg:max-w-[1180px]">
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+    <div className="ultima-shell-inner lg:max-w-[1320px]">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-4">
           <section
-            className={cn(ultimaCardClassName, 'relative overflow-hidden p-6 lg:p-7')}
+            className={cn(ultimaCardClassName, 'relative overflow-hidden p-5 lg:p-6')}
             style={accentCardStyle}
           >
             <div className="absolute inset-y-0 right-[-10%] w-[34%] rounded-full bg-white/[0.05] blur-3xl" />
-            <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-center">
+            <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-center xl:grid-cols-[minmax(0,1fr)_320px]">
               <div>
                 <div className="border-emerald-200/28 bg-emerald-300/12 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm text-emerald-50">
                   <span className="h-2 w-2 rounded-full bg-current" />
@@ -185,7 +185,7 @@ export function UltimaDesktopConnection({
                     defaultValue: `Шаг ${step}/3`,
                   })}
                 </div>
-                <h1 className="mt-4 text-[clamp(40px,4.8vw,58px)] font-semibold leading-[0.94] tracking-[-0.045em] text-white">
+                <h1 className="mt-4 max-w-[18ch] text-[clamp(34px,3.8vw,52px)] font-semibold leading-[0.98] tracking-[-0.038em] text-white">
                   {title}
                 </h1>
                 <p className="text-white/72 mt-3 max-w-[48ch] text-[15px] leading-[1.6]">
@@ -194,21 +194,21 @@ export function UltimaDesktopConnection({
               </div>
 
               <div className="flex items-center justify-center">
-                <div className="relative flex h-[340px] w-[340px] items-center justify-center">
+                <div className="relative flex h-[300px] w-[300px] items-center justify-center">
                   <div
-                    className="ultima-step-ring pointer-events-none absolute h-[340px] w-[340px] rounded-full border"
+                    className="ultima-step-ring pointer-events-none absolute h-[300px] w-[300px] rounded-full border"
                     style={{
                       borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 22%, transparent)',
                     }}
                   />
                   <div
-                    className="ultima-step-ring ultima-step-ring-delay-1 pointer-events-none absolute h-[258px] w-[258px] rounded-full border"
+                    className="ultima-step-ring ultima-step-ring-delay-1 pointer-events-none absolute h-[226px] w-[226px] rounded-full border"
                     style={{
                       borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 18%, transparent)',
                     }}
                   />
                   <div
-                    className="ultima-step-ring ultima-step-ring-delay-2 pointer-events-none absolute h-[180px] w-[180px] rounded-full border"
+                    className="ultima-step-ring ultima-step-ring-delay-2 pointer-events-none absolute h-[160px] w-[160px] rounded-full border"
                     style={{
                       borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 46%, transparent)',
                     }}
@@ -216,7 +216,7 @@ export function UltimaDesktopConnection({
                   <svg
                     viewBox="0 0 240 240"
                     className="pointer-events-none absolute -rotate-90"
-                    style={{ width: 210, height: 210 }}
+                    style={{ width: 190, height: 190 }}
                     aria-hidden
                   >
                     <circle
@@ -254,7 +254,7 @@ export function UltimaDesktopConnection({
                           ? onStartAddSubscription
                           : onToggleVpn
                     }
-                    className="bg-black/8 group relative z-10 inline-flex h-[112px] w-[112px] items-center justify-center rounded-full transition-transform duration-200 hover:scale-[1.02] active:scale-[0.97]"
+                    className="bg-black/8 group relative z-10 inline-flex h-[104px] w-[104px] items-center justify-center rounded-full transition-transform duration-200 hover:scale-[1.02] active:scale-[0.97]"
                     aria-label={step === 3 ? toggleVpnLabel : primaryAction.label}
                   >
                     {icon}
@@ -299,7 +299,7 @@ export function UltimaDesktopConnection({
             )}
           </section>
 
-          <section className={cn(ultimaCardClassName, 'p-5')} style={defaultCardStyle}>
+          <section className={cn(ultimaCardClassName, 'p-5 xl:p-6')} style={defaultCardStyle}>
             <div className="grid gap-3 md:grid-cols-3">
               {stepCards.map((card) => {
                 const done = step > card.step;
@@ -308,7 +308,7 @@ export function UltimaDesktopConnection({
                   <div
                     key={card.step}
                     className={cn(
-                      'rounded-[24px] border px-4 py-4 transition-colors',
+                      'rounded-[20px] border px-4 py-4 transition-colors',
                       active
                         ? 'border-emerald-200/34 bg-emerald-300/10'
                         : done
@@ -386,7 +386,7 @@ export function UltimaDesktopConnection({
           )}
 
           <section className={cn(ultimaCardClassName, 'p-5')} style={defaultCardStyle}>
-            <div className="text-[30px] font-semibold leading-[0.98] tracking-[-0.04em] text-white">
+            <div className="text-[28px] font-semibold leading-[1] tracking-[-0.035em] text-white">
               {title}
             </div>
             <p className="text-white/68 mt-3 text-sm leading-[1.6]">{subtitle}</p>

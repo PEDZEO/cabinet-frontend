@@ -1,5 +1,11 @@
-import { type CSSProperties, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import {
+  ultimaAccentSurfaceStyle,
+  ultimaCardClassName,
+  ultimaSurfaceStyle,
+} from '@/features/ultima/surfaces';
 
 type UltimaDesktopAgreementProps = {
   title: string;
@@ -9,23 +15,6 @@ type UltimaDesktopAgreementProps = {
   isLoading: boolean;
   emptyLabel: string;
   bottomNav: ReactNode;
-};
-
-const cardClassName =
-  'rounded-[30px] border p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_22px_48px_rgba(3,14,24,0.24)] backdrop-blur-xl';
-
-const cardStyle: CSSProperties = {
-  borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 22%, transparent)',
-  background:
-    'linear-gradient(180deg, color-mix(in srgb, var(--ultima-color-surface) 30%, transparent), color-mix(in srgb, var(--ultima-color-secondary) 66%, transparent))',
-};
-
-const highlightStyle: CSSProperties = {
-  borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 30%, transparent)',
-  background:
-    'linear-gradient(145deg, color-mix(in srgb, var(--ultima-color-aura) 20%, transparent), color-mix(in srgb, var(--ultima-color-secondary) 74%, transparent))',
-  boxShadow:
-    'inset 0 1px 0 rgba(255,255,255,0.08), 0 28px 56px color-mix(in srgb, var(--ultima-color-aura) 12%, transparent)',
 };
 
 const DocumentIcon = () => (
@@ -57,34 +46,36 @@ export function UltimaDesktopAgreement({
   emptyLabel,
   bottomNav,
 }: UltimaDesktopAgreementProps) {
+  const { t } = useTranslation();
+
   return (
     <div
-      className="ultima-shell-inner lg:max-w-[1120px]"
+      className="ultima-shell-inner lg:max-w-[1260px]"
       style={{
         height: 'calc(100dvh - 32px - env(safe-area-inset-bottom, 0px))',
         minHeight: 'calc(100dvh - 32px - env(safe-area-inset-bottom, 0px))',
         maxHeight: 'calc(100dvh - 32px - env(safe-area-inset-bottom, 0px))',
       }}
     >
-      <div className="grid h-full min-h-0 gap-5 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start">
+      <div className="grid h-full min-h-0 gap-5 lg:grid-cols-[300px_minmax(0,1fr)] lg:items-start">
         <aside className="ultima-desktop-aside space-y-5 lg:sticky lg:top-4">
           <section
-            className={cn(cardClassName, 'relative overflow-hidden p-6')}
-            style={highlightStyle}
+            className={cn(ultimaCardClassName, 'relative overflow-hidden p-5')}
+            style={ultimaAccentSurfaceStyle}
           >
-            <div className="text-white/84 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.07]">
+            <div className="text-white/84 flex h-11 w-11 items-center justify-center rounded-[16px] border border-white/10 bg-white/[0.07]">
               <DocumentIcon />
             </div>
-            <h1 className="mt-4 text-[36px] font-semibold leading-[0.94] tracking-[-0.04em] text-white">
+            <h1 className="mt-4 text-[32px] font-semibold leading-[0.98] tracking-[-0.035em] text-white">
               {title}
             </h1>
             <p className="mt-3 text-sm leading-[1.6] text-white/70">{subtitle}</p>
-            <div className="mt-6 rounded-[22px] border border-white/10 bg-black/15 px-4 py-3">
+            <div className="mt-6 rounded-[18px] border border-white/10 bg-black/15 px-4 py-3">
               <div className="text-white/42 text-[11px] uppercase tracking-[0.22em]">
-                Последнее обновление
+                {t('common.lastUpdated', { defaultValue: 'Последнее обновление' })}
               </div>
               <div className="text-white/88 mt-2 text-sm font-medium">
-                {updatedAtLabel ?? 'Не указано'}
+                {updatedAtLabel ?? t('common.notSpecified', { defaultValue: 'Не указано' })}
               </div>
             </div>
           </section>
@@ -93,14 +84,16 @@ export function UltimaDesktopAgreement({
         </aside>
 
         <section
-          className={cn(cardClassName, 'flex min-h-0 flex-col overflow-hidden p-0')}
-          style={cardStyle}
+          className={cn(ultimaCardClassName, 'flex min-h-0 flex-col overflow-hidden p-0')}
+          style={ultimaSurfaceStyle}
         >
           <div className="border-white/8 flex items-center justify-between border-b px-6 py-5">
             <div>
               <div className="text-2xl font-semibold tracking-[-0.03em] text-white">{title}</div>
             </div>
-            <div className="text-white/52 text-sm">{updatedAtLabel ?? 'Актуальная версия'}</div>
+            <div className="text-white/52 text-sm">
+              {updatedAtLabel ?? t('common.currentVersion', { defaultValue: 'Актуальная версия' })}
+            </div>
           </div>
 
           {isLoading ? (

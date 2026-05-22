@@ -1,31 +1,31 @@
 import { type CSSProperties } from 'react';
 
 export const ultimaCardClassName =
-  'rounded-[30px] border p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_22px_48px_rgba(3,14,24,0.24)] backdrop-blur-xl';
+  'rounded-[24px] border p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_20px_54px_rgba(0,0,0,0.34)] backdrop-blur-xl';
 
 export const ultimaPanelClassName =
-  'rounded-3xl border shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_22px_48px_rgba(3,14,24,0.24)] backdrop-blur-xl';
+  'rounded-[24px] border shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_20px_54px_rgba(0,0,0,0.34)] backdrop-blur-xl';
 
 export const ultimaPaneClassName =
-  'rounded-[22px] border shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_16px_36px_rgba(3,14,24,0.18)] backdrop-blur-xl';
+  'rounded-[18px] border shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_14px_34px_rgba(0,0,0,0.24)] backdrop-blur-xl';
 
 export const ultimaSurfaceStyle: CSSProperties = {
-  borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 22%, transparent)',
+  borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 18%, transparent)',
   background:
-    'linear-gradient(180deg, color-mix(in srgb, var(--ultima-color-surface) 30%, transparent), color-mix(in srgb, var(--ultima-color-secondary) 66%, transparent))',
+    'linear-gradient(180deg, color-mix(in srgb, #0b1320 62%, var(--ultima-color-surface) 38%), color-mix(in srgb, #070d16 72%, var(--ultima-color-secondary) 28%))',
 };
 
 export const ultimaAccentSurfaceStyle: CSSProperties = {
-  borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 32%, transparent)',
+  borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
   background:
-    'linear-gradient(145deg, color-mix(in srgb, var(--ultima-color-aura) 22%, transparent), color-mix(in srgb, var(--ultima-color-secondary) 72%, transparent))',
+    'radial-gradient(circle at 82% 18%, color-mix(in srgb, var(--ultima-color-ring) 16%, transparent), transparent 36%), linear-gradient(135deg, color-mix(in srgb, #0f2430 64%, var(--ultima-color-aura) 36%), color-mix(in srgb, #08111d 72%, var(--ultima-color-secondary) 28%))',
   boxShadow:
-    'inset 0 1px 0 rgba(255,255,255,0.08), 0 28px 56px color-mix(in srgb, var(--ultima-color-aura) 12%, transparent)',
+    'inset 0 1px 0 rgba(255,255,255,0.10), 0 30px 70px color-mix(in srgb, var(--ultima-color-aura) 10%, rgba(0,0,0,0.42))',
 };
 
 export const ultimaPaneSurfaceStyle: CSSProperties = {
-  borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 20%, transparent)',
+  borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 16%, transparent)',
   background:
-    'linear-gradient(180deg, color-mix(in srgb, var(--ultima-color-secondary) 72%, transparent) 0%, color-mix(in srgb, var(--ultima-color-surface) 44%, transparent) 100%)',
-  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 16px 36px rgba(3,14,24,0.18)',
+    'linear-gradient(180deg, color-mix(in srgb, #0b1320 68%, var(--ultima-color-secondary) 32%) 0%, color-mix(in srgb, #070d16 72%, var(--ultima-color-surface) 28%) 100%)',
+  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 14px 34px rgba(0,0,0,0.24)',
 };

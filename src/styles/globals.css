@@ -650,8 +650,8 @@ html:not(.ultima-frames-enabled) .ultima-flat-frames [class*='border'] {
   overscroll-behavior-y: contain;
   background: linear-gradient(
     160deg,
-    color-mix(in srgb, var(--ultima-color-bg-top) 18%, transparent) 0%,
-    color-mix(in srgb, var(--ultima-color-bg-bottom) 22%, transparent) 100%
+    color-mix(in srgb, #030712 76%, var(--ultima-color-bg-top) 24%) 0%,
+    color-mix(in srgb, #050b14 74%, var(--ultima-color-bg-bottom) 26%) 100%
   );
   padding-left: calc(clamp(12px, 3vw, 16px) + env(safe-area-inset-left, 0px));
   padding-right: calc(clamp(12px, 3vw, 16px) + env(safe-area-inset-right, 0px));
@@ -1620,8 +1620,39 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
     overflow-y: auto;
     align-items: flex-start;
     justify-content: center;
-    padding-top: 12px;
-    padding-bottom: calc(20px + var(--ultima-shell-safe-bottom));
+    padding-top: 20px;
+    padding-bottom: calc(28px + var(--ultima-shell-safe-bottom));
+    background:
+      radial-gradient(
+        900px 620px at 76% 8%,
+        color-mix(in srgb, var(--ultima-color-aura) 18%, transparent),
+        transparent 62%
+      ),
+      radial-gradient(
+        760px 560px at 16% 92%,
+        color-mix(in srgb, var(--ultima-color-ring) 9%, transparent),
+        transparent 64%
+      ),
+      linear-gradient(
+        145deg,
+        color-mix(in srgb, #020617 82%, var(--ultima-color-bg-top) 18%) 0%,
+        color-mix(in srgb, #07111d 72%, var(--ultima-color-bg-bottom) 28%) 46%,
+        #020617 100%
+      );
+  }
+
+  .ultima-shell-aura {
+    opacity: 0.34;
+  }
+
+  html[data-ultima-animation='meteor-stream'] .ultima-shell-aura::before {
+    opacity: 0.22;
+    filter: blur(12px);
+  }
+
+  html[data-ultima-animation='meteor-stream'] .ultima-shell-aura::after {
+    opacity: 0.2;
+    filter: blur(38px);
   }
 
   .ultima-shell-inner {
@@ -1642,45 +1673,45 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   }
 
   .ultima-shell-wide .ultima-shell-inner {
-    --ultima-dock-max-width: 1040px;
-    width: min(100%, 1040px);
-    max-width: 1040px;
-  }
-
-  .ultima-shell-dashboard-desktop .ultima-shell-inner {
-    --ultima-dock-max-width: 1240px;
-    width: min(100%, 1240px);
-    max-width: 1240px;
-  }
-
-  .ultima-shell-reading-desktop .ultima-shell-inner {
-    --ultima-dock-max-width: 1120px;
-    width: min(100%, 1120px);
-    max-width: 1120px;
-  }
-
-  .ultima-shell-connection-desktop .ultima-shell-inner {
     --ultima-dock-max-width: 1180px;
     width: min(100%, 1180px);
     max-width: 1180px;
   }
 
+  .ultima-shell-dashboard-desktop .ultima-shell-inner {
+    --ultima-dock-max-width: 1440px;
+    width: min(100%, 1440px);
+    max-width: 1440px;
+  }
+
+  .ultima-shell-reading-desktop .ultima-shell-inner {
+    --ultima-dock-max-width: 1260px;
+    width: min(100%, 1260px);
+    max-width: 1260px;
+  }
+
+  .ultima-shell-connection-desktop .ultima-shell-inner {
+    --ultima-dock-max-width: 1320px;
+    width: min(100%, 1320px);
+    max-width: 1320px;
+  }
+
   .ultima-shell-subscription-desktop .ultima-shell-inner {
-    --ultima-dock-max-width: 1200px;
-    width: min(100%, 1200px);
-    max-width: 1200px;
+    --ultima-dock-max-width: 1320px;
+    width: min(100%, 1320px);
+    max-width: 1320px;
   }
 
   .ultima-shell-gift-desktop .ultima-shell-inner {
-    --ultima-dock-max-width: 1220px;
-    width: min(100%, 1220px);
-    max-width: 1220px;
+    --ultima-dock-max-width: 1360px;
+    width: min(100%, 1360px);
+    max-width: 1360px;
   }
 
   .ultima-shell-profile-desktop .ultima-shell-inner {
-    --ultima-dock-max-width: 1160px;
-    width: min(100%, 1160px);
-    max-width: 1160px;
+    --ultima-dock-max-width: 1280px;
+    width: min(100%, 1280px);
+    max-width: 1280px;
   }
 
   .ultima-shell-compact .ultima-shell-inner {
@@ -1705,6 +1736,10 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   .ultima-nav-dock .ultima-bottom-nav {
     margin-inline: auto;
     max-width: min(100%, var(--ultima-dock-max-width, 760px));
+  }
+
+  .ultima-desktop-aside .ultima-nav-dock .ultima-bottom-nav {
+    max-width: 100%;
   }
 
   .ultima-mobile-overlay {

@@ -74,22 +74,22 @@ export function UltimaDesktopSubscription({
   const { t } = useTranslation();
 
   return (
-    <div className="ultima-shell-inner lg:max-w-[1200px]">
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+    <div className="ultima-shell-inner lg:max-w-[1320px]">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-4">
           {planSelector}
 
           <section
-            className={cn(ultimaCardClassName, 'relative overflow-hidden p-6 lg:p-7')}
+            className={cn(ultimaCardClassName, 'relative overflow-hidden p-5 lg:p-6')}
             style={accentCardStyle}
           >
             <div className="absolute inset-y-0 right-[-10%] w-[36%] rounded-full bg-white/[0.05] blur-3xl" />
             <div className="relative flex flex-wrap items-start justify-between gap-6">
               <div className="max-w-[56ch]">
-                <div className="border-white/12 inline-flex h-14 min-w-14 items-center justify-center rounded-full border bg-white/[0.08] px-4 text-[22px] font-semibold text-white">
+                <div className="border-white/12 inline-flex h-12 min-w-12 items-center justify-center rounded-[18px] border bg-white/[0.08] px-4 text-[20px] font-semibold text-white">
                   {selectedDeviceLimit}
                 </div>
-                <h1 className="mt-4 text-[clamp(38px,4.6vw,56px)] font-semibold leading-[0.94] tracking-[-0.045em] text-white">
+                <h1 className="mt-4 max-w-[18ch] text-[clamp(34px,3.6vw,50px)] font-semibold leading-[0.98] tracking-[-0.038em] text-white">
                   {title}
                 </h1>
                 <p className="text-white/72 mt-3 text-[15px] leading-[1.6]">{subtitle}</p>
@@ -118,7 +118,7 @@ export function UltimaDesktopSubscription({
             </div>
           </section>
 
-          <section className={cn(ultimaCardClassName, 'p-5')} style={defaultCardStyle}>
+          <section className={cn(ultimaCardClassName, 'p-5 xl:p-6')} style={defaultCardStyle}>
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               {periods.map((period) => (
                 <button
@@ -126,7 +126,7 @@ export function UltimaDesktopSubscription({
                   type="button"
                   onClick={() => onSelectPeriod(period.days)}
                   className={cn(
-                    'rounded-[26px] border p-4 text-left transition-colors',
+                    'rounded-[20px] border p-4 text-left transition-colors',
                     period.isSelected
                       ? 'border-emerald-200/36 bg-emerald-300/[0.08]'
                       : 'border-white/10 bg-white/[0.04] hover:bg-white/[0.08]',
@@ -157,7 +157,7 @@ export function UltimaDesktopSubscription({
 
         <aside className="ultima-desktop-aside space-y-4 lg:sticky lg:top-4">
           <section className={cn(ultimaCardClassName, 'p-5')} style={defaultCardStyle}>
-            <div className="text-[30px] font-semibold leading-[0.98] tracking-[-0.04em] text-white">
+            <div className="text-[28px] font-semibold leading-[1] tracking-[-0.035em] text-white">
               {payablePriceLabel}
             </div>
             <p className="text-white/68 mt-2 text-sm leading-[1.6]">

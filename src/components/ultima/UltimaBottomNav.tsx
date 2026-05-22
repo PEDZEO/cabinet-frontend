@@ -1,5 +1,6 @@
 import { type CSSProperties, type PointerEvent, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import type { UltimaBottomNavTab } from '@/features/ultima/navigation';
 
 type UltimaBottomNavProps = {
@@ -79,6 +80,7 @@ export function UltimaBottomNav({
   onProfileClick,
   onSupportClick,
 }: UltimaBottomNavProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [magnetOffset, setMagnetOffset] = useState<
     Record<UltimaBottomNavTab, { x: number; y: number }>
@@ -90,10 +92,18 @@ export function UltimaBottomNav({
     support: { x: 0, y: 0 },
   });
 
+  const navLabels: Record<UltimaBottomNavTab, string> = {
+    home: t('nav.dashboard', { defaultValue: 'Главная' }),
+    connection: t('lite.connectAndSetup', { defaultValue: 'Подключение' }),
+    news: t('nav.info', { defaultValue: 'Информация' }),
+    profile: t('nav.profile', { defaultValue: 'Профиль' }),
+    support: t('nav.support', { defaultValue: 'Поддержка' }),
+  };
+
   const getButtonClassName = (isActive: boolean) =>
     isActive
-      ? 'flex h-10 items-center justify-center rounded-[15px] border text-[var(--ultima-color-primary-text)] shadow-[0_8px_20px_rgba(20,209,157,0.32),inset_0_1px_0_rgba(255,255,255,0.24)] translate-y-[-1px] transition-all duration-200 active:translate-y-0 active:scale-[0.985]'
-      : 'flex h-10 items-center justify-center rounded-[15px] text-[var(--ultima-color-nav-text)]/78 transition-all duration-200 hover:bg-white/8 hover:translate-y-[-1px] active:translate-y-0 active:scale-[0.985]';
+      ? 'flex h-10 items-center justify-center rounded-[15px] border text-[var(--ultima-color-primary-text)] shadow-[0_8px_20px_rgba(20,209,157,0.32),inset_0_1px_0_rgba(255,255,255,0.24)] translate-y-[-1px] transition-all duration-200 active:translate-y-0 active:scale-[0.985] lg:h-11 lg:justify-start lg:gap-3 lg:px-3'
+      : 'flex h-10 items-center justify-center rounded-[15px] text-[var(--ultima-color-nav-text)]/78 transition-all duration-200 hover:bg-white/8 hover:translate-y-[-1px] active:translate-y-0 active:scale-[0.985] lg:h-11 lg:justify-start lg:gap-3 lg:px-3';
 
   const handlePointerMove =
     (tab: UltimaBottomNavTab) => (event: PointerEvent<HTMLButtonElement>) => {
@@ -129,7 +139,7 @@ export function UltimaBottomNav({
 
   return (
     <nav
-      className="ultima-bottom-nav grid grid-cols-5 items-center gap-1 rounded-[20px] p-1 shadow-[0_14px_34px_rgba(3,9,18,0.45),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-xl"
+      className="ultima-bottom-nav grid grid-cols-5 items-center gap-1 rounded-[20px] p-1 shadow-[0_14px_34px_rgba(3,9,18,0.45),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-xl lg:grid-cols-1 lg:gap-1.5 lg:rounded-[22px] lg:p-2"
       style={{
         background: `linear-gradient(
           180deg,
@@ -148,9 +158,12 @@ export function UltimaBottomNav({
         onPointerMove={handlePointerMove('home')}
         onPointerLeave={resetMagnet('home')}
         onPointerUp={resetMagnet('home')}
-        aria-label="ultima-nav-home"
+        aria-label={navLabels.home}
       >
         <GridIcon />
+        <span className="hidden min-w-0 truncate text-sm font-medium lg:inline">
+          {navLabels.home}
+        </span>
       </button>
       <button
         type="button"
@@ -161,9 +174,12 @@ export function UltimaBottomNav({
         onPointerMove={handlePointerMove('connection')}
         onPointerLeave={resetMagnet('connection')}
         onPointerUp={resetMagnet('connection')}
-        aria-label="ultima-nav-connection"
+        aria-label={navLabels.connection}
       >
         <GearIcon />
+        <span className="hidden min-w-0 truncate text-sm font-medium lg:inline">
+          {navLabels.connection}
+        </span>
       </button>
       <button
         type="button"
@@ -171,25 +187,28 @@ export function UltimaBottomNav({
         className={getButtonClassName(active === 'news')}
         style={{
           ...getButtonStyle('news', active === 'news'),
-          minHeight: '46px',
-          borderRadius: '17px',
-          background:
-            active === 'news'
-              ? 'linear-gradient(180deg, color-mix(in srgb, var(--ultima-color-nav-active) 96%, #fff), color-mix(in srgb, var(--ultima-color-nav-active) 72%, #000))'
-              : 'linear-gradient(180deg, color-mix(in srgb, var(--ultima-color-primary) 20%, transparent), color-mix(in srgb, var(--ultima-color-secondary) 72%, transparent))',
-          border: '1px solid color-mix(in srgb, var(--ultima-color-ring) 28%, transparent)',
-          boxShadow:
-            active === 'news'
-              ? '0 12px 28px color-mix(in srgb, var(--ultima-color-nav-active) 38%, transparent), inset 0 1px 0 rgba(255,255,255,0.26)'
-              : '0 10px 24px rgba(3,9,18,0.28), inset 0 1px 0 rgba(255,255,255,0.12)',
+          ...(active === 'news'
+            ? {
+                minHeight: '46px',
+                borderRadius: '17px',
+                background:
+                  'linear-gradient(180deg, color-mix(in srgb, var(--ultima-color-nav-active) 96%, #fff), color-mix(in srgb, var(--ultima-color-nav-active) 72%, #000))',
+                border: '1px solid color-mix(in srgb, var(--ultima-color-ring) 28%, transparent)',
+                boxShadow:
+                  '0 12px 28px color-mix(in srgb, var(--ultima-color-nav-active) 38%, transparent), inset 0 1px 0 rgba(255,255,255,0.26)',
+              }
+            : null),
         }}
         onClick={onNewsClick ?? (() => navigate('/ultima/news'))}
         onPointerMove={handlePointerMove('news')}
         onPointerLeave={resetMagnet('news')}
         onPointerUp={resetMagnet('news')}
-        aria-label="ultima-nav-news"
+        aria-label={navLabels.news}
       >
         <NewspaperIcon />
+        <span className="hidden min-w-0 truncate text-sm font-medium lg:inline">
+          {navLabels.news}
+        </span>
       </button>
       <button
         type="button"
@@ -200,9 +219,12 @@ export function UltimaBottomNav({
         onPointerMove={handlePointerMove('profile')}
         onPointerLeave={resetMagnet('profile')}
         onPointerUp={resetMagnet('profile')}
-        aria-label="ultima-nav-profile"
+        aria-label={navLabels.profile}
       >
         <ProfileIcon />
+        <span className="hidden min-w-0 truncate text-sm font-medium lg:inline">
+          {navLabels.profile}
+        </span>
       </button>
       <button
         type="button"
@@ -213,9 +235,12 @@ export function UltimaBottomNav({
         onPointerMove={handlePointerMove('support')}
         onPointerLeave={resetMagnet('support')}
         onPointerUp={resetMagnet('support')}
-        aria-label="ultima-nav-support"
+        aria-label={navLabels.support}
       >
         <SupportIcon />
+        <span className="hidden min-w-0 truncate text-sm font-medium lg:inline">
+          {navLabels.support}
+        </span>
       </button>
     </nav>
   );

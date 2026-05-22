@@ -173,12 +173,12 @@ function clampPercent(value: number): number {
 
 function DesktopMetricCard({ icon, label, value, meta }: DesktopMetricCardProps) {
   return (
-    <div className={cn(ultimaCardClassName, 'p-4')} style={defaultCardStyle}>
-      <div className="text-white/84 mb-2.5 flex h-9 w-9 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06]">
+    <div className={cn(ultimaCardClassName, 'p-4 xl:p-5')} style={defaultCardStyle}>
+      <div className="text-white/84 mb-3 flex h-9 w-9 items-center justify-center rounded-[14px] border border-white/10 bg-white/[0.06]">
         {icon}
       </div>
       <div className="text-white/42 text-[10px] uppercase tracking-[0.18em]">{label}</div>
-      <div className="mt-2 text-[24px] font-semibold leading-none tracking-[-0.03em] text-white">
+      <div className="mt-2 text-[24px] font-semibold leading-none tracking-[-0.025em] text-white">
         {value}
       </div>
       <div className="text-white/62 mt-1.5 text-[13px] leading-snug">{meta}</div>
@@ -191,7 +191,7 @@ function DesktopQuickAction({ label, onClick }: DesktopQuickActionProps) {
     <button
       type="button"
       onClick={onClick}
-      className="flex min-h-[56px] items-center justify-between gap-3 rounded-[20px] border border-white/10 bg-white/[0.05] px-4 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition hover:bg-white/[0.08]"
+      className="flex min-h-[54px] items-center justify-between gap-3 rounded-[18px] border border-white/10 bg-white/[0.05] px-4 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition hover:bg-white/[0.08]"
     >
       <div className="text-white/92 text-sm font-medium leading-snug">{label}</div>
       <span className="text-white/68 rounded-full border border-white/10 p-1">
@@ -203,11 +203,11 @@ function DesktopQuickAction({ label, onClick }: DesktopQuickActionProps) {
 
 export function UltimaDesktopDashboardSkeleton({ bottomNav }: { bottomNav: ReactNode }) {
   return (
-    <div className="ultima-shell-inner lg:max-w-[1240px]">
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+    <div className="ultima-shell-inner lg:max-w-[1440px]">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-4">
-          <section className={cn(ultimaCardClassName, 'min-h-[236px]')} style={accentCardStyle}>
-            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_160px] lg:items-center">
+          <section className={cn(ultimaCardClassName, 'min-h-[220px]')} style={accentCardStyle}>
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_132px] lg:items-center">
               <div>
                 <div className="h-14 w-[74%] animate-pulse rounded-[24px] bg-white/10" />
                 <div className="mt-4 h-5 w-[44%] animate-pulse rounded-full bg-white/10" />
@@ -216,7 +216,7 @@ export function UltimaDesktopDashboardSkeleton({ bottomNav }: { bottomNav: React
                   <div className="h-12 w-[228px] animate-pulse rounded-full bg-white/10" />
                 </div>
               </div>
-              <div className="mx-auto h-[136px] w-[136px] animate-pulse rounded-full border border-white/10 bg-white/[0.06]" />
+              <div className="mx-auto h-[124px] w-[124px] animate-pulse rounded-full border border-white/10 bg-white/[0.06]" />
             </div>
           </section>
 
@@ -230,7 +230,7 @@ export function UltimaDesktopDashboardSkeleton({ bottomNav }: { bottomNav: React
             ))}
           </div>
 
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_400px]">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
             <div
               className={cn(ultimaCardClassName, 'min-h-[220px] animate-pulse')}
               style={defaultCardStyle}
@@ -372,7 +372,7 @@ export function UltimaDesktopDashboard({
       <section className={cn(ultimaCardClassName, 'h-full')} style={defaultCardStyle}>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-[24px] font-semibold leading-[1.04] tracking-[-0.03em] text-white">
+            <h2 className="text-[22px] font-semibold leading-[1.06] tracking-[-0.025em] text-white">
               {supportCardTitle}
             </h2>
             <p className="mt-2 max-w-[42ch] text-[14px] leading-[1.5] text-white/70">
@@ -424,17 +424,17 @@ export function UltimaDesktopDashboard({
   };
 
   return (
-    <div className="ultima-shell-inner lg:max-w-[1240px]">
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+    <div className="ultima-shell-inner lg:max-w-[1440px]">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-4">
           <section
-            className={cn(ultimaCardClassName, 'relative overflow-hidden p-5 lg:p-6')}
+            className={cn(ultimaCardClassName, 'relative overflow-hidden p-5 lg:p-6 xl:p-7')}
             style={accentCardStyle}
           >
-            <div className="absolute inset-y-0 right-[-12%] w-[42%] rounded-full bg-white/[0.05] blur-3xl" />
-            <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_160px] lg:items-center">
+            <div className="absolute inset-y-0 right-[-8%] w-[38%] rounded-full bg-white/[0.05] blur-3xl" />
+            <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_132px] lg:items-center xl:grid-cols-[minmax(0,1fr)_150px]">
               <div>
-                <h1 className="max-w-[12ch] text-[clamp(38px,4.8vw,58px)] font-semibold leading-[0.94] tracking-[-0.045em] text-white">
+                <h1 className="max-w-[22ch] text-[clamp(34px,3.8vw,54px)] font-semibold leading-[0.98] tracking-[-0.038em] text-white">
                   {expiryLabel}
                 </h1>
                 <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -470,7 +470,7 @@ export function UltimaDesktopDashboard({
                   <button
                     type="button"
                     onClick={onBuySubscription}
-                    className="ultima-btn-pill ultima-btn-primary inline-flex min-h-[50px] items-center justify-between gap-4 px-5 text-[15px]"
+                    className="ultima-btn-pill ultima-btn-primary inline-flex min-h-[48px] items-center justify-between gap-4 px-5 text-[15px]"
                   >
                     <span>{buyCtaLabel}</span>
                     <span className="text-white/84">{buyFromLabel}</span>
@@ -479,7 +479,7 @@ export function UltimaDesktopDashboard({
                     type="button"
                     onClick={onOpenConnection}
                     className={cn(
-                      'ultima-btn-pill inline-flex min-h-[50px] items-center justify-between gap-4 px-5 text-[15px]',
+                      'ultima-btn-pill inline-flex min-h-[48px] items-center justify-between gap-4 px-5 text-[15px]',
                       showConnectionCtaHighlight ? 'ultima-btn-primary' : 'ultima-btn-secondary',
                     )}
                   >
@@ -527,6 +527,7 @@ export function UltimaDesktopDashboard({
               label={t('subscription.traffic', { defaultValue: 'Трафик' })}
               value={trafficLimitLabel}
               meta={t('ultima.desktop.trafficMeta', {
+                percent: trafficUsedPercent,
                 defaultValue: `${trafficUsedPercent}% уже использовано`,
               })}
             />
@@ -550,11 +551,11 @@ export function UltimaDesktopDashboard({
             />
           </div>
 
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_400px]">
-            <section className={cn(ultimaCardClassName, 'p-5')} style={defaultCardStyle}>
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
+            <section className={cn(ultimaCardClassName, 'p-5 xl:p-6')} style={defaultCardStyle}>
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-[24px] font-semibold leading-[1.04] tracking-[-0.03em] text-white">
+                  <h2 className="text-[22px] font-semibold leading-[1.06] tracking-[-0.025em] text-white">
                     {t('ultima.desktop.connectionTitle', {
                       defaultValue: 'Подключение и трафик',
                     })}
@@ -640,7 +641,7 @@ export function UltimaDesktopDashboard({
 
         <aside className="ultima-desktop-aside space-y-4 lg:sticky lg:top-4">
           <section className={cn(ultimaCardClassName, 'p-5')} style={defaultCardStyle}>
-            <h2 className="text-[24px] font-semibold leading-[1.04] tracking-[-0.03em] text-white">
+            <h2 className="text-[22px] font-semibold leading-[1.06] tracking-[-0.025em] text-white">
               {asideTitle}
             </h2>
             <p className="text-white/68 mt-2 text-sm leading-[1.6]">{asideSubtitle}</p>
