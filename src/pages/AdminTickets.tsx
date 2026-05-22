@@ -352,7 +352,27 @@ export default function AdminTickets() {
     const { first_name, last_name, username } = ticket.user;
     if (first_name || last_name) return `${first_name || ''} ${last_name || ''}`.trim();
     if (username) return `@${username}`;
+    if (ticket.user.email) return ticket.user.email;
     return 'User';
+  };
+
+  const formatMoney = (kopeks: number) =>
+    new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(
+      (kopeks || 0) / 100,
+    );
+
+  const formatContextDate = (value: string | null) =>
+    value ? new Date(value).toLocaleString() : '—';
+
+  const formatTraffic = (used: number | null, limit: number | null, percent: number | null) => {
+    if (limit === 0) {
+      return `${(used ?? 0).toFixed(2)} GB / безлимит`;
+    }
+    if (limit === null || limit === undefined) {
+      return '—';
+    }
+    const pct = percent === null || percent === undefined ? '' : ` (${Math.round(percent)}%)`;
+    return `${(used ?? 0).toFixed(2)} / ${limit} GB${pct}`;
   };
 
   const copyToClipboard = (text: string) => {
@@ -632,6 +652,99 @@ export default function AdminTickets() {
                   ))}
                 </div>
               </div>
+
+              {selectedTicket.user_context && (
+                <div className="mb-4 rounded-xl border border-dark-700/50 bg-dark-900/35 p-3">
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <h4 className="text-sm font-semibold text-dark-100">Контекст пользователя</h4>
+                    {selectedTicket.user_context.restriction_topup ||
+                    selectedTicket.user_context.restriction_subscription ? (
+                      <span className="rounded-full border border-warning-500/30 bg-warning-500/10 px-2 py-0.5 text-xs text-warning-300">
+                        есть ограничения
+                      </span>
+                    ) : (
+                      <span className="rounded-full border border-success-500/30 bg-success-500/10 px-2 py-0.5 text-xs text-success-300">
+                        без ограничений
+                      </span>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 text-xs md:grid-cols-2 xl:grid-cols-3">
+                    <div>
+                      <div className="text-dark-500">Аккаунт</div>
+                      <div className="text-dark-200">
+                        {selectedTicket.user_context.status || '—'} /{' '}
+                        {selectedTicket.user_context.language || '—'}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-dark-500">Баланс</div>
+                      <div className="text-dark-200">
+                        {formatMoney(selectedTicket.user_context.balance_kopeks)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-dark-500">Подписка</div>
+                      <div className="text-dark-200">
+                        {selectedTicket.user_context.subscription_actual_status ||
+                          selectedTicket.user_context.subscription_status ||
+                          'нет'}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-dark-500">Окончание</div>
+                      <div className="text-dark-200">
+                        {formatContextDate(selectedTicket.user_context.subscription_end_date)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-dark-500">Устройства</div>
+                      <div className="text-dark-200">
+                        {selectedTicket.user_context.subscription_device_limit ?? '—'}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-dark-500">Трафик</div>
+                      <div className="text-dark-200">
+                        {formatTraffic(
+                          selectedTicket.user_context.subscription_traffic_used_gb,
+                          selectedTicket.user_context.subscription_traffic_limit_gb,
+                          selectedTicket.user_context.subscription_traffic_used_percent,
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-dark-500">Последняя активность</div>
+                      <div className="text-dark-200">
+                        {formatContextDate(selectedTicket.user_context.last_activity)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-dark-500">Вход в кабинет</div>
+                      <div className="text-dark-200">
+                        {formatContextDate(selectedTicket.user_context.cabinet_last_login)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-dark-500">RemnaWave UUID</div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          selectedTicket.user_context?.remnawave_uuid &&
+                          copyToClipboard(selectedTicket.user_context.remnawave_uuid)
+                        }
+                        className="max-w-full truncate text-left text-dark-200 hover:text-accent-300"
+                      >
+                        {selectedTicket.user_context.remnawave_uuid || '—'}
+                      </button>
+                    </div>
+                  </div>
+                  {selectedTicket.user_context.restriction_reason ? (
+                    <div className="mt-2 rounded-lg border border-warning-500/20 bg-warning-500/10 px-2 py-1.5 text-xs text-warning-200">
+                      {selectedTicket.user_context.restriction_reason}
+                    </div>
+                  ) : null}
+                </div>
+              )}
 
               {/* Messages */}
               <div className="scrollbar-hide mb-4 max-h-[400px] flex-1 space-y-4 overflow-y-auto">

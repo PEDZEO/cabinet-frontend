@@ -34,6 +34,27 @@ const TICKETS_BATCH_SIZE = 5;
 const ULTIMA_SUPPORT_SECTION_STYLE: CSSProperties = ultimaSurfaceStyle;
 const ULTIMA_SUPPORT_PANE_STYLE: CSSProperties = ultimaPaneSurfaceStyle;
 
+const QUICK_SUPPORT_TOPICS = [
+  {
+    key: 'connection',
+    label: 'Не подключается',
+    title: 'Проблема с подключением',
+    message: 'Не получается подключить VPN. Устройство: . Что уже пробовал: . Ошибка/скрин: .',
+  },
+  {
+    key: 'payment',
+    label: 'Оплата',
+    title: 'Проблема с оплатой',
+    message: 'Возникла проблема с оплатой. Способ оплаты: . Сумма: . Что вижу после оплаты: .',
+  },
+  {
+    key: 'subscription',
+    label: 'Подписка',
+    title: 'Вопрос по подписке',
+    message: 'Нужна помощь с подпиской. Что не так: . Когда заметил проблему: .',
+  },
+];
+
 export function UltimaSupport() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -123,6 +144,11 @@ export function UltimaSupport() {
       queryClient.setQueryData(['ticket', selectedTicketId], updated);
     },
   });
+
+  const applyQuickTopic = (topic: (typeof QUICK_SUPPORT_TOPICS)[number]) => {
+    setNewTitle((current) => current.trim() || topic.title);
+    setNewMessage((current) => current.trim() || topic.message);
+  };
 
   const supportContact = useMemo(() => {
     if (!supportConfig) {
@@ -309,6 +335,18 @@ export function UltimaSupport() {
       className={`${ultimaPanelClassName} space-y-3 p-4`}
       style={ULTIMA_SUPPORT_SECTION_STYLE}
     >
+      <div className="flex flex-wrap gap-2">
+        {QUICK_SUPPORT_TOPICS.map((topic) => (
+          <button
+            key={topic.key}
+            type="button"
+            onClick={() => applyQuickTopic(topic)}
+            className="text-emerald-50/78 rounded-full border border-emerald-200/15 bg-emerald-950/35 px-3 py-1.5 text-[12px] font-medium transition hover:border-emerald-200/30 hover:bg-emerald-900/40"
+          >
+            {topic.label}
+          </button>
+        ))}
+      </div>
       <input
         value={newTitle}
         onChange={(event) => setNewTitle(event.target.value)}

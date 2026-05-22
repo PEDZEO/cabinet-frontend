@@ -2,7 +2,9 @@ import apiClient from './client';
 
 export interface AdminTicketUser {
   id: number;
-  telegram_id: number;
+  telegram_id: number | null;
+  auth_type?: string | null;
+  email?: string | null;
   username: string | null;
   first_name: string | null;
   last_name: string | null;
@@ -32,6 +34,27 @@ export interface AdminTicket {
   last_message: AdminTicketMessage | null;
 }
 
+export interface AdminTicketUserContext {
+  language: string | null;
+  status: string | null;
+  balance_kopeks: number;
+  has_had_paid_subscription: boolean;
+  created_at: string | null;
+  last_activity: string | null;
+  cabinet_last_login: string | null;
+  restriction_topup: boolean;
+  restriction_subscription: boolean;
+  restriction_reason: string | null;
+  subscription_status: string | null;
+  subscription_actual_status: string | null;
+  subscription_end_date: string | null;
+  subscription_device_limit: number | null;
+  subscription_traffic_limit_gb: number | null;
+  subscription_traffic_used_gb: number | null;
+  subscription_traffic_used_percent: number | null;
+  remnawave_uuid: string | null;
+}
+
 export interface AdminTicketDetail {
   id: number;
   title: string;
@@ -42,6 +65,7 @@ export interface AdminTicketDetail {
   closed_at: string | null;
   is_reply_blocked: boolean;
   user: AdminTicketUser | null;
+  user_context: AdminTicketUserContext | null;
   messages: AdminTicketMessage[];
 }
 
