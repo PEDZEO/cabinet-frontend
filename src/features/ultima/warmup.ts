@@ -31,6 +31,7 @@ export async function warmUltimaStartup(
     import('@/pages/UltimaSubscriptionInfo'),
     import('@/pages/Subscription'),
     import('@/pages/UltimaAgreement'),
+    import('@/pages/UltimaInfo'),
 
     queryClient.prefetchQuery({
       queryKey: ['subscription'],
@@ -125,6 +126,16 @@ export async function warmUltimaStartup(
     queryClient.prefetchQuery({
       queryKey: ['ultima-agreement', language],
       queryFn: () => ultimaAgreementApi.getAgreement(language || 'ru'),
+      staleTime: 60000,
+    }),
+    queryClient.prefetchQuery({
+      queryKey: ['faq-pages'],
+      queryFn: infoApi.getFaqPages,
+      staleTime: 60000,
+    }),
+    queryClient.prefetchQuery({
+      queryKey: ['rules'],
+      queryFn: infoApi.getRules,
       staleTime: 60000,
     }),
   ];

@@ -29,6 +29,10 @@ const UltimaAgreement = lazy(async () => {
   const module = await import('../UltimaAgreement');
   return { default: module.UltimaAgreement };
 });
+const UltimaInfo = lazy(async () => {
+  const module = await import('../UltimaInfo');
+  return { default: module.UltimaInfo };
+});
 const UltimaDevices = lazy(async () => {
   const module = await import('../UltimaDevices');
   return { default: module.UltimaDevices };
@@ -263,6 +267,16 @@ export const protectedRoutes: RouteConfig[] = [
       <ProtectedRoute>
         <LazyPage>
           <UltimaAgreement />
+        </LazyPage>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/ultima/info',
+    element: (
+      <ProtectedRoute>
+        <LazyPage>
+          <UltimaInfo />
         </LazyPage>
       </ProtectedRoute>
     ),

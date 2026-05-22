@@ -314,10 +314,12 @@ export function UltimaProfile() {
       icon: <ChatIcon />,
     },
     {
-      key: 'terms',
-      title: t('profile.termsTitle', { defaultValue: 'Пользовательское соглашение' }),
-      subtitle: t('profile.termsDescription', { defaultValue: 'Соглашения и правила сервиса' }),
-      path: '/ultima/agreement',
+      key: 'info',
+      title: t('nav.info', { defaultValue: 'Информация' }),
+      subtitle: t('profile.infoDescription', {
+        defaultValue: 'FAQ, правила, соглашение и документы сервиса',
+      }),
+      path: '/ultima/info',
       icon: <TermsIcon />,
     },
   ];
@@ -525,8 +527,22 @@ export function UltimaProfile() {
             staleTime: 15000,
           }),
         );
-      } else if (path === '/ultima/agreement') {
-        tasks.push(import('./UltimaAgreement'));
+      } else if (path === '/ultima/info') {
+        tasks.push(import('./UltimaInfo'));
+        tasks.push(
+          queryClient.prefetchQuery({
+            queryKey: ['faq-pages'],
+            queryFn: infoApi.getFaqPages,
+            staleTime: 60000,
+          }),
+        );
+        tasks.push(
+          queryClient.prefetchQuery({
+            queryKey: ['rules'],
+            queryFn: infoApi.getRules,
+            staleTime: 60000,
+          }),
+        );
         tasks.push(
           queryClient.prefetchQuery({
             queryKey: ['ultima-agreement', i18n.language],
@@ -637,7 +653,7 @@ export function UltimaProfile() {
               label: t('nav.support', { defaultValue: 'Поддержка' }),
               value: String(supportItems.length),
               hint: t('profile.desktopSupportHint', {
-                defaultValue: 'Тикеты, соглашение и помощь по сервису.',
+                defaultValue: 'Тикеты, информация и помощь по сервису.',
               }),
             },
           ]}
