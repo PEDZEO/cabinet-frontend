@@ -554,7 +554,7 @@ export interface TicketDetail extends Omit<Ticket, 'messages_count' | 'last_mess
 
 export interface SupportConfig {
   tickets_enabled: boolean;
-  support_type: 'tickets' | 'profile' | 'url';
+  support_type: 'tickets' | 'profile' | 'url' | 'both';
   support_url?: string | null;
   support_username?: string | null;
 }
