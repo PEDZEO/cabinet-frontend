@@ -272,7 +272,7 @@ export function ColorPicker({ value, onChange, label, description, disabled }: C
         {/* Hue slider */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-dark-400">Hue</span>
+            <span className="text-xs font-medium text-dark-400">Тон</span>
             <span className="text-xs text-dark-500">{hsl.h}°</span>
           </div>
           <input
@@ -292,7 +292,7 @@ export function ColorPicker({ value, onChange, label, description, disabled }: C
         {/* Saturation slider */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-dark-400">Saturation</span>
+            <span className="text-xs font-medium text-dark-400">Насыщенность</span>
             <span className="text-xs text-dark-500">{hsl.s}%</span>
           </div>
           <input
@@ -311,7 +311,7 @@ export function ColorPicker({ value, onChange, label, description, disabled }: C
         {/* Lightness slider */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-dark-400">Lightness</span>
+            <span className="text-xs font-medium text-dark-400">Яркость</span>
             <span className="text-xs text-dark-500">{hsl.l}%</span>
           </div>
           <input
@@ -342,7 +342,7 @@ export function ColorPicker({ value, onChange, label, description, disabled }: C
 
         {/* Presets */}
         <div className="border-t border-dark-700 pt-2">
-          <span className="mb-2 block text-xs font-medium text-dark-400">Presets</span>
+          <span className="mb-2 block text-xs font-medium text-dark-400">Готовые цвета</span>
           <div className="grid grid-cols-6 gap-1.5">
             {PRESET_COLORS.map((preset) => (
               <button

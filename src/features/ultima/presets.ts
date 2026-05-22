@@ -69,8 +69,8 @@ export type UltimaAnimationPreset = {
 export const ULTIMA_THEME_PRESETS: UltimaThemePreset[] = [
   {
     id: 'emerald-classic',
-    name: 'Emerald Classic',
-    description: 'Классический Ultima: изумруд, тёмное стекло и мягкое свечение.',
+    name: 'Изумрудная классика',
+    description: 'Фирменная Ultima: изумруд, темное стекло и мягкое свечение.',
     accent: '#1bd29f',
     config: {
       primaryColor: '#1bd29f',
@@ -93,7 +93,7 @@ export const ULTIMA_THEME_PRESETS: UltimaThemePreset[] = [
   },
   {
     id: 'neon-ocean',
-    name: 'Neon Ocean',
+    name: 'Неоновый океан',
     description: 'Холодный неон, аквамариновые акценты и глубокий океанский фон.',
     accent: '#1ed6bf',
     config: {
@@ -117,8 +117,8 @@ export const ULTIMA_THEME_PRESETS: UltimaThemePreset[] = [
   },
   {
     id: 'sunset-mint',
-    name: 'Sunset Mint',
-    description: 'Тёплый янтарный акцент на насыщенном зелёно-графитовом фоне.',
+    name: 'Мятный закат',
+    description: 'Теплый янтарный акцент на насыщенном зелено-графитовом фоне.',
     accent: '#f3b63c',
     config: {
       primaryColor: '#f3b63c',
@@ -141,7 +141,7 @@ export const ULTIMA_THEME_PRESETS: UltimaThemePreset[] = [
   },
   {
     id: 'arctic-glass',
-    name: 'Arctic Glass',
+    name: 'Арктическое стекло',
     description: 'Полярная стеклянная палитра со светлым сиянием и чистыми контурами.',
     accent: '#7de6d5',
     config: {
@@ -165,7 +165,7 @@ export const ULTIMA_THEME_PRESETS: UltimaThemePreset[] = [
   },
   {
     id: 'rose-nebula',
-    name: 'Rose Nebula',
+    name: 'Розовая туманность',
     description: 'Розово-малиновое свечение с темным космическим фоном.',
     accent: '#ff7ab6',
     config: {
@@ -189,8 +189,8 @@ export const ULTIMA_THEME_PRESETS: UltimaThemePreset[] = [
   },
   {
     id: 'midnight-gold',
-    name: 'Midnight Gold',
-    description: 'Почти чёрная база с золотистыми бликами и премиальным контрастом.',
+    name: 'Полночное золото',
+    description: 'Почти черная база с золотистыми бликами и премиальным контрастом.',
     accent: '#f0c35a',
     config: {
       primaryColor: '#f0c35a',
@@ -213,8 +213,8 @@ export const ULTIMA_THEME_PRESETS: UltimaThemePreset[] = [
   },
   {
     id: 'crimson-luxe',
-    name: 'Crimson Luxe',
-    description: 'Бордовый люкс с насыщенным красным свечением и темным металлом.',
+    name: 'Бордовый люкс',
+    description: 'Глубокий красный акцент, темный металл и плотное свечение.',
     accent: '#ff5a5f',
     config: {
       primaryColor: '#ff5a5f',
@@ -237,8 +237,8 @@ export const ULTIMA_THEME_PRESETS: UltimaThemePreset[] = [
   },
   {
     id: 'polar-night',
-    name: 'Polar Night',
-    description: 'Сине-ледяной градиент с северным свечением и спокойной глубиной.',
+    name: 'Полярная ночь',
+    description: 'Сине-ледяной градиент, северное свечение и спокойная глубина.',
     accent: '#72b8ff',
     config: {
       primaryColor: '#72b8ff',
@@ -261,8 +261,8 @@ export const ULTIMA_THEME_PRESETS: UltimaThemePreset[] = [
   },
   {
     id: 'citrus-pulse',
-    name: 'Citrus Pulse',
-    description: 'Лаймово-цитрусовый импульс с современным тёмным интерфейсом.',
+    name: 'Цитрусовый импульс',
+    description: 'Лаймовый акцент и современный темный интерфейс с быстрым ощущением.',
     accent: '#d8ff5a',
     config: {
       primaryColor: '#d8ff5a',
@@ -288,8 +288,8 @@ export const ULTIMA_THEME_PRESETS: UltimaThemePreset[] = [
 export const ULTIMA_ANIMATION_PRESETS: UltimaAnimationPreset[] = [
   {
     id: 'classic-waves',
-    name: 'Classic Waves',
-    description: 'Старые фирменные круговые волны Ultima как отдельная самостоятельная сцена.',
+    name: 'Классические волны',
+    description: 'Фирменные круговые волны Ultima как отдельная самостоятельная сцена.',
     config: {
       contentEnterMs: 320,
       tapRingMs: 780,
@@ -302,7 +302,7 @@ export const ULTIMA_ANIMATION_PRESETS: UltimaAnimationPreset[] = [
   },
   {
     id: 'orbital-aura',
-    name: 'Orbital Aura',
+    name: 'Орбитальная аура',
     description: 'Плавное круговое свечение и глубокая кинематографичная пульсация.',
     config: {
       contentEnterMs: 320,
@@ -316,8 +316,8 @@ export const ULTIMA_ANIMATION_PRESETS: UltimaAnimationPreset[] = [
   },
   {
     id: 'radar-sweep',
-    name: 'Radar Sweep',
-    description: 'Чёткий сканирующий луч и более собранная, техничная динамика.',
+    name: 'Радарный луч',
+    description: 'Четкий сканирующий луч и более собранная техническая динамика.',
     config: {
       contentEnterMs: 260,
       tapRingMs: 640,
@@ -330,7 +330,7 @@ export const ULTIMA_ANIMATION_PRESETS: UltimaAnimationPreset[] = [
   },
   {
     id: 'nebula-drift',
-    name: 'Nebula Drift',
+    name: 'Дрейф туманности',
     description: 'Медленные туманные переливы с мягким входом контента.',
     config: {
       contentEnterMs: 420,
@@ -344,7 +344,7 @@ export const ULTIMA_ANIMATION_PRESETS: UltimaAnimationPreset[] = [
   },
   {
     id: 'pulse-grid',
-    name: 'Pulse Grid',
+    name: 'Пульсирующая сетка',
     description: 'Ритмичная геометрия, заметные импульсы и более быстрый отклик.',
     config: {
       contentEnterMs: 240,
@@ -358,7 +358,7 @@ export const ULTIMA_ANIMATION_PRESETS: UltimaAnimationPreset[] = [
   },
   {
     id: 'meteor-stream',
-    name: 'Meteor Stream',
+    name: 'Метеорный поток',
     description: 'Диагональный поток света с энергичным темпом и живым шлейфом.',
     config: {
       contentEnterMs: 300,

@@ -18,6 +18,107 @@
   --ultima-color-surface-border: #92f4d8;
   --ultima-color-scrollbar-thumb: #49e9b3;
   --ultima-color-scrollbar-track: #0c262a;
+  --ultima-bg-page-desktop:
+    radial-gradient(
+      circle at 78% 12%,
+      color-mix(in srgb, var(--ultima-color-aura) 16%, transparent),
+      transparent 44%
+    ),
+    radial-gradient(
+      circle at 16% 86%,
+      color-mix(in srgb, var(--ultima-color-ring) 9%, transparent),
+      transparent 50%
+    ),
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, #020617 80%, var(--ultima-color-bg-top) 20%) 0%,
+      color-mix(in srgb, #06101b 68%, var(--ultima-color-bg-bottom) 32%) 46%,
+      color-mix(in srgb, #020617 84%, var(--ultima-color-secondary) 16%) 100%
+    );
+  --ultima-bg-page-mobile: radial-gradient(
+    circle at 74% 58%,
+    color-mix(in srgb, var(--ultima-color-aura) 22%, transparent),
+    color-mix(in srgb, var(--ultima-color-bg-top) 86%, #000000) 58%,
+    color-mix(in srgb, #020617 82%, var(--ultima-color-bg-bottom) 18%) 100%
+  );
+  --ultima-bg-page-overlay-desktop:
+    radial-gradient(
+      circle at 34% 82%,
+      color-mix(in srgb, var(--ultima-color-aura) 9%, transparent),
+      transparent 54%
+    ),
+    radial-gradient(
+      circle at 86% 18%,
+      color-mix(in srgb, var(--ultima-color-ring) 8%, transparent),
+      transparent 50%
+    );
+  --ultima-bg-page-overlay-mobile:
+    radial-gradient(
+      circle at 30% 84%,
+      color-mix(in srgb, var(--ultima-color-aura) 18%, transparent),
+      transparent 52%
+    ),
+    radial-gradient(
+      circle at 84% 18%,
+      color-mix(in srgb, var(--ultima-color-ring) 12%, transparent),
+      transparent 48%
+    );
+  --ultima-bg-page-scrim-desktop: linear-gradient(
+    160deg,
+    rgba(2, 6, 23, 0.72) 0%,
+    rgba(2, 8, 18, 0.5) 44%,
+    rgba(2, 6, 23, 0.86) 100%
+  );
+  --ultima-bg-page-scrim-mobile: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--ultima-color-bg-top) 58%, #000000) 0%,
+    color-mix(in srgb, var(--ultima-color-bg-bottom) 38%, transparent) 44%,
+    color-mix(in srgb, #020617 72%, var(--ultima-color-bg-top) 28%) 100%
+  );
+  --ultima-bg-shell: linear-gradient(
+    160deg,
+    color-mix(in srgb, #030712 70%, var(--ultima-color-bg-top) 30%) 0%,
+    color-mix(in srgb, #050b14 66%, var(--ultima-color-bg-bottom) 34%) 100%
+  );
+  --ultima-bg-surface: linear-gradient(
+    180deg,
+    color-mix(in srgb, #0b1320 54%, var(--ultima-color-surface) 46%) 0%,
+    color-mix(in srgb, #070d16 58%, var(--ultima-color-secondary) 42%) 100%
+  );
+  --ultima-bg-surface-soft: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ultima-color-surface) 42%, transparent) 0%,
+    color-mix(in srgb, var(--ultima-color-secondary) 36%, transparent) 100%
+  );
+  --ultima-bg-surface-strong: linear-gradient(
+    180deg,
+    color-mix(in srgb, #0b1320 44%, var(--ultima-color-surface) 56%) 0%,
+    color-mix(in srgb, #070d16 50%, var(--ultima-color-secondary) 50%) 100%
+  );
+  --ultima-bg-accent-surface:
+    radial-gradient(
+      circle at 82% 18%,
+      color-mix(in srgb, var(--ultima-color-ring) 15%, transparent),
+      transparent 36%
+    ),
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--ultima-color-aura) 32%, #0f2430) 0%,
+      color-mix(in srgb, var(--ultima-color-secondary) 38%, #08111d) 100%
+    );
+  --ultima-bg-pane: linear-gradient(
+    180deg,
+    color-mix(in srgb, #0b1320 58%, var(--ultima-color-secondary) 42%) 0%,
+    color-mix(in srgb, #070d16 62%, var(--ultima-color-surface) 38%) 100%
+  );
+  --ultima-border-soft: color-mix(in srgb, var(--ultima-color-surface-border) 18%, transparent);
+  --ultima-border-medium: color-mix(in srgb, var(--ultima-color-surface-border) 26%, transparent);
+  --ultima-text-strong: color-mix(in srgb, var(--ultima-color-secondary-text) 92%, #ffffff);
+  --ultima-text-muted: color-mix(in srgb, var(--ultima-color-secondary-text) 56%, transparent);
+  --ultima-shadow-surface: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 20px 54px rgba(0, 0, 0, 0.34);
+  --ultima-shadow-accent:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 30px 70px color-mix(in srgb, var(--ultima-color-aura) 10%, rgba(0, 0, 0, 0.42));
   --ultima-animation-content-enter-ms: 320;
   --ultima-animation-tap-ring-ms: 780;
   --ultima-animation-ring-wave-sec: 18;
@@ -648,11 +749,7 @@ html:not(.ultima-frames-enabled) .ultima-flat-frames [class*='border'] {
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior-y: contain;
-  background: linear-gradient(
-    160deg,
-    color-mix(in srgb, #030712 76%, var(--ultima-color-bg-top) 24%) 0%,
-    color-mix(in srgb, #050b14 74%, var(--ultima-color-bg-bottom) 26%) 100%
-  );
+  background: var(--ultima-bg-shell);
   padding-left: calc(clamp(12px, 3vw, 16px) + env(safe-area-inset-left, 0px));
   padding-right: calc(clamp(12px, 3vw, 16px) + env(safe-area-inset-right, 0px));
   padding-top: var(--ultima-shell-top-gap);
@@ -668,13 +765,13 @@ html:not(.ultima-frames-enabled) .ultima-flat-frames [class*='border'] {
   background:
     linear-gradient(
       180deg,
-      color-mix(in srgb, #03090d 30%, transparent) 0%,
-      color-mix(in srgb, #03090d 46%, transparent) 100%
+      color-mix(in srgb, var(--ultima-color-bg-top) 24%, transparent) 0%,
+      color-mix(in srgb, #03090d 42%, transparent) 100%
     ),
     radial-gradient(
       78% 60% at 50% 42%,
-      color-mix(in srgb, #061118 10%, transparent) 0%,
-      color-mix(in srgb, #03090d 32%, transparent) 74%
+      color-mix(in srgb, var(--ultima-color-aura) 8%, transparent) 0%,
+      color-mix(in srgb, #03090d 30%, transparent) 74%
     );
 }
 
