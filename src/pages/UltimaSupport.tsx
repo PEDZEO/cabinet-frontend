@@ -1,4 +1,11 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type MutableRefObject,
+} from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -30,9 +37,33 @@ const SendIcon = () => (
   </svg>
 );
 
+const ImageIcon = () => (
+  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M2.25 15.75 7.41 10.59a2.25 2.25 0 0 1 3.18 0l5.16 5.16m-1.5-1.5 1.41-1.41a2.25 2.25 0 0 1 3.18 0l2.91 2.91m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.01"
+    />
+  </svg>
+);
+
+const CloseIcon = () => (
+  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+  </svg>
+);
+
 const TICKETS_BATCH_SIZE = 5;
 const ULTIMA_SUPPORT_SECTION_STYLE: CSSProperties = ultimaSurfaceStyle;
 const ULTIMA_SUPPORT_PANE_STYLE: CSSProperties = ultimaPaneSurfaceStyle;
+
+type MediaAttachment = {
+  file: File;
+  preview: string;
+  uploading: boolean;
+  fileId?: string;
+  error?: string;
+};
 
 const QUICK_SUPPORT_TOPICS = [
   {
@@ -55,6 +86,127 @@ const QUICK_SUPPORT_TOPICS = [
   },
 ];
 
+function AttachmentPreview({
+  attachment,
+  onClear,
+}: {
+  attachment: MediaAttachment | null;
+  onClear: () => void;
+}) {
+  if (!attachment) return null;
+
+  return (
+    <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.045] p-2.5">
+      {attachment.preview ? (
+        <img
+          src={attachment.preview}
+          alt={attachment.file.name}
+          className="h-14 w-14 shrink-0 rounded-xl object-cover"
+        />
+      ) : (
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white/[0.06] text-white/60">
+          <ImageIcon />
+        </div>
+      )}
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-[12px] font-medium text-white/85">{attachment.file.name}</p>
+        <p className="mt-0.5 text-[11px] text-white/[0.52]">
+          {attachment.uploading
+            ? 'Загрузка...'
+            : attachment.error
+              ? attachment.error
+              : 'Скриншот прикреплен'}
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={onClear}
+        className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/70"
+        aria-label="remove-attachment"
+      >
+        <CloseIcon />
+      </button>
+    </div>
+  );
+}
+
+function MessageMedia({ message }: { message: Ticket['last_message'] }) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [showFullImage, setShowFullImage] = useState(false);
+
+  if (!message?.has_media || !message.media_file_id) {
+    return null;
+  }
+
+  const mediaUrl = ticketsApi.getMediaUrl(message.media_file_id);
+
+  if (message.media_type === 'photo') {
+    return (
+      <>
+        <div className="mt-2">
+          {!imageLoaded && !imageError ? (
+            <div className="flex h-32 w-full animate-pulse items-center justify-center rounded-xl bg-white/[0.06]">
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-emerald-300/40 border-t-transparent" />
+            </div>
+          ) : null}
+          {imageError ? (
+            <div className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-[12px] text-white/55">
+              Изображение не загрузилось
+            </div>
+          ) : (
+            <img
+              src={mediaUrl}
+              alt={message.media_caption || 'attachment'}
+              className={`max-h-56 max-w-full cursor-pointer rounded-xl object-contain transition-opacity hover:opacity-90 ${
+                imageLoaded ? '' : 'hidden'
+              }`}
+              onLoad={() => setImageLoaded(true)}
+              onError={() => setImageError(true)}
+              onClick={() => setShowFullImage(true)}
+            />
+          )}
+          {message.media_caption ? (
+            <p className="mt-1 text-[11px] text-white/50">{message.media_caption}</p>
+          ) : null}
+        </div>
+        {showFullImage ? (
+          <div
+            className="fixed inset-0 z-[80] flex items-center justify-center bg-black/90 p-4"
+            onClick={() => setShowFullImage(false)}
+          >
+            <button
+              type="button"
+              className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white"
+              onClick={() => setShowFullImage(false)}
+              aria-label="close-image"
+            >
+              <CloseIcon />
+            </button>
+            <img
+              src={mediaUrl}
+              alt={message.media_caption || 'attachment'}
+              className="max-h-full max-w-full object-contain"
+            />
+          </div>
+        ) : null}
+      </>
+    );
+  }
+
+  return (
+    <a
+      href={mediaUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="mt-2 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-[12px] text-white/75"
+    >
+      <ImageIcon />
+      {message.media_caption || 'Открыть вложение'}
+    </a>
+  );
+}
+
 export function UltimaSupport() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -70,6 +222,12 @@ export function UltimaSupport() {
   const [showOldTickets, setShowOldTickets] = useState(false);
   const [visibleRecentCount, setVisibleRecentCount] = useState(TICKETS_BATCH_SIZE);
   const [visibleOldCount, setVisibleOldCount] = useState(TICKETS_BATCH_SIZE);
+  const [createAttachment, setCreateAttachment] = useState<MediaAttachment | null>(null);
+  const [replyAttachment, setReplyAttachment] = useState<MediaAttachment | null>(null);
+  const createFileInputRef = useRef<HTMLInputElement>(null);
+  const replyFileInputRef = useRef<HTMLInputElement>(null);
+  const createPreviewRef = useRef<string | null>(null);
+  const replyPreviewRef = useRef<string | null>(null);
 
   const { data: supportConfig, isLoading: configLoading } = useQuery({
     queryKey: ['support-config'],
@@ -118,22 +276,112 @@ export function UltimaSupport() {
     enabled: Boolean(selectedTicketId),
   });
 
+  const clearCreateAttachment = () => {
+    if (createPreviewRef.current) {
+      URL.revokeObjectURL(createPreviewRef.current);
+      createPreviewRef.current = null;
+    }
+    setCreateAttachment(null);
+    if (createFileInputRef.current) {
+      createFileInputRef.current.value = '';
+    }
+  };
+
+  const clearReplyAttachment = () => {
+    if (replyPreviewRef.current) {
+      URL.revokeObjectURL(replyPreviewRef.current);
+      replyPreviewRef.current = null;
+    }
+    setReplyAttachment(null);
+    if (replyFileInputRef.current) {
+      replyFileInputRef.current.value = '';
+    }
+  };
+
+  const handleFileSelect = async (
+    file: File,
+    setAttachment: (attachment: MediaAttachment | null) => void,
+    previewRef: MutableRefObject<string | null>,
+  ) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setAttachment({
+        file,
+        preview: '',
+        uploading: false,
+        error: 'Можно прикрепить JPG, PNG, GIF или WEBP',
+      });
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setAttachment({
+        file,
+        preview: '',
+        uploading: false,
+        error: 'Файл больше 10 МБ',
+      });
+      return;
+    }
+
+    if (previewRef.current) {
+      URL.revokeObjectURL(previewRef.current);
+    }
+    const preview = URL.createObjectURL(file);
+    previewRef.current = preview;
+    setAttachment({ file, preview, uploading: true });
+
+    try {
+      const result = await ticketsApi.uploadMedia(file, 'photo');
+      setAttachment({ file, preview, uploading: false, fileId: result.file_id });
+    } catch {
+      setAttachment({
+        file,
+        preview,
+        uploading: false,
+        error: 'Не удалось загрузить файл',
+      });
+    }
+  };
+
   const createMutation = useMutation({
-    mutationFn: () => ticketsApi.createTicket(newTitle.trim(), newMessage.trim()),
+    mutationFn: () =>
+      ticketsApi.createTicket(
+        newTitle.trim(),
+        newMessage.trim(),
+        createAttachment?.fileId
+          ? {
+              media_type: 'photo',
+              media_file_id: createAttachment.fileId,
+            }
+          : undefined,
+      ),
     onSuccess: (ticket) => {
       queryClient.invalidateQueries({ queryKey: ['tickets'] });
       setShowCreate(false);
       setNewTitle('');
       setNewMessage('');
+      clearCreateAttachment();
       setSelectedTicketId(ticket.id);
     },
   });
 
   const replyMutation = useMutation({
-    mutationFn: () => ticketsApi.addMessage(selectedTicketId as number, replyMessage.trim()),
+    mutationFn: () =>
+      ticketsApi.addMessage(
+        selectedTicketId as number,
+        replyMessage.trim(),
+        replyAttachment?.fileId
+          ? {
+              media_type: 'photo',
+              media_file_id: replyAttachment.fileId,
+            }
+          : undefined,
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ticket', selectedTicketId] });
       setReplyMessage('');
+      clearReplyAttachment();
     },
   });
 
@@ -257,6 +505,14 @@ export function UltimaSupport() {
     setVisibleOldCount(TICKETS_BATCH_SIZE);
   }, [ticketBuckets.recent.length, ticketBuckets.old.length]);
 
+  useEffect(
+    () => () => {
+      if (createPreviewRef.current) URL.revokeObjectURL(createPreviewRef.current);
+      if (replyPreviewRef.current) URL.revokeObjectURL(replyPreviewRef.current);
+    },
+    [],
+  );
+
   const visibleRecentTickets = useMemo(
     () => ticketBuckets.recent.slice(0, visibleRecentCount),
     [ticketBuckets.recent, visibleRecentCount],
@@ -361,12 +617,36 @@ export function UltimaSupport() {
         className="min-h-[160px] w-full rounded-2xl bg-emerald-950/30 px-4 py-3 text-sm text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] placeholder:text-emerald-100/[0.35]"
         maxLength={4000}
       />
+      <input
+        ref={createFileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/gif,image/webp"
+        className="hidden"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (file) {
+            void handleFileSelect(file, setCreateAttachment, createPreviewRef);
+          }
+        }}
+      />
+      <AttachmentPreview attachment={createAttachment} onClear={clearCreateAttachment} />
       <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => createFileInputRef.current?.click()}
+          className="ultima-btn-pill ultima-btn-secondary px-3 py-2.5 text-sm"
+          aria-label="attach-screenshot"
+        >
+          <ImageIcon />
+        </button>
         <button
           type="button"
           onClick={() => createMutation.mutate()}
           disabled={
-            createMutation.isPending || newTitle.trim().length < 3 || newMessage.trim().length < 10
+            createMutation.isPending ||
+            createAttachment?.uploading ||
+            newTitle.trim().length < 3 ||
+            newMessage.trim().length < 10
           }
           className="ultima-btn-pill ultima-btn-primary flex flex-1 items-center justify-center gap-2 px-4 py-2.5 text-sm disabled:opacity-60"
         >
@@ -375,7 +655,10 @@ export function UltimaSupport() {
         </button>
         <button
           type="button"
-          onClick={() => setShowCreate(false)}
+          onClick={() => {
+            clearCreateAttachment();
+            setShowCreate(false);
+          }}
           className="ultima-btn-pill ultima-btn-secondary px-4 py-2.5 text-sm"
         >
           {t('common.cancel')}
@@ -568,29 +851,60 @@ export function UltimaSupport() {
                           </span>
                         </div>
                         <p>{msg.message_text}</p>
+                        <MessageMedia message={msg} />
                       </div>
                     ))
                   )}
                 </div>
 
                 {ticketDetail.status !== 'closed' && !ticketDetail.is_reply_blocked && (
-                  <div className="mt-auto flex gap-2 lg:gap-2.5">
+                  <div className="mt-auto space-y-2">
                     <input
-                      value={replyMessage}
-                      onChange={(event) => setReplyMessage(event.target.value)}
-                      placeholder={t('support.replyPlaceholder')}
-                      className="w-full rounded-xl bg-emerald-950/[0.35] px-3 py-2 text-sm text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] placeholder:text-emerald-100/[0.35] lg:h-11 lg:text-[14px]"
-                      maxLength={4000}
+                      ref={replyFileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/gif,image/webp"
+                      className="hidden"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        if (file) {
+                          void handleFileSelect(file, setReplyAttachment, replyPreviewRef);
+                        }
+                      }}
                     />
-                    <button
-                      type="button"
-                      onClick={() => replyMutation.mutate()}
-                      disabled={replyMutation.isPending || !replyMessage.trim()}
-                      className="ultima-btn-pill ultima-btn-primary rounded-xl px-3 text-sm disabled:opacity-60 lg:h-11 lg:px-4"
-                      aria-label="send-reply"
-                    >
-                      <SendIcon />
-                    </button>
+                    <AttachmentPreview
+                      attachment={replyAttachment}
+                      onClear={clearReplyAttachment}
+                    />
+                    <div className="flex gap-2 lg:gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => replyFileInputRef.current?.click()}
+                        className="ultima-btn-pill ultima-btn-secondary rounded-xl px-3 text-sm lg:h-11"
+                        aria-label="attach-reply-screenshot"
+                      >
+                        <ImageIcon />
+                      </button>
+                      <input
+                        value={replyMessage}
+                        onChange={(event) => setReplyMessage(event.target.value)}
+                        placeholder={t('support.replyPlaceholder')}
+                        className="w-full rounded-xl bg-emerald-950/[0.35] px-3 py-2 text-sm text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] placeholder:text-emerald-100/[0.35] lg:h-11 lg:text-[14px]"
+                        maxLength={4000}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => replyMutation.mutate()}
+                        disabled={
+                          replyMutation.isPending ||
+                          replyAttachment?.uploading ||
+                          !replyMessage.trim()
+                        }
+                        className="ultima-btn-pill ultima-btn-primary rounded-xl px-3 text-sm disabled:opacity-60 lg:h-11 lg:px-4"
+                        aria-label="send-reply"
+                      >
+                        <SendIcon />
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

@@ -17,6 +17,7 @@ type UltimaDesktopConnectionProps = {
   showInfo: boolean;
   canPermanentlyHideReminder: boolean;
   bottomNav: ReactNode;
+  setupControls?: ReactNode;
   onStartInstall: () => void;
   onStartAddSubscription: () => void;
   onAdvance: () => void;
@@ -86,6 +87,7 @@ export function UltimaDesktopConnection({
   showInfo,
   canPermanentlyHideReminder,
   bottomNav,
+  setupControls,
   onStartInstall,
   onStartAddSubscription,
   onAdvance,
@@ -394,6 +396,7 @@ export function UltimaDesktopConnection({
             <p className="mt-3 text-sm leading-[1.6] text-white/[0.68]">{subtitle}</p>
 
             <div className="mt-5 space-y-3">
+              {setupControls}
               <button
                 type="button"
                 onClick={primaryAction.onClick}

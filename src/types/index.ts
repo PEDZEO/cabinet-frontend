@@ -577,6 +577,7 @@ export interface LocalizedText {
 export interface RemnawaveButtonClient {
   url?: string;
   link?: string;
+  buttonLink?: string;
   text: LocalizedText;
   type?: 'external' | 'subscriptionLink' | 'copyButton';
   svgIconKey?: string;
@@ -596,6 +597,12 @@ export interface RemnawaveAppClient {
   featured?: boolean;
   deepLink?: string | null;
   svgIconKey?: string;
+  buttons?: RemnawaveButtonClient[];
+  downloadUrl?: string | null;
+  directDownloadUrl?: string | null;
+  apkUrl?: string | null;
+  apkDownloadUrl?: string | null;
+  storeUrl?: string | null;
   blocks: RemnawaveBlockClient[];
 }
 
@@ -609,6 +616,7 @@ export interface AppConfig {
   platformNames: Record<string, LocalizedText>;
   hasSubscription: boolean;
   subscriptionUrl: string | null;
+  subscriptionCryptoLink?: string | null;
   hideLink?: boolean;
   branding?: {
     name?: string;

@@ -7,7 +7,13 @@ import { subscriptionApi } from '@/api/subscription';
 import { UltimaDesktopConnection } from '@/components/ultima/desktop/UltimaDesktopConnection';
 import { useHaptic } from '@/platform';
 import { useAuthStore } from '@/store/auth';
-import type { AppConfig, LocalizedText, RemnawaveAppClient } from '@/types';
+import type {
+  AppConfig,
+  LocalizedText,
+  RemnawaveAppClient,
+  RemnawaveButtonClient,
+  RemnawavePlatformData,
+} from '@/types';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import {
@@ -29,6 +35,15 @@ type UltimaConnectionProps = {
   onGoBack: () => void;
   onRefreshAppConfig?: () => void;
 };
+
+type InstallOption = {
+  key: string;
+  label: string;
+  url: string;
+  kind: 'apk' | 'play' | 'appstore' | 'store' | 'download';
+};
+
+const PLATFORM_ORDER = ['ios', 'android', 'windows', 'macos', 'linux', 'androidTV', 'appleTV'];
 
 const DownloadIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-[74px] w-[74px] text-white/90">
@@ -94,42 +109,178 @@ const detectPlatformKey = (): string | null => {
   return null;
 };
 
-const resolveTemplateUrl = (value: string, subscriptionUrl: string | null): string => {
+const resolveTemplateUrl = (
+  value: string,
+  subscriptionUrl: string | null,
+  subscriptionCryptoLink?: string | null,
+): string => {
   if (!value) return value;
-  if (value.includes('{{subscriptionUrl}}')) {
-    return value.split('{{subscriptionUrl}}').join(subscriptionUrl ?? '');
+  return value
+    .replace(/\{\{\s*subscriptionUrl\s*\}\}/gi, subscriptionUrl ?? '')
+    .replace(/\{\{\s*SUBSCRIPTION_LINK\s*\}\}/gi, subscriptionUrl ?? '')
+    .replace(/\{\{\s*HAPP_CRYPT3_LINK\s*\}\}/gi, subscriptionCryptoLink ?? '')
+    .replace(/\{\{\s*HAPP_CRYPT4_LINK\s*\}\}/gi, subscriptionCryptoLink ?? '');
+};
+
+const getPlatformDisplayName = (appConfig: AppConfig, key: string, language: string): string => {
+  const platform = appConfig.platforms?.[key] as RemnawavePlatformData | undefined;
+  const label = getLocalizedText(platform?.displayName, language);
+  if (label) return label;
+
+  const configuredName = getLocalizedText(appConfig.platformNames?.[key], language);
+  if (configuredName) return configuredName;
+
+  const fallback: Record<string, string> = {
+    ios: 'iOS',
+    android: 'Android',
+    windows: 'Windows',
+    macos: 'macOS',
+    linux: 'Linux',
+    androidTV: 'Android TV',
+    appleTV: 'Apple TV',
+  };
+  return fallback[key] || key;
+};
+
+const getAvailablePlatformKeys = (appConfig: AppConfig): string[] => {
+  const configuredKeys = Object.keys(appConfig.platforms ?? {});
+  const sorted = PLATFORM_ORDER.filter((key) => {
+    const platform = appConfig.platforms?.[key];
+    return platform?.apps?.length;
+  });
+  const extra = configuredKeys.filter(
+    (key) => !PLATFORM_ORDER.includes(key) && appConfig.platforms?.[key]?.apps?.length,
+  );
+  return [...sorted, ...extra];
+};
+
+const getAppKey = (app: RemnawaveAppClient, index: number): string => `${app.name}:${index}`;
+
+const getButtonUrl = (button: RemnawaveButtonClient): string | null =>
+  button.resolvedUrl || button.url || button.link || button.buttonLink || null;
+
+const getAppButtons = (app: RemnawaveAppClient | null | undefined): RemnawaveButtonClient[] => {
+  if (!app) return [];
+  return [...(app.buttons ?? []), ...(app.blocks ?? []).flatMap((block) => block.buttons ?? [])];
+};
+
+const isSubscriptionButton = (button: RemnawaveButtonClient, label: string): boolean =>
+  button.type === 'subscriptionLink' ||
+  button.type === 'copyButton' ||
+  label.includes('subscription') ||
+  label.includes('подпис');
+
+const classifyInstallKind = (label: string, url: string): InstallOption['kind'] => {
+  const normalizedUrl = url.toLowerCase();
+  if (label.includes('apk') || normalizedUrl.includes('.apk')) return 'apk';
+  if (
+    normalizedUrl.includes('play.google') ||
+    label.includes('google play') ||
+    label.includes('play market')
+  ) {
+    return 'play';
   }
-  return value;
+  if (normalizedUrl.includes('apps.apple') || label.includes('app store')) return 'appstore';
+  if (label.includes('store') || label.includes('market')) return 'store';
+  return 'download';
+};
+
+const isInstallButton = (button: RemnawaveButtonClient, label: string, url: string): boolean => {
+  if (button.type === 'subscriptionLink' || button.type === 'copyButton') return false;
+  if (isSubscriptionButton(button, label)) return false;
+
+  const normalizedUrl = url.toLowerCase();
+  if (normalizedUrl.includes('.apk')) return true;
+  if (normalizedUrl.includes('play.google') || normalizedUrl.includes('apps.apple')) return true;
+  if (normalizedUrl.includes('github.com') && normalizedUrl.includes('release')) return true;
+
+  return (
+    label.includes('install') ||
+    label.includes('download') ||
+    label.includes('store') ||
+    label.includes('market') ||
+    label.includes('apk') ||
+    label.includes('скач') ||
+    label.includes('установ') ||
+    label.includes('загруз')
+  );
+};
+
+const labelForDirectInstallUrl = (field: string, url: string, language: string): string => {
+  const normalized = url.toLowerCase();
+  const isRu = language.toLowerCase().startsWith('ru');
+  if (field.toLowerCase().includes('apk') || normalized.includes('.apk')) return 'APK';
+  if (normalized.includes('play.google')) return 'Google Play';
+  if (normalized.includes('apps.apple')) return 'App Store';
+  return isRu ? 'Скачать напрямую' : 'Direct download';
+};
+
+const collectInstallOptions = (
+  app: RemnawaveAppClient | null,
+  appConfig: AppConfig,
+  language: string,
+): InstallOption[] => {
+  if (!app) return [];
+
+  const seen = new Set<string>();
+  const options: InstallOption[] = [];
+  const addOption = (label: string, rawUrl: string | null, key: string) => {
+    if (!rawUrl) return;
+    const resolved = resolveTemplateUrl(
+      rawUrl,
+      appConfig.subscriptionUrl,
+      appConfig.subscriptionCryptoLink,
+    );
+    if (!resolved || resolved.includes('{{') || seen.has(resolved)) return;
+    seen.add(resolved);
+    const finalLabel = label.trim() || labelForDirectInstallUrl(key, resolved, language);
+    options.push({
+      key,
+      label: finalLabel,
+      url: resolved,
+      kind: classifyInstallKind(finalLabel.toLowerCase(), resolved),
+    });
+  };
+
+  getAppButtons(app).forEach((button, index) => {
+    const label = getLocalizedText(button.text, language);
+    const rawUrl = getButtonUrl(button);
+    const lowerLabel = label.toLowerCase();
+    if (rawUrl && isInstallButton(button, lowerLabel, rawUrl)) {
+      addOption(label, rawUrl, `button-${index}`);
+    }
+  });
+
+  const appUrls = app as RemnawaveAppClient & Record<string, unknown>;
+  ['apkUrl', 'apkDownloadUrl', 'directDownloadUrl', 'downloadUrl', 'storeUrl'].forEach((field) => {
+    const value = appUrls[field];
+    if (typeof value === 'string') {
+      addOption(labelForDirectInstallUrl(field, value, language), value, `app-${field}`);
+    }
+  });
+
+  return options.slice(0, 6);
 };
 
 const findSetupUrls = (
   appConfig: AppConfig,
   language: string,
+  app: RemnawaveAppClient | null,
 ): {
+  installOptions: InstallOption[];
   installUrl: string | null;
   addSubscriptionUrl: string | null;
 } => {
-  const platforms = Object.entries(appConfig.platforms ?? {});
-  if (!platforms.length) return { installUrl: null, addSubscriptionUrl: null };
+  if (!app) return { installOptions: [], installUrl: null, addSubscriptionUrl: null };
 
-  const detected = detectPlatformKey();
-  const pickedPlatform =
-    (detected && appConfig.platforms[detected]) ||
-    appConfig.platforms.android ||
-    appConfig.platforms.ios ||
-    platforms[0]?.[1];
-
-  const apps = pickedPlatform?.apps ?? [];
-  const app: RemnawaveAppClient | undefined = apps.find((entry) => entry.featured) ?? apps[0];
-  if (!app) return { installUrl: null, addSubscriptionUrl: null };
-
-  const flatButtons = app.blocks.flatMap((block) => block.buttons ?? []);
+  const flatButtons = getAppButtons(app);
+  const installOptions = collectInstallOptions(app, appConfig, language);
   let installUrl: string | null = null;
   let addSubscriptionUrl: string | null = app.deepLink ?? null;
 
   for (const button of flatButtons) {
     const localized = getLocalizedText(button.text, language).toLowerCase();
-    const rawUrl = button.resolvedUrl || button.url || button.link || null;
+    const rawUrl = getButtonUrl(button);
     if (!rawUrl) continue;
 
     if (!addSubscriptionUrl && button.type === 'subscriptionLink') {
@@ -154,19 +305,27 @@ const findSetupUrls = (
       installUrl = rawUrl;
     }
 
-    if (!installUrl) {
+    if (!installUrl && isInstallButton(button, localized, rawUrl)) {
       installUrl = rawUrl;
     }
   }
 
-  const resolvedInstall = installUrl
-    ? resolveTemplateUrl(installUrl, appConfig.subscriptionUrl)
-    : null;
+  const primaryInstall =
+    installOptions.find((option) => option.kind === 'apk') ?? installOptions[0];
+  const resolvedInstall = primaryInstall?.url
+    ? primaryInstall.url
+    : installUrl
+      ? resolveTemplateUrl(installUrl, appConfig.subscriptionUrl, appConfig.subscriptionCryptoLink)
+      : null;
   const resolvedAdd = addSubscriptionUrl
-    ? resolveTemplateUrl(addSubscriptionUrl, appConfig.subscriptionUrl)
+    ? resolveTemplateUrl(
+        addSubscriptionUrl,
+        appConfig.subscriptionUrl,
+        appConfig.subscriptionCryptoLink,
+      )
     : appConfig.subscriptionUrl;
 
-  return { installUrl: resolvedInstall, addSubscriptionUrl: resolvedAdd };
+  return { installOptions, installUrl: resolvedInstall, addSubscriptionUrl: resolvedAdd };
 };
 
 export function UltimaConnection({
@@ -180,12 +339,15 @@ export function UltimaConnection({
   const haptic = useHaptic();
   const user = useAuthStore((state) => state.user);
   const isDesktopViewport = useMediaQuery('(min-width: 1024px)');
+  const detectedPlatform = useMemo(() => detectPlatformKey(), []);
   const [step, setStep] = useState<Step>(1);
   const [showInfo, setShowInfo] = useState(true);
   const [burst, setBurst] = useState(0);
   const [showReturnConfetti, setShowReturnConfetti] = useState(false);
   const [showFinishSuccess, setShowFinishSuccess] = useState(false);
   const [isReminderHidden, setIsReminderHidden] = useState(false);
+  const [activePlatformKey, setActivePlatformKey] = useState<string | null>(null);
+  const [selectedAppKey, setSelectedAppKey] = useState<string | null>(null);
   const [viewportHeight, setViewportHeight] = useState<number>(() =>
     typeof window === 'undefined' ? 820 : window.innerHeight,
   );
@@ -196,9 +358,55 @@ export function UltimaConnection({
     y: 0,
   });
 
+  const availablePlatformKeys = useMemo(() => getAvailablePlatformKeys(appConfig), [appConfig]);
+
+  useEffect(() => {
+    const preferred =
+      detectedPlatform && availablePlatformKeys.includes(detectedPlatform)
+        ? detectedPlatform
+        : (availablePlatformKeys[0] ?? null);
+    setActivePlatformKey((current) =>
+      current && availablePlatformKeys.includes(current) ? current : preferred,
+    );
+  }, [availablePlatformKeys, detectedPlatform]);
+
+  const currentPlatformData = activePlatformKey
+    ? (appConfig.platforms[activePlatformKey] as RemnawavePlatformData | undefined)
+    : undefined;
+  const currentPlatformApps = useMemo(
+    () => currentPlatformData?.apps ?? [],
+    [currentPlatformData?.apps],
+  );
+
+  useEffect(() => {
+    if (!currentPlatformApps.length) {
+      setSelectedAppKey(null);
+      return;
+    }
+    setSelectedAppKey((current) => {
+      if (current && currentPlatformApps.some((app, index) => getAppKey(app, index) === current)) {
+        return current;
+      }
+      const featuredIndex = currentPlatformApps.findIndex((app) => app.featured);
+      const index = featuredIndex >= 0 ? featuredIndex : 0;
+      return getAppKey(currentPlatformApps[index]!, index);
+    });
+  }, [currentPlatformApps]);
+
+  const selectedApp = useMemo(() => {
+    if (!selectedAppKey)
+      return currentPlatformApps.find((app) => app.featured) ?? currentPlatformApps[0] ?? null;
+    return (
+      currentPlatformApps.find((app, index) => getAppKey(app, index) === selectedAppKey) ??
+      currentPlatformApps.find((app) => app.featured) ??
+      currentPlatformApps[0] ??
+      null
+    );
+  }, [currentPlatformApps, selectedAppKey]);
+
   const setupUrls = useMemo(
-    () => findSetupUrls(appConfig, i18n.language || 'ru'),
-    [appConfig, i18n.language],
+    () => findSetupUrls(appConfig, i18n.language || 'ru', selectedApp),
+    [appConfig, i18n.language, selectedApp],
   );
   const { data: subscriptionResponse } = useQuery({
     queryKey: ['subscription'],
@@ -357,13 +565,21 @@ export function UltimaConnection({
     }
   };
 
-  const startInstallFlow = () => {
+  const startInstallUrlFlow = (url: string) => {
     writeUltimaConnectionCompleted(user?.id, false);
     try {
       localStorage.setItem(`${ULTIMA_CONNECTION_PENDING_STEP2_KEY}:${user?.id ?? 'guest'}`, '1');
       localStorage.setItem(ULTIMA_CONNECTION_PENDING_STEP2_KEY, '1');
     } catch {
       // ignore localStorage errors
+    }
+    onOpenDeepLink(url);
+  };
+
+  const startInstallFlow = () => {
+    if (setupUrls.installUrl) {
+      startInstallUrlFlow(setupUrls.installUrl);
+      return;
     }
     openInstall();
   };
@@ -444,6 +660,106 @@ export function UltimaConnection({
   };
 
   const bottomNav = <UltimaBottomNav active="connection" />;
+  const hasMultiplePlatforms = availablePlatformKeys.length > 1;
+  const hasMultipleApps = currentPlatformApps.length > 1;
+
+  const handlePlatformChange = (platformKey: string) => {
+    setActivePlatformKey(platformKey);
+    const apps = appConfig.platforms[platformKey]?.apps ?? [];
+    const featuredIndex = apps.findIndex((app) => app.featured);
+    const nextIndex = featuredIndex >= 0 ? featuredIndex : 0;
+    setSelectedAppKey(apps[nextIndex] ? getAppKey(apps[nextIndex], nextIndex) : null);
+  };
+
+  const renderConnectionPicker = (compact = false) => {
+    if (!hasMultiplePlatforms && !hasMultipleApps && setupUrls.installOptions.length <= 1) {
+      return null;
+    }
+
+    return (
+      <section
+        className={`rounded-[22px] border border-white/10 bg-white/[0.045] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl ${
+          compact ? 'mb-3 p-2.5' : 'p-3.5'
+        }`}
+      >
+        {(hasMultiplePlatforms || hasMultipleApps) && (
+          <div className="space-y-2.5">
+            {hasMultiplePlatforms && (
+              <div className="flex gap-1.5 overflow-x-auto pb-1">
+                {availablePlatformKeys.map((platformKey) => {
+                  const isActive = platformKey === activePlatformKey;
+                  return (
+                    <button
+                      key={platformKey}
+                      type="button"
+                      onClick={() => handlePlatformChange(platformKey)}
+                      className={`shrink-0 rounded-full border px-3 py-1.5 text-[12px] font-medium transition ${
+                        isActive
+                          ? 'border-emerald-200/[0.45] bg-emerald-300/[0.16] text-white'
+                          : 'border-white/10 bg-white/[0.04] text-white/[0.62] hover:border-white/20 hover:text-white/85'
+                      }`}
+                    >
+                      {getPlatformDisplayName(appConfig, platformKey, i18n.language || 'ru')}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {hasMultipleApps && (
+              <div className="grid grid-cols-1 gap-1.5 min-[380px]:grid-cols-2">
+                {currentPlatformApps.map((app, index) => {
+                  const appKey = getAppKey(app, index);
+                  const isActive = appKey === selectedAppKey;
+                  return (
+                    <button
+                      key={appKey}
+                      type="button"
+                      onClick={() => setSelectedAppKey(appKey)}
+                      className={`flex min-h-[40px] items-center justify-between gap-2 rounded-2xl border px-3 py-2 text-left text-[12px] font-medium transition ${
+                        isActive
+                          ? 'border-emerald-200/[0.36] bg-emerald-300/[0.12] text-white'
+                          : 'border-white/10 bg-white/[0.035] text-white/[0.66] hover:border-white/20 hover:text-white/90'
+                      }`}
+                    >
+                      <span className="min-w-0 truncate">{app.name}</span>
+                      {app.featured ? (
+                        <span className="h-2 w-2 shrink-0 rounded-full bg-amber-300" />
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {setupUrls.installOptions.length > 1 && (
+          <div className={hasMultiplePlatforms || hasMultipleApps ? 'mt-3' : ''}>
+            <p className="mb-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-white/[0.46]">
+              {t('subscription.connection.downloadSource', { defaultValue: 'Откуда скачать' })}
+            </p>
+            <div className="grid grid-cols-1 gap-1.5 min-[380px]:grid-cols-2">
+              {setupUrls.installOptions.map((option) => (
+                <button
+                  key={`${option.key}-${option.url}`}
+                  type="button"
+                  onClick={() => startInstallUrlFlow(option.url)}
+                  className={`rounded-2xl border px-3 py-2 text-left text-[12px] font-semibold transition ${
+                    option.kind === 'apk'
+                      ? 'border-emerald-200/[0.36] bg-emerald-300/[0.14] text-emerald-50'
+                      : 'border-white/10 bg-white/[0.04] text-white/[0.72] hover:border-white/20 hover:text-white/90'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
+    );
+  };
 
   if (isDesktopViewport) {
     return (
@@ -457,6 +773,7 @@ export function UltimaConnection({
           showInfo={showInfo}
           canPermanentlyHideReminder={canPermanentlyHideReminder}
           bottomNav={bottomNav}
+          setupControls={renderConnectionPicker()}
           onStartInstall={startInstallFlow}
           onStartAddSubscription={startAddSubscriptionFlow}
           onAdvance={advanceStep}
@@ -702,6 +1019,7 @@ export function UltimaConnection({
         </section>
 
         <section className={`${isFinalStep ? 'pt-1' : ''} pb-0 lg:pt-3`}>
+          {step !== 3 && renderConnectionPicker(true)}
           {step === 1 && (
             <button
               type="button"
