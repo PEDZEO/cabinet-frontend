@@ -7,10 +7,11 @@ import {
   type MutableRefObject,
 } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { infoApi } from '@/api/info';
 import { ticketsApi } from '@/api/tickets';
+import type { TicketMediaType } from '@/api/tickets';
 import { subscriptionApi } from '@/api/subscription';
 import {
   UltimaDesktopPanel,
@@ -62,8 +63,28 @@ type MediaAttachment = {
   preview: string;
   uploading: boolean;
   fileId?: string;
+  mediaType: TicketMediaType;
   error?: string;
 };
+
+const ALLOWED_FILE_TYPES: Record<string, TicketMediaType> = {
+  'image/jpeg': 'photo',
+  'image/png': 'photo',
+  'image/gif': 'photo',
+  'image/webp': 'photo',
+  'video/mp4': 'video',
+  'video/webm': 'video',
+  'video/quicktime': 'video',
+  'application/pdf': 'document',
+  'application/msword': 'document',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'document',
+  'text/plain': 'document',
+  'application/zip': 'document',
+  'application/x-rar-compressed': 'document',
+};
+
+const ACCEPT_STRING = Object.keys(ALLOWED_FILE_TYPES).join(',');
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 const QUICK_SUPPORT_TOPICS = [
   {
@@ -115,7 +136,9 @@ function AttachmentPreview({
             ? 'Загрузка...'
             : attachment.error
               ? attachment.error
-              : 'Скриншот прикреплен'}
+              : attachment.mediaType === 'photo'
+                ? 'Скриншот прикреплен'
+                : 'Файл прикреплен'}
         </p>
       </div>
       <button
@@ -210,6 +233,7 @@ function MessageMedia({ message }: { message: Ticket['last_message'] }) {
 export function UltimaSupport() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const { openTelegramLink, openLink } = usePlatform();
   const isDesktop = useMediaQuery('(min-width: 1024px)');
@@ -248,6 +272,16 @@ export function UltimaSupport() {
     selectedTicketId && tickets?.items?.length
       ? tickets.items.find((ticket) => ticket.id === selectedTicketId) || null
       : null;
+
+  useEffect(() => {
+    const ticketId = Number(searchParams.get('ticket'));
+    if (!Number.isInteger(ticketId) || ticketId <= 0 || selectedTicketId === ticketId) {
+      return;
+    }
+
+    setSelectedTicketId(ticketId);
+    setShowCreate(false);
+  }, [searchParams, selectedTicketId]);
 
   const ticketBuckets = useMemo(() => {
     const items = [...(tickets?.items ?? [])];
@@ -303,23 +337,27 @@ export function UltimaSupport() {
     setAttachment: (attachment: MediaAttachment | null) => void,
     previewRef: MutableRefObject<string | null>,
   ) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
+    const mediaType = ALLOWED_FILE_TYPES[file.type];
+    if (!mediaType) {
       setAttachment({
         file,
         preview: '',
         uploading: false,
-        error: 'Можно прикрепить JPG, PNG, GIF или WEBP',
+        mediaType: 'document',
+        error: t('adminTickets.invalidFileType', {
+          defaultValue: t('support.invalidFileType'),
+        }),
       });
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
+    if (file.size > MAX_FILE_SIZE) {
       setAttachment({
         file,
         preview: '',
         uploading: false,
-        error: 'Файл больше 10 МБ',
+        mediaType,
+        error: t('adminTickets.fileTooLarge', { defaultValue: t('support.fileTooLarge') }),
       });
       return;
     }
@@ -327,19 +365,20 @@ export function UltimaSupport() {
     if (previewRef.current) {
       URL.revokeObjectURL(previewRef.current);
     }
-    const preview = URL.createObjectURL(file);
-    previewRef.current = preview;
-    setAttachment({ file, preview, uploading: true });
+    const preview = mediaType === 'photo' ? URL.createObjectURL(file) : '';
+    previewRef.current = preview || null;
+    setAttachment({ file, preview, uploading: true, mediaType });
 
     try {
-      const result = await ticketsApi.uploadMedia(file, 'photo');
-      setAttachment({ file, preview, uploading: false, fileId: result.file_id });
+      const result = await ticketsApi.uploadMedia(file, mediaType);
+      setAttachment({ file, preview, uploading: false, mediaType, fileId: result.file_id });
     } catch {
       setAttachment({
         file,
         preview,
         uploading: false,
-        error: 'Не удалось загрузить файл',
+        mediaType,
+        error: t('adminTickets.uploadFailed', { defaultValue: t('support.uploadFailed') }),
       });
     }
   };
@@ -351,7 +390,7 @@ export function UltimaSupport() {
         newMessage.trim(),
         createAttachment?.fileId
           ? {
-              media_type: 'photo',
+              media_type: createAttachment.mediaType,
               media_file_id: createAttachment.fileId,
             }
           : undefined,
@@ -373,13 +412,14 @@ export function UltimaSupport() {
         replyMessage.trim(),
         replyAttachment?.fileId
           ? {
-              media_type: 'photo',
+              media_type: replyAttachment.mediaType,
               media_file_id: replyAttachment.fileId,
             }
           : undefined,
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ticket', selectedTicketId] });
+      queryClient.invalidateQueries({ queryKey: ['tickets'] });
       setReplyMessage('');
       clearReplyAttachment();
     },
@@ -620,7 +660,7 @@ export function UltimaSupport() {
       <input
         ref={createFileInputRef}
         type="file"
-        accept="image/jpeg,image/png,image/gif,image/webp"
+        accept={ACCEPT_STRING}
         className="hidden"
         onChange={(event) => {
           const file = event.target.files?.[0];
@@ -806,7 +846,7 @@ export function UltimaSupport() {
               <div className="flex h-full min-h-0 flex-col gap-3">
                 <div className="flex items-center justify-between gap-2">
                   <p className="line-clamp-2 break-words text-[14px] font-medium leading-snug text-white/95 lg:text-[16px]">
-                    {selectedTicket?.title}
+                    {ticketDetail.title || selectedTicket?.title || `#${selectedTicketId}`}
                   </p>
                   <div className="flex items-center gap-2">
                     <span
@@ -862,7 +902,7 @@ export function UltimaSupport() {
                     <input
                       ref={replyFileInputRef}
                       type="file"
-                      accept="image/jpeg,image/png,image/gif,image/webp"
+                      accept={ACCEPT_STRING}
                       className="hidden"
                       onChange={(event) => {
                         const file = event.target.files?.[0];
@@ -897,7 +937,7 @@ export function UltimaSupport() {
                         disabled={
                           replyMutation.isPending ||
                           replyAttachment?.uploading ||
-                          !replyMessage.trim()
+                          (!replyMessage.trim() && !replyAttachment?.fileId)
                         }
                         className="ultima-btn-pill ultima-btn-primary rounded-xl px-3 text-sm disabled:opacity-60 lg:h-11 lg:px-4"
                         aria-label="send-reply"

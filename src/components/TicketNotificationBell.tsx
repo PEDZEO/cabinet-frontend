@@ -120,6 +120,12 @@ export default function TicketNotificationBell({ isAdmin = false }: TicketNotifi
         queryClient.invalidateQueries({
           queryKey: isAdmin ? ['admin-ticket-notifications'] : ['ticket-notifications'],
         });
+        queryClient.invalidateQueries({
+          queryKey: isAdmin ? ['admin-tickets'] : ['tickets'],
+        });
+        queryClient.invalidateQueries({
+          queryKey: isAdmin ? ['admin-ticket', message.ticket_id] : ['ticket', message.ticket_id],
+        });
       }
     },
     [isAdmin, showWSNotificationToast, queryClient],

@@ -2,6 +2,8 @@ import apiClient from './client';
 import type { Ticket, TicketDetail, TicketMessage, PaginatedResponse } from '../types';
 
 // Media upload response type
+export type TicketMediaType = 'photo' | 'video' | 'document';
+
 interface MediaUploadResponse {
   media_type: string;
   file_id: string;
@@ -11,7 +13,7 @@ interface MediaUploadResponse {
 
 // Media parameters for ticket messages
 interface MediaParams {
-  media_type?: string;
+  media_type?: TicketMediaType;
   media_file_id?: string;
   media_caption?: string;
 }
@@ -68,7 +70,10 @@ export const ticketsApi = {
   },
 
   // Upload media file for tickets
-  uploadMedia: async (file: File, mediaType: string = 'photo'): Promise<MediaUploadResponse> => {
+  uploadMedia: async (
+    file: File,
+    mediaType: TicketMediaType = 'photo',
+  ): Promise<MediaUploadResponse> => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('media_type', mediaType);

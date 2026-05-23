@@ -1,4 +1,5 @@
 import apiClient from './client';
+import type { TicketMediaType } from './tickets';
 
 export interface AdminTicketUser {
   id: number;
@@ -142,7 +143,7 @@ export const adminApi = {
   replyToTicket: async (
     ticketId: number,
     message: string,
-    media?: { media_type?: string; media_file_id?: string; media_caption?: string },
+    media?: { media_type?: TicketMediaType; media_file_id?: string; media_caption?: string },
   ): Promise<AdminTicketMessage> => {
     const response = await apiClient.post(`/cabinet/admin/tickets/${ticketId}/reply`, {
       message,

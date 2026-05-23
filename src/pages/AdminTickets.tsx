@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
@@ -9,6 +9,7 @@ import {
   AdminTicketMessage,
   AdminTicketUserContext,
 } from '../api/admin';
+import type { TicketMediaType } from '../api/tickets';
 import { ticketsApi } from '../api/tickets';
 import { usePlatform } from '../platform/hooks/usePlatform';
 
@@ -17,11 +18,11 @@ interface MediaAttachment {
   preview: string;
   uploading: boolean;
   fileId?: string;
-  mediaType: string;
+  mediaType: TicketMediaType;
   error?: string;
 }
 
-const ALLOWED_FILE_TYPES: Record<string, string> = {
+const ALLOWED_FILE_TYPES: Record<string, TicketMediaType> = {
   'image/jpeg': 'photo',
   'image/png': 'photo',
   'image/gif': 'photo',
@@ -247,6 +248,7 @@ const buildOperatorHints = (context: AdminTicketUserContext): OperatorHint[] => 
 export default function AdminTickets() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const { capabilities } = usePlatform();
 
@@ -258,6 +260,13 @@ export default function AdminTickets() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const previewRef = useRef<string | null>(null);
   const uploadIdRef = useRef(0);
+
+  useEffect(() => {
+    const ticketId = Number(searchParams.get('ticket'));
+    if (Number.isInteger(ticketId) && ticketId > 0) {
+      setSelectedTicketId(ticketId);
+    }
+  }, [searchParams]);
 
   // Cancel in-flight uploads and cleanup blob URL on unmount
   useEffect(() => {
@@ -300,7 +309,7 @@ export default function AdminTickets() {
     }: {
       ticketId: number;
       message: string;
-      media?: { media_type?: string; media_file_id?: string; media_caption?: string };
+      media?: { media_type?: TicketMediaType; media_file_id?: string; media_caption?: string };
     }) => adminApi.replyToTicket(ticketId, message, media),
     onSuccess: () => {
       setReplyText('');
@@ -388,7 +397,7 @@ export default function AdminTickets() {
 
   const handleReply = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedTicketId || !replyText.trim()) return;
+    if (!selectedTicketId || (!replyText.trim() && !attachment?.fileId)) return;
     if (attachment && (attachment.uploading || attachment.error)) return;
 
     const media = attachment?.fileId
@@ -398,7 +407,7 @@ export default function AdminTickets() {
         }
       : undefined;
 
-    replyMutation.mutate({ ticketId: selectedTicketId, message: replyText, media });
+    replyMutation.mutate({ ticketId: selectedTicketId, message: replyText.trim(), media });
   };
 
   const getStatusBadge = (status: string) => {
@@ -998,7 +1007,7 @@ export default function AdminTickets() {
                     <button
                       type="submit"
                       disabled={
-                        !replyText.trim() ||
+                        (!replyText.trim() && !attachment?.fileId) ||
                         replyMutation.isPending ||
                         !!attachment?.uploading ||
                         !!attachment?.error

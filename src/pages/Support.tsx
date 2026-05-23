@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { ticketsApi } from '../api/tickets';
+import type { TicketMediaType } from '../api/tickets';
 import { infoApi } from '../api/info';
 import { useUltimaMode } from '../hooks/useUltimaMode';
 import { useAuthStore } from '../store/auth';
@@ -61,8 +63,28 @@ interface MediaAttachment {
   preview: string;
   uploading: boolean;
   fileId?: string;
+  mediaType: TicketMediaType;
   error?: string;
 }
+
+const ALLOWED_FILE_TYPES: Record<string, TicketMediaType> = {
+  'image/jpeg': 'photo',
+  'image/png': 'photo',
+  'image/gif': 'photo',
+  'image/webp': 'photo',
+  'video/mp4': 'video',
+  'video/webm': 'video',
+  'video/quicktime': 'video',
+  'application/pdf': 'document',
+  'application/msword': 'document',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'document',
+  'text/plain': 'document',
+  'application/zip': 'document',
+  'application/x-rar-compressed': 'document',
+};
+
+const ACCEPT_STRING = Object.keys(ALLOWED_FILE_TYPES).join(',');
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 // Message media display component
 function MessageMedia({ message, t }: { message: TicketMessage; t: (key: string) => string }) {
@@ -161,6 +183,7 @@ function SupportContent() {
   const { t } = useTranslation();
   const isAdmin = useAuthStore((state) => state.isAdmin);
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
   const { openTelegramLink, openLink } = usePlatform();
   const [selectedTicket, setSelectedTicket] = useState<TicketDetail | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -193,7 +216,10 @@ function SupportContent() {
       URL.revokeObjectURL(createPreviewRef.current);
       createPreviewRef.current = null;
     }
-    clearCreateAttachment();
+    setCreateAttachment(null);
+    if (createFileInputRef.current) {
+      createFileInputRef.current.value = '';
+    }
   };
 
   const clearReplyAttachment = () => {
@@ -201,7 +227,10 @@ function SupportContent() {
       URL.revokeObjectURL(replyPreviewRef.current);
       replyPreviewRef.current = null;
     }
-    clearReplyAttachment();
+    setReplyAttachment(null);
+    if (replyFileInputRef.current) {
+      replyFileInputRef.current.value = '';
+    }
   };
 
   // Get support configuration
@@ -216,6 +245,32 @@ function SupportContent() {
     enabled: supportConfig?.tickets_enabled === true,
   });
 
+  useEffect(() => {
+    const ticketId = Number(searchParams.get('ticket'));
+    if (!Number.isInteger(ticketId) || ticketId <= 0 || selectedTicket?.id === ticketId) {
+      return;
+    }
+
+    const ticket = tickets?.items?.find((item) => item.id === ticketId);
+    setSelectedTicket(
+      ticket
+        ? (ticket as unknown as TicketDetail)
+        : ({
+            id: ticketId,
+            title: `#${ticketId}`,
+            status: 'open',
+            priority: 'normal',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            closed_at: null,
+            is_reply_blocked: false,
+            messages: [],
+          } satisfies TicketDetail),
+    );
+    setShowCreateForm(false);
+    setIsTicketsOpen(true);
+  }, [searchParams, selectedTicket?.id, tickets?.items]);
+
   const { data: ticketDetail, isLoading: detailLoading } = useQuery({
     queryKey: ['ticket', selectedTicket?.id],
     queryFn: () => ticketsApi.getTicket(selectedTicket!.id),
@@ -227,25 +282,26 @@ function SupportContent() {
     file: File,
     setAttachment: (a: MediaAttachment | null) => void,
   ) => {
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
+    const mediaType = ALLOWED_FILE_TYPES[file.type];
+    if (!mediaType) {
       setAttachment({
         file,
         preview: '',
         uploading: false,
-        error: t('support.invalidFileType'),
+        mediaType: 'document',
+        error: t('adminTickets.invalidFileType', { defaultValue: t('support.invalidFileType') }),
       });
       return;
     }
 
     // Validate file size (10MB)
-    if (file.size > 10 * 1024 * 1024) {
+    if (file.size > MAX_FILE_SIZE) {
       setAttachment({
         file,
         preview: '',
         uploading: false,
-        error: t('support.fileTooLarge'),
+        mediaType,
+        error: t('adminTickets.fileTooLarge', { defaultValue: t('support.fileTooLarge') }),
       });
       return;
     }
@@ -253,16 +309,17 @@ function SupportContent() {
     // Revoke old blob URL before creating new one
     const previewRef = setAttachment === setCreateAttachment ? createPreviewRef : replyPreviewRef;
     if (previewRef.current) URL.revokeObjectURL(previewRef.current);
-    const preview = URL.createObjectURL(file);
-    previewRef.current = preview;
-    setAttachment({ file, preview, uploading: true });
+    const preview = mediaType === 'photo' ? URL.createObjectURL(file) : '';
+    previewRef.current = preview || null;
+    setAttachment({ file, preview, uploading: true, mediaType });
 
     try {
-      const result = await ticketsApi.uploadMedia(file, 'photo');
+      const result = await ticketsApi.uploadMedia(file, mediaType);
       setAttachment({
         file,
         preview,
         uploading: false,
+        mediaType,
         fileId: result.file_id,
       });
     } catch {
@@ -270,7 +327,8 @@ function SupportContent() {
         file,
         preview,
         uploading: false,
-        error: t('support.uploadFailed'),
+        mediaType,
+        error: t('adminTickets.uploadFailed', { defaultValue: t('support.uploadFailed') }),
       });
     }
   };
@@ -279,11 +337,11 @@ function SupportContent() {
     mutationFn: async () => {
       const media = createAttachment?.fileId
         ? {
-            media_type: 'photo',
+            media_type: createAttachment.mediaType,
             media_file_id: createAttachment.fileId,
           }
         : undefined;
-      return ticketsApi.createTicket(newTitle, newMessage, media);
+      return ticketsApi.createTicket(newTitle.trim(), newMessage.trim(), media);
     },
     onSuccess: (ticket) => {
       queryClient.invalidateQueries({ queryKey: ['tickets'] });
@@ -299,14 +357,15 @@ function SupportContent() {
     mutationFn: async () => {
       const media = replyAttachment?.fileId
         ? {
-            media_type: 'photo',
+            media_type: replyAttachment.mediaType,
             media_file_id: replyAttachment.fileId,
           }
         : undefined;
-      return ticketsApi.addMessage(selectedTicket!.id, replyMessage, media);
+      return ticketsApi.addMessage(selectedTicket!.id, replyMessage.trim(), media);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ticket', selectedTicket?.id] });
+      queryClient.invalidateQueries({ queryKey: ['tickets'] });
       setReplyMessage('');
       clearReplyAttachment();
     },
@@ -445,12 +504,17 @@ function SupportContent() {
     onRemove: () => void;
   }) => (
     <div className="relative mt-2 inline-block">
-      {attachment.preview && (
+      {attachment.preview ? (
         <img
           src={attachment.preview}
           alt="Attachment preview"
           className="h-20 w-auto rounded-lg border border-dark-700"
         />
+      ) : (
+        <div className="flex h-20 min-w-44 items-center gap-2 rounded-lg border border-dark-700 bg-dark-800/60 px-3 text-sm text-dark-300">
+          <ImageIcon />
+          <span className="max-w-40 truncate">{attachment.file.name}</span>
+        </div>
       )}
       {attachment.uploading && (
         <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-dark-900/70">
@@ -614,7 +678,7 @@ function SupportContent() {
                   <input
                     ref={createFileInputRef}
                     type="file"
-                    accept="image/jpeg,image/png,image/gif,image/webp"
+                    accept={ACCEPT_STRING}
                     className="hidden"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
@@ -634,7 +698,7 @@ function SupportContent() {
                       className="flex items-center gap-2 text-sm text-dark-400 transition-colors hover:text-dark-200"
                     >
                       <ImageIcon />
-                      {t('support.attachImage')}
+                      {t('adminTickets.attachMedia', { defaultValue: t('support.attachImage') })}
                     </button>
                   )}
                 </div>
@@ -725,6 +789,9 @@ function SupportContent() {
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
+                    if (!replyMessage.trim() && !replyAttachment?.fileId) {
+                      return;
+                    }
                     setRateLimitError(null);
                     // Rate limit: max 5 replies per 30 seconds
                     if (!checkRateLimit(RATE_LIMIT_KEYS.TICKET_REPLY, 5, 30000)) {
@@ -743,8 +810,6 @@ function SupportContent() {
                         placeholder={t('support.replyPlaceholder')}
                         value={replyMessage}
                         onChange={(e) => setReplyMessage(e.target.value)}
-                        required
-                        minLength={1}
                         maxLength={4000}
                       />
                     </div>
@@ -755,7 +820,7 @@ function SupportContent() {
                         <input
                           ref={replyFileInputRef}
                           type="file"
-                          accept="image/jpeg,image/png,image/gif,image/webp"
+                          accept={ACCEPT_STRING}
                           className="hidden"
                           onChange={(e) => {
                             const file = e.target.files?.[0];
@@ -775,14 +840,19 @@ function SupportContent() {
                             className="flex items-center gap-2 text-sm text-dark-400 transition-colors hover:text-dark-200"
                           >
                             <ImageIcon />
-                            {t('support.attachImage')}
+                            {t('adminTickets.attachMedia', {
+                              defaultValue: t('support.attachImage'),
+                            })}
                           </button>
                         )}
                       </div>
 
                       <Button
                         type="submit"
-                        disabled={!replyMessage.trim() || replyAttachment?.uploading}
+                        disabled={
+                          (!replyMessage.trim() && !replyAttachment?.fileId) ||
+                          replyAttachment?.uploading
+                        }
                         loading={replyMutation.isPending}
                       >
                         <SendIcon />
