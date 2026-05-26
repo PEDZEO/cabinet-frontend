@@ -55,6 +55,8 @@ const CloseIcon = () => (
 );
 
 const TICKETS_BATCH_SIZE = 5;
+const MOBILE_TICKET_LIST_COLLAPSED_HEIGHT = 'max-h-[132px]';
+const MOBILE_TICKET_LIST_EXPANDED_HEIGHT = 'max-h-[34vh]';
 const ULTIMA_SUPPORT_SECTION_STYLE: CSSProperties = ultimaSurfaceStyle;
 const ULTIMA_SUPPORT_PANE_STYLE: CSSProperties = ultimaPaneSurfaceStyle;
 
@@ -244,6 +246,7 @@ export function UltimaSupport() {
   const [newMessage, setNewMessage] = useState('');
   const [replyMessage, setReplyMessage] = useState('');
   const [showOldTickets, setShowOldTickets] = useState(false);
+  const [mobileTicketsExpanded, setMobileTicketsExpanded] = useState(false);
   const [visibleRecentCount, setVisibleRecentCount] = useState(TICKETS_BATCH_SIZE);
   const [visibleOldCount, setVisibleOldCount] = useState(TICKETS_BATCH_SIZE);
   const [createAttachment, setCreateAttachment] = useState<MediaAttachment | null>(null);
@@ -297,10 +300,11 @@ export function UltimaSupport() {
       return (
         ticket.status === 'open' ||
         ticket.status === 'answered' ||
-        (Number.isFinite(updated) && updated >= cutoffMs)
+        (ticket.status !== 'closed' && Number.isFinite(updated) && updated >= cutoffMs)
       );
     });
-    const old = items.filter((ticket) => !recent.some((item) => item.id === ticket.id));
+    const recentIds = new Set(recent.map((ticket) => ticket.id));
+    const old = items.filter((ticket) => !recentIds.has(ticket.id));
     return { recent, old };
   }, [tickets?.items]);
 
@@ -545,6 +549,29 @@ export function UltimaSupport() {
     setVisibleOldCount(TICKETS_BATCH_SIZE);
   }, [ticketBuckets.recent.length, ticketBuckets.old.length]);
 
+  useEffect(() => {
+    if (selectedTicketId || showCreate || !tickets?.items?.length) {
+      return;
+    }
+
+    const firstTicket = ticketBuckets.recent[0] ?? ticketBuckets.old[0];
+    if (firstTicket) {
+      setSelectedTicketId(firstTicket.id);
+    }
+  }, [
+    selectedTicketId,
+    showCreate,
+    ticketBuckets.old,
+    ticketBuckets.recent,
+    tickets?.items?.length,
+  ]);
+
+  useEffect(() => {
+    if (!isDesktop && selectedTicketId) {
+      setMobileTicketsExpanded(false);
+    }
+  }, [isDesktop, selectedTicketId]);
+
   useEffect(
     () => () => {
       if (createPreviewRef.current) URL.revokeObjectURL(createPreviewRef.current);
@@ -736,20 +763,46 @@ export function UltimaSupport() {
         className={`${ultimaPanelClassName} flex min-h-0 flex-1 flex-col gap-3 p-4 lg:rounded-[28px] lg:p-5`}
         style={ULTIMA_SUPPORT_SECTION_STYLE}
       >
-        <div className="flex items-center justify-between">
-          <p className="text-[13px] leading-none text-white/70">{t('support.yourTickets')}</p>
-          <button
-            type="button"
-            onClick={() => setShowCreate(true)}
-            className="ultima-btn-pill ultima-btn-secondary px-3 py-1.5 text-[12px] leading-none"
-          >
-            {t('support.newTicket')}
-          </button>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-[13px] leading-none text-white/70">{t('support.yourTickets')}</p>
+            {selectedTicket ? (
+              <p className="mt-1 line-clamp-1 text-[11px] text-white/45 lg:hidden">
+                {selectedTicket.title}
+              </p>
+            ) : null}
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            {selectedTicketId && tickets?.items?.length ? (
+              <button
+                type="button"
+                onClick={() => setMobileTicketsExpanded((prev) => !prev)}
+                className="ultima-btn-pill ultima-btn-secondary px-3 py-1.5 text-[12px] leading-none lg:hidden"
+              >
+                {mobileTicketsExpanded
+                  ? t('support.collapseTickets', { defaultValue: 'Свернуть' })
+                  : t('support.showTickets', { defaultValue: 'Тикеты' })}
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => setShowCreate(true)}
+              className="ultima-btn-pill ultima-btn-secondary px-3 py-1.5 text-[12px] leading-none"
+            >
+              {t('support.newTicket')}
+            </button>
+          </div>
         </div>
 
         <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[380px_minmax(0,1fr)] lg:gap-4">
           <div
-            className={`${ultimaPaneClassName} ultima-scrollbar max-h-[30vh] space-y-2 overflow-y-auto p-2 pr-1.5 lg:max-h-none lg:min-h-[500px] lg:p-3 lg:pr-2`}
+            className={`${ultimaPaneClassName} ultima-scrollbar ${
+              selectedTicketId
+                ? mobileTicketsExpanded
+                  ? MOBILE_TICKET_LIST_EXPANDED_HEIGHT
+                  : MOBILE_TICKET_LIST_COLLAPSED_HEIGHT
+                : 'max-h-[38vh]'
+            } space-y-2 overflow-y-auto p-2 pr-1.5 lg:max-h-none lg:min-h-[500px] lg:p-3 lg:pr-2`}
             style={ULTIMA_SUPPORT_PANE_STYLE}
           >
             {ticketsLoading ? (
@@ -789,7 +842,7 @@ export function UltimaSupport() {
                     <button
                       type="button"
                       onClick={() => setShowOldTickets((prev) => !prev)}
-                      className="w-full rounded-xl border px-2.5 py-2 text-left text-[12px]"
+                      className="flex w-full items-center justify-between gap-2 rounded-xl border px-2.5 py-2 text-left text-[12px]"
                       style={{
                         borderColor:
                           'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
@@ -799,12 +852,16 @@ export function UltimaSupport() {
                           'color-mix(in srgb, var(--ultima-color-secondary-text) 82%, transparent)',
                       }}
                     >
-                      {showOldTickets
-                        ? t('support.hideOldTickets', { defaultValue: 'Скрыть старые тикеты' })
-                        : t('support.showOldTickets', {
-                            defaultValue: 'Показать старые тикеты',
-                          })}{' '}
-                      ({ticketBuckets.old.length})
+                      <span>
+                        {showOldTickets
+                          ? t('support.hideOldTickets', { defaultValue: 'Скрыть архив' })
+                          : t('support.showOldTickets', {
+                              defaultValue: 'Закрытые и старые',
+                            })}
+                      </span>
+                      <span className="shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-white/70">
+                        {ticketBuckets.old.length}
+                      </span>
                     </button>
                     {showOldTickets && (
                       <div className="space-y-2">
@@ -839,11 +896,11 @@ export function UltimaSupport() {
           </div>
 
           <div
-            className={`${ultimaPaneClassName} min-h-0 flex-1 p-3 lg:min-h-[500px] lg:p-4`}
+            className={`${ultimaPaneClassName} flex min-h-[58dvh] flex-1 flex-col p-3 lg:min-h-[500px] lg:p-4`}
             style={ULTIMA_SUPPORT_PANE_STYLE}
           >
             {selectedTicketId && ticketDetail ? (
-              <div className="flex h-full min-h-0 flex-col gap-3">
+              <div className="flex min-h-0 flex-1 flex-col gap-3">
                 <div className="flex items-center justify-between gap-2">
                   <p className="line-clamp-2 break-words text-[14px] font-medium leading-snug text-white/95 lg:text-[16px]">
                     {ticketDetail.title || selectedTicket?.title || `#${selectedTicketId}`}
@@ -867,7 +924,7 @@ export function UltimaSupport() {
                     )}
                   </div>
                 </div>
-                <div className="ultima-scrollbar max-h-[24vh] space-y-2 overflow-y-auto pr-1 lg:max-h-[52vh] lg:space-y-2.5">
+                <div className="ultima-scrollbar min-h-[260px] flex-1 space-y-2 overflow-y-auto pr-1 lg:max-h-[52vh] lg:min-h-0 lg:space-y-2.5">
                   {ticketLoading ? (
                     <p className="text-[12px] text-white/60">{t('common.loading')}</p>
                   ) : (
@@ -898,7 +955,7 @@ export function UltimaSupport() {
                 </div>
 
                 {ticketDetail.status !== 'closed' && !ticketDetail.is_reply_blocked && (
-                  <div className="mt-auto space-y-2">
+                  <div className="mt-auto space-y-2 border-t border-white/10 pt-2">
                     <input
                       ref={replyFileInputRef}
                       type="file"
