@@ -551,27 +551,10 @@ export function UltimaSupport() {
   }, [ticketBuckets.recent.length, ticketBuckets.old.length]);
 
   useEffect(() => {
-    if (selectedTicketId || showCreate || !tickets?.items?.length) {
-      return;
-    }
-
-    const firstTicket = ticketBuckets.recent[0] ?? ticketBuckets.old[0];
-    if (firstTicket) {
-      setSelectedTicketId(firstTicket.id);
-    }
-  }, [
-    selectedTicketId,
-    showCreate,
-    ticketBuckets.old,
-    ticketBuckets.recent,
-    tickets?.items?.length,
-  ]);
-
-  useEffect(() => {
-    if (!isDesktop && selectedTicketId) {
+    if (selectedTicketId) {
       setMobileTicketsExpanded(false);
     }
-  }, [isDesktop, selectedTicketId]);
+  }, [selectedTicketId]);
 
   useEffect(
     () => () => {
@@ -598,9 +581,8 @@ export function UltimaSupport() {
 
   const handleTicketListModeChange = (mode: TicketListMode) => {
     setTicketListMode(mode);
-    if (!isDesktop) {
-      setMobileTicketsExpanded(true);
-    }
+    setSelectedTicketId(null);
+    setMobileTicketsExpanded(true);
   };
 
   const handleLoadMoreTickets = () => {
@@ -628,7 +610,10 @@ export function UltimaSupport() {
     <button
       key={ticket.id}
       type="button"
-      onClick={() => setSelectedTicketId(ticket.id)}
+      onClick={() => {
+        setSelectedTicketId(ticket.id);
+        setMobileTicketsExpanded(false);
+      }}
       className={`w-full rounded-2xl px-3 py-2 text-left transition lg:px-3.5 lg:py-2.5 ${
         selectedTicketId === ticket.id
           ? 'bg-[color:color-mix(in_srgb,var(--ultima-color-primary)_16%,transparent)] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
@@ -867,7 +852,7 @@ export function UltimaSupport() {
             className={`${ultimaPaneClassName} ultima-scrollbar ${
               selectedTicketId && !mobileTicketsExpanded ? 'hidden lg:block' : ''
             } ${
-              selectedTicketId ? MOBILE_TICKET_LIST_EXPANDED_HEIGHT : 'max-h-[38vh]'
+              selectedTicketId ? MOBILE_TICKET_LIST_EXPANDED_HEIGHT : 'max-h-[58dvh]'
             } space-y-2 overflow-y-auto p-2 pr-1.5 lg:max-h-none lg:min-h-[500px] lg:p-3 lg:pr-2`}
             style={ULTIMA_SUPPORT_PANE_STYLE}
           >
@@ -917,7 +902,9 @@ export function UltimaSupport() {
           </div>
 
           <div
-            className={`${ultimaPaneClassName} flex min-h-[58dvh] flex-1 flex-col p-3 lg:min-h-[500px] lg:p-4`}
+            className={`${ultimaPaneClassName} ${
+              selectedTicketId ? 'flex' : 'hidden lg:flex'
+            } min-h-[58dvh] flex-1 flex-col p-3 lg:min-h-[500px] lg:p-4`}
             style={ULTIMA_SUPPORT_PANE_STYLE}
           >
             {selectedTicketId && ticketDetail ? (
