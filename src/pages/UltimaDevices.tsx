@@ -30,6 +30,12 @@ const TrashIcon = () => (
   </svg>
 );
 
+const formatDeviceFingerprint = (hwid: string) => {
+  const value = hwid.trim();
+  if (value.length <= 18) return value;
+  return `${value.slice(0, 8)}…${value.slice(-6)}`;
+};
+
 type ApiErrorLike = {
   response?: {
     data?: {
@@ -386,8 +392,11 @@ export function UltimaDevices() {
                       <p className="line-clamp-2 break-words text-[13px] leading-snug text-white/[0.92]">
                         {device.device_model || device.platform}
                       </p>
-                      <p className="break-all text-[11px] leading-snug text-white/[0.52]">
-                        {device.platform} • {device.hwid}
+                      <p
+                        className="break-words text-[11px] leading-snug text-white/[0.52]"
+                        title={device.hwid}
+                      >
+                        {device.platform} • {formatDeviceFingerprint(device.hwid)}
                       </p>
                     </div>
                     <button

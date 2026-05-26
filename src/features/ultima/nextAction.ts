@@ -31,5 +31,5 @@ export function getUltimaNextAction({
     return 'renew';
   }
 
-  return 'subscription';
+  return 'renew';
 }

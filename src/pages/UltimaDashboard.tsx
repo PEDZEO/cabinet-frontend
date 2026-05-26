@@ -280,7 +280,7 @@ export function UltimaDashboard() {
     if ((daysLeft ?? 99) <= 3) {
       return t('subscription.renew', { defaultValue: 'Продлить' });
     }
-    return t('lite.buySubscription', { defaultValue: 'Купить подписку' });
+    return t('subscription.extend', { defaultValue: 'Продлить подписку' });
   }, [daysLeft, hasAnySubscription, isActive, t]);
   const purchaseFromLabel = useMemo(() => {
     if (!purchaseOptions || purchaseOptions.sales_mode !== 'tariffs')

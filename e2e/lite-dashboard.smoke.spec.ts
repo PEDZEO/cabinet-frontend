@@ -1,4 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
+import { DEFAULT_ANIMATION_CONFIG } from '../src/components/ui/backgrounds/types';
+import { DEFAULT_ENABLED_THEMES, DEFAULT_THEME_COLORS } from '../src/types/theme';
 
 type Scenario =
   | 'no_subscription'
@@ -103,7 +105,7 @@ async function bootstrapAuthAndLiteMode(page: Page): Promise<void> {
 async function mockLiteDashboardApi(page: Page, scenario: Scenario) {
   let trialActivationCalls = 0;
 
-  await page.route('**/api/**', async (route) => {
+  await page.route('**/api/cabinet/**', async (route) => {
     const request = route.request();
     const url = new URL(request.url());
     const path = url.pathname.replace(/^\/api/, '');
@@ -124,8 +126,52 @@ async function mockLiteDashboardApi(page: Page, scenario: Scenario) {
       return;
     }
 
+    if (path === '/cabinet/branding/colors' && method === 'GET') {
+      await route.fulfill({ status: 200, json: DEFAULT_THEME_COLORS });
+      return;
+    }
+
+    if (path === '/cabinet/branding/themes' && method === 'GET') {
+      await route.fulfill({ status: 200, json: DEFAULT_ENABLED_THEMES });
+      return;
+    }
+
+    if (path === '/cabinet/branding/animation-config' && method === 'GET') {
+      await route.fulfill({ status: 200, json: DEFAULT_ANIMATION_CONFIG });
+      return;
+    }
+
+    if (path === '/cabinet/branding/fullscreen' && method === 'GET') {
+      await route.fulfill({ status: 200, json: { enabled: false } });
+      return;
+    }
+
+    if (path === '/cabinet/info/support-config' && method === 'GET') {
+      await route.fulfill({
+        status: 200,
+        json: { tickets_enabled: true, support_type: 'tickets' },
+      });
+      return;
+    }
+
+    if (path === '/cabinet/info/languages' && method === 'GET') {
+      await route.fulfill({
+        status: 200,
+        json: {
+          languages: [{ code: 'ru', name: 'Русский', flag: '🇷🇺' }],
+          default: 'ru',
+        },
+      });
+      return;
+    }
+
     if (path === '/cabinet/branding/lite-mode' && method === 'GET') {
       await route.fulfill({ status: 200, json: { enabled: true } });
+      return;
+    }
+
+    if (path === '/cabinet/branding/ultima-mode' && method === 'GET') {
+      await route.fulfill({ status: 200, json: { enabled: false } });
       return;
     }
 
@@ -139,6 +185,19 @@ async function mockLiteDashboardApi(page: Page, scenario: Scenario) {
           has_custom_logo: false,
         },
       });
+      return;
+    }
+
+    if (path === '/cabinet/branding/analytics' && method === 'GET') {
+      await route.fulfill({
+        status: 200,
+        json: { yandex_metrika_id: '', google_ads_id: '', google_ads_label: '' },
+      });
+      return;
+    }
+
+    if (path === '/cabinet/branding/gift-enabled' && method === 'GET') {
+      await route.fulfill({ status: 200, json: { enabled: false } });
       return;
     }
 
@@ -169,6 +228,26 @@ async function mockLiteDashboardApi(page: Page, scenario: Scenario) {
       return;
     }
 
+    if (path === '/cabinet/referral/terms' && method === 'GET') {
+      await route.fulfill({ status: 200, json: { is_enabled: false, commission_percent: 0 } });
+      return;
+    }
+
+    if (path === '/cabinet/wheel/config' && method === 'GET') {
+      await route.fulfill({ status: 200, json: { is_enabled: false } });
+      return;
+    }
+
+    if (path === '/cabinet/contests/count' && method === 'GET') {
+      await route.fulfill({ status: 200, json: { count: 0 } });
+      return;
+    }
+
+    if (path === '/cabinet/polls/count' && method === 'GET') {
+      await route.fulfill({ status: 200, json: { count: 0 } });
+      return;
+    }
+
     if (path === '/cabinet/subscription/purchase-options' && method === 'GET') {
       await route.fulfill({ status: 200, json: PURCHASE_OPTIONS });
       return;
@@ -195,6 +274,19 @@ async function mockLiteDashboardApi(page: Page, scenario: Scenario) {
       return;
     }
 
+    if (path === '/cabinet/tickets' && method === 'GET') {
+      await route.fulfill({
+        status: 200,
+        json: { items: [], total: 0, page: 1, per_page: 20, pages: 0 },
+      });
+      return;
+    }
+
+    if (path === '/cabinet/tickets/notifications/unread-count' && method === 'GET') {
+      await route.fulfill({ status: 200, json: { unread_count: 0 } });
+      return;
+    }
+
     if (path === '/cabinet/subscription/trial' && method === 'GET') {
       await route.fulfill({
         status: 200,
@@ -205,6 +297,7 @@ async function mockLiteDashboardApi(page: Page, scenario: Scenario) {
 
     if (path === '/cabinet/subscription/trial' && method === 'POST') {
       trialActivationCalls += 1;
+      await new Promise((resolve) => setTimeout(resolve, 250));
       await route.fulfill({ status: 200, json: ACTIVE_SUBSCRIPTION });
       return;
     }
@@ -214,12 +307,12 @@ async function mockLiteDashboardApi(page: Page, scenario: Scenario) {
       return;
     }
 
-    if (path === '/cabinet/promo-offers/templates' && method === 'GET') {
+    if (path === '/cabinet/promo/offers' && method === 'GET') {
       await route.fulfill({ status: 200, json: [] });
       return;
     }
 
-    if (path === '/cabinet/promo-offers/active-discount' && method === 'GET') {
+    if (path === '/cabinet/promo/active-discount' && method === 'GET') {
       await route.fulfill({ status: 200, json: null });
       return;
     }
