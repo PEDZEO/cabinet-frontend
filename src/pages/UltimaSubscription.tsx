@@ -1214,13 +1214,13 @@ export function UltimaSubscription() {
         </header>
 
         <section
-          className={`w-full rounded-3xl border border-white/10 bg-white/5 backdrop-blur ${
-            isUltraCompactHeight ? 'mb-2 p-2.5' : 'mb-3 p-2.5'
+          className={`w-full rounded-[24px] border border-white/10 bg-white/5 backdrop-blur ${
+            isUltraCompactHeight ? 'mb-2 p-2' : 'mb-2.5 p-2.5'
           }`}
         >
-          <div className={`flex items-center gap-3 ${isUltraCompactHeight ? 'mb-2' : 'mb-3'}`}>
+          <div className={`flex items-center gap-2.5 ${isUltraCompactHeight ? 'mb-1.5' : 'mb-2'}`}>
             <span
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border text-[18px] font-semibold text-white shadow-[0_0_18px_color-mix(in_srgb,var(--ultima-color-primary)_36%,transparent)]"
+              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-[16px] font-semibold text-white shadow-[0_0_14px_color-mix(in_srgb,var(--ultima-color-primary)_34%,transparent)]"
               style={{
                 borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 52%, transparent)',
                 background:
@@ -1229,28 +1229,31 @@ export function UltimaSubscription() {
             >
               {selectedDeviceLimit}
             </span>
-            <div className="min-w-0">
-              <p
-                className={`${
-                  isUltraCompactHeight
-                    ? 'text-[19px]'
-                    : isNarrowWidth
-                      ? 'text-[20px]'
-                      : 'text-[22px]'
-                } font-medium leading-none text-white`}
-              >
-                {t('subscription.devices')}
-              </p>
-              <p
-                className={`${isUltraCompactHeight ? 'mt-0.5 text-[13px]' : 'mt-1 text-[14px]'} text-white/70`}
-              >
-                {selectedTariff?.traffic_limit_label ?? 'Одновременно в подписке'}
+            <div className="min-w-0 flex-1">
+              <div className="flex min-w-0 items-center gap-2">
+                <p
+                  className={`shrink-0 ${
+                    isUltraCompactHeight
+                      ? 'text-[17px]'
+                      : isNarrowWidth
+                        ? 'text-[18px]'
+                        : 'text-[19px]'
+                  } font-medium leading-none text-white`}
+                >
+                  {t('subscription.devices')}
+                </p>
+                <p className="min-w-0 truncate rounded-full border border-white/[0.1] bg-white/[0.06] px-2 py-0.5 text-[11px] leading-tight text-white/70">
+                  {selectedTariff?.traffic_limit_label ?? 'Одновременно в подписке'}
+                </p>
+              </div>
+              <p className="mt-1 truncate text-[11px] leading-tight text-white/[0.48]">
+                {baseDeviceLimitLabel}
               </p>
             </div>
           </div>
 
           <div
-            className="rounded-2xl border p-2"
+            className="rounded-[18px] border px-2 py-1.5"
             style={{
               borderColor:
                 'color-mix(in srgb, var(--ultima-color-surface-border) 22%, transparent)',
@@ -1276,16 +1279,16 @@ export function UltimaSubscription() {
               }}
               className="relative"
             >
-              <div className="relative h-9 w-full">
+              <div className="relative h-7 w-full">
                 <div
-                  className="absolute left-0 right-0 top-1/2 h-[8px] -translate-y-1/2 rounded-full border bg-white/10 shadow-[inset_0_1px_4px_rgba(0,0,0,0.25)]"
+                  className="absolute left-0 right-0 top-1/2 h-[6px] -translate-y-1/2 rounded-full border bg-white/10 shadow-[inset_0_1px_4px_rgba(0,0,0,0.25)]"
                   style={{
                     borderColor:
                       'color-mix(in srgb, var(--ultima-color-surface-border) 28%, transparent)',
                   }}
                 />
                 <div
-                  className="absolute left-0 top-1/2 h-[8px] -translate-y-1/2 rounded-full"
+                  className="absolute left-0 top-1/2 h-[6px] -translate-y-1/2 rounded-full"
                   style={{
                     width: `${sliderProgressPercent}%`,
                     background:
@@ -1294,7 +1297,7 @@ export function UltimaSubscription() {
                   }}
                 />
                 <div
-                  className="ultima-slider-glow pointer-events-none absolute left-0 top-1/2 h-[8px] -translate-y-1/2 rounded-full"
+                  className="ultima-slider-glow pointer-events-none absolute left-0 top-1/2 h-[6px] -translate-y-1/2 rounded-full"
                   style={{
                     width: `${Math.max(18, sliderProgressPercent)}%`,
                     filter: `blur(${2 + sliderProgressPercent * 0.02}px)`,
@@ -1304,9 +1307,9 @@ export function UltimaSubscription() {
                   }}
                 />
                 <span
-                  className="absolute top-1/2 z-20 h-5 w-5 -translate-y-1/2 rounded-full border"
+                  className="absolute top-1/2 z-20 h-4 w-4 -translate-y-1/2 rounded-full border"
                   style={{
-                    left: `calc(${sliderProgressPercent}% - 10px + ${
+                    left: `calc(${sliderProgressPercent}% - 8px + ${
                       selectedDeviceIndex === 0
                         ? '4px'
                         : selectedDeviceIndex === deviceLimits.length - 1
@@ -1327,7 +1330,7 @@ export function UltimaSubscription() {
                   step={1}
                   value={selectedDeviceIndex}
                   onChange={(event) => applyDeviceIndex(Number(event.target.value))}
-                  className="absolute inset-0 z-10 h-9 w-full cursor-pointer opacity-0"
+                  className="absolute inset-0 z-10 h-7 w-full cursor-pointer opacity-0"
                   aria-label="devices-slider-input"
                 />
                 {deviceLimits.map((limit, index) => {
@@ -1336,6 +1339,10 @@ export function UltimaSubscription() {
                       ? `${(index / (deviceLimits.length - 1)) * 100}%`
                       : '0%';
                   const active = index === selectedDeviceIndex;
+                  const isEdge = index === 0 || index === deviceLimits.length - 1;
+                  if (!active && !isEdge && deviceLimits.length > 14 && limit % 5 !== 0) {
+                    return null;
+                  }
                   return (
                     <button
                       key={limit}
@@ -1355,8 +1362,8 @@ export function UltimaSubscription() {
                       <span
                         className={`block rounded-full transition ${active ? '' : 'bg-white/30'}`}
                         style={{
-                          width: active ? 10 : 8,
-                          height: active ? 10 : 8,
+                          width: active ? 8 : 6,
+                          height: active ? 8 : 6,
                           backgroundColor: active
                             ? 'color-mix(in srgb, var(--ultima-color-ring) 88%, #ffffff)'
                             : undefined,
@@ -1400,32 +1407,36 @@ export function UltimaSubscription() {
           ) : null}
 
           <div
-            className={`rounded-3xl border border-white/10 bg-black/20 backdrop-blur ${
-              isUltraCompactHeight ? 'mb-2 p-2.5' : 'mb-3 p-3'
+            className={`rounded-[22px] border border-white/10 bg-black/20 backdrop-blur ${
+              isUltraCompactHeight ? 'mb-2 p-2' : 'mb-2.5 p-2.5'
             }`}
           >
-            <div className="flex items-center justify-between gap-3">
-              <div>
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
                 <h2 className="text-[15px] font-semibold leading-tight text-white">
                   {t('ultima.checkoutIncludedTitle', { defaultValue: 'Что входит' })}
                 </h2>
-                <p className="mt-0.5 text-[12px] leading-tight text-white/60">
+                <p className="mt-0.5 truncate text-[11px] leading-tight text-white/55">
                   {t('ultima.checkoutIncludedSubtitle', {
                     defaultValue: 'Применится сразу после оплаты',
                   })}
                 </p>
               </div>
-              <div className="rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-[12px] text-white/75">
+              <div className="shrink-0 rounded-full border border-white/10 bg-white/[0.06] px-2 py-0.5 text-[11px] text-white/70">
                 {periodLabel(selectedPeriod)}
               </div>
             </div>
-            <div className="mt-2 grid grid-cols-2 gap-2">
+            <div className="mt-2 grid grid-cols-4 gap-1.5">
               {checkoutIncludedItems.map((item) => (
-                <div key={item.label} className="rounded-[18px] bg-white/[0.05] px-3 py-2">
-                  <div className="text-[10px] uppercase tracking-[0.12em] text-white/45">
+                <div
+                  key={item.label}
+                  className="min-w-0 rounded-[13px] bg-white/[0.05] px-2 py-1.5"
+                  title={String(item.value)}
+                >
+                  <div className="truncate text-[9px] uppercase tracking-[0.08em] text-white/[0.42]">
                     {item.label}
                   </div>
-                  <div className="mt-0.5 line-clamp-2 break-words text-[13px] font-medium leading-snug text-white/90">
+                  <div className="mt-0.5 truncate text-[11px] font-medium leading-tight text-white/90">
                     {item.value}
                   </div>
                 </div>
@@ -1454,12 +1465,12 @@ export function UltimaSubscription() {
                   }}
                   className={`h-full rounded-3xl border text-left transition-colors ${
                     isUltraCompactHeight
-                      ? 'min-h-[104px] p-2.5'
+                      ? 'min-h-[92px] p-2.5'
                       : isNarrowWidth
-                        ? 'min-h-[116px] p-3'
+                        ? 'min-h-[102px] p-2.5'
                         : isCompactHeight
-                          ? 'min-h-[124px] p-3'
-                          : 'min-h-[132px] p-3.5'
+                          ? 'min-h-[108px] p-3'
+                          : 'min-h-[116px] p-3'
                   } ${
                     active
                       ? 'border bg-black/20'
@@ -1479,15 +1490,15 @@ export function UltimaSubscription() {
                   }
                 >
                   <div
-                    className={`${isUltraCompactHeight ? 'mb-2' : 'mb-3'} flex flex-wrap items-center justify-between gap-2`}
+                    className={`${isUltraCompactHeight ? 'mb-1.5' : 'mb-2'} flex flex-wrap items-center justify-between gap-2`}
                   >
                     <span
                       className={`font-medium text-white ${
                         isUltraCompactHeight
                           ? 'text-[15px]'
                           : isNarrowWidth
-                            ? 'text-[17px]'
-                            : 'text-[clamp(16px,4.4vw,19px)]'
+                            ? 'text-[16px]'
+                            : 'text-[clamp(16px,4.2vw,18px)]'
                       }`}
                     >
                       {periodLabel(period)}
@@ -1519,10 +1530,10 @@ export function UltimaSubscription() {
                   <p
                     className={`font-semibold leading-none text-white ${
                       isUltraCompactHeight
-                        ? 'text-[24px]'
+                        ? 'text-[23px]'
                         : isNarrowWidth
-                          ? 'text-[26px]'
-                          : 'text-[clamp(26px,7.8vw,30px)]'
+                          ? 'text-[24px]'
+                          : 'text-[clamp(24px,7vw,28px)]'
                     }`}
                   >
                     {formatPrice(
@@ -1532,7 +1543,7 @@ export function UltimaSubscription() {
                       ).price,
                     )}
                   </p>
-                  <p className="mt-1 text-[12px] text-white/70">
+                  <p className="mt-1 text-[11px] text-white/[0.68]">
                     {`${formatPrice(
                       Math.max(
                         1,
@@ -1555,12 +1566,12 @@ export function UltimaSubscription() {
 
         <div className={`ultima-mobile-dock-footer ${isUltraCompactHeight ? 'pt-2' : 'pt-3'}`}>
           {legacyDeviceNotice ? (
-            <div className="mb-2 flex items-center gap-2 rounded-[16px] border border-amber-200/[0.24] bg-amber-300/10 px-3 py-2 text-[11px] leading-[1.3] text-amber-50/[0.92]">
-              <p className="line-clamp-2 min-w-0 flex-1">{legacyDeviceNotice}</p>
+            <div className="mb-1.5 flex items-center gap-2 rounded-[14px] border border-amber-200/[0.22] bg-amber-300/10 px-2.5 py-1.5 text-[10.5px] leading-[1.25] text-amber-50/[0.9]">
+              <p className="line-clamp-1 min-w-0 flex-1">{legacyDeviceNotice}</p>
               <button
                 type="button"
                 onClick={() => navigate('/ultima/devices')}
-                className="ultima-btn-pill ultima-btn-secondary shrink-0 px-3 py-1.5 text-[12px]"
+                className="ultima-btn-pill ultima-btn-secondary shrink-0 px-2.5 py-1 text-[11px]"
               >
                 {t('subscription.manageDevices', { defaultValue: 'Устройства' })}
               </button>
