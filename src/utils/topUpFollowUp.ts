@@ -1,14 +1,26 @@
 export type PendingTopUpFollowUp = {
   amountKopeks: number;
   balanceBeforeKopeks: number;
+  paymentUrl?: string;
+  paymentMethodId?: string;
+  paymentMethodName?: string;
+  returnTo?: string;
   createdAt: number;
+  remindedAt?: number;
 };
 
 const PENDING_TOP_UP_FOLLOW_UP_KEY = 'pending_topup_followup_v1';
 const DISMISSED_TOP_UP_FOLLOW_UP_KEY = 'dismissed_topup_followup_v1';
 const PENDING_TOP_UP_TTL_MS = 30 * 60 * 1000;
+export const PENDING_TOP_UP_FOLLOW_UP_EVENT = 'pending-topup-followup:changed';
 
 const getScopedKey = (baseKey: string, userId?: number | null) => `${baseKey}:${userId ?? 'guest'}`;
+
+const emitPendingTopUpFollowUpChanged = () => {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(PENDING_TOP_UP_FOLLOW_UP_EVENT));
+  }
+};
 
 export const readPendingTopUpFollowUp = (userId?: number | null): PendingTopUpFollowUp | null => {
   try {
@@ -49,6 +61,7 @@ export const writePendingTopUpFollowUp = (
         createdAt: Date.now(),
       } satisfies PendingTopUpFollowUp),
     );
+    emitPendingTopUpFollowUpChanged();
   } catch {
     // localStorage not available
   }
@@ -57,6 +70,25 @@ export const writePendingTopUpFollowUp = (
 export const clearPendingTopUpFollowUp = (userId?: number | null) => {
   try {
     localStorage.removeItem(getScopedKey(PENDING_TOP_UP_FOLLOW_UP_KEY, userId));
+    emitPendingTopUpFollowUpChanged();
+  } catch {
+    // localStorage not available
+  }
+};
+
+export const markTopUpFollowUpReminderShown = (userId?: number | null) => {
+  try {
+    const pending = readPendingTopUpFollowUp(userId);
+    if (!pending) return;
+
+    localStorage.setItem(
+      getScopedKey(PENDING_TOP_UP_FOLLOW_UP_KEY, userId),
+      JSON.stringify({
+        ...pending,
+        remindedAt: Date.now(),
+      } satisfies PendingTopUpFollowUp),
+    );
+    emitPendingTopUpFollowUpChanged();
   } catch {
     // localStorage not available
   }

@@ -1,17 +1,34 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { balanceApi } from '@/api/balance';
+import { useToast } from '@/components/Toast';
+import { usePlatform } from '@/platform';
 import { useAuthStore } from '@/store/auth';
 import { showSuccessNotification } from '@/store/successNotification';
 import {
   clearPendingTopUpFollowUp,
   isTopUpFollowUpDismissed,
+  markTopUpFollowUpReminderShown,
+  PENDING_TOP_UP_FOLLOW_UP_EVENT,
   readPendingTopUpFollowUp,
 } from '@/utils/topUpFollowUp';
 
-const FOLLOW_UP_RETRY_DELAYS_MS = [1500, 4000, 8000];
+const PAYMENT_REMINDER_DELAY_MS = 12_000;
+const PAYMENT_REMINDER_REPEAT_MS = 10 * 60 * 1000;
+const FOLLOW_UP_RETRY_DELAYS_MS = [
+  1500,
+  4000,
+  8000,
+  PAYMENT_REMINDER_DELAY_MS,
+  20_000,
+  PAYMENT_REMINDER_DELAY_MS + PAYMENT_REMINDER_REPEAT_MS,
+];
 
 export function usePendingTopUpFollowUp() {
+  const { t } = useTranslation();
+  const { showToast } = useToast();
+  const { openLink, openTelegramLink } = usePlatform();
   const queryClient = useQueryClient();
   const userId = useAuthStore((state) => state.user?.id ?? null);
   const refreshUser = useAuthStore((state) => state.refreshUser);
@@ -41,7 +58,33 @@ export function usePendingTopUpFollowUp() {
       });
 
       const currentBalanceKopeks = Math.max(0, balance.balance_kopeks ?? 0);
-      if (currentBalanceKopeks <= pending.balanceBeforeKopeks) return;
+      if (currentBalanceKopeks <= pending.balanceBeforeKopeks) {
+        const canRemind =
+          Boolean(pending.paymentUrl) &&
+          Date.now() - pending.createdAt >= PAYMENT_REMINDER_DELAY_MS &&
+          (!pending.remindedAt || Date.now() - pending.remindedAt >= PAYMENT_REMINDER_REPEAT_MS);
+
+        if (canRemind && pending.paymentUrl) {
+          markTopUpFollowUpReminderShown(userId);
+          showToast({
+            type: 'warning',
+            title: t('balance.pendingReminderTitle', { defaultValue: 'Оплата не завершена' }),
+            message: t('balance.pendingReminderMessage', {
+              defaultValue: 'Нажмите, чтобы снова открыть страницу оплаты.',
+              method: pending.paymentMethodName || '',
+            }),
+            duration: 9000,
+            onClick: () => {
+              if (pending.paymentUrl?.includes('t.me/')) {
+                openTelegramLink(pending.paymentUrl);
+              } else if (pending.paymentUrl) {
+                openLink(pending.paymentUrl);
+              }
+            },
+          });
+        }
+        return;
+      }
 
       clearPendingTopUpFollowUp(userId);
       showSuccessNotification({
@@ -59,7 +102,7 @@ export function usePendingTopUpFollowUp() {
     } finally {
       isCheckingRef.current = false;
     }
-  }, [queryClient, refreshUser, userId]);
+  }, [openLink, openTelegramLink, queryClient, refreshUser, showToast, t, userId]);
 
   const scheduleRecoveryBurst = useCallback(() => {
     clearScheduledRetries();
@@ -104,12 +147,14 @@ export function usePendingTopUpFollowUp() {
     window.addEventListener('focus', handleFocus);
     window.addEventListener('pageshow', handlePageShow);
     window.addEventListener('online', handleOnline);
+    window.addEventListener(PENDING_TOP_UP_FOLLOW_UP_EVENT, scheduleRecoveryBurst);
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => {
       clearScheduledRetries();
       window.removeEventListener('focus', handleFocus);
       window.removeEventListener('pageshow', handlePageShow);
       window.removeEventListener('online', handleOnline);
+      window.removeEventListener(PENDING_TOP_UP_FOLLOW_UP_EVENT, scheduleRecoveryBurst);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [clearScheduledRetries, scheduleRecoveryBurst]);

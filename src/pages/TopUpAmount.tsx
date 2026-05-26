@@ -159,6 +159,11 @@ function TopUpAmountContent() {
   const [copied, setCopied] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
 
+  const methodKey = (method?.id ?? '').toLowerCase().replace(/-/g, '_');
+  const isStarsMethod = methodKey.includes('stars');
+  const methodName =
+    t(`balance.paymentMethods.${methodKey}.name`, { defaultValue: '' }) || method?.name || '';
+
   // Fallback: if cache is empty on direct deep-link, load methods from API to avoid modal redirect.
   useEffect(() => {
     let cancelled = false;
@@ -252,10 +257,14 @@ function TopUpAmountContent() {
     },
     onSuccess: (data, amountKopeks) => {
       const redirectUrl = data.payment_url || data.invoice_url;
-      if (redirectUrl) {
+      if (redirectUrl && method) {
         writePendingTopUpFollowUp(userId, {
           amountKopeks,
           balanceBeforeKopeks: Math.max(0, balanceData?.balance_kopeks ?? 0),
+          paymentUrl: redirectUrl,
+          paymentMethodId: method.id,
+          paymentMethodName: methodName,
+          returnTo: returnTo || '/balance',
         });
         setPaymentUrl(redirectUrl);
         if (autoOpenPayment) {
@@ -285,11 +294,6 @@ function TopUpAmountContent() {
   const hasOptions = Boolean(method?.options && method.options.length > 0);
   const minRubles = (method?.min_amount_kopeks ?? 0) / 100;
   const maxRubles = (method?.max_amount_kopeks ?? 0) / 100;
-  const methodKey = (method?.id ?? '').toLowerCase().replace(/-/g, '_');
-  const isStarsMethod = methodKey.includes('stars');
-  const methodName =
-    t(`balance.paymentMethods.${methodKey}.name`, { defaultValue: '' }) || method?.name || '';
-
   const handleSubmit = () => {
     setError(null);
     setPaymentUrl(null);

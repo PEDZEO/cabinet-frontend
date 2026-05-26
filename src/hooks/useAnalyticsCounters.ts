@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { brandingApi } from '../api/branding';
+import { setAnalyticsCountersForEvents } from '@/utils/analyticsEvents';
 
 const YM_SCRIPT_ID = 'ym-counter-script';
 const GTAG_LOADER_ID = 'gtag-loader-script';
@@ -80,5 +81,7 @@ export function useAnalyticsCounters() {
       removeElement(GTAG_LOADER_ID);
       removeElement(GTAG_INIT_ID);
     }
+
+    setAnalyticsCountersForEvents(data);
   }, [data]);
 }

@@ -78,6 +78,7 @@ export default function WebSocketNotifications() {
 
       // Subscription events
       if (type === 'subscription.activated') {
+        clearPendingTopUpFollowUp(userId);
         // Show prominent success modal for subscription activation
         showSuccessNotification({
           type: 'subscription_activated',
@@ -92,6 +93,7 @@ export default function WebSocketNotifications() {
       }
 
       if (type === 'subscription.renewed') {
+        clearPendingTopUpFollowUp(userId);
         // Show prominent success modal for subscription renewal
         showSuccessNotification({
           type: 'subscription_renewed',
@@ -179,6 +181,7 @@ export default function WebSocketNotifications() {
       }
 
       if (type === 'subscription.devices_purchased') {
+        clearPendingTopUpFollowUp(userId);
         // Show prominent success modal for device purchase
         showSuccessNotification({
           type: 'devices_purchased',
@@ -195,6 +198,7 @@ export default function WebSocketNotifications() {
       }
 
       if (type === 'subscription.traffic_purchased') {
+        clearPendingTopUpFollowUp(userId);
         // Show prominent success modal for traffic purchase
         showSuccessNotification({
           type: 'traffic_purchased',
@@ -370,6 +374,7 @@ export default function WebSocketNotifications() {
 
       // Payment received
       if (type === 'payment.received') {
+        clearPendingTopUpFollowUp(userId);
         const amount = message.amount_rubles ?? (message.amount_kopeks ?? 0) / 100;
         showToast({
           type: 'success',

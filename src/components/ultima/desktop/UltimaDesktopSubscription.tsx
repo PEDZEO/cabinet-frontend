@@ -17,6 +17,11 @@ type UltimaDesktopSubscriptionPeriod = {
   isBestDeal: boolean;
 };
 
+type UltimaDesktopIncludedItem = {
+  label: string;
+  value: string;
+};
+
 type UltimaDesktopSubscriptionProps = {
   planSelector?: ReactNode;
   title: string;
@@ -25,6 +30,7 @@ type UltimaDesktopSubscriptionProps = {
   deviceLimits: number[];
   periods: UltimaDesktopSubscriptionPeriod[];
   selectedPeriodLabel: string;
+  includedItems: UltimaDesktopIncludedItem[];
   baseDeviceLimitLabel?: string | null;
   extraDeviceChargeLabel?: string | null;
   legacyDeviceNotice?: string | null;
@@ -54,6 +60,7 @@ export function UltimaDesktopSubscription({
   deviceLimits,
   periods,
   selectedPeriodLabel,
+  includedItems,
   baseDeviceLimitLabel,
   extraDeviceChargeLabel,
   legacyDeviceNotice,
@@ -74,28 +81,28 @@ export function UltimaDesktopSubscription({
   const { t } = useTranslation();
 
   return (
-    <div className="ultima-shell-inner lg:max-w-[1320px]">
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start xl:grid-cols-[minmax(0,1fr)_360px]">
+    <div className="ultima-shell-inner lg:max-w-[1180px]">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start xl:grid-cols-[minmax(0,1fr)_330px]">
         <div className="space-y-4">
           {planSelector}
 
           <section
-            className={cn(ultimaCardClassName, 'relative overflow-hidden p-5 lg:p-6')}
+            className={cn(ultimaCardClassName, 'relative overflow-hidden p-4 lg:p-5')}
             style={accentCardStyle}
           >
             <div className="absolute inset-y-0 right-[-10%] w-[36%] rounded-full bg-white/[0.05] blur-3xl" />
-            <div className="relative flex flex-wrap items-start justify-between gap-6">
+            <div className="relative flex flex-wrap items-start justify-between gap-4">
               <div className="max-w-[56ch]">
-                <div className="inline-flex h-12 min-w-12 items-center justify-center rounded-[18px] border border-white/[0.12] bg-white/[0.08] px-4 text-[20px] font-semibold text-white">
+                <div className="inline-flex h-10 min-w-10 items-center justify-center rounded-[16px] border border-white/[0.12] bg-white/[0.08] px-3 text-[18px] font-semibold text-white">
                   {selectedDeviceLimit}
                 </div>
-                <h1 className="mt-4 max-w-[18ch] text-[clamp(34px,3.6vw,50px)] font-semibold leading-[0.98] tracking-[-0.038em] text-white">
+                <h1 className="mt-3 max-w-[22ch] text-[clamp(30px,3.2vw,42px)] font-semibold leading-[0.98] tracking-[-0.03em] text-white">
                   {title}
                 </h1>
-                <p className="mt-3 text-[15px] leading-[1.6] text-white/[0.72]">{subtitle}</p>
+                <p className="mt-2 text-[14px] leading-[1.5] text-white/[0.72]">{subtitle}</p>
               </div>
 
-              <div className="flex max-w-[420px] flex-wrap gap-2 lg:justify-end">
+              <div className="flex max-w-[380px] flex-wrap gap-2 lg:justify-end">
                 {deviceLimits.map((limit, index) => {
                   const active = limit === selectedDeviceLimit;
                   return (
@@ -126,7 +133,7 @@ export function UltimaDesktopSubscription({
                   type="button"
                   onClick={() => onSelectPeriod(period.days)}
                   className={cn(
-                    'rounded-[20px] border p-4 text-left transition-colors',
+                    'rounded-[18px] border p-3.5 text-left transition-colors',
                     period.isSelected
                       ? 'border-emerald-200/[0.36] bg-emerald-300/[0.08]'
                       : 'border-white/10 bg-white/[0.04] hover:bg-white/[0.08]',
@@ -140,7 +147,7 @@ export function UltimaDesktopSubscription({
                       </span>
                     ) : null}
                   </div>
-                  <div className="mt-4 text-[30px] font-semibold leading-none tracking-[-0.03em] text-white">
+                  <div className="mt-3 text-[26px] font-semibold leading-none tracking-[-0.03em] text-white">
                     {period.priceLabel}
                   </div>
                   <div className="mt-2 text-sm text-white/[0.68]">{period.monthlyLabel}</div>
@@ -167,6 +174,31 @@ export function UltimaDesktopSubscription({
             </p>
 
             <div className="mt-5 space-y-3">
+              <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <span className="text-sm font-medium text-white">
+                    {t('ultima.checkoutIncludedTitle', { defaultValue: 'Что входит' })}
+                  </span>
+                  <span className="text-xs text-white/[0.54]">
+                    {t('ultima.checkoutIncludedSubtitle', {
+                      defaultValue: 'Применится сразу после оплаты',
+                    })}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {includedItems.map((item) => (
+                    <div key={item.label} className="rounded-[16px] bg-black/15 px-3 py-2">
+                      <div className="text-[11px] uppercase tracking-[0.12em] text-white/[0.46]">
+                        {item.label}
+                      </div>
+                      <div className="mt-1 line-clamp-2 break-words text-sm font-medium leading-snug text-white/90">
+                        {item.value}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
                 <div className="flex items-center justify-between gap-3 text-sm">
                   <span className="text-white/[0.62]">

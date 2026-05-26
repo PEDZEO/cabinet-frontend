@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useCallback,
   useMemo,
   useRef,
   useState,
@@ -27,6 +28,7 @@ import { usePlatform } from '@/platform';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import type { Ticket } from '@/types';
+import { trackAnalyticsEvent } from '@/utils/analyticsEvents';
 
 const SendIcon = () => (
   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -92,23 +94,54 @@ type TicketListMode = 'active' | 'archive';
 const QUICK_SUPPORT_TOPICS = [
   {
     key: 'connection',
-    label: 'Не подключается',
-    title: 'Проблема с подключением',
-    message: 'Не получается подключить VPN. Устройство: . Что уже пробовал: . Ошибка/скрин: .',
+    labelKey: 'support.quickConnection',
+    titleKey: 'support.quickConnectionTitle',
+    messageKey: 'support.quickConnectionMessage',
   },
   {
     key: 'payment',
-    label: 'Оплата',
-    title: 'Проблема с оплатой',
-    message: 'Возникла проблема с оплатой. Способ оплаты: . Сумма: . Что вижу после оплаты: .',
+    labelKey: 'support.quickPayment',
+    titleKey: 'support.quickPaymentTitle',
+    messageKey: 'support.quickPaymentMessage',
   },
   {
     key: 'subscription',
-    label: 'Подписка',
-    title: 'Вопрос по подписке',
-    message: 'Нужна помощь с подпиской. Что не так: . Когда заметил проблему: .',
+    labelKey: 'support.quickSubscription',
+    titleKey: 'support.quickSubscriptionTitle',
+    messageKey: 'support.quickSubscriptionMessage',
   },
-];
+] as const;
+
+const SELF_HELP_ACTIONS = [
+  {
+    key: 'setup',
+    titleKey: 'support.selfHelpSetupTitle',
+    descriptionKey: 'support.selfHelpSetupDescription',
+    actionKey: 'support.selfHelpSetupAction',
+    to: '/connection',
+  },
+  {
+    key: 'payment',
+    titleKey: 'support.selfHelpPaymentTitle',
+    descriptionKey: 'support.selfHelpPaymentDescription',
+    actionKey: 'support.selfHelpPaymentAction',
+    to: '/subscription',
+  },
+  {
+    key: 'devices',
+    titleKey: 'support.selfHelpDevicesTitle',
+    descriptionKey: 'support.selfHelpDevicesDescription',
+    actionKey: 'support.selfHelpDevicesAction',
+    to: '/ultima/devices',
+  },
+  {
+    key: 'info',
+    titleKey: 'support.selfHelpInfoTitle',
+    descriptionKey: 'support.selfHelpInfoDescription',
+    actionKey: 'support.selfHelpInfoAction',
+    to: '/ultima/info',
+  },
+] as const;
 
 function AttachmentPreview({
   attachment,
@@ -236,7 +269,7 @@ function MessageMedia({ message }: { message: Ticket['last_message'] }) {
 export function UltimaSupport() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const { openTelegramLink, openLink } = usePlatform();
   const isDesktop = useMediaQuery('(min-width: 1024px)');
@@ -277,16 +310,6 @@ export function UltimaSupport() {
       ? tickets.items.find((ticket) => ticket.id === selectedTicketId) || null
       : null;
 
-  useEffect(() => {
-    const ticketId = Number(searchParams.get('ticket'));
-    if (!Number.isInteger(ticketId) || ticketId <= 0 || selectedTicketId === ticketId) {
-      return;
-    }
-
-    setSelectedTicketId(ticketId);
-    setShowCreate(false);
-  }, [searchParams, selectedTicketId]);
-
   const ticketBuckets = useMemo(() => {
     const items = [...(tickets?.items ?? [])];
     items.sort((a, b) => {
@@ -308,6 +331,43 @@ export function UltimaSupport() {
     const old = items.filter((ticket) => !recentIds.has(ticket.id));
     return { recent, old };
   }, [tickets?.items]);
+
+  useEffect(() => {
+    const ticketParam = searchParams.get('ticket');
+    const ticketId = Number(ticketParam);
+
+    if (!ticketParam || !Number.isInteger(ticketId) || ticketId <= 0) {
+      if (selectedTicketId !== null) {
+        setSelectedTicketId(null);
+        setMobileTicketsExpanded(true);
+      }
+      return;
+    }
+
+    const ticketFromUrl = tickets?.items?.find((ticket) => ticket.id === ticketId);
+    if (ticketFromUrl) {
+      const isArchiveTicket = ticketBuckets.old.some((ticket) => ticket.id === ticketId);
+      setTicketListMode(isArchiveTicket ? 'archive' : 'active');
+    }
+    if (selectedTicketId !== ticketId) {
+      setSelectedTicketId(ticketId);
+    }
+    setMobileTicketsExpanded(false);
+    setShowCreate(false);
+  }, [searchParams, selectedTicketId, ticketBuckets.old, tickets?.items]);
+
+  const replaceTicketSearchParam = useCallback(
+    (ticketId: number | null) => {
+      const next = new URLSearchParams(searchParams);
+      if (ticketId) {
+        next.set('ticket', String(ticketId));
+      } else {
+        next.delete('ticket');
+      }
+      setSearchParams(next, { replace: true });
+    },
+    [searchParams, setSearchParams],
+  );
 
   const { data: ticketDetail, isLoading: ticketLoading } = useQuery({
     queryKey: ['ticket', selectedTicketId],
@@ -401,12 +461,18 @@ export function UltimaSupport() {
           : undefined,
       ),
     onSuccess: (ticket) => {
+      trackAnalyticsEvent('ultima_support_ticket_created', {
+        ticket_id: ticket.id,
+        has_attachment: Boolean(createAttachment?.fileId),
+      });
       queryClient.invalidateQueries({ queryKey: ['tickets'] });
       setShowCreate(false);
       setNewTitle('');
       setNewMessage('');
       clearCreateAttachment();
+      setTicketListMode('active');
       setSelectedTicketId(ticket.id);
+      replaceTicketSearchParam(ticket.id);
     },
   });
 
@@ -438,9 +504,42 @@ export function UltimaSupport() {
     },
   });
 
-  const applyQuickTopic = (topic: (typeof QUICK_SUPPORT_TOPICS)[number]) => {
+  const quickSupportTopics = useMemo(
+    () =>
+      QUICK_SUPPORT_TOPICS.map((topic) => ({
+        key: topic.key,
+        label: t(topic.labelKey),
+        title: t(topic.titleKey),
+        message: t(topic.messageKey),
+      })),
+    [t],
+  );
+
+  const selfHelpActions = useMemo(
+    () =>
+      SELF_HELP_ACTIONS.map((action) => ({
+        key: action.key,
+        title: t(action.titleKey),
+        description: t(action.descriptionKey),
+        action: t(action.actionKey),
+        to: action.to,
+      })),
+    [t],
+  );
+
+  const applyQuickTopic = (topic: { title: string; message: string }) => {
     setNewTitle((current) => current.trim() || topic.title);
     setNewMessage((current) => current.trim() || topic.message);
+  };
+
+  const openCreateTicket = () => {
+    trackAnalyticsEvent('ultima_support_new_ticket_start');
+    replaceTicketSearchParam(null);
+    clearCreateAttachment();
+    clearReplyAttachment();
+    setSelectedTicketId(null);
+    setMobileTicketsExpanded(false);
+    setShowCreate(true);
   };
 
   const supportContact = useMemo(() => {
@@ -582,6 +681,9 @@ export function UltimaSupport() {
   const handleTicketListModeChange = (mode: TicketListMode) => {
     setTicketListMode(mode);
     setSelectedTicketId(null);
+    clearReplyAttachment();
+    replaceTicketSearchParam(null);
+    setShowCreate(false);
     setMobileTicketsExpanded(true);
   };
 
@@ -612,6 +714,8 @@ export function UltimaSupport() {
       type="button"
       onClick={() => {
         setSelectedTicketId(ticket.id);
+        replaceTicketSearchParam(ticket.id);
+        clearReplyAttachment();
         setMobileTicketsExpanded(false);
       }}
       className={`w-full rounded-2xl px-3 py-2 text-left transition lg:px-3.5 lg:py-2.5 ${
@@ -672,6 +776,42 @@ export function UltimaSupport() {
     );
   };
 
+  const renderSelfHelpActions = (className = '') => (
+    <section
+      className={`${ultimaPaneClassName} p-3 ${className}`}
+      style={ULTIMA_SUPPORT_PANE_STYLE}
+    >
+      <div className="mb-2 flex items-end justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-white/86 text-[12px] font-semibold">{t('support.selfHelpTitle')}</p>
+          <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-white/[0.52]">
+            {t('support.selfHelpSubtitle')}
+          </p>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+        {selfHelpActions.map((action) => (
+          <button
+            key={action.key}
+            type="button"
+            onClick={() => navigate(action.to)}
+            className="rounded-2xl border border-white/10 bg-white/[0.045] px-3 py-2.5 text-left transition hover:border-white/20 hover:bg-white/[0.075]"
+          >
+            <span className="block truncate text-[12px] font-medium text-white/90">
+              {action.title}
+            </span>
+            <span className="mt-1 line-clamp-2 block min-h-[30px] text-[11px] leading-snug text-white/[0.55]">
+              {action.description}
+            </span>
+            <span className="mt-2 block text-[11px] font-medium text-[color:var(--ultima-color-ring)]">
+              {action.action}
+            </span>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+
   const bottomNav = <UltimaBottomNav active="support" onProfileClick={openProfileFast} />;
 
   const supportContent = configLoading ? (
@@ -696,8 +836,9 @@ export function UltimaSupport() {
       className={`${ultimaPanelClassName} space-y-3 p-4`}
       style={ULTIMA_SUPPORT_SECTION_STYLE}
     >
+      {renderSelfHelpActions()}
       <div className="flex flex-wrap gap-2">
-        {QUICK_SUPPORT_TOPICS.map((topic) => (
+        {quickSupportTopics.map((topic) => (
           <button
             key={topic.key}
             type="button"
@@ -824,7 +965,7 @@ export function UltimaSupport() {
             ) : null}
             <button
               type="button"
-              onClick={() => setShowCreate(true)}
+              onClick={openCreateTicket}
               className="ultima-btn-pill ultima-btn-secondary px-3 py-1.5 text-[12px] leading-none"
             >
               {t('support.newTicket')}
@@ -1072,7 +1213,7 @@ export function UltimaSupport() {
               <>
                 <button
                   type="button"
-                  onClick={() => setShowCreate(true)}
+                  onClick={openCreateTicket}
                   className="ultima-btn-pill ultima-btn-primary px-5 py-3 text-sm"
                 >
                   {t('support.newTicket')}

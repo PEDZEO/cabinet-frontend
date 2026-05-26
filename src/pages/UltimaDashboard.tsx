@@ -44,7 +44,9 @@ import {
   hasUltimaTrialGuideBeenAcknowledged,
   writeUltimaTrialGuideAcknowledged,
 } from '@/features/ultima/trialOnboardingFlow';
+import { getUltimaNextAction, type UltimaNextActionKind } from '@/features/ultima/nextAction';
 import { warmUltimaStartup } from '@/features/ultima/warmup';
+import { trackAnalyticsEvent } from '@/utils/analyticsEvents';
 
 const ShieldIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-16 w-16 text-white/95">
@@ -146,6 +148,7 @@ export function UltimaDashboard() {
   const tapResetTimeoutRef = useRef<number | null>(null);
   const warmedLanguagesRef = useRef<Set<string>>(new Set());
   const trialAutoActivationAttemptedRef = useRef(false);
+  const dashboardViewTrackedRef = useRef(false);
   const [shieldRipples, setShieldRipples] = useState<ShieldRipple[]>([]);
   const [shieldDigits, setShieldDigits] = useState<ShieldDigit[]>([]);
   const [connectionStep, setConnectionStep] = useState<1 | 2 | 3>(1);
@@ -267,9 +270,9 @@ export function UltimaDashboard() {
               pill: 'border-emerald-200/[0.28] bg-emerald-300/[0.16] text-emerald-50/95',
               pulse: 'from-emerald-300/[0.34] via-emerald-200/[0.24] to-transparent',
             };
-  const buyCtaLabel = useMemo(() => {
+  const purchaseCtaLabel = useMemo(() => {
     if (!hasAnySubscription) {
-      return t('ultima.buySubscriptionActivate', { defaultValue: 'Активировать подписку' });
+      return t('ultima.chooseTariff', { defaultValue: 'Выбрать тариф' });
     }
     if (!isActive) {
       return t('ultima.buySubscriptionRenew', { defaultValue: 'Продлить подписку' });
@@ -279,7 +282,7 @@ export function UltimaDashboard() {
     }
     return t('lite.buySubscription', { defaultValue: 'Купить подписку' });
   }, [daysLeft, hasAnySubscription, isActive, t]);
-  const buyFromLabel = useMemo(() => {
+  const purchaseFromLabel = useMemo(() => {
     if (!purchaseOptions || purchaseOptions.sales_mode !== 'tariffs')
       return `от 199 ${currencySymbol}`;
     const periods = purchaseOptions.tariffs
@@ -635,7 +638,7 @@ export function UltimaDashboard() {
     navigate('/ultima/devices');
   };
 
-  const openSubscriptionInfo = () => {
+  const openSubscriptionInfo = useCallback(() => {
     haptic.impact('light');
     void queryClient.prefetchQuery({
       queryKey: ['subscription'],
@@ -644,9 +647,10 @@ export function UltimaDashboard() {
     });
     void import('./UltimaSubscriptionInfo');
     navigate('/ultima/subscription-info');
-  };
+  }, [haptic, navigate, queryClient]);
 
   const openSubscriptionPurchase = useCallback(() => {
+    haptic.impact('light');
     void queryClient.prefetchQuery({
       queryKey: ['purchase-options'],
       queryFn: subscriptionApi.getPurchaseOptions,
@@ -661,7 +665,7 @@ export function UltimaDashboard() {
     });
     void import('./Subscription');
     navigate('/subscription');
-  }, [navigate, queryClient]);
+  }, [haptic, navigate, queryClient]);
 
   const canPermanentlyHideReminder = Boolean(
     subscription?.is_active && !subscription?.is_expired && !subscription?.is_trial,
@@ -698,6 +702,87 @@ export function UltimaDashboard() {
   const shouldReserveHomeLogoSlot =
     !hasHomeLogoLoadError &&
     (Boolean(ultimaThemeConfig?.homeUseBrandLogo) || isHomeLogoDecisionPending);
+
+  const primaryActionKind = getUltimaNextAction({
+    hasAnySubscription,
+    isActive,
+    isExpired: Boolean(subscription?.is_expired),
+    daysLeft,
+    isConnectionCompleted,
+  });
+
+  useEffect(() => {
+    if (!isSubscriptionReady || dashboardViewTrackedRef.current) {
+      return;
+    }
+    dashboardViewTrackedRef.current = true;
+    trackAnalyticsEvent('ultima_dashboard_view', {
+      has_subscription: hasAnySubscription,
+      is_active: isActive,
+      is_trial: isActiveTrial,
+      days_left: daysLeft ?? null,
+      connection_completed: isConnectionCompleted,
+      primary_action: primaryActionKind,
+    });
+  }, [
+    daysLeft,
+    hasAnySubscription,
+    isActive,
+    isActiveTrial,
+    isConnectionCompleted,
+    isSubscriptionReady,
+    primaryActionKind,
+  ]);
+
+  const primaryCtaLabel = useMemo(() => {
+    const labels: Record<UltimaNextActionKind, string> = {
+      buy: purchaseCtaLabel,
+      renew: purchaseCtaLabel,
+      setup: t('ultima.finishSetup', { defaultValue: 'Завершить установку' }),
+      subscription: t('subscription.desktopOpenInfo', { defaultValue: 'Открыть подписку' }),
+    };
+    return labels[primaryActionKind];
+  }, [primaryActionKind, purchaseCtaLabel, t]);
+
+  const primaryCtaMeta = useMemo(() => {
+    if (primaryActionKind === 'setup') {
+      return t('ultima.desktop.stepShort', {
+        step: isConnectionCompleted ? 3 : connectionStep,
+        defaultValue: `Шаг ${isConnectionCompleted ? 3 : connectionStep}/3`,
+      });
+    }
+    if (primaryActionKind === 'subscription') {
+      return statusLabel;
+    }
+    return purchaseFromLabel;
+  }, [connectionStep, isConnectionCompleted, primaryActionKind, purchaseFromLabel, statusLabel, t]);
+
+  const handlePrimaryAction = useCallback(() => {
+    trackAnalyticsEvent('ultima_main_cta_click', {
+      action: primaryActionKind,
+      connection_completed: isConnectionCompleted,
+      days_left: daysLeft ?? null,
+    });
+
+    if (primaryActionKind === 'setup') {
+      openConnection();
+      return;
+    }
+
+    if (primaryActionKind === 'subscription') {
+      openSubscriptionInfo();
+      return;
+    }
+
+    openSubscriptionPurchase();
+  }, [
+    daysLeft,
+    isConnectionCompleted,
+    openConnection,
+    openSubscriptionInfo,
+    openSubscriptionPurchase,
+    primaryActionKind,
+  ]);
 
   const renderHomeBrandMark = useCallback(() => {
     if (!shouldReserveHomeLogoSlot) {
@@ -809,6 +894,7 @@ export function UltimaDashboard() {
     isDesktopViewport && 'ultima-flat-frames ultima-shell-dashboard-desktop',
   );
   const bottomNav = <UltimaBottomNav active="home" onSupportClick={openSupport} />;
+  const PrimaryCtaIcon = primaryActionKind === 'setup' ? SetupIcon : GlobeIcon;
   const desktopTrialGuide =
     showTrialSetupCard && !isTrialGuideVisible ? (
       <UltimaTrialGuide
@@ -880,8 +966,9 @@ export function UltimaDashboard() {
           daysLeft={daysLeft}
           connectionStep={connectionStep}
           isConnectionCompleted={isConnectionCompleted}
-          buyCtaLabel={buyCtaLabel}
-          buyFromLabel={buyFromLabel}
+          primaryActionKind={primaryActionKind}
+          primaryCtaLabel={primaryCtaLabel}
+          primaryCtaMeta={primaryCtaMeta}
           promoMessage={promoMessage}
           activeDiscount={activeDiscount}
           firstPromoOffer={firstPromoOffer}
@@ -890,6 +977,7 @@ export function UltimaDashboard() {
           hasSetupReminder={hasSetupReminder}
           hasCompactSetupReminder={hasCompactSetupReminder}
           showConnectionCtaHighlight={showConnectionCtaHighlight}
+          onPrimaryAction={handlePrimaryAction}
           onBuySubscription={openSubscriptionPurchase}
           onOpenConnection={() => openConnection()}
           onOpenDevices={openDevices}
@@ -1091,15 +1179,15 @@ export function UltimaDashboard() {
         <section className="ultima-mobile-dock-footer lg:mt-0">
           <button
             type="button"
-            onClick={openSubscriptionPurchase}
+            onClick={handlePrimaryAction}
             className="ultima-btn-pill ultima-btn-primary mb-3 flex w-full items-center gap-3 px-4 py-3 text-left text-[15px] min-[360px]:px-5 min-[360px]:text-[16px]"
           >
             <span className="flex min-w-0 flex-1 items-center gap-2.5">
-              <GlobeIcon />
-              <span className="min-w-0 break-words leading-tight">{buyCtaLabel}</span>
+              <PrimaryCtaIcon />
+              <span className="min-w-0 break-words leading-tight">{primaryCtaLabel}</span>
             </span>
             <span className="shrink-0 whitespace-nowrap text-[15px] text-white/90 min-[360px]:text-[16px]">
-              {buyFromLabel}
+              {primaryCtaMeta}
             </span>
           </button>
 
@@ -1110,21 +1198,23 @@ export function UltimaDashboard() {
                 <span className="ultima-cta-highlight ultima-cta-highlight-delay pointer-events-none absolute inset-[-5px] rounded-[999px]" />
               </>
             )}
-            <button
-              type="button"
-              onClick={() => openConnection()}
-              className="ultima-btn-pill ultima-btn-secondary relative flex w-full items-center gap-3 px-4 py-3 text-left text-[15px] min-[360px]:px-5 min-[360px]:text-[16px]"
-            >
-              <span className="flex min-w-0 flex-1 items-center gap-2.5">
-                <SetupIcon />
-                <span className="min-w-0 break-words leading-tight">
-                  {t('lite.connectAndSetup', { defaultValue: 'Установка и настройка' })}
+            {primaryActionKind !== 'setup' ? (
+              <button
+                type="button"
+                onClick={() => openConnection()}
+                className="ultima-btn-pill ultima-btn-secondary relative flex w-full items-center gap-3 px-4 py-3 text-left text-[15px] min-[360px]:px-5 min-[360px]:text-[16px]"
+              >
+                <span className="flex min-w-0 flex-1 items-center gap-2.5">
+                  <SetupIcon />
+                  <span className="min-w-0 break-words leading-tight">
+                    {t('lite.connectAndSetup', { defaultValue: 'Установка и настройка' })}
+                  </span>
                 </span>
-              </span>
-              <span className="shrink-0 text-white/70">
-                <PhoneIcon />
-              </span>
-            </button>
+                <span className="shrink-0 text-white/70">
+                  <PhoneIcon />
+                </span>
+              </button>
+            ) : null}
           </div>
         </section>
       </div>

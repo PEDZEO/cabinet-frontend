@@ -6,6 +6,7 @@ import {
   ultimaCardClassName,
   ultimaSurfaceStyle,
 } from '@/features/ultima/surfaces';
+import type { UltimaNextActionKind } from '@/features/ultima/nextAction';
 import { cn } from '@/lib/utils';
 import type { Subscription } from '@/types';
 
@@ -21,8 +22,9 @@ type UltimaDesktopDashboardProps = {
   daysLeft: number | null;
   connectionStep: 1 | 2 | 3;
   isConnectionCompleted: boolean;
-  buyCtaLabel: string;
-  buyFromLabel: string;
+  primaryActionKind: UltimaNextActionKind;
+  primaryCtaLabel: string;
+  primaryCtaMeta: string;
   promoMessage: string | null;
   activeDiscount?: ActiveDiscount;
   firstPromoOffer: PromoOffer | null;
@@ -31,6 +33,7 @@ type UltimaDesktopDashboardProps = {
   hasSetupReminder: boolean;
   hasCompactSetupReminder: boolean;
   showConnectionCtaHighlight: boolean;
+  onPrimaryAction: () => void;
   onBuySubscription: () => void;
   onOpenConnection: () => void;
   onOpenDevices: () => void;
@@ -264,8 +267,9 @@ export function UltimaDesktopDashboard({
   daysLeft,
   connectionStep,
   isConnectionCompleted,
-  buyCtaLabel,
-  buyFromLabel,
+  primaryActionKind,
+  primaryCtaLabel,
+  primaryCtaMeta,
   promoMessage,
   activeDiscount,
   firstPromoOffer,
@@ -274,6 +278,7 @@ export function UltimaDesktopDashboard({
   hasSetupReminder,
   hasCompactSetupReminder,
   showConnectionCtaHighlight,
+  onPrimaryAction,
   onBuySubscription,
   onOpenConnection,
   onOpenDevices,
@@ -469,30 +474,32 @@ export function UltimaDesktopDashboard({
                 <div className="mt-6 flex flex-wrap gap-3">
                   <button
                     type="button"
-                    onClick={onBuySubscription}
+                    onClick={onPrimaryAction}
                     className="ultima-btn-pill ultima-btn-primary inline-flex min-h-[48px] items-center justify-between gap-4 px-5 text-[15px]"
                   >
-                    <span>{buyCtaLabel}</span>
-                    <span className="text-white/[0.84]">{buyFromLabel}</span>
+                    <span>{primaryCtaLabel}</span>
+                    <span className="text-white/[0.84]">{primaryCtaMeta}</span>
                   </button>
-                  <button
-                    type="button"
-                    onClick={onOpenConnection}
-                    className={cn(
-                      'ultima-btn-pill inline-flex min-h-[48px] items-center justify-between gap-4 px-5 text-[15px]',
-                      showConnectionCtaHighlight ? 'ultima-btn-primary' : 'ultima-btn-secondary',
-                    )}
-                  >
-                    <span>
-                      {t('lite.connectAndSetup', { defaultValue: 'Установка и настройка' })}
-                    </span>
-                    <span className="text-white/[0.68]">
-                      {t('ultima.desktop.stepShort', {
-                        step: isConnectionCompleted ? 3 : connectionStep,
-                        defaultValue: `Шаг ${isConnectionCompleted ? 3 : connectionStep}/3`,
-                      })}
-                    </span>
-                  </button>
+                  {primaryActionKind !== 'setup' ? (
+                    <button
+                      type="button"
+                      onClick={onOpenConnection}
+                      className={cn(
+                        'ultima-btn-pill inline-flex min-h-[48px] items-center justify-between gap-4 px-5 text-[15px]',
+                        showConnectionCtaHighlight ? 'ultima-btn-primary' : 'ultima-btn-secondary',
+                      )}
+                    >
+                      <span>
+                        {t('lite.connectAndSetup', { defaultValue: 'Установка и настройка' })}
+                      </span>
+                      <span className="text-white/[0.68]">
+                        {t('ultima.desktop.stepShort', {
+                          step: isConnectionCompleted ? 3 : connectionStep,
+                          defaultValue: `Шаг ${isConnectionCompleted ? 3 : connectionStep}/3`,
+                        })}
+                      </span>
+                    </button>
+                  ) : null}
                 </div>
 
                 {referralCta ? (
@@ -699,12 +706,12 @@ export function UltimaDesktopDashboard({
             <div className="mt-5 space-y-3">
               <button
                 type="button"
-                onClick={onOpenSubscriptionInfo}
+                onClick={onPrimaryAction}
                 className="ultima-btn-pill ultima-btn-primary flex w-full items-center justify-center px-5 py-3 text-[15px]"
               >
-                {t('subscription.desktopOpenInfo', { defaultValue: 'Открыть подписку' })}
+                {primaryCtaLabel}
               </button>
-              {!isConnectionCompleted ? (
+              {primaryActionKind !== 'setup' && !isConnectionCompleted ? (
                 <button
                   type="button"
                   onClick={onOpenConnection}

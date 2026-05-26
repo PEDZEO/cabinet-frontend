@@ -23,8 +23,11 @@ import {
   useCloseOnSuccessNotification,
 } from '@/store/successNotification';
 import { useHaptic, usePlatform } from '@/platform';
+import { useAuthStore } from '@/store/auth';
 import type { PaymentMethod, TariffPeriod } from '@/types';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+import { clearPendingTopUpFollowUp, writePendingTopUpFollowUp } from '@/utils/topUpFollowUp';
+import { trackAnalyticsConversion, trackAnalyticsEvent } from '@/utils/analyticsEvents';
 
 const ULTIMA_PENDING_PURCHASE_KEY = 'ultima_pending_purchase_v1';
 
@@ -161,6 +164,7 @@ export function UltimaSubscription() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
+  const userId = useAuthStore((state) => state.user?.id ?? null);
   const { currencySymbol } = useCurrency();
   const haptic = useHaptic();
   const { openLink, openTelegramLink } = usePlatform();
@@ -183,6 +187,7 @@ export function UltimaSubscription() {
   const deviceTrackRef = useRef<HTMLDivElement | null>(null);
   const autoPurchaseAttemptRef = useRef<string | null>(null);
   const finalizeInProgressRef = useRef(false);
+  const checkoutViewTrackedRef = useRef(false);
 
   const { data: purchaseOptions, isLoading } = useQuery({
     queryKey: ['purchase-options'],
@@ -345,9 +350,12 @@ export function UltimaSubscription() {
       if (withHaptic && lastHapticDeviceIndexRef.current !== clamped) {
         haptic.selection();
         lastHapticDeviceIndexRef.current = clamped;
+        trackAnalyticsEvent('ultima_device_select', {
+          device_limit: deviceLimits[clamped] ?? null,
+        });
       }
     },
-    [deviceLimits.length, haptic],
+    [deviceLimits, haptic],
   );
 
   const handleDeviceTrackClick = (event: MouseEvent<HTMLDivElement>) => {
@@ -418,7 +426,13 @@ export function UltimaSubscription() {
       return subscriptionApi.purchaseTariff(tariffId, periodDays, undefined, params?.deviceLimit);
     },
     onSuccess: async (result) => {
+      trackAnalyticsConversion('ultima_purchase_success', {
+        tariff_name: result.tariff_name,
+        subscription_id: result.subscription.id,
+        purchase_source: 'balance',
+      });
       clearPendingUltimaPurchase();
+      clearPendingTopUpFollowUp(userId);
       setAwaitingPaymentCompletion(false);
       setError(null);
       showSuccessNotification({
@@ -462,7 +476,7 @@ export function UltimaSubscription() {
         payload.paymentMethodId,
         payload.paymentOptionId,
       ),
-    onSuccess: (payment) => {
+    onSuccess: (payment, payload) => {
       const redirectUrl = payment.payment_url;
       if (!redirectUrl) {
         clearPendingUltimaPurchase();
@@ -470,6 +484,24 @@ export function UltimaSubscription() {
         setError(t('balance.errors.noPaymentLink'));
         return;
       }
+      const paymentMethod = paymentMethods?.find((method) => method.id === payload.paymentMethodId);
+      const paymentMethodName = paymentMethod
+        ? t(`balance.paymentMethods.${paymentMethod.id.toLowerCase().replace(/-/g, '_')}.name`, {
+            defaultValue: paymentMethod.name,
+          })
+        : undefined;
+      writePendingTopUpFollowUp(userId, {
+        amountKopeks: payload.amountKopeks,
+        balanceBeforeKopeks: Math.max(0, balanceData?.balance_kopeks ?? 0),
+        paymentUrl: redirectUrl,
+        paymentMethodId: payload.paymentMethodId,
+        paymentMethodName,
+        returnTo: '/subscription',
+      });
+      trackAnalyticsEvent('ultima_payment_link_created', {
+        amount_kopeks: payload.amountKopeks,
+        payment_method_id: payload.paymentMethodId,
+      });
       setAwaitingPaymentCompletion(true);
       if (redirectUrl.includes('t.me/')) {
         openTelegramLink(redirectUrl);
@@ -567,6 +599,12 @@ export function UltimaSubscription() {
           undefined,
           pending.deviceLimit,
         );
+        trackAnalyticsConversion('ultima_purchase_success', {
+          tariff_name: result.tariff_name,
+          subscription_id: result.subscription.id,
+          purchase_source: 'pending_topup',
+          finalize_source: source,
+        });
         queryClient.setQueryData(['subscription'], (prev: unknown) => {
           const previous = prev as { has_subscription?: boolean } | undefined;
           return {
@@ -661,6 +699,18 @@ export function UltimaSubscription() {
       window.removeEventListener('resize', updateViewportWidth);
     };
   }, []);
+
+  useEffect(() => {
+    if (isLoading || checkoutViewTrackedRef.current || !selectedTariff || !selectedPeriod) {
+      return;
+    }
+    checkoutViewTrackedRef.current = true;
+    trackAnalyticsEvent('ultima_checkout_view', {
+      tariff_id: selectedTariff.id,
+      period_days: selectedPeriod.days,
+      device_limit: selectedDeviceLimit,
+    });
+  }, [isLoading, selectedDeviceLimit, selectedPeriod, selectedTariff]);
 
   if (isLoading) {
     if (isDesktopViewport) {
@@ -793,6 +843,7 @@ export function UltimaSubscription() {
     payableAmountKopeks > 0 ? (topUpPreview?.requestedAmountKopeks ?? payableAmountKopeks) : 0;
   const requiresMinTopUpBump =
     payableAmountKopeks > 0 && !!topUpPreview && topUpPreview.bumpsToMinimum;
+
   const canTopUpSelectedTariffTraffic =
     selectedTariffHasTopUp && (trafficPackages?.length ?? 0) > 0;
   const trafficPurchaseErrorMessage =
@@ -812,6 +863,14 @@ export function UltimaSubscription() {
     if (createPaymentMutation.isPending || purchaseMutation.isPending || isFinalizingPending)
       return;
     if (!selectedTariffIdForPurchase || !selectedPeriod) return;
+    trackAnalyticsEvent('ultima_payment_submit', {
+      tariff_id: selectedTariffIdForPurchase,
+      period_days: selectedPeriod.days,
+      device_limit: selectedDeviceLimit,
+      price_kopeks: selectedPriceKopeks,
+      payable_kopeks: payableAmountKopeks,
+      balance_applied_kopeks: balanceAppliedKopeks,
+    });
     let insufficientBalanceError: {
       response?: {
         status?: number;
@@ -895,6 +954,10 @@ export function UltimaSubscription() {
     );
 
     if (bumpsToMinimum) {
+      trackAnalyticsEvent('ultima_min_topup_redirect', {
+        amount_kopeks: topupAmountKopeks,
+        payment_method_id: method.id,
+      });
       const params = new URLSearchParams();
       params.set('amount', String(Math.ceil(topupAmountKopeks / 100)));
       params.set('returnTo', '/subscription');
@@ -908,14 +971,6 @@ export function UltimaSubscription() {
       paymentMethodId: method.id,
       paymentOptionId: selectedOptionId,
     });
-  };
-
-  const formatMonthWord = (months: number) => {
-    const mod10 = months % 10;
-    const mod100 = months % 100;
-    if (mod10 === 1 && mod100 !== 11) return 'месяц';
-    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 'месяца';
-    return 'месяцев';
   };
 
   const selectedTariffSubtitle =
@@ -941,6 +996,10 @@ export function UltimaSubscription() {
           setError(null);
           setSelectedTariffId(tariffId);
           setSelectedPeriodDays(null);
+          trackAnalyticsEvent('ultima_tariff_select', {
+            tariff_id: tariffId,
+            source: 'desktop',
+          });
         }}
       />
     ) : null;
@@ -958,20 +1017,53 @@ export function UltimaSubscription() {
         setSelectedTariffId(tariffId);
         setSelectedPeriodDays(null);
         setIsMobileTariffChooserOpen(false);
+        trackAnalyticsEvent('ultima_tariff_select', {
+          tariff_id: tariffId,
+          source: 'mobile',
+        });
       }}
     />
   ) : null;
 
   const periodLabel = (period: TariffPeriod) => {
-    if (period.days === 365) return '1 год';
+    if (period.days === 365) {
+      return t('ultima.periodYear', { defaultValue: '1 год' });
+    }
     if (period.days > 0 && period.days % 30 === 0) {
       const months = period.days / 30;
       if (months >= 1 && months <= 12) {
-        return `${months} ${formatMonthWord(months)}`;
+        return t('ultima.periodMonths', {
+          count: months,
+          defaultValue: `${months} мес.`,
+        });
       }
     }
-    return `${period.days} дней`;
+    return t('ultima.periodDays', {
+      count: period.days,
+      defaultValue: `${period.days} дн.`,
+    });
   };
+
+  const checkoutIncludedItems = [
+    {
+      label: t('ultima.checkoutPlan', { defaultValue: 'Тариф' }),
+      value: selectedTariff.name,
+    },
+    {
+      label: t('ultima.checkoutPeriod', { defaultValue: 'Период' }),
+      value: periodLabel(selectedPeriod),
+    },
+    {
+      label: t('ultima.checkoutDevices', { defaultValue: 'Устройства' }),
+      value: String(selectedDeviceLimit),
+    },
+    {
+      label: t('ultima.checkoutTraffic', { defaultValue: 'Трафик' }),
+      value:
+        selectedTariff.traffic_limit_label ||
+        t('subscription.unlimited', { defaultValue: 'Безлимит' }),
+    },
+  ];
 
   const desktopPeriods = displayPeriods.map((period) => {
     const preview = applyPromoDiscount(
@@ -984,7 +1076,7 @@ export function UltimaSubscription() {
       days: period.days,
       label: periodLabel(period),
       priceLabel: formatPrice(preview.price),
-      monthlyLabel: `${formatPrice(monthlyPrice)} / мес`,
+      monthlyLabel: `${formatPrice(monthlyPrice)} / ${t('ultima.monthShort', { defaultValue: 'мес' })}`,
       originalPriceLabel:
         preview.original && preview.original > preview.price ? formatPrice(preview.original) : null,
       isSelected: period.days === selectedPeriod.days,
@@ -1013,6 +1105,7 @@ export function UltimaSubscription() {
           deviceLimits={deviceLimits}
           periods={desktopPeriods}
           selectedPeriodLabel={periodLabel(selectedPeriod)}
+          includedItems={checkoutIncludedItems}
           baseDeviceLimitLabel={baseDeviceLimitLabel}
           extraDeviceChargeLabel={extraDeviceChargeLabel}
           legacyDeviceNotice={legacyDeviceNotice}
@@ -1036,6 +1129,12 @@ export function UltimaSubscription() {
           onSelectPeriod={(days) => {
             haptic.impact('light');
             setSelectedPeriodDays(days);
+            trackAnalyticsEvent('ultima_period_select', {
+              tariff_id: selectedTariffIdForPurchase,
+              period_days: days,
+              device_limit: selectedDeviceLimit,
+              source: 'desktop',
+            });
           }}
           onPay={() => {
             void openTopUpForSubscription();
@@ -1301,6 +1400,40 @@ export function UltimaSubscription() {
           ) : null}
 
           <div
+            className={`rounded-3xl border border-white/10 bg-black/20 backdrop-blur ${
+              isUltraCompactHeight ? 'mb-2 p-2.5' : 'mb-3 p-3'
+            }`}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-[15px] font-semibold leading-tight text-white">
+                  {t('ultima.checkoutIncludedTitle', { defaultValue: 'Что входит' })}
+                </h2>
+                <p className="mt-0.5 text-[12px] leading-tight text-white/60">
+                  {t('ultima.checkoutIncludedSubtitle', {
+                    defaultValue: 'Применится сразу после оплаты',
+                  })}
+                </p>
+              </div>
+              <div className="rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-[12px] text-white/75">
+                {periodLabel(selectedPeriod)}
+              </div>
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {checkoutIncludedItems.map((item) => (
+                <div key={item.label} className="rounded-[18px] bg-white/[0.05] px-3 py-2">
+                  <div className="text-[10px] uppercase tracking-[0.12em] text-white/45">
+                    {item.label}
+                  </div>
+                  <div className="mt-0.5 line-clamp-2 break-words text-[13px] font-medium leading-snug text-white/90">
+                    {item.value}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div
             className={`grid auto-rows-fr grid-cols-1 min-[360px]:grid-cols-2 ${isCompactHeight ? 'gap-2.5' : 'gap-3'}`}
           >
             {displayPeriods.map((period) => {
@@ -1312,15 +1445,21 @@ export function UltimaSubscription() {
                   onClick={() => {
                     haptic.impact('light');
                     setSelectedPeriodDays(period.days);
+                    trackAnalyticsEvent('ultima_period_select', {
+                      tariff_id: selectedTariffIdForPurchase,
+                      period_days: period.days,
+                      device_limit: selectedDeviceLimit,
+                      source: 'mobile',
+                    });
                   }}
                   className={`h-full rounded-3xl border text-left transition-colors ${
                     isUltraCompactHeight
-                      ? 'min-h-[124px] p-2.5'
+                      ? 'min-h-[104px] p-2.5'
                       : isNarrowWidth
-                        ? 'min-h-[132px] p-3'
+                        ? 'min-h-[116px] p-3'
                         : isCompactHeight
-                          ? 'min-h-[140px] p-3'
-                          : 'min-h-[148px] p-3.5'
+                          ? 'min-h-[124px] p-3'
+                          : 'min-h-[132px] p-3.5'
                   } ${
                     active
                       ? 'border bg-black/20'
@@ -1380,10 +1519,10 @@ export function UltimaSubscription() {
                   <p
                     className={`font-semibold leading-none text-white ${
                       isUltraCompactHeight
-                        ? 'text-[26px]'
+                        ? 'text-[24px]'
                         : isNarrowWidth
-                          ? 'text-[28px]'
-                          : 'text-[clamp(28px,8.6vw,32px)]'
+                          ? 'text-[26px]'
+                          : 'text-[clamp(26px,7.8vw,30px)]'
                     }`}
                   >
                     {formatPrice(
@@ -1406,7 +1545,7 @@ export function UltimaSubscription() {
                             30,
                         ),
                       ),
-                    )} / мес`}
+                    )} / ${t('ultima.monthShort', { defaultValue: 'мес' })}`}
                   </p>
                 </button>
               );

@@ -134,6 +134,12 @@ export function UltimaTopUpAmount() {
   const maxRub = (method?.max_amount_kopeks ?? 0) / 100;
   const quickRubles = [100, 300, 500, 1000].filter((value) => value >= minRub && value <= maxRub);
 
+  const methodName = useMemo(() => {
+    if (!method) return '';
+    const key = method.id.toLowerCase().replace(/-/g, '_');
+    return t(`balance.paymentMethods.${key}.name`, { defaultValue: method.name });
+  }, [method, t]);
+
   const openPayment = useCallback(
     (url: string) => {
       if (url.includes('t.me/')) {
@@ -157,11 +163,16 @@ export function UltimaTopUpAmount() {
       return balanceApi.createTopUp(amountKopeks, method.id, selectedOption || undefined);
     },
     onSuccess: (result, amountKopeks) => {
+      if (!method) return;
       setError(null);
       const url = result.payment_url;
       writePendingTopUpFollowUp(userId, {
         amountKopeks,
         balanceBeforeKopeks: Math.max(0, balanceData?.balance_kopeks ?? 0),
+        paymentUrl: url,
+        paymentMethodId: method.id,
+        paymentMethodName: methodName,
+        returnTo: returnTo || '/subscription',
       });
       setPaymentUrl(url);
       openPayment(url);
@@ -207,12 +218,6 @@ export function UltimaTopUpAmount() {
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1200);
   };
-
-  const methodName = useMemo(() => {
-    if (!method) return '';
-    const key = method.id.toLowerCase().replace(/-/g, '_');
-    return t(`balance.paymentMethods.${key}.name`, { defaultValue: method.name });
-  }, [method, t]);
 
   if (!method) {
     return <div className="min-h-[100dvh] min-h-[100svh] w-full bg-transparent" />;
