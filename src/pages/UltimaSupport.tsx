@@ -55,7 +55,6 @@ const CloseIcon = () => (
 );
 
 const TICKETS_BATCH_SIZE = 5;
-const MOBILE_TICKET_LIST_COLLAPSED_HEIGHT = 'max-h-[132px]';
 const MOBILE_TICKET_LIST_EXPANDED_HEIGHT = 'max-h-[34vh]';
 const ULTIMA_SUPPORT_SECTION_STYLE: CSSProperties = ultimaSurfaceStyle;
 const ULTIMA_SUPPORT_PANE_STYLE: CSSProperties = ultimaPaneSurfaceStyle;
@@ -87,6 +86,8 @@ const ALLOWED_FILE_TYPES: Record<string, TicketMediaType> = {
 
 const ACCEPT_STRING = Object.keys(ALLOWED_FILE_TYPES).join(',');
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+type TicketListMode = 'active' | 'archive';
 
 const QUICK_SUPPORT_TOPICS = [
   {
@@ -245,7 +246,7 @@ export function UltimaSupport() {
   const [newTitle, setNewTitle] = useState('');
   const [newMessage, setNewMessage] = useState('');
   const [replyMessage, setReplyMessage] = useState('');
-  const [showOldTickets, setShowOldTickets] = useState(false);
+  const [ticketListMode, setTicketListMode] = useState<TicketListMode>('active');
   const [mobileTicketsExpanded, setMobileTicketsExpanded] = useState(false);
   const [visibleRecentCount, setVisibleRecentCount] = useState(TICKETS_BATCH_SIZE);
   const [visibleOldCount, setVisibleOldCount] = useState(TICKETS_BATCH_SIZE);
@@ -590,6 +591,29 @@ export function UltimaSupport() {
     [ticketBuckets.old, visibleOldCount],
   );
 
+  const currentTicketBucket =
+    ticketListMode === 'archive' ? ticketBuckets.old : ticketBuckets.recent;
+  const visibleTicketList = ticketListMode === 'archive' ? visibleOldTickets : visibleRecentTickets;
+  const visibleTicketCount = ticketListMode === 'archive' ? visibleOldCount : visibleRecentCount;
+
+  const handleTicketListModeChange = (mode: TicketListMode) => {
+    setTicketListMode(mode);
+    if (!isDesktop) {
+      setMobileTicketsExpanded(true);
+    }
+  };
+
+  const handleLoadMoreTickets = () => {
+    if (ticketListMode === 'archive') {
+      setVisibleOldCount((prev) => Math.min(ticketBuckets.old.length, prev + TICKETS_BATCH_SIZE));
+      return;
+    }
+
+    setVisibleRecentCount((prev) =>
+      Math.min(ticketBuckets.recent.length, prev + TICKETS_BATCH_SIZE),
+    );
+  };
+
   const openProfileFast = () => {
     void queryClient.prefetchQuery({
       queryKey: ['subscription'],
@@ -633,6 +657,35 @@ export function UltimaSupport() {
       <p className="mt-1 text-[11px] text-white/[0.48]">{formatDate(ticket.updated_at)}</p>
     </button>
   );
+
+  const renderTicketListTab = (mode: TicketListMode, label: string, count: number) => {
+    const active = ticketListMode === mode;
+
+    return (
+      <button
+        type="button"
+        onClick={() => handleTicketListModeChange(mode)}
+        className={`flex min-w-0 items-center justify-center gap-2 rounded-2xl border px-3 py-2 text-[12px] font-medium transition lg:text-[13px] ${
+          active
+            ? 'border-transparent text-white'
+            : 'border-white/10 bg-white/[0.04] text-white/[0.58] hover:bg-white/[0.07] hover:text-white/[0.78]'
+        }`}
+        style={
+          active
+            ? {
+                background:
+                  'linear-gradient(135deg, color-mix(in srgb, var(--ultima-color-primary) 52%, transparent), color-mix(in srgb, var(--ultima-color-secondary) 82%, transparent))',
+              }
+            : undefined
+        }
+      >
+        <span className="truncate">{label}</span>
+        <span className="shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-white/[0.78]">
+          {count}
+        </span>
+      </button>
+    );
+  };
 
   const bottomNav = <UltimaBottomNav active="support" onProfileClick={openProfileFast} />;
 
@@ -794,14 +847,27 @@ export function UltimaSupport() {
           </div>
         </div>
 
+        {tickets?.items?.length ? (
+          <div className="grid grid-cols-2 gap-2 lg:max-w-[380px]">
+            {renderTicketListTab(
+              'active',
+              t('support.activeTickets', { defaultValue: 'Активные' }),
+              ticketBuckets.recent.length,
+            )}
+            {renderTicketListTab(
+              'archive',
+              t('support.archiveTickets', { defaultValue: 'Архив' }),
+              ticketBuckets.old.length,
+            )}
+          </div>
+        ) : null}
+
         <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[380px_minmax(0,1fr)] lg:gap-4">
           <div
             className={`${ultimaPaneClassName} ultima-scrollbar ${
-              selectedTicketId
-                ? mobileTicketsExpanded
-                  ? MOBILE_TICKET_LIST_EXPANDED_HEIGHT
-                  : MOBILE_TICKET_LIST_COLLAPSED_HEIGHT
-                : 'max-h-[38vh]'
+              selectedTicketId && !mobileTicketsExpanded ? 'hidden lg:block' : ''
+            } ${
+              selectedTicketId ? MOBILE_TICKET_LIST_EXPANDED_HEIGHT : 'max-h-[38vh]'
             } space-y-2 overflow-y-auto p-2 pr-1.5 lg:max-h-none lg:min-h-[500px] lg:p-3 lg:pr-2`}
             style={ULTIMA_SUPPORT_PANE_STYLE}
           >
@@ -809,86 +875,41 @@ export function UltimaSupport() {
               <p className="px-2 py-1 text-[13px] text-white/70">{t('common.loading')}</p>
             ) : tickets?.items?.length ? (
               <>
-                {ticketBuckets.recent.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="px-1 text-[10px] uppercase tracking-[0.18em] text-white/[0.45]">
-                      {t('support.recentTickets', { defaultValue: 'Новые и активные' })}
+                <div className="space-y-2">
+                  <p className="px-1 text-[10px] uppercase tracking-[0.18em] text-white/[0.45]">
+                    {ticketListMode === 'archive'
+                      ? t('support.archiveTickets', { defaultValue: 'Архив' })
+                      : t('support.recentTickets', { defaultValue: 'Новые и активные' })}
+                  </p>
+                  {visibleTicketList.length > 0 ? (
+                    <>
+                      {visibleTicketList.map((ticket) => renderTicketCard(ticket))}
+                      {currentTicketBucket.length > visibleTicketCount ? (
+                        <button
+                          type="button"
+                          onClick={handleLoadMoreTickets}
+                          className="w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-left text-[12px] text-white/80 transition hover:bg-white/[0.08]"
+                        >
+                          {t('support.desktopShowMoreTickets', {
+                            count: Math.min(
+                              TICKETS_BATCH_SIZE,
+                              currentTicketBucket.length - visibleTicketCount,
+                            ),
+                            defaultValue: `Показать еще ${Math.min(TICKETS_BATCH_SIZE, currentTicketBucket.length - visibleTicketCount)}`,
+                          })}
+                        </button>
+                      ) : null}
+                    </>
+                  ) : (
+                    <p className="rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-4 text-[13px] text-white/[0.58]">
+                      {ticketListMode === 'archive'
+                        ? t('support.noArchiveTickets', {
+                            defaultValue: 'В архиве пока нет тикетов',
+                          })
+                        : t('support.noActiveTickets', { defaultValue: 'Активных тикетов нет' })}
                     </p>
-                    {visibleRecentTickets.map((ticket) => renderTicketCard(ticket))}
-                    {ticketBuckets.recent.length > visibleRecentCount ? (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setVisibleRecentCount((prev) =>
-                            Math.min(ticketBuckets.recent.length, prev + TICKETS_BATCH_SIZE),
-                          )
-                        }
-                        className="w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-left text-[12px] text-white/80 transition hover:bg-white/[0.08]"
-                      >
-                        {t('support.desktopShowMoreTickets', {
-                          count: Math.min(
-                            TICKETS_BATCH_SIZE,
-                            ticketBuckets.recent.length - visibleRecentCount,
-                          ),
-                          defaultValue: `Показать еще ${Math.min(TICKETS_BATCH_SIZE, ticketBuckets.recent.length - visibleRecentCount)}`,
-                        })}
-                      </button>
-                    ) : null}
-                  </div>
-                )}
-
-                {ticketBuckets.old.length > 0 && (
-                  <div className="space-y-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => setShowOldTickets((prev) => !prev)}
-                      className="flex w-full items-center justify-between gap-2 rounded-xl border px-2.5 py-2 text-left text-[12px]"
-                      style={{
-                        borderColor:
-                          'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
-                        background:
-                          'color-mix(in srgb, var(--ultima-color-secondary) 60%, transparent)',
-                        color:
-                          'color-mix(in srgb, var(--ultima-color-secondary-text) 82%, transparent)',
-                      }}
-                    >
-                      <span>
-                        {showOldTickets
-                          ? t('support.hideOldTickets', { defaultValue: 'Скрыть архив' })
-                          : t('support.showOldTickets', {
-                              defaultValue: 'Закрытые и старые',
-                            })}
-                      </span>
-                      <span className="shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-white/70">
-                        {ticketBuckets.old.length}
-                      </span>
-                    </button>
-                    {showOldTickets && (
-                      <div className="space-y-2">
-                        {visibleOldTickets.map((ticket) => renderTicketCard(ticket))}
-                        {ticketBuckets.old.length > visibleOldCount ? (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setVisibleOldCount((prev) =>
-                                Math.min(ticketBuckets.old.length, prev + TICKETS_BATCH_SIZE),
-                              )
-                            }
-                            className="w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-left text-[12px] text-white/80 transition hover:bg-white/[0.08]"
-                          >
-                            {t('support.desktopShowMoreTickets', {
-                              count: Math.min(
-                                TICKETS_BATCH_SIZE,
-                                ticketBuckets.old.length - visibleOldCount,
-                              ),
-                              defaultValue: `Показать еще ${Math.min(TICKETS_BATCH_SIZE, ticketBuckets.old.length - visibleOldCount)}`,
-                            })}
-                          </button>
-                        ) : null}
-                      </div>
-                    )}
-                  </div>
-                )}
+                  )}
+                </div>
               </>
             ) : (
               <p className="px-2 py-2 text-[13px] text-white/60">{t('support.noTickets')}</p>
