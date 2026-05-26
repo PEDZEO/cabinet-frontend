@@ -401,6 +401,10 @@ export function UltimaSubscription() {
   const sliderProgressPercent =
     deviceLimits.length > 1 ? (selectedDeviceIndex / (deviceLimits.length - 1)) * 100 : 0;
   const sliderVisualPower = 0.28 + sliderProgressPercent / 130;
+  const minDeviceLimit = deviceLimits[0] ?? selectedDeviceLimit;
+  const maxDeviceLimit = deviceLimits[deviceLimits.length - 1] ?? selectedDeviceLimit;
+  const canDecreaseDevices = selectedDeviceIndex > 0;
+  const canIncreaseDevices = selectedDeviceIndex < deviceLimits.length - 1;
   const autoTariffId = Number(searchParams.get('autoTariffId'));
   const autoPeriodDays = Number(searchParams.get('autoPeriodDays'));
   const autoDeviceLimit = Number(searchParams.get('autoDeviceLimit'));
@@ -1219,16 +1223,6 @@ export function UltimaSubscription() {
           }`}
         >
           <div className={`flex items-center gap-2.5 ${isUltraCompactHeight ? 'mb-1.5' : 'mb-2'}`}>
-            <span
-              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-[16px] font-semibold text-white shadow-[0_0_14px_color-mix(in_srgb,var(--ultima-color-primary)_34%,transparent)]"
-              style={{
-                borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 52%, transparent)',
-                background:
-                  'radial-gradient(circle at 30% 30%, color-mix(in srgb, #ffffff 34%, transparent), color-mix(in srgb, var(--ultima-color-primary) 36%, transparent) 40%, color-mix(in srgb, var(--ultima-color-surface) 78%, #000000) 100%)',
-              }}
-            >
-              {selectedDeviceLimit}
-            </span>
             <div className="min-w-0 flex-1">
               <div className="flex min-w-0 items-center gap-2">
                 <p
@@ -1249,6 +1243,36 @@ export function UltimaSubscription() {
               <p className="mt-1 truncate text-[11px] leading-tight text-white/[0.48]">
                 {baseDeviceLimitLabel}
               </p>
+            </div>
+            <div
+              className="flex h-9 shrink-0 items-center rounded-full border p-0.5 shadow-[0_0_14px_color-mix(in_srgb,var(--ultima-color-primary)_22%,transparent)]"
+              style={{
+                borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 38%, transparent)',
+                background:
+                  'linear-gradient(180deg,color-mix(in srgb, var(--ultima-color-surface) 70%, transparent),color-mix(in srgb, var(--ultima-color-secondary) 62%, transparent))',
+              }}
+            >
+              <button
+                type="button"
+                aria-label="decrease-devices"
+                disabled={!canDecreaseDevices}
+                onClick={() => applyDeviceIndex(selectedDeviceIndex - 1)}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-[18px] font-medium leading-none text-white/80 transition enabled:hover:bg-white/[0.08] enabled:active:scale-95 disabled:cursor-not-allowed disabled:text-white/[0.28]"
+              >
+                -
+              </button>
+              <span className="min-w-7 text-center text-[15px] font-semibold leading-none text-white">
+                {selectedDeviceLimit}
+              </span>
+              <button
+                type="button"
+                aria-label="increase-devices"
+                disabled={!canIncreaseDevices}
+                onClick={() => applyDeviceIndex(selectedDeviceIndex + 1)}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-[18px] font-medium leading-none text-white/80 transition enabled:hover:bg-white/[0.08] enabled:active:scale-95 disabled:cursor-not-allowed disabled:text-white/[0.28]"
+              >
+                +
+              </button>
             </div>
           </div>
 
@@ -1339,20 +1363,11 @@ export function UltimaSubscription() {
                       ? `${(index / (deviceLimits.length - 1)) * 100}%`
                       : '0%';
                   const active = index === selectedDeviceIndex;
-                  const isEdge = index === 0 || index === deviceLimits.length - 1;
-                  if (!active && !isEdge && deviceLimits.length > 14 && limit % 5 !== 0) {
-                    return null;
-                  }
                   return (
-                    <button
+                    <span
                       key={limit}
-                      type="button"
-                      aria-label={`devices-${limit}`}
-                      onClick={(event) => {
-                        event.preventDefault();
-                        applyDeviceIndex(index);
-                      }}
-                      className="absolute top-1/2 z-30 -translate-x-1/2 -translate-y-1/2"
+                      aria-hidden="true"
+                      className="pointer-events-none absolute top-1/2 z-20 -translate-x-1/2 -translate-y-1/2"
                       style={{
                         left: `calc(${left} + ${
                           index === 0 ? '4px' : index === deviceLimits.length - 1 ? '-4px' : '0px'
@@ -1372,9 +1387,14 @@ export function UltimaSubscription() {
                             : 'none',
                         }}
                       />
-                    </button>
+                    </span>
                   );
                 })}
+              </div>
+              <div className="mt-0.5 flex items-center justify-between px-0.5 text-[10px] leading-none text-white/[0.45]">
+                <span>{minDeviceLimit}</span>
+                <span className="font-medium text-white/[0.64]">{selectedDeviceLimit}</span>
+                <span>{maxDeviceLimit}</span>
               </div>
             </div>
           </div>

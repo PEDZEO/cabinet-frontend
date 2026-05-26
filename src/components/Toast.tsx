@@ -96,7 +96,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
 
       {/* Toast Container — safe area aware, adaptive width */}
-      <div className="pointer-events-none fixed left-4 right-4 top-[calc(1rem+env(safe-area-inset-top,0px))] z-[100] flex flex-col gap-3 sm:left-auto sm:right-[calc(1rem+env(safe-area-inset-right,0px))]">
+      <div className="pointer-events-none fixed left-4 right-4 top-[calc(0.75rem+env(safe-area-inset-top,0px))] z-[100] flex flex-col gap-2 sm:left-auto sm:right-[calc(1rem+env(safe-area-inset-right,0px))]">
         {toasts.map((toast) => (
           <ToastItem key={toast.id} toast={toast} onClose={() => removeToast(toast.id)} />
         ))}
@@ -113,28 +113,28 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
 
   const typeStyles = {
     success: {
-      border: 'border-l-success-500',
+      border: 'border-l-success-400/70',
       icon: 'text-success-400',
-      iconBg: 'bg-success-500/20',
-      progress: 'bg-success-400',
+      iconBg: 'bg-success-500/10',
+      progress: 'bg-success-400/60',
     },
     error: {
-      border: 'border-l-error-500',
+      border: 'border-l-error-400/70',
       icon: 'text-error-400',
-      iconBg: 'bg-error-500/20',
-      progress: 'bg-error-400',
+      iconBg: 'bg-error-500/10',
+      progress: 'bg-error-400/60',
     },
     warning: {
-      border: 'border-l-warning-500',
-      icon: 'text-warning-400',
-      iconBg: 'bg-warning-500/20',
-      progress: 'bg-warning-400',
+      border: 'border-l-warning-400/60',
+      icon: 'text-warning-300',
+      iconBg: 'bg-warning-500/10',
+      progress: 'bg-warning-300/50',
     },
     info: {
-      border: 'border-l-accent-500',
+      border: 'border-l-accent-400/70',
       icon: 'text-accent-400',
-      iconBg: 'bg-accent-500/20',
-      progress: 'bg-accent-400',
+      iconBg: 'bg-accent-500/10',
+      progress: 'bg-accent-400/60',
     },
   };
 
@@ -197,14 +197,14 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
 
   return (
     <div
-      className={`pointer-events-auto w-full cursor-pointer border border-l-4 border-dark-700 ${style.border} animate-slide-in-right overflow-hidden rounded-2xl bg-dark-900 shadow-2xl shadow-black/50 backdrop-blur-xl transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] sm:max-w-sm`}
+      className={`pointer-events-auto w-full cursor-pointer border border-l-2 border-dark-700/80 ${style.border} animate-fade-in-fast overflow-hidden rounded-2xl bg-dark-900/95 shadow-lg shadow-black/30 backdrop-blur-xl transition-colors duration-200 hover:border-dark-600 active:bg-dark-800/95 sm:max-w-sm`}
       onClick={handleClick}
     >
-      <div className="relative p-4">
+      <div className="relative p-3.5">
         <div className="flex gap-3">
           {/* Icon */}
           <div
-            className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl ${style.iconBg} ${style.icon}`}
+            className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl ${style.iconBg} ${style.icon}`}
           >
             {toast.icon || defaultIcons[toast.type || 'info']}
           </div>
@@ -212,16 +212,16 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
           {/* Content */}
           <div className="min-w-0 flex-1 pt-0.5">
             {toast.title && (
-              <p className="mb-0.5 text-sm font-semibold text-dark-100">{toast.title}</p>
+              <p className="mb-0.5 text-[13px] font-semibold text-dark-100">{toast.title}</p>
             )}
-            <p className="text-sm leading-relaxed text-dark-300">{toast.message}</p>
+            <p className="text-[13px] leading-relaxed text-dark-300">{toast.message}</p>
           </div>
         </div>
 
         {/* Progress bar */}
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-dark-800/50">
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-dark-800/30">
           <div
-            className={`h-full w-full ${style.progress} opacity-60`}
+            className={`h-full w-full ${style.progress}`}
             style={{
               animation: `shrink ${toast.duration}ms linear forwards`,
               transformOrigin: 'left',
