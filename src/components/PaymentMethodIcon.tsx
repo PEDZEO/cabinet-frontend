@@ -7,7 +7,49 @@ export default function PaymentMethodIcon({
   method,
   className = 'h-8 w-8',
 }: PaymentMethodIconProps) {
-  switch (method) {
+  const normalizedMethod = method.toLowerCase().replace(/-/g, '_');
+  const letterIcon = (label: string, fill: string) => (
+    <svg className={className} viewBox="0 0 40 40">
+      <circle cx="20" cy="20" r="20" fill={fill} />
+      <g fill="#fff" fontFamily="Arial,sans-serif" fontWeight="700">
+        <text x="20" y="26" textAnchor="middle" fontSize={label.length > 2 ? 11 : 14}>
+          {label}
+        </text>
+      </g>
+    </svg>
+  );
+  const cardIcon = (fill = '#6C5CE7') => (
+    <svg className={className} viewBox="0 0 40 40">
+      <circle cx="20" cy="20" r="20" fill={fill} />
+      <rect
+        x="10"
+        y="14"
+        width="20"
+        height="14"
+        rx="2"
+        fill="none"
+        stroke="#fff"
+        strokeWidth="1.5"
+      />
+      <line x1="10" y1="19" x2="30" y2="19" stroke="#fff" strokeWidth="1.5" />
+      <rect x="13" y="22" width="5" height="2" rx="0.5" fill="#fff" opacity=".6" />
+    </svg>
+  );
+  const sbpIcon = (fill = '#00B894') => (
+    <svg className={className} viewBox="0 0 40 40">
+      <circle cx="20" cy="20" r="20" fill={fill} />
+      <g fill="#fff" fontFamily="Arial,sans-serif" fontWeight="700">
+        <text x="20" y="20" textAnchor="middle" fontSize="9">
+          SBP
+        </text>
+        <text x="20" y="30" textAnchor="middle" fontSize="8" fontWeight="400">
+          QR
+        </text>
+      </g>
+    </svg>
+  );
+
+  switch (normalizedMethod) {
     case 'telegram_stars':
       return (
         <svg className={className} viewBox="0 0 40 40">
@@ -188,6 +230,61 @@ export default function PaymentMethodIcon({
           </g>
         </svg>
       );
+
+    case 'kassa_ai_sbp':
+    case 'aurapay_sbp':
+    case 'etoplatezhi_sbp':
+    case 'antilopay_sbp':
+    case 'jupiter_sbp':
+    case 'donut_sbp':
+    case 'donut_sbp_qr':
+    case 'lava_sbp':
+      return sbpIcon();
+
+    case 'kassa_ai_card':
+    case 'aurapay_card':
+    case 'etoplatezhi_card':
+    case 'antilopay_card':
+    case 'donut_card':
+    case 'lava_card':
+      return cardIcon();
+
+    case 'kassa_ai_sberpay':
+    case 'antilopay_sberpay':
+      return letterIcon('SB', '#16A34A');
+
+    case 'riopay':
+      return letterIcon('RP', '#059669');
+
+    case 'severpay':
+      return letterIcon('SP', '#1D4ED8');
+
+    case 'paypear':
+      return letterIcon('PP', '#D97706');
+
+    case 'rollypay':
+      return letterIcon('RY', '#0D9488');
+
+    case 'overpay':
+      return letterIcon('OP', '#7C3AED');
+
+    case 'aurapay':
+      return letterIcon('AP', '#DB2777');
+
+    case 'etoplatezhi':
+      return letterIcon('EP', '#059669');
+
+    case 'antilopay':
+      return letterIcon('AL', '#D97706');
+
+    case 'jupiter':
+      return letterIcon('JP', '#6366F1');
+
+    case 'donut':
+      return letterIcon('DN', '#EC4899');
+
+    case 'lava':
+      return letterIcon('LV', '#EF4444');
 
     default:
       return (

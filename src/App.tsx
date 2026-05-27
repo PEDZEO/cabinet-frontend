@@ -5,6 +5,7 @@ import { BlockingOverlay } from './components/routing/RouteShells';
 import { infoApi } from './api/info';
 import { ticketsApi } from './api/tickets';
 import { useAnalyticsCounters } from './hooks/useAnalyticsCounters';
+import { useSiteVerification } from './hooks/useSiteVerification';
 import { adminRoutes } from './pages/routes/adminRoutes';
 import { protectedRoutes } from './pages/routes/protectedRoutes';
 import { publicRoutes } from './pages/routes/publicRoutes';
@@ -12,6 +13,7 @@ import { useAuthStore } from './store/auth';
 
 function App() {
   useAnalyticsCounters();
+  useSiteVerification();
   const queryClient = useQueryClient();
   const location = useLocation();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);

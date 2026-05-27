@@ -30,6 +30,20 @@ const METHOD_LABELS: Record<string, string> = {
   cloudpayments: 'CloudPayments',
   freekassa: 'FreeKassa',
   kassa_ai: 'Kassa AI',
+  kassa_ai_sbp: 'Kassa AI SBP',
+  kassa_ai_card: 'Kassa AI Card',
+  kassa_ai_sberpay: 'Kassa AI SberPay',
+  riopay: 'RioPay',
+  severpay: 'SeverPay',
+  paypear: 'PayPear',
+  rollypay: 'RollyPay',
+  overpay: 'Overpay',
+  aurapay: 'AuraPay',
+  etoplatezhi: 'Etoplatezhi',
+  antilopay: 'Antilopay',
+  jupiter: 'Jupiter',
+  donut: 'Donut',
+  lava: 'Lava',
 };
 
 export function DepositsTab({ params, viewMode = 'classic' }: DepositsTabProps) {

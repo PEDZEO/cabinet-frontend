@@ -6,7 +6,13 @@ import { adminSettingsApi, SettingDefinition } from '../api/adminSettings';
 import { themeColorsApi } from '../api/themeColors';
 import { useFavoriteSettings } from '../hooks/useFavoriteSettings';
 import { useFavoriteSettingCategories } from '../hooks/useFavoriteSettingCategories';
-import { MENU_SECTIONS, MenuItem, formatSettingKey } from '../components/admin';
+import {
+  SETTINGS_TREE,
+  TreeGroup,
+  TreeSubItem,
+  findTreeLocation,
+  formatSettingKey,
+} from '../components/admin';
 import { usePlatform } from '../platform/hooks/usePlatform';
 import { AnalyticsTab } from '../components/admin/AnalyticsTab';
 import { BrandingTab } from '../components/admin/BrandingTab';
@@ -14,14 +20,18 @@ import { MenuEditorTab } from '../components/admin/MenuEditorTab';
 import { ThemeTab } from '../components/admin/ThemeTab';
 import { FavoritesTab } from '../components/admin/FavoritesTab';
 import { CategoryGroup, SettingsTab } from '../components/admin/SettingsTab';
+import { SettingsTreeSidebar } from '../components/admin/SettingsTreeSidebar';
 import { SettingsMobileTabs } from '../components/admin/SettingsMobileTabs';
-import {
-  SettingsSearch,
-  SettingsSearchMobile,
-  SettingsSearchResults,
-} from '../components/admin/SettingsSearch';
+import { SettingsSearchMobile, SettingsSearchResults } from '../components/admin/SettingsSearch';
 
-// BackIcon
+const DEFAULT_SECTION = 'branding';
+const TARIFF_MODE_SETTINGS = ['MULTI_TARIFF_ENABLED', 'MAX_ACTIVE_SUBSCRIPTIONS'];
+
+type ActiveTreeInfo = {
+  group: TreeGroup;
+  child: TreeSubItem;
+};
+
 const BackIcon = () => (
   <svg
     className="h-5 w-5 text-dark-400"
@@ -34,16 +44,44 @@ const BackIcon = () => (
   </svg>
 );
 
-// Find section ID by category key
-function findSectionByCategory(categoryKey: string): string | null {
-  for (const section of MENU_SECTIONS) {
-    for (const item of section.items) {
-      if (item.categories?.includes(categoryKey)) {
-        return item.id;
-      }
-    }
+const ChevronRightIcon = () => (
+  <svg
+    className="h-3.5 w-3.5 text-dark-600"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={2}
+  >
+    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+  </svg>
+);
+
+function getTreeInfo(sectionId: string): ActiveTreeInfo | null {
+  for (const group of SETTINGS_TREE.groups) {
+    const child = group.children.find((item) => item.id === sectionId);
+    if (child) return { group, child };
   }
   return null;
+}
+
+function normalizeSection(sectionId?: string | null, categoryKey?: string | null): string {
+  if (categoryKey) {
+    const location = findTreeLocation(categoryKey);
+    if (location) return location.subItemId;
+  }
+
+  if (!sectionId) return DEFAULT_SECTION;
+
+  if (SETTINGS_TREE.specialItems.some((item) => item.id === sectionId)) {
+    return sectionId;
+  }
+
+  if (getTreeInfo(sectionId)) return sectionId;
+
+  const group = SETTINGS_TREE.groups.find((item) => item.id === sectionId);
+  if (group?.children[0]) return group.children[0].id;
+
+  return DEFAULT_SECTION;
 }
 
 export default function AdminSettings() {
@@ -52,12 +90,14 @@ export default function AdminSettings() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { capabilities } = usePlatform();
 
-  // State
-  const [activeSection, setActiveSection] = useState('branding');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [focusedCategoryKey, setFocusedCategoryKey] = useState<string | null>(null);
+  const [activeSection, setActiveSection] = useState(() =>
+    normalizeSection(searchParams.get('section'), searchParams.get('category')),
+  );
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
+  const [focusedCategoryKey, setFocusedCategoryKey] = useState<string | null>(() =>
+    searchParams.get('category'),
+  );
 
-  // Favorites hook
   const { favorites, toggleFavorite, isFavorite } = useFavoriteSettings();
   const {
     favorites: favoriteCategoryKeys,
@@ -65,12 +105,10 @@ export default function AdminSettings() {
     isFavoriteCategory,
   } = useFavoriteSettingCategories();
 
-  // Scroll to top on section change
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    window.scrollTo({ top: 0, behavior: 'auto' });
   }, [activeSection]);
 
-  // Queries
   const { data: themeColors } = useQuery({
     queryKey: ['theme-colors'],
     queryFn: themeColorsApi.getColors,
@@ -86,47 +124,64 @@ export default function AdminSettings() {
     const category = searchParams.get('category');
     const search = searchParams.get('search');
 
-    if (section) {
-      setActiveSection(section);
-    }
-    if (category) {
-      setFocusedCategoryKey(category);
-    }
-    if (search) {
-      setSearchQuery(search);
-    }
+    setActiveSection(normalizeSection(section, category));
+    setFocusedCategoryKey(category);
+    setSearchQuery(search || '');
   }, [searchParams]);
 
-  // Get current menu item configuration
-  const currentMenuItem = useMemo(() => {
-    for (const section of MENU_SECTIONS) {
-      const item = section.items.find((i: MenuItem) => i.id === activeSection);
-      if (item) return item;
-    }
-    return null;
-  }, [activeSection]);
+  const activeTreeInfo = useMemo(() => getTreeInfo(activeSection), [activeSection]);
 
-  // Get categories for current section
+  const isTariffsMode = useMemo(() => {
+    if (!allSettings || !Array.isArray(allSettings)) return false;
+    const salesMode = allSettings.find((setting) => setting.key === 'SALES_MODE');
+    return salesMode?.current === 'tariffs';
+  }, [allSettings]);
+
+  const shouldHideSetting = useCallback(
+    (setting: SettingDefinition) => !isTariffsMode && TARIFF_MODE_SETTINGS.includes(setting.key),
+    [isTariffsMode],
+  );
+
+  const handleSectionChange = useCallback(
+    (sectionId: string) => {
+      const normalizedSection = normalizeSection(sectionId);
+      setActiveSection(normalizedSection);
+
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.set('section', normalizedSection);
+      nextParams.delete('category');
+      nextParams.delete('search');
+      setFocusedCategoryKey(null);
+      setSearchParams(nextParams);
+    },
+    [searchParams, setSearchParams],
+  );
+
   const currentCategories = useMemo(() => {
-    if (!currentMenuItem?.categories || !allSettings || !Array.isArray(allSettings)) return [];
+    if (!activeTreeInfo || !allSettings || !Array.isArray(allSettings)) return [];
 
+    const categoryKeys = activeTreeInfo.child.categories;
     const categoryMap = new Map<string, SettingDefinition[]>();
 
     for (const setting of allSettings) {
-      if (currentMenuItem.categories.includes(setting.category.key)) {
-        if (!categoryMap.has(setting.category.key)) {
-          categoryMap.set(setting.category.key, []);
-        }
-        categoryMap.get(setting.category.key)!.push(setting);
+      if (!categoryKeys.includes(setting.category.key)) continue;
+      if (shouldHideSetting(setting)) continue;
+
+      if (!categoryMap.has(setting.category.key)) {
+        categoryMap.set(setting.category.key, []);
       }
+      categoryMap.get(setting.category.key)!.push(setting);
     }
 
-    return Array.from(categoryMap.entries()).map(([key, settings]) => ({
-      key,
-      label: t(`admin.settings.categories.${key}`, key),
-      settings,
-    }));
-  }, [currentMenuItem, allSettings, t]);
+    return Array.from(categoryMap.entries()).map(([key, settings]) => {
+      const categoryLabel = settings[0]?.category.label || key;
+      return {
+        key,
+        label: t(`admin.settings.categories.${key}`, categoryLabel),
+        settings,
+      };
+    });
+  }, [activeTreeInfo, allSettings, shouldHideSetting, t]);
 
   const allCategoryGroups = useMemo(() => {
     if (!allSettings || !Array.isArray(allSettings)) return [];
@@ -140,11 +195,16 @@ export default function AdminSettings() {
     >();
 
     for (const setting of allSettings) {
-      const categoryKey = setting.category.key;
-      const sectionId = findSectionByCategory(categoryKey);
-      if (!sectionId) continue;
+      if (shouldHideSetting(setting)) continue;
 
-      const sectionLabel = t(`admin.settings.${sectionId}`, sectionId);
+      const categoryKey = setting.category.key;
+      const location = findTreeLocation(categoryKey);
+      if (!location) continue;
+
+      const treeInfo = getTreeInfo(location.subItemId);
+      const sectionLabel = treeInfo
+        ? t(`admin.settings.tree.${treeInfo.child.id}`, treeInfo.child.label)
+        : location.subItemId;
       const existing = categoryMap.get(categoryKey);
 
       if (existing) {
@@ -154,96 +214,106 @@ export default function AdminSettings() {
 
       categoryMap.set(categoryKey, {
         key: categoryKey,
-        label: t(`admin.settings.categories.${categoryKey}`, categoryKey),
+        label: t(`admin.settings.categories.${categoryKey}`, setting.category.label || categoryKey),
         settings: [setting],
-        sectionId,
+        sectionId: location.subItemId,
         sectionLabel,
       });
     }
 
     return Array.from(categoryMap.values());
-  }, [allSettings, t]);
+  }, [allSettings, shouldHideSetting, t]);
 
-  // Filter settings for search - GLOBAL search across all settings
   const filteredSettings = useMemo(() => {
     if (!allSettings || !Array.isArray(allSettings) || !searchQuery) return [];
 
-    const q = searchQuery.toLowerCase().trim();
-    if (!q) return [];
+    const query = searchQuery.toLowerCase().trim();
+    if (!query) return [];
 
-    return allSettings.filter((s: SettingDefinition) => {
-      // Search by key
-      if (s.key.toLowerCase().includes(q)) return true;
+    return allSettings.filter((setting) => {
+      if (shouldHideSetting(setting)) return false;
+      if (setting.key.toLowerCase().includes(query)) return true;
+      if (setting.name?.toLowerCase().includes(query)) return true;
 
-      // Search by original name
-      if (s.name?.toLowerCase().includes(q)) return true;
-
-      // Search by translated name
-      const formattedKey = formatSettingKey(s.name || s.key);
+      const formattedKey = formatSettingKey(setting.name || setting.key);
       const translatedName = t(`admin.settings.settingNames.${formattedKey}`, formattedKey);
-      if (translatedName.toLowerCase().includes(q)) return true;
+      if (translatedName.toLowerCase().includes(query)) return true;
 
-      // Search by description
-      if (s.hint?.description?.toLowerCase().includes(q)) return true;
+      if (setting.hint?.description?.toLowerCase().includes(query)) return true;
 
-      // Search by category
-      const categoryLabel = t(`admin.settings.categories.${s.category.key}`, s.category.key);
-      if (categoryLabel.toLowerCase().includes(q)) return true;
-
-      return false;
+      const categoryLabel = t(
+        `admin.settings.categories.${setting.category.key}`,
+        setting.category.label || setting.category.key,
+      );
+      return categoryLabel.toLowerCase().includes(query);
     });
-  }, [allSettings, searchQuery, t]);
+  }, [allSettings, searchQuery, shouldHideSetting, t]);
 
-  // Favorite settings
   const favoriteSettings = useMemo(() => {
     if (!allSettings || !Array.isArray(allSettings)) return [];
-    return allSettings.filter((s: SettingDefinition) => favorites.includes(s.key));
-  }, [allSettings, favorites]);
+    return allSettings.filter(
+      (setting) => favorites.includes(setting.key) && !shouldHideSetting(setting),
+    );
+  }, [allSettings, favorites, shouldHideSetting]);
 
   const favoriteCategories = useMemo(
     () => allCategoryGroups.filter((category) => favoriteCategoryKeys.includes(category.key)),
     [allCategoryGroups, favoriteCategoryKeys],
   );
 
+  const currentSettingsCount = useMemo(
+    () => currentCategories.reduce((count, category) => count + category.settings.length, 0),
+    [currentCategories],
+  );
+
+  const currentModifiedCount = useMemo(
+    () =>
+      currentCategories.reduce(
+        (count, category) =>
+          count + category.settings.filter((setting) => setting.has_override).length,
+        0,
+      ),
+    [currentCategories],
+  );
+
   const handleOpenCategory = useCallback(
     (categoryKey: string, sectionId?: string) => {
-      const resolvedSectionId = sectionId || findSectionByCategory(categoryKey);
-      if (resolvedSectionId) {
-        setActiveSection(resolvedSectionId);
-      }
+      const resolvedSectionId = normalizeSection(sectionId, categoryKey);
+      setActiveSection(resolvedSectionId);
       setSearchQuery('');
       setFocusedCategoryKey(categoryKey);
-      setSearchParams(
-        resolvedSectionId
-          ? { section: resolvedSectionId, category: categoryKey }
-          : { category: categoryKey },
-      );
+      setSearchParams({ section: resolvedSectionId, category: categoryKey });
     },
-    [setActiveSection, setFocusedCategoryKey, setSearchParams, setSearchQuery],
+    [setSearchParams],
   );
 
-  // Handle setting selection from autocomplete
   const handleSelectSetting = useCallback(
     (setting: SettingDefinition) => {
-      const sectionId = findSectionByCategory(setting.category.key);
-      if (sectionId) {
-        setActiveSection(sectionId);
-      }
+      const resolvedSectionId = normalizeSection(null, setting.category.key);
+      setActiveSection(resolvedSectionId);
       setFocusedCategoryKey(setting.category.key);
-      // Set search to setting key to filter to just this setting
       setSearchQuery(setting.key);
-      setSearchParams(
-        sectionId
-          ? { section: sectionId, category: setting.category.key, search: setting.key }
-          : { category: setting.category.key, search: setting.key },
-      );
+      setSearchParams({
+        section: resolvedSectionId,
+        category: setting.category.key,
+        search: setting.key,
+      });
     },
-    [setActiveSection, setFocusedCategoryKey, setSearchParams, setSearchQuery],
+    [setSearchParams],
   );
 
-  // Render content based on active section
+  const sectionTitle = useMemo(() => {
+    const specialItem = SETTINGS_TREE.specialItems.find((item) => item.id === activeSection);
+    if (specialItem) return t(`admin.settings.${specialItem.id}`, specialItem.label);
+
+    if (activeTreeInfo) {
+      return t(`admin.settings.tree.${activeTreeInfo.child.id}`, activeTreeInfo.child.label);
+    }
+
+    return t('admin.settings.title');
+  }, [activeSection, activeTreeInfo, t]);
+
   const renderContent = () => {
-    // If searching, always show search results regardless of active section
     if (searchQuery.trim()) {
       return (
         <SettingsTab
@@ -279,42 +349,29 @@ export default function AdminSettings() {
           />
         );
       default:
-        if (
-          [
-            'payments',
-            'subscriptions',
-            'interface',
-            'notifications',
-            'database',
-            'system',
-            'users',
-          ].includes(activeSection)
-        ) {
-          return (
-            <SettingsTab
-              categories={currentCategories}
-              searchQuery={searchQuery}
-              filteredSettings={filteredSettings}
-              isFavorite={isFavorite}
-              toggleFavorite={toggleFavorite}
-              isFavoriteCategory={isFavoriteCategory}
-              toggleFavoriteCategory={toggleFavoriteCategory}
-              focusedCategoryKey={focusedCategoryKey}
-              onFocusedCategoryHandled={() => setFocusedCategoryKey(null)}
-            />
-          );
-        }
-        return null;
+        if (!activeTreeInfo) return null;
+        return (
+          <SettingsTab
+            categories={currentCategories}
+            searchQuery={searchQuery}
+            filteredSettings={filteredSettings}
+            isFavorite={isFavorite}
+            toggleFavorite={toggleFavorite}
+            isFavoriteCategory={isFavoriteCategory}
+            toggleFavoriteCategory={toggleFavoriteCategory}
+            focusedCategoryKey={focusedCategoryKey}
+            onFocusedCategoryHandled={() => setFocusedCategoryKey(null)}
+          />
+        );
     }
   };
 
   return (
     <>
-      {/* Mobile Layout */}
-      <div className="space-y-4 lg:hidden">
+      <div className="space-y-4 pb-4 lg:hidden">
         <SettingsMobileTabs
           activeSection={activeSection}
-          setActiveSection={setActiveSection}
+          setActiveSection={handleSectionChange}
           favoritesCount={favorites.length}
         />
         <SettingsSearchMobile
@@ -327,17 +384,16 @@ export default function AdminSettings() {
         {renderContent()}
       </div>
 
-      {/* Desktop Layout - fixed sidebar, scrollable content */}
       <div className="hidden h-[calc(100vh-120px)] lg:flex">
-        {/* Fixed Sidebar */}
-        <div className="w-64 shrink-0 overflow-y-auto border-r border-dark-700/50">
+        <div className="w-[264px] shrink-0 overflow-y-auto border-r border-dark-700/50">
           <div className="border-b border-dark-700/50 p-4">
             <div className="flex items-center gap-3">
-              {/* Show back button only on web, not in Telegram Mini App */}
               {!capabilities.hasBackButton && (
                 <button
+                  type="button"
                   onClick={() => navigate('/admin')}
                   className="flex h-10 w-10 items-center justify-center rounded-xl border border-dark-700 bg-dark-800 transition-colors hover:border-dark-600"
+                  aria-label={t('admin.settings.backToAdmin')}
                 >
                   <BackIcon />
                 </button>
@@ -345,67 +401,53 @@ export default function AdminSettings() {
               <h1 className="text-lg font-bold text-dark-100">{t('admin.settings.title')}</h1>
             </div>
           </div>
-          <nav className="space-y-1 p-2">
-            {MENU_SECTIONS.map((section, sectionIdx) => (
-              <div key={section.id}>
-                {sectionIdx > 0 && <div className="my-3 border-t border-dark-700/50" />}
-                {section.items.map((item) => {
-                  const isActive = activeSection === item.id;
-                  const hasIcon = item.iconType === 'star';
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => setActiveSection(item.id)}
-                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 transition-all ${
-                        isActive
-                          ? 'bg-accent-500/10 text-accent-400'
-                          : 'text-dark-400 hover:bg-dark-800/50 hover:text-dark-200'
-                      }`}
-                    >
-                      {hasIcon && (
-                        <svg
-                          className={`h-4 w-4 ${isActive ? 'fill-current' : ''}`}
-                          fill={isActive ? 'currentColor' : 'none'}
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={2}
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-                          />
-                        </svg>
-                      )}
-                      <span className="font-medium">{t(`admin.settings.${item.id}`)}</span>
-                      {item.id === 'favorites' && favorites.length > 0 && (
-                        <span className="ml-auto rounded-full bg-warning-500/20 px-2 py-0.5 text-xs text-warning-400">
-                          {favorites.length}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            ))}
-          </nav>
+          <SettingsTreeSidebar
+            activeSection={activeSection}
+            onSectionChange={handleSectionChange}
+            favoritesCount={favorites.length}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            allSettings={allSettings}
+            onSelectSetting={handleSelectSetting}
+          />
         </div>
 
-        {/* Scrollable Content */}
         <div className="min-w-0 flex-1 overflow-y-auto p-6">
+          {activeTreeInfo && !searchQuery.trim() && (
+            <div className="mb-2 flex items-center gap-1.5 text-xs">
+              <button
+                type="button"
+                onClick={() => handleSectionChange(activeTreeInfo.group.children[0].id)}
+                className="text-dark-500 transition-colors hover:text-dark-300"
+              >
+                {t(`admin.settings.groups.${activeTreeInfo.group.id}`, activeTreeInfo.group.label)}
+              </button>
+              <ChevronRightIcon />
+              <span className="text-dark-300">
+                {t(`admin.settings.tree.${activeTreeInfo.child.id}`, activeTreeInfo.child.label)}
+              </span>
+            </div>
+          )}
+
           <div className="mb-4 flex items-center gap-3">
-            <h2 className="truncate text-xl font-semibold text-dark-100">
-              {t(`admin.settings.${activeSection}`)}
-            </h2>
-            <div className="flex-1" />
-            <SettingsSearch
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              resultsCount={filteredSettings.length}
-              allSettings={allSettings}
-              onSelectSetting={handleSelectSetting}
-            />
+            <h2 className="truncate text-xl font-semibold text-dark-100">{sectionTitle}</h2>
+            {currentSettingsCount > 0 && !searchQuery.trim() && activeTreeInfo && (
+              <div className="flex items-center gap-2">
+                <span className="rounded-full bg-dark-700/50 px-2 py-0.5 text-xs text-dark-400">
+                  {t('admin.settings.settingsCountLabel', { count: currentSettingsCount })}
+                </span>
+                {currentModifiedCount > 0 && (
+                  <span className="rounded-full bg-warning-500/20 px-2 py-0.5 text-xs text-warning-400">
+                    {t('admin.settings.modifiedCount', {
+                      defaultValue: 'Изменено: {{count}}',
+                      count: currentModifiedCount,
+                    })}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
+
           <SettingsSearchResults searchQuery={searchQuery} resultsCount={filteredSettings.length} />
           {renderContent()}
         </div>

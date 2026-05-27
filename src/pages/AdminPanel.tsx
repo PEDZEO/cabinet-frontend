@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { RemnawaveIcon, ArrowPathIcon } from '../components/icons';
 import { usePermissionStore } from '@/store/permissions';
 import { adminSettingsApi, SettingDefinition } from '../api/adminSettings';
-import { MENU_SECTIONS, StarIcon, formatSettingKey } from '../components/admin';
+import { StarIcon, findTreeLocation, formatSettingKey } from '../components/admin';
 import { useFavoriteAdminLinks } from '../hooks/useFavoriteAdminLinks';
 import { useFavoriteSettings } from '../hooks/useFavoriteSettings';
 import { useFavoriteSettingCategories } from '../hooks/useFavoriteSettingCategories';
@@ -359,14 +359,7 @@ interface AdminGroup {
 }
 
 function findSectionByCategory(categoryKey: string): string | null {
-  for (const section of MENU_SECTIONS) {
-    for (const item of section.items) {
-      if (item.categories?.includes(categoryKey)) {
-        return item.id;
-      }
-    }
-  }
-  return null;
+  return findTreeLocation(categoryKey)?.subItemId ?? null;
 }
 
 function AdminCard({
@@ -491,7 +484,10 @@ export default function AdminPanel() {
 
       return {
         key: categoryKey,
-        label: t(`admin.settings.categories.${categoryKey}`, categoryKey),
+        label: t(
+          `admin.settings.categories.${categoryKey}`,
+          settings[0].category.label || categoryKey,
+        ),
         count: settings.length,
         sectionId,
       };
@@ -835,7 +831,10 @@ export default function AdminPanel() {
         to: `/admin/settings?section=${encodeURIComponent(sectionId)}&category=${encodeURIComponent(setting.category.key)}&search=${encodeURIComponent(setting.key)}`,
         icon: <CogIcon />,
         title: t(`admin.settings.settingNames.${formattedKey}`, formattedKey),
-        description: t(`admin.settings.categories.${setting.category.key}`, setting.category.key),
+        description: t(
+          `admin.settings.categories.${setting.category.key}`,
+          setting.category.label || setting.category.key,
+        ),
       };
     }),
   ].slice(0, 6);

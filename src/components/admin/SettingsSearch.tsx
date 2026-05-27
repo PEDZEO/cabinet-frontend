@@ -36,7 +36,10 @@ export function SettingsSearch({
             const translatedName = t(`admin.settings.settingNames.${formattedKey}`, formattedKey);
             if (translatedName.toLowerCase().includes(q)) return true;
             if (s.hint?.description?.toLowerCase().includes(q)) return true;
-            const categoryLabel = t(`admin.settings.categories.${s.category.key}`, s.category.key);
+            const categoryLabel = t(
+              `admin.settings.categories.${s.category.key}`,
+              s.category.label || s.category.key,
+            );
             if (categoryLabel.toLowerCase().includes(q)) return true;
             return false;
           })
@@ -141,7 +144,10 @@ export function SettingsSearch({
                 {getSettingDisplayName(setting)}
               </span>
               <span className="truncate text-xs text-dark-500">
-                {t(`admin.settings.categories.${setting.category.key}`, setting.category.key)}
+                {t(
+                  `admin.settings.categories.${setting.category.key}`,
+                  setting.category.label || setting.category.key,
+                )}
               </span>
             </button>
           ))}
@@ -174,7 +180,10 @@ export function SettingsSearchMobile({
             const translatedName = t(`admin.settings.settingNames.${formattedKey}`, formattedKey);
             if (translatedName.toLowerCase().includes(q)) return true;
             if (s.hint?.description?.toLowerCase().includes(q)) return true;
-            const categoryLabel = t(`admin.settings.categories.${s.category.key}`, s.category.key);
+            const categoryLabel = t(
+              `admin.settings.categories.${s.category.key}`,
+              s.category.label || s.category.key,
+            );
             if (categoryLabel.toLowerCase().includes(q)) return true;
             return false;
           })
@@ -250,7 +259,10 @@ export function SettingsSearchMobile({
                 {getSettingDisplayName(setting)}
               </span>
               <span className="truncate text-xs text-dark-500">
-                {t(`admin.settings.categories.${setting.category.key}`, setting.category.key)}
+                {t(
+                  `admin.settings.categories.${setting.category.key}`,
+                  setting.category.label || setting.category.key,
+                )}
               </span>
             </button>
           ))}
