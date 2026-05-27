@@ -1,5 +1,38 @@
 # Changelog
 
+## [1.12.0](https://github.com/PEDZEO/cabinet-frontend/compare/v1.11.0...v1.12.0) (2026-05-27)
+
+
+### Features
+
+* **admin:** expose sticky new-connections mode ([e9ba605](https://github.com/PEDZEO/cabinet-frontend/commit/e9ba6054226ac6b278d52ec207553eb00a40518d))
+* clarify ultima tariff selection and legacy device pricing ([c809ee0](https://github.com/PEDZEO/cabinet-frontend/commit/c809ee0c0b36fab83bd019a6c3102bece38130b6))
+* expose new balancer group controls ([2b9dffd](https://github.com/PEDZEO/cabinet-frontend/commit/2b9dffd0ab9b2b30113ecf056a6d1cabbc3db5ce))
+* expose separate-node balancer groups ([2f93b11](https://github.com/PEDZEO/cabinet-frontend/commit/2f93b1179b01dd9e6d0d3e0dd76bf4599d188ef1))
+* improve ultima setup and support attachments ([001a664](https://github.com/PEDZEO/cabinet-frontend/commit/001a664a89d3826face0674e19636dc60fbb3d04))
+* redesign admin balancer controls ([3e20fe8](https://github.com/PEDZEO/cabinet-frontend/commit/3e20fe8f79f09074942cfab843c8136b7b02ca25))
+
+
+### Bug Fixes
+
+* add real Ultima traffic top-up flow ([3833abc](https://github.com/PEDZEO/cabinet-frontend/commit/3833abc590a69fffaef59ea898aba2d2f0a871ee))
+* compact ultima tariff checkout ([5e939ec](https://github.com/PEDZEO/cabinet-frontend/commit/5e939ec95bbf85c0b7b5e118724891706ee2c692))
+* improve ticket media replies ([028896b](https://github.com/PEDZEO/cabinet-frontend/commit/028896b412257b74f2f36c6594618cd9fd3c4b09))
+* improve ultima support tickets layout ([1cdfa93](https://github.com/PEDZEO/cabinet-frontend/commit/1cdfa93340ec3aa861739b068c465895a32bc697))
+* keep Ultima purchase layout compact ([eff4a36](https://github.com/PEDZEO/cabinet-frontend/commit/eff4a363fa20c4d807ff40963dd2bdfc4452d879))
+* mark app oauth callbacks explicitly ([517e638](https://github.com/PEDZEO/cabinet-frontend/commit/517e63845dfa60d50d741994008d5c07ccdbbfef))
+* **news:** improve article image rendering ([66af5df](https://github.com/PEDZEO/cabinet-frontend/commit/66af5df8f263aa58bbef9ad16720a98c214bf969))
+* **news:** upgrade insecure media urls ([b05a763](https://github.com/PEDZEO/cabinet-frontend/commit/b05a763a1b797c20622a14b1c51964889acfa805))
+* preserve oauth callback query for app redirect ([fdf36ed](https://github.com/PEDZEO/cabinet-frontend/commit/fdf36eda0f1829bf447df901a63c85eefba2ff6d))
+* return mobile oauth callback to app ([70eb7ab](https://github.com/PEDZEO/cabinet-frontend/commit/70eb7ab995e052d9fb750cbaa5cd02de13e49fcd))
+* show ticket list when switching support tabs ([aded980](https://github.com/PEDZEO/cabinet-frontend/commit/aded980b35ab5da83aed777122cda275a015eee7))
+* simplify Ultima tariff cards ([3d2e993](https://github.com/PEDZEO/cabinet-frontend/commit/3d2e9931eace1c412a909235baa9876c64bc8578))
+* smooth ultima checkout controls ([5934abf](https://github.com/PEDZEO/cabinet-frontend/commit/5934abfeeac470d14b556525aeaebef09510d25f))
+* split support tickets archive tab ([293e615](https://github.com/PEDZEO/cabinet-frontend/commit/293e61523e8ff0b42cd2ee398c7fd4718a91e551))
+* split Ultima mobile tariff selection ([c1da8f4](https://github.com/PEDZEO/cabinet-frontend/commit/c1da8f4879ab7adde8b063392c4f8f5735bd14b5))
+* update ultima renewal flow ([e30ea68](https://github.com/PEDZEO/cabinet-frontend/commit/e30ea6885f6fff91503e51891a77b83c2f01a063))
+* wire ultima device actions to real flows ([3284929](https://github.com/PEDZEO/cabinet-frontend/commit/328492905f317aee839f623e34e26cee111dc94e))
+
 ## [1.11.0](https://github.com/PEDZEO/cabinet-frontend/compare/v1.10.0...v1.11.0) (2026-03-31)
 
 
