@@ -1,13 +1,21 @@
+import { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
 import { Link } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { RemnawaveIcon, ArrowPathIcon } from '../components/icons';
 import { usePermissionStore } from '@/store/permissions';
+import { statsApi, type SystemInfo, type DashboardStats } from '@/api/admin';
 import { adminSettingsApi, SettingDefinition } from '../api/adminSettings';
 import { StarIcon, findTreeLocation, formatSettingKey } from '../components/admin';
+import { useAnimatedNumber } from '@/hooks/useAnimatedNumber';
+import { useTelegramSDK } from '@/hooks/useTelegramSDK';
 import { useFavoriteAdminLinks } from '../hooks/useFavoriteAdminLinks';
 import { useFavoriteSettings } from '../hooks/useFavoriteSettings';
 import { useFavoriteSettingCategories } from '../hooks/useFavoriteSettingCategories';
+import { cn } from '@/lib/utils';
+
+const CABINET_VERSION = __APP_VERSION__;
+const IS_MAC = /Mac|iPhone|iPod|iPad/i.test(navigator.userAgent);
 
 // Group header icons
 const AnalyticsGroupIcon = () => (
@@ -289,6 +297,88 @@ const ChevronRightIcon = () => (
   </svg>
 );
 
+const SearchIcon = () => (
+  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+    <circle cx="11" cy="11" r="7.5" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="m20 20-3.5-3.5" />
+  </svg>
+);
+
+const XMarkIcon = () => (
+  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M18 6 6 18" />
+  </svg>
+);
+
+const UptimeIcon = () => (
+  <svg
+    className="h-3.5 w-3.5"
+    fill="none"
+    viewBox="0 0 16 16"
+    stroke="currentColor"
+    strokeWidth={1.3}
+  >
+    <circle cx="8" cy="8" r="6.5" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M8 4.5V8l2.5 1.5" />
+  </svg>
+);
+
+const BotIcon = () => (
+  <svg
+    className="h-3.5 w-3.5"
+    fill="none"
+    viewBox="0 0 16 16"
+    stroke="currentColor"
+    strokeWidth={1.3}
+  >
+    <rect x="3" y="4" width="10" height="8" rx="2" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 8h.01M10 8h.01M8 2v2M4 14h8" />
+  </svg>
+);
+
+const CabinetIcon = () => (
+  <svg
+    className="h-3.5 w-3.5"
+    fill="none"
+    viewBox="0 0 16 16"
+    stroke="currentColor"
+    strokeWidth={1.3}
+  >
+    <rect x="2" y="3" width="12" height="10" rx="1.5" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M2 6h12M5 3v3" />
+  </svg>
+);
+
+const TrialIcon = () => (
+  <svg
+    className="h-3.5 w-3.5"
+    fill="none"
+    viewBox="0 0 16 16"
+    stroke="currentColor"
+    strokeWidth={1.3}
+  >
+    <path strokeLinecap="round" strokeLinejoin="round" d="M8 2v2M8 12v2M4 8H2M14 8h-2" />
+    <circle cx="8" cy="8" r="3" />
+  </svg>
+);
+
+const PaidIcon = () => (
+  <svg
+    className="h-3.5 w-3.5"
+    fill="none"
+    viewBox="0 0 16 16"
+    stroke="currentColor"
+    strokeWidth={1.3}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M4 6c0-1.7 1.8-3 4-3s4 1.3 4 3-1.8 3-4 3-4 1.3-4 3 1.8 3 4 3 4-1.3 4-3"
+    />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M8 1v2M8 13v2" />
+  </svg>
+);
+
 const SecurityGroupIcon = () => (
   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
     <path
@@ -362,48 +452,165 @@ function findSectionByCategory(categoryKey: string): string | null {
   return findTreeLocation(categoryKey)?.subItemId ?? null;
 }
 
+function formatUptime(seconds: number): string {
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+}
+
+function AnimatedStat({ value, suffix = '' }: { value: number; suffix?: string }) {
+  const animated = useAnimatedNumber(value);
+
+  return (
+    <span>
+      {Math.round(animated).toLocaleString()}
+      {suffix}
+    </span>
+  );
+}
+
+interface StatsBarProps {
+  systemInfo: SystemInfo | null;
+  dashboardStats: DashboardStats | null;
+  loading: boolean;
+}
+
+const StatsBar = memo(function StatsBar({ systemInfo, dashboardStats, loading }: StatsBarProps) {
+  const { t } = useTranslation();
+
+  const stats = useMemo(
+    () => [
+      {
+        icon: <UptimeIcon />,
+        label: t('admin.panel.statsUptime', { defaultValue: 'Аптайм' }),
+        value:
+          systemInfo && systemInfo.uptime_seconds > 0
+            ? formatUptime(systemInfo.uptime_seconds)
+            : '--',
+        colorClass: 'text-success-400 bg-success-400/10 border-success-400/20',
+      },
+      {
+        icon: <BotIcon />,
+        label: t('admin.panel.statsBot', { defaultValue: 'Бот' }),
+        value: systemInfo?.bot_version || '--',
+        colorClass: 'text-accent-400 bg-accent-400/10 border-accent-400/20',
+      },
+      {
+        icon: <CabinetIcon />,
+        label: t('admin.panel.statsCabinet', { defaultValue: 'Кабинет' }),
+        value: `v${CABINET_VERSION}`,
+        colorClass: 'text-accent-300 bg-accent-300/10 border-accent-300/20',
+      },
+      {
+        icon: <TrialIcon />,
+        label: t('admin.panel.statsTrials', { defaultValue: 'Триалы' }),
+        numericValue: dashboardStats?.subscriptions.trial ?? 0,
+        colorClass: 'text-warning-400 bg-warning-400/10 border-warning-400/20',
+      },
+      {
+        icon: <PaidIcon />,
+        label: t('admin.panel.statsPaid', { defaultValue: 'Платные' }),
+        numericValue: dashboardStats?.subscriptions.paid ?? 0,
+        delta:
+          (dashboardStats?.subscriptions.purchased_today ?? 0) > 0
+            ? `+${dashboardStats?.subscriptions.purchased_today}`
+            : undefined,
+        colorClass: 'text-success-400 bg-success-400/10 border-success-400/20',
+      },
+    ],
+    [dashboardStats, systemInfo, t],
+  );
+
+  return (
+    <div className="scrollbar-hide flex w-full gap-2 overflow-x-auto pb-1">
+      {stats.map((stat) => (
+        <div
+          key={stat.label}
+          className={cn(
+            'flex min-w-[150px] flex-1 items-center gap-2 rounded-xl border border-dark-700/50 bg-dark-800/40 px-3 py-2 backdrop-blur-xl transition-all duration-200',
+            'light:border-champagne-300/50 light:bg-champagne-100/60',
+            loading && 'animate-pulse',
+          )}
+        >
+          <div
+            className={cn(
+              'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border',
+              stat.colorClass,
+            )}
+          >
+            {stat.icon}
+          </div>
+          <div className="flex min-w-0 flex-col gap-0.5 overflow-hidden">
+            <span className="light:text-champagne-900 flex items-center gap-1 font-mono text-xs font-bold text-dark-100">
+              {'numericValue' in stat && stat.numericValue !== undefined ? (
+                <AnimatedStat value={stat.numericValue} />
+              ) : (
+                <span className="truncate">{stat.value}</span>
+              )}
+              {stat.delta && (
+                <span className="shrink-0 rounded-md border border-success-400/20 bg-success-400/10 px-1.5 py-px text-2xs font-semibold text-success-400">
+                  {stat.delta}
+                </span>
+              )}
+            </span>
+            <span className="light:text-champagne-600 truncate text-2xs text-dark-500">
+              {stat.label}
+              {stat.delta && ` / ${t('admin.panel.statsToday', { defaultValue: 'сегодня' })}`}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+});
+
 function AdminCard({
-  to,
-  icon,
-  title,
-  description,
+  item,
   iconBg,
   iconColor,
   isFavorite,
   onToggleFavorite,
-}: AdminItem & {
+}: {
+  item: AdminItem;
   iconBg: string;
   iconColor: string;
   isFavorite: boolean;
   onToggleFavorite: (path: string) => void;
 }) {
   return (
-    <div className="group flex items-center gap-2 rounded-xl border border-dark-700/50 bg-dark-800/40 p-2.5 transition-all duration-200 hover:border-dark-600 hover:bg-dark-800/80">
-      <Link to={to} className="flex min-w-0 flex-1 items-center gap-3">
+    <div className="group/item light:hover:border-champagne-400/40 light:hover:bg-champagne-200/50 flex items-center gap-1 rounded-xl border border-transparent px-1.5 py-1 transition-all duration-150 hover:border-dark-600/50 hover:bg-dark-700/30">
+      <Link to={item.to} className="flex min-w-0 flex-1 items-center gap-2.5 px-0.5 py-1">
         <div
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${iconBg} ${iconColor} transition-transform group-hover:scale-105`}
+          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-dark-700/40 bg-dark-800/40 ${iconColor} light:border-champagne-400/30 light:bg-champagne-200/50 transition-transform group-hover/item:scale-105 [&>svg]:h-[15px] [&>svg]:w-[15px] ${iconBg}`}
         >
-          {icon}
+          {item.icon}
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-medium text-dark-100 transition-colors group-hover:text-white">
-            {title}
+          <h3 className="light:text-champagne-900 truncate text-xs font-semibold text-dark-100 transition-colors group-hover/item:text-white">
+            {item.title}
           </h3>
-          <p className="truncate text-xs text-dark-500">{description}</p>
+          <p className="light:text-champagne-600 truncate text-2xs text-dark-500">
+            {item.description}
+          </p>
         </div>
-        <div className="text-dark-600 transition-colors group-hover:text-dark-400">
+        <div className="-translate-x-1 text-dark-600 opacity-0 transition-all duration-150 group-hover/item:translate-x-0 group-hover/item:opacity-70">
           <ChevronRightIcon />
         </div>
       </Link>
       <button
         type="button"
-        onClick={() => onToggleFavorite(to)}
+        onClick={() => onToggleFavorite(item.to)}
         className={`rounded-lg p-2 transition-colors ${
           isFavorite
             ? 'bg-warning-500/15 text-warning-400'
-            : 'text-dark-500 hover:bg-dark-700/60 hover:text-warning-400'
+            : 'light:hover:bg-champagne-200/70 text-dark-500 hover:bg-dark-700/60 hover:text-warning-400'
         }`}
-        title={isFavorite ? title : title}
+        aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+        title={item.title}
       >
         <StarIcon filled={isFavorite} />
       </button>
@@ -413,34 +620,61 @@ function AdminCard({
 
 function GroupSection({
   group,
+  index,
+  searchTerm,
   isFavoriteLink,
   toggleFavoriteLink,
 }: {
   group: AdminGroup;
+  index: number;
+  searchTerm: string;
   isFavoriteLink: (path: string) => boolean;
   toggleFavoriteLink: (path: string) => void;
 }) {
   const hasPermission = usePermissionStore((state) => state.hasPermission);
-  const visibleItems = group.items.filter((item) => hasPermission(item.permission));
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+  const visibleItems = group.items.filter((item) => {
+    if (!hasPermission(item.permission)) return false;
+    if (!normalizedSearch) return true;
+
+    return `${item.title} ${item.description} ${group.title}`
+      .toLowerCase()
+      .includes(normalizedSearch);
+  });
 
   if (visibleItems.length === 0) return null;
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-dark-700/50 bg-dark-900/30 backdrop-blur">
-      {/* Group Header */}
-      <div className={`bg-gradient-to-r px-4 py-3 ${group.gradient} border-b ${group.borderColor}`}>
+    <div
+      className="group/card light:border-champagne-300/50 light:bg-champagne-100/40 light:hover:border-champagne-400/60 relative overflow-hidden rounded-2xl border border-dark-700/50 bg-dark-800/30 backdrop-blur-xl transition-all duration-300 hover:border-dark-600/80 hover:shadow-lg"
+      style={{ animationDelay: `${index * 45}ms` }}
+    >
+      <div
+        className={`absolute left-0 right-0 top-0 h-px bg-gradient-to-r ${group.gradient} opacity-70 transition-all duration-300 group-hover/card:h-0.5 group-hover/card:opacity-100`}
+      />
+      <div
+        className={`border-b ${group.borderColor} bg-gradient-to-r px-3.5 py-2.5 ${group.gradient}`}
+      >
         <div className="flex items-center gap-2.5">
-          <div className={`rounded-lg p-1.5 ${group.iconBg} ${group.iconColor}`}>{group.icon}</div>
-          <h2 className="text-sm font-semibold text-dark-100">{group.title}</h2>
+          <div
+            className={`relative flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-lg ${group.iconBg} ${group.iconColor} shadow-md`}
+          >
+            <span className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-white/15" />
+            <span className="relative [&>svg]:h-4 [&>svg]:w-4">{group.icon}</span>
+          </div>
+          <h2 className="light:text-champagne-900 min-w-0 flex-1 truncate text-[13px] font-semibold text-dark-100">
+            {group.title}
+          </h2>
+          <span className="light:border-champagne-400/50 light:bg-champagne-200/60 light:text-champagne-600 rounded-full border border-dark-600/50 bg-dark-900/40 px-2 py-0.5 text-2xs font-semibold text-dark-400">
+            {visibleItems.length}
+          </span>
         </div>
       </div>
-
-      {/* Group Items */}
-      <div className="space-y-1.5 p-2">
+      <div className="flex flex-col gap-px p-1.5">
         {visibleItems.map((item) => (
           <AdminCard
             key={item.to}
-            {...item}
+            item={item}
             iconBg={group.iconBg}
             iconColor={group.iconColor}
             isFavorite={isFavoriteLink(item.to)}
@@ -455,6 +689,12 @@ function GroupSection({
 export default function AdminPanel() {
   const { t } = useTranslation();
   const hasPermission = usePermissionStore((state) => state.hasPermission);
+  const [search, setSearch] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+  const { safeAreaInset, contentSafeAreaInset } = useTelegramSDK();
+  const [systemInfo, setSystemInfo] = useState<SystemInfo | null>(null);
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
   const {
     favorites: favoriteAdminLinks,
     isFavoriteLink,
@@ -462,6 +702,55 @@ export default function AdminPanel() {
   } = useFavoriteAdminLinks();
   const { favorites } = useFavoriteSettings();
   const { favorites: favoriteCategoryKeys } = useFavoriteSettingCategories();
+  const safeTop = Math.max(safeAreaInset.top, contentSafeAreaInset.top);
+  const safeBottom = Math.max(safeAreaInset.bottom, contentSafeAreaInset.bottom);
+
+  const loadStats = useCallback(async (isActive: () => boolean) => {
+    try {
+      const [nextSystemInfo, nextDashboardStats] = await Promise.all([
+        statsApi.getSystemInfo(),
+        statsApi.getDashboardStats(),
+      ]);
+
+      if (!isActive()) return;
+      setSystemInfo(nextSystemInfo);
+      setDashboardStats(nextDashboardStats);
+    } catch {
+      // The menu itself must stay usable if stats are temporarily unavailable.
+    } finally {
+      if (isActive()) setStatsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    const isActive = () => active;
+
+    void loadStats(isActive);
+    const interval = window.setInterval(() => void loadStats(isActive), 60_000);
+
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+    };
+  }, [loadStats]);
+
+  useEffect(() => {
+    const handler = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        inputRef.current?.focus();
+      }
+
+      if (event.key === 'Escape') {
+        setSearch('');
+        inputRef.current?.blur();
+      }
+    };
+
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   const { data: allSettings } = useQuery({
     queryKey: ['admin-settings'],
@@ -497,307 +786,317 @@ export default function AdminPanel() {
     )
     .slice(0, 4);
 
-  const groups: AdminGroup[] = [
-    {
-      id: 'analytics',
-      title: t('admin.groups.analytics'),
-      icon: <AnalyticsGroupIcon />,
-      gradient: 'from-success-500/10 to-success-500/5',
-      borderColor: 'border-success-500/20',
-      iconBg: 'bg-success-500/20',
-      iconColor: 'text-success-400',
-      items: [
-        {
-          to: '/admin/dashboard',
-          icon: <ChartBarIcon />,
-          title: t('admin.nav.dashboard'),
-          description: t('admin.panel.dashboardDesc'),
-          permission: 'stats:read',
-        },
-        {
-          to: '/admin/payments',
-          icon: <BanknotesIcon />,
-          title: t('admin.nav.payments'),
-          description: t('admin.panel.paymentsDesc'),
-          permission: 'payments:read',
-        },
-        {
-          to: '/admin/traffic-usage',
-          icon: <ArrowsUpDownIcon />,
-          title: t('admin.nav.trafficUsage'),
-          description: t('admin.panel.trafficUsageDesc'),
-          permission: 'traffic:read',
-        },
-        {
-          to: '/admin/sales-stats',
-          icon: <ChartBarIcon />,
-          title: t('admin.nav.salesStats'),
-          description: t('admin.panel.salesStatsDesc'),
-          permission: 'sales_stats:read',
-        },
-      ],
-    },
-    {
-      id: 'users',
-      title: t('admin.groups.users'),
-      icon: <UsersGroupIcon />,
-      gradient: 'from-accent-500/10 to-accent-500/5',
-      borderColor: 'border-accent-500/20',
-      iconBg: 'bg-accent-500/20',
-      iconColor: 'text-accent-400',
-      items: [
-        {
-          to: '/admin/users',
-          icon: <UsersIcon />,
-          title: t('admin.nav.users'),
-          description: t('admin.panel.usersDesc'),
-          permission: 'users:read',
-        },
-        {
-          to: '/admin/tickets',
-          icon: <ChatBubbleIcon />,
-          title: t('admin.nav.tickets'),
-          description: t('admin.panel.ticketsDesc'),
-          permission: 'tickets:read',
-        },
-        {
-          to: '/admin/account-linking',
-          icon: <LinkIcon />,
-          title: t('admin.nav.accountLinking'),
-          description: t('admin.panel.accountLinkingDesc'),
-          permission: 'users:read',
-        },
-        {
-          to: '/admin/ban-system',
-          icon: <NoSymbolIcon />,
-          title: t('admin.nav.banSystem'),
-          description: t('admin.panel.banSystemDesc'),
-          permission: 'ban_system:read',
-        },
-      ],
-    },
-    {
-      id: 'tariffs',
-      title: t('admin.groups.tariffs'),
-      icon: <TariffsGroupIcon />,
-      gradient: 'from-warning-500/10 to-warning-500/5',
-      borderColor: 'border-warning-500/20',
-      iconBg: 'bg-warning-500/20',
-      iconColor: 'text-warning-400',
-      items: [
-        {
-          to: '/admin/tariffs',
-          icon: <CreditCardIcon />,
-          title: t('admin.nav.tariffs'),
-          description: t('admin.panel.tariffsDesc'),
-          permission: 'tariffs:read',
-        },
-        {
-          to: '/admin/promocodes',
-          icon: <TicketIcon />,
-          title: t('admin.nav.promocodes'),
-          description: t('admin.panel.promocodesDesc'),
-          permission: 'promocodes:read',
-        },
-        {
-          to: '/admin/promo-groups',
-          icon: <UserGroupIcon />,
-          title: t('admin.nav.promoGroups'),
-          description: t('admin.panel.promoGroupsDesc'),
-          permission: 'promo_groups:read',
-        },
-        {
-          to: '/admin/promo-offers',
-          icon: <GiftIcon />,
-          title: t('admin.nav.promoOffers'),
-          description: t('admin.panel.promoOffersDesc'),
-          permission: 'promo_offers:read',
-        },
-        {
-          to: '/admin/payment-methods',
-          icon: <BanknotesIcon />,
-          title: t('admin.nav.paymentMethods'),
-          description: t('admin.panel.paymentMethodsDesc'),
-          permission: 'payment_methods:read',
-        },
-      ],
-    },
-    {
-      id: 'marketing',
-      title: t('admin.groups.marketing'),
-      icon: <MarketingGroupIcon />,
-      gradient: 'from-error-500/10 to-error-500/5',
-      borderColor: 'border-error-500/20',
-      iconBg: 'bg-error-500/20',
-      iconColor: 'text-error-400',
-      items: [
-        {
-          to: '/admin/news',
-          icon: <NewspaperIcon />,
-          title: t('admin.nav.news'),
-          description: t('admin.panel.newsDesc'),
-          permission: 'news:read',
-        },
-        {
-          to: '/admin/campaigns',
-          icon: <MegaphoneIcon />,
-          title: t('admin.nav.campaigns'),
-          description: t('admin.panel.campaignsDesc'),
-          permission: 'campaigns:read',
-        },
-        {
-          to: '/admin/broadcasts',
-          icon: <PaperAirplaneIcon />,
-          title: t('admin.nav.broadcasts'),
-          description: t('admin.panel.broadcastsDesc'),
-          permission: 'broadcasts:read',
-        },
-        {
-          to: '/admin/pinned-messages',
-          icon: <PinnedMessageIcon />,
-          title: t('admin.nav.pinnedMessages'),
-          description: t('admin.panel.pinnedMessagesDesc'),
-          permission: 'pinned_messages:read',
-        },
-        {
-          to: '/admin/wheel',
-          icon: <SparklesIcon />,
-          title: t('admin.nav.wheel'),
-          description: t('admin.panel.wheelDesc'),
-          permission: 'wheel:read',
-        },
-        {
-          to: '/admin/partners',
-          icon: <HandshakeIcon />,
-          title: t('admin.nav.partners'),
-          description: t('admin.panel.partnersDesc'),
-          permission: 'partners:read',
-        },
-        {
-          to: '/admin/withdrawals',
-          icon: <BanknotesIcon />,
-          title: t('admin.nav.withdrawals'),
-          description: t('admin.panel.withdrawalsDesc'),
-          permission: 'withdrawals:read',
-        },
-      ],
-    },
-    {
-      id: 'system',
-      title: t('admin.groups.system'),
-      icon: <SystemGroupIcon />,
-      gradient: 'from-violet-500/10 to-violet-500/5',
-      borderColor: 'border-violet-500/20',
-      iconBg: 'bg-violet-500/20',
-      iconColor: 'text-violet-400',
-      items: [
-        {
-          to: '/admin/channel-subscriptions',
-          icon: <MegaphoneIcon />,
-          title: t('admin.nav.channelSubscriptions'),
-          description: t('admin.panel.channelSubscriptionsDesc'),
-          permission: 'channels:read',
-        },
-        {
-          to: '/admin/settings',
-          icon: <CogIcon />,
-          title: t('admin.nav.settings'),
-          description: t('admin.panel.settingsDesc'),
-          permission: 'settings:read',
-        },
-        {
-          to: '/admin/ultima-settings',
-          icon: <MainMenuButtonsIcon />,
-          title: t('admin.nav.ultimaSettings', { defaultValue: 'Ultima настройки' }),
-          description: t('admin.panel.ultimaSettingsDesc', {
-            defaultValue: 'Кнопки, соглашение и параметры режима Ultima',
-          }),
-          permission: 'settings:read',
-        },
-        {
-          to: '/admin/apps',
-          icon: <DevicePhoneMobileIcon />,
-          title: t('admin.nav.apps'),
-          description: t('admin.panel.appsDesc'),
-          permission: 'apps:read',
-        },
-        {
-          to: '/admin/servers',
-          icon: <ServerStackIcon />,
-          title: t('admin.nav.servers'),
-          description: t('admin.panel.serversDesc'),
-          permission: 'servers:read',
-        },
-        {
-          to: '/admin/remnawave',
-          icon: <RemnawaveIcon />,
-          title: t('admin.nav.remnawave'),
-          description: t('admin.panel.remnawaveDesc'),
-          permission: 'remnawave:read',
-        },
-        {
-          to: '/admin/balancer',
-          icon: <ServerStackIcon />,
-          title: t('admin.nav.balancer'),
-          description: t('admin.panel.balancerDesc'),
-          permission: 'remnawave:read',
-        },
-        {
-          to: '/admin/email-templates',
-          icon: <EnvelopeIcon />,
-          title: t('admin.nav.emailTemplates'),
-          description: t('admin.panel.emailTemplatesDesc'),
-          permission: 'email_templates:read',
-        },
-        {
-          to: '/admin/updates',
-          icon: <ArrowPathIcon className="h-5 w-5" />,
-          title: t('admin.nav.updates'),
-          description: t('admin.panel.updatesDesc'),
-          permission: 'updates:read',
-        },
-      ],
-    },
-    {
-      id: 'security',
-      title: t('admin.groups.security'),
-      icon: <SecurityGroupIcon />,
-      gradient: 'from-red-500/10 to-orange-500/5',
-      borderColor: 'border-red-500/20',
-      iconBg: 'bg-red-500/20',
-      iconColor: 'text-red-400',
-      items: [
-        {
-          to: '/admin/roles',
-          icon: <ShieldIcon />,
-          title: t('admin.nav.roles'),
-          description: t('admin.panel.rolesDesc'),
-          permission: 'roles:read',
-        },
-        {
-          to: '/admin/roles/assign',
-          icon: <UserPlusIcon />,
-          title: t('admin.nav.roleAssign'),
-          description: t('admin.panel.roleAssignDesc'),
-          permission: 'roles:assign',
-        },
-        {
-          to: '/admin/policies',
-          icon: <DocumentCheckIcon />,
-          title: t('admin.nav.policies'),
-          description: t('admin.panel.policiesDesc'),
-          permission: 'roles:read',
-        },
-        {
-          to: '/admin/audit-log',
-          icon: <ClipboardDocumentListIcon />,
-          title: t('admin.nav.auditLog'),
-          description: t('admin.panel.auditLogDesc'),
-          permission: 'audit_log:read',
-        },
-      ],
-    },
-  ];
+  const groups = useMemo<AdminGroup[]>(
+    () => [
+      {
+        id: 'analytics',
+        title: t('admin.groups.analytics'),
+        icon: <AnalyticsGroupIcon />,
+        gradient: 'from-success-500/10 to-success-500/5',
+        borderColor: 'border-success-500/20',
+        iconBg: 'bg-success-500/20',
+        iconColor: 'text-success-400',
+        items: [
+          {
+            to: '/admin/dashboard',
+            icon: <ChartBarIcon />,
+            title: t('admin.nav.dashboard'),
+            description: t('admin.panel.dashboardDesc'),
+            permission: 'stats:read',
+          },
+          {
+            to: '/admin/payments',
+            icon: <BanknotesIcon />,
+            title: t('admin.nav.payments'),
+            description: t('admin.panel.paymentsDesc'),
+            permission: 'payments:read',
+          },
+          {
+            to: '/admin/traffic-usage',
+            icon: <ArrowsUpDownIcon />,
+            title: t('admin.nav.trafficUsage'),
+            description: t('admin.panel.trafficUsageDesc'),
+            permission: 'traffic:read',
+          },
+          {
+            to: '/admin/sales-stats',
+            icon: <ChartBarIcon />,
+            title: t('admin.nav.salesStats'),
+            description: t('admin.panel.salesStatsDesc'),
+            permission: 'sales_stats:read',
+          },
+        ],
+      },
+      {
+        id: 'users',
+        title: t('admin.groups.users'),
+        icon: <UsersGroupIcon />,
+        gradient: 'from-accent-500/10 to-accent-500/5',
+        borderColor: 'border-accent-500/20',
+        iconBg: 'bg-accent-500/20',
+        iconColor: 'text-accent-400',
+        items: [
+          {
+            to: '/admin/users',
+            icon: <UsersIcon />,
+            title: t('admin.nav.users'),
+            description: t('admin.panel.usersDesc'),
+            permission: 'users:read',
+          },
+          {
+            to: '/admin/tickets',
+            icon: <ChatBubbleIcon />,
+            title: t('admin.nav.tickets'),
+            description: t('admin.panel.ticketsDesc'),
+            permission: 'tickets:read',
+          },
+          {
+            to: '/admin/account-linking',
+            icon: <LinkIcon />,
+            title: t('admin.nav.accountLinking'),
+            description: t('admin.panel.accountLinkingDesc'),
+            permission: 'users:read',
+          },
+          {
+            to: '/admin/ban-system',
+            icon: <NoSymbolIcon />,
+            title: t('admin.nav.banSystem'),
+            description: t('admin.panel.banSystemDesc'),
+            permission: 'ban_system:read',
+          },
+        ],
+      },
+      {
+        id: 'tariffs',
+        title: t('admin.groups.tariffs'),
+        icon: <TariffsGroupIcon />,
+        gradient: 'from-warning-500/10 to-warning-500/5',
+        borderColor: 'border-warning-500/20',
+        iconBg: 'bg-warning-500/20',
+        iconColor: 'text-warning-400',
+        items: [
+          {
+            to: '/admin/tariffs',
+            icon: <CreditCardIcon />,
+            title: t('admin.nav.tariffs'),
+            description: t('admin.panel.tariffsDesc'),
+            permission: 'tariffs:read',
+          },
+          {
+            to: '/admin/promocodes',
+            icon: <TicketIcon />,
+            title: t('admin.nav.promocodes'),
+            description: t('admin.panel.promocodesDesc'),
+            permission: 'promocodes:read',
+          },
+          {
+            to: '/admin/promo-groups',
+            icon: <UserGroupIcon />,
+            title: t('admin.nav.promoGroups'),
+            description: t('admin.panel.promoGroupsDesc'),
+            permission: 'promo_groups:read',
+          },
+          {
+            to: '/admin/promo-offers',
+            icon: <GiftIcon />,
+            title: t('admin.nav.promoOffers'),
+            description: t('admin.panel.promoOffersDesc'),
+            permission: 'promo_offers:read',
+          },
+          {
+            to: '/admin/payment-methods',
+            icon: <BanknotesIcon />,
+            title: t('admin.nav.paymentMethods'),
+            description: t('admin.panel.paymentMethodsDesc'),
+            permission: 'payment_methods:read',
+          },
+        ],
+      },
+      {
+        id: 'marketing',
+        title: t('admin.groups.marketing'),
+        icon: <MarketingGroupIcon />,
+        gradient: 'from-error-500/10 to-error-500/5',
+        borderColor: 'border-error-500/20',
+        iconBg: 'bg-error-500/20',
+        iconColor: 'text-error-400',
+        items: [
+          {
+            to: '/admin/news',
+            icon: <NewspaperIcon />,
+            title: t('admin.nav.news'),
+            description: t('admin.panel.newsDesc'),
+            permission: 'news:read',
+          },
+          {
+            to: '/admin/campaigns',
+            icon: <MegaphoneIcon />,
+            title: t('admin.nav.campaigns'),
+            description: t('admin.panel.campaignsDesc'),
+            permission: 'campaigns:read',
+          },
+          {
+            to: '/admin/broadcasts',
+            icon: <PaperAirplaneIcon />,
+            title: t('admin.nav.broadcasts'),
+            description: t('admin.panel.broadcastsDesc'),
+            permission: 'broadcasts:read',
+          },
+          {
+            to: '/admin/pinned-messages',
+            icon: <PinnedMessageIcon />,
+            title: t('admin.nav.pinnedMessages'),
+            description: t('admin.panel.pinnedMessagesDesc'),
+            permission: 'pinned_messages:read',
+          },
+          {
+            to: '/admin/wheel',
+            icon: <SparklesIcon />,
+            title: t('admin.nav.wheel'),
+            description: t('admin.panel.wheelDesc'),
+            permission: 'wheel:read',
+          },
+          {
+            to: '/admin/partners',
+            icon: <HandshakeIcon />,
+            title: t('admin.nav.partners'),
+            description: t('admin.panel.partnersDesc'),
+            permission: 'partners:read',
+          },
+          {
+            to: '/admin/withdrawals',
+            icon: <BanknotesIcon />,
+            title: t('admin.nav.withdrawals'),
+            description: t('admin.panel.withdrawalsDesc'),
+            permission: 'withdrawals:read',
+          },
+        ],
+      },
+      {
+        id: 'system',
+        title: t('admin.groups.system'),
+        icon: <SystemGroupIcon />,
+        gradient: 'from-violet-500/10 to-violet-500/5',
+        borderColor: 'border-violet-500/20',
+        iconBg: 'bg-violet-500/20',
+        iconColor: 'text-violet-400',
+        items: [
+          {
+            to: '/admin/channel-subscriptions',
+            icon: <MegaphoneIcon />,
+            title: t('admin.nav.channelSubscriptions'),
+            description: t('admin.panel.channelSubscriptionsDesc'),
+            permission: 'channels:read',
+          },
+          {
+            to: '/admin/settings',
+            icon: <CogIcon />,
+            title: t('admin.nav.settings'),
+            description: t('admin.panel.settingsDesc'),
+            permission: 'settings:read',
+          },
+          {
+            to: '/admin/main-menu-buttons',
+            icon: <MainMenuButtonsIcon />,
+            title: t('admin.nav.mainMenuButtons'),
+            description: t('admin.panel.mainMenuButtonsDesc'),
+            permission: 'settings:read',
+          },
+          {
+            to: '/admin/ultima-settings',
+            icon: <MainMenuButtonsIcon />,
+            title: t('admin.nav.ultimaSettings', { defaultValue: 'Ultima настройки' }),
+            description: t('admin.panel.ultimaSettingsDesc', {
+              defaultValue: 'Кнопки, соглашение и параметры режима Ultima',
+            }),
+            permission: 'settings:read',
+          },
+          {
+            to: '/admin/apps',
+            icon: <DevicePhoneMobileIcon />,
+            title: t('admin.nav.apps'),
+            description: t('admin.panel.appsDesc'),
+            permission: 'apps:read',
+          },
+          {
+            to: '/admin/servers',
+            icon: <ServerStackIcon />,
+            title: t('admin.nav.servers'),
+            description: t('admin.panel.serversDesc'),
+            permission: 'servers:read',
+          },
+          {
+            to: '/admin/remnawave',
+            icon: <RemnawaveIcon />,
+            title: t('admin.nav.remnawave'),
+            description: t('admin.panel.remnawaveDesc'),
+            permission: 'remnawave:read',
+          },
+          {
+            to: '/admin/balancer',
+            icon: <ServerStackIcon />,
+            title: t('admin.nav.balancer'),
+            description: t('admin.panel.balancerDesc'),
+            permission: 'remnawave:read',
+          },
+          {
+            to: '/admin/email-templates',
+            icon: <EnvelopeIcon />,
+            title: t('admin.nav.emailTemplates'),
+            description: t('admin.panel.emailTemplatesDesc'),
+            permission: 'email_templates:read',
+          },
+          {
+            to: '/admin/updates',
+            icon: <ArrowPathIcon className="h-5 w-5" />,
+            title: t('admin.nav.updates'),
+            description: t('admin.panel.updatesDesc'),
+            permission: 'updates:read',
+          },
+        ],
+      },
+      {
+        id: 'security',
+        title: t('admin.groups.security'),
+        icon: <SecurityGroupIcon />,
+        gradient: 'from-red-500/10 to-orange-500/5',
+        borderColor: 'border-red-500/20',
+        iconBg: 'bg-red-500/20',
+        iconColor: 'text-red-400',
+        items: [
+          {
+            to: '/admin/roles',
+            icon: <ShieldIcon />,
+            title: t('admin.nav.roles'),
+            description: t('admin.panel.rolesDesc'),
+            permission: 'roles:read',
+          },
+          {
+            to: '/admin/roles/assign',
+            icon: <UserPlusIcon />,
+            title: t('admin.nav.roleAssign'),
+            description: t('admin.panel.roleAssignDesc'),
+            permission: 'roles:assign',
+          },
+          {
+            to: '/admin/policies',
+            icon: <DocumentCheckIcon />,
+            title: t('admin.nav.policies'),
+            description: t('admin.panel.policiesDesc'),
+            permission: 'roles:read',
+          },
+          {
+            to: '/admin/audit-log',
+            icon: <ClipboardDocumentListIcon />,
+            title: t('admin.nav.auditLog'),
+            description: t('admin.panel.auditLogDesc'),
+            permission: 'audit_log:read',
+          },
+        ],
+      },
+    ],
+    [t],
+  );
 
   const adminFavorites = groups
     .flatMap((group) =>
@@ -839,135 +1138,276 @@ export default function AdminPanel() {
     }),
   ].slice(0, 6);
 
+  const normalizedSearch = search.trim().toLowerCase();
+  const visibleGroups = groups.filter((group) =>
+    group.items.some((item) => {
+      if (!hasPermission(item.permission)) return false;
+      if (!normalizedSearch) return true;
+
+      return `${item.title} ${item.description} ${group.title}`
+        .toLowerCase()
+        .includes(normalizedSearch);
+    }),
+  );
+
   return (
-    <div className="animate-fade-in space-y-4">
-      {/* Header */}
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-dark-100">{t('admin.panel.title')}</h1>
-          <p className="mt-1 text-sm text-dark-400">{t('admin.panel.subtitle')}</p>
-        </div>
-        <Link
-          to="/"
-          className="inline-flex items-center rounded-lg border border-dark-600/70 bg-dark-800/50 px-3 py-2 text-sm font-medium text-dark-100 transition-colors hover:border-accent-500/40 hover:text-accent-300"
-        >
-          {t('admin.panel.backToCabinet', { defaultValue: 'Вернуться в кабинет' })}
-        </Link>
-      </div>
-
-      {adminFavorites.length > 0 && (
-        <div className="overflow-hidden rounded-2xl border border-warning-500/20 bg-dark-900/30 backdrop-blur">
-          <div className="border-b border-warning-500/20 bg-gradient-to-r from-warning-500/10 to-warning-500/5 px-4 py-3">
-            <div className="flex items-center gap-2.5">
-              <div className="rounded-lg bg-warning-500/20 p-1.5 text-warning-400">
-                <StarIcon filled />
-              </div>
-              <div>
-                <h2 className="text-sm font-semibold text-dark-100">
-                  {t('admin.panel.favoriteSectionsTitle', { defaultValue: 'Избранные разделы' })}
-                </h2>
-                <p className="text-xs text-dark-400">
-                  {t('admin.panel.favoriteSectionsSubtitle', {
-                    defaultValue: 'Закреплённые экраны админки для быстрого доступа',
-                  })}
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 gap-2 p-2 lg:grid-cols-2">
-            {adminFavorites.map((item) => (
-              <Link
-                key={`favorite-admin-${item.to}`}
-                to={item.to}
-                className="group flex items-center gap-3 rounded-xl border border-dark-700/50 bg-dark-800/40 p-3 transition-all duration-200 hover:border-warning-500/30 hover:bg-dark-800/80"
-              >
-                <div
-                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${item.iconBg} ${item.iconColor} transition-transform group-hover:scale-105`}
-                >
-                  {item.icon}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h3 className="truncate text-sm font-medium text-dark-100 transition-colors group-hover:text-white">
-                    {item.title}
-                  </h3>
-                  <p className="truncate text-xs text-dark-500">{item.groupTitle}</p>
-                </div>
-                <div className="text-dark-600 transition-colors group-hover:text-dark-400">
-                  <ChevronRightIcon />
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {hasPermission('settings:read') && favoriteCards.length > 0 && (
-        <div className="overflow-hidden rounded-2xl border border-warning-500/20 bg-dark-900/30 backdrop-blur">
-          <div className="border-b border-warning-500/20 bg-gradient-to-r from-warning-500/10 to-warning-500/5 px-4 py-3">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <div className="rounded-lg bg-warning-500/20 p-1.5 text-warning-400">
-                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.922-.755 1.688-1.539 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.196-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z" />
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="text-sm font-semibold text-dark-100">
-                    {t('admin.panel.favoriteSettingsTitle', {
-                      defaultValue: 'Быстрый доступ к настройкам',
-                    })}
-                  </h2>
-                  <p className="text-xs text-dark-400">
-                    {t('admin.panel.favoriteSettingsSubtitle', {
-                      defaultValue:
-                        'Закреплённые настройки и категории открываются сразу из панели',
-                    })}
-                  </p>
-                </div>
-              </div>
-              <Link
-                to="/admin/settings?section=favorites"
-                className="rounded-lg border border-dark-600/70 bg-dark-800/50 px-3 py-1.5 text-xs font-medium text-dark-200 transition-colors hover:border-warning-500/40 hover:text-warning-300"
-              >
-                {t('admin.nav.settings')}
-              </Link>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 gap-2 p-2 lg:grid-cols-2">
-            {favoriteCards.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className="group flex items-center gap-3 rounded-xl border border-dark-700/50 bg-dark-800/40 p-3 transition-all duration-200 hover:border-warning-500/30 hover:bg-dark-800/80"
-              >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-warning-500/20 text-warning-400 transition-transform group-hover:scale-105">
-                  {item.icon}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h3 className="truncate text-sm font-medium text-dark-100 transition-colors group-hover:text-white">
-                    {item.title}
-                  </h3>
-                  <p className="truncate text-xs text-dark-500">{item.description}</p>
-                </div>
-                <div className="text-dark-600 transition-colors group-hover:text-dark-400">
-                  <ChevronRightIcon />
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Groups Grid */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {groups.map((group) => (
-          <GroupSection
-            key={group.id}
-            group={group}
-            isFavoriteLink={isFavoriteLink}
-            toggleFavoriteLink={toggleFavoriteLink}
+    <div className="relative flex min-h-0 flex-1 animate-fade-in flex-col">
+      <div
+        className="relative z-10 mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-3 overflow-hidden px-4 sm:px-6"
+        style={{
+          paddingTop: safeTop > 0 ? `${safeTop}px` : 'env(safe-area-inset-top, 0px)',
+          paddingBottom: safeBottom > 0 ? `${safeBottom}px` : 'env(safe-area-inset-bottom, 0px)',
+        }}
+      >
+        <div className="hidden shrink-0 sm:flex">
+          <StatsBar
+            systemInfo={systemInfo}
+            dashboardStats={dashboardStats}
+            loading={statsLoading}
           />
-        ))}
+        </div>
+
+        <div className="grid shrink-0 grid-cols-2 gap-1.5 sm:hidden">
+          {[
+            {
+              icon: <UptimeIcon />,
+              label: t('admin.panel.statsUptime', { defaultValue: 'Аптайм' }),
+              value:
+                systemInfo && systemInfo.uptime_seconds > 0
+                  ? formatUptime(systemInfo.uptime_seconds)
+                  : '--',
+              className: 'text-success-400',
+            },
+            {
+              icon: <BotIcon />,
+              label: t('admin.panel.statsBot', { defaultValue: 'Бот' }),
+              value: systemInfo?.bot_version || '--',
+              className: 'text-accent-400',
+            },
+            {
+              icon: <TrialIcon />,
+              label: t('admin.panel.statsTrials', { defaultValue: 'Триалы' }),
+              value: dashboardStats?.subscriptions.trial?.toLocaleString() || '--',
+              className: 'text-warning-400',
+            },
+            {
+              icon: <PaidIcon />,
+              label: t('admin.panel.statsPaid', { defaultValue: 'Платные' }),
+              value: dashboardStats?.subscriptions.paid?.toLocaleString() || '--',
+              delta:
+                (dashboardStats?.subscriptions.purchased_today ?? 0) > 0
+                  ? `+${dashboardStats?.subscriptions.purchased_today}`
+                  : undefined,
+              className: 'text-success-400',
+            },
+          ].map((stat) => (
+            <div
+              key={stat.label}
+              className={cn(
+                'flex items-center gap-2 rounded-xl border border-dark-700/50 bg-dark-800/40 px-2.5 py-2 backdrop-blur-xl',
+                'light:border-champagne-300/50 light:bg-champagne-100/60',
+                statsLoading && 'animate-pulse',
+              )}
+            >
+              <div className={cn('shrink-0', stat.className)}>{stat.icon}</div>
+              <div className="flex min-w-0 flex-col">
+                <span className="light:text-champagne-900 flex items-center gap-1 font-mono text-[11px] font-bold text-dark-100">
+                  <span className="truncate">{stat.value}</span>
+                  {'delta' in stat && stat.delta && (
+                    <span className="shrink-0 rounded border border-success-400/20 bg-success-400/10 px-1 text-2xs font-semibold text-success-400">
+                      {stat.delta}
+                    </span>
+                  )}
+                </span>
+                <span className="light:text-champagne-600 truncate text-2xs text-dark-500">
+                  {stat.label}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex shrink-0 flex-wrap items-center gap-3">
+          <div className="min-w-0">
+            <h1 className="light:from-champagne-900 light:via-champagne-600 light:to-accent-600 truncate bg-gradient-to-r from-dark-50 via-dark-300 to-accent-400 bg-clip-text text-lg font-extrabold tracking-tight text-transparent sm:text-xl">
+              {t('admin.panel.title')}
+            </h1>
+            <div className="light:text-champagne-500 mt-0.5 flex items-center gap-1.5 text-xs text-dark-400">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-success-400 shadow-[0_0_10px_rgba(var(--color-success-400),0.6)]" />
+              <span className="truncate">
+                {t('admin.panel.statsOnline', { defaultValue: 'Онлайн' })}
+              </span>
+            </div>
+          </div>
+
+          <div className="relative ml-auto min-w-[180px] max-w-[390px] flex-1">
+            <div className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-dark-500">
+              <SearchIcon />
+            </div>
+            <input
+              ref={inputRef}
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder={t('admin.panel.searchPlaceholder', { defaultValue: 'Поиск...' })}
+              aria-label={t('admin.panel.searchPlaceholder', { defaultValue: 'Поиск...' })}
+              className="light:border-champagne-300/50 light:bg-champagne-100/60 light:text-champagne-900 light:placeholder:text-champagne-500 w-full rounded-xl border border-dark-700/50 bg-dark-800/40 py-2 pl-8 pr-16 text-xs text-dark-100 outline-none backdrop-blur-xl transition-all placeholder:text-dark-500 focus:border-accent-500/40 focus:shadow-[0_0_0_3px_rgba(var(--color-accent-500),0.08)]"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                aria-label={t('admin.panel.searchClear', { defaultValue: 'Очистить поиск' })}
+                className="absolute right-12 top-1/2 -translate-y-1/2 rounded-md p-1 text-dark-500 transition-colors hover:bg-dark-700/60 hover:text-dark-300"
+              >
+                <XMarkIcon />
+              </button>
+            )}
+            <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md border border-dark-700/50 bg-dark-800/60 px-1.5 py-0.5 font-mono text-2xs text-dark-500">
+              {IS_MAC ? 'Cmd' : 'Ctrl'} K
+            </kbd>
+          </div>
+
+          <Link
+            to="/"
+            className="light:border-champagne-300/60 light:bg-champagne-100/60 light:text-champagne-900 hidden rounded-xl border border-dark-600/70 bg-dark-800/50 px-3 py-2 text-xs font-medium text-dark-100 transition-colors hover:border-accent-500/40 hover:text-accent-300 sm:inline-flex"
+          >
+            {t('admin.panel.backToCabinet', { defaultValue: 'В кабинет' })}
+          </Link>
+        </div>
+
+        <div className="scrollbar-hide min-h-0 flex-1 space-y-3 overflow-auto pb-4">
+          {adminFavorites.length > 0 && (
+            <div className="overflow-hidden rounded-2xl border border-warning-500/20 bg-dark-900/30 backdrop-blur">
+              <div className="border-b border-warning-500/20 bg-gradient-to-r from-warning-500/10 to-warning-500/5 px-4 py-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="rounded-lg bg-warning-500/20 p-1.5 text-warning-400">
+                    <StarIcon filled />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-semibold text-dark-100">
+                      {t('admin.panel.favoriteSectionsTitle', {
+                        defaultValue: 'Избранные разделы',
+                      })}
+                    </h2>
+                    <p className="text-xs text-dark-400">
+                      {t('admin.panel.favoriteSectionsSubtitle', {
+                        defaultValue: 'Закреплённые экраны админки для быстрого доступа',
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-2 p-2 lg:grid-cols-2">
+                {adminFavorites.map((item) => (
+                  <Link
+                    key={`favorite-admin-${item.to}`}
+                    to={item.to}
+                    className="group flex items-center gap-3 rounded-xl border border-dark-700/50 bg-dark-800/40 p-3 transition-all duration-200 hover:border-warning-500/30 hover:bg-dark-800/80"
+                  >
+                    <div
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${item.iconBg} ${item.iconColor} transition-transform group-hover:scale-105`}
+                    >
+                      {item.icon}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate text-sm font-medium text-dark-100 transition-colors group-hover:text-white">
+                        {item.title}
+                      </h3>
+                      <p className="truncate text-xs text-dark-500">{item.groupTitle}</p>
+                    </div>
+                    <div className="text-dark-600 transition-colors group-hover:text-dark-400">
+                      <ChevronRightIcon />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {hasPermission('settings:read') && favoriteCards.length > 0 && (
+            <div className="overflow-hidden rounded-2xl border border-warning-500/20 bg-dark-900/30 backdrop-blur">
+              <div className="border-b border-warning-500/20 bg-gradient-to-r from-warning-500/10 to-warning-500/5 px-4 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="rounded-lg bg-warning-500/20 p-1.5 text-warning-400">
+                      <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.922-.755 1.688-1.539 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.196-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-semibold text-dark-100">
+                        {t('admin.panel.favoriteSettingsTitle', {
+                          defaultValue: 'Быстрый доступ к настройкам',
+                        })}
+                      </h2>
+                      <p className="text-xs text-dark-400">
+                        {t('admin.panel.favoriteSettingsSubtitle', {
+                          defaultValue:
+                            'Закреплённые настройки и категории открываются сразу из панели',
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    to="/admin/settings?section=favorites"
+                    className="rounded-lg border border-dark-600/70 bg-dark-800/50 px-3 py-1.5 text-xs font-medium text-dark-200 transition-colors hover:border-warning-500/40 hover:text-warning-300"
+                  >
+                    {t('admin.nav.settings')}
+                  </Link>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-2 p-2 lg:grid-cols-2">
+                {favoriteCards.map((item) => (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className="group flex items-center gap-3 rounded-xl border border-dark-700/50 bg-dark-800/40 p-3 transition-all duration-200 hover:border-warning-500/30 hover:bg-dark-800/80"
+                  >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-warning-500/20 text-warning-400 transition-transform group-hover:scale-105">
+                      {item.icon}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate text-sm font-medium text-dark-100 transition-colors group-hover:text-white">
+                        {item.title}
+                      </h3>
+                      <p className="truncate text-xs text-dark-500">{item.description}</p>
+                    </div>
+                    <div className="text-dark-600 transition-colors group-hover:text-dark-400">
+                      <ChevronRightIcon />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Groups Grid */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {visibleGroups.map((group, index) => (
+              <GroupSection
+                key={group.id}
+                group={group}
+                index={index}
+                searchTerm={search}
+                isFavoriteLink={isFavoriteLink}
+                toggleFavoriteLink={toggleFavoriteLink}
+              />
+            ))}
+          </div>
+          {visibleGroups.length === 0 && (
+            <div className="light:border-champagne-300/50 light:bg-champagne-100/40 flex flex-col items-center justify-center rounded-2xl border border-dark-700/50 bg-dark-800/30 px-4 py-16 text-center backdrop-blur-xl">
+              <div className="light:border-champagne-300/50 light:bg-champagne-200/60 light:text-champagne-600 mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-dark-700/50 bg-dark-800/40 text-dark-500">
+                <SearchIcon />
+              </div>
+              <h3 className="light:text-champagne-800 text-sm font-semibold text-dark-200">
+                {t('admin.panel.searchEmpty', { defaultValue: 'Ничего не найдено' })}
+              </h3>
+              <p className="light:text-champagne-600 mt-1 text-xs text-dark-500">
+                {t('admin.panel.searchEmptyHint', { defaultValue: 'Попробуйте другой запрос' })}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
