@@ -1,6 +1,8 @@
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { CheckIcon, CopyIcon } from '@/components/icons';
 import type { RemnawaveButtonClient, LocalizedText } from '@/types';
+import { copyToClipboard } from '@/utils/clipboard';
 
 // eslint-disable-next-line no-script-url
 const dangerousSchemes = ['javascript:', 'data:', 'vbscript:', 'file:'];
@@ -19,26 +21,11 @@ function isValidExternalUrl(url: string | undefined): boolean {
   return lowerUrl.startsWith('http://') || lowerUrl.startsWith('https://');
 }
 
-const CopyIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-    />
-  </svg>
-);
-
-const CheckIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-  </svg>
-);
-
 interface BlockButtonsProps {
   buttons: RemnawaveButtonClient[] | undefined;
   variant: 'light' | 'subtle';
   isLight?: boolean;
+  platformKey?: string | null;
   subscriptionUrl: string | null;
   hideLink?: boolean;
   deepLink?: string | null;
@@ -64,35 +51,73 @@ export function BlockButtons({
   const [copied, setCopied] = useState(false);
 
   const handleCopy = useCallback(async (url: string) => {
-    try {
-      await navigator.clipboard.writeText(url);
-    } catch {
-      const textarea = document.createElement('textarea');
-      textarea.value = url;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-    }
+    await copyToClipboard(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }, []);
 
   if (!buttons || buttons.length === 0) return null;
 
-  const baseClass =
-    variant === 'light'
-      ? isLight
-        ? 'rounded-xl border border-accent-500/50 px-4 py-2 text-sm font-medium text-accent-600 shadow-sm transition-all hover:bg-accent-500/10'
-        : 'rounded-xl border border-accent-500/40 px-4 py-2 text-sm font-medium text-accent-400 transition-all hover:bg-accent-500/10'
-      : isLight
-        ? 'rounded-xl px-3 py-1.5 text-sm font-medium text-dark-300 transition-all hover:bg-dark-700/30'
-        : 'rounded-xl px-3 py-1.5 text-sm font-medium text-dark-300 transition-all hover:bg-dark-700/50';
+  const getButtonClass = () => {
+    const sharedLight =
+      'min-h-9 w-full justify-center rounded-2xl border border-accent-500 px-3 py-2 text-center text-[11px] font-bold leading-tight transition-all active:scale-[0.98] sm:min-h-10 sm:text-xs lg:min-h-11 lg:text-sm';
+
+    if (variant === 'light') {
+      return isLight
+        ? `${sharedLight} bg-accent-950/20 text-accent-600 shadow-[0_8px_20px_rgba(var(--color-accent-500),0.16)]`
+        : `${sharedLight} bg-accent-500/12 text-accent-400 shadow-[0_8px_20px_rgba(var(--color-accent-500),0.12)]`;
+    }
+
+    return isLight
+      ? 'rounded-xl px-3 py-1.5 text-sm font-medium text-dark-300 transition-all hover:bg-dark-700/30'
+      : 'rounded-xl px-3 py-1.5 text-sm font-medium text-dark-300 transition-all hover:bg-dark-700/50';
+  };
+
+  const getExternalFallbackText = (btn: RemnawaveButtonClient) => {
+    const url = (btn.link || btn.url || btn.resolvedUrl || '').toLowerCase();
+    if (!url) return '';
+
+    if (url.includes('github.com')) return 'GitHub';
+    if (url.includes('apps.apple.com') || url.includes('itunes.apple.com')) return 'App Store';
+    if (url.includes('testflight.apple.com')) return 'TestFlight';
+    if (url.includes('play.google.com')) return 'Google Play';
+    if (url.includes('microsoft.com') || url.includes('apps.microsoft.com'))
+      return 'Microsoft Store';
+    if (url.includes('.apk')) return 'Скачать APK';
+    if (url.includes('.appimage') || url.includes('.deb') || url.includes('.rpm'))
+      return 'Скачать Linux';
+    if (url.includes('.exe') || url.includes('.msi')) return 'Скачать Windows';
+    if (url.includes('.dmg') || url.includes('.pkg')) return 'Скачать macOS';
+
+    try {
+      const hostname = new URL(btn.link || btn.url || btn.resolvedUrl || '').hostname.replace(
+        /^www\./,
+        '',
+      );
+      return hostname || '';
+    } catch {
+      return '';
+    }
+  };
+
+  const getButtonText = (btn: RemnawaveButtonClient) => {
+    const rawText = getLocalizedText(btn.text).trim();
+
+    if (variant === 'light' && (btn.type === 'subscriptionLink' || btn.type === 'copyButton')) {
+      return 'Добавить подписку';
+    }
+
+    return rawText || getExternalFallbackText(btn);
+  };
 
   return (
-    <div className="mt-3 flex flex-wrap gap-2">
+    <div
+      className={
+        variant === 'light' ? 'mt-3 grid grid-cols-2 gap-2 sm:gap-3' : 'mt-2 flex flex-wrap gap-2'
+      }
+    >
       {buttons.map((btn, idx) => {
-        const btnText = getLocalizedText(btn.text);
+        const btnText = getButtonText(btn);
         const btnSvg = getSvgHtml(btn.svgIconKey);
         const btnIcon = btnSvg ? (
           <div
@@ -108,7 +133,7 @@ export function BlockButtons({
             <button
               key={idx}
               onClick={() => onOpenDeepLink(url)}
-              className={`flex items-center gap-2 ${baseClass}`}
+              className={`flex items-center gap-1.5 only:col-span-2 ${getButtonClass()}`}
             >
               {btnIcon}
               {btnText || getBaseTranslation('openApp', 'subscription.connection.openLink')}
@@ -124,10 +149,10 @@ export function BlockButtons({
             <button
               key={idx}
               onClick={() => handleCopy(url)}
-              className={`flex items-center gap-2 ${
+              className={`flex items-center gap-1.5 only:col-span-2 ${
                 copied
-                  ? `rounded-xl border border-success-500 bg-success-500/10 px-4 py-2 text-sm font-medium ${isLight ? 'text-success-600' : 'text-success-400'}`
-                  : baseClass
+                  ? `min-h-9 w-full justify-center rounded-2xl border border-success-500 bg-success-500/10 px-3 py-2 text-center text-[11px] font-bold leading-tight transition-all sm:min-h-10 sm:text-xs lg:min-h-11 lg:text-sm ${isLight ? 'text-success-600' : 'text-success-400'}`
+                  : getButtonClass()
               }`}
             >
               {copied ? <CheckIcon /> : btnIcon || <CopyIcon />}
@@ -147,7 +172,7 @@ export function BlockButtons({
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className={`inline-flex items-center gap-2 ${baseClass}`}
+            className={`flex items-center gap-1.5 only:col-span-2 ${getButtonClass()}`}
           >
             {btnIcon}
             {btnText}

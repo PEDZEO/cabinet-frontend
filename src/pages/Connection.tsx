@@ -7,6 +7,7 @@ import { subscriptionApi } from '../api/subscription';
 import { useTelegramSDK } from '../hooks/useTelegramSDK';
 import { useHaptic } from '@/platform';
 import { resolveTemplate, hasTemplates } from '../utils/templateEngine';
+import { isHappCryptolinkMode, resolveConnectionUrlForUi } from '../utils/connectionLink';
 import { useAuthStore } from '../store/auth';
 import type { AppConfig, RemnawavePlatformData } from '../types';
 import InstallationGuide from '../components/connection/InstallationGuide';
@@ -19,10 +20,18 @@ export default function Connection() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const isAdmin = useAuthStore((state) => state.isAdmin);
-  const { isTelegramWebApp } = useTelegramSDK();
+  const { isTelegramWebApp, safeAreaInset, contentSafeAreaInset, isFullscreen, isMobile } =
+    useTelegramSDK();
   const { isUltimaMode } = useUltimaMode();
   const { impact: hapticImpact } = useHaptic();
   const queryClient = useQueryClient();
+  const telegramTopOffset =
+    isTelegramWebApp && isFullscreen ? Math.max(safeAreaInset.top, contentSafeAreaInset.top) : 0;
+  const telegramBottomOffset =
+    isTelegramWebApp && isFullscreen
+      ? Math.max(safeAreaInset.bottom, contentSafeAreaInset.bottom)
+      : 0;
+  const reserveTelegramRightControls = isTelegramWebApp && isFullscreen && isMobile;
 
   const hapticRef = useRef(hapticImpact);
   hapticRef.current = hapticImpact;
@@ -46,18 +55,53 @@ export default function Connection() {
     enabled: !!appConfig && !appConfig.hasSubscription,
   });
 
+  const { data: connectionLink, isLoading: isConnectionLinkLoading } = useQuery({
+    queryKey: ['connectionLink'],
+    queryFn: subscriptionApi.getConnectionLink,
+    retry: false,
+    staleTime: 0,
+    enabled: Boolean(appConfig?.hasSubscription),
+  });
+
+  const qrConnectionUrl = useMemo(
+    () =>
+      resolveConnectionUrlForUi({
+        mode: connectionLink?.connect_mode,
+        happSchemeLink: connectionLink?.happ_scheme_link,
+        displayLink: connectionLink?.display_link,
+        subscriptionUrl: connectionLink?.subscription_url,
+        happCryptLink: connectionLink?.happ_cryptolink,
+        happCryptoLink: connectionLink?.happ_crypto_link ?? appConfig?.subscriptionCryptoLink,
+        happLink: connectionLink?.happ_link,
+        fallbackUrl: appConfig?.subscriptionUrl,
+      }),
+    [
+      appConfig?.subscriptionCryptoLink,
+      appConfig?.subscriptionUrl,
+      connectionLink?.connect_mode,
+      connectionLink?.display_link,
+      connectionLink?.happ_cryptolink,
+      connectionLink?.happ_crypto_link,
+      connectionLink?.happ_link,
+      connectionLink?.happ_scheme_link,
+      connectionLink?.subscription_url,
+    ],
+  );
+
   const handleGoBack = useCallback(() => {
     navigate(-1);
   }, [navigate]);
 
   const handleOpenQR = useCallback(() => {
+    if (!qrConnectionUrl) return;
     navigate('/connection/qr', {
+      replace: !isTelegramWebApp,
       state: {
-        url: appConfig?.subscriptionUrl,
-        hideLink: appConfig?.hideLink ?? false,
+        url: qrConnectionUrl,
+        hideLink: connectionLink?.hide_link ?? appConfig?.hideLink ?? false,
       },
     });
-  }, [navigate, appConfig?.subscriptionUrl, appConfig?.hideLink]);
+  }, [navigate, qrConnectionUrl, connectionLink?.hide_link, appConfig?.hideLink, isTelegramWebApp]);
 
   useEffect(() => {
     const refresh = () => {
@@ -101,11 +145,16 @@ export default function Connection() {
       markLiteOnboardingStep('subscription_added', user?.id);
 
       let resolved = deepLink;
-      if (hasTemplates(resolved)) {
+      if (isHappCryptolinkMode(connectionLink?.connect_mode) && qrConnectionUrl) {
+        resolved = qrConnectionUrl;
+      } else if (hasTemplates(resolved)) {
         resolved = resolveUrl(resolved);
       }
 
-      const finalUrl = `${window.location.origin}/miniapp/redirect.html?url=${encodeURIComponent(resolved)}&lang=${i18n.language || 'en'}`;
+      const isHttpUrl = /^https?:\/\//i.test(resolved);
+      const finalUrl = isHttpUrl
+        ? resolved
+        : `${window.location.origin}/miniapp/redirect.html?url=${encodeURIComponent(resolved)}&lang=${i18n.language || 'en'}`;
 
       if (isTelegramWebApp) {
         try {
@@ -116,9 +165,16 @@ export default function Connection() {
         }
       }
 
-      window.location.href = finalUrl;
+      window.location.href = isHttpUrl ? resolved : finalUrl;
     },
-    [isTelegramWebApp, i18n.language, resolveUrl, user?.id],
+    [
+      connectionLink?.connect_mode,
+      i18n.language,
+      isTelegramWebApp,
+      qrConnectionUrl,
+      resolveUrl,
+      user?.id,
+    ],
   );
 
   // Check if any platform has configured apps
@@ -130,7 +186,7 @@ export default function Connection() {
   }, [appConfig?.platforms]);
 
   // Loading
-  if (isLoading) {
+  if (isLoading || isConnectionLinkLoading) {
     return (
       <div className="flex flex-1 items-center justify-center py-20">
         <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-accent-500/30 border-t-accent-500" />
@@ -264,6 +320,9 @@ export default function Connection() {
       isTelegramWebApp={isTelegramWebApp}
       onGoBack={handleGoBack}
       onOpenQR={handleOpenQR}
+      telegramTopOffset={telegramTopOffset}
+      telegramBottomOffset={telegramBottomOffset}
+      reserveTelegramRightControls={reserveTelegramRightControls}
     />
   );
 }
