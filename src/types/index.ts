@@ -518,8 +518,10 @@ export interface ReferralTerms {
   minimum_topup_rubles: number;
   first_topup_bonus_kopeks: number;
   first_topup_bonus_rubles: number;
+  first_topup_bonus_days?: number;
   inviter_bonus_kopeks: number;
   inviter_bonus_rubles: number;
+  inviter_bonus_days?: number;
   partner_section_visible?: boolean;
 }
 

@@ -6,6 +6,9 @@ type UltimaReferralCtaProps = {
   onClick: () => void;
   variant?: 'mobile' | 'desktop';
   className?: string;
+  title?: string;
+  description?: string;
+  badgeLabel?: string;
 };
 
 const ReferralIcon = () => (
@@ -37,19 +40,22 @@ export function UltimaReferralCta({
   onClick,
   variant = 'mobile',
   className,
+  title: titleOverride,
+  description: descriptionOverride,
+  badgeLabel,
 }: UltimaReferralCtaProps) {
   const { t } = useTranslation();
   const normalizedCommission = Math.max(0, Math.round(commissionPercent ?? 0));
-  const showBadge = normalizedCommission > 0;
-  const title = t('profile.referralTitle', { defaultValue: 'Реферальная программа' });
-  const description = showBadge
-    ? t('ultima.referralCtaDescription', {
-        percent: normalizedCommission,
-        defaultValue: 'До {{percent}}% за приглашения',
-      })
-    : t('profile.referralDescription', {
-        defaultValue: 'Получайте бонусы за приглашения',
-      });
+  const showBadge = normalizedCommission > 0 || Boolean(badgeLabel);
+  const title = titleOverride ?? t('ultima.referralInviteTitle', { defaultValue: 'Позови друга' });
+  const description =
+    descriptionOverride ??
+    t('ultima.referralInviteDescription', {
+      percent: normalizedCommission,
+      defaultValue: 'Бонус за приглашение друга',
+    });
+  const resolvedBadgeLabel =
+    badgeLabel ?? t('ultima.referralInviteBadge', { defaultValue: 'Бонус' });
 
   return (
     <button
@@ -122,7 +128,7 @@ export function UltimaReferralCta({
                 background: 'color-mix(in srgb, var(--ultima-color-primary) 16%, transparent)',
               }}
             >
-              {normalizedCommission}%
+              {resolvedBadgeLabel}
             </span>
           ) : null}
 

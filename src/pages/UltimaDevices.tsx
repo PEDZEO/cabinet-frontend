@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { QRCodeSVG } from 'qrcode.react';
 import { balanceApi } from '@/api/balance';
 import { subscriptionApi } from '@/api/subscription';
 import {
@@ -11,6 +12,7 @@ import {
 import { useCurrency } from '@/hooks/useCurrency';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { copyToClipboard } from '@/utils/clipboard';
 
 const DeviceIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
@@ -55,6 +57,7 @@ export function UltimaDevices() {
   const [success, setSuccess] = useState<string | null>(null);
   const [addCount, setAddCount] = useState(1);
   const [reduceLimit, setReduceLimit] = useState(1);
+  const [isConnectionPanelOpen, setIsConnectionPanelOpen] = useState(false);
 
   const { data: purchaseOptions } = useQuery({
     queryKey: ['purchase-options'],
@@ -279,6 +282,11 @@ export function UltimaDevices() {
   });
 
   const connectedCount = devicesData?.devices?.length ?? 0;
+  const availableDeviceSlots = Math.max(0, currentLimit - connectedCount);
+  const subscriptionLink = subscriptionData?.subscription?.subscription_url ?? '';
+  const hideSubscriptionLink = Boolean(subscriptionData?.subscription?.hide_subscription_link);
+  const canUseSubscriptionLink = subscriptionLink.length > 0;
+  const canCopySubscriptionLink = canUseSubscriptionLink && !hideSubscriptionLink;
   const isBusy =
     purchaseMutation.isPending ||
     reduceMutation.isPending ||
@@ -291,6 +299,59 @@ export function UltimaDevices() {
 
   const minReduceLimit = reductionInfo?.min_device_limit ?? 1;
   const maxReduceLimit = reductionInfo?.current_device_limit ?? currentLimit ?? 1;
+
+  const openConnectionPanel = () => {
+    if (!canUseSubscriptionLink) {
+      setSuccess(null);
+      setError(
+        t('devices.subscriptionLinkUnavailable', {
+          defaultValue: 'Ссылка подписки пока недоступна. Попробуйте открыть подписку позже.',
+        }),
+      );
+      return;
+    }
+
+    setError(null);
+    setIsConnectionPanelOpen(true);
+    window.setTimeout(() => {
+      document.getElementById('ultima-connect-new-device')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }, 0);
+  };
+
+  const copySubscriptionLink = async () => {
+    if (!canCopySubscriptionLink) {
+      setSuccess(null);
+      setError(
+        t('devices.subscriptionLinkHidden', {
+          defaultValue: 'Ссылка скрыта настройками. Используйте QR-код подписки.',
+        }),
+      );
+      return;
+    }
+
+    await copyToClipboard(subscriptionLink);
+    setError(null);
+    setSuccess(
+      t('devices.subscriptionLinkCopied', {
+        defaultValue: 'Ссылка подписки скопирована',
+      }),
+    );
+  };
+
+  const handleDeviceCapacityCta = () => {
+    if (availableDeviceSlots > 0 || isActiveTrial) {
+      openConnectionPanel();
+      return;
+    }
+
+    document.getElementById('ultima-device-slots')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+    });
+  };
 
   const bottomNav = <UltimaBottomNav active="profile" />;
 
@@ -358,7 +419,113 @@ export function UltimaDevices() {
                 </button>
               </div>
             ) : null}
+            <div className="mt-3 rounded-2xl border border-emerald-200/[0.16] bg-emerald-300/[0.08] px-3 py-2.5">
+              <div className="flex flex-col gap-2 min-[360px]:flex-row min-[360px]:items-center min-[360px]:justify-between">
+                <div className="min-w-0">
+                  <p className="text-[13px] font-medium text-white">
+                    {availableDeviceSlots > 0
+                      ? t('devices.freeSlotsTitle', {
+                          defaultValue: 'Можно подключить новое устройство',
+                        })
+                      : t('devices.noFreeSlotsTitle', {
+                          defaultValue: 'Свободных слотов нет',
+                        })}
+                  </p>
+                  <p className="mt-0.5 text-[11px] leading-snug text-white/[0.58]">
+                    {availableDeviceSlots > 0
+                      ? t('devices.freeSlotsHint', {
+                          count: availableDeviceSlots,
+                          limit: currentLimit,
+                          defaultValue:
+                            'Свободно {{count}} из {{limit}}. Скопируйте ссылку подписки или покажите QR-код.',
+                        })
+                      : t('devices.noFreeSlotsHint', {
+                          defaultValue: 'Удалите старое устройство или купите дополнительный слот.',
+                        })}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleDeviceCapacityCta}
+                  className="ultima-btn-pill ultima-btn-primary shrink-0 rounded-xl px-3 py-2 text-[12px] font-semibold"
+                >
+                  {availableDeviceSlots > 0 || isActiveTrial
+                    ? t('devices.connectDevice', { defaultValue: 'Подключить' })
+                    : t('devices.buySlot', { defaultValue: 'Купить слот' })}
+                </button>
+              </div>
+            </div>
           </section>
+
+          {isConnectionPanelOpen && canUseSubscriptionLink ? (
+            <section
+              id="ultima-connect-new-device"
+              className="rounded-3xl border border-emerald-200/[0.16] bg-[rgba(12,45,42,0.24)] p-3 backdrop-blur-md"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[14px] font-semibold text-white/95">
+                    {t('devices.connectNewDeviceTitle', {
+                      defaultValue: 'Подключить новое устройство',
+                    })}
+                  </p>
+                  <p className="mt-1 text-[12px] leading-snug text-white/[0.62]">
+                    {t('devices.connectNewDeviceHint', {
+                      defaultValue:
+                        'Откройте эту ссылку на новом устройстве или отсканируйте QR-код.',
+                    })}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsConnectionPanelOpen(false)}
+                  className="ultima-btn-pill ultima-btn-secondary shrink-0 rounded-xl px-3 py-2 text-[12px] font-medium"
+                >
+                  {t('common.close', { defaultValue: 'Закрыть' })}
+                </button>
+              </div>
+
+              <div className="mt-3 grid gap-3 min-[520px]:grid-cols-[160px_minmax(0,1fr)]">
+                <div className="mx-auto rounded-2xl bg-white p-3">
+                  <QRCodeSVG value={subscriptionLink} size={136} level="M" includeMargin={false} />
+                </div>
+                <div className="min-w-0 space-y-2">
+                  {hideSubscriptionLink ? (
+                    <p className="rounded-2xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-[12px] leading-snug text-white/[0.58]">
+                      {t('devices.subscriptionLinkHiddenText', {
+                        defaultValue:
+                          'Текст ссылки скрыт настройками. Для подключения используйте QR-код.',
+                      })}
+                    </p>
+                  ) : (
+                    <p className="truncate rounded-2xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 font-mono text-[11px] text-white/[0.72]">
+                      {subscriptionLink}
+                    </p>
+                  )}
+                  <div className="flex flex-col gap-2 min-[360px]:flex-row">
+                    <button
+                      type="button"
+                      onClick={() => void copySubscriptionLink()}
+                      disabled={!canCopySubscriptionLink}
+                      className="ultima-btn-pill ultima-btn-primary flex-1 rounded-xl px-3 py-2.5 text-[12px] font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {t('devices.copySubscriptionLink', {
+                        defaultValue: 'Скопировать ссылку',
+                      })}
+                    </button>
+                    <a
+                      href={subscriptionLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="ultima-btn-pill ultima-btn-secondary flex-1 rounded-xl px-3 py-2.5 text-center text-[12px] font-semibold"
+                    >
+                      {t('common.open', { defaultValue: 'Открыть' })}
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </section>
+          ) : null}
 
           <section className="rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
             <div className="mb-2 flex items-center justify-between">
@@ -414,16 +581,32 @@ export function UltimaDevices() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-white/[0.56]">
-                {t('lite.noDevices', { defaultValue: 'Устройств пока нет' })}
-              </p>
+              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] px-3 py-3">
+                <p className="text-sm text-white/[0.72]">
+                  {t('lite.noDevices', { defaultValue: 'Устройств пока нет' })}
+                </p>
+                {currentLimit > 0 ? (
+                  <button
+                    type="button"
+                    onClick={openConnectionPanel}
+                    className="ultima-btn-pill ultima-btn-secondary mt-2 rounded-xl px-3 py-2 text-[12px] font-medium"
+                  >
+                    {t('devices.connectFirstDevice', {
+                      defaultValue: 'Подключить первое устройство',
+                    })}
+                  </button>
+                ) : null}
+              </div>
             )}
           </section>
 
           {!isActiveTrial ? (
-            <section className="rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md">
+            <section
+              id="ultima-device-slots"
+              className="rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md"
+            >
               <p className="mb-2 text-[14px] text-white/90">
-                {t('lite.addDevices', { defaultValue: 'Добавить устройства' })}
+                {t('devices.buySlotsTitle', { defaultValue: 'Купить слоты для устройств' })}
               </p>
               <div className="mb-2 flex items-center gap-2">
                 <button
@@ -467,7 +650,7 @@ export function UltimaDevices() {
               >
                 {devicePrice?.total_price_kopeks && !canAffordDevicePurchase
                   ? t('ultima.topUpAndBuy', 'Пополнить и купить')
-                  : t('lite.buyDevices', { defaultValue: 'Купить устройства' })}
+                  : t('devices.buySlotsButton', { defaultValue: 'Купить слоты' })}
               </button>
             </section>
           ) : null}

@@ -305,7 +305,7 @@ export default function AdminTariffCreate() {
   const addPeriod = () => {
     const days = toNumber(newPeriodDays, 0);
     const price = toNumber(newPeriodPrice, 0);
-    if (days > 0 && price > 0) {
+    if (days > 0 && price >= 0) {
       const exists = periodPrices.some((p) => p.days === days);
       if (!exists) {
         setPeriodPrices((prev) =>

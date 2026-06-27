@@ -96,6 +96,14 @@ const PhoneIcon = () => (
   </svg>
 );
 
+const DevicesHomeIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
+    <rect x="3.5" y="5" width="11" height="14" rx="2.5" stroke="currentColor" strokeWidth="1.8" />
+    <rect x="16.5" y="8" width="4" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
+    <path d="M8.75 15.5h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+  </svg>
+);
+
 const AdminIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
     <path
@@ -216,6 +224,13 @@ export function UltimaDashboard() {
   });
   const subscription = subscriptionResponse?.subscription ?? null;
   const hasAnySubscription = subscriptionResponse?.has_subscription === true;
+  const { data: dashboardDevicesData } = useQuery({
+    queryKey: ['devices'],
+    queryFn: subscriptionApi.getDevices,
+    enabled: hasAnySubscription,
+    staleTime: 10000,
+    placeholderData: (previousData) => previousData,
+  });
   const isI18nReady =
     i18n.isInitialized &&
     (typeof i18n.hasLoadedNamespace !== 'function' || i18n.hasLoadedNamespace('translation'));
@@ -694,6 +709,24 @@ export function UltimaDashboard() {
   const showReferralEntry = Boolean(referralTerms?.is_enabled || referralInfo?.referral_link);
   const referralCommissionPercent =
     referralInfo?.commission_percent ?? referralTerms?.commission_percent ?? 0;
+  const referralInviteTitle = t('ultima.referralInviteTitle', {
+    defaultValue: 'Позови друга',
+  });
+  const referralInviteDescription =
+    (referralTerms?.inviter_bonus_days ?? 0) > 0
+      ? t('ultima.referralInviteDescriptionWithDays', {
+          count: referralTerms?.inviter_bonus_days ?? 0,
+          defaultValue: 'Бонус к подписке или балансу за приглашение.',
+        })
+      : t('ultima.referralInviteDescription', {
+          defaultValue: 'Бонус к балансу за приглашение друга.',
+        });
+  const referralInviteBadgeLabel = t('ultima.referralInviteBadge', {
+    defaultValue: 'Бонус',
+  });
+  const connectedDevicesCount = dashboardDevicesData?.devices?.length ?? 0;
+  const dashboardDeviceLimit = Math.max(0, subscription?.device_limit ?? 0);
+  const dashboardFreeDeviceSlots = Math.max(0, dashboardDeviceLimit - connectedDevicesCount);
   const showBrandLogoOnHome = Boolean(
     ultimaThemeConfig?.homeUseBrandLogo && hasCustomLogo && logoUrl && !hasHomeLogoLoadError,
   );
@@ -895,6 +928,51 @@ export function UltimaDashboard() {
   );
   const bottomNav = <UltimaBottomNav active="home" onSupportClick={openSupport} />;
   const PrimaryCtaIcon = primaryActionKind === 'setup' ? SetupIcon : GlobeIcon;
+  const devicesHomeCta = hasAnySubscription ? (
+    <button
+      type="button"
+      onClick={openDevices}
+      className="group relative w-full overflow-hidden rounded-[20px] border px-3.5 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_22px_rgba(3,14,24,0.16)] backdrop-blur-md transition hover:bg-white/[0.04]"
+      style={{
+        borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
+        background:
+          'linear-gradient(180deg, color-mix(in srgb, var(--ultima-color-surface) 42%, transparent), color-mix(in srgb, var(--ultima-color-secondary) 62%, transparent))',
+      }}
+    >
+      <span className="relative flex min-w-0 items-center gap-3">
+        <span
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[18px] border text-white/[0.88]"
+          style={{
+            borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 18%, transparent)',
+            background: 'color-mix(in srgb, var(--ultima-color-surface) 42%, transparent)',
+          }}
+        >
+          <DevicesHomeIcon />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[14px] font-semibold leading-tight text-white/[0.96]">
+            {t('devices.homeCtaTitle', { defaultValue: 'Мои устройства' })}
+          </span>
+          <span className="mt-0.5 block truncate text-[11px] leading-tight text-white/[0.62]">
+            {dashboardFreeDeviceSlots > 0
+              ? t('devices.homeCtaFreeSlots', {
+                  count: dashboardFreeDeviceSlots,
+                  total: dashboardDeviceLimit,
+                  defaultValue: 'Свободно {{count}} из {{total}} слотов',
+                })
+              : t('devices.homeCtaNoSlots', {
+                  count: connectedDevicesCount,
+                  total: dashboardDeviceLimit,
+                  defaultValue: 'Подключено {{count}} из {{total}}',
+                })}
+          </span>
+        </span>
+        <span className="shrink-0 rounded-full border border-white/10 px-2.5 py-1 text-[11px] font-semibold text-white/[0.86]">
+          {t('common.open', { defaultValue: 'Открыть' })}
+        </span>
+      </span>
+    </button>
+  ) : null;
   const desktopTrialGuide =
     showTrialSetupCard && !isTrialGuideVisible ? (
       <UltimaTrialGuide
@@ -956,9 +1034,13 @@ export function UltimaDashboard() {
                 commissionPercent={referralCommissionPercent}
                 onClick={openReferral}
                 variant="desktop"
+                title={referralInviteTitle}
+                description={referralInviteDescription}
+                badgeLabel={referralInviteBadgeLabel}
               />
             ) : null
           }
+          devicesCta={devicesHomeCta}
           subscription={subscription}
           expiryLabel={expiryLabel}
           statusLabel={statusLabel}
@@ -1065,9 +1147,14 @@ export function UltimaDashboard() {
               <UltimaReferralCta
                 commissionPercent={referralCommissionPercent}
                 onClick={openReferral}
+                title={referralInviteTitle}
+                description={referralInviteDescription}
+                badgeLabel={referralInviteBadgeLabel}
               />
             </div>
           )}
+
+          {devicesHomeCta ? <div className="mb-4">{devicesHomeCta}</div> : null}
 
           {showPromoCard && (
             <div

@@ -7,6 +7,7 @@ import {
   useEffect,
   ReactNode,
 } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ToastOptions {
   type?: 'success' | 'error' | 'info' | 'warning';
@@ -91,16 +92,24 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  const toastContainer =
+    typeof document === 'undefined'
+      ? null
+      : createPortal(
+          <div className="pointer-events-none fixed left-4 right-4 top-[calc(0.75rem+env(safe-area-inset-top,0px))] z-[100] flex flex-col gap-2 sm:left-auto sm:right-[calc(1rem+env(safe-area-inset-right,0px))]">
+            {toasts.map((toast) => (
+              <ToastItem key={toast.id} toast={toast} onClose={() => removeToast(toast.id)} />
+            ))}
+          </div>,
+          document.body,
+        );
+
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
 
       {/* Toast Container — safe area aware, adaptive width */}
-      <div className="pointer-events-none fixed left-4 right-4 top-[calc(0.75rem+env(safe-area-inset-top,0px))] z-[100] flex flex-col gap-2 sm:left-auto sm:right-[calc(1rem+env(safe-area-inset-right,0px))]">
-        {toasts.map((toast) => (
-          <ToastItem key={toast.id} toast={toast} onClose={() => removeToast(toast.id)} />
-        ))}
-      </div>
+      {toastContainer}
     </ToastContext.Provider>
   );
 }
