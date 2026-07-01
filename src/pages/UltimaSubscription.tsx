@@ -1681,18 +1681,6 @@ export function UltimaSubscription() {
         </section>
 
         <div className={`ultima-mobile-dock-footer ${isUltraCompactHeight ? 'pt-2' : 'pt-3'}`}>
-          {legacyDeviceNotice ? (
-            <div className="mb-1.5 flex items-center gap-2 rounded-[14px] border border-amber-200/[0.22] bg-amber-300/10 px-2.5 py-1.5 text-[10.5px] leading-[1.25] text-amber-50/[0.9]">
-              <p className="line-clamp-1 min-w-0 flex-1">{legacyDeviceNotice}</p>
-              <button
-                type="button"
-                onClick={() => navigate('/ultima/devices')}
-                className="ultima-btn-pill ultima-btn-secondary shrink-0 px-2.5 py-1 text-[11px]"
-              >
-                {t('subscription.manageDevices', { defaultValue: 'Устройства' })}
-              </button>
-            </div>
-          ) : null}
           {!error && requiresMinTopUpBump && defaultPaymentMethod && (
             <p className="mb-2 text-center text-[13px] leading-relaxed text-white/70">
               {t(

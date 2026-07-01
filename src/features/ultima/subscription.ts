@@ -35,7 +35,7 @@ export const getUltimaDeviceLimitsForTariff = (
 ): number[] => {
   const baseLimit = getUltimaBaseDeviceLimit(tariff);
   const currentSubscriptionLimit = Math.max(1, subscription?.device_limit ?? 1);
-  const minLimit = tariff.is_current ? Math.max(baseLimit, currentSubscriptionLimit) : baseLimit;
+  const minLimit = baseLimit;
   const maxLimit = getUltimaTariffMaxDeviceLimit(tariff, currentSubscriptionLimit);
 
   return Array.from(
