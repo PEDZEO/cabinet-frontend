@@ -518,6 +518,8 @@
     "trafficTimerExpired": "Traffic expired",
     "trafficTimerRemaining": "Remaining lifetime",
     "trafficTimerUsed": "{{percent}}% used",
+    "trafficTimerDetails": "Details",
+    "trafficTimerCollapse": "Hide",
     "additionalOptions": {
       "title": "Additional options",
       "buyDevices": "Buy more devices",

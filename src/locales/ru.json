@@ -541,6 +541,8 @@
     "trafficTimerExpired": "Срок трафика вышел",
     "trafficTimerRemaining": "Осталось срока",
     "trafficTimerUsed": "{{percent}}% прошло",
+    "trafficTimerDetails": "Подробнее",
+    "trafficTimerCollapse": "Свернуть",
     "additionalOptions": {
       "title": "Дополнительные опции",
       "buyDevices": "Докупить устройства",
