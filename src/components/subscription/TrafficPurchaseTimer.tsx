@@ -100,6 +100,9 @@ export function TrafficPurchaseTimer({
   const toggleLabel = expanded
     ? t('subscription.trafficTimerCollapse', { defaultValue: 'Hide' })
     : t('subscription.trafficTimerDetails', { defaultValue: 'Details' });
+  const statusLabel = state.isExpired
+    ? t('subscription.trafficTimerExpired', { defaultValue: 'Traffic expired' })
+    : t('subscription.trafficTimerExpiresIn', { defaultValue: 'Expires in' });
   const unitClassName =
     variant === 'ultima'
       ? 'rounded-[14px] border border-white/[0.08] bg-black/[0.16] px-2.5 py-2'
@@ -119,51 +122,54 @@ export function TrafficPurchaseTimer({
       onClick={() => setExpanded((value) => !value)}
       onKeyDown={handleKeyDown}
       className={cn(
-        'cursor-pointer select-none overflow-hidden rounded-[18px] border p-3 text-left transition-[border-color,background-color,transform] duration-200 active:scale-[0.99]',
+        'group cursor-pointer select-none overflow-hidden rounded-[20px] border p-3.5 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-[border-color,background-color,box-shadow,transform] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 active:scale-[0.99]',
         variant === 'ultima'
-          ? 'border-white/10 bg-black/10 text-white'
-          : 'border-white/10 text-dark-50',
+          ? 'border-white/10 bg-[linear-gradient(135deg,rgba(44,230,174,0.13),rgba(255,255,255,0.045)_46%,rgba(0,0,0,0.1))] text-white hover:border-white/[0.18] hover:shadow-[0_14px_36px_rgba(0,0,0,0.16),inset_0_1px_0_rgba(255,255,255,0.08)]'
+          : 'border-white/10 bg-white/[0.04] text-dark-50 hover:border-white/[0.16]',
         className,
       )}
       style={surfaceStyle}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span
+            className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] border"
+            style={{
+              borderColor: `${toneColor}38`,
+              background: `linear-gradient(145deg, ${toneColor}24, ${toneColor}0d)`,
+              color: toneColor,
+              boxShadow: `0 0 24px ${toneColor}1f`,
+            }}
+            aria-hidden
+          >
             <span
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[12px] border"
-              style={{
-                borderColor: `${toneColor}33`,
-                background: `${toneColor}16`,
-                color: toneColor,
-              }}
-              aria-hidden
-            >
-              <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
-                <path
-                  d="M7 16a4 4 0 0 1-.88-7.9A5 5 0 0 1 16 6a5 5 0 0 1 1 9.9M12 10v8M9 13l3-3 3 3"
-                  stroke="currentColor"
-                  strokeWidth="1.9"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </span>
-            <div className="min-w-0">
-              <p className="text-[13px] font-semibold leading-tight">
-                +{purchase.traffic_gb} {t('common.units.gb')}
-              </p>
-              <p className="mt-0.5 text-[11px] leading-tight opacity-60">
-                {state.isExpired
-                  ? t('subscription.trafficTimerExpired', { defaultValue: 'Traffic expired' })
-                  : t('subscription.trafficTimerExpiresIn', { defaultValue: 'Expires in' })}
-              </p>
-            </div>
+              className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full"
+              style={{ background: toneColor }}
+            />
+            <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
+              <path
+                d="M7 16a4 4 0 0 1-.88-7.9A5 5 0 0 1 16 6a5 5 0 0 1 1 9.9M12 10v8M9 13l3-3 3 3"
+                stroke="currentColor"
+                strokeWidth="1.9"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-[14px] font-semibold leading-tight">
+              +{purchase.traffic_gb} {t('common.units.gb')}
+            </p>
+            <p className="mt-1 truncate text-[11px] leading-tight opacity-[0.58]">{statusLabel}</p>
+            {!expanded && expiresAtLabel ? (
+              <p className="mt-1 truncate text-[10px] leading-tight opacity-40">{expiresAtLabel}</p>
+            ) : null}
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-1.5">
+
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
           <div
-            className="max-w-[96px] truncate rounded-full border px-2.5 py-1 text-[10px] font-semibold leading-none"
+            className="max-w-[128px] truncate rounded-full border px-3 py-1.5 text-[11px] font-semibold leading-none"
             style={{
               borderColor: `${toneColor}24`,
               background: `${toneColor}14`,
@@ -173,25 +179,25 @@ export function TrafficPurchaseTimer({
           >
             {compactDurationLabel}
           </div>
-          <span className="hidden rounded-full border border-white/[0.1] bg-white/[0.04] px-2 py-1 text-[10px] font-medium opacity-60 min-[380px]:inline">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-[10px] font-medium leading-none opacity-70 transition-opacity group-hover:opacity-90">
             {toggleLabel}
-          </span>
-          <span
-            className={cn(
-              'flex h-7 w-7 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04] transition-transform duration-200',
-              expanded && 'rotate-180',
-            )}
-            aria-hidden
-          >
-            <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5">
-              <path
-                d="m6 9 6 6 6-6"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <span
+              className={cn(
+                'flex h-4 w-4 items-center justify-center transition-transform duration-200',
+                expanded && 'rotate-180',
+              )}
+              aria-hidden
+            >
+              <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5">
+                <path
+                  d="m6 9 6 6 6-6"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
           </span>
         </div>
       </div>
@@ -215,7 +221,12 @@ export function TrafficPurchaseTimer({
         </div>
       ) : null}
 
-      <div className="mt-3">
+      <div
+        className={cn(
+          'mt-3',
+          !expanded && 'rounded-[14px] border border-white/[0.06] bg-black/[0.06] p-2.5',
+        )}
+      >
         <div className="flex items-center justify-between text-[10px] opacity-50">
           <span>
             {t('subscription.trafficTimerRemaining', { defaultValue: 'Remaining lifetime' })}
