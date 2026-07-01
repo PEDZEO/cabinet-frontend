@@ -3312,7 +3312,17 @@
           "earned": "Заработано",
           "commission": "Комиссия",
           "default": "По умолч.",
-          "invalidPercent": "Процент должен быть от 0 до 100"
+          "invalidPercent": "Процент должен быть от 0 до 100",
+          "attachHint": "Найдите пользователя и прикрепите его как реферала этого аккаунта.",
+          "searchPlaceholder": "Имя, @username, email или Telegram ID",
+          "search": "Найти",
+          "searchMinLength": "Введите минимум 2 символа",
+          "noSearchResults": "Подходящие пользователи не найдены",
+          "searchError": "Не удалось найти пользователей",
+          "attach": "Прикрепить",
+          "detach": "Убрать",
+          "updated": "Рефералы обновлены",
+          "updateError": "Не удалось обновить рефералов"
         },
         "restrictions": {
           "title": "Ограничения",

@@ -8,6 +8,7 @@ import type {
 } from '../components/AdminUserDetailContent';
 import type {
   PanelSyncStatusResponse,
+  UpdateUserReferralsAction,
   UserAvailableTariff,
   UserDetailResponse,
   UserListItem,
@@ -33,6 +34,10 @@ interface BuildAdminUserDetailContentPropsParams {
   onUpdateReferralCommission: () => void;
   referralsLoading: boolean;
   referrals: UserListItem[];
+  onUpdateReferrals: (
+    referralUserIds: number[],
+    action: UpdateUserReferralsAction,
+  ) => Promise<void>;
   onOpenUser: (userId: number) => void;
   onBlockUser: () => void;
   onUnblockUser: () => void;
@@ -129,6 +134,7 @@ function buildInfoTabProps(params: BuildAdminUserDetailContentPropsParams): Info
     onUpdateReferralCommission,
     referralsLoading,
     referrals,
+    onUpdateReferrals,
     onOpenUser,
     onBlockUser,
     onUnblockUser,
@@ -156,6 +162,7 @@ function buildInfoTabProps(params: BuildAdminUserDetailContentPropsParams): Info
     onUpdateReferralCommission,
     referralsLoading,
     referrals,
+    onUpdateReferrals,
     onOpenUser,
     onBlockUser,
     onUnblockUser,

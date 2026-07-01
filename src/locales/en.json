@@ -2800,7 +2800,17 @@
           "earned": "Earned",
           "commission": "Commission",
           "default": "Default",
-          "invalidPercent": "Commission must be between 0 and 100"
+          "invalidPercent": "Commission must be between 0 and 100",
+          "attachHint": "Find a user and attach them as a referral of this account.",
+          "searchPlaceholder": "Name, @username, email, or Telegram ID",
+          "search": "Search",
+          "searchMinLength": "Enter at least 2 characters",
+          "noSearchResults": "No matching users found",
+          "searchError": "Failed to search users",
+          "attach": "Attach",
+          "detach": "Remove",
+          "updated": "Referrals updated",
+          "updateError": "Failed to update referrals"
         },
         "restrictions": {
           "title": "Restrictions",

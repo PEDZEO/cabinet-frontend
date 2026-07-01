@@ -1,7 +1,12 @@
 import type { Dispatch, RefObject, SetStateAction } from 'react';
 import type { UserDetailResponse } from '../../../api/adminUsers';
 import type { PanelSyncStatusResponse } from '../../../api/adminUsers';
-import type { UserAvailableTariff, UserListItem, UserPanelInfo } from '../../../api/adminUsers';
+import type {
+  UpdateUserReferralsAction,
+  UserAvailableTariff,
+  UserListItem,
+  UserPanelInfo,
+} from '../../../api/adminUsers';
 import type { AdminTicket, AdminTicketDetail } from '../../../api/admin';
 import type { PromoGroup } from '../../../api/promocodes';
 import type { NodeUsagePeriodItem } from './subscriptionTypes';
@@ -29,6 +34,10 @@ export interface InfoTabContentProps {
   onUpdateReferralCommission: () => void;
   referralsLoading: boolean;
   referrals: UserListItem[];
+  onUpdateReferrals: (
+    referralUserIds: number[],
+    action: UpdateUserReferralsAction,
+  ) => Promise<void>;
   onOpenUser: (userId: number) => void;
   onBlockUser: () => void;
   onUnblockUser: () => void;
@@ -163,6 +172,7 @@ export function AdminUserDetailContent({
           onUpdateReferralCommission={infoTab.onUpdateReferralCommission}
           referralsLoading={infoTab.referralsLoading}
           referrals={infoTab.referrals}
+          onUpdateReferrals={infoTab.onUpdateReferrals}
           onOpenUser={infoTab.onOpenUser}
           onBlockUser={infoTab.onBlockUser}
           onUnblockUser={infoTab.onUnblockUser}

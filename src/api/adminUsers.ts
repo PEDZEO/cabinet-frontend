@@ -87,6 +87,16 @@ export interface UserReferralInfo {
   referred_by_username: string | null;
 }
 
+export type UpdateUserReferralsAction = 'replace' | 'add' | 'remove';
+
+export interface UpdateUserReferralsResponse {
+  success: boolean;
+  added: number;
+  removed: number;
+  total: number;
+  message: string;
+}
+
 export interface UserDetailResponse {
   id: number;
   telegram_id: number;
@@ -509,6 +519,19 @@ export const adminUsersApi = {
   getReferrals: async (userId: number, offset = 0, limit = 50): Promise<UsersListResponse> => {
     const response = await apiClient.get(`/cabinet/admin/users/${userId}/referrals`, {
       params: { offset, limit },
+    });
+    return response.data;
+  },
+
+  // Update referrals
+  updateReferrals: async (
+    userId: number,
+    referralUserIds: number[],
+    action: UpdateUserReferralsAction = 'replace',
+  ): Promise<UpdateUserReferralsResponse> => {
+    const response = await apiClient.post(`/cabinet/admin/users/${userId}/referrals`, {
+      action,
+      referral_user_ids: referralUserIds,
     });
     return response.data;
   },

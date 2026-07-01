@@ -1,7 +1,12 @@
-import type { Dispatch, SetStateAction } from 'react';
+import { useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { PromoGroup } from '../../../api/promocodes';
-import type { UserDetailResponse, UserListItem } from '../../../api/adminUsers';
+import {
+  adminUsersApi,
+  type UpdateUserReferralsAction,
+  type UserDetailResponse,
+  type UserListItem,
+} from '../../../api/adminUsers';
 import { createNumberInputHandler } from '../../../utils/inputHelpers';
 import { StatusBadge } from './StatusBadge';
 import { AdminUserDangerZone } from './AdminUserDangerZone';
@@ -22,6 +27,10 @@ interface AdminUserInfoTabProps {
   onUpdateReferralCommission: () => void;
   referralsLoading: boolean;
   referrals: UserListItem[];
+  onUpdateReferrals: (
+    referralUserIds: number[],
+    action: UpdateUserReferralsAction,
+  ) => Promise<void>;
   onOpenUser: (userId: number) => void;
   onBlockUser: () => void;
   onUnblockUser: () => void;
@@ -48,6 +57,7 @@ export function AdminUserInfoTab({
   onUpdateReferralCommission,
   referralsLoading,
   referrals,
+  onUpdateReferrals,
   onOpenUser,
   onBlockUser,
   onUnblockUser,
@@ -58,6 +68,69 @@ export function AdminUserInfoTab({
   onConfirmFullDelete,
 }: AdminUserInfoTabProps) {
   const { t } = useTranslation();
+  const [referralSearch, setReferralSearch] = useState('');
+  const [referralSearchResults, setReferralSearchResults] = useState<UserListItem[]>([]);
+  const [referralSearchLoading, setReferralSearchLoading] = useState(false);
+  const [referralSearchError, setReferralSearchError] = useState('');
+  const referralIdSet = useMemo(() => new Set(referrals.map((item) => item.id)), [referrals]);
+
+  const getReferralUserMeta = (referralUser: UserListItem) => {
+    const parts = [];
+    if (referralUser.username) {
+      parts.push(`@${referralUser.username}`);
+    }
+    if (referralUser.telegram_id) {
+      parts.push(`TG ${referralUser.telegram_id}`);
+    }
+    parts.push(`#${referralUser.id}`);
+    return parts.join(' · ');
+  };
+
+  const handleReferralSearch = async () => {
+    const query = referralSearch.trim();
+    if (query.length < 2) {
+      setReferralSearchResults([]);
+      setReferralSearchError(t('admin.users.detail.referral.searchMinLength'));
+      return;
+    }
+
+    setReferralSearchLoading(true);
+    setReferralSearchError('');
+    try {
+      const data = await adminUsersApi.getUsers({ search: query, limit: 8 });
+      const foundUsers = data.users.filter(
+        (item) => item.id !== user.id && !referralIdSet.has(item.id),
+      );
+      setReferralSearchResults(foundUsers);
+      setReferralSearchError(
+        foundUsers.length === 0 ? t('admin.users.detail.referral.noSearchResults') : '',
+      );
+    } catch (error) {
+      console.error('Failed to search referral users:', error);
+      setReferralSearchError(t('admin.users.detail.referral.searchError'));
+    } finally {
+      setReferralSearchLoading(false);
+    }
+  };
+
+  const handleAttachReferral = async (referralUser: UserListItem) => {
+    try {
+      await onUpdateReferrals([referralUser.id], 'add');
+      setReferralSearchResults((current) => current.filter((item) => item.id !== referralUser.id));
+      setReferralSearch('');
+      setReferralSearchError('');
+    } catch {
+      // Parent handler already shows the notification.
+    }
+  };
+
+  const handleDetachReferral = async (referralUserId: number) => {
+    try {
+      await onUpdateReferrals([referralUserId], 'remove');
+    } catch {
+      // Parent handler already shows the notification.
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -233,47 +306,132 @@ export function AdminUserInfoTab({
         </div>
       </div>
 
-      {user.referral.referrals_count > 0 && (
-        <div className="rounded-xl bg-dark-800/50 p-3">
-          <div className="mb-2 text-sm font-medium text-dark-200">
-            {t('admin.users.detail.referralsList')}
+      <div className="rounded-xl bg-dark-800/50 p-3">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <div className="text-sm font-medium text-dark-200">
+              {t('admin.users.detail.referralsList')}
+            </div>
+            <div className="text-xs text-dark-500">
+              {t('admin.users.detail.referral.attachHint')}
+            </div>
           </div>
-          {referralsLoading ? (
-            <div className="flex justify-center py-4">
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
-            </div>
-          ) : referrals.length === 0 ? (
-            <div className="py-2 text-center text-xs text-dark-500">
-              {t('admin.users.detail.noReferrals')}
-            </div>
-          ) : (
-            <div className="max-h-48 space-y-2 overflow-y-auto">
-              {referrals.map((referralUser) => (
-                <button
+          <span className="rounded-full bg-accent-500/10 px-2.5 py-1 text-xs font-medium text-accent-300">
+            {user.referral.referrals_count}
+          </span>
+        </div>
+
+        <div className="rounded-lg border border-dark-700/80 bg-dark-900/40 p-2">
+          <div className="flex gap-2">
+            <input
+              value={referralSearch}
+              onChange={(event) => {
+                setReferralSearch(event.target.value);
+                if (referralSearchError) {
+                  setReferralSearchError('');
+                }
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  void handleReferralSearch();
+                }
+              }}
+              placeholder={t('admin.users.detail.referral.searchPlaceholder')}
+              disabled={actionLoading || referralSearchLoading}
+              className="input min-w-0 flex-1 text-sm"
+            />
+            <button
+              type="button"
+              onClick={() => void handleReferralSearch()}
+              disabled={actionLoading || referralSearchLoading}
+              className="shrink-0 rounded-lg bg-accent-500 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-accent-600 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {referralSearchLoading
+                ? t('common.loading')
+                : t('admin.users.detail.referral.search')}
+            </button>
+          </div>
+
+          {referralSearchError && (
+            <div className="mt-2 text-xs text-dark-500">{referralSearchError}</div>
+          )}
+
+          {referralSearchResults.length > 0 && (
+            <div className="mt-2 space-y-1">
+              {referralSearchResults.map((referralUser) => (
+                <div
                   key={referralUser.id}
-                  onClick={() => onOpenUser(referralUser.id)}
-                  className="flex w-full items-center justify-between rounded-lg bg-dark-700/50 p-2 text-left transition-colors hover:bg-dark-700"
+                  className="flex items-center justify-between gap-2 rounded-lg bg-dark-800/80 p-2"
                 >
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-dark-600 text-xs font-bold text-dark-300">
-                      {referralUser.first_name?.[0] || referralUser.username?.[0] || '?'}
+                  <button
+                    type="button"
+                    onClick={() => onOpenUser(referralUser.id)}
+                    className="min-w-0 flex-1 text-left"
+                  >
+                    <div className="truncate text-sm text-dark-100">{referralUser.full_name}</div>
+                    <div className="truncate text-xs text-dark-500">
+                      {getReferralUserMeta(referralUser)}
                     </div>
-                    <div>
-                      <div className="text-sm text-dark-100">{referralUser.full_name}</div>
-                      <div className="text-xs text-dark-500">
-                        {formatDate(referralUser.created_at)}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-xs text-dark-400">
-                    {formatWithCurrency(referralUser.total_spent_kopeks / 100)}
-                  </div>
-                </button>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void handleAttachReferral(referralUser)}
+                    disabled={actionLoading}
+                    className="shrink-0 rounded-lg bg-success-500/15 px-2.5 py-1.5 text-xs font-medium text-success-300 transition-colors hover:bg-success-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {t('admin.users.detail.referral.attach')}
+                  </button>
+                </div>
               ))}
             </div>
           )}
         </div>
-      )}
+
+        {referralsLoading ? (
+          <div className="flex justify-center py-4">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
+          </div>
+        ) : referrals.length === 0 ? (
+          <div className="py-4 text-center text-xs text-dark-500">
+            {t('admin.users.detail.noReferrals')}
+          </div>
+        ) : (
+          <div className="mt-3 max-h-56 space-y-2 overflow-y-auto">
+            {referrals.map((referralUser) => (
+              <div
+                key={referralUser.id}
+                className="flex items-center justify-between gap-2 rounded-lg bg-dark-700/50 p-2 transition-colors hover:bg-dark-700"
+              >
+                <button
+                  type="button"
+                  onClick={() => onOpenUser(referralUser.id)}
+                  className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                >
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-dark-600 text-xs font-bold text-dark-300">
+                    {referralUser.first_name?.[0] || referralUser.username?.[0] || '?'}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="truncate text-sm text-dark-100">{referralUser.full_name}</div>
+                    <div className="truncate text-xs text-dark-500">
+                      {formatDate(referralUser.created_at)} ·{' '}
+                      {formatWithCurrency(referralUser.total_spent_kopeks / 100)}
+                    </div>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handleDetachReferral(referralUser.id)}
+                  disabled={actionLoading}
+                  className="shrink-0 rounded-lg bg-error-500/10 px-2.5 py-1.5 text-xs font-medium text-error-300 transition-colors hover:bg-error-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {t('admin.users.detail.referral.detach')}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       <AdminUserDangerZone
         user={user}

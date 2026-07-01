@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 import { useCurrency } from '../hooks/useCurrency';
 import { useNotify } from '../platform/hooks/useNotify';
+import { adminUsersApi, type UpdateUserReferralsAction } from '../api/adminUsers';
 import {
   AdminUserDetailContent,
   type AdminUserDetailTab,
@@ -161,6 +162,28 @@ export default function AdminUserDetail() {
     notify,
   });
 
+  const handleUpdateReferrals = useCallback(
+    async (referralUserIds: number[], action: UpdateUserReferralsAction) => {
+      if (!userId) {
+        return;
+      }
+
+      setActionLoading(true);
+      try {
+        await adminUsersApi.updateReferrals(userId, referralUserIds, action);
+        notify.success(t('admin.users.detail.referral.updated'), t('common.success'));
+        await Promise.all([loadUser(), loadReferrals()]);
+      } catch (error) {
+        console.error('Failed to update referrals:', error);
+        notify.error(t('admin.users.detail.referral.updateError'), t('common.error'));
+        throw error;
+      } finally {
+        setActionLoading(false);
+      }
+    },
+    [loadReferrals, loadUser, notify, setActionLoading, t, userId],
+  );
+
   useAdminUserTabDataLoader({
     activeTab,
     loadReferrals,
@@ -204,6 +227,7 @@ export default function AdminUserDetail() {
     onUpdateReferralCommission: handleUpdateReferralCommission,
     referralsLoading,
     referrals,
+    onUpdateReferrals: handleUpdateReferrals,
     onOpenUser: openAdminUser,
     onBlockUser: handleBlockUser,
     onUnblockUser: handleUnblockUser,
