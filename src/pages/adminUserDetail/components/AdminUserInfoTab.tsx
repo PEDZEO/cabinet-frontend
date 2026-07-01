@@ -11,6 +11,8 @@ import { createNumberInputHandler } from '../../../utils/inputHelpers';
 import { StatusBadge } from './StatusBadge';
 import { AdminUserDangerZone } from './AdminUserDangerZone';
 
+const REFERRALS_PREVIEW_LIMIT = 5;
+
 interface AdminUserInfoTabProps {
   user: UserDetailResponse;
   actionLoading: boolean;
@@ -72,7 +74,12 @@ export function AdminUserInfoTab({
   const [referralSearchResults, setReferralSearchResults] = useState<UserListItem[]>([]);
   const [referralSearchLoading, setReferralSearchLoading] = useState(false);
   const [referralSearchError, setReferralSearchError] = useState('');
+  const [showAllReferrals, setShowAllReferrals] = useState(false);
   const referralIdSet = useMemo(() => new Set(referrals.map((item) => item.id)), [referrals]);
+  const visibleReferrals = showAllReferrals
+    ? referrals
+    : referrals.slice(0, REFERRALS_PREVIEW_LIMIT);
+  const hiddenReferralsCount = Math.max(referrals.length - REFERRALS_PREVIEW_LIMIT, 0);
 
   const getReferralUserMeta = (referralUser: UserListItem) => {
     const parts = [];
@@ -397,39 +404,57 @@ export function AdminUserInfoTab({
             {t('admin.users.detail.noReferrals')}
           </div>
         ) : (
-          <div className="mt-3 max-h-56 space-y-2 overflow-y-auto">
-            {referrals.map((referralUser) => (
-              <div
-                key={referralUser.id}
-                className="flex items-center justify-between gap-2 rounded-lg bg-dark-700/50 p-2 transition-colors hover:bg-dark-700"
-              >
-                <button
-                  type="button"
-                  onClick={() => onOpenUser(referralUser.id)}
-                  className="flex min-w-0 flex-1 items-center gap-2 text-left"
+          <>
+            <div
+              className={
+                showAllReferrals ? 'mt-3 max-h-56 space-y-2 overflow-y-auto pr-1' : 'mt-3 space-y-2'
+              }
+            >
+              {visibleReferrals.map((referralUser) => (
+                <div
+                  key={referralUser.id}
+                  className="flex items-center justify-between gap-2 rounded-lg bg-dark-700/50 p-2 transition-colors hover:bg-dark-700"
                 >
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-dark-600 text-xs font-bold text-dark-300">
-                    {referralUser.first_name?.[0] || referralUser.username?.[0] || '?'}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="truncate text-sm text-dark-100">{referralUser.full_name}</div>
-                    <div className="truncate text-xs text-dark-500">
-                      {formatDate(referralUser.created_at)} ·{' '}
-                      {formatWithCurrency(referralUser.total_spent_kopeks / 100)}
+                  <button
+                    type="button"
+                    onClick={() => onOpenUser(referralUser.id)}
+                    className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                  >
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-dark-600 text-xs font-bold text-dark-300">
+                      {referralUser.first_name?.[0] || referralUser.username?.[0] || '?'}
                     </div>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void handleDetachReferral(referralUser.id)}
-                  disabled={actionLoading}
-                  className="shrink-0 rounded-lg bg-error-500/10 px-2.5 py-1.5 text-xs font-medium text-error-300 transition-colors hover:bg-error-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {t('admin.users.detail.referral.detach')}
-                </button>
-              </div>
-            ))}
-          </div>
+                    <div className="min-w-0">
+                      <div className="truncate text-sm text-dark-100">{referralUser.full_name}</div>
+                      <div className="truncate text-xs text-dark-500">
+                        {formatDate(referralUser.created_at)} ·{' '}
+                        {formatWithCurrency(referralUser.total_spent_kopeks / 100)}
+                      </div>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void handleDetachReferral(referralUser.id)}
+                    disabled={actionLoading}
+                    className="shrink-0 rounded-lg bg-error-500/10 px-2.5 py-1.5 text-xs font-medium text-error-300 transition-colors hover:bg-error-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {t('admin.users.detail.referral.detach')}
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {referrals.length > REFERRALS_PREVIEW_LIMIT && (
+              <button
+                type="button"
+                onClick={() => setShowAllReferrals((value) => !value)}
+                className="mt-3 w-full rounded-lg border border-dark-700 bg-dark-900/40 px-3 py-2 text-xs font-medium text-accent-300 transition-colors hover:border-accent-500/50 hover:bg-accent-500/10"
+              >
+                {showAllReferrals
+                  ? t('admin.users.detail.referral.showLess')
+                  : t('admin.users.detail.referral.showMore', { count: hiddenReferralsCount })}
+              </button>
+            )}
+          </>
         )}
       </div>
 

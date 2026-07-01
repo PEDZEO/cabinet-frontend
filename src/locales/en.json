@@ -2809,6 +2809,8 @@
           "searchError": "Failed to search users",
           "attach": "Attach",
           "detach": "Remove",
+          "showMore": "Show {{count}} more",
+          "showLess": "Collapse list",
           "updated": "Referrals updated",
           "updateError": "Failed to update referrals"
         },
