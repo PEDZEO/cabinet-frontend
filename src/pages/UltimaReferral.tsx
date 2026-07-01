@@ -13,6 +13,7 @@ import {
 import { useCurrency } from '@/hooks/useCurrency';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { getReferralBonusParts } from '@/utils/referralBonus';
 
 const CopyIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
@@ -158,6 +159,27 @@ export function UltimaReferral() {
   const showRejectedSection = partnerStatusValue === 'rejected';
 
   const bottomNav = <UltimaBottomNav active="profile" />;
+  const formatReferralDaysBonus = (days: number) =>
+    t('referral.terms.subscriptionDaysBonus', {
+      count: days,
+      defaultValue: '+{{count}} d. subscription',
+    });
+  const firstTopupBonus = terms
+    ? getReferralBonusParts({
+        rubles: terms.first_topup_bonus_rubles,
+        days: terms.first_topup_bonus_days,
+        formatPositive,
+        formatDays: formatReferralDaysBonus,
+      })
+    : null;
+  const inviterBonus = terms
+    ? getReferralBonusParts({
+        rubles: terms.inviter_bonus_rubles,
+        days: terms.inviter_bonus_days,
+        formatPositive,
+        formatDays: formatReferralDaysBonus,
+      })
+    : null;
 
   const referralContent = (
     <section className="min-h-0 flex-1 overflow-hidden rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:p-4">
@@ -226,6 +248,59 @@ export function UltimaReferral() {
                 </button>
               </div>
             </div>
+
+            {terms ? (
+              <div className="rounded-2xl border border-emerald-200/[0.12] bg-emerald-950/[0.28] p-3">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <p className="text-[13px] text-white/[0.88]">{t('referral.terms.title')}</p>
+                  <span className="rounded-full border border-emerald-200/20 bg-emerald-500/[0.14] px-2 py-0.5 text-[11px] font-medium text-emerald-100">
+                    {terms.commission_percent}%
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="rounded-xl border border-emerald-200/[0.1] bg-emerald-950/[0.35] p-2">
+                    <p className="text-[10px] text-white/[0.48]">{t('referral.terms.minTopup')}</p>
+                    <p className="mt-1 text-[13px] font-semibold leading-tight text-white/[0.92]">
+                      {formatWithCurrency(terms.minimum_topup_rubles)}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-emerald-200/[0.1] bg-emerald-950/[0.35] p-2">
+                    <p className="text-[10px] text-white/[0.48]">
+                      {t('referral.terms.newUserBonus')}
+                    </p>
+                    <p className="mt-1 text-[13px] font-semibold leading-tight text-emerald-200">
+                      {firstTopupBonus?.primary}
+                    </p>
+                    {firstTopupBonus?.secondary ? (
+                      <p className="mt-0.5 text-[11px] font-medium leading-tight text-emerald-200/80">
+                        {firstTopupBonus.secondary}
+                      </p>
+                    ) : null}
+                  </div>
+                  <div className="rounded-xl border border-emerald-200/[0.1] bg-emerald-950/[0.35] p-2">
+                    <p className="text-[10px] text-white/[0.48]">
+                      {t('referral.terms.commission')}
+                    </p>
+                    <p className="mt-1 text-[13px] font-semibold leading-tight text-sky-200">
+                      {terms.commission_percent}%
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-emerald-200/[0.1] bg-emerald-950/[0.35] p-2">
+                    <p className="text-[10px] text-white/[0.48]">
+                      {t('referral.terms.inviterBonus')}
+                    </p>
+                    <p className="mt-1 text-[13px] font-semibold leading-tight text-emerald-200">
+                      {inviterBonus?.primary}
+                    </p>
+                    {inviterBonus?.secondary ? (
+                      <p className="mt-0.5 text-[11px] font-medium leading-tight text-emerald-200/80">
+                        {inviterBonus.secondary}
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
             <div className="rounded-2xl border border-emerald-200/[0.12] bg-emerald-950/[0.28] p-3">
               <p className="mb-2 text-[13px] text-white/[0.88]">{t('referral.yourReferrals')}</p>

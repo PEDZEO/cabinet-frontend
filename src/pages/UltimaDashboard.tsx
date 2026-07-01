@@ -716,7 +716,7 @@ export function UltimaDashboard() {
     (referralTerms?.inviter_bonus_days ?? 0) > 0
       ? t('ultima.referralInviteDescriptionWithDays', {
           count: referralTerms?.inviter_bonus_days ?? 0,
-          defaultValue: 'Бонус к подписке или балансу за приглашение.',
+          defaultValue: '+{{count}} d. subscription for an invitation.',
         })
       : t('ultima.referralInviteDescription', {
           defaultValue: 'Бонус к балансу за приглашение друга.',

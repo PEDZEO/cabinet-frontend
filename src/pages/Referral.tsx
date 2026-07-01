@@ -8,6 +8,7 @@ import { partnerApi } from '../api/partners';
 import { withdrawalApi } from '../api/withdrawals';
 import { useCurrency } from '../hooks/useCurrency';
 import { useUltimaMode } from '@/hooks/useUltimaMode';
+import { getReferralBonusParts } from '@/utils/referralBonus';
 import { UltimaReferral } from './UltimaReferral';
 
 const LinkIcon = () => (
@@ -111,6 +112,27 @@ function ReferralContent() {
     queryKey: ['referral-terms'],
     queryFn: referralApi.getReferralTerms,
   });
+  const formatReferralDaysBonus = (days: number) =>
+    t('referral.terms.subscriptionDaysBonus', {
+      count: days,
+      defaultValue: '+{{count}} d. subscription',
+    });
+  const firstTopupBonus = terms
+    ? getReferralBonusParts({
+        rubles: terms.first_topup_bonus_rubles,
+        days: terms.first_topup_bonus_days,
+        formatPositive,
+        formatDays: formatReferralDaysBonus,
+      })
+    : null;
+  const inviterBonus = terms
+    ? getReferralBonusParts({
+        rubles: terms.inviter_bonus_rubles,
+        days: terms.inviter_bonus_days,
+        formatPositive,
+        formatDays: formatReferralDaysBonus,
+      })
+    : null;
 
   const { data: referralList } = useQuery({
     queryKey: ['referral-list'],
@@ -311,14 +333,24 @@ function ReferralContent() {
             <div className="rounded-xl bg-dark-800/30 p-3">
               <div className="text-sm text-dark-500">{t('referral.terms.newUserBonus')}</div>
               <div className="mt-1 text-lg font-semibold text-success-400">
-                {formatPositive(terms.first_topup_bonus_rubles)}
+                {firstTopupBonus?.primary}
               </div>
+              {firstTopupBonus?.secondary ? (
+                <div className="mt-0.5 text-xs font-medium text-success-300">
+                  {firstTopupBonus.secondary}
+                </div>
+              ) : null}
             </div>
             <div className="rounded-xl bg-dark-800/30 p-3">
               <div className="text-sm text-dark-500">{t('referral.terms.inviterBonus')}</div>
               <div className="mt-1 text-lg font-semibold text-success-400">
-                {formatPositive(terms.inviter_bonus_rubles)}
+                {inviterBonus?.primary}
               </div>
+              {inviterBonus?.secondary ? (
+                <div className="mt-0.5 text-xs font-medium text-success-300">
+                  {inviterBonus.secondary}
+                </div>
+              ) : null}
             </div>
           </div>
         </div>

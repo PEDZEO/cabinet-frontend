@@ -765,7 +765,8 @@
       "commission": "Комиссия",
       "minTopup": "Мин. пополнение",
       "newUserBonus": "Бонус новому пользователю",
-      "inviterBonus": "Бонус пригласившему"
+      "inviterBonus": "Бонус пригласившему",
+      "subscriptionDaysBonus": "+{{count}} дн. к подписке"
     },
     "yourReferrals": "Ваши рефералы",
     "noReferrals": "Пока нет рефералов. Поделитесь ссылкой, чтобы пригласить друзей!",
@@ -5229,6 +5230,10 @@
     "setupCompactTitle": "VPN ещё не настроен",
     "setupCompactDesc": "Откройте установку и завершите подключение, когда будет удобно.",
     "referralCtaDescription": "До {{percent}}% за приглашения",
+    "referralInviteTitle": "Позови друга",
+    "referralInviteDescription": "Бонус к балансу за приглашение друга.",
+    "referralInviteDescriptionWithDays": "+{{count}} дн. к подписке за приглашение друга.",
+    "referralInviteBadge": "Бонус",
     "desktop": {
       "daysLeftValue": "{{count}}",
       "daysLeftMeta": "до следующего обновления доступа",

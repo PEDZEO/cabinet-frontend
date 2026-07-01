@@ -737,7 +737,8 @@
       "commission": "Commission",
       "minTopup": "Min. Top-up",
       "newUserBonus": "New User Bonus",
-      "inviterBonus": "Inviter Bonus"
+      "inviterBonus": "Inviter Bonus",
+      "subscriptionDaysBonus": "+{{count}} d. subscription"
     },
     "yourReferrals": "Your Referrals",
     "noReferrals": "No referrals yet. Share your link to invite friends!",
@@ -4659,6 +4660,10 @@
     "setupCompactTitle": "VPN is not configured yet",
     "setupCompactDesc": "Open setup and finish the connection whenever you're ready.",
     "referralCtaDescription": "Up to {{percent}}% from referrals",
+    "referralInviteTitle": "Invite a friend",
+    "referralInviteDescription": "Balance bonus for inviting a friend.",
+    "referralInviteDescriptionWithDays": "+{{count}} d. subscription for inviting a friend.",
+    "referralInviteBadge": "Bonus",
     "desktop": {
       "daysLeftValue": "{{count}}",
       "daysLeftMeta": "until the next access update",
