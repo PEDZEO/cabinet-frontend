@@ -283,6 +283,7 @@ export function UltimaSubscriptionInfo() {
             formatPrice={formatPrice}
             trafficLimitGb={subscription.traffic_limit_gb}
             trafficUsedGb={subscription.traffic_used_gb}
+            trafficPurchases={subscription.traffic_purchases}
             trafficPackages={trafficPackages}
             selectedTrafficPackage={selectedTrafficPackage}
             setSelectedTrafficPackage={setSelectedTrafficPackage}

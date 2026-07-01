@@ -6,13 +6,15 @@ import {
   ultimaSurfaceStyle,
 } from '@/features/ultima/surfaces';
 import { cn } from '@/lib/utils';
-import type { TrafficPackage } from '@/types';
+import { TrafficPurchaseTimer } from '@/components/subscription/TrafficPurchaseTimer';
+import type { TrafficPackage, TrafficPurchase } from '@/types';
 
 type UltimaTrafficTopUpSectionProps = {
   t: TFunction;
   formatPrice: (kopeks: number) => string;
   trafficLimitGb: number;
   trafficUsedGb: number;
+  trafficPurchases?: TrafficPurchase[];
   trafficPackages: TrafficPackage[] | undefined;
   selectedTrafficPackage: number | null;
   setSelectedTrafficPackage: (value: number | null) => void;
@@ -28,6 +30,7 @@ export function UltimaTrafficTopUpSection({
   formatPrice,
   trafficLimitGb,
   trafficUsedGb,
+  trafficPurchases,
   trafficPackages,
   selectedTrafficPackage,
   setSelectedTrafficPackage,
@@ -64,6 +67,25 @@ export function UltimaTrafficTopUpSection({
           </p>
         </div>
       </div>
+
+      {trafficPurchases && trafficPurchases.length > 0 ? (
+        <div className="mt-3 space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-white/[0.48]">
+              {t('subscription.purchasedTraffic')}
+            </p>
+            <span className="rounded-full border border-emerald-200/[0.18] bg-emerald-300/[0.1] px-2 py-0.5 text-[11px] font-medium text-emerald-50">
+              +{trafficPurchases.reduce((sum, item) => sum + item.traffic_gb, 0)}{' '}
+              {t('common.units.gb')}
+            </span>
+          </div>
+          <div className="space-y-2">
+            {trafficPurchases.map((purchase) => (
+              <TrafficPurchaseTimer key={purchase.id} purchase={purchase} variant="ultima" />
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       {!trafficPackages || trafficPackages.length === 0 ? (
         <div className="mt-3 rounded-[20px] border border-white/10 bg-black/10 px-4 py-3 text-[13px] text-white/[0.64]">

@@ -6,6 +6,7 @@ import { AxiosError } from 'axios';
 import { subscriptionApi } from '../api/subscription';
 import { promoApi } from '../api/promo';
 import TrafficProgressBar from '../components/dashboard/TrafficProgressBar';
+import { TrafficPurchaseTimer } from '../components/subscription/TrafficPurchaseTimer';
 import { useTrafficZone } from '../hooks/useTrafficZone';
 import { formatTraffic } from '../utils/formatTraffic';
 import { getGlassColors } from '../utils/glassTheme';
@@ -1051,76 +1052,16 @@ function FullSubscription() {
                   </div>
                   <div className="space-y-2">
                     {subscription.traffic_purchases.map((purchase) => (
-                      <div
+                      <TrafficPurchaseTimer
                         key={purchase.id}
-                        className="rounded-[12px] p-3"
-                        style={{
+                        purchase={purchase}
+                        accentColor={zone.mainHex}
+                        trackColor={g.trackBg}
+                        surfaceStyle={{
                           background: g.innerBg,
                           border: `1px solid ${g.innerBorder}`,
                         }}
-                      >
-                        <div className="mb-2 flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div
-                              className="flex h-7 w-7 items-center justify-center rounded-[8px]"
-                              style={{ background: `${zone.mainHex}12` }}
-                            >
-                              <svg
-                                width="14"
-                                height="14"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke={zone.mainHex}
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                aria-hidden="true"
-                              >
-                                <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                              </svg>
-                            </div>
-                            <span className="text-sm font-semibold text-dark-50">
-                              {purchase.traffic_gb} {t('common.units.gb')}
-                            </span>
-                          </div>
-                          <div className="text-right">
-                            <div
-                              className="text-[11px] font-medium"
-                              style={{
-                                color: purchase.days_remaining === 0 ? '#FF6B35' : g.textSecondary,
-                              }}
-                            >
-                              {purchase.days_remaining === 0
-                                ? t('subscription.expired')
-                                : t('subscription.days', { count: purchase.days_remaining })}
-                            </div>
-                            <div className="mt-0.5 font-mono text-[9px] text-dark-50/20">
-                              {t('subscription.trafficResetAt')}:{' '}
-                              {new Date(purchase.expires_at).toLocaleDateString(undefined, {
-                                day: '2-digit',
-                                month: '2-digit',
-                                year: 'numeric',
-                              })}
-                            </div>
-                          </div>
-                        </div>
-                        <div
-                          className="relative h-1.5 overflow-hidden rounded-full"
-                          style={{ background: g.trackBg }}
-                        >
-                          <div
-                            className="absolute inset-0 rounded-full transition-[width] duration-500"
-                            style={{
-                              width: `${purchase.progress_percent}%`,
-                              background: `linear-gradient(90deg, ${zone.mainHex}, ${zone.mainHex}80)`,
-                            }}
-                          />
-                        </div>
-                        <div className="mt-1 flex justify-between font-mono text-[9px] text-dark-50/20">
-                          <span>{new Date(purchase.created_at).toLocaleDateString()}</span>
-                          <span>{new Date(purchase.expires_at).toLocaleDateString()}</span>
-                        </div>
-                      </div>
+                      />
                     ))}
                   </div>
                 </div>

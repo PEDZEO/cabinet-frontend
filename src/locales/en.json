@@ -514,6 +514,10 @@
     },
     "purchasedTraffic": "Purchased Traffic",
     "trafficResetAt": "Reset",
+    "trafficTimerExpiresIn": "Expires in",
+    "trafficTimerExpired": "Traffic expired",
+    "trafficTimerRemaining": "Remaining lifetime",
+    "trafficTimerUsed": "{{percent}}% used",
     "additionalOptions": {
       "title": "Additional options",
       "buyDevices": "Buy more devices",

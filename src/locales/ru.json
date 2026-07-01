@@ -537,6 +537,10 @@
     },
     "purchasedTraffic": "Докупленный трафик",
     "trafficResetAt": "Сброс",
+    "trafficTimerExpiresIn": "Сгорит через",
+    "trafficTimerExpired": "Срок трафика вышел",
+    "trafficTimerRemaining": "Осталось срока",
+    "trafficTimerUsed": "{{percent}}% прошло",
     "additionalOptions": {
       "title": "Дополнительные опции",
       "buyDevices": "Докупить устройства",
