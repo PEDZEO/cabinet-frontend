@@ -1168,6 +1168,7 @@
       "balancer": "Балансер",
       "landings": "Лендинги",
       "referralNetwork": "Реферальная сеть",
+      "referralSettings": "Реферальная программа",
       "news": "Новости"
     },
     "panel": {
@@ -1207,6 +1208,7 @@
       "balancerDesc": "Управление и мониторинг xray-balancer",
       "landingsDesc": "Страницы быстрой покупки",
       "referralNetworkDesc": "Визуализация графа рефералов и РК",
+      "referralSettingsDesc": "Бонусы, дни подписки, комиссия, выводы и антифрод",
       "newsDesc": "Управление новостями и статьями"
     },
     "salesStats": {
@@ -2157,17 +2159,21 @@
         "Locales Path": "Путь к локалям",
         "Referral Commission Percent": "Комиссия (%)",
         "Referral Contests Enabled": "Конкурсы рефералов",
+        "Referral First Topup Bonus Days": "Дни новичку",
         "Referral First Topup Bonus Kopeks": "Бонус новичку (коп.)",
+        "Referral Inviter Bonus Days": "Дни пригласившему",
         "Referral Inviter Bonus Kopeks": "Бонус пригласившему (коп.)",
         "Referral Minimum Topup Kopeks": "Мин. пополнение (коп.)",
         "Referral Notifications Enabled": "Уведомления рефералов",
         "Referral Notification Retry Attempts": "Попытки уведомлений",
+        "Referral Partner Section Visible": "Раздел партнёрки",
         "Referral Program Enabled": "Реферальная программа",
         "Referral Withdrawal Cooldown Days": "Кулдаун вывода (дни)",
         "Referral Withdrawal Enabled": "Вывод средств",
         "Referral Withdrawal Min Amount Kopeks": "Мин. сумма вывода (коп.)",
         "Referral Withdrawal Notifications Topic Id": "ID топика уведомлений",
         "Referral Withdrawal Only Referral Balance": "Только реферальный баланс",
+        "Referral Withdrawal Requisites Text": "Подсказка реквизитов",
         "Referral Withdrawal Suspicious Max Deposits Per Month": "Макс. депозитов в месяц",
         "Referral Withdrawal Suspicious Min Deposit Kopeks": "Мин. подозр. депозит (коп.)",
         "Referral Withdrawal Suspicious No Purchases Ratio": "Коэф. без покупок",

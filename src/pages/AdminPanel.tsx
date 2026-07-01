@@ -844,6 +844,13 @@ export default function AdminPanel() {
             permission: 'users:read',
           },
           {
+            to: '/admin/settings?section=users_referral&category=REFERRAL',
+            icon: <HandshakeIcon />,
+            title: t('admin.nav.referralSettings'),
+            description: t('admin.panel.referralSettingsDesc'),
+            permission: 'settings:read',
+          },
+          {
             to: '/admin/tickets',
             icon: <ChatBubbleIcon />,
             title: t('admin.nav.tickets'),

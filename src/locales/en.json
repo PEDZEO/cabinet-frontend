@@ -1147,6 +1147,7 @@
       "balancer": "Balancer",
       "landings": "Landings",
       "referralNetwork": "Referral Network",
+      "referralSettings": "Referral Program",
       "news": "News"
     },
     "panel": {
@@ -1198,6 +1199,7 @@
       "balancerDesc": "Manage and monitor xray-balancer",
       "landingsDesc": "Quick purchase landing pages",
       "referralNetworkDesc": "Referral graph and campaign visualization",
+      "referralSettingsDesc": "Bonuses, subscription days, commissions, withdrawals, and fraud checks",
       "newsDesc": "Manage news articles and publications"
     },
     "salesStats": {
