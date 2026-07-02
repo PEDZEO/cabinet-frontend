@@ -141,8 +141,6 @@ type ShieldDigit = {
   scale: number;
 };
 
-const shieldTapResetDelayMs = 1400;
-
 export function UltimaDashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -158,7 +156,7 @@ export function UltimaDashboard() {
   const rippleIdRef = useRef(0);
   const digitIdRef = useRef(0);
   const tapCountRef = useRef(0);
-  const tapResetTimeoutRef = useRef<number | null>(null);
+  const tapRewardProgressSeededRef = useRef(false);
   const tapRewardPendingRef = useRef(0);
   const tapRewardFlushTimeoutRef = useRef<number | null>(null);
   const dashboardMessageTimeoutRef = useRef<number | null>(null);
@@ -189,6 +187,13 @@ export function UltimaDashboard() {
     queryKey: ['purchase-options'],
     queryFn: subscriptionApi.getPurchaseOptions,
     staleTime: 60000,
+    placeholderData: (previousData) => previousData,
+  });
+  const { data: tapRewardProgress } = useQuery({
+    queryKey: ['tap-rewards', 'progress'],
+    queryFn: tapRewardsApi.getProgress,
+    staleTime: 30000,
+    retry: false,
     placeholderData: (previousData) => previousData,
   });
   const { data: promoOffers } = useQuery({
@@ -443,13 +448,15 @@ export function UltimaDashboard() {
 
     tapRewardPendingRef.current = 0;
     let remaining = pendingCount;
+    let latestResponse: TapRewardResponse | null = null;
     let rewardResponse: TapRewardResponse | null = null;
 
     try {
       while (remaining > 0) {
-        const batchSize = Math.min(remaining, 10);
-        const response = await tapRewardsApi.recordTap(batchSize);
+        const batchSize = Math.min(remaining, 25);
         remaining -= batchSize;
+        const response = await tapRewardsApi.recordTap(batchSize);
+        latestResponse = response;
 
         if (response.reward_granted) {
           rewardResponse = response;
@@ -460,7 +467,20 @@ export function UltimaDashboard() {
         }
       }
     } catch {
+      if (remaining > 0) {
+        tapRewardPendingRef.current += remaining;
+        if (tapRewardFlushTimeoutRef.current === null) {
+          tapRewardFlushTimeoutRef.current = window.setTimeout(() => {
+            tapRewardFlushTimeoutRef.current = null;
+            void flushTapRewards();
+          }, 1200);
+        }
+      }
       return;
+    }
+
+    if (latestResponse) {
+      queryClient.setQueryData(['tap-rewards', 'progress'], latestResponse);
     }
 
     if (!rewardResponse) {
@@ -471,6 +491,7 @@ export function UltimaDashboard() {
     queryClient.invalidateQueries({ queryKey: ['balance'] });
     queryClient.invalidateQueries({ queryKey: ['subscription'] });
     queryClient.invalidateQueries({ queryKey: ['purchase-options'] });
+    queryClient.invalidateQueries({ queryKey: ['tap-rewards', 'progress'] });
     void refreshUser();
   }, [getTapRewardMessage, queryClient, refreshUser, showDashboardMessage]);
 
@@ -490,6 +511,15 @@ export function UltimaDashboard() {
     // Warm subscription route chunk so dashboard -> purchase transition stays seamless.
     void import('./Subscription');
   }, []);
+
+  useEffect(() => {
+    if (!tapRewardProgress?.enabled || tapRewardProgressSeededRef.current) {
+      return;
+    }
+
+    tapCountRef.current = Math.max(tapCountRef.current, tapRewardProgress.total_taps ?? 0);
+    tapRewardProgressSeededRef.current = true;
+  }, [tapRewardProgress?.enabled, tapRewardProgress?.total_taps]);
 
   useEffect(() => {
     if (!isSubscriptionReady || hasAnySubscription) {
@@ -583,9 +613,6 @@ export function UltimaDashboard() {
 
   useEffect(() => {
     return () => {
-      if (tapResetTimeoutRef.current !== null) {
-        window.clearTimeout(tapResetTimeoutRef.current);
-      }
       if (tapRewardFlushTimeoutRef.current !== null) {
         window.clearTimeout(tapRewardFlushTimeoutRef.current);
       }
@@ -610,10 +637,6 @@ export function UltimaDashboard() {
       const y = event.clientY - rect.top;
       const size = Math.max(rect.width, rect.height) * 1.85;
       setShieldRipples((previous) => [...previous, { id, x, y, size }]);
-
-      if (tapResetTimeoutRef.current !== null) {
-        window.clearTimeout(tapResetTimeoutRef.current);
-      }
 
       const nextTapNumber = ++tapCountRef.current;
       const side = nextTapNumber % 2 === 0 ? 1 : -1;
@@ -641,11 +664,6 @@ export function UltimaDashboard() {
       window.setTimeout(() => {
         setShieldDigits((previous) => previous.filter((item) => item.id !== digitId));
       }, 1280);
-
-      tapResetTimeoutRef.current = window.setTimeout(() => {
-        tapCountRef.current = 0;
-        tapResetTimeoutRef.current = null;
-      }, shieldTapResetDelayMs);
     },
     [haptic, scheduleTapRewardFlush],
   );
