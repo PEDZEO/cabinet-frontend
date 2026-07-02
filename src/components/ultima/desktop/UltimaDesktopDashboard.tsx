@@ -664,80 +664,28 @@ export function UltimaDesktopDashboard({
             <p className="mt-2 text-sm leading-[1.6] text-white/[0.68]">{asideSubtitle}</p>
 
             <div className="mt-5 space-y-3">
-              <div className="relative overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.06] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-                <div className="relative flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="text-[10px] uppercase tracking-[0.16em] text-white/[0.42]">
-                      {t('ultima.currentTariff', { defaultValue: 'Ваш тариф' })}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={onOpenSubscriptionInfo}
-                      className="mt-2 max-w-full truncate text-left text-[21px] font-semibold leading-tight text-white transition hover:text-white/90"
-                    >
-                      {planName}
-                    </button>
-                  </div>
-                  <span
-                    className={cn(
-                      'relative inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1 text-xs',
-                      tone.chip,
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        'absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full blur-[6px]',
-                        tone.glow,
-                      )}
-                    />
-                    <span className="relative h-1.5 w-1.5 rounded-full bg-current" />
-                    {statusLabel}
-                  </span>
-                </div>
-
-                <div className="relative mt-4 grid grid-cols-2 gap-2">
-                  <div className="rounded-[16px] border border-white/[0.08] bg-black/[0.12] px-3 py-2.5">
-                    <div className="text-[10px] uppercase tracking-[0.12em] text-white/[0.42]">
-                      {t('subscription.expiresAt', { defaultValue: 'Действует до' })}
-                    </div>
-                    <div className="mt-1 truncate text-sm font-semibold text-white">
-                      {expiryLabel}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={onOpenDevices}
-                    className="rounded-[16px] border border-white/[0.08] bg-black/[0.12] px-3 py-2.5 text-left transition hover:bg-white/[0.04]"
-                  >
-                    <div className="text-[10px] uppercase tracking-[0.12em] text-white/[0.42]">
-                      {t('lite.devicesTotal', { defaultValue: 'Устройства' })}
-                    </div>
-                    <div className="mt-1 truncate text-sm font-semibold text-white">
-                      {normalizedDeviceLimit}
-                    </div>
-                  </button>
-                  <div className="col-span-2 rounded-[16px] border border-white/[0.08] bg-black/[0.12] px-3 py-2.5">
-                    <div className="text-[10px] uppercase tracking-[0.12em] text-white/[0.42]">
-                      {t('subscription.traffic', { defaultValue: 'Трафик' })}
-                    </div>
-                    <div className="mt-1 truncate text-sm font-semibold text-white">
-                      {trafficLimitLabel}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="relative mt-3 grid grid-cols-2 gap-2">
+              <div className="rounded-[20px] border border-white/10 bg-white/[0.05] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+                <div className="flex items-center justify-between gap-3">
                   <button
                     type="button"
                     onClick={onOpenSubscriptionInfo}
-                    className="ultima-btn-pill ultima-btn-secondary flex min-h-11 items-center justify-center px-4 text-[14px]"
+                    className="min-w-0 flex-1 text-left"
                   >
-                    {t('common.open', { defaultValue: 'Открыть' })}
+                    <span className="block text-[10px] uppercase tracking-[0.16em] text-white/[0.42]">
+                      {t('ultima.currentTariff', { defaultValue: 'Ваш тариф' })}
+                    </span>
+                    <span className="mt-1 block truncate text-[18px] font-semibold leading-tight text-white transition hover:text-white/90">
+                      {planName}
+                    </span>
+                    <span className="mt-1 block truncate text-xs text-white/[0.58]">
+                      {trafficLimitLabel} · {t('lite.devicesTotal', { defaultValue: 'Устройства' })}
+                      : {normalizedDeviceLimit}
+                    </span>
                   </button>
                   <button
                     type="button"
                     onClick={onBuySubscription}
-                    className="ultima-btn-pill ultima-btn-primary flex min-h-11 items-center justify-center px-4 text-[14px]"
+                    className="ultima-btn-pill ultima-btn-primary flex min-h-10 shrink-0 items-center justify-center px-4 text-[14px]"
                   >
                     {t('subscription.renew', { defaultValue: 'Продлить' })}
                   </button>
