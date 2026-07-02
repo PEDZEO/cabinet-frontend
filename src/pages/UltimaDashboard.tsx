@@ -106,6 +106,22 @@ const DevicesHomeIcon = () => (
   </svg>
 );
 
+const PlanIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
+    <path
+      d="M5 5.5A2.5 2.5 0 0 1 7.5 3h9A2.5 2.5 0 0 1 19 5.5v13A2.5 2.5 0 0 1 16.5 21h-9A2.5 2.5 0 0 1 5 18.5v-13Z"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    />
+    <path
+      d="M8.5 8h7M8.5 12h7M8.5 16h4"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+    />
+  </svg>
+);
+
 const AdminIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
     <path
@@ -1039,6 +1055,116 @@ export function UltimaDashboard() {
       </span>
     </button>
   ) : null;
+  const subscriptionPlanName =
+    subscription?.tariff_name ||
+    (isActiveTrial
+      ? t('subscription.trialStatus', { defaultValue: 'Пробный период' })
+      : t('subscription.infoTitle', { defaultValue: 'Подписка' }));
+  const subscriptionTrafficLabel =
+    (subscription?.traffic_limit_gb ?? 0) > 0
+      ? `${subscription?.traffic_limit_gb ?? 0} ${t('common.units.gb', { defaultValue: 'ГБ' })}`
+      : t('subscription.unlimited', { defaultValue: 'Безлимит' });
+  const subscriptionPlanCard = hasAnySubscription ? (
+    <div
+      className="relative overflow-hidden rounded-[24px] border px-4 py-4 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_14px_30px_rgba(3,14,24,0.22)] backdrop-blur-md"
+      style={{
+        borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 26%, transparent)',
+        background:
+          'linear-gradient(145deg, color-mix(in srgb, var(--ultima-color-surface) 56%, transparent), color-mix(in srgb, var(--ultima-color-primary) 18%, transparent) 58%, rgba(0,0,0,0.16))',
+      }}
+    >
+      <div className="relative flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.16em] text-white/[0.46]">
+            <span className="flex h-8 w-8 items-center justify-center rounded-[14px] border border-white/[0.1] bg-white/[0.05] text-white/[0.76]">
+              <PlanIcon />
+            </span>
+            {t('ultima.currentTariff', { defaultValue: 'Ваш тариф' })}
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              trackAnalyticsEvent('ultima_home_plan_open', {
+                source: 'tariff_card_title',
+                days_left: daysLeft ?? null,
+              });
+              openSubscriptionInfo();
+            }}
+            className="mt-3 max-w-full text-left text-[22px] font-semibold leading-[1.04] text-white transition hover:text-white/90"
+          >
+            {subscriptionPlanName}
+          </button>
+        </div>
+        <span
+          className={`relative inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1 text-xs shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ${statusTone.pill}`}
+        >
+          <span
+            className={`absolute left-1.5 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full blur-[4px] ${statusTone.halo}`}
+          />
+          <span className={`relative h-1.5 w-1.5 rounded-full ${statusTone.dot}`} />
+          {statusLabel}
+        </span>
+      </div>
+
+      <div className="relative mt-4 grid grid-cols-2 gap-2">
+        <div className="rounded-[16px] border border-white/[0.08] bg-black/[0.1] px-3 py-2.5">
+          <div className="text-[10px] uppercase tracking-[0.12em] text-white/[0.42]">
+            {t('subscription.expiresAt', { defaultValue: 'Действует до' })}
+          </div>
+          <div className="mt-1 truncate text-[15px] font-semibold text-white">{expiryLabel}</div>
+        </div>
+        <button
+          type="button"
+          onClick={() => openDevices(false, 'home_tariff_card_devices')}
+          className="rounded-[16px] border border-white/[0.08] bg-black/[0.1] px-3 py-2.5 text-left transition hover:bg-white/[0.04]"
+        >
+          <div className="text-[10px] uppercase tracking-[0.12em] text-white/[0.42]">
+            {t('lite.devicesTotal', { defaultValue: 'Устройства' })}
+          </div>
+          <div className="mt-1 truncate text-[15px] font-semibold text-white">
+            {connectedDevicesCount}/{dashboardDeviceLimit}
+          </div>
+        </button>
+        <div className="col-span-2 rounded-[16px] border border-white/[0.08] bg-black/[0.1] px-3 py-2.5">
+          <div className="text-[10px] uppercase tracking-[0.12em] text-white/[0.42]">
+            {t('subscription.traffic', { defaultValue: 'Трафик' })}
+          </div>
+          <div className="mt-1 truncate text-[15px] font-semibold text-white">
+            {subscriptionTrafficLabel}
+          </div>
+        </div>
+      </div>
+
+      <div className="relative mt-3 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            trackAnalyticsEvent('ultima_home_plan_open', {
+              source: 'tariff_card_open',
+              days_left: daysLeft ?? null,
+            });
+            openSubscriptionInfo();
+          }}
+          className="ultima-btn-pill ultima-btn-secondary min-h-11 px-4 text-[14px]"
+        >
+          {t('common.open', { defaultValue: 'Открыть' })}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            trackAnalyticsEvent('ultima_home_renew_click', {
+              source: 'tariff_card',
+              days_left: daysLeft ?? null,
+            });
+            openSubscriptionPurchase();
+          }}
+          className="ultima-btn-pill ultima-btn-primary min-h-11 px-4 text-[14px]"
+        >
+          {t('subscription.renew', { defaultValue: 'Продлить' })}
+        </button>
+      </div>
+    </div>
+  ) : null;
   const desktopPendingPaymentCta = pendingTopUp?.paymentUrl ? (
     <UltimaPendingPaymentCard source="dashboard_desktop" compact />
   ) : null;
@@ -1234,6 +1360,8 @@ export function UltimaDashboard() {
           )}
 
           {devicesHomeCta ? <div className="mb-4">{devicesHomeCta}</div> : null}
+
+          {subscriptionPlanCard ? <div className="mb-4">{subscriptionPlanCard}</div> : null}
 
           {showPromoCard && (
             <div
