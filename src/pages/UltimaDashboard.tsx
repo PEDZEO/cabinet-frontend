@@ -1050,7 +1050,7 @@ export function UltimaDashboard() {
       : t('subscription.unlimited', { defaultValue: 'Безлимит' });
   const subscriptionPlanCard = hasAnySubscription ? (
     <div
-      className="mb-3 rounded-[18px] border px-3 py-2.5 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_8px_18px_rgba(3,14,24,0.16)] backdrop-blur-md"
+      className="mb-2 rounded-[17px] border px-3 py-2 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_8px_18px_rgba(3,14,24,0.16)] backdrop-blur-md"
       style={{
         borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 26%, transparent)',
         background:
@@ -1073,7 +1073,7 @@ export function UltimaDashboard() {
             {t('ultima.currentTariff', { defaultValue: 'Ваш тариф' })}
           </span>
           <span className="mt-0.5 flex min-w-0 items-center gap-2">
-            <span className="truncate text-[15px] font-semibold leading-tight text-white/[0.96]">
+            <span className="truncate text-[14px] font-semibold leading-tight text-white/[0.96]">
               {subscriptionPlanName}
             </span>
             <span className="shrink-0 rounded-full border border-white/[0.08] bg-black/[0.08] px-2 py-0.5 text-[11px] font-medium text-white/[0.68]">
@@ -1096,7 +1096,7 @@ export function UltimaDashboard() {
             });
             openSubscriptionPurchase();
           }}
-          className="ultima-btn-pill ultima-btn-primary min-h-9 shrink-0 px-3.5 text-[13px]"
+          className="ultima-btn-pill ultima-btn-primary min-h-8 shrink-0 px-3.5 text-[13px]"
         >
           {t('subscription.renew', { defaultValue: 'Продлить' })}
         </button>
@@ -1372,19 +1372,19 @@ export function UltimaDashboard() {
           {!showTrialSetupCard && (
             <div className="mt-auto">
               {subscriptionPlanCard}
-              <div className="mb-3 flex flex-wrap items-start justify-between gap-3 text-white lg:mb-3 lg:mt-4 lg:flex-col lg:justify-center lg:gap-3 lg:text-center">
+              <div className="mb-2 flex flex-wrap items-start justify-between gap-2.5 text-white lg:mb-3 lg:mt-4 lg:flex-col lg:justify-center lg:gap-3 lg:text-center">
                 <div className="min-w-0 flex-1 lg:flex lg:flex-col lg:items-center">
                   <button
                     type="button"
                     onClick={openSubscriptionInfo}
-                    className="max-w-full break-words text-left text-[clamp(28px,8.7vw,36px)] font-semibold leading-[0.95] tracking-[-0.02em] text-white transition hover:text-white/90 lg:text-center lg:text-[38px]"
+                    className="max-w-full break-words text-left text-[clamp(24px,7.2vw,30px)] font-semibold leading-[1.02] text-white transition hover:text-white/90 lg:text-center lg:text-[38px]"
                   >
                     {expiryLabel}
                   </button>
                   <button
                     type="button"
                     onClick={() => openDevices(false, 'dashboard_devices_count')}
-                    className="mt-2 text-left text-[15px] leading-snug text-emerald-300/90 transition hover:text-emerald-200 lg:text-center"
+                    className="mt-1 text-left text-[13px] leading-snug text-emerald-300/90 transition hover:text-emerald-200 lg:text-center"
                   >
                     {t('lite.devicesTotal', { defaultValue: 'Устройств' })}:{' '}
                     {subscription?.device_limit ?? 0}
@@ -1401,7 +1401,7 @@ export function UltimaDashboard() {
                 </span>
               </div>
               <div
-                className={`mb-3 h-[2px] w-full rounded-full bg-gradient-to-r ${statusTone.pulse} lg:mb-2`}
+                className={`mb-2 h-[2px] w-full rounded-full bg-gradient-to-r ${statusTone.pulse} lg:mb-2`}
               />
             </div>
           )}
