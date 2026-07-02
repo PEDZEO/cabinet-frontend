@@ -16,6 +16,7 @@ import { infoApi } from '@/api/info';
 import { promoApi } from '@/api/promo';
 import { referralApi } from '@/api/referral';
 import { subscriptionApi } from '@/api/subscription';
+import { tapRewardsApi, type TapRewardResponse } from '@/api/tapRewards';
 import { UltimaReferralCta } from '@/components/ultima/UltimaReferralCta';
 import { UltimaPendingPaymentCard } from '@/components/ultima/UltimaPendingPaymentCard';
 import {
@@ -151,12 +152,16 @@ export function UltimaDashboard() {
   const haptic = useHaptic();
   const isAdmin = useAuthStore((state) => state.isAdmin);
   const user = useAuthStore((state) => state.user);
+  const refreshUser = useAuthStore((state) => state.refreshUser);
   const isDesktopViewport = useMediaQuery('(min-width: 1024px)');
   const { pendingTopUp } = usePendingTopUpFollowUpState();
   const rippleIdRef = useRef(0);
   const digitIdRef = useRef(0);
   const tapCountRef = useRef(0);
   const tapResetTimeoutRef = useRef<number | null>(null);
+  const tapRewardPendingRef = useRef(0);
+  const tapRewardFlushTimeoutRef = useRef<number | null>(null);
+  const dashboardMessageTimeoutRef = useRef<number | null>(null);
   const warmedLanguagesRef = useRef<Set<string>>(new Set());
   const trialAutoActivationAttemptedRef = useRef(false);
   const dashboardViewTrackedRef = useRef(false);
@@ -397,6 +402,90 @@ export function UltimaDashboard() {
     },
   });
 
+  const showDashboardMessage = useCallback((message: string) => {
+    setPromoMessage(message);
+    if (dashboardMessageTimeoutRef.current !== null) {
+      window.clearTimeout(dashboardMessageTimeoutRef.current);
+    }
+    dashboardMessageTimeoutRef.current = window.setTimeout(() => {
+      setPromoMessage(null);
+      dashboardMessageTimeoutRef.current = null;
+    }, 3500);
+  }, []);
+
+  const getTapRewardMessage = useCallback(
+    (result: TapRewardResponse) => {
+      if (result.message) return result.message;
+
+      if (result.reward_type === 'balance') {
+        const amount = Math.round((result.reward_value ?? 0) / 100);
+        return t('ultima.tapRewardBalance', {
+          defaultValue: `Подарок за тапы: +${amount} ${currencySymbol}`,
+          amount,
+          currency: currencySymbol,
+        });
+      }
+
+      const days = result.reward_value ?? 0;
+      return t('ultima.tapRewardDays', {
+        defaultValue: `Подарок за тапы: +${days} дн. к подписке`,
+        days,
+      });
+    },
+    [currencySymbol, t],
+  );
+
+  const flushTapRewards = useCallback(async () => {
+    const pendingCount = tapRewardPendingRef.current;
+    if (pendingCount <= 0) {
+      return;
+    }
+
+    tapRewardPendingRef.current = 0;
+    let remaining = pendingCount;
+    let rewardResponse: TapRewardResponse | null = null;
+
+    try {
+      while (remaining > 0) {
+        const batchSize = Math.min(remaining, 10);
+        const response = await tapRewardsApi.recordTap(batchSize);
+        remaining -= batchSize;
+
+        if (response.reward_granted) {
+          rewardResponse = response;
+        }
+
+        if (!response.enabled) {
+          break;
+        }
+      }
+    } catch {
+      return;
+    }
+
+    if (!rewardResponse) {
+      return;
+    }
+
+    showDashboardMessage(getTapRewardMessage(rewardResponse));
+    queryClient.invalidateQueries({ queryKey: ['balance'] });
+    queryClient.invalidateQueries({ queryKey: ['subscription'] });
+    queryClient.invalidateQueries({ queryKey: ['purchase-options'] });
+    void refreshUser();
+  }, [getTapRewardMessage, queryClient, refreshUser, showDashboardMessage]);
+
+  const scheduleTapRewardFlush = useCallback(() => {
+    tapRewardPendingRef.current += 1;
+    if (tapRewardFlushTimeoutRef.current !== null) {
+      return;
+    }
+
+    tapRewardFlushTimeoutRef.current = window.setTimeout(() => {
+      tapRewardFlushTimeoutRef.current = null;
+      void flushTapRewards();
+    }, 450);
+  }, [flushTapRewards]);
+
   useEffect(() => {
     // Warm subscription route chunk so dashboard -> purchase transition stays seamless.
     void import('./Subscription');
@@ -497,12 +586,19 @@ export function UltimaDashboard() {
       if (tapResetTimeoutRef.current !== null) {
         window.clearTimeout(tapResetTimeoutRef.current);
       }
+      if (tapRewardFlushTimeoutRef.current !== null) {
+        window.clearTimeout(tapRewardFlushTimeoutRef.current);
+      }
+      if (dashboardMessageTimeoutRef.current !== null) {
+        window.clearTimeout(dashboardMessageTimeoutRef.current);
+      }
     };
   }, []);
 
   const handleShieldTap = useCallback(
     (event: PointerEvent<HTMLButtonElement>) => {
       haptic.impact('light');
+      scheduleTapRewardFlush();
 
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         return;
@@ -551,7 +647,7 @@ export function UltimaDashboard() {
         tapResetTimeoutRef.current = null;
       }, shieldTapResetDelayMs);
     },
-    [haptic],
+    [haptic, scheduleTapRewardFlush],
   );
 
   const openSupport = () => {
@@ -1240,6 +1336,15 @@ export function UltimaDashboard() {
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[680px] lg:justify-between">
         <section className="ultima-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto pb-[clamp(14px,2.8vh,24px)] pr-1 pt-[clamp(46px,10vh,104px)] lg:flex-none lg:overflow-visible lg:pb-2 lg:pr-0 lg:pt-8">
           {renderShieldButton('mb-[clamp(12px,3.4vh,40px)] lg:mb-5')}
+
+          {promoMessage && !showPromoCard && (
+            <div
+              aria-live="polite"
+              className="mx-auto mb-4 max-w-full rounded-full border border-emerald-200/[0.22] bg-emerald-300/[0.12] px-3.5 py-2 text-center text-[12px] font-medium leading-snug text-emerald-50/95 shadow-[0_10px_22px_rgba(5,30,24,0.2)] backdrop-blur-md"
+            >
+              {promoMessage}
+            </div>
+          )}
 
           {hasSetupReminder && (
             <div className="mb-4 rounded-2xl border border-emerald-200/[0.24] bg-[rgba(12,45,42,0.38)] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_24px_rgba(3,14,24,0.28)] backdrop-blur-md">

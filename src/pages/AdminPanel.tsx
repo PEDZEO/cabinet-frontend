@@ -964,6 +964,13 @@ export default function AdminPanel() {
             permission: 'wheel:read',
           },
           {
+            to: '/admin/settings?section=marketing_tap_rewards&category=TAP_REWARDS',
+            icon: <GiftIcon />,
+            title: t('admin.nav.tapRewards'),
+            description: t('admin.panel.tapRewardsDesc'),
+            permission: 'settings:read',
+          },
+          {
             to: '/admin/partners',
             icon: <HandshakeIcon />,
             title: t('admin.nav.partners'),

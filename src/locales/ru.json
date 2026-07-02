@@ -1169,6 +1169,7 @@
       "landings": "Лендинги",
       "referralNetwork": "Реферальная сеть",
       "referralSettings": "Реферальная программа",
+      "tapRewards": "Подарки за тапы",
       "news": "Новости"
     },
     "panel": {
@@ -1209,6 +1210,7 @@
       "landingsDesc": "Страницы быстрой покупки",
       "referralNetworkDesc": "Визуализация графа рефералов и РК",
       "referralSettingsDesc": "Бонусы, дни подписки, комиссия, выводы и антифрод",
+      "tapRewardsDesc": "Настройка подарков за нажатия по логотипу",
       "newsDesc": "Управление новостями и статьями"
     },
     "salesStats": {
@@ -1793,6 +1795,7 @@
       "database": "База данных",
       "system": "Система",
       "users": "Пользователи",
+      "marketing": "Маркетинг",
       "logoAndName": "Логотип и название",
       "projectName": "Название проекта",
       "interfaceOptions": "Опции интерфейса",
@@ -2178,6 +2181,12 @@
         "Referral Withdrawal Suspicious Min Deposit Kopeks": "Мин. подозр. депозит (коп.)",
         "Referral Withdrawal Suspicious No Purchases Ratio": "Коэф. без покупок",
         "Referral Withdrawal Test Mode": "Тестовый режим вывода",
+        "Tap Rewards Balance Kopeks": "Подарок балансом (коп.)",
+        "Tap Rewards Daily Reward Limit": "Подарков в день",
+        "Tap Rewards Enabled": "Подарки за тапы",
+        "Tap Rewards Reward Type": "Тип подарка",
+        "Tap Rewards Subscription Days": "Подарок днями",
+        "Tap Rewards Threshold": "Тапов до подарка",
         "Support Menu Enabled": "Меню поддержки",
         "Support System Mode": "Режим поддержки",
         "Support Ticket Sla Check Interval Seconds": "Интервал проверки SLA (сек)",
@@ -2337,6 +2346,7 @@
         "CHANNEL": "Канал",
         "TIMEZONE": "Часовой пояс",
         "REFERRAL": "Реферальная система",
+        "TAP_REWARDS": "Подарки за тапы",
         "MODERATION": "Модерация",
         "BALANCER": "Балансер"
       },

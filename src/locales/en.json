@@ -1148,6 +1148,7 @@
       "landings": "Landings",
       "referralNetwork": "Referral Network",
       "referralSettings": "Referral Program",
+      "tapRewards": "Tap Rewards",
       "news": "News"
     },
     "panel": {
@@ -1200,6 +1201,7 @@
       "landingsDesc": "Quick purchase landing pages",
       "referralNetworkDesc": "Referral graph and campaign visualization",
       "referralSettingsDesc": "Bonuses, subscription days, commissions, withdrawals, and fraud checks",
+      "tapRewardsDesc": "Configure logo tap rewards",
       "newsDesc": "Manage news articles and publications"
     },
     "salesStats": {
@@ -1815,8 +1817,10 @@
       "quickPresets": "Quick presets",
       "resetAllColors": "Reset all colors",
       "statusColors": "Status colors",
+      "marketing": "Marketing",
       "categories": {
-        "BALANCER": "Balancer"
+        "BALANCER": "Balancer",
+        "TAP_REWARDS": "Tap Rewards"
       },
       "settingNames": {
         "Balancer Api Url": "Balancer API URL",
@@ -1827,7 +1831,13 @@
         "BALANCER ADMIN TOKEN": "Balancer Admin Token",
         "Balancer Request Timeout": "Balancer Request Timeout",
         "Balancer request timeout": "Balancer Request Timeout",
-        "BALANCER REQUEST TIMEOUT": "Balancer Request Timeout"
+        "BALANCER REQUEST TIMEOUT": "Balancer Request Timeout",
+        "Tap Rewards Balance Kopeks": "Balance reward (kopeks)",
+        "Tap Rewards Daily Reward Limit": "Daily reward limit",
+        "Tap Rewards Enabled": "Tap rewards",
+        "Tap Rewards Reward Type": "Reward type",
+        "Tap Rewards Subscription Days": "Subscription days reward",
+        "Tap Rewards Threshold": "Taps per reward"
       },
       "liteMode": "Lite mode",
       "liteModeDesc": "Simplified cabinet interface",

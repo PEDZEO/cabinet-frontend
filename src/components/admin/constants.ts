@@ -123,6 +123,14 @@ export const SETTINGS_TREE: SettingsTreeConfig = {
       ],
     },
     {
+      id: 'marketing',
+      label: 'Маркетинг',
+      icon: '📣',
+      children: [
+        { id: 'marketing_tap_rewards', label: 'Подарки за тапы', categories: ['TAP_REWARDS'] },
+      ],
+    },
+    {
       id: 'notifications',
       label: 'Уведомления',
       icon: '🔔',
@@ -308,6 +316,11 @@ export const MENU_SECTIONS: MenuSection[] = [
         id: 'users',
         iconType: null,
         categories: ['SUPPORT', 'LOCALIZATION', 'CHANNEL', 'TIMEZONE', 'REFERRAL', 'MODERATION'],
+      },
+      {
+        id: 'marketing',
+        iconType: null,
+        categories: ['TAP_REWARDS'],
       },
     ],
   },
