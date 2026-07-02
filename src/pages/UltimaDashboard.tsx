@@ -51,7 +51,7 @@ import { warmUltimaStartup } from '@/features/ultima/warmup';
 import { trackAnalyticsEvent } from '@/utils/analyticsEvents';
 
 const ShieldIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" className="h-16 w-16 text-white/95">
+  <svg viewBox="0 0 24 24" fill="none" className="h-[72px] w-[72px] text-white/95">
     <path
       d="M12 3 5 5.7v5.54c0 4.4 2.99 8.5 7 9.76 4.01-1.26 7-5.36 7-9.76V5.7L12 3Z"
       stroke="currentColor"
@@ -864,7 +864,7 @@ export function UltimaDashboard() {
 
     return (
       <span
-        className="relative flex h-[86px] w-[86px] items-center justify-center overflow-hidden rounded-full border bg-black/20 p-3 backdrop-blur"
+        className="relative z-10 flex h-[100px] w-[100px] items-center justify-center overflow-hidden rounded-full border bg-black/20 p-3 backdrop-blur"
         style={{
           borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 34%, transparent)',
           boxShadow:
@@ -910,12 +910,12 @@ export function UltimaDashboard() {
         aria-label={t('nav.dashboard')}
         onPointerDown={handleShieldTap}
         className={cn(
-          'relative mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-black/[0.15] focus-visible:outline-none',
+          'relative isolate mx-auto flex h-28 w-28 items-center justify-center rounded-full bg-black/[0.15] focus-visible:outline-none',
           className,
         )}
         style={{ WebkitTapHighlightColor: 'transparent' }}
       >
-        <span aria-hidden className="pointer-events-none absolute inset-0 overflow-visible">
+        <span aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-visible">
           {shieldRipples.map((ripple) => (
             <span
               key={ripple.id}
@@ -928,6 +928,9 @@ export function UltimaDashboard() {
               }}
             />
           ))}
+        </span>
+        {renderHomeBrandMark()}
+        <span aria-hidden className="pointer-events-none absolute inset-0 z-30 overflow-visible">
           {shieldDigits.map((digit) => {
             const style = {
               left: digit.x,
@@ -953,7 +956,6 @@ export function UltimaDashboard() {
             );
           })}
         </span>
-        {renderHomeBrandMark()}
       </button>
     ),
     [handleShieldTap, renderHomeBrandMark, shieldDigits, shieldRipples, t],
@@ -1236,8 +1238,8 @@ export function UltimaDashboard() {
       )}
 
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[680px] lg:justify-between">
-        <section className="ultima-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto pb-[clamp(14px,2.8vh,24px)] pr-1 pt-[clamp(58px,13vh,126px)] lg:flex-none lg:overflow-visible lg:pb-2 lg:pr-0 lg:pt-8">
-          {renderShieldButton('mb-[clamp(24px,5vh,56px)] lg:mb-5')}
+        <section className="ultima-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto pb-[clamp(14px,2.8vh,24px)] pr-1 pt-[clamp(46px,10vh,104px)] lg:flex-none lg:overflow-visible lg:pb-2 lg:pr-0 lg:pt-8">
+          {renderShieldButton('mb-[clamp(12px,3.4vh,40px)] lg:mb-5')}
 
           {hasSetupReminder && (
             <div className="mb-4 rounded-2xl border border-emerald-200/[0.24] bg-[rgba(12,45,42,0.38)] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_24px_rgba(3,14,24,0.28)] backdrop-blur-md">
