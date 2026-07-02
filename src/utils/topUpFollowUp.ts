@@ -105,6 +105,7 @@ export const isTopUpFollowUpDismissed = (userId?: number | null) => {
 export const dismissTopUpFollowUp = (userId?: number | null) => {
   try {
     localStorage.setItem(getScopedKey(DISMISSED_TOP_UP_FOLLOW_UP_KEY, userId), '1');
+    emitPendingTopUpFollowUpChanged();
   } catch {
     // localStorage not available
   }

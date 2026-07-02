@@ -26,6 +26,7 @@ import {
   writeUltimaConnectionReminderHidden,
   writeUltimaConnectionStep,
 } from '@/features/ultima/connectionFlow';
+import { trackAnalyticsEvent } from '@/utils/analyticsEvents';
 
 type Step = 1 | 2 | 3;
 
@@ -567,6 +568,11 @@ export function UltimaConnection({
 
   const startInstallUrlFlow = (url: string) => {
     writeUltimaConnectionCompleted(user?.id, false);
+    trackAnalyticsEvent('ultima_connection_install_start', {
+      platform: activePlatformKey,
+      app: selectedApp?.name ?? null,
+      step,
+    });
     try {
       localStorage.setItem(`${ULTIMA_CONNECTION_PENDING_STEP2_KEY}:${user?.id ?? 'guest'}`, '1');
       localStorage.setItem(ULTIMA_CONNECTION_PENDING_STEP2_KEY, '1');
@@ -592,6 +598,11 @@ export function UltimaConnection({
 
   const startAddSubscriptionFlow = () => {
     writeUltimaConnectionCompleted(user?.id, false);
+    trackAnalyticsEvent('ultima_connection_add_subscription_start', {
+      platform: activePlatformKey,
+      app: selectedApp?.name ?? null,
+      step,
+    });
     try {
       localStorage.setItem(`${ULTIMA_CONNECTION_PENDING_STEP3_KEY}:${user?.id ?? 'guest'}`, '1');
       localStorage.setItem(ULTIMA_CONNECTION_PENDING_STEP3_KEY, '1');
@@ -632,6 +643,11 @@ export function UltimaConnection({
       });
     }
     writeUltimaConnectionCompleted(user?.id, true);
+    trackAnalyticsEvent('ultima_connection_flow_complete', {
+      platform: activePlatformKey,
+      app: selectedApp?.name ?? null,
+      is_trial: isActiveTrial,
+    });
     haptic.notification('success');
     window.setTimeout(() => {
       setShowFinishSuccess(true);

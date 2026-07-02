@@ -17,6 +17,7 @@ import { promoApi } from '@/api/promo';
 import { referralApi } from '@/api/referral';
 import { subscriptionApi } from '@/api/subscription';
 import { UltimaReferralCta } from '@/components/ultima/UltimaReferralCta';
+import { UltimaPendingPaymentCard } from '@/components/ultima/UltimaPendingPaymentCard';
 import {
   UltimaDesktopDashboard,
   UltimaDesktopDashboardSkeleton,
@@ -27,6 +28,7 @@ import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { UltimaTrialGuide } from '@/components/ultima/UltimaTrialGuide';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { usePendingTopUpFollowUpState } from '@/hooks/usePendingTopUpFollowUpState';
 import { useBrandLogoImage } from '@/hooks/useBrandLogoImage';
 import { useBranding } from '@/hooks/useBranding';
 import { cn } from '@/lib/utils';
@@ -150,6 +152,7 @@ export function UltimaDashboard() {
   const isAdmin = useAuthStore((state) => state.isAdmin);
   const user = useAuthStore((state) => state.user);
   const isDesktopViewport = useMediaQuery('(min-width: 1024px)');
+  const { pendingTopUp } = usePendingTopUpFollowUpState();
   const rippleIdRef = useRef(0);
   const digitIdRef = useRef(0);
   const tapCountRef = useRef(0);
@@ -566,6 +569,9 @@ export function UltimaDashboard() {
 
   const openReferral = useCallback(() => {
     haptic.impact('light');
+    trackAnalyticsEvent('ultima_referral_entry_click', {
+      source: 'dashboard',
+    });
     void import('./Referral');
     void queryClient.prefetchQuery({
       queryKey: ['referral-info'],
@@ -632,26 +638,33 @@ export function UltimaDashboard() {
     setIsTrialGuideVisible(false);
   }, [acknowledgeTrialGuide]);
 
-  const openDevices = () => {
-    haptic.impact('light');
-    void queryClient.prefetchQuery({
-      queryKey: ['subscription'],
-      queryFn: subscriptionApi.getSubscription,
-      staleTime: 15000,
-    });
-    void queryClient.prefetchQuery({
-      queryKey: ['devices'],
-      queryFn: subscriptionApi.getDevices,
-      staleTime: 10000,
-    });
-    void queryClient.prefetchQuery({
-      queryKey: ['device-reduction-info'],
-      queryFn: subscriptionApi.getDeviceReductionInfo,
-      staleTime: 10000,
-    });
-    void import('./UltimaDevices');
-    navigate('/ultima/devices');
-  };
+  const openDevices = useCallback(
+    (connect = false, source = 'dashboard') => {
+      haptic.impact('light');
+      trackAnalyticsEvent('ultima_devices_open', {
+        source,
+        connect,
+      });
+      void queryClient.prefetchQuery({
+        queryKey: ['subscription'],
+        queryFn: subscriptionApi.getSubscription,
+        staleTime: 15000,
+      });
+      void queryClient.prefetchQuery({
+        queryKey: ['devices'],
+        queryFn: subscriptionApi.getDevices,
+        staleTime: 10000,
+      });
+      void queryClient.prefetchQuery({
+        queryKey: ['device-reduction-info'],
+        queryFn: subscriptionApi.getDeviceReductionInfo,
+        staleTime: 10000,
+      });
+      void import('./UltimaDevices');
+      navigate(connect ? '/ultima/devices?connect=1' : '/ultima/devices');
+    },
+    [haptic, navigate, queryClient],
+  );
 
   const openSubscriptionInfo = useCallback(() => {
     haptic.impact('light');
@@ -742,6 +755,8 @@ export function UltimaDashboard() {
     isExpired: Boolean(subscription?.is_expired),
     daysLeft,
     isConnectionCompleted,
+    connectedDevicesCount,
+    deviceLimit: dashboardDeviceLimit,
   });
 
   useEffect(() => {
@@ -772,6 +787,7 @@ export function UltimaDashboard() {
       buy: purchaseCtaLabel,
       renew: purchaseCtaLabel,
       setup: t('ultima.finishSetup', { defaultValue: 'Завершить установку' }),
+      device: t('devices.connectFirstDevice', { defaultValue: 'Подключить устройство' }),
       subscription: t('subscription.desktopOpenInfo', { defaultValue: 'Открыть подписку' }),
     };
     return labels[primaryActionKind];
@@ -787,8 +803,26 @@ export function UltimaDashboard() {
     if (primaryActionKind === 'subscription') {
       return statusLabel;
     }
+    if (primaryActionKind === 'device') {
+      return dashboardFreeDeviceSlots > 0
+        ? t('devices.homeCtaFreeSlots', {
+            count: dashboardFreeDeviceSlots,
+            total: dashboardDeviceLimit,
+            defaultValue: 'Свободно {{count}} из {{total}}',
+          })
+        : t('devices.noFreeSlotsTitle', { defaultValue: 'Слотов нет' });
+    }
     return purchaseFromLabel;
-  }, [connectionStep, isConnectionCompleted, primaryActionKind, purchaseFromLabel, statusLabel, t]);
+  }, [
+    connectionStep,
+    dashboardDeviceLimit,
+    dashboardFreeDeviceSlots,
+    isConnectionCompleted,
+    primaryActionKind,
+    purchaseFromLabel,
+    statusLabel,
+    t,
+  ]);
 
   const handlePrimaryAction = useCallback(() => {
     trackAnalyticsEvent('ultima_main_cta_click', {
@@ -802,6 +836,11 @@ export function UltimaDashboard() {
       return;
     }
 
+    if (primaryActionKind === 'device') {
+      openDevices(true, 'main_cta');
+      return;
+    }
+
     if (primaryActionKind === 'subscription') {
       openSubscriptionInfo();
       return;
@@ -812,6 +851,7 @@ export function UltimaDashboard() {
     daysLeft,
     isConnectionCompleted,
     openConnection,
+    openDevices,
     openSubscriptionInfo,
     openSubscriptionPurchase,
     primaryActionKind,
@@ -927,11 +967,47 @@ export function UltimaDashboard() {
     isDesktopViewport && 'ultima-flat-frames ultima-shell-dashboard-desktop',
   );
   const bottomNav = <UltimaBottomNav active="home" onSupportClick={openSupport} />;
-  const PrimaryCtaIcon = primaryActionKind === 'setup' ? SetupIcon : GlobeIcon;
+  const PrimaryCtaIcon =
+    primaryActionKind === 'setup'
+      ? SetupIcon
+      : primaryActionKind === 'device'
+        ? DevicesHomeIcon
+        : GlobeIcon;
+  const shouldConnectDeviceFromHome = connectedDevicesCount <= 0 || dashboardFreeDeviceSlots > 0;
+  const devicesHomeCtaTitle =
+    connectedDevicesCount <= 0
+      ? t('devices.connectFirstDevice', { defaultValue: 'Подключить первое устройство' })
+      : dashboardFreeDeviceSlots > 0
+        ? t('devices.connectNewDeviceTitle', { defaultValue: 'Подключить новое устройство' })
+        : t('devices.buySlot', { defaultValue: 'Купить слот' });
+  const devicesHomeCtaSubtitle =
+    connectedDevicesCount <= 0
+      ? t('devices.homeCtaSubscriptionReady', {
+          defaultValue: 'QR-код и ссылка подписки уже готовы',
+        })
+      : dashboardFreeDeviceSlots > 0
+        ? t('devices.homeCtaFreeSlots', {
+            count: dashboardFreeDeviceSlots,
+            total: dashboardDeviceLimit,
+            defaultValue: 'Свободно {{count}} из {{total}} слотов',
+          })
+        : t('devices.homeCtaNoSlots', {
+            count: connectedDevicesCount,
+            total: dashboardDeviceLimit,
+            defaultValue: 'Подключено {{count}} из {{total}}',
+          });
+  const devicesHomeCtaAction = shouldConnectDeviceFromHome
+    ? t('devices.subscriptionQrShort', { defaultValue: 'QR' })
+    : t('devices.buySlotShort', { defaultValue: 'Слот' });
   const devicesHomeCta = hasAnySubscription ? (
     <button
       type="button"
-      onClick={openDevices}
+      onClick={() =>
+        openDevices(
+          shouldConnectDeviceFromHome,
+          shouldConnectDeviceFromHome ? 'home_device_connect_card' : 'home_device_slots_card',
+        )
+      }
       className="group relative w-full overflow-hidden rounded-[20px] border px-3.5 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_22px_rgba(3,14,24,0.16)] backdrop-blur-md transition hover:bg-white/[0.04]"
       style={{
         borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
@@ -951,28 +1027,38 @@ export function UltimaDashboard() {
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-[14px] font-semibold leading-tight text-white/[0.96]">
-            {t('devices.homeCtaTitle', { defaultValue: 'Мои устройства' })}
+            {devicesHomeCtaTitle}
           </span>
           <span className="mt-0.5 block truncate text-[11px] leading-tight text-white/[0.62]">
-            {dashboardFreeDeviceSlots > 0
-              ? t('devices.homeCtaFreeSlots', {
-                  count: dashboardFreeDeviceSlots,
-                  total: dashboardDeviceLimit,
-                  defaultValue: 'Свободно {{count}} из {{total}} слотов',
-                })
-              : t('devices.homeCtaNoSlots', {
-                  count: connectedDevicesCount,
-                  total: dashboardDeviceLimit,
-                  defaultValue: 'Подключено {{count}} из {{total}}',
-                })}
+            {devicesHomeCtaSubtitle}
           </span>
         </span>
         <span className="shrink-0 rounded-full border border-white/10 px-2.5 py-1 text-[11px] font-semibold text-white/[0.86]">
-          {t('common.open', { defaultValue: 'Открыть' })}
+          {devicesHomeCtaAction}
         </span>
       </span>
     </button>
   ) : null;
+  const desktopPendingPaymentCta = pendingTopUp?.paymentUrl ? (
+    <UltimaPendingPaymentCard source="dashboard_desktop" compact />
+  ) : null;
+  const desktopReferralCta = showReferralEntry ? (
+    <UltimaReferralCta
+      commissionPercent={referralCommissionPercent}
+      onClick={openReferral}
+      variant="desktop"
+      title={referralInviteTitle}
+      description={referralInviteDescription}
+      badgeLabel={referralInviteBadgeLabel}
+    />
+  ) : null;
+  const desktopActionCtaStack =
+    desktopPendingPaymentCta || desktopReferralCta ? (
+      <>
+        {desktopPendingPaymentCta}
+        {desktopReferralCta}
+      </>
+    ) : null;
   const desktopTrialGuide =
     showTrialSetupCard && !isTrialGuideVisible ? (
       <UltimaTrialGuide
@@ -1028,18 +1114,7 @@ export function UltimaDashboard() {
 
         <UltimaDesktopDashboard
           heroButton={renderShieldButton('h-[108px] w-[108px] lg:h-[124px] lg:w-[124px]')}
-          referralCta={
-            showReferralEntry ? (
-              <UltimaReferralCta
-                commissionPercent={referralCommissionPercent}
-                onClick={openReferral}
-                variant="desktop"
-                title={referralInviteTitle}
-                description={referralInviteDescription}
-                badgeLabel={referralInviteBadgeLabel}
-              />
-            ) : null
-          }
+          referralCta={desktopActionCtaStack}
           devicesCta={devicesHomeCta}
           subscription={subscription}
           expiryLabel={expiryLabel}
@@ -1062,7 +1137,7 @@ export function UltimaDashboard() {
           onPrimaryAction={handlePrimaryAction}
           onBuySubscription={openSubscriptionPurchase}
           onOpenConnection={() => openConnection()}
-          onOpenDevices={openDevices}
+          onOpenDevices={() => openDevices(false, 'desktop_dashboard')}
           onOpenSubscriptionInfo={openSubscriptionInfo}
           onOpenSupport={openSupport}
           onActivateOffer={
@@ -1141,6 +1216,10 @@ export function UltimaDashboard() {
               </span>
             </button>
           )}
+
+          {pendingTopUp?.paymentUrl ? (
+            <UltimaPendingPaymentCard source="dashboard_mobile" className="mb-4" />
+          ) : null}
 
           {showReferralEntry && (
             <div className="mb-4">
@@ -1239,7 +1318,7 @@ export function UltimaDashboard() {
                   </button>
                   <button
                     type="button"
-                    onClick={openDevices}
+                    onClick={() => openDevices(false, 'dashboard_devices_count')}
                     className="mt-2 text-left text-[15px] leading-snug text-emerald-300/90 transition hover:text-emerald-200 lg:text-center"
                   >
                     {t('lite.devicesTotal', { defaultValue: 'Устройств' })}:{' '}

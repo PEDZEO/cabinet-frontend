@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import { balanceApi } from '@/api/balance';
-import { useToast } from '@/components/Toast';
-import { usePlatform } from '@/platform';
 import { useAuthStore } from '@/store/auth';
 import { showSuccessNotification } from '@/store/successNotification';
 import {
@@ -13,6 +10,7 @@ import {
   PENDING_TOP_UP_FOLLOW_UP_EVENT,
   readPendingTopUpFollowUp,
 } from '@/utils/topUpFollowUp';
+import { trackAnalyticsEvent } from '@/utils/analyticsEvents';
 
 const PAYMENT_REMINDER_DELAY_MS = 12_000;
 const PAYMENT_REMINDER_REPEAT_MS = 10 * 60 * 1000;
@@ -26,9 +24,6 @@ const FOLLOW_UP_RETRY_DELAYS_MS = [
 ];
 
 export function usePendingTopUpFollowUp() {
-  const { t } = useTranslation();
-  const { showToast } = useToast();
-  const { openLink, openTelegramLink } = usePlatform();
   const queryClient = useQueryClient();
   const userId = useAuthStore((state) => state.user?.id ?? null);
   const refreshUser = useAuthStore((state) => state.refreshUser);
@@ -66,21 +61,9 @@ export function usePendingTopUpFollowUp() {
 
         if (canRemind && pending.paymentUrl) {
           markTopUpFollowUpReminderShown(userId);
-          showToast({
-            type: 'warning',
-            title: t('balance.pendingReminderTitle', { defaultValue: 'Оплата не завершена' }),
-            message: t('balance.pendingReminderMessage', {
-              defaultValue: 'Нажмите, чтобы снова открыть страницу оплаты.',
-              method: pending.paymentMethodName || '',
-            }),
-            duration: 9000,
-            onClick: () => {
-              if (pending.paymentUrl?.includes('t.me/')) {
-                openTelegramLink(pending.paymentUrl);
-              } else if (pending.paymentUrl) {
-                openLink(pending.paymentUrl);
-              }
-            },
+          trackAnalyticsEvent('ultima_payment_recovery_available', {
+            amount_kopeks: pending.amountKopeks,
+            payment_method_id: pending.paymentMethodId ?? null,
           });
         }
         return;
@@ -102,7 +85,7 @@ export function usePendingTopUpFollowUp() {
     } finally {
       isCheckingRef.current = false;
     }
-  }, [openLink, openTelegramLink, queryClient, refreshUser, showToast, t, userId]);
+  }, [queryClient, refreshUser, userId]);
 
   const scheduleRecoveryBurst = useCallback(() => {
     clearScheduledRetries();

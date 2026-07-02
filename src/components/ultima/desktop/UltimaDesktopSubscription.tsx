@@ -40,6 +40,7 @@ type UltimaDesktopSubscriptionProps = {
   payablePriceLabel: string;
   originalPriceLabel: string | null;
   error: string | null;
+  paymentRecoveryCard?: ReactNode;
   awaitingPaymentCompletion: boolean;
   isFinalizingPending: boolean;
   isPayDisabled: boolean;
@@ -70,6 +71,7 @@ export function UltimaDesktopSubscription({
   payablePriceLabel,
   originalPriceLabel,
   error,
+  paymentRecoveryCard,
   awaitingPaymentCompletion,
   isFinalizingPending,
   isPayDisabled,
@@ -277,6 +279,8 @@ export function UltimaDesktopSubscription({
                 ) : null}
               </div>
             ) : null}
+
+            {paymentRecoveryCard ? <div className="mt-4">{paymentRecoveryCard}</div> : null}
 
             <button
               type="button"

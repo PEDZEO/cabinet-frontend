@@ -8,6 +8,7 @@ import { subscriptionApi } from '@/api/subscription';
 import { UltimaDesktopSubscription } from '@/components/ultima/desktop/UltimaDesktopSubscription';
 import { UltimaTariffSelector } from '@/components/ultima/UltimaTariffSelector';
 import { UltimaTrafficTopUpSection } from '@/components/ultima/UltimaTrafficTopUpSection';
+import { UltimaPendingPaymentCard } from '@/components/ultima/UltimaPendingPaymentCard';
 import { createApplyPromoDiscount } from '@/features/subscription/utils/pricing';
 import {
   getSortedUltimaTariffs,
@@ -18,6 +19,7 @@ import {
 } from '@/features/ultima/subscription';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { usePendingTopUpFollowUpState } from '@/hooks/usePendingTopUpFollowUpState';
 import {
   showSuccessNotification,
   useCloseOnSuccessNotification,
@@ -165,6 +167,7 @@ export function UltimaSubscription() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
+  const { pendingTopUp } = usePendingTopUpFollowUpState();
   const userId = useAuthStore((state) => state.user?.id ?? null);
   const { currencySymbol } = useCurrency();
   const haptic = useHaptic();
@@ -373,32 +376,6 @@ export function UltimaSubscription() {
     [deviceLimits, haptic],
   );
 
-  const applyDeviceLimit = useCallback(
-    (nextLimit: number) => {
-      if (!deviceLimits.length) return;
-      const minLimit = deviceLimits[0];
-      const maxLimit = deviceLimits[deviceLimits.length - 1];
-      const clampedLimit = Math.min(Math.max(nextLimit, minLimit), maxLimit);
-      const exactIndex = deviceLimits.findIndex((value) => value === clampedLimit);
-      if (exactIndex >= 0) {
-        applyDeviceIndex(exactIndex);
-        return;
-      }
-
-      let closestIndex = 0;
-      let closestDistance = Number.POSITIVE_INFINITY;
-      deviceLimits.forEach((value, index) => {
-        const distance = Math.abs(value - clampedLimit);
-        if (distance < closestDistance) {
-          closestIndex = index;
-          closestDistance = distance;
-        }
-      });
-      applyDeviceIndex(closestIndex);
-    },
-    [applyDeviceIndex, deviceLimits],
-  );
-
   const displayPeriods = useMemo(() => {
     if (!selectedTariff) return [];
     return getUltimaPeriodsForDeviceLimit(selectedTariff, selectedDeviceLimit).sort(
@@ -430,8 +407,6 @@ export function UltimaSubscription() {
   }, [displayPeriods, selectedPeriodDays]);
 
   const selectedTariffIdForPurchase = selectedTariff?.id ?? selectedPeriod?.tariffId ?? null;
-  const sliderProgressPercent =
-    deviceLimits.length > 1 ? (selectedDeviceIndex / (deviceLimits.length - 1)) * 100 : 0;
   const minDeviceLimit = deviceLimits[0] ?? selectedDeviceLimit;
   const maxDeviceLimit = deviceLimits[deviceLimits.length - 1] ?? selectedDeviceLimit;
   const canDecreaseDevices = selectedDeviceIndex > 0;
@@ -594,7 +569,11 @@ export function UltimaSubscription() {
 
   const purchaseTrafficMutation = useMutation({
     mutationFn: (gb: number) => subscriptionApi.purchaseTraffic(gb),
-    onSuccess: async () => {
+    onSuccess: async (result) => {
+      trackAnalyticsConversion('ultima_traffic_purchase_success', {
+        gb: result.gb_added,
+        amount_paid_kopeks: result.amount_paid_kopeks,
+      });
       setSelectedTrafficPackage(null);
       setError(null);
       await Promise.all([
@@ -1242,6 +1221,11 @@ export function UltimaSubscription() {
               : null
           }
           error={error}
+          paymentRecoveryCard={
+            pendingTopUp?.paymentUrl ? (
+              <UltimaPendingPaymentCard source="subscription_desktop" compact />
+            ) : null
+          }
           awaitingPaymentCompletion={awaitingPaymentCompletion}
           isFinalizingPending={isFinalizingPending}
           isPayDisabled={
@@ -1432,7 +1416,7 @@ export function UltimaSubscription() {
               </div>
 
               <div
-                className="rounded-[16px] border px-3 py-2"
+                className="rounded-[16px] border px-2.5 py-2"
                 style={{
                   borderColor:
                     'color-mix(in srgb, var(--ultima-color-surface-border) 22%, transparent)',
@@ -1440,25 +1424,33 @@ export function UltimaSubscription() {
                     'linear-gradient(180deg,color-mix(in srgb, var(--ultima-color-surface) 58%, transparent) 0%,color-mix(in srgb, var(--ultima-color-secondary) 46%, transparent) 100%)',
                 }}
               >
-                <input
-                  type="range"
-                  min={minDeviceLimit}
-                  max={maxDeviceLimit}
-                  step={1}
-                  value={selectedDeviceLimit}
-                  onChange={(event) => applyDeviceLimit(Number(event.target.value))}
-                  className="h-6 w-full accent-emerald-300"
-                  aria-label="devices-limit-input"
-                  style={{
-                    background: `linear-gradient(90deg,color-mix(in srgb, var(--ultima-color-primary) 88%, #ffffff) 0%,color-mix(in srgb, var(--ultima-color-primary) 88%, #ffffff) ${sliderProgressPercent}%,rgba(255,255,255,0.14) ${sliderProgressPercent}%,rgba(255,255,255,0.14) 100%)`,
-                  }}
-                />
-                <div className="mt-0.5 flex items-center justify-between text-[10px] leading-none text-white/[0.46]">
-                  <span>{minDeviceLimit}</span>
-                  <span className="font-medium text-white/[0.7]">
+                <div className="scrollbar-hide flex gap-1.5 overflow-x-auto">
+                  {deviceLimits.map((limit, index) => {
+                    const active = limit === selectedDeviceLimit;
+                    return (
+                      <button
+                        key={limit}
+                        type="button"
+                        onClick={() => applyDeviceIndex(index)}
+                        className={`shrink-0 rounded-full border px-3 py-1.5 text-[12px] font-semibold transition ${
+                          active
+                            ? 'border-emerald-200/[0.42] bg-emerald-300/[0.16] text-emerald-50'
+                            : 'border-white/[0.1] bg-white/[0.045] text-white/[0.62] hover:bg-white/[0.075]'
+                        }`}
+                        aria-pressed={active}
+                      >
+                        {limit}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="mt-1.5 flex items-center justify-between gap-2 text-[10px] leading-none text-white/[0.46]">
+                  <span>
+                    {minDeviceLimit}-{maxDeviceLimit}
+                  </span>
+                  <span className="truncate font-medium text-white/[0.7]">
                     {t('subscription.devices', { count: selectedDeviceLimit })}
                   </span>
-                  <span>{maxDeviceLimit}</span>
                 </div>
               </div>
             </>
@@ -1470,28 +1462,6 @@ export function UltimaSubscription() {
             isUltraCompactHeight ? 'pb-0' : 'pb-1'
           }`}
         >
-          {canTopUpSelectedTariffTraffic && subscription ? (
-            <div className={isCompactHeight ? 'mb-2.5' : 'mb-3'}>
-              <UltimaTrafficTopUpSection
-                t={t}
-                formatPrice={formatPrice}
-                trafficLimitGb={subscription.traffic_limit_gb}
-                trafficUsedGb={subscription.traffic_used_gb}
-                trafficPurchases={subscription.traffic_purchases}
-                trafficPackages={trafficPackages}
-                selectedTrafficPackage={selectedTrafficPackage}
-                setSelectedTrafficPackage={setSelectedTrafficPackage}
-                purchaseBalanceKopeks={currentBalanceKopeks}
-                isPending={purchaseTrafficMutation.isPending}
-                error={trafficPurchaseErrorMessage}
-                onPurchaseTraffic={(gb) => purchaseTrafficMutation.mutate(gb)}
-                onTopUpBalance={(gb) => {
-                  void openTopUpForTraffic(gb);
-                }}
-              />
-            </div>
-          ) : null}
-
           <div
             className={`rounded-[18px] border border-white/10 bg-black/20 backdrop-blur ${
               isUltraCompactHeight ? 'mb-1.5 p-1.5' : 'mb-2 p-2'
@@ -1679,9 +1649,38 @@ export function UltimaSubscription() {
               })}
             </div>
           )}
+
+          {canTopUpSelectedTariffTraffic && subscription ? (
+            <div className={isCompactHeight ? 'mt-2.5' : 'mt-3'}>
+              <UltimaTrafficTopUpSection
+                t={t}
+                formatPrice={formatPrice}
+                trafficLimitGb={subscription.traffic_limit_gb}
+                trafficUsedGb={subscription.traffic_used_gb}
+                trafficPurchases={subscription.traffic_purchases}
+                trafficPackages={trafficPackages}
+                selectedTrafficPackage={selectedTrafficPackage}
+                setSelectedTrafficPackage={setSelectedTrafficPackage}
+                purchaseBalanceKopeks={currentBalanceKopeks}
+                isPending={purchaseTrafficMutation.isPending}
+                error={trafficPurchaseErrorMessage}
+                onPurchaseTraffic={(gb) => purchaseTrafficMutation.mutate(gb)}
+                onTopUpBalance={(gb) => {
+                  void openTopUpForTraffic(gb);
+                }}
+              />
+            </div>
+          ) : null}
         </section>
 
         <div className={`ultima-mobile-dock-footer ${isUltraCompactHeight ? 'pt-2' : 'pt-3'}`}>
+          {pendingTopUp?.paymentUrl ? (
+            <UltimaPendingPaymentCard
+              source="subscription_mobile"
+              compact
+              className={isUltraCompactHeight ? 'mb-2' : 'mb-2.5'}
+            />
+          ) : null}
           {!error && requiresMinTopUpBump && defaultPaymentMethod && (
             <p className="mb-2 text-center text-[13px] leading-relaxed text-white/70">
               {t(

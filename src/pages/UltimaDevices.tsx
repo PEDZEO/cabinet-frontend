@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { QRCodeSVG } from 'qrcode.react';
 import { balanceApi } from '@/api/balance';
@@ -13,6 +13,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { copyToClipboard } from '@/utils/clipboard';
+import { trackAnalyticsEvent } from '@/utils/analyticsEvents';
 
 const DeviceIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
@@ -49,6 +50,7 @@ type ApiErrorLike = {
 export function UltimaDevices() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const { formatAmount, currencySymbol } = useCurrency();
   const isDesktop = useMediaQuery('(min-width: 1024px)');
@@ -58,6 +60,7 @@ export function UltimaDevices() {
   const [addCount, setAddCount] = useState(1);
   const [reduceLimit, setReduceLimit] = useState(1);
   const [isConnectionPanelOpen, setIsConnectionPanelOpen] = useState(false);
+  const autoConnectHandledRef = useRef(false);
 
   const { data: purchaseOptions } = useQuery({
     queryKey: ['purchase-options'],
@@ -300,26 +303,54 @@ export function UltimaDevices() {
   const minReduceLimit = reductionInfo?.min_device_limit ?? 1;
   const maxReduceLimit = reductionInfo?.current_device_limit ?? currentLimit ?? 1;
 
-  const openConnectionPanel = () => {
-    if (!canUseSubscriptionLink) {
-      setSuccess(null);
-      setError(
-        t('devices.subscriptionLinkUnavailable', {
-          defaultValue: 'Ссылка подписки пока недоступна. Попробуйте открыть подписку позже.',
-        }),
-      );
+  const openConnectionPanel = useCallback(
+    (source = 'manual') => {
+      if (!canUseSubscriptionLink) {
+        setSuccess(null);
+        setError(
+          t('devices.subscriptionLinkUnavailable', {
+            defaultValue: 'Ссылка подписки пока недоступна. Попробуйте открыть подписку позже.',
+          }),
+        );
+        return;
+      }
+
+      trackAnalyticsEvent('ultima_devices_connect_panel_open', {
+        source,
+        connected_devices: connectedCount,
+        device_limit: currentLimit,
+        free_slots: availableDeviceSlots,
+        subscription_link_hidden: hideSubscriptionLink,
+      });
+      setError(null);
+      setIsConnectionPanelOpen(true);
+      window.setTimeout(() => {
+        document.getElementById('ultima-connect-new-device')?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+      }, 0);
+    },
+    [
+      availableDeviceSlots,
+      canUseSubscriptionLink,
+      connectedCount,
+      currentLimit,
+      hideSubscriptionLink,
+      t,
+    ],
+  );
+
+  useEffect(() => {
+    if (autoConnectHandledRef.current || searchParams.get('connect') !== '1') {
       return;
     }
-
-    setError(null);
-    setIsConnectionPanelOpen(true);
-    window.setTimeout(() => {
-      document.getElementById('ultima-connect-new-device')?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-      });
-    }, 0);
-  };
+    if (subscriptionLoading) {
+      return;
+    }
+    autoConnectHandledRef.current = true;
+    openConnectionPanel('query_connect');
+  }, [openConnectionPanel, searchParams, subscriptionLoading]);
 
   const copySubscriptionLink = async () => {
     if (!canCopySubscriptionLink) {
@@ -333,6 +364,11 @@ export function UltimaDevices() {
     }
 
     await copyToClipboard(subscriptionLink);
+    trackAnalyticsEvent('ultima_device_subscription_link_copy', {
+      connected_devices: connectedCount,
+      device_limit: currentLimit,
+      free_slots: availableDeviceSlots,
+    });
     setError(null);
     setSuccess(
       t('devices.subscriptionLinkCopied', {
@@ -342,8 +378,14 @@ export function UltimaDevices() {
   };
 
   const handleDeviceCapacityCta = () => {
+    trackAnalyticsEvent('ultima_device_capacity_cta_click', {
+      connected_devices: connectedCount,
+      device_limit: currentLimit,
+      free_slots: availableDeviceSlots,
+      action: availableDeviceSlots > 0 || isActiveTrial ? 'connect' : 'buy_slot',
+    });
     if (availableDeviceSlots > 0 || isActiveTrial) {
-      openConnectionPanel();
+      openConnectionPanel('capacity_cta');
       return;
     }
 
@@ -588,7 +630,7 @@ export function UltimaDevices() {
                 {currentLimit > 0 ? (
                   <button
                     type="button"
-                    onClick={openConnectionPanel}
+                    onClick={() => openConnectionPanel('empty_state')}
                     className="ultima-btn-pill ultima-btn-secondary mt-2 rounded-xl px-3 py-2 text-[12px] font-medium"
                   >
                     {t('devices.connectFirstDevice', {

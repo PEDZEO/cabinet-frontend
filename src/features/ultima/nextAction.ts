@@ -1,4 +1,4 @@
-export type UltimaNextActionKind = 'buy' | 'renew' | 'setup' | 'subscription';
+export type UltimaNextActionKind = 'buy' | 'renew' | 'setup' | 'device' | 'subscription';
 
 type UltimaNextActionInput = {
   hasAnySubscription: boolean;
@@ -6,6 +6,8 @@ type UltimaNextActionInput = {
   isExpired: boolean;
   daysLeft: number | null;
   isConnectionCompleted: boolean;
+  connectedDevicesCount?: number | null;
+  deviceLimit?: number | null;
 };
 
 export function getUltimaNextAction({
@@ -14,6 +16,8 @@ export function getUltimaNextAction({
   isExpired,
   daysLeft,
   isConnectionCompleted,
+  connectedDevicesCount = null,
+  deviceLimit = null,
 }: UltimaNextActionInput): UltimaNextActionKind {
   if (!hasAnySubscription) {
     return 'buy';
@@ -21,6 +25,15 @@ export function getUltimaNextAction({
 
   if (!isActive || isExpired) {
     return 'renew';
+  }
+
+  if (
+    connectedDevicesCount !== null &&
+    deviceLimit !== null &&
+    deviceLimit > 0 &&
+    connectedDevicesCount <= 0
+  ) {
+    return 'device';
   }
 
   if (!isConnectionCompleted) {
@@ -31,5 +44,5 @@ export function getUltimaNextAction({
     return 'renew';
   }
 
-  return 'renew';
+  return 'subscription';
 }

@@ -9,6 +9,7 @@ import {
 import { cn } from '@/lib/utils';
 import { TrafficPurchaseTimer } from '@/components/subscription/TrafficPurchaseTimer';
 import type { TrafficPackage, TrafficPurchase } from '@/types';
+import { trackAnalyticsEvent } from '@/utils/analyticsEvents';
 
 type UltimaTrafficTopUpSectionProps = {
   t: TFunction;
@@ -68,7 +69,16 @@ export function UltimaTrafficTopUpSection({
       <button
         type="button"
         aria-expanded={isExpanded}
-        onClick={() => setIsExpanded((value) => !value)}
+        onClick={() => {
+          setIsExpanded((value) => {
+            const next = !value;
+            trackAnalyticsEvent('ultima_traffic_topup_toggle', {
+              expanded: next,
+              active_traffic_gb: purchasedTrafficTotal,
+            });
+            return next;
+          });
+        }}
         className="group w-full rounded-[22px] border border-white/[0.08] bg-black/[0.1] p-3 text-left transition-[border-color,background-color,box-shadow] hover:border-white/[0.16] hover:bg-white/[0.035] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25"
       >
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
@@ -191,7 +201,14 @@ export function UltimaTrafficTopUpSection({
                     <button
                       key={pkg.gb}
                       type="button"
-                      onClick={() => setSelectedTrafficPackage(pkg.gb)}
+                      onClick={() => {
+                        setSelectedTrafficPackage(pkg.gb);
+                        trackAnalyticsEvent('ultima_traffic_package_select', {
+                          gb: pkg.gb,
+                          price_kopeks: pkg.price_kopeks,
+                          is_unlimited: pkg.is_unlimited,
+                        });
+                      }}
                       className={cn(
                         'rounded-[22px] border px-4 py-3 text-left transition-colors',
                         active
@@ -239,7 +256,14 @@ export function UltimaTrafficTopUpSection({
                       </p>
                       <button
                         type="button"
-                        onClick={() => onTopUpBalance(selectedPackage.gb)}
+                        onClick={() => {
+                          trackAnalyticsEvent('ultima_traffic_topup_balance_click', {
+                            gb: selectedPackage.gb,
+                            price_kopeks: selectedPackage.price_kopeks,
+                            missing_kopeks: missingAmountKopeks,
+                          });
+                          onTopUpBalance(selectedPackage.gb);
+                        }}
                         className="ultima-btn-pill ultima-btn-secondary w-full px-4 py-3 text-sm"
                       >
                         {t('balance.topUp')}
@@ -248,7 +272,13 @@ export function UltimaTrafficTopUpSection({
                   ) : (
                     <button
                       type="button"
-                      onClick={() => onPurchaseTraffic(selectedPackage.gb)}
+                      onClick={() => {
+                        trackAnalyticsEvent('ultima_traffic_purchase_click', {
+                          gb: selectedPackage.gb,
+                          price_kopeks: selectedPackage.price_kopeks,
+                        });
+                        onPurchaseTraffic(selectedPackage.gb);
+                      }}
                       disabled={isPending || !hasEnoughBalance}
                       className="ultima-btn-pill ultima-btn-primary mt-3 w-full px-4 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-75"
                     >

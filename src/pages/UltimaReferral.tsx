@@ -14,6 +14,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { getReferralBonusParts } from '@/utils/referralBonus';
+import { trackAnalyticsEvent } from '@/utils/analyticsEvents';
 
 const CopyIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
@@ -126,6 +127,10 @@ export function UltimaReferral() {
 
   const copyLink = () => {
     if (!referralLink) return;
+    trackAnalyticsEvent('ultima_referral_link_copy', {
+      source: 'referral_page',
+      commission_percent: info?.commission_percent || 0,
+    });
     void navigator.clipboard.writeText(referralLink);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1600);
@@ -133,6 +138,11 @@ export function UltimaReferral() {
 
   const shareLink = () => {
     if (!referralLink) return;
+    trackAnalyticsEvent('ultima_referral_link_share', {
+      source: 'referral_page',
+      commission_percent: info?.commission_percent || 0,
+      native_share: Boolean(navigator.share),
+    });
     const shareText = t('referral.shareMessage', {
       percent: info?.commission_percent || 0,
       botName: branding?.name || import.meta.env.VITE_APP_NAME || 'Cabinet',
@@ -180,6 +190,20 @@ export function UltimaReferral() {
         formatDays: formatReferralDaysBonus,
       })
     : null;
+  const referralBenefitItems = [
+    inviterBonus?.primary
+      ? t('referral.inviterBenefitShort', {
+          value: inviterBonus.primary,
+          defaultValue: 'Вам {{value}}',
+        })
+      : null,
+    firstTopupBonus?.primary
+      ? t('referral.friendBenefitShort', {
+          value: firstTopupBonus.primary,
+          defaultValue: 'Другу {{value}}',
+        })
+      : null,
+  ].filter(Boolean);
 
   const referralContent = (
     <section className="min-h-0 flex-1 overflow-hidden rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:p-4">
@@ -224,6 +248,18 @@ export function UltimaReferral() {
               <p className="mt-1 text-[11px] text-white/[0.52]">
                 {t('referral.shareHint', { percent: info?.commission_percent || 0 })}
               </p>
+              {referralBenefitItems.length > 0 ? (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {referralBenefitItems.map((item) => (
+                    <span
+                      key={String(item)}
+                      className="rounded-full border border-emerald-200/[0.18] bg-emerald-300/[0.1] px-2.5 py-1 text-[11px] font-medium text-emerald-50"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
               <div className="mt-2 rounded-xl border border-emerald-200/[0.12] bg-emerald-950/40 px-3 py-2 text-[12px] text-white/[0.86]">
                 <p className="break-all leading-snug">{referralLink || '—'}</p>
               </div>
