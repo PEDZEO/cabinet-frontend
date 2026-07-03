@@ -1836,6 +1836,7 @@
         "Tap Rewards Daily Reward Limit": "Daily reward limit",
         "Tap Rewards Enabled": "Tap rewards",
         "Tap Rewards Reward Type": "Reward type",
+        "Tap Rewards Streak Timeout Seconds": "Reset taps after pause (sec.)",
         "Tap Rewards Subscription Days": "Subscription days reward",
         "Tap Rewards Threshold": "Taps per reward"
       },

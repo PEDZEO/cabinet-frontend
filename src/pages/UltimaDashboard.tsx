@@ -156,7 +156,7 @@ export function UltimaDashboard() {
   const rippleIdRef = useRef(0);
   const digitIdRef = useRef(0);
   const tapCountRef = useRef(0);
-  const tapRewardProgressSeededRef = useRef(false);
+  const tapResetTimeoutRef = useRef<number | null>(null);
   const tapRewardPendingRef = useRef(0);
   const tapRewardFlushTimeoutRef = useRef<number | null>(null);
   const dashboardMessageTimeoutRef = useRef<number | null>(null);
@@ -196,6 +196,10 @@ export function UltimaDashboard() {
     retry: false,
     placeholderData: (previousData) => previousData,
   });
+  const tapRewardPauseMs = useMemo(() => {
+    const seconds = tapRewardProgress?.streak_timeout_seconds ?? 1;
+    return seconds > 0 ? Math.max(250, seconds * 1000) : 0;
+  }, [tapRewardProgress?.streak_timeout_seconds]);
   const { data: promoOffers } = useQuery({
     queryKey: ['promo-offers'],
     queryFn: promoApi.getOffers,
@@ -507,19 +511,39 @@ export function UltimaDashboard() {
     }, 450);
   }, [flushTapRewards]);
 
+  const scheduleTapCounterReset = useCallback(() => {
+    if (tapResetTimeoutRef.current !== null) {
+      window.clearTimeout(tapResetTimeoutRef.current);
+      tapResetTimeoutRef.current = null;
+    }
+
+    if (tapRewardPauseMs <= 0) {
+      return;
+    }
+
+    tapResetTimeoutRef.current = window.setTimeout(() => {
+      tapCountRef.current = 0;
+      tapResetTimeoutRef.current = null;
+    }, tapRewardPauseMs);
+  }, [tapRewardPauseMs]);
+
   useEffect(() => {
     // Warm subscription route chunk so dashboard -> purchase transition stays seamless.
     void import('./Subscription');
   }, []);
 
   useEffect(() => {
-    if (!tapRewardProgress?.enabled || tapRewardProgressSeededRef.current) {
+    if (!tapRewardProgress?.enabled) {
+      tapCountRef.current = 0;
       return;
     }
 
-    tapCountRef.current = Math.max(tapCountRef.current, tapRewardProgress.total_taps ?? 0);
-    tapRewardProgressSeededRef.current = true;
-  }, [tapRewardProgress?.enabled, tapRewardProgress?.total_taps]);
+    if (tapRewardPendingRef.current > 0) {
+      return;
+    }
+
+    tapCountRef.current = Math.max(0, tapRewardProgress.progress_taps ?? 0);
+  }, [tapRewardProgress?.enabled, tapRewardProgress?.progress_taps]);
 
   useEffect(() => {
     if (!isSubscriptionReady || hasAnySubscription) {
@@ -613,6 +637,9 @@ export function UltimaDashboard() {
 
   useEffect(() => {
     return () => {
+      if (tapResetTimeoutRef.current !== null) {
+        window.clearTimeout(tapResetTimeoutRef.current);
+      }
       if (tapRewardFlushTimeoutRef.current !== null) {
         window.clearTimeout(tapRewardFlushTimeoutRef.current);
       }
@@ -626,6 +653,8 @@ export function UltimaDashboard() {
     (event: PointerEvent<HTMLButtonElement>) => {
       haptic.impact('light');
       scheduleTapRewardFlush();
+      const nextTapNumber = ++tapCountRef.current;
+      scheduleTapCounterReset();
 
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         return;
@@ -638,7 +667,6 @@ export function UltimaDashboard() {
       const size = Math.max(rect.width, rect.height) * 1.85;
       setShieldRipples((previous) => [...previous, { id, x, y, size }]);
 
-      const nextTapNumber = ++tapCountRef.current;
       const side = nextTapNumber % 2 === 0 ? 1 : -1;
       const digitId = digitIdRef.current++;
       const digit = {
@@ -665,7 +693,7 @@ export function UltimaDashboard() {
         setShieldDigits((previous) => previous.filter((item) => item.id !== digitId));
       }, 1280);
     },
-    [haptic, scheduleTapRewardFlush],
+    [haptic, scheduleTapCounterReset, scheduleTapRewardFlush],
   );
 
   const openSupport = () => {

@@ -6,6 +6,7 @@ export interface TapRewardResponse {
   progress_taps: number;
   threshold: number;
   taps_until_next: number;
+  streak_timeout_seconds: number;
   rewards_granted_total: number;
   daily_reward_limit: number;
   daily_rewards_granted: number;
