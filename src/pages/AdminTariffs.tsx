@@ -10,8 +10,10 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
+  Switch,
 } from '@/components/primitives';
 import { usePlatform } from '../platform/hooks/usePlatform';
 import {
@@ -273,7 +275,7 @@ function SortableTariffCard({
             </button>
             <span className="text-xs text-dark-500">
               {t('admin.tariffs.applyLimitsHint', {
-                defaultValue: 'Трафик и устройства для активных подписок',
+                defaultValue: 'Трафик для активных подписок, устройства только по галочке',
               })}
             </span>
           </div>
@@ -334,7 +336,7 @@ export default function AdminTariffs() {
   const queryClient = useQueryClient();
   const confirmDelete = useDestructiveConfirm();
   const notify = useNotify();
-  const { capabilities, dialog } = usePlatform();
+  const { capabilities } = usePlatform();
 
   const [localTariffs, setLocalTariffs] = useState<TariffListItem[]>([]);
   const [orderChanged, setOrderChanged] = useState(false);
@@ -344,6 +346,10 @@ export default function AdminTariffs() {
   const [applyLimitsResult, setApplyLimitsResult] = useState<TariffApplyLimitsResponse | null>(
     null,
   );
+  const [pendingApplyLimitsTariff, setPendingApplyLimitsTariff] = useState<TariffListItem | null>(
+    null,
+  );
+  const [applyLimitsUpdateDevices, setApplyLimitsUpdateDevices] = useState(false);
   const [applyingTariffId, setApplyingTariffId] = useState<number | null>(null);
 
   // Queries
@@ -414,8 +420,14 @@ export default function AdminTariffs() {
   });
 
   const applyLimitsMutation = useMutation({
-    mutationFn: tariffsApi.applyLimits,
-    onMutate: (tariffId) => {
+    mutationFn: ({
+      tariffId,
+      updateDeviceLimit,
+    }: {
+      tariffId: number;
+      updateDeviceLimit: boolean;
+    }) => tariffsApi.applyLimits(tariffId, { update_device_limit: updateDeviceLimit }),
+    onMutate: ({ tariffId }) => {
       setApplyingTariffId(tariffId);
     },
     onSuccess: (data) => {
@@ -441,20 +453,30 @@ export default function AdminTariffs() {
     },
   });
 
-  const handleApplyLimits = async (tariff: TariffListItem) => {
-    const confirmed = await dialog.confirm(
-      t('admin.tariffs.applyLimitsConfirmText', {
-        defaultValue: `Применить текущие лимиты тарифа "${tariff.name}" ко всем активным подпискам на этом тарифе? Трафик станет ${formatTrafficLimit(tariff.traffic_limit_gb)}, устройства: ${tariff.device_limit}.`,
-        name: tariff.name,
-        traffic: formatTrafficLimit(tariff.traffic_limit_gb),
-        devices: tariff.device_limit,
-      }),
-      t('admin.tariffs.applyLimitsConfirmTitle', { defaultValue: 'Применить лимиты тарифа' }),
-    );
+  const handleApplyLimits = (tariff: TariffListItem) => {
+    setPendingApplyLimitsTariff(tariff);
+    setApplyLimitsUpdateDevices(false);
+  };
 
-    if (confirmed) {
-      applyLimitsMutation.mutate(tariff.id);
+  const closeApplyLimitsDialog = () => {
+    if (applyLimitsMutation.isPending) {
+      return;
     }
+    setPendingApplyLimitsTariff(null);
+    setApplyLimitsUpdateDevices(false);
+  };
+
+  const confirmApplyLimits = () => {
+    if (!pendingApplyLimitsTariff) {
+      return;
+    }
+
+    applyLimitsMutation.mutate({
+      tariffId: pendingApplyLimitsTariff.id,
+      updateDeviceLimit: applyLimitsUpdateDevices,
+    });
+    setPendingApplyLimitsTariff(null);
+    setApplyLimitsUpdateDevices(false);
   };
 
   const handleDelete = async (tariff: TariffListItem) => {
@@ -775,6 +797,117 @@ export default function AdminTariffs() {
       )}
 
       <Dialog
+        open={!!pendingApplyLimitsTariff}
+        onOpenChange={(open) => {
+          if (!open) {
+            closeApplyLimitsDialog();
+          }
+        }}
+      >
+        <DialogContent className="max-w-lg">
+          {pendingApplyLimitsTariff && (
+            <>
+              <DialogHeader>
+                <DialogTitle>
+                  {t('admin.tariffs.applyLimitsConfirmTitle', {
+                    defaultValue: 'Применить лимиты тарифа',
+                  })}
+                </DialogTitle>
+                <DialogDescription>
+                  {t('admin.tariffs.applyLimitsConfirmSubtitle', {
+                    defaultValue: 'Массовое обновление активных подписок',
+                  })}
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-3">
+                <div className="rounded-lg border border-dark-700 bg-dark-800/70 p-3">
+                  <div className="text-sm font-medium text-dark-100">
+                    {pendingApplyLimitsTariff.name}
+                  </div>
+                  <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                    <div className="rounded-lg bg-dark-900/70 p-3">
+                      <div className="text-xs uppercase tracking-wide text-dark-500">
+                        {t('admin.tariffs.applyLimitsTraffic', {
+                          defaultValue: 'Трафик тарифа',
+                        })}
+                      </div>
+                      <div className="mt-1 text-sm font-semibold text-accent-300">
+                        {formatTrafficLimit(pendingApplyLimitsTariff.traffic_limit_gb)}
+                      </div>
+                      <div className="mt-1 text-xs text-dark-400">
+                        {t('admin.tariffs.applyLimitsTrafficAlways', {
+                          defaultValue: 'Обновится у всех активных подписок',
+                        })}
+                      </div>
+                    </div>
+                    <div className="rounded-lg bg-dark-900/70 p-3">
+                      <div className="text-xs uppercase tracking-wide text-dark-500">
+                        {t('admin.tariffs.applyLimitsDevices', {
+                          defaultValue: 'Устройства тарифа',
+                        })}
+                      </div>
+                      <div className="mt-1 text-sm font-semibold text-dark-100">
+                        {pendingApplyLimitsTariff.device_limit}
+                      </div>
+                      <div className="mt-1 text-xs text-dark-400">
+                        {applyLimitsUpdateDevices
+                          ? t('admin.tariffs.applyLimitsDevicesWillUpdate', {
+                              defaultValue: 'Будут применены к подпискам и Remnawave',
+                            })
+                          : t('admin.tariffs.applyLimitsDevicesStay', {
+                              defaultValue: 'Не меняются, купленные слоты сохраняются',
+                            })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-warning-500/25 bg-warning-500/10 p-3">
+                  <Switch
+                    checked={applyLimitsUpdateDevices}
+                    onCheckedChange={setApplyLimitsUpdateDevices}
+                    label={t('admin.tariffs.applyLimitsUpdateDevices', {
+                      defaultValue: 'Также обновить устройства',
+                    })}
+                    description={t('admin.tariffs.applyLimitsUpdateDevicesHint', {
+                      defaultValue:
+                        'Выключено по умолчанию: лимиты устройств и докупленные слоты останутся как есть.',
+                    })}
+                  />
+                </div>
+              </div>
+
+              <DialogFooter className="gap-2 sm:space-x-0">
+                <button
+                  type="button"
+                  onClick={closeApplyLimitsDialog}
+                  disabled={applyLimitsMutation.isPending}
+                  className="btn-secondary justify-center"
+                >
+                  {t('common.cancel', { defaultValue: 'Отмена' })}
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmApplyLimits}
+                  disabled={applyLimitsMutation.isPending}
+                  className="btn-primary justify-center"
+                >
+                  {applyLimitsUpdateDevices
+                    ? t('admin.tariffs.applyLimitsConfirmWithDevices', {
+                        defaultValue: 'Применить трафик и устройства',
+                      })
+                    : t('admin.tariffs.applyLimitsConfirmTrafficOnly', {
+                        defaultValue: 'Применить только трафик',
+                      })}
+                </button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
         open={!!applyLimitsResult}
         onOpenChange={(open) => !open && setApplyLimitsResult(null)}
       >
@@ -836,10 +969,17 @@ export default function AdminTariffs() {
                 </div>
                 <div className="mt-2 flex items-center justify-between gap-3 text-sm">
                   <span className="text-dark-400">
-                    {t('admin.tariffs.applyLimitsDevices', { defaultValue: 'Устройства тарифа' })}
+                    {t('admin.tariffs.applyLimitsDevicesResult', { defaultValue: 'Устройства' })}
                   </span>
                   <span className="font-medium text-dark-100">
-                    {applyLimitsResult.tariff_device_limit}
+                    {applyLimitsResult.device_limits_updated
+                      ? t('admin.tariffs.applyLimitsDevicesApplied', {
+                          defaultValue: `обновлены до ${applyLimitsResult.tariff_device_limit}`,
+                          count: applyLimitsResult.tariff_device_limit,
+                        })
+                      : t('admin.tariffs.applyLimitsDevicesNotChanged', {
+                          defaultValue: 'не менялись',
+                        })}
                   </span>
                 </div>
               </div>

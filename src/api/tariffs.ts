@@ -193,7 +193,12 @@ export interface TariffApplyLimitsResponse {
   skipped_count: number;
   tariff_traffic_limit_gb: number;
   tariff_device_limit: number;
+  device_limits_updated: boolean;
   errors: string[];
+}
+
+export interface TariffApplyLimitsRequest {
+  update_device_limit?: boolean;
 }
 
 export const tariffsApi = {
@@ -249,9 +254,12 @@ export const tariffsApi = {
     return response.data;
   },
 
-  // Apply current traffic/device limits to active linked subscriptions
-  applyLimits: async (tariffId: number): Promise<TariffApplyLimitsResponse> => {
-    const response = await apiClient.post(`/cabinet/admin/tariffs/${tariffId}/apply-limits`);
+  // Apply current tariff limits to active linked subscriptions
+  applyLimits: async (
+    tariffId: number,
+    data: TariffApplyLimitsRequest = {},
+  ): Promise<TariffApplyLimitsResponse> => {
+    const response = await apiClient.post(`/cabinet/admin/tariffs/${tariffId}/apply-limits`, data);
     return response.data;
   },
 
