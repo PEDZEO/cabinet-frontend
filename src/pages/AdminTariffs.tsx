@@ -3,9 +3,16 @@ import { useNavigate } from 'react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { AxiosError } from 'axios';
-import { tariffsApi, TariffListItem } from '../api/tariffs';
+import { tariffsApi, TariffApplyLimitsResponse, TariffListItem } from '../api/tariffs';
 import { adminSettingsApi } from '../api/adminSettings';
 import { useDestructiveConfirm, useNotify } from '@/platform';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/primitives';
 import { usePlatform } from '../platform/hooks/usePlatform';
 import {
   DndContext,
@@ -105,6 +112,22 @@ const SaveIcon = () => (
   </svg>
 );
 
+const SyncIcon = ({ spinning = false }: { spinning?: boolean }) => (
+  <svg
+    className={`h-4 w-4 ${spinning ? 'animate-spin' : ''}`}
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={2}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M16.023 9.348h4.992m0 0V4.356m0 4.992-3.181-3.183a8.25 8.25 0 0 0-13.803 3.7M7.977 14.652H2.985m0 0v4.992m0-4.992 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7"
+    />
+  </svg>
+);
+
 const TRIAL_DURATION_KEY = 'TRIAL_DURATION_DAYS';
 const TRIAL_TRAFFIC_KEY = 'TRIAL_TRAFFIC_LIMIT_GB';
 const TRIAL_DEVICES_KEY = 'TRIAL_DEVICE_LIMIT';
@@ -119,6 +142,8 @@ const toIntValue = (value: unknown, fallback: number): number => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
+const formatTrafficLimit = (gb: number): string => (gb === 0 ? 'Безлимит' : `${gb} GB`);
+
 // ============ Sortable Tariff Card ============
 
 interface SortableTariffCardProps {
@@ -127,6 +152,8 @@ interface SortableTariffCardProps {
   onDelete: () => void;
   onToggle: () => void;
   onToggleTrial: () => void;
+  onApplyLimits: () => void;
+  isApplyingLimits: boolean;
 }
 
 function SortableTariffCard({
@@ -135,6 +162,8 @@ function SortableTariffCard({
   onDelete,
   onToggle,
   onToggleTrial,
+  onApplyLimits,
+  isApplyingLimits,
 }: SortableTariffCardProps) {
   const { t } = useTranslation();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -230,6 +259,24 @@ function SortableTariffCard({
             <span>{t('admin.tariffs.servers', { count: tariff.servers_count })}</span>
             <span>{t('admin.tariffs.subscriptions', { count: tariff.subscriptions_count })}</span>
           </div>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={onApplyLimits}
+              disabled={isApplyingLimits || tariff.subscriptions_count === 0}
+              className="inline-flex items-center gap-2 rounded-lg border border-accent-500/30 bg-accent-500/10 px-3 py-2 text-xs font-medium text-accent-300 transition-colors hover:bg-accent-500/20 disabled:cursor-not-allowed disabled:border-dark-700 disabled:bg-dark-800 disabled:text-dark-500"
+            >
+              <SyncIcon spinning={isApplyingLimits} />
+              {isApplyingLimits
+                ? t('admin.tariffs.applyLimitsPending', { defaultValue: 'Применяем...' })
+                : t('admin.tariffs.applyLimits', { defaultValue: 'Применить лимиты' })}
+            </button>
+            <span className="text-xs text-dark-500">
+              {t('admin.tariffs.applyLimitsHint', {
+                defaultValue: 'Трафик и устройства для активных подписок',
+              })}
+            </span>
+          </div>
         </div>
 
         {/* Actions */}
@@ -287,13 +334,17 @@ export default function AdminTariffs() {
   const queryClient = useQueryClient();
   const confirmDelete = useDestructiveConfirm();
   const notify = useNotify();
-  const { capabilities } = usePlatform();
+  const { capabilities, dialog } = usePlatform();
 
   const [localTariffs, setLocalTariffs] = useState<TariffListItem[]>([]);
   const [orderChanged, setOrderChanged] = useState(false);
   const [trialDaysInput, setTrialDaysInput] = useState<string>('');
   const [trialTrafficInput, setTrialTrafficInput] = useState<string>('');
   const [trialDevicesInput, setTrialDevicesInput] = useState<string>('');
+  const [applyLimitsResult, setApplyLimitsResult] = useState<TariffApplyLimitsResponse | null>(
+    null,
+  );
+  const [applyingTariffId, setApplyingTariffId] = useState<number | null>(null);
 
   // Queries
   const { data: tariffsData, isLoading } = useQuery({
@@ -361,6 +412,50 @@ export default function AdminTariffs() {
       }
     },
   });
+
+  const applyLimitsMutation = useMutation({
+    mutationFn: tariffsApi.applyLimits,
+    onMutate: (tariffId) => {
+      setApplyingTariffId(tariffId);
+    },
+    onSuccess: (data) => {
+      setApplyLimitsResult(data);
+      queryClient.invalidateQueries({ queryKey: ['admin-tariffs'] });
+      notify.success(
+        t('admin.tariffs.applyLimitsSuccess', {
+          defaultValue: `Обновлено ${data.updated_count} из ${data.total_subscriptions}`,
+          updated: data.updated_count,
+          total: data.total_subscriptions,
+        }),
+      );
+    },
+    onError: () => {
+      notify.error(
+        t('admin.tariffs.applyLimitsError', {
+          defaultValue: 'Не удалось применить лимиты тарифа',
+        }),
+      );
+    },
+    onSettled: () => {
+      setApplyingTariffId(null);
+    },
+  });
+
+  const handleApplyLimits = async (tariff: TariffListItem) => {
+    const confirmed = await dialog.confirm(
+      t('admin.tariffs.applyLimitsConfirmText', {
+        defaultValue: `Применить текущие лимиты тарифа "${tariff.name}" ко всем активным подпискам на этом тарифе? Трафик станет ${formatTrafficLimit(tariff.traffic_limit_gb)}, устройства: ${tariff.device_limit}.`,
+        name: tariff.name,
+        traffic: formatTrafficLimit(tariff.traffic_limit_gb),
+        devices: tariff.device_limit,
+      }),
+      t('admin.tariffs.applyLimitsConfirmTitle', { defaultValue: 'Применить лимиты тарифа' }),
+    );
+
+    if (confirmed) {
+      applyLimitsMutation.mutate(tariff.id);
+    }
+  };
 
   const handleDelete = async (tariff: TariffListItem) => {
     const confirmText =
@@ -670,12 +765,109 @@ export default function AdminTariffs() {
                   onDelete={() => handleDelete(tariff)}
                   onToggle={() => toggleMutation.mutate(tariff.id)}
                   onToggleTrial={() => toggleTrialMutation.mutate(tariff.id)}
+                  onApplyLimits={() => handleApplyLimits(tariff)}
+                  isApplyingLimits={applyingTariffId === tariff.id}
                 />
               ))}
             </div>
           </SortableContext>
         </DndContext>
       )}
+
+      <Dialog
+        open={!!applyLimitsResult}
+        onOpenChange={(open) => !open && setApplyLimitsResult(null)}
+      >
+        <DialogContent className="max-w-md">
+          {applyLimitsResult && (
+            <>
+              <DialogHeader>
+                <DialogTitle>
+                  {t('admin.tariffs.applyLimitsResultTitle', {
+                    defaultValue: 'Лимиты тарифа применены',
+                  })}
+                </DialogTitle>
+                <DialogDescription>{applyLimitsResult.tariff_name}</DialogDescription>
+              </DialogHeader>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div className="rounded-lg border border-success-500/25 bg-success-500/10 p-3">
+                  <div className="text-2xl font-semibold text-success-300">
+                    {applyLimitsResult.updated_count}
+                  </div>
+                  <div className="text-xs text-success-200/80">
+                    {t('admin.tariffs.applyLimitsUpdated', { defaultValue: 'обновлено' })}
+                  </div>
+                </div>
+                <div className="rounded-lg border border-warning-500/25 bg-warning-500/10 p-3">
+                  <div className="text-2xl font-semibold text-warning-300">
+                    {applyLimitsResult.skipped_count}
+                  </div>
+                  <div className="text-xs text-warning-200/80">
+                    {t('admin.tariffs.applyLimitsSkipped', { defaultValue: 'пропущено' })}
+                  </div>
+                </div>
+                <div className="rounded-lg border border-error-500/25 bg-error-500/10 p-3">
+                  <div className="text-2xl font-semibold text-error-300">
+                    {applyLimitsResult.failed_count}
+                  </div>
+                  <div className="text-xs text-error-200/80">
+                    {t('admin.tariffs.applyLimitsFailed', { defaultValue: 'ошибок' })}
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-dark-700 bg-dark-800/70 p-3">
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-dark-400">
+                    {t('admin.tariffs.applyLimitsTotal', { defaultValue: 'Всего подписок' })}
+                  </span>
+                  <span className="font-medium text-dark-100">
+                    {applyLimitsResult.total_subscriptions}
+                  </span>
+                </div>
+                <div className="mt-2 flex items-center justify-between gap-3 text-sm">
+                  <span className="text-dark-400">
+                    {t('admin.tariffs.applyLimitsTraffic', { defaultValue: 'Трафик тарифа' })}
+                  </span>
+                  <span className="font-medium text-dark-100">
+                    {formatTrafficLimit(applyLimitsResult.tariff_traffic_limit_gb)}
+                  </span>
+                </div>
+                <div className="mt-2 flex items-center justify-between gap-3 text-sm">
+                  <span className="text-dark-400">
+                    {t('admin.tariffs.applyLimitsDevices', { defaultValue: 'Устройства тарифа' })}
+                  </span>
+                  <span className="font-medium text-dark-100">
+                    {applyLimitsResult.tariff_device_limit}
+                  </span>
+                </div>
+              </div>
+
+              {applyLimitsResult.errors.length > 0 && (
+                <div className="max-h-32 overflow-auto rounded-lg border border-error-500/25 bg-error-500/10 p-3">
+                  <div className="mb-2 text-xs font-medium uppercase text-error-300">
+                    {t('admin.tariffs.applyLimitsErrorsTitle', { defaultValue: 'Детали ошибок' })}
+                  </div>
+                  <div className="space-y-1 text-xs text-error-200/90">
+                    {applyLimitsResult.errors.map((error, index) => (
+                      <div key={`${index}-${error}`}>{error}</div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setApplyLimitsResult(null)}
+                className="btn-primary w-full justify-center"
+              >
+                {t('common.close', { defaultValue: 'Закрыть' })}
+              </button>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

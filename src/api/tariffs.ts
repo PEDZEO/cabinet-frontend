@@ -184,6 +184,18 @@ export interface TariffStats {
   revenue_rubles: number;
 }
 
+export interface TariffApplyLimitsResponse {
+  tariff_id: number;
+  tariff_name: string;
+  total_subscriptions: number;
+  updated_count: number;
+  failed_count: number;
+  skipped_count: number;
+  tariff_traffic_limit_gb: number;
+  tariff_device_limit: number;
+  errors: string[];
+}
+
 export const tariffsApi = {
   // Get all tariffs
   getTariffs: async (includeInactive = true): Promise<TariffListResponse> => {
@@ -234,6 +246,12 @@ export const tariffsApi = {
   // Get tariff stats
   getTariffStats: async (tariffId: number): Promise<TariffStats> => {
     const response = await apiClient.get(`/cabinet/admin/tariffs/${tariffId}/stats`);
+    return response.data;
+  },
+
+  // Apply current traffic/device limits to active linked subscriptions
+  applyLimits: async (tariffId: number): Promise<TariffApplyLimitsResponse> => {
+    const response = await apiClient.post(`/cabinet/admin/tariffs/${tariffId}/apply-limits`);
     return response.data;
   },
 
