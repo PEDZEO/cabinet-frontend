@@ -169,7 +169,7 @@ export function useAdminUserActions({
             : {}),
         };
         await adminUsersApi.updateSubscription(userId, data);
-        await Promise.all([loadUser(), loadSyncStatus()]);
+        await Promise.all([loadUser(), loadSyncStatus(), loadDevices()]);
 
         const successMessage =
           action === 'extend'
@@ -193,7 +193,17 @@ export function useAdminUserActions({
         setActionLoading(false);
       }
     },
-    [loadSyncStatus, loadUser, notify, selectedTariffId, setActionLoading, subDays, t, userId],
+    [
+      loadDevices,
+      loadSyncStatus,
+      loadUser,
+      notify,
+      selectedTariffId,
+      setActionLoading,
+      subDays,
+      t,
+      userId,
+    ],
   );
 
   const handleBlockUser = useCallback(async () => {
