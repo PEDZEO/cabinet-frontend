@@ -7,8 +7,6 @@ export function AdminUserSubscriptionTab({
   user,
   actionLoading,
   confirmingAction,
-  subAction,
-  setSubAction,
   subDays,
   setSubDays,
   selectedTariffId,
@@ -46,8 +44,6 @@ export function AdminUserSubscriptionTab({
         user={user}
         actionLoading={actionLoading}
         confirmingAction={confirmingAction}
-        subAction={subAction}
-        setSubAction={setSubAction}
         subDays={subDays}
         setSubDays={setSubDays}
         selectedTariffId={selectedTariffId}

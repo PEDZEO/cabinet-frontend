@@ -1,5 +1,6 @@
 import type { Dispatch, SetStateAction } from 'react';
 import type {
+  UpdateSubscriptionRequest,
   UserAvailableTariff,
   UserDetailResponse,
   UserPanelInfo,
@@ -23,8 +24,6 @@ export interface AdminUserSubscriptionTabProps {
   user: UserDetailResponse;
   actionLoading: boolean;
   confirmingAction: string | null;
-  subAction: string;
-  setSubAction: Dispatch<SetStateAction<string>>;
   subDays: number | '';
   setSubDays: Dispatch<SetStateAction<number | ''>>;
   selectedTariffId: number | null;
@@ -46,7 +45,7 @@ export interface AdminUserSubscriptionTabProps {
   formatDate: (date: string | null) => string;
   formatBytes: (bytes: number) => string;
   onInlineConfirm: (action: string, callback: () => Promise<void>) => void;
-  onUpdateSubscription: (overrideAction?: string) => void;
+  onUpdateSubscription: (action: UpdateSubscriptionRequest['action']) => Promise<void>;
   onSetDeviceLimit: (newLimit: number) => void;
   onRemoveTraffic: (purchaseId: number) => Promise<void>;
   onAddTraffic: (gb: number) => void;

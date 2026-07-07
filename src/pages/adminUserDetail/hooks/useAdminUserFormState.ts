@@ -4,7 +4,6 @@ export function useAdminUserFormState() {
   const [balanceAmount, setBalanceAmount] = useState<number | ''>('');
   const [balanceDescription, setBalanceDescription] = useState('');
 
-  const [subAction, setSubAction] = useState<string>('extend');
   const [subDays, setSubDays] = useState<number | ''>(30);
   const [selectedTariffId, setSelectedTariffId] = useState<number | null>(null);
 
@@ -23,8 +22,6 @@ export function useAdminUserFormState() {
     setBalanceAmount,
     balanceDescription,
     setBalanceDescription,
-    subAction,
-    setSubAction,
     subDays,
     setSubDays,
     selectedTariffId,

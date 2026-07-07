@@ -27,9 +27,16 @@ interface NotifyLike {
   error: (message: string, title?: string) => void;
 }
 
+type TranslateLike = (
+  key: string,
+  options?: {
+    defaultValue?: string;
+    [key: string]: unknown;
+  },
+) => string;
+
 interface UseAdminUserActionsParams {
   userId: number | null;
-  subAction: string;
   subDays: number | '';
   selectedTariffId: number | null;
   balanceAmount: number | '';
@@ -51,13 +58,12 @@ interface UseAdminUserActionsParams {
   loadDevices: () => Promise<void>;
   navigateToUsers: () => void;
   confirmAction: (message: string) => boolean;
-  t: (key: string) => string;
+  t: TranslateLike;
   notify: NotifyLike;
 }
 
 export function useAdminUserActions({
   userId,
-  subAction,
   subDays,
   selectedTariffId,
   balanceAmount,
@@ -121,35 +127,65 @@ export function useAdminUserActions({
   );
 
   const handleUpdateSubscription = useCallback(
-    async (overrideAction?: string) => {
+    async (action: UpdateSubscriptionRequest['action']) => {
       if (!userId) {
         return;
       }
 
       setActionLoading(true);
       try {
-        const actionRaw = overrideAction || subAction;
-        if (!isValidSubscriptionAction(actionRaw)) {
+        if (!isValidSubscriptionAction(action)) {
           notify.error(t('admin.users.userActions.error'), t('common.error'));
           return;
         }
 
-        const action = actionRaw;
+        const days = toNumber(subDays, 0);
+        if ((action === 'extend' || action === 'create') && days < 1) {
+          notify.error(
+            t('admin.users.detail.subscription.enterDays', {
+              defaultValue: 'Укажите количество дней',
+            }),
+            t('common.error'),
+          );
+          return;
+        }
+
+        if ((action === 'change_tariff' || action === 'create') && !selectedTariffId) {
+          notify.error(t('admin.users.detail.subscription.selectTariff'), t('common.error'));
+          return;
+        }
+
         const data: UpdateSubscriptionRequest = {
           action,
-          ...(action === 'extend' ? { days: toNumber(subDays, 30) } : {}),
+          ...(action === 'extend' ? { days } : {}),
           ...(action === 'change_tariff' && selectedTariffId
             ? { tariff_id: selectedTariffId }
             : {}),
           ...(action === 'create'
             ? {
-                days: toNumber(subDays, 30),
+                days,
                 ...(selectedTariffId ? { tariff_id: selectedTariffId } : {}),
               }
             : {}),
         };
         await adminUsersApi.updateSubscription(userId, data);
-        await loadUser();
+        await Promise.all([loadUser(), loadSyncStatus()]);
+
+        const successMessage =
+          action === 'extend'
+            ? t('admin.users.detail.subscription.extendedSuccess', {
+                defaultValue: 'Подписка продлена',
+              })
+            : action === 'change_tariff'
+              ? t('admin.users.detail.subscription.tariffAssigned', {
+                  defaultValue: 'Тариф назначен',
+                })
+              : action === 'create'
+                ? t('admin.users.detail.subscription.createdSuccess', {
+                    defaultValue: 'Подписка создана',
+                  })
+                : t('admin.users.actions.applied', { defaultValue: 'Изменения применены' });
+        notify.success(successMessage, t('common.success'));
       } catch (error) {
         console.error('Failed to update subscription:', error);
         notify.error(t('admin.users.userActions.error'), t('common.error'));
@@ -157,7 +193,7 @@ export function useAdminUserActions({
         setActionLoading(false);
       }
     },
-    [loadUser, notify, selectedTariffId, setActionLoading, subAction, subDays, t, userId],
+    [loadSyncStatus, loadUser, notify, selectedTariffId, setActionLoading, subDays, t, userId],
   );
 
   const handleBlockUser = useCallback(async () => {

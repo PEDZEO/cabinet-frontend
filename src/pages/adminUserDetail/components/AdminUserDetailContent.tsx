@@ -1,5 +1,5 @@
 import type { Dispatch, RefObject, SetStateAction } from 'react';
-import type { UserDetailResponse } from '../../../api/adminUsers';
+import type { UpdateSubscriptionRequest, UserDetailResponse } from '../../../api/adminUsers';
 import type { PanelSyncStatusResponse } from '../../../api/adminUsers';
 import type {
   UpdateUserReferralsAction,
@@ -53,8 +53,6 @@ export interface SubscriptionTabContentProps {
   user: UserDetailResponse;
   actionLoading: boolean;
   confirmingAction: string | null;
-  subAction: string;
-  setSubAction: Dispatch<SetStateAction<string>>;
   subDays: number | '';
   setSubDays: Dispatch<SetStateAction<number | ''>>;
   selectedTariffId: number | null;
@@ -76,7 +74,7 @@ export interface SubscriptionTabContentProps {
   formatDate: (date: string | null) => string;
   formatBytes: (bytes: number) => string;
   onInlineConfirm: (action: string, callback: () => Promise<void>) => void;
-  onUpdateSubscription: (overrideAction?: string) => void;
+  onUpdateSubscription: (action: UpdateSubscriptionRequest['action']) => Promise<void>;
   onSetDeviceLimit: (newLimit: number) => void;
   onRemoveTraffic: (purchaseId: number) => Promise<void>;
   onAddTraffic: (gb: number) => void;
@@ -193,8 +191,6 @@ export function AdminUserDetailContent({
           user={subscriptionTab.user}
           actionLoading={subscriptionTab.actionLoading}
           confirmingAction={subscriptionTab.confirmingAction}
-          subAction={subscriptionTab.subAction}
-          setSubAction={subscriptionTab.setSubAction}
           subDays={subscriptionTab.subDays}
           setSubDays={subscriptionTab.setSubDays}
           selectedTariffId={subscriptionTab.selectedTariffId}

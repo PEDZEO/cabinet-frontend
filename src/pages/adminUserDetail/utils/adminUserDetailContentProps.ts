@@ -47,8 +47,6 @@ interface BuildAdminUserDetailContentPropsParams {
   onResetSubscription: () => Promise<void>;
   onDisableUser: () => Promise<void>;
   onFullDeleteUser: () => Promise<void>;
-  subAction: string;
-  setSubAction: Dispatch<SetStateAction<string>>;
   subDays: number | '';
   setSubDays: Dispatch<SetStateAction<number | ''>>;
   selectedTariffId: number | null;
@@ -68,7 +66,7 @@ interface BuildAdminUserDetailContentPropsParams {
   devicesLoading: boolean;
   locale: string;
   formatBytes: (bytes: number) => string;
-  onUpdateSubscription: (overrideAction?: string) => void;
+  onUpdateSubscription: SubscriptionTabContentProps['onUpdateSubscription'];
   onSetDeviceLimit: (newLimit: number) => void;
   onRemoveTraffic: (purchaseId: number) => Promise<void>;
   onAddTraffic: (gb: number) => void;
@@ -182,8 +180,6 @@ function buildSubscriptionTabProps(
     user,
     actionLoading,
     confirmingAction,
-    subAction,
-    setSubAction,
     subDays,
     setSubDays,
     selectedTariffId,
@@ -220,8 +216,6 @@ function buildSubscriptionTabProps(
     user,
     actionLoading,
     confirmingAction,
-    subAction,
-    setSubAction,
     subDays,
     setSubDays,
     selectedTariffId,
