@@ -814,7 +814,7 @@ export default function AdminTariffs() {
           }
         }}
       >
-        <DialogContent className="w-[calc(100vw-1rem)] max-w-sm gap-3 overflow-visible p-4 sm:max-w-md sm:p-5">
+        <DialogContent className="max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-sm gap-3 overflow-y-auto p-4 sm:max-h-[85vh] sm:max-w-md sm:p-5">
           {pendingApplyLimitsTariff && (
             <>
               <DialogHeader className="pr-8 text-left">
@@ -941,7 +941,7 @@ export default function AdminTariffs() {
         open={!!applyLimitsResult}
         onOpenChange={(open) => !open && setApplyLimitsResult(null)}
       >
-        <DialogContent className="w-[calc(100vw-1rem)] max-w-sm gap-3 overflow-visible p-4 sm:max-w-md sm:p-5">
+        <DialogContent className="max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-sm gap-3 overflow-y-auto p-4 sm:max-h-[85vh] sm:max-w-md sm:p-5">
           {applyLimitsResult && (
             <>
               <DialogHeader className="pr-8 text-left">

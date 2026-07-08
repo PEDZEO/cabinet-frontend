@@ -108,6 +108,9 @@ export const DialogContent = forwardRef<HTMLDivElement, DialogContentProps>(
                   animate="animate"
                   exit="exit"
                   transition={scaleTransition}
+                  transformTemplate={(_, generated) =>
+                    `translateX(-50%) translateY(-50%)${generated && generated !== 'none' ? ` ${generated}` : ''}`
+                  }
                 >
                   {children}
                   {showCloseButton && (
