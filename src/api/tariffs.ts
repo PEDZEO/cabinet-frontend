@@ -194,11 +194,15 @@ export interface TariffApplyLimitsResponse {
   tariff_traffic_limit_gb: number;
   tariff_device_limit: number;
   device_limits_updated: boolean;
+  traffic_usage_reset: boolean;
+  traffic_reset_count: number;
+  traffic_reset_failed_count: number;
   errors: string[];
 }
 
 export interface TariffApplyLimitsRequest {
   update_device_limit?: boolean;
+  reset_traffic_usage?: boolean;
 }
 
 export const tariffsApi = {

@@ -10,7 +10,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   Switch,
@@ -350,6 +349,7 @@ export default function AdminTariffs() {
     null,
   );
   const [applyLimitsUpdateDevices, setApplyLimitsUpdateDevices] = useState(false);
+  const [applyLimitsResetTraffic, setApplyLimitsResetTraffic] = useState(false);
   const [applyingTariffId, setApplyingTariffId] = useState<number | null>(null);
 
   // Queries
@@ -423,10 +423,16 @@ export default function AdminTariffs() {
     mutationFn: ({
       tariffId,
       updateDeviceLimit,
+      resetTrafficUsage,
     }: {
       tariffId: number;
       updateDeviceLimit: boolean;
-    }) => tariffsApi.applyLimits(tariffId, { update_device_limit: updateDeviceLimit }),
+      resetTrafficUsage: boolean;
+    }) =>
+      tariffsApi.applyLimits(tariffId, {
+        update_device_limit: updateDeviceLimit,
+        reset_traffic_usage: resetTrafficUsage,
+      }),
     onMutate: ({ tariffId }) => {
       setApplyingTariffId(tariffId);
     },
@@ -456,6 +462,7 @@ export default function AdminTariffs() {
   const handleApplyLimits = (tariff: TariffListItem) => {
     setPendingApplyLimitsTariff(tariff);
     setApplyLimitsUpdateDevices(false);
+    setApplyLimitsResetTraffic(false);
   };
 
   const closeApplyLimitsDialog = () => {
@@ -464,6 +471,7 @@ export default function AdminTariffs() {
     }
     setPendingApplyLimitsTariff(null);
     setApplyLimitsUpdateDevices(false);
+    setApplyLimitsResetTraffic(false);
   };
 
   const confirmApplyLimits = () => {
@@ -474,9 +482,11 @@ export default function AdminTariffs() {
     applyLimitsMutation.mutate({
       tariffId: pendingApplyLimitsTariff.id,
       updateDeviceLimit: applyLimitsUpdateDevices,
+      resetTrafficUsage: applyLimitsResetTraffic,
     });
     setPendingApplyLimitsTariff(null);
     setApplyLimitsUpdateDevices(false);
+    setApplyLimitsResetTraffic(false);
   };
 
   const handleDelete = async (tariff: TariffListItem) => {
@@ -804,86 +814,112 @@ export default function AdminTariffs() {
           }
         }}
       >
-        <DialogContent className="max-w-lg">
+        <DialogContent className="w-[calc(100vw-1rem)] max-w-sm gap-3 overflow-visible p-4 sm:max-w-md sm:p-5">
           {pendingApplyLimitsTariff && (
             <>
-              <DialogHeader>
-                <DialogTitle>
+              <DialogHeader className="pr-8 text-left">
+                <DialogTitle className="text-base">
                   {t('admin.tariffs.applyLimitsConfirmTitle', {
                     defaultValue: 'Применить лимиты тарифа',
                   })}
                 </DialogTitle>
-                <DialogDescription>
+                <DialogDescription className="text-xs">
                   {t('admin.tariffs.applyLimitsConfirmSubtitle', {
-                    defaultValue: 'Массовое обновление активных подписок',
+                    defaultValue: 'Обновление активных подписок на выбранном тарифе',
                   })}
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-3">
-                <div className="rounded-lg border border-dark-700 bg-dark-800/70 p-3">
-                  <div className="text-sm font-medium text-dark-100">
-                    {pendingApplyLimitsTariff.name}
+              <div className="rounded-lg border border-dark-700 bg-dark-800/70 p-3">
+                <div className="min-w-0 truncate text-sm font-semibold text-dark-100">
+                  {pendingApplyLimitsTariff.name}
+                </div>
+                <div className="mt-2 space-y-1.5 text-sm">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-dark-400">
+                      {t('admin.tariffs.applyLimitsTraffic', { defaultValue: 'Трафик' })}
+                    </span>
+                    <span className="font-medium text-accent-300">
+                      {formatTrafficLimit(pendingApplyLimitsTariff.traffic_limit_gb)}
+                    </span>
                   </div>
-                  <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                    <div className="rounded-lg bg-dark-900/70 p-3">
-                      <div className="text-xs uppercase tracking-wide text-dark-500">
-                        {t('admin.tariffs.applyLimitsTraffic', {
-                          defaultValue: 'Трафик тарифа',
-                        })}
-                      </div>
-                      <div className="mt-1 text-sm font-semibold text-accent-300">
-                        {formatTrafficLimit(pendingApplyLimitsTariff.traffic_limit_gb)}
-                      </div>
-                      <div className="mt-1 text-xs text-dark-400">
-                        {t('admin.tariffs.applyLimitsTrafficAlways', {
-                          defaultValue: 'Обновится у всех активных подписок',
-                        })}
-                      </div>
-                    </div>
-                    <div className="rounded-lg bg-dark-900/70 p-3">
-                      <div className="text-xs uppercase tracking-wide text-dark-500">
-                        {t('admin.tariffs.applyLimitsDevices', {
-                          defaultValue: 'Устройства тарифа',
-                        })}
-                      </div>
-                      <div className="mt-1 text-sm font-semibold text-dark-100">
-                        {pendingApplyLimitsTariff.device_limit}
-                      </div>
-                      <div className="mt-1 text-xs text-dark-400">
-                        {applyLimitsUpdateDevices
-                          ? t('admin.tariffs.applyLimitsDevicesWillUpdate', {
-                              defaultValue: 'Будут применены к подпискам и Remnawave',
-                            })
-                          : t('admin.tariffs.applyLimitsDevicesStay', {
-                              defaultValue: 'Не меняются, купленные слоты сохраняются',
-                            })}
-                      </div>
-                    </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-dark-400">
+                      {t('admin.tariffs.applyLimitsDevicesResult', { defaultValue: 'Устройства' })}
+                    </span>
+                    <span className="font-medium text-dark-100">
+                      {applyLimitsUpdateDevices
+                        ? pendingApplyLimitsTariff.device_limit
+                        : t('admin.tariffs.applyLimitsKeepValue', { defaultValue: 'не менять' })}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-dark-400">
+                      {t('admin.tariffs.applyLimitsTrafficUsage', { defaultValue: 'Использовано' })}
+                    </span>
+                    <span
+                      className={
+                        applyLimitsResetTraffic
+                          ? 'font-medium text-warning-200'
+                          : 'font-medium text-dark-100'
+                      }
+                    >
+                      {applyLimitsResetTraffic
+                        ? t('admin.tariffs.applyLimitsTrafficWillReset', {
+                            defaultValue: 'сбросить',
+                          })
+                        : t('admin.tariffs.applyLimitsKeepValue', { defaultValue: 'не менять' })}
+                    </span>
                   </div>
                 </div>
+              </div>
 
-                <div className="rounded-lg border border-warning-500/25 bg-warning-500/10 p-3">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-3 rounded-lg border border-dark-700 bg-dark-800/60 p-2.5">
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium leading-tight text-dark-100">
+                      {t('admin.tariffs.applyLimitsUpdateDevices', {
+                        defaultValue: 'Обновить устройства',
+                      })}
+                    </div>
+                    <div className="mt-0.5 text-[11px] leading-snug text-dark-400">
+                      {t('admin.tariffs.applyLimitsUpdateDevicesHint', {
+                        defaultValue: 'Выключено: купленные слоты останутся как есть.',
+                      })}
+                    </div>
+                  </div>
                   <Switch
                     checked={applyLimitsUpdateDevices}
                     onCheckedChange={setApplyLimitsUpdateDevices}
-                    label={t('admin.tariffs.applyLimitsUpdateDevices', {
-                      defaultValue: 'Также обновить устройства',
-                    })}
-                    description={t('admin.tariffs.applyLimitsUpdateDevicesHint', {
-                      defaultValue:
-                        'Выключено по умолчанию: лимиты устройств и докупленные слоты останутся как есть.',
-                    })}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between gap-3 rounded-lg border border-warning-500/25 bg-warning-500/10 p-2.5">
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium leading-tight text-dark-100">
+                      {t('admin.tariffs.applyLimitsResetTraffic', {
+                        defaultValue: 'Сбросить трафик',
+                      })}
+                    </div>
+                    <div className="mt-0.5 text-[11px] leading-snug text-dark-400">
+                      {t('admin.tariffs.applyLimitsResetTrafficHint', {
+                        defaultValue: 'Использованный трафик станет 0 в Remnawave и кабинете.',
+                      })}
+                    </div>
+                  </div>
+                  <Switch
+                    checked={applyLimitsResetTraffic}
+                    onCheckedChange={setApplyLimitsResetTraffic}
                   />
                 </div>
               </div>
 
-              <DialogFooter className="gap-2 sm:space-x-0">
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={closeApplyLimitsDialog}
                   disabled={applyLimitsMutation.isPending}
-                  className="btn-secondary justify-center"
+                  className="btn-secondary justify-center px-3 py-2 text-sm"
                 >
                   {t('common.cancel', { defaultValue: 'Отмена' })}
                 </button>
@@ -891,17 +927,11 @@ export default function AdminTariffs() {
                   type="button"
                   onClick={confirmApplyLimits}
                   disabled={applyLimitsMutation.isPending}
-                  className="btn-primary justify-center"
+                  className="btn-primary justify-center px-3 py-2 text-sm"
                 >
-                  {applyLimitsUpdateDevices
-                    ? t('admin.tariffs.applyLimitsConfirmWithDevices', {
-                        defaultValue: 'Применить трафик и устройства',
-                      })
-                    : t('admin.tariffs.applyLimitsConfirmTrafficOnly', {
-                        defaultValue: 'Применить только трафик',
-                      })}
+                  {t('common.apply', { defaultValue: 'Применить' })}
                 </button>
-              </DialogFooter>
+              </div>
             </>
           )}
         </DialogContent>
@@ -911,85 +941,118 @@ export default function AdminTariffs() {
         open={!!applyLimitsResult}
         onOpenChange={(open) => !open && setApplyLimitsResult(null)}
       >
-        <DialogContent className="max-w-md">
+        <DialogContent className="w-[calc(100vw-1rem)] max-w-sm gap-3 overflow-visible p-4 sm:max-w-md sm:p-5">
           {applyLimitsResult && (
             <>
-              <DialogHeader>
-                <DialogTitle>
+              <DialogHeader className="pr-8 text-left">
+                <DialogTitle className="text-base">
                   {t('admin.tariffs.applyLimitsResultTitle', {
                     defaultValue: 'Лимиты тарифа применены',
                   })}
                 </DialogTitle>
-                <DialogDescription>{applyLimitsResult.tariff_name}</DialogDescription>
+                <DialogDescription className="text-xs">
+                  {applyLimitsResult.tariff_name}
+                </DialogDescription>
               </DialogHeader>
 
               <div className="grid grid-cols-3 gap-2">
-                <div className="rounded-lg border border-success-500/25 bg-success-500/10 p-3">
-                  <div className="text-2xl font-semibold text-success-300">
+                <div className="rounded-lg border border-success-500/25 bg-success-500/10 p-2.5">
+                  <div className="text-xl font-semibold text-success-300">
                     {applyLimitsResult.updated_count}
                   </div>
-                  <div className="text-xs text-success-200/80">
+                  <div className="text-[11px] text-success-200/80">
                     {t('admin.tariffs.applyLimitsUpdated', { defaultValue: 'обновлено' })}
                   </div>
                 </div>
-                <div className="rounded-lg border border-warning-500/25 bg-warning-500/10 p-3">
-                  <div className="text-2xl font-semibold text-warning-300">
+                <div className="rounded-lg border border-warning-500/25 bg-warning-500/10 p-2.5">
+                  <div className="text-xl font-semibold text-warning-300">
                     {applyLimitsResult.skipped_count}
                   </div>
-                  <div className="text-xs text-warning-200/80">
+                  <div className="text-[11px] text-warning-200/80">
                     {t('admin.tariffs.applyLimitsSkipped', { defaultValue: 'пропущено' })}
                   </div>
                 </div>
-                <div className="rounded-lg border border-error-500/25 bg-error-500/10 p-3">
-                  <div className="text-2xl font-semibold text-error-300">
+                <div className="rounded-lg border border-error-500/25 bg-error-500/10 p-2.5">
+                  <div className="text-xl font-semibold text-error-300">
                     {applyLimitsResult.failed_count}
                   </div>
-                  <div className="text-xs text-error-200/80">
+                  <div className="text-[11px] text-error-200/80">
                     {t('admin.tariffs.applyLimitsFailed', { defaultValue: 'ошибок' })}
                   </div>
                 </div>
               </div>
 
               <div className="rounded-lg border border-dark-700 bg-dark-800/70 p-3">
-                <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-dark-400">
-                    {t('admin.tariffs.applyLimitsTotal', { defaultValue: 'Всего подписок' })}
-                  </span>
-                  <span className="font-medium text-dark-100">
-                    {applyLimitsResult.total_subscriptions}
-                  </span>
-                </div>
-                <div className="mt-2 flex items-center justify-between gap-3 text-sm">
-                  <span className="text-dark-400">
-                    {t('admin.tariffs.applyLimitsTraffic', { defaultValue: 'Трафик тарифа' })}
-                  </span>
-                  <span className="font-medium text-dark-100">
-                    {formatTrafficLimit(applyLimitsResult.tariff_traffic_limit_gb)}
-                  </span>
-                </div>
-                <div className="mt-2 flex items-center justify-between gap-3 text-sm">
-                  <span className="text-dark-400">
-                    {t('admin.tariffs.applyLimitsDevicesResult', { defaultValue: 'Устройства' })}
-                  </span>
-                  <span className="font-medium text-dark-100">
-                    {applyLimitsResult.device_limits_updated
-                      ? t('admin.tariffs.applyLimitsDevicesApplied', {
-                          defaultValue: `обновлены до ${applyLimitsResult.tariff_device_limit}`,
-                          count: applyLimitsResult.tariff_device_limit,
-                        })
-                      : t('admin.tariffs.applyLimitsDevicesNotChanged', {
-                          defaultValue: 'не менялись',
+                <div className="space-y-1.5 text-sm">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-dark-400">
+                      {t('admin.tariffs.applyLimitsTotal', { defaultValue: 'Всего подписок' })}
+                    </span>
+                    <span className="font-medium text-dark-100">
+                      {applyLimitsResult.total_subscriptions}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-dark-400">
+                      {t('admin.tariffs.applyLimitsTraffic', { defaultValue: 'Трафик' })}
+                    </span>
+                    <span className="font-medium text-dark-100">
+                      {formatTrafficLimit(applyLimitsResult.tariff_traffic_limit_gb)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-dark-400">
+                      {t('admin.tariffs.applyLimitsDevicesResult', { defaultValue: 'Устройства' })}
+                    </span>
+                    <span className="font-medium text-dark-100">
+                      {applyLimitsResult.device_limits_updated
+                        ? t('admin.tariffs.applyLimitsDevicesApplied', {
+                            defaultValue: `до ${applyLimitsResult.tariff_device_limit}`,
+                            count: applyLimitsResult.tariff_device_limit,
+                          })
+                        : t('admin.tariffs.applyLimitsDevicesNotChanged', {
+                            defaultValue: 'не менялись',
+                          })}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-dark-400">
+                      {t('admin.tariffs.applyLimitsTrafficResetResult', {
+                        defaultValue: 'Сброс трафика',
+                      })}
+                    </span>
+                    <span className="font-medium text-dark-100">
+                      {applyLimitsResult.traffic_usage_reset
+                        ? t('admin.tariffs.applyLimitsTrafficResetApplied', {
+                            defaultValue: `${applyLimitsResult.traffic_reset_count} успешно`,
+                            count: applyLimitsResult.traffic_reset_count,
+                          })
+                        : t('admin.tariffs.applyLimitsTrafficResetSkipped', {
+                            defaultValue: 'не выполнялся',
+                          })}
+                    </span>
+                  </div>
+                  {applyLimitsResult.traffic_reset_failed_count > 0 && (
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-dark-400">
+                        {t('admin.tariffs.applyLimitsTrafficResetFailed', {
+                          defaultValue: 'Ошибок сброса',
                         })}
-                  </span>
+                      </span>
+                      <span className="font-medium text-error-300">
+                        {applyLimitsResult.traffic_reset_failed_count}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {applyLimitsResult.errors.length > 0 && (
-                <div className="max-h-32 overflow-auto rounded-lg border border-error-500/25 bg-error-500/10 p-3">
-                  <div className="mb-2 text-xs font-medium uppercase text-error-300">
+                <div className="max-h-28 overflow-auto rounded-lg border border-error-500/25 bg-error-500/10 p-2.5">
+                  <div className="mb-1.5 text-[11px] font-medium uppercase text-error-300">
                     {t('admin.tariffs.applyLimitsErrorsTitle', { defaultValue: 'Детали ошибок' })}
                   </div>
-                  <div className="space-y-1 text-xs text-error-200/90">
+                  <div className="space-y-1 text-[11px] text-error-200/90">
                     {applyLimitsResult.errors.map((error, index) => (
                       <div key={`${index}-${error}`}>{error}</div>
                     ))}
@@ -1000,7 +1063,7 @@ export default function AdminTariffs() {
               <button
                 type="button"
                 onClick={() => setApplyLimitsResult(null)}
-                className="btn-primary w-full justify-center"
+                className="btn-primary w-full justify-center px-3 py-2 text-sm"
               >
                 {t('common.close', { defaultValue: 'Закрыть' })}
               </button>

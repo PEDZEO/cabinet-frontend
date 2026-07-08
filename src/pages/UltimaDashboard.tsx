@@ -47,7 +47,11 @@ import {
   hasUltimaTrialGuideBeenAcknowledged,
   writeUltimaTrialGuideAcknowledged,
 } from '@/features/ultima/trialOnboardingFlow';
-import { getUltimaNextAction, type UltimaNextActionKind } from '@/features/ultima/nextAction';
+import {
+  getUltimaNextAction,
+  ULTIMA_RENEWAL_NOTICE_DAYS,
+  type UltimaNextActionKind,
+} from '@/features/ultima/nextAction';
 import { warmUltimaStartup } from '@/features/ultima/warmup';
 import { trackAnalyticsEvent } from '@/utils/analyticsEvents';
 
@@ -271,7 +275,7 @@ export function UltimaDashboard() {
     ? 'expired'
     : isActiveTrial
       ? 'trial'
-      : (daysLeft ?? 99) <= 3
+      : (daysLeft ?? 99) <= ULTIMA_RENEWAL_NOTICE_DAYS
         ? 'warning'
         : 'active';
   const statusTone =
@@ -309,7 +313,7 @@ export function UltimaDashboard() {
     if (!isActive) {
       return t('ultima.buySubscriptionRenew', { defaultValue: 'Продлить подписку' });
     }
-    if ((daysLeft ?? 99) <= 3) {
+    if ((daysLeft ?? 99) <= ULTIMA_RENEWAL_NOTICE_DAYS) {
       return t('subscription.renew', { defaultValue: 'Продлить' });
     }
     return t('subscription.extend', { defaultValue: 'Продлить подписку' });

@@ -10,6 +10,7 @@ import { useTrafficZone } from '../../hooks/useTrafficZone';
 import { formatTraffic } from '../../utils/formatTraffic';
 import { getGlassColors } from '../../utils/glassTheme';
 import { HoverBorderGradient } from '../ui/hover-border-gradient';
+import { ULTIMA_RENEWAL_NOTICE_DAYS } from '@/features/ultima/nextAction';
 import type { Subscription } from '../../types';
 
 interface SubscriptionCardActiveProps {
@@ -61,6 +62,7 @@ export default function SubscriptionCardActive({
 
   const formattedDate = new Date(subscription.end_date).toLocaleDateString();
   const daysLeft = subscription.days_left;
+  const isRenewalNotice = daysLeft <= ULTIMA_RENEWAL_NOTICE_DAYS;
 
   // Sparkline placeholder data (hidden until API provides daily usage)
   const dailyUsage: number[] = [];
@@ -306,14 +308,16 @@ export default function SubscriptionCardActive({
           className="flex-1 rounded-[14px] p-3.5 transition-colors duration-300"
           style={{
             background: g.innerBg,
-            border: daysLeft <= 3 ? '1px solid rgba(255,184,0,0.2)' : `1px solid ${g.innerBorder}`,
+            border: isRenewalNotice
+              ? '1px solid rgba(255,184,0,0.2)'
+              : `1px solid ${g.innerBorder}`,
           }}
         >
           <div className="mb-1 flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-dark-50/35">
             <div
               className="flex h-6 w-6 items-center justify-center rounded-[7px] transition-colors duration-300"
               style={{
-                background: daysLeft <= 3 ? 'rgba(255,184,0,0.1)' : g.hoverBg,
+                background: isRenewalNotice ? 'rgba(255,184,0,0.1)' : g.hoverBg,
               }}
             >
               <svg
@@ -321,7 +325,7 @@ export default function SubscriptionCardActive({
                 height="13"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke={daysLeft <= 3 ? '#FFB800' : g.textSecondary}
+                stroke={isRenewalNotice ? '#FFB800' : g.textSecondary}
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -336,7 +340,7 @@ export default function SubscriptionCardActive({
           <div className="flex items-baseline gap-1">
             <span
               className="text-[22px] font-bold tracking-tight transition-colors duration-300"
-              style={{ color: daysLeft <= 3 ? '#FFB800' : g.text }}
+              style={{ color: isRenewalNotice ? '#FFB800' : g.text }}
             >
               {daysLeft}
             </span>

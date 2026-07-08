@@ -11,6 +11,7 @@ import { useLocation } from 'react-router';
 import type { Tariff, TrafficPackage } from '@/types';
 import { PullToRefresh } from '@/components/lite/PullToRefresh';
 import { LiteSubscriptionSkeleton } from '@/components/lite/LiteSubscriptionSkeleton';
+import { ULTIMA_RENEWAL_NOTICE_DAYS } from '@/features/ultima/nextAction';
 import { showSuccessNotification } from '@/store/successNotification';
 import { getPromocodeErrorKey } from '@/utils/promocodeErrors';
 
@@ -636,12 +637,12 @@ export function LiteSubscription() {
   return (
     <PullToRefresh onRefresh={handleRefresh}>
       <div className="mx-auto w-full max-w-5xl px-3 py-5 min-[360px]:px-4 min-[360px]:py-6 lg:px-6 xl:px-8 2xl:py-8">
-        {/* Expiry warning - show when 3 days or less */}
+        {/* Expiry warning */}
         {subscription &&
           !subscription.is_expired &&
           !subscription.is_trial &&
           subscription.days_left > 0 &&
-          subscription.days_left <= 3 && (
+          subscription.days_left <= ULTIMA_RENEWAL_NOTICE_DAYS && (
             <div className="mb-4 flex items-center gap-3 rounded-xl bg-warning-500/10 px-4 py-3">
               <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-warning-500/20 text-warning-400">
                 <svg

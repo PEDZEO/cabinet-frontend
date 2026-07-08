@@ -1,5 +1,7 @@
 export type UltimaNextActionKind = 'buy' | 'renew' | 'setup' | 'device' | 'subscription';
 
+export const ULTIMA_RENEWAL_NOTICE_DAYS = 7;
+
 type UltimaNextActionInput = {
   hasAnySubscription: boolean;
   isActive: boolean;
@@ -40,7 +42,7 @@ export function getUltimaNextAction({
     return 'setup';
   }
 
-  if (daysLeft !== null && daysLeft <= 3) {
+  if (daysLeft !== null && daysLeft <= ULTIMA_RENEWAL_NOTICE_DAYS) {
     return 'renew';
   }
 

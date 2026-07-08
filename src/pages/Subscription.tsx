@@ -27,6 +27,7 @@ import {
   useCloseOnSuccessNotification,
 } from '../store/successNotification';
 import { useHaptic } from '@/platform';
+import { ULTIMA_RENEWAL_NOTICE_DAYS } from '@/features/ultima/nextAction';
 import {
   buildPurchaseSteps,
   BuyDevicesSection,
@@ -90,7 +91,7 @@ const CountdownTimer = memo(function CountdownTimer({
   }, [endDate]);
 
   const isExpired = !isActive;
-  const isUrgent = countdown.days <= 3;
+  const isUrgent = countdown.days <= ULTIMA_RENEWAL_NOTICE_DAYS;
 
   const formattedDate = new Date(endDate).toLocaleDateString(undefined, {
     day: 'numeric',
