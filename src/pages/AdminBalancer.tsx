@@ -200,25 +200,25 @@ function ChecklistCard({
   const hasHiddenOptions = orderedOptions.length > visibleOptions.length;
 
   return (
-    <div className="rounded-xl border border-dark-700 bg-dark-900/40 p-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="space-y-1">
-          <h5 className="text-sm font-semibold text-dark-100">{title}</h5>
-          <p className="max-w-2xl text-xs leading-5 text-dark-400">{description}</p>
+    <div className="rounded-lg border border-dark-700 bg-dark-900/40 p-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 space-y-1">
+          <h5 className="truncate text-sm font-semibold text-dark-100">{title}</h5>
+          <p className="text-xs leading-5 text-dark-400">{description}</p>
         </div>
-        <div className="inline-flex items-center rounded-full border border-dark-600 bg-dark-950/70 px-3 py-1 text-xs text-dark-300">
+        <div className="shrink-0 rounded-full border border-dark-600 bg-dark-950/70 px-2.5 py-1 text-xs text-dark-300">
           {selectedLabel
             .replace('{{selected}}', String(selected.length))
             .replace('{{total}}', String(options.length))}
         </div>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-2">
+      <div className="mt-2 flex flex-wrap items-center gap-1.5">
         {selected.length > 0 ? (
           selected.map((name) => (
             <span
               key={`${title}-${name}`}
-              className="inline-flex max-w-full items-center rounded-full border border-accent-500/30 bg-accent-500/10 px-2.5 py-1 text-xs text-accent-300"
+              className="inline-flex max-w-full items-center rounded-full border border-accent-500/30 bg-accent-500/10 px-2 py-0.5 text-xs text-accent-300"
             >
               <span className="truncate">{name}</span>
             </span>
@@ -228,49 +228,53 @@ function ChecklistCard({
         )}
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-3">
+      <div className="mt-2 flex flex-wrap items-center gap-3">
         <button
           onClick={onToggleExpanded}
-          className="rounded-lg border border-dark-600 bg-dark-800/70 px-3 py-1.5 text-xs text-dark-200 transition-colors hover:bg-dark-700"
+          className="rounded-md border border-dark-600 bg-dark-800/70 px-2.5 py-1.5 text-xs text-dark-200 transition-colors hover:bg-dark-700"
         >
           {expanded ? collapseLabel : expandLabel}
         </button>
-        <button onClick={onClear} className="text-xs text-dark-300 underline hover:text-dark-100">
-          {clearLabel}
-        </button>
-      </div>
-
-      <div className="mt-3 rounded-lg border border-dark-700 bg-dark-950/60 p-3">
-        {options.length === 0 ? (
-          <p className="text-xs text-dark-500">{emptyText}</p>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-              {visibleOptions.map((name) => (
-                <label
-                  key={`${title}-option-${name}`}
-                  className="inline-flex items-center gap-2 rounded-lg border border-transparent px-2 py-1.5 text-xs text-dark-200 transition-colors hover:border-dark-700 hover:bg-dark-900/70"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selected.includes(name)}
-                    onChange={() => onToggleOption(name)}
-                  />
-                  <span className="truncate">{name}</span>
-                </label>
-              ))}
-            </div>
-            {hasHiddenOptions && (
-              <p className="mt-3 text-xs text-dark-500">
-                {hiddenCountLabel.replace(
-                  '{{count}}',
-                  String(options.length - visibleOptions.length),
-                )}
-              </p>
-            )}
-          </>
+        {selected.length > 0 && (
+          <button onClick={onClear} className="text-xs text-dark-300 underline hover:text-dark-100">
+            {clearLabel}
+          </button>
         )}
       </div>
+
+      {expanded && (
+        <div className="mt-3 rounded-lg border border-dark-700 bg-dark-950/60 p-2">
+          {options.length === 0 ? (
+            <p className="px-1 py-2 text-xs text-dark-500">{emptyText}</p>
+          ) : (
+            <>
+              <div className="grid max-h-56 grid-cols-1 gap-1 overflow-y-auto pr-1 md:grid-cols-2">
+                {visibleOptions.map((name) => (
+                  <label
+                    key={`${title}-option-${name}`}
+                    className="inline-flex min-w-0 items-center gap-2 rounded-md border border-transparent px-2 py-1.5 text-xs text-dark-200 transition-colors hover:border-dark-700 hover:bg-dark-900/70"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selected.includes(name)}
+                      onChange={() => onToggleOption(name)}
+                    />
+                    <span className="truncate">{name}</span>
+                  </label>
+                ))}
+              </div>
+              {hasHiddenOptions && (
+                <p className="mt-2 px-1 text-xs text-dark-500">
+                  {hiddenCountLabel.replace(
+                    '{{count}}',
+                    String(options.length - visibleOptions.length),
+                  )}
+                </p>
+              )}
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -1534,65 +1538,63 @@ export default function AdminBalancer() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 xl:grid-cols-4">
-          <div className="rounded-xl border border-dark-700 bg-dark-900/40 p-4">
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-5">
+          <div className="rounded-lg border border-dark-700 bg-dark-900/40 p-3">
             <p className="text-xs uppercase tracking-wide text-dark-500">
               {t('admin.balancer.groups.summaryGroups', 'Manual groups')}
             </p>
-            <p className="mt-2 text-2xl font-semibold text-dark-100">{groupsDraft.length}</p>
-            <p className="mt-1 text-xs text-dark-400">
+            <p className="mt-1 text-xl font-semibold text-dark-100">{groupsDraft.length}</p>
+            <p className="mt-1 text-xs leading-5 text-dark-400">
               {t(
                 'admin.balancer.groups.summaryGroupsDesc',
                 'These groups are created manually and define how servers are grouped.',
               )}
             </p>
           </div>
-          <div className="rounded-xl border border-dark-700 bg-dark-900/40 p-4">
+          <div className="rounded-lg border border-dark-700 bg-dark-900/40 p-3">
             <p className="text-xs uppercase tracking-wide text-dark-500">
               {t('admin.balancer.groups.summaryFastest', 'Automatic route group')}
             </p>
-            <p className="mt-2 text-2xl font-semibold text-dark-100">{fastestStatusText}</p>
-            <p className="mt-1 text-xs text-dark-400">
+            <p className="mt-1 text-xl font-semibold text-dark-100">{fastestStatusText}</p>
+            <p className="mt-1 text-xs leading-5 text-dark-400">
               {t(
                 'admin.balancer.groups.summaryFastestDesc',
                 'Creates one extra group that automatically picks the better server.',
               )}
             </p>
           </div>
-          <div className="rounded-xl border border-dark-700 bg-dark-900/40 p-4">
+          <div className="rounded-lg border border-dark-700 bg-dark-900/40 p-3">
             <p className="text-xs uppercase tracking-wide text-dark-500">
               {t('admin.balancer.groups.summaryReserve', 'Reserve groups')}
             </p>
-            <p className="mt-2 text-2xl font-semibold text-dark-100">{fallbackGroups.length}</p>
-            <p className="mt-1 text-xs text-dark-400">
+            <p className="mt-1 text-xl font-semibold text-dark-100">{fallbackGroups.length}</p>
+            <p className="mt-1 text-xs leading-5 text-dark-400">
               {t(
                 'admin.balancer.groups.summaryReserveDesc',
                 'Used only when the main automatic choice should fall back to other groups.',
               )}
             </p>
           </div>
-          <div className="rounded-xl border border-dark-700 bg-dark-900/40 p-4">
+          <div className="rounded-lg border border-dark-700 bg-dark-900/40 p-3">
             <p className="text-xs uppercase tracking-wide text-dark-500">
               {t('admin.balancer.groups.summaryFixed', 'Groups left untouched')}
             </p>
-            <p className="mt-2 text-2xl font-semibold text-dark-100">
+            <p className="mt-1 text-xl font-semibold text-dark-100">
               {nodeStatsExcludeGroups.length}
             </p>
-            <p className="mt-1 text-xs text-dark-400">
+            <p className="mt-1 text-xs leading-5 text-dark-400">
               {t(
                 'admin.balancer.groups.summaryFixedDesc',
                 'Servers inside these groups keep your original order and are not auto-rebalanced.',
               )}
             </p>
           </div>
-          <div className="rounded-xl border border-dark-700 bg-dark-900/40 p-4">
+          <div className="rounded-lg border border-dark-700 bg-dark-900/40 p-3">
             <p className="text-xs uppercase tracking-wide text-dark-500">
               {t('admin.balancer.groups.summaryExpanded', 'Separate servers in subscription')}
             </p>
-            <p className="mt-2 text-2xl font-semibold text-dark-100">
-              {expandGroupsToNodes.length}
-            </p>
-            <p className="mt-1 text-xs text-dark-400">
+            <p className="mt-1 text-xl font-semibold text-dark-100">{expandGroupsToNodes.length}</p>
+            <p className="mt-1 text-xs leading-5 text-dark-400">
               {t(
                 'admin.balancer.groups.summaryExpandedDesc',
                 'For these groups, the subscription shows separate servers instead of one shared group.',
@@ -1601,7 +1603,7 @@ export default function AdminBalancer() {
           </div>
         </div>
 
-        <div className="space-y-3">
+        <div className="mt-3 space-y-3">
           {groupsError && (
             <div className="rounded-lg border border-error-500/40 bg-error-500/10 p-3 text-sm text-error-200">
               {t(
@@ -1710,61 +1712,61 @@ export default function AdminBalancer() {
           })}
         </div>
 
-        <div className="mt-4 rounded-xl border border-dark-700 bg-dark-900/40 p-4">
-          <div className="mb-4">
-            <h4 className="text-sm font-semibold text-dark-100">
-              {t('admin.balancer.groups.fastestSectionTitle', 'Automatic group behavior')}
-            </h4>
-            <p className="mt-1 max-w-3xl text-xs leading-5 text-dark-400">
-              {t(
-                'admin.balancer.groups.fastestSectionDesc',
-                'This block controls the extra automatic group that chooses a suitable server for the user. You can turn it off completely, rename it, exclude some groups from it, or define reserve groups.',
-              )}
-            </p>
-          </div>
+        <div className="mt-4 rounded-lg border border-dark-700 bg-dark-900/40 p-3">
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+            <div>
+              <h4 className="text-sm font-semibold text-dark-100">
+                {t('admin.balancer.groups.fastestSectionTitle', 'Automatic group behavior')}
+              </h4>
+              <p className="mt-1 max-w-3xl text-xs leading-5 text-dark-400">
+                {t(
+                  'admin.balancer.groups.fastestSectionDesc',
+                  'This block controls the extra automatic group that chooses a suitable server for the user. You can turn it off completely, rename it, exclude some groups from it, or define reserve groups.',
+                )}
+              </p>
+            </div>
 
-          <label className="mb-2 flex items-start gap-3 text-sm text-dark-200">
-            <input
-              type="checkbox"
-              checked={fastestEnabled}
-              onChange={(event) => {
-                setGroupsDirty(true);
-                setFastestEnabled(event.target.checked);
-              }}
-            />
-            <span>
-              {t('admin.balancer.groups.fastestToggle', 'Enable automatic group')}
+            <label className="flex items-start gap-3 rounded-lg border border-dark-700 bg-dark-950/40 p-3 text-sm text-dark-200">
+              <input
+                type="checkbox"
+                checked={fastestEnabled}
+                onChange={(event) => {
+                  setGroupsDirty(true);
+                  setFastestEnabled(event.target.checked);
+                }}
+              />
+              <span>
+                {t('admin.balancer.groups.fastestToggle', 'Enable automatic group')}
+                <span className="mt-1 block text-xs leading-5 text-dark-500">
+                  {t(
+                    'admin.balancer.groups.fastestToggleDesc',
+                    'If enabled, the balancer adds one extra group that automatically routes users to a more suitable server.',
+                  )}
+                </span>
+              </span>
+            </label>
+
+            <label className="text-xs text-dark-400 lg:col-span-2">
+              {t('admin.balancer.groups.fastestName', 'Visible group name')}
+              <input
+                value={fastestGroupName}
+                onChange={(event) => {
+                  setGroupsDirty(true);
+                  setFastestGroupName(event.target.value);
+                }}
+                placeholder={DEFAULT_FASTEST_GROUP_NAME}
+                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none placeholder:text-dark-500 focus:border-accent-500"
+              />
               <span className="mt-1 block text-xs leading-5 text-dark-500">
                 {t(
-                  'admin.balancer.groups.fastestToggleDesc',
-                  'If enabled, the balancer adds one extra group that automatically routes users to a more suitable server.',
+                  'admin.balancer.groups.fastestNameDesc',
+                  'This is just the display name that users see in their client config.',
                 )}
               </span>
-            </span>
-          </label>
-
-          <div className="mb-4">
-            <label className="mb-1 block text-xs text-dark-400">
-              {t('admin.balancer.groups.fastestName', 'Visible group name')}
             </label>
-            <input
-              value={fastestGroupName}
-              onChange={(event) => {
-                setGroupsDirty(true);
-                setFastestGroupName(event.target.value);
-              }}
-              placeholder={DEFAULT_FASTEST_GROUP_NAME}
-              className="w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none placeholder:text-dark-500 focus:border-accent-500"
-            />
-            <p className="mt-1 text-xs leading-5 text-dark-500">
-              {t(
-                'admin.balancer.groups.fastestNameDesc',
-                'This is just the display name that users see in their client config.',
-              )}
-            </p>
           </div>
 
-          <div className="space-y-4">
+          <div className="mt-3 grid grid-cols-1 gap-3 xl:grid-cols-2">
             <ChecklistCard
               title={t('admin.balancer.groups.excludeTitle', 'Do not include in automatic choice')}
               description={t(
@@ -1963,15 +1965,32 @@ export default function AdminBalancer() {
         </div>
 
         <div className="mt-4 rounded-lg border border-dark-700 bg-dark-900/40 p-3">
-          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-dark-300">
-            {t('admin.balancer.groups.advancedTitle', 'Advanced balancer settings')}
-          </h4>
-          <p className="mb-3 text-xs text-dark-500">
-            {t(
-              'admin.balancer.groups.advancedHint',
-              'These values are sent to PUT /admin/groups together with groups config.',
-            )}
-          </p>
+          <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h4 className="text-xs font-semibold uppercase tracking-wide text-dark-300">
+                {t('admin.balancer.groups.advancedTitle', 'Advanced balancer settings')}
+              </h4>
+              <p className="mt-1 text-xs leading-5 text-dark-500">
+                {t(
+                  'admin.balancer.groups.advancedHint',
+                  'These values are sent to PUT /admin/groups together with groups config.',
+                )}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-1.5 text-xs">
+              <span className="rounded-full border border-dark-600 bg-dark-950/60 px-2.5 py-1 text-dark-300">
+                {t('admin.balancer.groups.strategy', 'Strategy')}:{' '}
+                {t(
+                  `admin.balancer.groups.strategyOptions.${advancedSettings.strategy}`,
+                  advancedSettings.strategy,
+                )}
+              </span>
+              <span className="rounded-full border border-dark-600 bg-dark-950/60 px-2.5 py-1 text-dark-300">
+                {t('admin.balancer.groups.stickyEnabled', 'Enable sticky routing')}:{' '}
+                {advancedSettings.stickyEnabled ? t('common.yes', 'Yes') : t('common.no', 'No')}
+              </span>
+            </div>
+          </div>
 
           <div className="space-y-3">
             <details className="rounded-lg border border-dark-700 bg-dark-900/30 p-3" open>
@@ -1996,7 +2015,7 @@ export default function AdminBalancer() {
                   >
                     {STRATEGY_OPTIONS.map((strategy) => (
                       <option key={strategy} value={strategy}>
-                        {strategy}
+                        {t(`admin.balancer.groups.strategyOptions.${strategy}`, strategy)}
                       </option>
                     ))}
                   </select>
@@ -2106,8 +2125,12 @@ export default function AdminBalancer() {
                     }
                     className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
                   >
-                    <option value="pin">pin</option>
-                    <option value="prefer">prefer</option>
+                    <option value="pin">
+                      {t('admin.balancer.groups.stickyModes.pin', 'Strict pin')}
+                    </option>
+                    <option value="prefer">
+                      {t('admin.balancer.groups.stickyModes.prefer', 'Prefer pinned node')}
+                    </option>
                   </select>
                   <p className="mt-1 text-[11px] text-dark-500">
                     {t(
