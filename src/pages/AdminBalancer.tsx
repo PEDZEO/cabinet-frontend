@@ -2,7 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
-import { BalancerGroupsResponse, adminBalancerApi } from '../api/adminBalancer';
+import {
+  BalancerGroupsResponse,
+  UpdateBalancerGroupsPayload,
+  adminBalancerApi,
+} from '../api/adminBalancer';
 import { AdminBackButton } from '../components/admin/AdminBackButton';
 
 type GroupDraft = {
@@ -12,6 +16,12 @@ type GroupDraft = {
 };
 
 const DEFAULT_FASTEST_GROUP_NAME = '🏁 🇪🇺 Самые быстрые';
+const DEFAULT_FASTEST_PROBE_URL = 'https://ya.ru';
+const DEFAULT_PROBE_INTERVAL = '3m';
+const STRATEGY_OPTIONS = ['leastLoad', 'leastPing', 'random', 'roundRobin'] as const;
+
+type BalancerStrategy = (typeof STRATEGY_OPTIONS)[number];
+type StickyMode = 'pin' | 'prefer';
 
 type AlertTone = 'default' | 'success' | 'error';
 
@@ -39,7 +49,15 @@ type ChecklistCardProps = {
 };
 
 type BalancerAdvancedSettings = {
+  strategy: BalancerStrategy;
+  probeInterval: string;
+  fastestProbeUrl: string;
+  nodeStatsStaleSec: number;
+  stickyEnabled: boolean;
+  stickyMode: StickyMode;
   stickyNewConnectionsOnly: boolean;
+  stickyTtlSec: number;
+  stickyMaxEntries: number;
   autoQuarantineEnabled: boolean;
   autoQuarantineFailures: number;
   autoQuarantineReleaseSuccesses: number;
@@ -57,7 +75,15 @@ type BalancerAdvancedSettings = {
 };
 
 const DEFAULT_ADVANCED_SETTINGS: BalancerAdvancedSettings = {
+  strategy: 'leastLoad',
+  probeInterval: DEFAULT_PROBE_INTERVAL,
+  fastestProbeUrl: DEFAULT_FASTEST_PROBE_URL,
+  nodeStatsStaleSec: 360,
+  stickyEnabled: false,
+  stickyMode: 'pin',
   stickyNewConnectionsOnly: false,
+  stickyTtlSec: 3600,
+  stickyMaxEntries: 10000,
   autoQuarantineEnabled: false,
   autoQuarantineFailures: 3,
   autoQuarantineReleaseSuccesses: 2,
@@ -281,6 +307,43 @@ function toNumber(value: unknown): number | null {
   return null;
 }
 
+function normalizeStrategyValue(value: unknown): BalancerStrategy {
+  if (typeof value !== 'string') return DEFAULT_ADVANCED_SETTINGS.strategy;
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'leastping') return 'leastPing';
+  if (normalized === 'random') return 'random';
+  if (normalized === 'roundrobin') return 'roundRobin';
+  return 'leastLoad';
+}
+
+function normalizeStickyMode(value: unknown): StickyMode {
+  return value === 'prefer' ? 'prefer' : 'pin';
+}
+
+function normalizeStringList(value: unknown): string[] {
+  return Array.isArray(value) ? value.map((item) => String(item).trim()).filter(Boolean) : [];
+}
+
+function sameStringList(left: string[] | undefined, right: string[] | undefined): boolean {
+  return JSON.stringify(normalizeStringList(left)) === JSON.stringify(normalizeStringList(right));
+}
+
+function sameGroups(
+  left: Record<string, string[]> | undefined,
+  right: Record<string, string[]> | undefined,
+): boolean {
+  return JSON.stringify(left ?? {}) === JSON.stringify(right ?? {});
+}
+
+function renameSelectedList(items: string[], oldName: string, newName: string): string[] {
+  const next: string[] = [];
+  for (const item of items) {
+    const value = item === oldName ? newName : item;
+    if (!next.includes(value)) next.push(value);
+  }
+  return next;
+}
+
 function prettyValue(value: unknown): string {
   if (typeof value === 'string') return value;
   if (typeof value === 'number') return value.toLocaleString();
@@ -297,10 +360,33 @@ function normalizeAdvancedSettings(
     typeof value === 'number' && Number.isFinite(value) ? value : fallback;
 
   return {
+    strategy: normalizeStrategyValue(source?.strategy),
+    probeInterval:
+      typeof source?.probe_interval === 'string' && source.probe_interval.trim()
+        ? source.probe_interval.trim()
+        : DEFAULT_ADVANCED_SETTINGS.probeInterval,
+    fastestProbeUrl:
+      typeof source?.fastest_probe_url === 'string' && source.fastest_probe_url.trim()
+        ? source.fastest_probe_url.trim()
+        : DEFAULT_ADVANCED_SETTINGS.fastestProbeUrl,
+    nodeStatsStaleSec: toFinite(
+      source?.node_stats_stale_sec,
+      DEFAULT_ADVANCED_SETTINGS.nodeStatsStaleSec,
+    ),
+    stickyEnabled:
+      typeof source?.sticky_enabled === 'boolean'
+        ? source.sticky_enabled
+        : DEFAULT_ADVANCED_SETTINGS.stickyEnabled,
+    stickyMode: normalizeStickyMode(source?.sticky_mode),
     stickyNewConnectionsOnly:
       typeof source?.sticky_new_connections_only === 'boolean'
         ? source.sticky_new_connections_only
         : DEFAULT_ADVANCED_SETTINGS.stickyNewConnectionsOnly,
+    stickyTtlSec: toFinite(source?.sticky_ttl_sec, DEFAULT_ADVANCED_SETTINGS.stickyTtlSec),
+    stickyMaxEntries: toFinite(
+      source?.sticky_max_entries,
+      DEFAULT_ADVANCED_SETTINGS.stickyMaxEntries,
+    ),
     autoQuarantineEnabled:
       typeof source?.auto_quarantine_enabled === 'boolean'
         ? source.auto_quarantine_enabled
@@ -360,6 +446,227 @@ function normalizeAdvancedSettings(
   };
 }
 
+function findSaveMismatch(
+  payload: UpdateBalancerGroupsPayload,
+  response: BalancerGroupsResponse,
+): string | null {
+  if (!sameGroups(payload.groups, response.groups)) return 'groups';
+  if (payload.fastest_group !== response.fastest_group) return 'fastest_group';
+  if ((payload.fastest_group_name || '') !== (response.fastest_group_name || '')) {
+    return 'fastest_group_name';
+  }
+  if (payload.strategy && normalizeStrategyValue(response.strategy) !== payload.strategy) {
+    return 'strategy';
+  }
+  if (!sameStringList(payload.fastest_exclude_groups, response.fastest_exclude_groups)) {
+    return 'fastest_exclude_groups';
+  }
+  if (!sameStringList(payload.fastest_fallback, response.fastest_fallback)) {
+    return 'fastest_fallback';
+  }
+  if (!sameStringList(payload.node_stats_exclude, response.node_stats_exclude)) {
+    return 'node_stats_exclude';
+  }
+  if (!sameStringList(payload.expand_groups_to_nodes, response.expand_groups_to_nodes)) {
+    return 'expand_groups_to_nodes';
+  }
+  if (!sameStringList(payload.hidden_groups, response.hidden_groups)) return 'hidden_groups';
+  if (!sameStringList(payload.hidden_nodes, response.hidden_nodes)) return 'hidden_nodes';
+  return null;
+}
+
+function buildAdvancedPayload(
+  settings: BalancerAdvancedSettings,
+  source?: BalancerGroupsResponse,
+): Partial<UpdateBalancerGroupsPayload> {
+  const payload: Partial<UpdateBalancerGroupsPayload> = {};
+  const include = (sourceValue: unknown, changed: boolean) => sourceValue !== undefined || changed;
+
+  if (include(source?.strategy, settings.strategy !== DEFAULT_ADVANCED_SETTINGS.strategy)) {
+    payload.strategy = settings.strategy;
+  }
+  if (
+    include(
+      source?.probe_interval,
+      settings.probeInterval.trim() !== DEFAULT_ADVANCED_SETTINGS.probeInterval,
+    )
+  ) {
+    payload.probe_interval = settings.probeInterval.trim() || DEFAULT_PROBE_INTERVAL;
+  }
+  if (
+    include(
+      source?.fastest_probe_url,
+      settings.fastestProbeUrl.trim() !== DEFAULT_ADVANCED_SETTINGS.fastestProbeUrl,
+    )
+  ) {
+    payload.fastest_probe_url = settings.fastestProbeUrl.trim() || DEFAULT_FASTEST_PROBE_URL;
+  }
+  if (
+    include(
+      source?.node_stats_stale_sec,
+      settings.nodeStatsStaleSec !== DEFAULT_ADVANCED_SETTINGS.nodeStatsStaleSec,
+    )
+  ) {
+    payload.node_stats_stale_sec = Math.max(1, Math.round(settings.nodeStatsStaleSec));
+  }
+  if (
+    include(
+      source?.sticky_enabled,
+      settings.stickyEnabled !== DEFAULT_ADVANCED_SETTINGS.stickyEnabled,
+    )
+  ) {
+    payload.sticky_enabled = settings.stickyEnabled;
+  }
+  if (include(source?.sticky_mode, settings.stickyMode !== DEFAULT_ADVANCED_SETTINGS.stickyMode)) {
+    payload.sticky_mode = settings.stickyMode;
+  }
+  if (
+    include(
+      source?.sticky_new_connections_only,
+      settings.stickyNewConnectionsOnly !== DEFAULT_ADVANCED_SETTINGS.stickyNewConnectionsOnly,
+    )
+  ) {
+    payload.sticky_new_connections_only = settings.stickyNewConnectionsOnly;
+  }
+  if (
+    include(
+      source?.sticky_ttl_sec,
+      settings.stickyTtlSec !== DEFAULT_ADVANCED_SETTINGS.stickyTtlSec,
+    )
+  ) {
+    payload.sticky_ttl_sec = Math.max(1, Math.round(settings.stickyTtlSec));
+  }
+  if (
+    include(
+      source?.sticky_max_entries,
+      settings.stickyMaxEntries !== DEFAULT_ADVANCED_SETTINGS.stickyMaxEntries,
+    )
+  ) {
+    payload.sticky_max_entries = Math.max(1, Math.round(settings.stickyMaxEntries));
+  }
+  if (
+    include(
+      source?.auto_quarantine_enabled,
+      settings.autoQuarantineEnabled !== DEFAULT_ADVANCED_SETTINGS.autoQuarantineEnabled,
+    )
+  ) {
+    payload.auto_quarantine_enabled = settings.autoQuarantineEnabled;
+  }
+  if (
+    include(
+      source?.auto_quarantine_failures,
+      settings.autoQuarantineFailures !== DEFAULT_ADVANCED_SETTINGS.autoQuarantineFailures,
+    )
+  ) {
+    payload.auto_quarantine_failures = Math.max(1, Math.round(settings.autoQuarantineFailures));
+  }
+  if (
+    include(
+      source?.auto_quarantine_release_successes,
+      settings.autoQuarantineReleaseSuccesses !==
+        DEFAULT_ADVANCED_SETTINGS.autoQuarantineReleaseSuccesses,
+    )
+  ) {
+    payload.auto_quarantine_release_successes = Math.max(
+      1,
+      Math.round(settings.autoQuarantineReleaseSuccesses),
+    );
+  }
+  if (
+    include(
+      source?.auto_quarantine_max_nodes,
+      settings.autoQuarantineMaxNodes !== DEFAULT_ADVANCED_SETTINGS.autoQuarantineMaxNodes,
+    )
+  ) {
+    payload.auto_quarantine_max_nodes = Math.max(1, Math.round(settings.autoQuarantineMaxNodes));
+  }
+  if (
+    include(
+      source?.auto_drain_enabled,
+      settings.autoDrainEnabled !== DEFAULT_ADVANCED_SETTINGS.autoDrainEnabled,
+    )
+  ) {
+    payload.auto_drain_enabled = settings.autoDrainEnabled;
+  }
+  if (
+    include(
+      source?.auto_drain_failures,
+      settings.autoDrainFailures !== DEFAULT_ADVANCED_SETTINGS.autoDrainFailures,
+    )
+  ) {
+    payload.auto_drain_failures = Math.max(1, Math.round(settings.autoDrainFailures));
+  }
+  if (
+    include(
+      source?.auto_drain_release_successes,
+      settings.autoDrainReleaseSuccesses !== DEFAULT_ADVANCED_SETTINGS.autoDrainReleaseSuccesses,
+    )
+  ) {
+    payload.auto_drain_release_successes = Math.max(
+      1,
+      Math.round(settings.autoDrainReleaseSuccesses),
+    );
+  }
+  if (
+    include(
+      source?.auto_drain_load_threshold,
+      settings.autoDrainLoadThreshold !== DEFAULT_ADVANCED_SETTINGS.autoDrainLoadThreshold,
+    )
+  ) {
+    payload.auto_drain_load_threshold = Math.max(0, settings.autoDrainLoadThreshold);
+  }
+  if (
+    include(
+      source?.auto_drain_score_penalty,
+      settings.autoDrainScorePenalty !== DEFAULT_ADVANCED_SETTINGS.autoDrainScorePenalty,
+    )
+  ) {
+    payload.auto_drain_score_penalty = Math.max(0, settings.autoDrainScorePenalty);
+  }
+  if (
+    include(
+      source?.balancer_load_weight,
+      settings.balancerLoadWeight !== DEFAULT_ADVANCED_SETTINGS.balancerLoadWeight,
+    )
+  ) {
+    payload.balancer_load_weight = Math.max(0, settings.balancerLoadWeight);
+  }
+  if (
+    include(
+      source?.balancer_latency_weight,
+      settings.balancerLatencyWeight !== DEFAULT_ADVANCED_SETTINGS.balancerLatencyWeight,
+    )
+  ) {
+    payload.balancer_latency_weight = Math.max(0, settings.balancerLatencyWeight);
+  }
+  if (
+    include(
+      source?.balancer_max_latency_ms,
+      settings.balancerMaxLatencyMs !== DEFAULT_ADVANCED_SETTINGS.balancerMaxLatencyMs,
+    )
+  ) {
+    payload.balancer_max_latency_ms = Math.max(1, Math.round(settings.balancerMaxLatencyMs));
+  }
+  if (
+    include(
+      source?.balancer_smoothing_alpha,
+      settings.balancerSmoothingAlpha !== DEFAULT_ADVANCED_SETTINGS.balancerSmoothingAlpha,
+    )
+  ) {
+    payload.balancer_smoothing_alpha = Math.max(0, settings.balancerSmoothingAlpha);
+  }
+  if (
+    include(
+      source?.balancer_hysteresis_delta,
+      settings.balancerHysteresisDelta !== DEFAULT_ADVANCED_SETTINGS.balancerHysteresisDelta,
+    )
+  ) {
+    payload.balancer_hysteresis_delta = Math.max(0, settings.balancerHysteresisDelta);
+  }
+
+  return payload;
+}
+
 export default function AdminBalancer() {
   const { t, i18n } = useTranslation();
   const [token, setToken] = useState('');
@@ -373,10 +680,14 @@ export default function AdminBalancer() {
   const [fallbackGroups, setFallbackGroups] = useState<string[]>([]);
   const [nodeStatsExcludeGroups, setNodeStatsExcludeGroups] = useState<string[]>([]);
   const [expandGroupsToNodes, setExpandGroupsToNodes] = useState<string[]>([]);
+  const [hiddenGroups, setHiddenGroups] = useState<string[]>([]);
+  const [hiddenNodes, setHiddenNodes] = useState<string[]>([]);
   const [excludeExpanded, setExcludeExpanded] = useState(false);
   const [fallbackExpanded, setFallbackExpanded] = useState(false);
   const [nodeStatsExcludeExpanded, setNodeStatsExcludeExpanded] = useState(false);
   const [expandGroupsToNodesExpanded, setExpandGroupsToNodesExpanded] = useState(false);
+  const [hiddenGroupsExpanded, setHiddenGroupsExpanded] = useState(false);
+  const [hiddenNodesExpanded, setHiddenNodesExpanded] = useState(false);
   const [advancedSettings, setAdvancedSettings] =
     useState<BalancerAdvancedSettings>(DEFAULT_ADVANCED_SETTINGS);
   const [groupsDirty, setGroupsDirty] = useState(false);
@@ -462,6 +773,8 @@ export default function AdminBalancer() {
     setFallbackGroups(groupsData.fastest_fallback || []);
     setNodeStatsExcludeGroups(groupsData.node_stats_exclude || []);
     setExpandGroupsToNodes(groupsData.expand_groups_to_nodes || []);
+    setHiddenGroups(groupsData.hidden_groups || []);
+    setHiddenNodes(groupsData.hidden_nodes || []);
     setAdvancedSettings(normalizeAdvancedSettings(groupsData));
   }, [groupsData, groupsDirty]);
 
@@ -499,7 +812,21 @@ export default function AdminBalancer() {
 
   const saveGroupsMutation = useMutation({
     mutationFn: adminBalancerApi.updateGroups,
-    onSuccess: async (data) => {
+    onSuccess: async (data, payload) => {
+      const mismatch = findSaveMismatch(payload, data);
+      if (mismatch) {
+        setAlert(
+          t(
+            'admin.balancer.actions.groupsSaveMismatch',
+            'Balancer did not apply saved field: {{field}}. Check cabinet backend proxy.',
+            { field: mismatch },
+          ),
+          'error',
+        );
+        await Promise.all([refetchGroups(), refetchHealth(), refetchDebugStats()]);
+        return;
+      }
+
       setAlert(t('admin.balancer.actions.groupsSaved', 'Groups saved'), 'success');
       setGroupsDirty(false);
       setGroupsDraft(groupsToDraft(data));
@@ -509,8 +836,10 @@ export default function AdminBalancer() {
       setFallbackGroups(data.fastest_fallback || []);
       setNodeStatsExcludeGroups(data.node_stats_exclude || []);
       setExpandGroupsToNodes(data.expand_groups_to_nodes || []);
+      setHiddenGroups(data.hidden_groups || []);
+      setHiddenNodes(data.hidden_nodes || []);
       setAdvancedSettings(normalizeAdvancedSettings(data));
-      await refetchGroups();
+      await Promise.all([refetchGroups(), refetchHealth(), refetchDebugStats()]);
     },
     onError: () => {
       setAlert(t('admin.balancer.actions.groupsSaveError', 'Groups save failed'), 'error');
@@ -639,6 +968,15 @@ export default function AdminBalancer() {
     return primaryRows.length > 0 ? primaryRows : nodeRows;
   }, [nodeRows]);
 
+  const availableNodeNames = useMemo(
+    () =>
+      visibleNodeRows
+        .map((row) => row.nodeName.trim())
+        .filter(Boolean)
+        .filter((name, idx, arr) => arr.indexOf(name) === idx),
+    [visibleNodeRows],
+  );
+
   const addGroup = () => {
     setGroupsDirty(true);
     setGroupsDraft((prev) => [
@@ -673,6 +1011,16 @@ export default function AdminBalancer() {
 
   const updateGroup = (id: string, patch: Partial<GroupDraft>) => {
     setGroupsDirty(true);
+    const current = groupsDraft.find((group) => group.id === id);
+    const oldName = current?.name.trim();
+    const newName = patch.name?.trim();
+    if (patch.name !== undefined && oldName && newName && oldName !== newName) {
+      setExcludeGroups((prev) => renameSelectedList(prev, oldName, newName));
+      setFallbackGroups((prev) => renameSelectedList(prev, oldName, newName));
+      setNodeStatsExcludeGroups((prev) => renameSelectedList(prev, oldName, newName));
+      setExpandGroupsToNodes((prev) => renameSelectedList(prev, oldName, newName));
+      setHiddenGroups((prev) => renameSelectedList(prev, oldName, newName));
+    }
     setGroupsDraft((prev) =>
       prev.map((group) => (group.id === id ? { ...group, ...patch } : group)),
     );
@@ -703,6 +1051,20 @@ export default function AdminBalancer() {
     setGroupsDirty(true);
     setExpandGroupsToNodes((prev) =>
       prev.includes(groupName) ? prev.filter((value) => value !== groupName) : [...prev, groupName],
+    );
+  };
+
+  const toggleHiddenGroup = (groupName: string) => {
+    setGroupsDirty(true);
+    setHiddenGroups((prev) =>
+      prev.includes(groupName) ? prev.filter((value) => value !== groupName) : [...prev, groupName],
+    );
+  };
+
+  const toggleHiddenNode = (nodeName: string) => {
+    setGroupsDirty(true);
+    setHiddenNodes((prev) =>
+      prev.includes(nodeName) ? prev.filter((value) => value !== nodeName) : [...prev, nodeName],
     );
   };
 
@@ -773,30 +1135,13 @@ export default function AdminBalancer() {
     const filteredExpandGroupsToNodes = expandGroupsToNodes.filter((value) =>
       availableNames.has(value),
     );
+    const filteredHiddenGroups = hiddenGroups.filter((value) => availableNames.has(value));
+    const filteredHiddenNodes = hiddenNodes
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .filter((value, index, values) => values.indexOf(value) === index);
     const normalizedFastestName = fastestGroupName.trim() || DEFAULT_FASTEST_GROUP_NAME;
-    const nextAdvanced = {
-      auto_quarantine_enabled: advancedSettings.autoQuarantineEnabled,
-      sticky_new_connections_only: advancedSettings.stickyNewConnectionsOnly,
-      auto_quarantine_failures: Math.max(1, Math.round(advancedSettings.autoQuarantineFailures)),
-      auto_quarantine_release_successes: Math.max(
-        1,
-        Math.round(advancedSettings.autoQuarantineReleaseSuccesses),
-      ),
-      auto_quarantine_max_nodes: Math.max(1, Math.round(advancedSettings.autoQuarantineMaxNodes)),
-      auto_drain_enabled: advancedSettings.autoDrainEnabled,
-      auto_drain_failures: Math.max(1, Math.round(advancedSettings.autoDrainFailures)),
-      auto_drain_release_successes: Math.max(
-        1,
-        Math.round(advancedSettings.autoDrainReleaseSuccesses),
-      ),
-      auto_drain_load_threshold: Math.max(0, advancedSettings.autoDrainLoadThreshold),
-      auto_drain_score_penalty: Math.max(0, advancedSettings.autoDrainScorePenalty),
-      balancer_load_weight: Math.max(0, advancedSettings.balancerLoadWeight),
-      balancer_latency_weight: Math.max(0, advancedSettings.balancerLatencyWeight),
-      balancer_max_latency_ms: Math.max(1, Math.round(advancedSettings.balancerMaxLatencyMs)),
-      balancer_smoothing_alpha: Math.max(0, advancedSettings.balancerSmoothingAlpha),
-      balancer_hysteresis_delta: Math.max(0, advancedSettings.balancerHysteresisDelta),
-    };
+    const nextAdvanced = buildAdvancedPayload(advancedSettings, groupsData);
 
     await saveGroupsMutation.mutateAsync({
       groups,
@@ -806,6 +1151,8 @@ export default function AdminBalancer() {
       fastest_fallback: filteredFallback,
       node_stats_exclude: filteredNodeStatsExclude,
       expand_groups_to_nodes: filteredExpandGroupsToNodes,
+      hidden_groups: filteredHiddenGroups,
+      hidden_nodes: filteredHiddenNodes,
       ...nextAdvanced,
     });
   };
@@ -956,27 +1303,12 @@ export default function AdminBalancer() {
       fastest_fallback: fallbackGroups.filter((name) => availableNames.has(name)),
       node_stats_exclude: nodeStatsExcludeGroups.filter((name) => availableNames.has(name)),
       expand_groups_to_nodes: expandGroupsToNodes.filter((name) => availableNames.has(name)),
-      sticky_new_connections_only: advancedSettings.stickyNewConnectionsOnly,
-      auto_quarantine_enabled: advancedSettings.autoQuarantineEnabled,
-      auto_quarantine_failures: Math.max(1, Math.round(advancedSettings.autoQuarantineFailures)),
-      auto_quarantine_release_successes: Math.max(
-        1,
-        Math.round(advancedSettings.autoQuarantineReleaseSuccesses),
-      ),
-      auto_quarantine_max_nodes: Math.max(1, Math.round(advancedSettings.autoQuarantineMaxNodes)),
-      auto_drain_enabled: advancedSettings.autoDrainEnabled,
-      auto_drain_failures: Math.max(1, Math.round(advancedSettings.autoDrainFailures)),
-      auto_drain_release_successes: Math.max(
-        1,
-        Math.round(advancedSettings.autoDrainReleaseSuccesses),
-      ),
-      auto_drain_load_threshold: Math.max(0, advancedSettings.autoDrainLoadThreshold),
-      auto_drain_score_penalty: Math.max(0, advancedSettings.autoDrainScorePenalty),
-      balancer_load_weight: Math.max(0, advancedSettings.balancerLoadWeight),
-      balancer_latency_weight: Math.max(0, advancedSettings.balancerLatencyWeight),
-      balancer_max_latency_ms: Math.max(1, Math.round(advancedSettings.balancerMaxLatencyMs)),
-      balancer_smoothing_alpha: Math.max(0, advancedSettings.balancerSmoothingAlpha),
-      balancer_hysteresis_delta: Math.max(0, advancedSettings.balancerHysteresisDelta),
+      hidden_groups: hiddenGroups.filter((name) => availableNames.has(name)),
+      hidden_nodes: hiddenNodes
+        .map((name) => name.trim())
+        .filter(Boolean)
+        .filter((name, index, names) => names.indexOf(name) === index),
+      ...buildAdvancedPayload(advancedSettings, groupsData),
     };
   }, [
     advancedSettings,
@@ -986,6 +1318,9 @@ export default function AdminBalancer() {
     fastestEnabled,
     fastestGroupName,
     groupsDraft,
+    groupsData,
+    hiddenGroups,
+    hiddenNodes,
     nodeStatsExcludeGroups,
   ]);
 
@@ -1118,6 +1453,8 @@ export default function AdminBalancer() {
                 setFallbackGroups(groupsData.fastest_fallback || []);
                 setNodeStatsExcludeGroups(groupsData.node_stats_exclude || []);
                 setExpandGroupsToNodes(groupsData.expand_groups_to_nodes || []);
+                setHiddenGroups(groupsData.hidden_groups || []);
+                setHiddenNodes(groupsData.hidden_nodes || []);
                 setAdvancedSettings(normalizeAdvancedSettings(groupsData));
                 setGroupsDirty(false);
                 setAlert(
@@ -1153,6 +1490,8 @@ export default function AdminBalancer() {
                 setFallbackGroups(groupsData.fastest_fallback || []);
                 setNodeStatsExcludeGroups(groupsData.node_stats_exclude || []);
                 setExpandGroupsToNodes(groupsData.expand_groups_to_nodes || []);
+                setHiddenGroups(groupsData.hidden_groups || []);
+                setHiddenNodes(groupsData.hidden_nodes || []);
                 setAdvancedSettings(normalizeAdvancedSettings(groupsData));
                 setGroupsDirty(false);
                 setAlert(
@@ -1556,6 +1895,70 @@ export default function AdminBalancer() {
                 '{{count}} more items are hidden until you expand the list.',
               )}
             />
+
+            <ChecklistCard
+              title={t('admin.balancer.groups.hiddenGroupsTitle', 'Hide groups from subscription')}
+              description={t(
+                'admin.balancer.groups.hiddenGroupsDesc',
+                'Selected groups stay in config but are not published into generated subscription groups.',
+              )}
+              selected={hiddenGroups}
+              options={availableGroupNames}
+              expanded={hiddenGroupsExpanded}
+              onToggleExpanded={() => setHiddenGroupsExpanded((prev) => !prev)}
+              onClear={() => {
+                setGroupsDirty(true);
+                setHiddenGroups([]);
+              }}
+              onToggleOption={toggleHiddenGroup}
+              emptyText={t(
+                'admin.balancer.groups.emptySelection',
+                'Nothing selected yet. Add groups above to configure this list.',
+              )}
+              selectedLabel={t(
+                'admin.balancer.groups.excludeCounter',
+                'Selected {{selected}} / {{total}}',
+              )}
+              clearLabel={t('admin.balancer.groups.clearSelection', 'Clear selection')}
+              expandLabel={t('admin.balancer.groups.expandList', 'Show full list')}
+              collapseLabel={t('admin.balancer.groups.collapseList', 'Collapse list')}
+              hiddenCountLabel={t(
+                'admin.balancer.groups.hiddenCount',
+                '{{count}} more items are hidden until you expand the list.',
+              )}
+            />
+
+            <ChecklistCard
+              title={t('admin.balancer.groups.hiddenNodesTitle', 'Hide nodes from subscription')}
+              description={t(
+                'admin.balancer.groups.hiddenNodesDesc',
+                'Selected nodes are removed from generated subscription output without deleting the node from panel.',
+              )}
+              selected={hiddenNodes}
+              options={availableNodeNames}
+              expanded={hiddenNodesExpanded}
+              onToggleExpanded={() => setHiddenNodesExpanded((prev) => !prev)}
+              onClear={() => {
+                setGroupsDirty(true);
+                setHiddenNodes([]);
+              }}
+              onToggleOption={toggleHiddenNode}
+              emptyText={t(
+                'admin.balancer.groups.hiddenNodesEmpty',
+                'No node stats yet. Refresh stats to populate node choices.',
+              )}
+              selectedLabel={t(
+                'admin.balancer.groups.excludeCounter',
+                'Selected {{selected}} / {{total}}',
+              )}
+              clearLabel={t('admin.balancer.groups.clearSelection', 'Clear selection')}
+              expandLabel={t('admin.balancer.groups.expandList', 'Show full list')}
+              collapseLabel={t('admin.balancer.groups.collapseList', 'Collapse list')}
+              hiddenCountLabel={t(
+                'admin.balancer.groups.hiddenCount',
+                '{{count}} more items are hidden until you expand the list.',
+              )}
+            />
           </div>
         </div>
 
@@ -1571,6 +1974,99 @@ export default function AdminBalancer() {
           </p>
 
           <div className="space-y-3">
+            <details className="rounded-lg border border-dark-700 bg-dark-900/30 p-3" open>
+              <summary className="cursor-pointer text-sm font-semibold text-dark-100">
+                {t('admin.balancer.groups.sectionRouting', 'Routing behavior')}
+              </summary>
+              <p className="mt-2 text-xs text-dark-500">
+                {t(
+                  'admin.balancer.groups.sectionRoutingHint',
+                  'Core strategy and probe settings used by generated balancers.',
+                )}
+              </p>
+              <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+                <label className="text-xs text-dark-400">
+                  {t('admin.balancer.groups.strategy', 'Strategy')}
+                  <select
+                    value={advancedSettings.strategy}
+                    onChange={(event) =>
+                      updateAdvancedSetting('strategy', normalizeStrategyValue(event.target.value))
+                    }
+                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                  >
+                    {STRATEGY_OPTIONS.map((strategy) => (
+                      <option key={strategy} value={strategy}>
+                        {strategy}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-[11px] text-dark-500">
+                    {t(
+                      'admin.balancer.groups.strategyDesc',
+                      'leastPing uses latency first, leastLoad uses load score, random and roundRobin are plain Xray strategies.',
+                    )}
+                  </p>
+                </label>
+
+                <label className="text-xs text-dark-400">
+                  {t('admin.balancer.groups.probeInterval', 'Probe interval')}
+                  <input
+                    value={advancedSettings.probeInterval}
+                    onChange={(event) => updateAdvancedSetting('probeInterval', event.target.value)}
+                    placeholder={DEFAULT_PROBE_INTERVAL}
+                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                  />
+                  <p className="mt-1 text-[11px] text-dark-500">
+                    {t(
+                      'admin.balancer.groups.probeIntervalDesc',
+                      'Xray probe interval, for example 30s, 1m, 3m.',
+                    )}
+                  </p>
+                </label>
+
+                <label className="text-xs text-dark-400 md:col-span-2">
+                  {t('admin.balancer.groups.fastestProbeUrl', 'Fastest probe URL')}
+                  <input
+                    value={advancedSettings.fastestProbeUrl}
+                    onChange={(event) =>
+                      updateAdvancedSetting('fastestProbeUrl', event.target.value)
+                    }
+                    placeholder={DEFAULT_FASTEST_PROBE_URL}
+                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                  />
+                  <p className="mt-1 text-[11px] text-dark-500">
+                    {t(
+                      'admin.balancer.groups.fastestProbeUrlDesc',
+                      'HTTP URL used by fastest and latency-aware checks.',
+                    )}
+                  </p>
+                </label>
+
+                <label className="text-xs text-dark-400">
+                  {t('admin.balancer.groups.nodeStatsStaleSec', 'Node stats stale TTL (sec)')}
+                  <input
+                    type="number"
+                    min={1}
+                    step={1}
+                    value={advancedSettings.nodeStatsStaleSec}
+                    onChange={(event) =>
+                      updateAdvancedSetting(
+                        'nodeStatsStaleSec',
+                        parseNumericInput(event.target.value, advancedSettings.nodeStatsStaleSec),
+                      )
+                    }
+                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                  />
+                  <p className="mt-1 text-[11px] text-dark-500">
+                    {t(
+                      'admin.balancer.groups.nodeStatsStaleSecDesc',
+                      'After this time cached node stats stop affecting sorting and quarantine matching.',
+                    )}
+                  </p>
+                </label>
+              </div>
+            </details>
+
             <details className="rounded-lg border border-dark-700 bg-dark-900/30 p-3">
               <summary className="cursor-pointer text-sm font-semibold text-dark-100">
                 {t('admin.balancer.groups.sectionSticky', 'Поведение привязки')}
@@ -1582,7 +2078,92 @@ export default function AdminBalancer() {
                 )}
               </p>
               <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-                <label className="flex items-center gap-2 text-sm text-dark-200 md:col-span-2 xl:col-span-3">
+                <label className="flex items-center gap-2 text-sm text-dark-200">
+                  <input
+                    type="checkbox"
+                    checked={advancedSettings.stickyEnabled}
+                    onChange={(event) =>
+                      updateAdvancedSetting('stickyEnabled', event.target.checked)
+                    }
+                  />
+                  <span>
+                    {t('admin.balancer.groups.stickyEnabled', 'Enable sticky routing')}
+                    <span className="mt-1 block text-xs text-dark-500">
+                      {t(
+                        'admin.balancer.groups.stickyEnabledDesc',
+                        'Keeps the same token on the selected node while the sticky record is valid.',
+                      )}
+                    </span>
+                  </span>
+                </label>
+
+                <label className="text-xs text-dark-400">
+                  {t('admin.balancer.groups.stickyMode', 'Sticky mode')}
+                  <select
+                    value={advancedSettings.stickyMode}
+                    onChange={(event) =>
+                      updateAdvancedSetting('stickyMode', normalizeStickyMode(event.target.value))
+                    }
+                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                  >
+                    <option value="pin">pin</option>
+                    <option value="prefer">prefer</option>
+                  </select>
+                  <p className="mt-1 text-[11px] text-dark-500">
+                    {t(
+                      'admin.balancer.groups.stickyModeDesc',
+                      'pin returns only the selected node; prefer keeps it first but leaves fallback nodes available.',
+                    )}
+                  </p>
+                </label>
+
+                <label className="text-xs text-dark-400">
+                  {t('admin.balancer.groups.stickyTtlSec', 'Sticky TTL (sec)')}
+                  <input
+                    type="number"
+                    min={1}
+                    step={1}
+                    value={advancedSettings.stickyTtlSec}
+                    onChange={(event) =>
+                      updateAdvancedSetting(
+                        'stickyTtlSec',
+                        parseNumericInput(event.target.value, advancedSettings.stickyTtlSec),
+                      )
+                    }
+                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                  />
+                  <p className="mt-1 text-[11px] text-dark-500">
+                    {t(
+                      'admin.balancer.groups.stickyTtlSecDesc',
+                      'How long one token keeps its assigned node.',
+                    )}
+                  </p>
+                </label>
+
+                <label className="text-xs text-dark-400">
+                  {t('admin.balancer.groups.stickyMaxEntries', 'Sticky max entries')}
+                  <input
+                    type="number"
+                    min={1}
+                    step={1}
+                    value={advancedSettings.stickyMaxEntries}
+                    onChange={(event) =>
+                      updateAdvancedSetting(
+                        'stickyMaxEntries',
+                        parseNumericInput(event.target.value, advancedSettings.stickyMaxEntries),
+                      )
+                    }
+                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                  />
+                  <p className="mt-1 text-[11px] text-dark-500">
+                    {t(
+                      'admin.balancer.groups.stickyMaxEntriesDesc',
+                      'Maximum number of sticky token assignments kept in memory.',
+                    )}
+                  </p>
+                </label>
+
+                <label className="flex items-center gap-2 text-sm text-dark-200 md:col-span-2">
                   <input
                     type="checkbox"
                     checked={advancedSettings.stickyNewConnectionsOnly}

@@ -17,13 +17,23 @@ export interface BalancerRuntimeStatsResponse {
 export interface BalancerGroupsResponse {
   status: string;
   groups: Record<string, string[]>;
+  strategy?: string;
   fastest_group: boolean;
   fastest_group_name?: string;
   fastest_exclude_groups: string[];
   fastest_fallback?: string[];
   node_stats_exclude?: string[];
   expand_groups_to_nodes?: string[];
+  hidden_groups?: string[];
+  hidden_nodes?: string[];
+  probe_interval?: string;
+  fastest_probe_url?: string;
+  node_stats_stale_sec?: number;
+  sticky_enabled?: boolean;
+  sticky_mode?: string;
   sticky_new_connections_only?: boolean;
+  sticky_ttl_sec?: number;
+  sticky_max_entries?: number;
   quarantine_nodes?: string[];
   auto_quarantine_enabled?: boolean;
   auto_quarantine_failures?: number;
@@ -49,13 +59,23 @@ export interface BalancerQuarantineResponse {
 
 export interface UpdateBalancerGroupsPayload {
   groups: Record<string, string[]>;
+  strategy?: string;
   fastest_group: boolean;
   fastest_group_name?: string;
   fastest_exclude_groups: string[];
   fastest_fallback?: string[];
   node_stats_exclude?: string[];
   expand_groups_to_nodes?: string[];
+  hidden_groups?: string[];
+  hidden_nodes?: string[];
+  probe_interval?: string;
+  fastest_probe_url?: string;
+  node_stats_stale_sec?: number;
+  sticky_enabled?: boolean;
+  sticky_mode?: string;
   sticky_new_connections_only?: boolean;
+  sticky_ttl_sec?: number;
+  sticky_max_entries?: number;
   auto_quarantine_enabled?: boolean;
   auto_quarantine_failures?: number;
   auto_quarantine_release_successes?: number;
