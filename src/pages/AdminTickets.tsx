@@ -12,6 +12,7 @@ import {
 import type { TicketMediaType } from '../api/tickets';
 import { ticketsApi } from '../api/tickets';
 import { usePlatform } from '../platform/hooks/usePlatform';
+import { copyToClipboard as copyTextToClipboard } from '@/utils/clipboard';
 
 interface MediaAttachment {
   file: File;
@@ -465,14 +466,7 @@ export default function AdminTickets() {
   };
 
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text).catch(() => {
-      const textarea = document.createElement('textarea');
-      textarea.value = text;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-    });
+    void copyTextToClipboard(text);
   };
 
   const operatorHints = useMemo(

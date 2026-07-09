@@ -15,6 +15,7 @@ import { useAuthStore } from '@/store/auth';
 import type { PaymentMethod } from '@/types';
 import { writePendingTopUpFollowUp } from '@/utils/topUpFollowUp';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+import { copyToClipboard } from '@/utils/clipboard';
 
 const OpenIcon = () => (
   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -214,7 +215,7 @@ export function UltimaTopUpAmount() {
 
   const handleCopyUrl = async () => {
     if (!paymentUrl) return;
-    await navigator.clipboard.writeText(paymentUrl);
+    await copyToClipboard(paymentUrl);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1200);
   };

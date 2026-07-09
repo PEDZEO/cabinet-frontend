@@ -88,7 +88,7 @@ async function bootstrapUltimaAuth(page: Page): Promise<void> {
   await page.addInitScript(
     ({ jwt, themeConfig }) => {
       sessionStorage.setItem('access_token', jwt);
-      localStorage.setItem('refresh_token', jwt);
+      sessionStorage.setItem('refresh_token', jwt);
       localStorage.setItem('cabinet_ultima_mode', 'true');
       localStorage.setItem('cabinet_ultima_theme_config', JSON.stringify(themeConfig));
     },
@@ -208,6 +208,14 @@ async function mockUltimaLinkingApi(page: Page): Promise<void> {
           telegram_username: null,
           text: null,
         },
+      });
+      return;
+    }
+
+    if (path === '/cabinet/info/languages' && method === 'GET') {
+      await route.fulfill({
+        status: 200,
+        json: { languages: [{ code: 'ru', name: 'Русский', flag: '🇷🇺' }], default: 'ru' },
       });
       return;
     }

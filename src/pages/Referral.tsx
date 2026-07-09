@@ -10,6 +10,7 @@ import { useCurrency } from '../hooks/useCurrency';
 import { useUltimaMode } from '@/hooks/useUltimaMode';
 import { getReferralBonusParts } from '@/utils/referralBonus';
 import { UltimaReferral } from './UltimaReferral';
+import { copyToClipboard } from '@/utils/clipboard';
 
 const LinkIcon = () => (
   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -180,9 +181,9 @@ function ReferralContent() {
     },
   });
 
-  const copyLink = () => {
+  const copyLink = async () => {
     if (referralLink) {
-      navigator.clipboard.writeText(referralLink);
+      await copyToClipboard(referralLink);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -570,8 +571,8 @@ function ReferralContent() {
             </div>
 
             {partnerStatus.campaigns.map((campaign) => {
-              const copyLink = (url: string, key: string) => {
-                navigator.clipboard.writeText(url);
+              const copyLink = async (url: string, key: string) => {
+                await copyToClipboard(url);
                 setCopiedLink(key);
                 setTimeout(() => setCopiedLink(null), 2000);
               };

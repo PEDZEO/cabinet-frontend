@@ -20,6 +20,7 @@ import { Switch } from '@/components/primitives/Switch';
 import { staggerContainer, staggerItem } from '@/components/motion/transitions';
 import { useUltimaMode } from '@/hooks/useUltimaMode';
 import { UltimaProfile } from './UltimaProfile';
+import { copyToClipboard } from '@/utils/clipboard';
 
 // Icons
 const CopyIcon = () => (
@@ -143,9 +144,9 @@ function FullProfile() {
     ? `${window.location.origin}/login?ref=${referralInfo.referral_code}`
     : '';
 
-  const copyReferralLink = () => {
+  const copyReferralLink = async () => {
     if (referralLink) {
-      navigator.clipboard.writeText(referralLink);
+      await copyToClipboard(referralLink);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }

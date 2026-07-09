@@ -3,6 +3,7 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './e2e',
   timeout: 60_000,
+  workers: 1,
   expect: {
     timeout: 10_000,
   },
@@ -11,10 +12,12 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   webServer: {
-    command: 'npm run dev -- --host 127.0.0.1 --port 4173',
+    command: 'npm run build && node e2e/static-server.mjs',
     url: 'http://127.0.0.1:4173',
     reuseExistingServer: true,
     timeout: 120_000,
+    stdout: 'ignore',
+    stderr: 'ignore',
   },
   projects: [
     {

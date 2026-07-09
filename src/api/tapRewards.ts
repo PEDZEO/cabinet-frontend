@@ -25,9 +25,9 @@ export const tapRewardsApi = {
     return response.data;
   },
 
-  recordTap: async (count = 1): Promise<TapRewardResponse> => {
+  recordTap: async (): Promise<TapRewardResponse> => {
     const response = await apiClient.post<TapRewardResponse>('/cabinet/tap-rewards/tap', {
-      count,
+      count: 1,
     });
     return response.data;
   },

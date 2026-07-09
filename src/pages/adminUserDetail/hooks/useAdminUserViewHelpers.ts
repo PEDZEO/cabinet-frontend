@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react';
 import type { UserNodeUsageResponse } from '../../../api/adminUsers';
 import { buildNodeUsageForPeriod } from '../utils/nodeUsage';
 import { formatDateTime } from '../utils/formatters';
+import { copyToClipboard as copyTextToClipboard } from '@/utils/clipboard';
 
 interface NotifyLike {
   success: (message: string, title?: string) => void;
@@ -34,7 +35,7 @@ export function useAdminUserViewHelpers({
   const copyToClipboard = useCallback(
     async (text: string) => {
       try {
-        await navigator.clipboard.writeText(text);
+        await copyTextToClipboard(text);
         notify.success(t('admin.users.detail.copied'));
       } catch {
         // ignore

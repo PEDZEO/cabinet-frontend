@@ -11,6 +11,7 @@ import {
 import { AdminBackButton, BackIcon } from '../components/admin';
 import { useIsTelegram } from '../platform/hooks/usePlatform';
 import { useNotify } from '@/platform';
+import { copyToClipboard } from '@/utils/clipboard';
 
 // Hook to check if on mobile
 function useIsMobile() {
@@ -350,7 +351,7 @@ function TemplateEditor({
                 className="cursor-pointer rounded bg-dark-700 px-2 py-0.5 font-mono text-xs text-accent-400 transition-colors hover:bg-dark-600"
                 title={t('admin.emailTemplates.clickToCopy')}
                 onClick={() => {
-                  navigator.clipboard.writeText(`{${v}}`);
+                  void copyToClipboard(`{${v}}`);
                   notify.success(`Copied {${v}}`);
                 }}
               >

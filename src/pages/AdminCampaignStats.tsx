@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 import { campaignsApi, CampaignBonusType } from '../api/campaigns';
 import { AdminBackButton, AdminPageErrorState, AdminPageLoadingState } from '../components/admin';
+import { copyToClipboard } from '@/utils/clipboard';
 
 // Icons
 const CopyIcon = () => (
@@ -132,7 +133,7 @@ export default function AdminCampaignStats() {
   const copyBotLink = async () => {
     if (stats?.deep_link) {
       try {
-        await navigator.clipboard.writeText(stats.deep_link);
+        await copyToClipboard(stats.deep_link);
         setCopiedBot(true);
         clearTimeout(copyBotTimer.current);
         copyBotTimer.current = setTimeout(() => setCopiedBot(false), 2000);
@@ -145,7 +146,7 @@ export default function AdminCampaignStats() {
   const copyWebLink = async () => {
     if (stats?.web_link) {
       try {
-        await navigator.clipboard.writeText(stats.web_link);
+        await copyToClipboard(stats.web_link);
         setCopiedWeb(true);
         clearTimeout(copyWebTimer.current);
         copyWebTimer.current = setTimeout(() => setCopiedWeb(false), 2000);

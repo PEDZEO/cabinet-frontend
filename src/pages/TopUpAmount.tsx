@@ -12,6 +12,7 @@ import { useHaptic, usePlatform } from '@/platform';
 import { useAuthStore } from '@/store/auth';
 import { useUltimaMode } from '@/hooks/useUltimaMode';
 import { writePendingTopUpFollowUp } from '@/utils/topUpFollowUp';
+import { copyToClipboard } from '@/utils/clipboard';
 import { staggerContainer, staggerItem } from '@/components/motion/transitions';
 import type { PaymentMethod } from '../types';
 import BentoCard from '../components/ui/BentoCard';
@@ -345,7 +346,7 @@ function TopUpAmountContent() {
   const handleCopyUrl = async () => {
     if (!paymentUrl) return;
     try {
-      await navigator.clipboard.writeText(paymentUrl);
+      await copyToClipboard(paymentUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (e) {

@@ -22,6 +22,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useHaptic } from '@/platform';
 import { usePlatform } from '@/platform';
 import { isUltimaTariffUnlimited } from '@/features/ultima/subscription';
+import { copyToClipboard } from '@/utils/clipboard';
 
 const CopyIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
@@ -313,7 +314,7 @@ export function UltimaSubscriptionInfo() {
 
   const copySubscriptionLink = async () => {
     if (!subscriptionLink) return;
-    await navigator.clipboard.writeText(subscriptionLink);
+    await copyToClipboard(subscriptionLink);
     setLinkCopied(true);
     window.setTimeout(() => setLinkCopied(false), 1400);
   };

@@ -461,9 +461,8 @@ export function UltimaDashboard() {
 
     try {
       while (remaining > 0) {
-        const batchSize = Math.min(remaining, 25);
-        remaining -= batchSize;
-        const response = await tapRewardsApi.recordTap(batchSize);
+        const response = await tapRewardsApi.recordTap();
+        remaining -= 1;
         latestResponse = response;
 
         if (response.reward_granted) {

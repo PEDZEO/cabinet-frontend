@@ -17,6 +17,7 @@ import type {
 
 import { cn } from '../lib/utils';
 import { usePlatform, useHaptic } from '@/platform';
+import { copyToClipboard as copyTextToClipboard } from '@/utils/clipboard';
 
 function formatPrice(amountKopeks: number, currencySymbol = '₽'): string {
   return `${(amountKopeks / 100).toFixed(2)} ${currencySymbol}`;
@@ -24,7 +25,7 @@ function formatPrice(amountKopeks: number, currencySymbol = '₽'): string {
 
 async function copyToClipboard(text: string): Promise<boolean> {
   try {
-    await navigator.clipboard.writeText(text);
+    await copyTextToClipboard(text);
     return true;
   } catch {
     return false;

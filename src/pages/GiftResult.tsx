@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { giftApi } from '../api/gift';
 import { cn } from '@/lib/utils';
+import { copyToClipboard } from '@/utils/clipboard';
 
 const MAX_POLL_MS = 10 * 60 * 1000; // 10 minutes
 
@@ -107,7 +108,7 @@ function CodeOnlySuccessState({
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(fullMessage);
+      await copyToClipboard(fullMessage);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {

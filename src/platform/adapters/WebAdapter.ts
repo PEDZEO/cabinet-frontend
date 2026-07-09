@@ -12,6 +12,7 @@ import type {
   HapticNotificationType,
   OpenLinkOptions,
 } from '@/platform/types';
+import { copyToClipboard } from '@/utils/clipboard';
 
 // Storage key for local storage fallback
 const STORAGE_PREFIX = 'bedolaga_';
@@ -225,7 +226,7 @@ export function createWebAdapter(): PlatformContext {
       // Fallback: copy to clipboard
       try {
         const shareText = url ? `${text}\n${url}` : text;
-        await navigator.clipboard.writeText(shareText);
+        await copyToClipboard(shareText);
         return true;
       } catch {
         return false;

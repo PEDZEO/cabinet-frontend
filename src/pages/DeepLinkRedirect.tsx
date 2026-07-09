@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { brandingApi } from '../api/branding';
+import { copyToClipboard } from '@/utils/clipboard';
 
 type Status = 'countdown' | 'fallback' | 'error';
 
@@ -150,18 +151,11 @@ export default function DeepLinkRedirect() {
       clearTimeout(copiedTimeoutRef.current);
     }
     try {
-      await navigator.clipboard.writeText(linkToCopy);
+      await copyToClipboard(linkToCopy);
       setCopied(true);
       copiedTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
     } catch {
-      const textarea = document.createElement('textarea');
-      textarea.value = linkToCopy;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-      setCopied(true);
-      copiedTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
+      // ignore
     }
   };
 

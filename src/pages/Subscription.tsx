@@ -28,6 +28,7 @@ import {
 } from '../store/successNotification';
 import { useHaptic } from '@/platform';
 import { ULTIMA_RENEWAL_NOTICE_DAYS } from '@/features/ultima/nextAction';
+import { copyToClipboard } from '@/utils/clipboard';
 import {
   buildPurchaseSteps,
   BuyDevicesSection,
@@ -584,9 +585,9 @@ function FullSubscription() {
     }
   }, [location.state]);
 
-  const copyUrl = () => {
+  const copyUrl = async () => {
     if (subscription?.subscription_url) {
-      navigator.clipboard.writeText(subscription.subscription_url);
+      await copyToClipboard(subscription.subscription_url);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }

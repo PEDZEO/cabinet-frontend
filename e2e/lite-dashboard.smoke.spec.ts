@@ -95,7 +95,7 @@ async function bootstrapAuthAndLiteMode(page: Page): Promise<void> {
   await page.addInitScript(
     ({ jwt }) => {
       sessionStorage.setItem('access_token', jwt);
-      localStorage.setItem('refresh_token', jwt);
+      sessionStorage.setItem('refresh_token', jwt);
       localStorage.setItem('cabinet_lite_mode', 'true');
     },
     { jwt: token },

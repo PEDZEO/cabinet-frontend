@@ -61,7 +61,7 @@ export function isTokenValid(token: string | null): boolean {
 /**
  * Безопасное хранилище токенов
  * Access token: sessionStorage (short-lived, cleared on tab close)
- * Refresh token: localStorage (persistent, survives Mini App reopens, server-validated)
+ * Refresh token: sessionStorage (rotated by the server and cleared on tab close)
  */
 export const tokenStorage = {
   getAccessToken(): string | null {
@@ -74,8 +74,7 @@ export const tokenStorage = {
 
   getRefreshToken(): string | null {
     try {
-      // Refresh token in localStorage for persistence across Mini App reopens
-      return localStorage.getItem(TOKEN_KEYS.REFRESH) || sessionStorage.getItem(TOKEN_KEYS.REFRESH);
+      return sessionStorage.getItem(TOKEN_KEYS.REFRESH);
     } catch {
       return null;
     }
@@ -84,10 +83,8 @@ export const tokenStorage = {
   setTokens(accessToken: string, refreshToken: string): void {
     try {
       sessionStorage.setItem(TOKEN_KEYS.ACCESS, accessToken);
-      // Refresh token in localStorage — survives Mini App tab close/reopen
-      localStorage.setItem(TOKEN_KEYS.REFRESH, refreshToken);
-      // Clean up old sessionStorage refresh token (migration)
-      sessionStorage.removeItem(TOKEN_KEYS.REFRESH);
+      sessionStorage.setItem(TOKEN_KEYS.REFRESH, refreshToken);
+      localStorage.removeItem(TOKEN_KEYS.REFRESH);
     } catch {
       // Storage unavailable
     }
@@ -117,8 +114,7 @@ export const tokenStorage = {
 
   /**
    * Миграция токенов для обратной совместимости.
-   * Access token: sessionStorage (short-lived, OK to lose on tab close)
-   * Refresh token: localStorage (persistent, survives Mini App reopens)
+   * Both tokens are moved out of persistent localStorage.
    */
   migrateFromLocalStorage(): void {
     try {
@@ -130,12 +126,11 @@ export const tokenStorage = {
       }
       localStorage.removeItem(TOKEN_KEYS.ACCESS);
 
-      // Migrate refresh token from sessionStorage to localStorage
-      const refreshInSession = sessionStorage.getItem(TOKEN_KEYS.REFRESH);
-      if (refreshInSession && !localStorage.getItem(TOKEN_KEYS.REFRESH)) {
-        localStorage.setItem(TOKEN_KEYS.REFRESH, refreshInSession);
+      const refreshInLocal = localStorage.getItem(TOKEN_KEYS.REFRESH);
+      if (refreshInLocal && !sessionStorage.getItem(TOKEN_KEYS.REFRESH)) {
+        sessionStorage.setItem(TOKEN_KEYS.REFRESH, refreshInLocal);
       }
-      sessionStorage.removeItem(TOKEN_KEYS.REFRESH);
+      localStorage.removeItem(TOKEN_KEYS.REFRESH);
     } catch {
       // ignore
     }
@@ -273,16 +268,21 @@ class TokenRefreshManager {
   private async doRefresh(refreshToken: string): Promise<string | null> {
     try {
       // Используем чистый axios (не apiClient) чтобы избежать циклической зависимости
-      const response = await axios.post<{ access_token?: string }>(
+      const response = await axios.post<{ access_token?: string; refresh_token?: string }>(
         this.refreshEndpoint,
         { refresh_token: refreshToken },
         { headers: { 'Content-Type': 'application/json' } },
       );
 
       const newAccessToken = response.data.access_token;
+      const newRefreshToken = response.data.refresh_token;
 
       if (newAccessToken) {
-        tokenStorage.setAccessToken(newAccessToken);
+        if (newRefreshToken) {
+          tokenStorage.setTokens(newAccessToken, newRefreshToken);
+        } else {
+          tokenStorage.setAccessToken(newAccessToken);
+        }
         return newAccessToken;
       }
 

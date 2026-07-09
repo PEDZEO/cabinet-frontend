@@ -12,7 +12,16 @@ export default function LanguageSwitcher() {
     const fetchLanguages = async () => {
       try {
         const data = await infoApi.getLanguages();
-        setAvailableLanguages(data.languages);
+        const languages = Array.isArray(data?.languages)
+          ? data.languages.filter(
+              (language): language is LanguageInfo =>
+                Boolean(language) &&
+                typeof language.code === 'string' &&
+                typeof language.name === 'string' &&
+                typeof language.flag === 'string',
+            )
+          : [];
+        setAvailableLanguages(languages);
       } catch {
         // Silently fall back to empty list — component handles it gracefully
       }

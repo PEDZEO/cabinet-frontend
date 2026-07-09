@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useHapticFeedback } from '@/platform/hooks/useHaptic';
 import { useNavigate } from 'react-router';
 import type { Subscription } from '@/types';
+import { copyToClipboard } from '@/utils/clipboard';
 
 interface LiteSubscriptionCardProps {
   subscription: Subscription;
@@ -32,9 +33,9 @@ export function LiteSubscriptionCard({ subscription, deviceLimit }: LiteSubscrip
   const [copied, setCopied] = useState(false);
   const isUnlimitedTraffic = subscription.traffic_limit_gb <= 0;
 
-  const copySubscriptionLink = () => {
+  const copySubscriptionLink = async () => {
     if (subscription.subscription_url && !subscription.hide_subscription_link) {
-      navigator.clipboard.writeText(subscription.subscription_url);
+      await copyToClipboard(subscription.subscription_url);
       setCopied(true);
       haptic.success();
       setTimeout(() => setCopied(false), 2000);

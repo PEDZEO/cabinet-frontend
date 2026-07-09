@@ -19,6 +19,7 @@ import {
   markLiteOnboardingStep,
   resetLiteOnboardingFlowState,
 } from '@/features/lite/onboardingFlow';
+import { copyToClipboard } from '@/utils/clipboard';
 
 const ConnectIcon = () => (
   <svg
@@ -235,9 +236,9 @@ export function LiteDashboard() {
       ? `${referralLink.slice(0, 30)}...${referralLink.slice(-10)}`
       : referralLink;
 
-  const copyReferralLink = () => {
+  const copyReferralLink = async () => {
     if (referralLink) {
-      navigator.clipboard.writeText(referralLink);
+      await copyToClipboard(referralLink);
       setCopied(true);
       haptic.success();
       setTimeout(() => setCopied(false), 2000);

@@ -15,6 +15,7 @@ import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { getReferralBonusParts } from '@/utils/referralBonus';
 import { trackAnalyticsEvent } from '@/utils/analyticsEvents';
+import { copyToClipboard } from '@/utils/clipboard';
 
 const CopyIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
@@ -125,13 +126,13 @@ export function UltimaReferral() {
     ? `${window.location.origin}/login?ref=${info.referral_code}`
     : '';
 
-  const copyLink = () => {
+  const copyLink = async () => {
     if (!referralLink) return;
     trackAnalyticsEvent('ultima_referral_link_copy', {
       source: 'referral_page',
       commission_percent: info?.commission_percent || 0,
     });
-    void navigator.clipboard.writeText(referralLink);
+    await copyToClipboard(referralLink);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1600);
   };

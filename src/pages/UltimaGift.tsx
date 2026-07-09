@@ -8,6 +8,7 @@ import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { UltimaDesktopGift } from '@/components/ultima/desktop/UltimaDesktopGift';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { usePlatform } from '@/platform/hooks/usePlatform';
+import { copyToClipboard } from '@/utils/clipboard';
 
 const PENDING_GIFT_TOKEN_KEY = 'ultima_pending_gift_token';
 const PENDING_GIFT_TOKEN_TS_KEY = 'ultima_pending_gift_token_ts';
@@ -218,7 +219,7 @@ export function UltimaGift() {
   const copyGiftCodeValue = useCallback(
     async (code: string) => {
       try {
-        await navigator.clipboard.writeText(code);
+        await copyToClipboard(code);
         setSuccess(
           t('balance.promocode.giftCodeCopied', {
             defaultValue: `Промокод скопирован: ${code}`,
@@ -1022,7 +1023,7 @@ export function UltimaGift() {
                     </p>
                     <button
                       type="button"
-                      onClick={() => void navigator.clipboard.writeText(generatedGiftCode)}
+                      onClick={() => void copyGiftCodeValue(generatedGiftCode)}
                       className="h-8 shrink-0 rounded-lg border border-emerald-200/20 bg-emerald-900/[0.35] px-2 text-[12px] text-white/[0.85]"
                     >
                       {t('common.copy', { defaultValue: 'Копировать' })}

@@ -23,6 +23,7 @@ import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { warmUltimaStartup } from '@/features/ultima/warmup';
 import { ultimaSurfaceStyle } from '@/features/ultima/surfaces';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { copyToClipboard } from '@/utils/clipboard';
 
 const CopyIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
@@ -328,7 +329,7 @@ export function UltimaProfile() {
 
   const copyText = async (value: string, setDone: (value: boolean) => void) => {
     if (!value) return;
-    await navigator.clipboard.writeText(value);
+    await copyToClipboard(value);
     setDone(true);
     window.setTimeout(() => setDone(false), 1500);
   };
