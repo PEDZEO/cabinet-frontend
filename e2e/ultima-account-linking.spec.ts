@@ -239,6 +239,40 @@ async function mockUltimaLinkingApi(page: Page): Promise<void> {
 }
 
 test.describe('Ultima account linking callback', () => {
+  test('completes yandex login when callback returns without browser storage', async ({ page }) => {
+    await bootstrapUltimaModeOnly(page);
+    await mockUltimaLinkingApi(page);
+
+    await page.route('**/api/cabinet/auth/oauth/state-context', async (route: Route) => {
+      await route.fulfill({
+        status: 200,
+        json: { provider: 'yandex', intent: 'login' },
+      });
+    });
+    await page.route('**/api/cabinet/auth/oauth/yandex/callback', async (route: Route) => {
+      await route.fulfill({
+        status: 200,
+        json: {
+          access_token: createFakeJwt(),
+          refresh_token: createFakeJwt(),
+          token_type: 'bearer',
+          expires_in: 900,
+          user: STATIC_USER,
+        },
+      });
+    });
+
+    await page.goto('/auth/oauth/callback?code=test-code&state=cross-browser-yandex-state');
+
+    await page.waitForURL((url) => url.pathname === '/');
+    const storedTokens = await page.evaluate(() => ({
+      access: sessionStorage.getItem('access_token'),
+      refresh: sessionStorage.getItem('refresh_token'),
+    }));
+    expect(storedTokens.access).toBeTruthy();
+    expect(storedTokens.refresh).toBeTruthy();
+  });
+
   test('redirects browser callback back to account linking without crashing', async ({ page }) => {
     await bootstrapUltimaAuth(page);
     await mockUltimaLinkingApi(page);

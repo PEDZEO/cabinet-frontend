@@ -87,10 +87,12 @@ export function saveOAuthState(
   }
 }
 
-export function getAndClearOAuthState(): SavedOAuthState | null {
-  const saved = loadState(OAUTH_STATE_KEY, OAUTH_PROVIDER_KEY, OAUTH_RETURN_TO_KEY);
+export function peekOAuthState(): SavedOAuthState | null {
+  return loadState(OAUTH_STATE_KEY, OAUTH_PROVIDER_KEY, OAUTH_RETURN_TO_KEY);
+}
+
+export function clearOAuthState(): void {
   clearState(OAUTH_STATE_KEY, OAUTH_PROVIDER_KEY, OAUTH_RETURN_TO_KEY);
-  return saved;
 }
 
 export function saveLinkOAuthState(

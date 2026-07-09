@@ -190,6 +190,16 @@ export const authApi = {
     return response.data;
   },
 
+  getOAuthStateContext: async (
+    state: string,
+  ): Promise<{ provider: string; intent: 'login' | 'link' }> => {
+    const response = await apiClient.post<{ provider: string; intent: 'login' | 'link' }>(
+      '/cabinet/auth/oauth/state-context',
+      { state },
+    );
+    return response.data;
+  },
+
   getLinkProviderAuthorizeUrl: async (provider: string): Promise<LinkProviderAuthorizeResponse> => {
     const response = await apiClient.get<LinkProviderAuthorizeResponse>(
       `/cabinet/auth/link/oauth/${encodeURIComponent(provider)}/authorize`,

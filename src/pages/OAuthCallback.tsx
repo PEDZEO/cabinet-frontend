@@ -17,9 +17,10 @@ import {
 } from '@/utils/accountLinkingFlow';
 import { useAuthStore } from '@/store/auth';
 import {
+  clearOAuthState,
   getAndClearLinkOAuthState,
-  getAndClearOAuthState,
   peekLinkOAuthState,
+  peekOAuthState,
 } from '@/utils/oauthState';
 import type { LinkOperationResponse } from '@/types';
 
@@ -74,8 +75,9 @@ export default function OAuthCallback() {
       provider = consumed?.provider;
       returnTo = consumed?.returnTo;
     } else {
-      const loginSaved = getAndClearOAuthState();
+      const loginSaved = peekOAuthState();
       if (loginSaved && loginSaved.state === urlState) {
+        clearOAuthState();
         mode = 'login';
         provider = loginSaved.provider;
         returnTo = loginSaved.returnTo;
@@ -100,6 +102,31 @@ export default function OAuthCallback() {
 
     const handle = async () => {
       window.history.replaceState({}, '', '/auth/oauth/callback');
+
+      if (isAppFlow) {
+        window.location.replace(buildAppOAuthCallbackUrl(originalSearch));
+        return;
+      }
+
+      if (mode === 'link-server' && !provider) {
+        try {
+          const stateContext = await authApi.getOAuthStateContext(urlState);
+          provider = stateContext.provider;
+          if (stateContext.intent === 'login') {
+            mode = 'login';
+          }
+        } catch (err) {
+          const parsedError = parseApiErrorDetail(err);
+          setErrorMode('login');
+          setError(
+            getLocalizedAuthErrorDetailMessage(t, {
+              ...parsedError,
+              fallback: t('auth.oauthExpired', 'OAuth session expired. Please try again.'),
+            }),
+          );
+          return;
+        }
+      }
 
       if (mode === 'link-browser' && provider) {
         try {
@@ -159,11 +186,6 @@ export default function OAuthCallback() {
             }),
           );
         }
-        return;
-      }
-
-      if (isAppFlow || (mode === 'link-server' && !hasStoredSession)) {
-        window.location.replace(buildAppOAuthCallbackUrl(originalSearch));
         return;
       }
 
