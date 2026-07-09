@@ -49,23 +49,13 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
     cleanup();
 
     // Build WebSocket URL
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    let host = window.location.host;
-
-    // Handle VITE_API_URL - can be absolute URL or relative path
-    const apiUrl = import.meta.env.VITE_API_URL;
-    if (apiUrl && (apiUrl.startsWith('http://') || apiUrl.startsWith('https://'))) {
-      try {
-        host = new URL(apiUrl).host;
-      } catch {
-        // If URL parsing fails, use window.location.host
-      }
-    }
-
-    const wsUrl = `${protocol}//${host}/cabinet/ws?token=${accessToken}`;
+    const apiBaseUrl = new URL(import.meta.env.VITE_API_URL || '/', window.location.origin);
+    const protocol = apiBaseUrl.protocol === 'https:' ? 'wss:' : 'ws:';
+    const apiPath = apiBaseUrl.pathname.replace(/\/+$/, '');
+    const wsUrl = `${protocol}//${apiBaseUrl.host}${apiPath}/cabinet/ws`;
 
     try {
-      const ws = new WebSocket(wsUrl);
+      const ws = new WebSocket(wsUrl, ['cabinet-auth', accessToken]);
       wsRef.current = ws;
 
       ws.onopen = () => {
