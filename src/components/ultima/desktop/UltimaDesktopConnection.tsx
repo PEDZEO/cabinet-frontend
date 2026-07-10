@@ -6,6 +6,7 @@ import {
   ultimaSurfaceStyle,
 } from '@/features/ultima/surfaces';
 import { cn } from '@/lib/utils';
+import { UltimaDesktopRail } from './UltimaDesktopWorkspace';
 
 type Step = 1 | 2 | 3;
 
@@ -170,15 +171,19 @@ export function UltimaDesktopConnection({
         };
 
   return (
-    <div className="ultima-shell-inner lg:max-w-[1320px]">
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start xl:grid-cols-[minmax(0,1fr)_360px]">
+    <div className="ultima-shell-inner ultima-desktop-workspace">
+      <UltimaDesktopRail bottomNav={bottomNav} />
+      <main className="ultima-desktop-main">
         <div className="space-y-4">
           <section
-            className={cn(ultimaCardClassName, 'relative overflow-hidden p-5 lg:p-6')}
+            className={cn(
+              ultimaCardClassName,
+              'ultima-desktop-connection-hero relative overflow-hidden p-5 lg:p-6',
+            )}
             style={accentCardStyle}
           >
             <div className="absolute inset-y-0 right-[-10%] w-[34%] rounded-full bg-white/[0.05] blur-3xl" />
-            <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-center xl:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="relative grid gap-6 xl:grid-cols-[minmax(0,1fr)_260px] xl:items-center">
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200/[0.28] bg-emerald-300/[0.12] px-3 py-1 text-sm text-emerald-50">
                   <span className="h-2 w-2 rounded-full bg-current" />
@@ -196,21 +201,21 @@ export function UltimaDesktopConnection({
               </div>
 
               <div className="flex items-center justify-center">
-                <div className="relative flex h-[300px] w-[300px] items-center justify-center">
+                <div className="relative flex h-[260px] w-[260px] items-center justify-center">
                   <div
-                    className="ultima-step-ring pointer-events-none absolute h-[300px] w-[300px] rounded-full border"
+                    className="ultima-step-ring pointer-events-none absolute h-[260px] w-[260px] rounded-full border"
                     style={{
                       borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 22%, transparent)',
                     }}
                   />
                   <div
-                    className="ultima-step-ring ultima-step-ring-delay-1 pointer-events-none absolute h-[226px] w-[226px] rounded-full border"
+                    className="ultima-step-ring ultima-step-ring-delay-1 pointer-events-none absolute h-[196px] w-[196px] rounded-full border"
                     style={{
                       borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 18%, transparent)',
                     }}
                   />
                   <div
-                    className="ultima-step-ring ultima-step-ring-delay-2 pointer-events-none absolute h-[160px] w-[160px] rounded-full border"
+                    className="ultima-step-ring ultima-step-ring-delay-2 pointer-events-none absolute h-[138px] w-[138px] rounded-full border"
                     style={{
                       borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 46%, transparent)',
                     }}
@@ -218,7 +223,7 @@ export function UltimaDesktopConnection({
                   <svg
                     viewBox="0 0 240 240"
                     className="pointer-events-none absolute -rotate-90"
-                    style={{ width: 190, height: 190 }}
+                    style={{ width: 166, height: 166 }}
                     aria-hidden
                   >
                     <circle
@@ -256,7 +261,7 @@ export function UltimaDesktopConnection({
                           ? onStartAddSubscription
                           : onToggleVpn
                     }
-                    className="group relative z-10 inline-flex h-[104px] w-[104px] items-center justify-center rounded-full bg-black/[0.08] transition-transform duration-200 hover:scale-[1.02] active:scale-[0.97]"
+                    className="group relative z-10 inline-flex h-[96px] w-[96px] items-center justify-center rounded-full bg-black/[0.08] transition-transform duration-200 hover:scale-[1.02] active:scale-[0.97]"
                     aria-label={step === 3 ? toggleVpnLabel : primaryAction.label}
                   >
                     {icon}
@@ -338,94 +343,92 @@ export function UltimaDesktopConnection({
             </div>
           </section>
         </div>
+      </main>
 
-        <aside className="ultima-desktop-aside space-y-4 lg:sticky lg:top-4">
-          {showInfo && step === 1 && (
-            <section className={cn(ultimaCardClassName, 'p-5')} style={defaultCardStyle}>
-              <div className="flex items-start justify-between gap-3">
-                <h2 className="text-[28px] font-semibold leading-[1.02] tracking-[-0.03em] text-white">
-                  {t('subscription.connection.importantInfo', {
-                    defaultValue: 'Важная информация',
-                  })}
-                </h2>
-                <button
-                  type="button"
-                  onClick={onDismissInfo}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 text-white/80"
-                  aria-label="close-info-card"
-                >
-                  ×
-                </button>
-              </div>
-              <p className="mt-3 text-sm leading-[1.6] text-white/[0.74]">
-                {importantInfoDescription}
-              </p>
-              <div className="mt-5 space-y-2.5">
-                <button
-                  type="button"
-                  onClick={onDismissInfo}
-                  className="ultima-btn-pill ultima-btn-secondary flex w-full items-center justify-center px-5 py-3 text-[15px]"
-                >
-                  {canPermanentlyHideReminder
-                    ? t('subscription.connection.remindLater', {
-                        defaultValue: 'Напомнить позже',
-                      })
-                    : t('subscription.connection.gotIt', {
-                        defaultValue: 'Все понятно',
-                      })}
-                </button>
-                {canPermanentlyHideReminder && (
-                  <button
-                    type="button"
-                    onClick={onHideReminderPermanently}
-                    className="ultima-btn-pill ultima-btn-secondary flex w-full items-center justify-center px-5 py-3 text-[15px]"
-                  >
-                    {t('subscription.connection.hideReminderPermanently', {
-                      defaultValue: 'Больше не показывать',
-                    })}
-                  </button>
-                )}
-              </div>
-            </section>
-          )}
-
+      <aside className="ultima-desktop-context">
+        {showInfo && step === 1 && (
           <section className={cn(ultimaCardClassName, 'p-5')} style={defaultCardStyle}>
-            <div className="text-[28px] font-semibold leading-[1] tracking-[-0.035em] text-white">
-              {title}
-            </div>
-            <p className="mt-3 text-sm leading-[1.6] text-white/[0.68]">{subtitle}</p>
-
-            <div className="mt-5 space-y-3">
-              {setupControls}
+            <div className="flex items-start justify-between gap-3">
+              <h2 className="text-[28px] font-semibold leading-[1.02] tracking-[-0.03em] text-white">
+                {t('subscription.connection.importantInfo', {
+                  defaultValue: 'Важная информация',
+                })}
+              </h2>
               <button
                 type="button"
-                onClick={primaryAction.onClick}
-                className="ultima-btn-pill ultima-btn-primary flex w-full items-center justify-center px-5 py-3 text-[15px]"
+                onClick={onDismissInfo}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 text-white/80"
+                aria-label="close-info-card"
               >
-                {primaryAction.label}
+                ×
               </button>
+            </div>
+            <p className="mt-3 text-sm leading-[1.6] text-white/[0.74]">
+              {importantInfoDescription}
+            </p>
+            <div className="mt-5 space-y-2.5">
               <button
                 type="button"
-                onClick={secondaryAction.onClick}
+                onClick={onDismissInfo}
                 className="ultima-btn-pill ultima-btn-secondary flex w-full items-center justify-center px-5 py-3 text-[15px]"
               >
-                {secondaryAction.label}
+                {canPermanentlyHideReminder
+                  ? t('subscription.connection.remindLater', {
+                      defaultValue: 'Напомнить позже',
+                    })
+                  : t('subscription.connection.gotIt', {
+                      defaultValue: 'Все понятно',
+                    })}
               </button>
-              {step === 3 && (
+              {canPermanentlyHideReminder && (
                 <button
                   type="button"
-                  onClick={onToggleVpn}
+                  onClick={onHideReminderPermanently}
                   className="ultima-btn-pill ultima-btn-secondary flex w-full items-center justify-center px-5 py-3 text-[15px]"
                 >
-                  {t('subscription.connection.desktopOpenHapp', { defaultValue: 'Открыть Happ' })}
+                  {t('subscription.connection.hideReminderPermanently', {
+                    defaultValue: 'Больше не показывать',
+                  })}
                 </button>
               )}
             </div>
           </section>
+        )}
 
-          <div className="ultima-nav-dock mt-0">{bottomNav}</div>
-        </aside>
-      </div>
+        <section className={cn(ultimaCardClassName, 'p-5')} style={defaultCardStyle}>
+          <div className="text-[28px] font-semibold leading-[1] tracking-[-0.035em] text-white">
+            {title}
+          </div>
+          <p className="mt-3 text-sm leading-[1.6] text-white/[0.68]">{subtitle}</p>
+
+          <div className="mt-5 space-y-3">
+            {setupControls}
+            <button
+              type="button"
+              onClick={primaryAction.onClick}
+              className="ultima-btn-pill ultima-btn-primary flex w-full items-center justify-center px-5 py-3 text-[15px]"
+            >
+              {primaryAction.label}
+            </button>
+            <button
+              type="button"
+              onClick={secondaryAction.onClick}
+              className="ultima-btn-pill ultima-btn-secondary flex w-full items-center justify-center px-5 py-3 text-[15px]"
+            >
+              {secondaryAction.label}
+            </button>
+            {step === 3 && (
+              <button
+                type="button"
+                onClick={onToggleVpn}
+                className="ultima-btn-pill ultima-btn-secondary flex w-full items-center justify-center px-5 py-3 text-[15px]"
+              >
+                {t('subscription.connection.desktopOpenHapp', { defaultValue: 'Открыть Happ' })}
+              </button>
+            )}
+          </div>
+        </section>
+      </aside>
     </div>
   );
 }

@@ -701,7 +701,13 @@ export function UltimaConnection({
         {(hasMultiplePlatforms || hasMultipleApps) && (
           <div className="space-y-2.5">
             {hasMultiplePlatforms && (
-              <div className="flex gap-1.5 overflow-x-auto pb-1">
+              <div
+                className={
+                  isDesktopViewport
+                    ? 'grid grid-cols-2 gap-1.5'
+                    : 'flex gap-1.5 overflow-x-auto pb-1'
+                }
+              >
                 {availablePlatformKeys.map((platformKey) => {
                   const isActive = platformKey === activePlatformKey;
                   return (
@@ -709,7 +715,9 @@ export function UltimaConnection({
                       key={platformKey}
                       type="button"
                       onClick={() => handlePlatformChange(platformKey)}
-                      className={`shrink-0 rounded-full border px-3 py-1.5 text-[12px] font-medium transition ${
+                      className={`rounded-full border px-3 py-1.5 text-[12px] font-medium transition ${
+                        isDesktopViewport ? 'min-w-0 truncate text-center' : 'shrink-0'
+                      } ${
                         isActive
                           ? 'border-emerald-200/[0.45] bg-emerald-300/[0.16] text-white'
                           : 'border-white/10 bg-white/[0.04] text-white/[0.62] hover:border-white/20 hover:text-white/85'

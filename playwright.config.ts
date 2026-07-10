@@ -15,7 +15,7 @@ export default defineConfig({
     command: 'npm run build && node e2e/static-server.mjs',
     url: 'http://127.0.0.1:4173',
     reuseExistingServer: true,
-    timeout: 120_000,
+    timeout: 240_000,
     stdout: 'ignore',
     stderr: 'ignore',
   },

@@ -74,7 +74,7 @@ export default function Login() {
   if (isUltimaMode) {
     return (
       <div
-        className="relative min-h-[100dvh] overflow-hidden"
+        className="ultima-login relative min-h-[100dvh] overflow-hidden"
         style={{
           background:
             'linear-gradient(160deg, color-mix(in srgb, var(--ultima-color-bg-top) 28%, transparent) 0%, color-mix(in srgb, var(--ultima-color-bg-bottom) 40%, #000000) 100%)',
@@ -104,134 +104,136 @@ export default function Login() {
           <LanguageSwitcher />
         </div>
 
-        <div className="relative z-10 mx-auto flex w-full max-w-md flex-col px-4">
-          <header className="mb-4 flex flex-col items-center pt-8 text-center">
+        <div className="relative z-10 mx-auto flex w-full max-w-md flex-col px-4 lg:grid lg:min-h-[calc(100dvh-64px)] lg:max-w-[1040px] lg:grid-cols-[minmax(0,0.8fr)_minmax(420px,1fr)] lg:items-center lg:gap-16 lg:px-8">
+          <header className="mb-4 flex flex-col items-center pt-8 text-center lg:mb-0 lg:items-start lg:pt-0 lg:text-left">
             <UltimaAuthBrandMark
               appName={appName}
               logoUrl={logoUrl}
               showBrandLogo={showUltimaBrandLogo}
-              className="mb-3"
+              className="mb-3 lg:mb-5"
             />
-            <h1 className="text-[34px] font-semibold leading-none tracking-[-0.01em] text-white">
+            <h1 className="text-[34px] font-semibold leading-none text-white lg:text-[48px]">
               {appName}
             </h1>
-            <p className="text-white/62 mt-2 text-[14px]">
+            <p className="text-white/62 mt-2 max-w-[34ch] text-[14px] lg:mt-3 lg:text-[16px]">
               {t('auth.loginToAccount', { defaultValue: 'Войдите в аккаунт для продолжения' })}
             </p>
           </header>
 
-          {registeredEmail ? (
-            <div
-              className="rounded-[28px] border p-4 backdrop-blur-md"
-              style={{
-                borderColor:
-                  'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
-                background: 'color-mix(in srgb, var(--ultima-color-surface) 44%, transparent)',
-              }}
-            >
-              <LoginCheckEmailCard email={registeredEmail} onBackToLogin={handleBackToLogin} />
-            </div>
-          ) : (
-            <div
-              className="rounded-[28px] border p-4 backdrop-blur-md"
-              style={{
-                borderColor:
-                  'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
-                background: 'color-mix(in srgb, var(--ultima-color-surface) 44%, transparent)',
-              }}
-            >
-              {error && (
-                <>
-                  <div className="bg-rose-500/12 mb-3 rounded-xl border border-rose-300/35 px-4 py-2.5 text-sm text-rose-100">
-                    {error}
-                  </div>
-                  <AuthSupportAction
-                    visible={errorNeedsSupport}
-                    containerClassName="mb-4"
-                    buttonClassName="border-white/10 bg-white/6 text-white hover:bg-white/10 hover:text-white"
-                    usernameClassName="text-white/55"
+          <div className="min-w-0">
+            {registeredEmail ? (
+              <div
+                className="rounded-[28px] border p-4 backdrop-blur-md lg:rounded-[8px] lg:p-5"
+                style={{
+                  borderColor:
+                    'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
+                  background: 'color-mix(in srgb, var(--ultima-color-surface) 44%, transparent)',
+                }}
+              >
+                <LoginCheckEmailCard email={registeredEmail} onBackToLogin={handleBackToLogin} />
+              </div>
+            ) : (
+              <div
+                className="rounded-[28px] border p-4 backdrop-blur-md lg:rounded-[8px] lg:p-5"
+                style={{
+                  borderColor:
+                    'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
+                  background: 'color-mix(in srgb, var(--ultima-color-surface) 44%, transparent)',
+                }}
+              >
+                {error && (
+                  <>
+                    <div className="bg-rose-500/12 mb-3 rounded-xl border border-rose-300/35 px-4 py-2.5 text-sm text-rose-100">
+                      {error}
+                    </div>
+                    <AuthSupportAction
+                      visible={errorNeedsSupport}
+                      containerClassName="mb-4"
+                      buttonClassName="border-white/10 bg-white/6 text-white hover:bg-white/10 hover:text-white"
+                      usernameClassName="text-white/55"
+                    />
+                  </>
+                )}
+
+                <div
+                  className="rounded-2xl border p-3 lg:rounded-[8px] lg:p-4"
+                  style={{
+                    borderColor:
+                      'color-mix(in srgb, var(--ultima-color-surface-border) 20%, transparent)',
+                    background: 'color-mix(in srgb, var(--ultima-color-surface) 34%, transparent)',
+                  }}
+                >
+                  <LoginTelegramSection
+                    isLoading={isLoading}
+                    isTelegramWebApp={isTelegramWebApp}
+                    hasError={Boolean(error)}
+                    botUsername={botUsername}
+                    referralCode={referralCode || undefined}
+                    onRetryTelegramAuth={handleRetryTelegramAuth}
                   />
-                </>
-              )}
+                </div>
 
-              <div
-                className="rounded-2xl border p-3"
-                style={{
-                  borderColor:
-                    'color-mix(in srgb, var(--ultima-color-surface-border) 20%, transparent)',
-                  background: 'color-mix(in srgb, var(--ultima-color-surface) 34%, transparent)',
-                }}
-              >
-                <LoginTelegramSection
-                  isLoading={isLoading}
-                  isTelegramWebApp={isTelegramWebApp}
-                  hasError={Boolean(error)}
-                  botUsername={botUsername}
-                  referralCode={referralCode || undefined}
-                  onRetryTelegramAuth={handleRetryTelegramAuth}
-                />
+                <div
+                  className="mt-3 rounded-2xl border p-3 lg:rounded-[8px] lg:p-4"
+                  style={{
+                    borderColor:
+                      'color-mix(in srgb, var(--ultima-color-surface-border) 20%, transparent)',
+                    background: 'color-mix(in srgb, var(--ultima-color-surface) 34%, transparent)',
+                  }}
+                >
+                  <LoginOAuthSection
+                    isLoading={isOAuthProvidersLoading}
+                    providers={oauthProviders}
+                    oauthLoading={oauthLoading}
+                    onOAuthLogin={handleOAuthLogin}
+                  />
+                </div>
+
+                <div
+                  className="mt-3 rounded-2xl border p-3 lg:rounded-[8px] lg:p-4"
+                  style={{
+                    borderColor:
+                      'color-mix(in srgb, var(--ultima-color-surface-border) 20%, transparent)',
+                    background: 'color-mix(in srgb, var(--ultima-color-surface) 34%, transparent)',
+                  }}
+                >
+                  <LoginEmailAuthSection
+                    isEmailAuthLoading={isEmailAuthLoading}
+                    isEmailAuthEnabled={isEmailAuthEnabled}
+                    showEmailForm={showEmailForm}
+                    onToggleEmailForm={handleToggleEmailForm}
+                    showForgotPassword={showForgotPassword}
+                    forgotPasswordSent={forgotPasswordSent}
+                    forgotPasswordEmail={forgotPasswordEmail}
+                    onForgotPasswordEmailChange={setForgotPasswordEmail}
+                    forgotPasswordError={forgotPasswordError}
+                    forgotPasswordLoading={forgotPasswordLoading}
+                    onForgotPasswordSubmit={handleForgotPassword}
+                    onCloseForgotPassword={closeForgotPasswordModal}
+                    authMode={authMode}
+                    onAuthModeChange={setAuthMode}
+                    onEmailSubmit={handleEmailSubmit}
+                    firstName={firstName}
+                    onFirstNameChange={setFirstName}
+                    email={email}
+                    onEmailChange={setEmail}
+                    password={password}
+                    onPasswordChange={setPassword}
+                    confirmPassword={confirmPassword}
+                    onConfirmPasswordChange={setConfirmPassword}
+                    isLoading={isLoading}
+                    onShowForgotPassword={handleShowForgotPassword}
+                  />
+                </div>
               </div>
+            )}
 
-              <div
-                className="mt-3 rounded-2xl border p-3"
-                style={{
-                  borderColor:
-                    'color-mix(in srgb, var(--ultima-color-surface-border) 20%, transparent)',
-                  background: 'color-mix(in srgb, var(--ultima-color-surface) 34%, transparent)',
-                }}
-              >
-                <LoginOAuthSection
-                  isLoading={isOAuthProvidersLoading}
-                  providers={oauthProviders}
-                  oauthLoading={oauthLoading}
-                  onOAuthLogin={handleOAuthLogin}
-                />
-              </div>
-
-              <div
-                className="mt-3 rounded-2xl border p-3"
-                style={{
-                  borderColor:
-                    'color-mix(in srgb, var(--ultima-color-surface-border) 20%, transparent)',
-                  background: 'color-mix(in srgb, var(--ultima-color-surface) 34%, transparent)',
-                }}
-              >
-                <LoginEmailAuthSection
-                  isEmailAuthLoading={isEmailAuthLoading}
-                  isEmailAuthEnabled={isEmailAuthEnabled}
-                  showEmailForm={showEmailForm}
-                  onToggleEmailForm={handleToggleEmailForm}
-                  showForgotPassword={showForgotPassword}
-                  forgotPasswordSent={forgotPasswordSent}
-                  forgotPasswordEmail={forgotPasswordEmail}
-                  onForgotPasswordEmailChange={setForgotPasswordEmail}
-                  forgotPasswordError={forgotPasswordError}
-                  forgotPasswordLoading={forgotPasswordLoading}
-                  onForgotPasswordSubmit={handleForgotPassword}
-                  onCloseForgotPassword={closeForgotPasswordModal}
-                  authMode={authMode}
-                  onAuthModeChange={setAuthMode}
-                  onEmailSubmit={handleEmailSubmit}
-                  firstName={firstName}
-                  onFirstNameChange={setFirstName}
-                  email={email}
-                  onEmailChange={setEmail}
-                  password={password}
-                  onPasswordChange={setPassword}
-                  confirmPassword={confirmPassword}
-                  onConfirmPasswordChange={setConfirmPassword}
-                  isLoading={isLoading}
-                  onShowForgotPassword={handleShowForgotPassword}
-                />
-              </div>
-            </div>
-          )}
-
-          <p className="mt-4 text-center text-[11px] text-white/45">
-            {t('auth.secureLoginHint', {
-              defaultValue: 'Безопасный вход через Telegram, OAuth или email.',
-            })}
-          </p>
+            <p className="mt-4 text-center text-[11px] text-white/45">
+              {t('auth.secureLoginHint', {
+                defaultValue: 'Безопасный вход через Telegram, OAuth или email.',
+              })}
+            </p>
+          </div>
         </div>
       </div>
     );

@@ -5,6 +5,7 @@ import {
   ultimaSurfaceStyle,
 } from '@/features/ultima/surfaces';
 import { cn } from '@/lib/utils';
+import { UltimaDesktopWorkspace } from './UltimaDesktopWorkspace';
 
 type UltimaDesktopMetric = {
   label: string;
@@ -42,15 +43,16 @@ export function UltimaDesktopPanel({
   className,
 }: UltimaDesktopPanelProps) {
   return (
-    <section className={cn(ultimaCardClassName, className)} style={defaultCardStyle}>
+    <section
+      className={cn(ultimaCardClassName, 'ultima-desktop-panel', className)}
+      style={defaultCardStyle}
+    >
       {title ? (
-        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+        <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 className="text-[20px] font-semibold leading-[1.08] tracking-[-0.02em] text-white">
-              {title}
-            </h2>
+            <h2 className="text-[18px] font-semibold leading-tight text-white">{title}</h2>
             {subtitle ? (
-              <p className="mt-1.5 max-w-[64ch] text-sm leading-[1.55] text-white/[0.62]">
+              <p className="mt-1.5 max-w-[64ch] text-sm leading-[1.55] text-white/[0.58]">
                 {subtitle}
               </p>
             ) : null}
@@ -80,68 +82,36 @@ export function UltimaDesktopSectionLayout({
     normalizedEyebrow && normalizedEyebrow !== normalizedTitle ? eyebrow : undefined;
 
   return (
-    <div className="ultima-shell-inner lg:max-w-[1280px]">
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start xl:grid-cols-[minmax(0,1fr)_320px]">
-        <div className={cn('space-y-4', contentClassName)}>
-          <section
-            className={cn(ultimaCardClassName, 'relative overflow-hidden p-5 lg:p-6')}
-            style={accentCardStyle}
-          >
-            <div className="absolute inset-y-0 right-[-8%] w-[34%] rounded-full bg-white/[0.05] blur-3xl" />
-            <div className="relative">
-              <div className="flex flex-wrap items-start justify-between gap-6">
-                <div className="max-w-[54ch]">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-[16px] border border-white/10 bg-white/[0.08] text-white/[0.84]">
-                    {icon}
-                  </div>
-                  {displayEyebrow ? (
-                    <div className="mt-4 text-[11px] uppercase tracking-[0.22em] text-white/[0.48]">
-                      {displayEyebrow}
-                    </div>
-                  ) : null}
-                  <h1 className="mt-2.5 max-w-[18ch] text-[clamp(30px,3.2vw,46px)] font-semibold leading-[0.98] tracking-[-0.035em] text-white">
-                    {title}
-                  </h1>
-                  <p className="mt-3 max-w-[62ch] text-[15px] leading-[1.62] text-white/70">
-                    {subtitle}
-                  </p>
-                </div>
-                {heroActions ? <div className="flex flex-wrap gap-2">{heroActions}</div> : null}
-              </div>
-
-              {metrics && metrics.length > 0 ? (
-                <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                  {metrics.map((metric) => (
-                    <div
-                      key={`${metric.label}-${metric.value}`}
-                      className="rounded-[18px] border border-white/10 bg-black/[0.16] px-4 py-3"
-                    >
-                      <div className="text-[10px] uppercase tracking-[0.18em] text-white/[0.42]">
-                        {metric.label}
-                      </div>
-                      <div className="mt-2 text-[22px] font-semibold leading-none tracking-[-0.025em] text-white">
-                        {metric.value}
-                      </div>
-                      {metric.hint ? (
-                        <div className="mt-2 text-[13px] leading-[1.5] text-white/60">
-                          {metric.hint}
-                        </div>
-                      ) : null}
-                    </div>
-                  ))}
-                </div>
+    <UltimaDesktopWorkspace bottomNav={bottomNav} aside={aside}>
+      <div className={cn('ultima-desktop-page space-y-5', contentClassName)}>
+        <header className="ultima-desktop-page-header" style={accentCardStyle}>
+          <div className="ultima-desktop-page-heading">
+            <div className="ultima-desktop-page-icon">{icon}</div>
+            <div className="min-w-0">
+              {displayEyebrow ? (
+                <div className="ultima-desktop-eyebrow">{displayEyebrow}</div>
               ) : null}
+              <h1>{title}</h1>
+              <p>{subtitle}</p>
             </div>
+          </div>
+          {heroActions ? <div className="ultima-desktop-page-actions">{heroActions}</div> : null}
+        </header>
+
+        {metrics && metrics.length > 0 ? (
+          <section className="ultima-desktop-metrics" aria-label="Сводка">
+            {metrics.map((metric) => (
+              <article key={`${metric.label}-${metric.value}`}>
+                <div>{metric.label}</div>
+                <strong>{metric.value}</strong>
+                {metric.hint ? <p>{metric.hint}</p> : null}
+              </article>
+            ))}
           </section>
+        ) : null}
 
-          {children}
-        </div>
-
-        <aside className="ultima-desktop-aside space-y-4 lg:sticky lg:top-4">
-          {aside}
-          <div className="ultima-nav-dock mt-0">{bottomNav}</div>
-        </aside>
+        {children}
       </div>
-    </div>
+    </UltimaDesktopWorkspace>
   );
 }

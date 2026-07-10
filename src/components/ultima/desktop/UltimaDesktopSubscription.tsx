@@ -6,6 +6,7 @@ import {
   ultimaSurfaceStyle,
 } from '@/features/ultima/surfaces';
 import { cn } from '@/lib/utils';
+import { UltimaDesktopRail } from './UltimaDesktopWorkspace';
 
 type UltimaDesktopSubscriptionPeriod = {
   days: number;
@@ -83,13 +84,17 @@ export function UltimaDesktopSubscription({
   const { t } = useTranslation();
 
   return (
-    <div className="ultima-shell-inner lg:max-w-[1180px]">
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start xl:grid-cols-[minmax(0,1fr)_330px]">
+    <div className="ultima-shell-inner ultima-desktop-workspace">
+      <UltimaDesktopRail bottomNav={bottomNav} />
+      <main className="ultima-desktop-main">
         <div className="space-y-4">
           {planSelector}
 
           <section
-            className={cn(ultimaCardClassName, 'relative overflow-hidden p-4 lg:p-5')}
+            className={cn(
+              ultimaCardClassName,
+              'ultima-desktop-subscription-config relative overflow-hidden p-4 lg:p-5',
+            )}
             style={accentCardStyle}
           >
             <div className="absolute inset-y-0 right-[-10%] w-[36%] rounded-full bg-white/[0.05] blur-3xl" />
@@ -128,7 +133,7 @@ export function UltimaDesktopSubscription({
           </section>
 
           <section className={cn(ultimaCardClassName, 'p-5 xl:p-6')} style={defaultCardStyle}>
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
               {periods.map((period) => (
                 <button
                   key={period.days}
@@ -163,139 +168,137 @@ export function UltimaDesktopSubscription({
             </div>
           </section>
         </div>
+      </main>
 
-        <aside className="ultima-desktop-aside space-y-4 lg:sticky lg:top-4">
-          <section className={cn(ultimaCardClassName, 'p-5')} style={defaultCardStyle}>
-            <div className="text-[28px] font-semibold leading-[1] tracking-[-0.035em] text-white">
-              {payablePriceLabel}
-            </div>
-            <p className="mt-2 text-sm leading-[1.6] text-white/[0.68]">
-              {t('subscription.purchaseSummary', {
-                defaultValue: 'Итоговая сумма к оплате после списания баланса.',
-              })}
-            </p>
+      <aside className="ultima-desktop-context">
+        <section className={cn(ultimaCardClassName, 'p-5')} style={defaultCardStyle}>
+          <div className="text-[28px] font-semibold leading-[1] tracking-[-0.035em] text-white">
+            {payablePriceLabel}
+          </div>
+          <p className="mt-2 text-sm leading-[1.6] text-white/[0.68]">
+            {t('subscription.purchaseSummary', {
+              defaultValue: 'Итоговая сумма к оплате после списания баланса.',
+            })}
+          </p>
 
-            <div className="mt-5 space-y-3">
-              <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <span className="text-sm font-medium text-white">
-                    {t('ultima.checkoutIncludedTitle', { defaultValue: 'Что входит' })}
-                  </span>
-                  <span className="text-xs text-white/[0.54]">
-                    {t('ultima.checkoutIncludedSubtitle', {
-                      defaultValue: 'Применится сразу после оплаты',
-                    })}
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  {includedItems.map((item) => (
-                    <div key={item.label} className="rounded-[16px] bg-black/15 px-3 py-2">
-                      <div className="text-[11px] uppercase tracking-[0.12em] text-white/[0.46]">
-                        {item.label}
-                      </div>
-                      <div className="mt-1 line-clamp-2 break-words text-sm font-medium leading-snug text-white/90">
-                        {item.value}
-                      </div>
+          <div className="mt-5 space-y-3">
+            <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <span className="text-sm font-medium text-white">
+                  {t('ultima.checkoutIncludedTitle', { defaultValue: 'Что входит' })}
+                </span>
+                <span className="text-xs text-white/[0.54]">
+                  {t('ultima.checkoutIncludedSubtitle', {
+                    defaultValue: 'Применится сразу после оплаты',
+                  })}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {includedItems.map((item) => (
+                  <div key={item.label} className="rounded-[16px] bg-black/15 px-3 py-2">
+                    <div className="text-[11px] uppercase tracking-[0.12em] text-white/[0.46]">
+                      {item.label}
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
-                <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-white/[0.62]">
-                    {t('lite.devicesTotal', { defaultValue: 'Устройства' })}
-                  </span>
-                  <span className="font-medium text-white/90">{selectedDeviceLimit}</span>
-                </div>
-                {baseDeviceLimitLabel ? (
-                  <div className="mt-1 text-xs leading-[1.5] text-white/[0.56]">
-                    {baseDeviceLimitLabel}
+                    <div className="mt-1 line-clamp-2 break-words text-sm font-medium leading-snug text-white/90">
+                      {item.value}
+                    </div>
                   </div>
-                ) : null}
-                {extraDeviceChargeLabel ? (
-                  <div className="mt-1 text-xs leading-[1.5] text-amber-100/[0.86]">
-                    {extraDeviceChargeLabel}
-                  </div>
-                ) : null}
-              </div>
-              <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
-                <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-white/[0.62]">
-                    {t('subscription.period', { defaultValue: 'Период' })}
-                  </span>
-                  <span className="font-medium text-white/90">{selectedPeriodLabel}</span>
-                </div>
-              </div>
-              <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
-                <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-white/[0.62]">
-                    {t('subscription.price', { defaultValue: 'Стоимость' })}
-                  </span>
-                  <span className="font-medium text-white/90">{totalPriceLabel}</span>
-                </div>
-                {originalPriceLabel ? (
-                  <div className="mt-1 text-right text-xs text-white/[0.48] line-through">
-                    {originalPriceLabel}
-                  </div>
-                ) : null}
-              </div>
-              <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
-                <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-white/[0.62]">
-                    {t('balance.title', { defaultValue: 'С баланса' })}
-                  </span>
-                  <span className="font-medium text-white/90">{balanceAppliedLabel}</span>
-                </div>
+                ))}
               </div>
             </div>
 
-            {(awaitingPaymentCompletion || isFinalizingPending) && (
-              <div className="mt-4 rounded-[22px] border border-emerald-200/[0.24] bg-emerald-300/10 px-4 py-3 text-sm leading-[1.55] text-emerald-50/90">
-                {t('subscription.paymentPending', {
-                  defaultValue:
-                    'Ожидаем подтверждение оплаты. После возврата подписка обновится автоматически.',
-                })}
+            <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
+              <div className="flex items-center justify-between gap-3 text-sm">
+                <span className="text-white/[0.62]">
+                  {t('lite.devicesTotal', { defaultValue: 'Устройства' })}
+                </span>
+                <span className="font-medium text-white/90">{selectedDeviceLimit}</span>
               </div>
-            )}
-
-            {error && (
-              <div className="mt-4 rounded-[22px] border border-rose-200/[0.24] bg-rose-400/10 px-4 py-3 text-sm leading-[1.55] text-rose-100">
-                {error}
+              {baseDeviceLimitLabel ? (
+                <div className="mt-1 text-xs leading-[1.5] text-white/[0.56]">
+                  {baseDeviceLimitLabel}
+                </div>
+              ) : null}
+              {extraDeviceChargeLabel ? (
+                <div className="mt-1 text-xs leading-[1.5] text-amber-100/[0.86]">
+                  {extraDeviceChargeLabel}
+                </div>
+              ) : null}
+            </div>
+            <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
+              <div className="flex items-center justify-between gap-3 text-sm">
+                <span className="text-white/[0.62]">
+                  {t('subscription.period', { defaultValue: 'Период' })}
+                </span>
+                <span className="font-medium text-white/90">{selectedPeriodLabel}</span>
               </div>
-            )}
-
-            {legacyDeviceNotice ? (
-              <div className="mt-4 rounded-[18px] border border-amber-200/[0.24] bg-amber-300/10 px-3 py-2.5 text-[13px] leading-[1.45] text-amber-50/[0.92]">
-                <p>{legacyDeviceNotice}</p>
-                {onReduceDevices ? (
-                  <button
-                    type="button"
-                    onClick={onReduceDevices}
-                    className="ultima-btn-pill ultima-btn-secondary mt-2 w-full px-3 py-2 text-[13px]"
-                  >
-                    {t('subscription.manageDevices', { defaultValue: 'Управление устройствами' })}
-                  </button>
-                ) : null}
+            </div>
+            <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
+              <div className="flex items-center justify-between gap-3 text-sm">
+                <span className="text-white/[0.62]">
+                  {t('subscription.price', { defaultValue: 'Стоимость' })}
+                </span>
+                <span className="font-medium text-white/90">{totalPriceLabel}</span>
               </div>
-            ) : null}
+              {originalPriceLabel ? (
+                <div className="mt-1 text-right text-xs text-white/[0.48] line-through">
+                  {originalPriceLabel}
+                </div>
+              ) : null}
+            </div>
+            <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
+              <div className="flex items-center justify-between gap-3 text-sm">
+                <span className="text-white/[0.62]">
+                  {t('balance.title', { defaultValue: 'С баланса' })}
+                </span>
+                <span className="font-medium text-white/90">{balanceAppliedLabel}</span>
+              </div>
+            </div>
+          </div>
 
-            {paymentRecoveryCard ? <div className="mt-4">{paymentRecoveryCard}</div> : null}
+          {(awaitingPaymentCompletion || isFinalizingPending) && (
+            <div className="mt-4 rounded-[22px] border border-emerald-200/[0.24] bg-emerald-300/10 px-4 py-3 text-sm leading-[1.55] text-emerald-50/90">
+              {t('subscription.paymentPending', {
+                defaultValue:
+                  'Ожидаем подтверждение оплаты. После возврата подписка обновится автоматически.',
+              })}
+            </div>
+          )}
 
-            <button
-              type="button"
-              onClick={onPay}
-              disabled={isPayDisabled}
-              className="ultima-btn-pill ultima-btn-primary mt-5 flex w-full items-center justify-between px-5 py-3 text-[15px] disabled:cursor-not-allowed disabled:opacity-75"
-            >
-              <span>{t('subscription.pay', { defaultValue: 'Оплатить подписку' })}</span>
-              <span className="text-white/[0.92]">{payablePriceLabel}</span>
-            </button>
-          </section>
+          {error && (
+            <div className="mt-4 rounded-[22px] border border-rose-200/[0.24] bg-rose-400/10 px-4 py-3 text-sm leading-[1.55] text-rose-100">
+              {error}
+            </div>
+          )}
 
-          <div className="ultima-nav-dock mt-0">{bottomNav}</div>
-        </aside>
-      </div>
+          {legacyDeviceNotice ? (
+            <div className="mt-4 rounded-[18px] border border-amber-200/[0.24] bg-amber-300/10 px-3 py-2.5 text-[13px] leading-[1.45] text-amber-50/[0.92]">
+              <p>{legacyDeviceNotice}</p>
+              {onReduceDevices ? (
+                <button
+                  type="button"
+                  onClick={onReduceDevices}
+                  className="ultima-btn-pill ultima-btn-secondary mt-2 w-full px-3 py-2 text-[13px]"
+                >
+                  {t('subscription.manageDevices', { defaultValue: 'Управление устройствами' })}
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+
+          {paymentRecoveryCard ? <div className="mt-4">{paymentRecoveryCard}</div> : null}
+
+          <button
+            type="button"
+            onClick={onPay}
+            disabled={isPayDisabled}
+            className="ultima-btn-pill ultima-btn-primary mt-5 flex w-full items-center justify-between px-5 py-3 text-[15px] disabled:cursor-not-allowed disabled:opacity-75"
+          >
+            <span>{t('subscription.pay', { defaultValue: 'Оплатить подписку' })}</span>
+            <span className="text-white/[0.92]">{payablePriceLabel}</span>
+          </button>
+        </section>
+      </aside>
     </div>
   );
 }

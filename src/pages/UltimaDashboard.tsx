@@ -1270,18 +1270,18 @@ export function UltimaDashboard() {
         {desktopReferralCta}
       </>
     ) : null;
-  const desktopTrialGuide =
-    showTrialSetupCard && !isTrialGuideVisible ? (
-      <UltimaTrialGuide
-        variant="inline"
-        expiryDateLabel={trialExpiryDateLabel}
-        daysLeft={daysLeft}
-        trafficLimitGb={subscription?.traffic_limit_gb ?? 0}
-        deviceLimit={subscription?.device_limit ?? 0}
-        onPrimaryAction={handleTrialGuideStart}
-        onStatClick={openSubscriptionInfo}
-      />
-    ) : null;
+  const desktopShowTrialSetupCard = isActiveTrial && connectionStep === 1 && !isConnectionCompleted;
+  const desktopTrialGuide = desktopShowTrialSetupCard ? (
+    <UltimaTrialGuide
+      variant="inline"
+      expiryDateLabel={trialExpiryDateLabel}
+      daysLeft={daysLeft}
+      trafficLimitGb={subscription?.traffic_limit_gb ?? 0}
+      deviceLimit={subscription?.device_limit ?? 0}
+      onPrimaryAction={handleTrialGuideStart}
+      onStatClick={openSubscriptionInfo}
+    />
+  ) : null;
 
   if (!isI18nReady || !isSubscriptionReady || shouldHoldForAutoTrial) {
     if (isDesktopViewport) {
@@ -1340,7 +1340,7 @@ export function UltimaDashboard() {
           promoMessage={promoMessage}
           activeDiscount={activeDiscount}
           firstPromoOffer={firstPromoOffer}
-          showTrialSetupCard={showTrialSetupCard}
+          showTrialSetupCard={desktopShowTrialSetupCard}
           trialGuide={desktopTrialGuide}
           hasSetupReminder={hasSetupReminder}
           hasCompactSetupReminder={hasCompactSetupReminder}
@@ -1357,18 +1357,6 @@ export function UltimaDashboard() {
           isActivatingOffer={claimOfferMutation.isPending}
           bottomNav={bottomNav}
         />
-
-        {isTrialGuideVisible && (
-          <UltimaTrialGuide
-            variant="overlay"
-            expiryDateLabel={trialExpiryDateLabel}
-            daysLeft={daysLeft}
-            trafficLimitGb={subscription?.traffic_limit_gb ?? 0}
-            deviceLimit={subscription?.device_limit ?? 0}
-            onPrimaryAction={handleTrialGuideStart}
-            onDismiss={handleTrialGuideDismiss}
-          />
-        )}
       </div>
     );
   }
