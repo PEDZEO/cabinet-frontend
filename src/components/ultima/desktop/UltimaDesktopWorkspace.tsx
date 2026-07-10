@@ -1,7 +1,8 @@
 import { type ReactNode } from 'react';
-import { ChevronRight, CreditCard, ShieldCheck, UserRound } from 'lucide-react';
+import { ChevronRight, CreditCard, Settings, ShieldCheck, UserRound } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router';
 import { cn } from '@/lib/utils';
+import { useAuthStore } from '@/store/auth';
 
 type UltimaDesktopWorkspaceProps = {
   bottomNav: ReactNode;
@@ -11,6 +12,9 @@ type UltimaDesktopWorkspaceProps = {
 };
 
 export function UltimaDesktopRail({ bottomNav }: { bottomNav: ReactNode }) {
+  const navigate = useNavigate();
+  const isAdmin = useAuthStore((state) => state.isAdmin);
+
   return (
     <aside className="ultima-desktop-rail" aria-label="Ultimteam">
       <div className="ultima-desktop-brand">
@@ -26,6 +30,19 @@ export function UltimaDesktopRail({ bottomNav }: { bottomNav: ReactNode }) {
       <div className="ultima-desktop-navigation">
         <span className="ultima-desktop-navigation-label">Навигация</span>
         {bottomNav}
+        {isAdmin ? (
+          <button
+            type="button"
+            className="ultima-desktop-admin-link"
+            onClick={() => navigate('/admin')}
+            aria-label="Админка"
+            title="Админка"
+            data-testid="ultima-desktop-admin-link"
+          >
+            <Settings size={18} strokeWidth={1.8} aria-hidden />
+            <span>Админка</span>
+          </button>
+        ) : null}
       </div>
 
       <div className="ultima-desktop-rail-status">

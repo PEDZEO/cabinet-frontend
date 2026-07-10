@@ -125,7 +125,10 @@ async function bootstrapUltimaDesktop(page: Page): Promise<void> {
   );
 }
 
-async function mockUltimaDesktopApi(page: Page): Promise<void> {
+async function mockUltimaDesktopApi(
+  page: Page,
+  { isAdmin = false }: { isAdmin?: boolean } = {},
+): Promise<void> {
   await page.route('**/api/**', async (route: Route) => {
     const request = route.request();
     const url = new URL(request.url());
@@ -135,7 +138,7 @@ async function mockUltimaDesktopApi(page: Page): Promise<void> {
     const respond = async (json: unknown) => route.fulfill({ status: 200, json });
 
     if (path === '/cabinet/auth/me') return respond(USER);
-    if (path === '/cabinet/auth/me/is-admin') return respond({ is_admin: false });
+    if (path === '/cabinet/auth/me/is-admin') return respond({ is_admin: isAdmin });
     if (path === '/cabinet/auth/identities') {
       return respond({
         identities: [],
@@ -333,6 +336,29 @@ test.describe('Ultima desktop workspace', () => {
     await page.mouse.move(800, 600);
     await page.mouse.wheel(0, 720);
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  });
+
+  test('keeps the admin action inside the rail', async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 768 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page, { isAdmin: true });
+    await page.goto('/');
+
+    await expect(page.locator('.ultima-desktop-workspace')).toBeVisible();
+    const adminAction = page.getByTestId('ultima-desktop-admin-link');
+    await expect(adminAction).toBeVisible();
+    expect(await adminAction.count()).toBe(1);
+
+    const adminBox = await adminAction.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { left: rect.left, right: rect.right };
+    });
+    const topbarBox = await page.locator('.ultima-desktop-topbar').evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { left: rect.left, right: rect.right };
+    });
+
+    expect(adminBox.right).toBeLessThanOrEqual(topbarBox.left);
   });
 
   test('keeps primary desktop sections reachable from the rail', async ({ page }) => {

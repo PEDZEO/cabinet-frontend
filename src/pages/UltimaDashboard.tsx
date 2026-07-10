@@ -1106,9 +1106,8 @@ export function UltimaDashboard() {
     [handleShieldTap, renderHomeBrandMark, shieldDigits, shieldRipples, t],
   );
 
-  const adminButtonClassName = isDesktopViewport
-    ? 'absolute right-5 top-5 z-30 inline-flex h-10 items-center gap-2 rounded-full border border-white/10 bg-black/25 px-4 text-sm font-medium text-white/[0.84] backdrop-blur'
-    : 'absolute right-4 top-2 z-30 inline-flex h-9 items-center gap-1.5 rounded-full border border-amber-300/30 bg-black/30 px-3 text-xs font-medium text-amber-200 backdrop-blur';
+  const adminButtonClassName =
+    'absolute right-4 top-2 z-30 inline-flex h-9 items-center gap-1.5 rounded-full border border-amber-300/30 bg-black/30 px-3 text-xs font-medium text-amber-200 backdrop-blur';
   const shellClassName = cn(
     'ultima-shell ultima-shell-shared-nav-docked',
     isDesktopViewport && 'ultima-flat-frames ultima-shell-dashboard-desktop',
@@ -1316,13 +1315,6 @@ export function UltimaDashboard() {
     return (
       <div className={shellClassName}>
         <div className="ultima-shell-aura" />
-        {isAdmin && (
-          <button type="button" onClick={() => navigate('/admin')} className={adminButtonClassName}>
-            <AdminIcon />
-            <span>{t('admin.nav.title', { defaultValue: 'Админ' })}</span>
-          </button>
-        )}
-
         <UltimaDesktopDashboard
           heroButton={renderShieldButton('h-[108px] w-[108px] lg:h-[124px] lg:w-[124px]')}
           referralCta={desktopActionCtaStack}
