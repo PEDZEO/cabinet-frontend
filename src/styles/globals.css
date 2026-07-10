@@ -2214,6 +2214,11 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
     gap: 20px;
   }
 
+  .ultima-desktop-workspace-no-context {
+    grid-template-columns: 196px minmax(0, 1fr);
+    grid-template-areas: 'rail main';
+  }
+
   .ultima-desktop-brand {
     justify-content: flex-start;
   }
@@ -2243,6 +2248,10 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   .ultima-desktop-workspace {
     grid-template-columns: 220px minmax(0, 1fr) 300px;
     gap: 24px;
+  }
+
+  .ultima-desktop-workspace-no-context {
+    grid-template-columns: 220px minmax(0, 1fr);
   }
 }
 

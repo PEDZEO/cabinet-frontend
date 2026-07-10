@@ -291,19 +291,30 @@ test.describe('Ultima desktop workspace', () => {
     await page.goto('/');
 
     await page.locator('[data-ultima-nav-btn="1"]').nth(2).click();
+    await expect(page).toHaveURL(/\/ultima\/news$/);
     await expect(page.locator('h1').first()).toBeVisible();
+    await expect(page.locator('.ultima-desktop-workspace')).toHaveClass(
+      /ultima-desktop-workspace-no-context/,
+    );
+    const newsMainWidth = await page
+      .locator('.ultima-desktop-main')
+      .evaluate((element) => element.getBoundingClientRect().width);
+    expect(newsMainWidth).toBeGreaterThan(1100);
     await expectNoHorizontalOverflow(page);
 
     await page.locator('[data-ultima-nav-btn="1"]').nth(3).click();
+    await expect(page).toHaveURL(/\/profile$/);
     await expect(page.locator('h1').first()).toBeVisible();
 
     await page.locator('[data-ultima-nav-btn="1"]').nth(4).click();
+    await expect(page).toHaveURL(/\/support$/);
     await expect(page.locator('h1').first()).toBeVisible();
 
     await page.goto('/ultima/devices');
     await expect(page.locator('h1').first()).toBeVisible();
 
     await page.locator('[data-ultima-nav-btn="1"]').nth(1).click();
+    await expect(page).toHaveURL(/\/connection$/);
     await expect(page.locator('.ultima-desktop-workspace')).toBeVisible();
     await expectNoHorizontalOverflow(page);
   });

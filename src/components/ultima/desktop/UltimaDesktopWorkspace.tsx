@@ -42,7 +42,13 @@ export function UltimaDesktopWorkspace({
   className,
 }: UltimaDesktopWorkspaceProps) {
   return (
-    <div className={cn('ultima-shell-inner ultima-desktop-workspace', className)}>
+    <div
+      className={cn(
+        'ultima-shell-inner ultima-desktop-workspace',
+        !aside && 'ultima-desktop-workspace-no-context',
+        className,
+      )}
+    >
       <UltimaDesktopRail bottomNav={bottomNav} />
 
       <main className="ultima-desktop-main">{children}</main>

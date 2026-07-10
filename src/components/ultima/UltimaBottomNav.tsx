@@ -25,7 +25,7 @@ export function UltimaBottomNav({
 
   const navLabels: Record<UltimaBottomNavTab, string> = {
     home: t('nav.dashboard', { defaultValue: 'Главная' }),
-    connection: t('lite.connectAndSetup', { defaultValue: 'Подключение' }),
+    connection: t('lite.connect', { defaultValue: 'Подключиться' }),
     news: t('nav.info', { defaultValue: 'Информация' }),
     profile: t('nav.profile', { defaultValue: 'Профиль' }),
     support: t('nav.support', { defaultValue: 'Поддержка' }),
