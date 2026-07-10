@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react';
-import { ShieldCheck } from 'lucide-react';
+import { ChevronRight, CreditCard, ShieldCheck, UserRound } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router';
 import { cn } from '@/lib/utils';
 
 type UltimaDesktopWorkspaceProps = {
@@ -22,7 +23,10 @@ export function UltimaDesktopRail({ bottomNav }: { bottomNav: ReactNode }) {
         </span>
       </div>
 
-      <div className="ultima-desktop-navigation">{bottomNav}</div>
+      <div className="ultima-desktop-navigation">
+        <span className="ultima-desktop-navigation-label">Навигация</span>
+        {bottomNav}
+      </div>
 
       <div className="ultima-desktop-rail-status">
         <span aria-hidden />
@@ -32,6 +36,59 @@ export function UltimaDesktopRail({ bottomNav }: { bottomNav: ReactNode }) {
         </div>
       </div>
     </aside>
+  );
+}
+
+function getWorkspaceTitle(pathname: string): string {
+  if (pathname === '/') return 'Главная';
+  if (pathname.startsWith('/subscription')) return 'Тарифы и оплата';
+  if (pathname.startsWith('/connection')) return 'Подключение';
+  if (pathname.startsWith('/ultima/devices')) return 'Устройства';
+  if (pathname.startsWith('/ultima/news')) return 'Новости';
+  if (pathname.startsWith('/support')) return 'Поддержка';
+  if (pathname.startsWith('/profile')) return 'Профиль';
+  if (pathname.startsWith('/referral')) return 'Реферальная программа';
+  if (pathname.startsWith('/balance')) return 'Баланс';
+  if (pathname.startsWith('/ultima/subscription-info')) return 'Подписка';
+  return 'Личный кабинет';
+}
+
+export function UltimaDesktopTopbar() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const pageTitle = getWorkspaceTitle(location.pathname);
+
+  return (
+    <header className="ultima-desktop-topbar">
+      <div className="ultima-desktop-breadcrumb">
+        <span>Ultimteam</span>
+        <ChevronRight className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+        <strong>{pageTitle}</strong>
+      </div>
+
+      <div className="ultima-desktop-topbar-actions">
+        <div className="ultima-desktop-security-label">
+          <ShieldCheck className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+          <span>Защищенный кабинет</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => navigate('/subscription')}
+          aria-label="Тарифы и оплата"
+          title="Тарифы и оплата"
+        >
+          <CreditCard className="h-[18px] w-[18px]" strokeWidth={1.8} />
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate('/profile')}
+          aria-label="Профиль"
+          title="Профиль"
+        >
+          <UserRound className="h-[18px] w-[18px]" strokeWidth={1.8} />
+        </button>
+      </div>
+    </header>
   );
 }
 
@@ -51,9 +108,14 @@ export function UltimaDesktopWorkspace({
     >
       <UltimaDesktopRail bottomNav={bottomNav} />
 
-      <main className="ultima-desktop-main">{children}</main>
+      <div className="ultima-desktop-stage">
+        <UltimaDesktopTopbar />
 
-      {aside ? <aside className="ultima-desktop-context">{aside}</aside> : null}
+        <div className={cn('ultima-desktop-stage-body', aside && 'has-context')}>
+          <main className="ultima-desktop-main">{children}</main>
+          {aside ? <aside className="ultima-desktop-context">{aside}</aside> : null}
+        </div>
+      </div>
     </div>
   );
 }

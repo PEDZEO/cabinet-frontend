@@ -381,9 +381,26 @@ export function AppShell({ children }: AppShellProps) {
   }, [logoUrl]);
 
   useEffect(() => {
-    if (!isUltimaSceneRoute || isDesktopViewport) {
+    if (!isUltimaSceneRoute) {
       return;
     }
+
+    if (isDesktopViewport) {
+      const root = document.documentElement;
+      const hasOpenDialog = Boolean(document.querySelector('[role="dialog"][data-state="open"]'));
+
+      if (
+        !hasOpenDialog &&
+        document.body.style.overflow === 'hidden' &&
+        root.style.overflow === 'hidden'
+      ) {
+        document.body.style.overflow = '';
+        root.style.overflow = '';
+      }
+
+      return;
+    }
+
     const prevBody = document.body.style.overflow;
     const prevHtml = document.documentElement.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -636,7 +653,7 @@ export function AppShell({ children }: AppShellProps) {
       )}
 
       {/* Desktop spacer */}
-      <div className="hidden h-14 lg:block" />
+      <div className={isUltimaMode ? 'hidden' : 'hidden h-14 lg:block'} />
 
       {/* Mobile spacer */}
       <div

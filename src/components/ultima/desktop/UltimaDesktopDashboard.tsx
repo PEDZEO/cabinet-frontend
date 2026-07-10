@@ -9,7 +9,7 @@ import {
 import type { UltimaNextActionKind } from '@/features/ultima/nextAction';
 import { cn } from '@/lib/utils';
 import type { Subscription } from '@/types';
-import { UltimaDesktopRail } from './UltimaDesktopWorkspace';
+import { UltimaDesktopRail, UltimaDesktopTopbar } from './UltimaDesktopWorkspace';
 
 export type UltimaDashboardStatusTone = 'active' | 'trial' | 'warning' | 'expired';
 
@@ -213,50 +213,55 @@ export function UltimaDesktopDashboardSkeleton({ bottomNav }: { bottomNav: React
   return (
     <div className="ultima-shell-inner ultima-desktop-workspace">
       <UltimaDesktopRail bottomNav={bottomNav} />
-      <main className="ultima-desktop-main">
-        <div className="space-y-4">
-          <section className={cn(ultimaCardClassName, 'min-h-[220px]')} style={accentCardStyle}>
-            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_132px] lg:items-center">
-              <div>
-                <div className="h-14 w-[74%] animate-pulse rounded-[24px] bg-white/10" />
-                <div className="mt-4 h-5 w-[44%] animate-pulse rounded-full bg-white/10" />
-                <div className="mt-6 flex gap-3">
-                  <div className="h-12 flex-1 animate-pulse rounded-full bg-white/10" />
-                  <div className="h-12 w-[228px] animate-pulse rounded-full bg-white/10" />
+      <div className="ultima-desktop-stage">
+        <UltimaDesktopTopbar />
+        <div className="ultima-desktop-stage-body has-context">
+          <main className="ultima-desktop-main">
+            <div className="space-y-4">
+              <section className={cn(ultimaCardClassName, 'min-h-[220px]')} style={accentCardStyle}>
+                <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_132px] lg:items-center">
+                  <div>
+                    <div className="h-14 w-[74%] animate-pulse rounded-[24px] bg-white/10" />
+                    <div className="mt-4 h-5 w-[44%] animate-pulse rounded-full bg-white/10" />
+                    <div className="mt-6 flex gap-3">
+                      <div className="h-12 flex-1 animate-pulse rounded-full bg-white/10" />
+                      <div className="h-12 w-[228px] animate-pulse rounded-full bg-white/10" />
+                    </div>
+                  </div>
+                  <div className="mx-auto h-[124px] w-[124px] animate-pulse rounded-full border border-white/10 bg-white/[0.06]" />
                 </div>
+              </section>
+
+              <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className={cn(ultimaCardClassName, 'min-h-[136px] animate-pulse')}
+                    style={defaultCardStyle}
+                  />
+                ))}
               </div>
-              <div className="mx-auto h-[124px] w-[124px] animate-pulse rounded-full border border-white/10 bg-white/[0.06]" />
+
+              <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_360px]">
+                <div
+                  className={cn(ultimaCardClassName, 'min-h-[220px] animate-pulse')}
+                  style={defaultCardStyle}
+                />
+                <div
+                  className={cn(ultimaCardClassName, 'min-h-[220px] animate-pulse')}
+                  style={defaultCardStyle}
+                />
+              </div>
             </div>
-          </section>
-
-          <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <div
-                key={index}
-                className={cn(ultimaCardClassName, 'min-h-[136px] animate-pulse')}
-                style={defaultCardStyle}
-              />
-            ))}
-          </div>
-
-          <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_360px]">
+          </main>
+          <aside className="ultima-desktop-context">
             <div
-              className={cn(ultimaCardClassName, 'min-h-[220px] animate-pulse')}
+              className={cn(ultimaCardClassName, 'min-h-[236px] animate-pulse')}
               style={defaultCardStyle}
             />
-            <div
-              className={cn(ultimaCardClassName, 'min-h-[220px] animate-pulse')}
-              style={defaultCardStyle}
-            />
-          </div>
+          </aside>
         </div>
-      </main>
-      <aside className="ultima-desktop-context">
-        <div
-          className={cn(ultimaCardClassName, 'min-h-[236px] animate-pulse')}
-          style={defaultCardStyle}
-        />
-      </aside>
+      </div>
     </div>
   );
 }
@@ -441,164 +446,281 @@ export function UltimaDesktopDashboard({
   return (
     <div className="ultima-shell-inner ultima-desktop-workspace">
       <UltimaDesktopRail bottomNav={bottomNav} />
-      <main className="ultima-desktop-main">
-        <div className="space-y-4">
-          <section
-            className={cn(
-              ultimaCardClassName,
-              'ultima-desktop-dashboard-hero relative overflow-hidden p-5 lg:p-6 xl:p-7',
-            )}
-            style={accentCardStyle}
-          >
-            <div className="absolute inset-y-0 right-[-8%] w-[38%] rounded-full bg-white/[0.05] blur-3xl" />
-            <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_132px] lg:items-center xl:grid-cols-[minmax(0,1fr)_150px]">
-              <div>
-                <h1 className="max-w-[22ch] text-[clamp(34px,3.8vw,54px)] font-semibold leading-[0.98] tracking-[-0.038em] text-white">
-                  {expiryLabel}
-                </h1>
-                <div className="mt-4 flex flex-wrap items-center gap-3">
-                  <span
-                    className={cn(
-                      'relative inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm',
-                      tone.chip,
+      <div className="ultima-desktop-stage">
+        <UltimaDesktopTopbar />
+        <div className="ultima-desktop-stage-body has-context">
+          <main className="ultima-desktop-main">
+            <div className="space-y-4">
+              <section
+                className={cn(
+                  ultimaCardClassName,
+                  'ultima-desktop-dashboard-hero relative overflow-hidden p-5 lg:p-6 xl:p-7',
+                )}
+                style={accentCardStyle}
+              >
+                <div className="absolute inset-y-0 right-[-8%] w-[38%] rounded-full bg-white/[0.05] blur-3xl" />
+                <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_132px] lg:items-center xl:grid-cols-[minmax(0,1fr)_150px]">
+                  <div>
+                    <h1 className="max-w-[22ch] text-[clamp(34px,3.8vw,54px)] font-semibold leading-[0.98] tracking-[-0.038em] text-white">
+                      {expiryLabel}
+                    </h1>
+                    <div className="mt-4 flex flex-wrap items-center gap-3">
+                      <span
+                        className={cn(
+                          'relative inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm',
+                          tone.chip,
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            'absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full blur-[6px]',
+                            tone.glow,
+                          )}
+                        />
+                        <span className="relative h-2 w-2 rounded-full bg-current" />
+                        {statusLabel}
+                      </span>
+                      <span className={cn('text-sm', tone.soft)}>
+                        {daysLeft === null
+                          ? t('ultima.desktop.noDeadline', {
+                              defaultValue: 'Срок появится после активации доступа.',
+                            })
+                          : t('ultima.desktop.daysLeftShort', {
+                              count: Math.max(daysLeft, 0),
+                              defaultValue: `${Math.max(daysLeft, 0)} дней осталось`,
+                            })}
+                      </span>
+                    </div>
+                    {promoMessage && (
+                      <p className="mt-3 text-sm text-white/[0.88]">{promoMessage}</p>
                     )}
-                  >
-                    <span
-                      className={cn(
-                        'absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full blur-[6px]',
-                        tone.glow,
-                      )}
-                    />
-                    <span className="relative h-2 w-2 rounded-full bg-current" />
-                    {statusLabel}
-                  </span>
-                  <span className={cn('text-sm', tone.soft)}>
-                    {daysLeft === null
-                      ? t('ultima.desktop.noDeadline', {
-                          defaultValue: 'Срок появится после активации доступа.',
-                        })
-                      : t('ultima.desktop.daysLeftShort', {
-                          count: Math.max(daysLeft, 0),
-                          defaultValue: `${Math.max(daysLeft, 0)} дней осталось`,
-                        })}
-                  </span>
-                </div>
-                {promoMessage && <p className="mt-3 text-sm text-white/[0.88]">{promoMessage}</p>}
 
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <button
-                    type="button"
-                    onClick={onPrimaryAction}
-                    className="ultima-btn-pill ultima-btn-primary inline-flex min-h-[48px] items-center justify-between gap-4 px-5 text-[15px]"
-                  >
-                    <span>{primaryCtaLabel}</span>
-                    <span className="text-white/[0.84]">{primaryCtaMeta}</span>
-                  </button>
-                  {primaryActionKind !== 'setup' ? (
-                    <button
-                      type="button"
-                      onClick={onOpenConnection}
-                      className={cn(
-                        'ultima-btn-pill inline-flex min-h-[48px] items-center justify-between gap-4 px-5 text-[15px]',
-                        showConnectionCtaHighlight ? 'ultima-btn-primary' : 'ultima-btn-secondary',
-                      )}
-                    >
-                      <span>
-                        {t('lite.connectAndSetup', { defaultValue: 'Установка и настройка' })}
-                      </span>
-                      <span className="text-white/[0.68]">
-                        {t('ultima.desktop.stepShort', {
-                          step: isConnectionCompleted ? 3 : connectionStep,
-                          defaultValue: `Шаг ${isConnectionCompleted ? 3 : connectionStep}/3`,
-                        })}
-                      </span>
-                    </button>
-                  ) : null}
-                </div>
+                    <div className="mt-6 flex flex-wrap gap-3">
+                      <button
+                        type="button"
+                        onClick={onPrimaryAction}
+                        className="ultima-btn-pill ultima-btn-primary inline-flex min-h-[48px] items-center justify-between gap-4 px-5 text-[15px]"
+                      >
+                        <span>{primaryCtaLabel}</span>
+                        <span className="text-white/[0.84]">{primaryCtaMeta}</span>
+                      </button>
+                      {primaryActionKind !== 'setup' ? (
+                        <button
+                          type="button"
+                          onClick={onOpenConnection}
+                          className={cn(
+                            'ultima-btn-pill inline-flex min-h-[48px] items-center justify-between gap-4 px-5 text-[15px]',
+                            showConnectionCtaHighlight
+                              ? 'ultima-btn-primary'
+                              : 'ultima-btn-secondary',
+                          )}
+                        >
+                          <span>
+                            {t('lite.connectAndSetup', { defaultValue: 'Установка и настройка' })}
+                          </span>
+                          <span className="text-white/[0.68]">
+                            {t('ultima.desktop.stepShort', {
+                              step: isConnectionCompleted ? 3 : connectionStep,
+                              defaultValue: `Шаг ${isConnectionCompleted ? 3 : connectionStep}/3`,
+                            })}
+                          </span>
+                        </button>
+                      ) : null}
+                    </div>
 
-                {referralCta || devicesCta ? (
-                  <div className="mt-5 grid gap-3 md:grid-cols-2">
-                    {referralCta}
-                    {devicesCta}
+                    {referralCta || devicesCta ? (
+                      <div className="mt-5 grid gap-3 2xl:grid-cols-2">
+                        {referralCta}
+                        {devicesCta}
+                      </div>
+                    ) : null}
                   </div>
-                ) : null}
+
+                  <div className="mx-auto flex items-center justify-center lg:justify-self-end">
+                    {heroButton}
+                  </div>
+                </div>
+              </section>
+
+              <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-4">
+                <DesktopMetricCard
+                  icon={<CalendarIcon />}
+                  label={t('subscription.timeLeft', { defaultValue: 'Осталось времени' })}
+                  value={daysLeftLabel}
+                  meta={daysLeftMeta}
+                />
+                <DesktopMetricCard
+                  icon={<DevicesIcon />}
+                  label={t('lite.devicesTotal', { defaultValue: 'Устройства' })}
+                  value={String(normalizedDeviceLimit)}
+                  meta={t('ultima.desktop.devicesMeta', {
+                    count: normalizedDeviceLimit,
+                    defaultValue: 'доступно в подписке сейчас',
+                  })}
+                />
+                <DesktopMetricCard
+                  icon={<TrafficIcon />}
+                  label={t('subscription.traffic', { defaultValue: 'Трафик' })}
+                  value={trafficLimitLabel}
+                  meta={t('ultima.desktop.trafficMeta', {
+                    percent: trafficUsedPercent,
+                    defaultValue: `${trafficUsedPercent}% уже использовано`,
+                  })}
+                />
+                <DesktopMetricCard
+                  icon={<ServersIcon />}
+                  label={
+                    discountPercent
+                      ? t('promo.discount', { defaultValue: 'Скидка' })
+                      : t('subscription.servers', { defaultValue: 'Серверы' })
+                  }
+                  value={discountPercent ? `${discountPercent}%` : String(serversCount)}
+                  meta={
+                    discountPercent
+                      ? t('ultima.desktop.discountMeta', {
+                          defaultValue: 'активная выгода на оплату',
+                        })
+                      : t('ultima.desktop.serversMeta', {
+                          defaultValue: 'доступно для текущего доступа',
+                        })
+                  }
+                />
               </div>
 
-              <div className="mx-auto flex items-center justify-center lg:justify-self-end">
-                {heroButton}
+              <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_360px]">
+                <section className={cn(ultimaCardClassName, 'p-5 xl:p-6')} style={defaultCardStyle}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h2 className="text-[22px] font-semibold leading-[1.06] tracking-[-0.025em] text-white">
+                        {t('ultima.desktop.connectionTitle', {
+                          defaultValue: 'Подключение и трафик',
+                        })}
+                      </h2>
+                    </div>
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-white/[0.84]">
+                      <ConnectionIcon />
+                    </div>
+                  </div>
+
+                  <div className="mt-5 space-y-4">
+                    <div>
+                      <div className="mb-2 flex items-center justify-between gap-3 text-sm text-white/[0.74]">
+                        <span>
+                          {t('ultima.desktop.connectionProgress', {
+                            defaultValue: 'Прогресс подключения',
+                          })}
+                        </span>
+                        <span className={tone.accent}>
+                          {isConnectionCompleted
+                            ? t('common.done', { defaultValue: 'Готово' })
+                            : t('ultima.desktop.stepCounter', {
+                                step: connectionStep,
+                                defaultValue: `Шаг ${connectionStep} из 3`,
+                              })}
+                        </span>
+                      </div>
+                      <div className="h-2 rounded-full bg-black/20">
+                        <div
+                          className="h-full rounded-full"
+                          style={{
+                            width: `${connectionProgress}%`,
+                            background:
+                              'linear-gradient(90deg, var(--ultima-color-primary), color-mix(in srgb, var(--ultima-color-ring) 84%, #fff))',
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="mb-2 flex items-center justify-between gap-3 text-sm text-white/[0.74]">
+                        <span>{t('subscription.traffic', { defaultValue: 'Трафик' })}</span>
+                        <span className="text-white/[0.92]">
+                          {trafficLimitGb > 0
+                            ? `${trafficUsedGb.toFixed(1)} / ${trafficLimitGb} ${t(
+                                'common.units.gb',
+                                {
+                                  defaultValue: 'ГБ',
+                                },
+                              )}`
+                            : t('subscription.unlimited', { defaultValue: 'Безлимит' })}
+                        </span>
+                      </div>
+                      <div className="h-2 rounded-full bg-black/20">
+                        <div
+                          className="h-full rounded-full"
+                          style={{
+                            width: `${trafficLimitGb > 0 ? trafficUsedPercent : 18}%`,
+                            background:
+                              'linear-gradient(90deg, color-mix(in srgb, var(--ultima-color-ring) 78%, #fff), var(--ultima-color-primary))',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                    <DesktopQuickAction
+                      label={t('subscription.details', { defaultValue: 'Детали подписки' })}
+                      onClick={onOpenSubscriptionInfo}
+                    />
+                    <DesktopQuickAction
+                      label={t('lite.devicesTotal', { defaultValue: 'Устройства' })}
+                      onClick={onOpenDevices}
+                    />
+                    <DesktopQuickAction
+                      label={t('support.title', { defaultValue: 'Поддержка' })}
+                      onClick={onOpenSupport}
+                    />
+                  </div>
+                </section>
+
+                {renderSpotlightCard()}
               </div>
             </div>
-          </section>
+          </main>
 
-          <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-4">
-            <DesktopMetricCard
-              icon={<CalendarIcon />}
-              label={t('subscription.timeLeft', { defaultValue: 'Осталось времени' })}
-              value={daysLeftLabel}
-              meta={daysLeftMeta}
-            />
-            <DesktopMetricCard
-              icon={<DevicesIcon />}
-              label={t('lite.devicesTotal', { defaultValue: 'Устройства' })}
-              value={String(normalizedDeviceLimit)}
-              meta={t('ultima.desktop.devicesMeta', {
-                count: normalizedDeviceLimit,
-                defaultValue: 'доступно в подписке сейчас',
-              })}
-            />
-            <DesktopMetricCard
-              icon={<TrafficIcon />}
-              label={t('subscription.traffic', { defaultValue: 'Трафик' })}
-              value={trafficLimitLabel}
-              meta={t('ultima.desktop.trafficMeta', {
-                percent: trafficUsedPercent,
-                defaultValue: `${trafficUsedPercent}% уже использовано`,
-              })}
-            />
-            <DesktopMetricCard
-              icon={<ServersIcon />}
-              label={
-                discountPercent
-                  ? t('promo.discount', { defaultValue: 'Скидка' })
-                  : t('subscription.servers', { defaultValue: 'Серверы' })
-              }
-              value={discountPercent ? `${discountPercent}%` : String(serversCount)}
-              meta={
-                discountPercent
-                  ? t('ultima.desktop.discountMeta', {
-                      defaultValue: 'активная выгода на оплату',
-                    })
-                  : t('ultima.desktop.serversMeta', {
-                      defaultValue: 'доступно для текущего доступа',
-                    })
-              }
-            />
-          </div>
+          <aside className="ultima-desktop-context">
+            <section className={cn(ultimaCardClassName, 'p-5')} style={defaultCardStyle}>
+              <h2 className="text-[22px] font-semibold leading-[1.06] tracking-[-0.025em] text-white">
+                {asideTitle}
+              </h2>
+              <p className="mt-2 text-sm leading-[1.6] text-white/[0.68]">{asideSubtitle}</p>
 
-          <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_360px]">
-            <section className={cn(ultimaCardClassName, 'p-5 xl:p-6')} style={defaultCardStyle}>
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h2 className="text-[22px] font-semibold leading-[1.06] tracking-[-0.025em] text-white">
-                    {t('ultima.desktop.connectionTitle', {
-                      defaultValue: 'Подключение и трафик',
-                    })}
-                  </h2>
+              <div className="mt-5 space-y-3">
+                <div className="rounded-[20px] border border-white/10 bg-white/[0.05] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+                  <div className="flex items-center justify-between gap-3">
+                    <button
+                      type="button"
+                      onClick={onOpenSubscriptionInfo}
+                      className="min-w-0 flex-1 text-left"
+                    >
+                      <span className="block text-[10px] uppercase tracking-[0.16em] text-white/[0.42]">
+                        {t('ultima.currentTariff', { defaultValue: 'Ваш тариф' })}
+                      </span>
+                      <span className="mt-1 block truncate text-[18px] font-semibold leading-tight text-white transition hover:text-white/90">
+                        {planName}
+                      </span>
+                      <span className="mt-1 block truncate text-xs text-white/[0.58]">
+                        {trafficLimitLabel} ·{' '}
+                        {t('lite.devicesTotal', { defaultValue: 'Устройства' })}:{' '}
+                        {normalizedDeviceLimit}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={onBuySubscription}
+                      className="ultima-btn-pill ultima-btn-primary flex min-h-10 shrink-0 items-center justify-center px-4 text-[14px]"
+                    >
+                      {t('subscription.renew', { defaultValue: 'Продлить' })}
+                    </button>
+                  </div>
                 </div>
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-white/[0.84]">
-                  <ConnectionIcon />
-                </div>
-              </div>
-
-              <div className="mt-5 space-y-4">
-                <div>
-                  <div className="mb-2 flex items-center justify-between gap-3 text-sm text-white/[0.74]">
-                    <span>
-                      {t('ultima.desktop.connectionProgress', {
-                        defaultValue: 'Прогресс подключения',
-                      })}
+                <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm text-white/[0.62]">
+                      {t('ultima.desktop.connectionState', { defaultValue: 'Подключение' })}
                     </span>
-                    <span className={tone.accent}>
+                    <span className="text-sm font-medium text-white/[0.88]">
                       {isConnectionCompleted
                         ? t('common.done', { defaultValue: 'Готово' })
                         : t('ultima.desktop.stepCounter', {
@@ -607,165 +729,61 @@ export function UltimaDesktopDashboard({
                           })}
                     </span>
                   </div>
-                  <div className="h-2 rounded-full bg-black/20">
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: `${connectionProgress}%`,
-                        background:
-                          'linear-gradient(90deg, var(--ultima-color-primary), color-mix(in srgb, var(--ultima-color-ring) 84%, #fff))',
-                      }}
-                    />
-                  </div>
                 </div>
-
-                <div>
-                  <div className="mb-2 flex items-center justify-between gap-3 text-sm text-white/[0.74]">
-                    <span>{t('subscription.traffic', { defaultValue: 'Трафик' })}</span>
-                    <span className="text-white/[0.92]">
-                      {trafficLimitGb > 0
-                        ? `${trafficUsedGb.toFixed(1)} / ${trafficLimitGb} ${t('common.units.gb', {
-                            defaultValue: 'ГБ',
-                          })}`
-                        : t('subscription.unlimited', { defaultValue: 'Безлимит' })}
+                <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm text-white/[0.62]">
+                      {t('subscription.traffic', { defaultValue: 'Трафик' })}
+                    </span>
+                    <span className="text-sm font-medium text-white/[0.88]">
+                      {trafficLimitGb > 0 ? `${trafficUsedPercent}%` : '∞'}
                     </span>
                   </div>
-                  <div className="h-2 rounded-full bg-black/20">
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: `${trafficLimitGb > 0 ? trafficUsedPercent : 18}%`,
-                        background:
-                          'linear-gradient(90deg, color-mix(in srgb, var(--ultima-color-ring) 78%, #fff), var(--ultima-color-primary))',
-                      }}
-                    />
+                  <div className="mt-1 text-xs text-white/[0.54]">
+                    {trafficLimitGb > 0
+                      ? `${trafficUsedGb.toFixed(1)} / ${trafficLimitGb} ${t('common.units.gb', {
+                          defaultValue: 'ГБ',
+                        })}`
+                      : t('subscription.unlimited', { defaultValue: 'Безлимит' })}
                   </div>
                 </div>
               </div>
 
-              <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                <DesktopQuickAction
-                  label={t('subscription.details', { defaultValue: 'Детали подписки' })}
-                  onClick={onOpenSubscriptionInfo}
-                />
-                <DesktopQuickAction
-                  label={t('lite.devicesTotal', { defaultValue: 'Устройства' })}
-                  onClick={onOpenDevices}
-                />
-                <DesktopQuickAction
-                  label={t('support.title', { defaultValue: 'Поддержка' })}
+              {promoMessage ? (
+                <div className="mt-4 rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3 text-sm leading-[1.6] text-white/[0.74]">
+                  {promoMessage}
+                </div>
+              ) : null}
+
+              <div className="mt-5 space-y-3">
+                <button
+                  type="button"
+                  onClick={onPrimaryAction}
+                  className="ultima-btn-pill ultima-btn-primary flex w-full items-center justify-center px-5 py-3 text-[15px]"
+                >
+                  {primaryCtaLabel}
+                </button>
+                {primaryActionKind !== 'setup' && !isConnectionCompleted ? (
+                  <button
+                    type="button"
+                    onClick={onOpenConnection}
+                    className="ultima-btn-pill ultima-btn-secondary flex w-full items-center justify-center px-5 py-3 text-[15px]"
+                  >
+                    {t('lite.connectAndSetup', { defaultValue: 'Установка и настройка' })}
+                  </button>
+                ) : null}
+                <button
+                  type="button"
                   onClick={onOpenSupport}
-                />
+                  className="ultima-btn-pill ultima-btn-secondary flex w-full items-center justify-center px-5 py-3 text-[15px]"
+                >
+                  {t('support.title', { defaultValue: 'Поддержка' })}
+                </button>
               </div>
             </section>
-
-            {renderSpotlightCard()}
-          </div>
+          </aside>
         </div>
-      </main>
-
-      <aside className="ultima-desktop-context">
-        <section className={cn(ultimaCardClassName, 'p-5')} style={defaultCardStyle}>
-          <h2 className="text-[22px] font-semibold leading-[1.06] tracking-[-0.025em] text-white">
-            {asideTitle}
-          </h2>
-          <p className="mt-2 text-sm leading-[1.6] text-white/[0.68]">{asideSubtitle}</p>
-
-          <div className="mt-5 space-y-3">
-            <div className="rounded-[20px] border border-white/10 bg-white/[0.05] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
-              <div className="flex items-center justify-between gap-3">
-                <button
-                  type="button"
-                  onClick={onOpenSubscriptionInfo}
-                  className="min-w-0 flex-1 text-left"
-                >
-                  <span className="block text-[10px] uppercase tracking-[0.16em] text-white/[0.42]">
-                    {t('ultima.currentTariff', { defaultValue: 'Ваш тариф' })}
-                  </span>
-                  <span className="mt-1 block truncate text-[18px] font-semibold leading-tight text-white transition hover:text-white/90">
-                    {planName}
-                  </span>
-                  <span className="mt-1 block truncate text-xs text-white/[0.58]">
-                    {trafficLimitLabel} · {t('lite.devicesTotal', { defaultValue: 'Устройства' })}:{' '}
-                    {normalizedDeviceLimit}
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={onBuySubscription}
-                  className="ultima-btn-pill ultima-btn-primary flex min-h-10 shrink-0 items-center justify-center px-4 text-[14px]"
-                >
-                  {t('subscription.renew', { defaultValue: 'Продлить' })}
-                </button>
-              </div>
-            </div>
-            <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-sm text-white/[0.62]">
-                  {t('ultima.desktop.connectionState', { defaultValue: 'Подключение' })}
-                </span>
-                <span className="text-sm font-medium text-white/[0.88]">
-                  {isConnectionCompleted
-                    ? t('common.done', { defaultValue: 'Готово' })
-                    : t('ultima.desktop.stepCounter', {
-                        step: connectionStep,
-                        defaultValue: `Шаг ${connectionStep} из 3`,
-                      })}
-                </span>
-              </div>
-            </div>
-            <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-sm text-white/[0.62]">
-                  {t('subscription.traffic', { defaultValue: 'Трафик' })}
-                </span>
-                <span className="text-sm font-medium text-white/[0.88]">
-                  {trafficLimitGb > 0 ? `${trafficUsedPercent}%` : '∞'}
-                </span>
-              </div>
-              <div className="mt-1 text-xs text-white/[0.54]">
-                {trafficLimitGb > 0
-                  ? `${trafficUsedGb.toFixed(1)} / ${trafficLimitGb} ${t('common.units.gb', {
-                      defaultValue: 'ГБ',
-                    })}`
-                  : t('subscription.unlimited', { defaultValue: 'Безлимит' })}
-              </div>
-            </div>
-          </div>
-
-          {promoMessage ? (
-            <div className="mt-4 rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3 text-sm leading-[1.6] text-white/[0.74]">
-              {promoMessage}
-            </div>
-          ) : null}
-
-          <div className="mt-5 space-y-3">
-            <button
-              type="button"
-              onClick={onPrimaryAction}
-              className="ultima-btn-pill ultima-btn-primary flex w-full items-center justify-center px-5 py-3 text-[15px]"
-            >
-              {primaryCtaLabel}
-            </button>
-            {primaryActionKind !== 'setup' && !isConnectionCompleted ? (
-              <button
-                type="button"
-                onClick={onOpenConnection}
-                className="ultima-btn-pill ultima-btn-secondary flex w-full items-center justify-center px-5 py-3 text-[15px]"
-              >
-                {t('lite.connectAndSetup', { defaultValue: 'Установка и настройка' })}
-              </button>
-            ) : null}
-            <button
-              type="button"
-              onClick={onOpenSupport}
-              className="ultima-btn-pill ultima-btn-secondary flex w-full items-center justify-center px-5 py-3 text-[15px]"
-            >
-              {t('support.title', { defaultValue: 'Поддержка' })}
-            </button>
-          </div>
-        </section>
-      </aside>
+      </div>
     </div>
   );
 }

@@ -305,9 +305,35 @@ test.describe('Ultima desktop workspace', () => {
 
       await expect(page.locator('[data-ultima-nav-btn="1"]').first()).toBeVisible();
       await expect(page.locator('.ultima-desktop-workspace')).toBeVisible();
+      await expect(page.locator('.ultima-desktop-topbar')).toBeVisible();
       await expectNoHorizontalOverflow(page);
     });
   }
+
+  test('scrolls long desktop pages with the document wheel', async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 768 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+    await page.goto('/subscription');
+
+    await expect(page.locator('.ultima-desktop-topbar')).toBeVisible();
+    const overflowState = await page.evaluate(() => ({
+      bodyOverflow: getComputedStyle(document.body).overflowY,
+      rootOverflow: getComputedStyle(document.documentElement).overflowY,
+    }));
+    expect(overflowState.bodyOverflow).not.toBe('hidden');
+    expect(overflowState.rootOverflow).not.toBe('hidden');
+
+    const pageDimensions = await page.evaluate(() => ({
+      scrollHeight: document.documentElement.scrollHeight,
+      viewportHeight: document.documentElement.clientHeight,
+    }));
+    expect(pageDimensions.scrollHeight).toBeGreaterThan(pageDimensions.viewportHeight);
+
+    await page.mouse.move(800, 600);
+    await page.mouse.wheel(0, 720);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  });
 
   test('keeps primary desktop sections reachable from the rail', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
