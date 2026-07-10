@@ -1,5 +1,6 @@
 import { type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Minus, Plus } from 'lucide-react';
 import {
   ultimaAccentSurfaceStyle,
   ultimaCardClassName,
@@ -82,6 +83,10 @@ export function UltimaDesktopSubscription({
   onPay,
 }: UltimaDesktopSubscriptionProps) {
   const { t } = useTranslation();
+  const selectedDeviceIndex = deviceLimits.indexOf(selectedDeviceLimit);
+  const canDecreaseDevices = selectedDeviceIndex > 0;
+  const canIncreaseDevices =
+    selectedDeviceIndex >= 0 && selectedDeviceIndex < deviceLimits.length - 1;
 
   return (
     <div className="ultima-shell-inner ultima-desktop-workspace">
@@ -109,25 +114,55 @@ export function UltimaDesktopSubscription({
                 <p className="mt-2 text-[14px] leading-[1.5] text-white/[0.72]">{subtitle}</p>
               </div>
 
-              <div className="flex max-w-[380px] flex-wrap gap-2 lg:justify-end">
-                {deviceLimits.map((limit, index) => {
-                  const active = limit === selectedDeviceLimit;
-                  return (
+              <div className="w-full max-w-[300px] rounded-[8px] border border-white/[0.12] bg-black/[0.16] p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-[11px] font-semibold uppercase text-white/[0.48]">
+                      {t('lite.devicesTotal', { defaultValue: 'Устройства' })}
+                    </div>
+                    <div className="mt-1 text-xs text-white/[0.58]">
+                      {deviceLimits[0]}–{deviceLimits[deviceLimits.length - 1]}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-[40px_minmax(88px,1fr)_40px] overflow-hidden rounded-[8px] border border-white/[0.12] bg-black/20">
                     <button
-                      key={limit}
                       type="button"
-                      onClick={() => onSelectDevice(index)}
-                      className={cn(
-                        'rounded-full border px-4 py-2 text-sm font-medium transition-colors',
-                        active
-                          ? 'border-emerald-200/[0.45] bg-emerald-300/[0.16] text-emerald-50'
-                          : 'border-white/[0.12] bg-white/[0.04] text-white/[0.72] hover:bg-white/[0.08]',
-                      )}
+                      data-testid="ultima-desktop-devices-minus"
+                      onClick={() => onSelectDevice(selectedDeviceIndex - 1)}
+                      disabled={!canDecreaseDevices}
+                      aria-label={t('common.decrease', { defaultValue: 'Уменьшить' })}
+                      className="flex h-10 items-center justify-center border-r border-white/[0.1] text-white/[0.74] transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-30"
                     >
-                      {limit}
+                      <Minus className="h-4 w-4" strokeWidth={2} />
                     </button>
-                  );
-                })}
+                    <select
+                      data-testid="ultima-desktop-device-select"
+                      value={selectedDeviceLimit}
+                      onChange={(event) => {
+                        const nextIndex = deviceLimits.indexOf(Number(event.target.value));
+                        if (nextIndex >= 0) onSelectDevice(nextIndex);
+                      }}
+                      aria-label={t('lite.devicesTotal', { defaultValue: 'Устройства' })}
+                      className="h-10 min-w-0 appearance-none bg-transparent px-3 text-center text-sm font-semibold text-white outline-none"
+                    >
+                      {deviceLimits.map((limit) => (
+                        <option key={limit} value={limit} className="bg-[#10171c] text-white">
+                          {limit}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      data-testid="ultima-desktop-devices-plus"
+                      onClick={() => onSelectDevice(selectedDeviceIndex + 1)}
+                      disabled={!canIncreaseDevices}
+                      aria-label={t('common.increase', { defaultValue: 'Увеличить' })}
+                      className="flex h-10 items-center justify-center border-l border-white/[0.1] text-white/[0.74] transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-30"
+                    >
+                      <Plus className="h-4 w-4" strokeWidth={2} />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </section>

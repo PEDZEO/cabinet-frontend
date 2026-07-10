@@ -78,12 +78,30 @@ const TARIFF = {
   id: 1,
   name: 'Обычный',
   description: 'Основной тариф',
+  tier_level: 1,
   traffic_limit_gb: 100,
+  traffic_limit_label: '100 GB',
+  is_unlimited_traffic: false,
   device_limit: 3,
   base_device_limit: 2,
-  is_active: true,
+  max_device_limit: 3,
+  extra_devices_count: 1,
+  servers_count: 1,
+  servers: [{ uuid: 'server-1', name: 'Нидерланды' }],
+  is_available: true,
   is_current: true,
-  periods: [{ days: 30, price_kopeks: 31000, price_rubles: 310 }],
+  periods: [
+    {
+      days: 30,
+      months: 1,
+      label: '1 месяц',
+      price_kopeks: 31000,
+      price_label: '310 ₽',
+      price_per_month_kopeks: 31000,
+      price_per_month_label: '310 ₽',
+      extra_devices_count: 1,
+    },
+  ],
 };
 
 function createFakeJwt(): string {
@@ -145,7 +163,14 @@ async function mockUltimaDesktopApi(page: Page): Promise<void> {
       return respond({ has_subscription: true, subscription: SUBSCRIPTION });
     }
     if (path === '/cabinet/subscription/purchase-options') {
-      return respond({ sales_mode: 'tariffs', tariffs: [TARIFF], current_tariff_id: 1 });
+      return respond({
+        sales_mode: 'tariffs',
+        tariffs: [TARIFF],
+        current_tariff_id: 1,
+        balance_kopeks: 125_000,
+        balance_label: '1 250 ₽',
+        has_subscription: true,
+      });
     }
     if (path === '/cabinet/subscription/trial') {
       return respond({ is_available: false, reason_unavailable: 'already_used' });
@@ -312,6 +337,13 @@ test.describe('Ultima desktop workspace', () => {
 
     await page.goto('/ultima/devices');
     await expect(page.locator('h1').first()).toBeVisible();
+
+    await page.goto('/subscription');
+    const deviceSelect = page.getByTestId('ultima-desktop-device-select');
+    await expect(deviceSelect).toBeVisible();
+    await expect(deviceSelect.locator('option')).toHaveCount(2);
+    await deviceSelect.selectOption({ label: '2' });
+    await expect(deviceSelect).toHaveValue('2');
 
     await page.locator('[data-ultima-nav-btn="1"]').nth(1).click();
     await expect(page).toHaveURL(/\/connection$/);
