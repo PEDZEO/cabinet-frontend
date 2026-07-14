@@ -23,6 +23,7 @@ type UltimaTrafficTopUpSectionProps = {
   purchaseBalanceKopeks: number;
   isPending: boolean;
   error: string | null;
+  initiallyExpanded?: boolean;
   onPurchaseTraffic: (gb: number) => void;
   onTopUpBalance: (gb: number) => void;
 };
@@ -39,10 +40,13 @@ export function UltimaTrafficTopUpSection({
   purchaseBalanceKopeks,
   isPending,
   error,
+  initiallyExpanded = false,
   onPurchaseTraffic,
   onTopUpBalance,
 }: UltimaTrafficTopUpSectionProps) {
-  const [isExpanded, setIsExpanded] = useState(() => selectedTrafficPackage !== null);
+  const [isExpanded, setIsExpanded] = useState(
+    () => initiallyExpanded || selectedTrafficPackage !== null,
+  );
   const selectedPackage =
     selectedTrafficPackage !== null
       ? (trafficPackages?.find((entry) => entry.gb === selectedTrafficPackage) ?? null)
@@ -64,8 +68,24 @@ export function UltimaTrafficTopUpSection({
     }
   }, [error, isPending, selectedTrafficPackage]);
 
+  useEffect(() => {
+    if (!initiallyExpanded) return;
+    setIsExpanded(true);
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById('ultima-traffic-top-up')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [initiallyExpanded]);
+
   return (
-    <section className={cn(ultimaPaneClassName, 'p-3.5')} style={ultimaSurfaceStyle}>
+    <section
+      id="ultima-traffic-top-up"
+      className={cn(ultimaPaneClassName, 'scroll-mt-4 p-3.5')}
+      style={ultimaSurfaceStyle}
+    >
       <button
         type="button"
         aria-expanded={isExpanded}

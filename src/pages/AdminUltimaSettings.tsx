@@ -430,6 +430,11 @@ export default function AdminUltimaSettings() {
             title="Темы и сцены"
             subtitle="цвета, фон и анимации"
           />
+          <SmallLinkCard
+            to="/admin/ultima-settings/traffic-warning"
+            title="Заканчивается трафик"
+            subtitle="порог, текст и кнопка докупки"
+          />
         </div>
       </Section>
 

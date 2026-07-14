@@ -296,6 +296,7 @@ export function UltimaSubscription() {
     !isUltimaTariffUnlimited(selectedTariff) &&
     selectedTariff.traffic_topup_enabled !== false &&
     subscription?.is_active === true;
+  const shouldOpenTrafficTopUp = searchParams.get('trafficTopUp') === '1';
 
   const { data: trafficPackages } = useQuery({
     queryKey: ['traffic-packages', 'ultima-purchase', selectedTariff?.id],
@@ -1664,6 +1665,7 @@ export function UltimaSubscription() {
                 purchaseBalanceKopeks={currentBalanceKopeks}
                 isPending={purchaseTrafficMutation.isPending}
                 error={trafficPurchaseErrorMessage}
+                initiallyExpanded={shouldOpenTrafficTopUp}
                 onPurchaseTraffic={(gb) => purchaseTrafficMutation.mutate(gb)}
                 onTopUpBalance={(gb) => {
                   void openTopUpForTraffic(gb);

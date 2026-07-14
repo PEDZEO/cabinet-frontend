@@ -245,6 +245,17 @@ async function mockUltimaDesktopApi(
     if (path === '/cabinet/subscription/happ-downloads') {
       return respond({ happ_enabled: false, platforms: {} });
     }
+    if (path === '/cabinet/subscription/traffic-packages') {
+      return respond([
+        {
+          gb: 10,
+          price_kopeks: 10000,
+          price_label: '100 ₽',
+          is_unlimited: false,
+          expires_in_days: 30,
+        },
+      ]);
+    }
     if (path === '/cabinet/balance') {
       return respond({ balance_kopeks: 125_000, balance_rubles: 1250 });
     }
@@ -367,6 +378,20 @@ test.describe('Ultima desktop workspace', () => {
     await page.mouse.move(800, 600);
     await page.mouse.wheel(0, 720);
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  });
+
+  test('opens the traffic top-up section from a notification deep link', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+    await page.goto('/subscription?trafficTopUp=1#ultima-traffic-top-up');
+
+    const trafficTopUp = page.locator('#ultima-traffic-top-up');
+    await expect(trafficTopUp).toBeVisible();
+    await expect(trafficTopUp.locator('button[aria-expanded]').first()).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
   });
 
   test('keeps the admin action inside the rail', async ({ page }) => {
