@@ -47,6 +47,13 @@ const USER = {
   auth_type: 'telegram',
 };
 
+const CONNECTED_DEVICE = {
+  hwid: 'desktop-smoke-device',
+  platform: 'windows',
+  device_model: 'Desktop PC',
+  created_at: '2026-07-01T00:00:00.000Z',
+};
+
 const SUBSCRIPTION = {
   id: 990,
   status: 'ACTIVE',
@@ -153,7 +160,12 @@ async function mockUltimaDesktopApi(
   {
     isAdmin = false,
     subscription = SUBSCRIPTION,
-  }: { isAdmin?: boolean; subscription?: typeof SUBSCRIPTION } = {},
+    connectedDevices = [CONNECTED_DEVICE],
+  }: {
+    isAdmin?: boolean;
+    subscription?: typeof SUBSCRIPTION;
+    connectedDevices?: Array<typeof CONNECTED_DEVICE>;
+  } = {},
 ): Promise<void> {
   await page.route('**/api/**', async (route: Route) => {
     const request = route.request();
@@ -206,16 +218,9 @@ async function mockUltimaDesktopApi(
     }
     if (path === '/cabinet/subscription/devices') {
       return respond({
-        devices: [
-          {
-            hwid: 'desktop-smoke-device',
-            platform: 'windows',
-            device_model: 'Desktop PC',
-            created_at: '2026-07-01T00:00:00.000Z',
-          },
-        ],
-        total: 1,
-        device_limit: 3,
+        devices: connectedDevices,
+        total: connectedDevices.length,
+        device_limit: subscription.device_limit,
       });
     }
     if (path === '/cabinet/subscription/devices/reduction-info') {
@@ -468,5 +473,23 @@ test.describe('Ultima trial onboarding persistence', () => {
     await page.reload();
     await page.waitForTimeout(650);
     await expect(page.getByTestId('ultima-trial-guide-overlay')).toHaveCount(0);
+  });
+
+  test('uses the primary trial CTA for subscription purchase without removing device access', async ({
+    page,
+  }) => {
+    await bootstrapUltimaDesktop(page, { connectionCompleted: true });
+    await mockUltimaDesktopApi(page, {
+      subscription: TRIAL_SUBSCRIPTION,
+      connectedDevices: [],
+    });
+
+    await page.goto('/');
+
+    await expect(page.getByText('Подключить первое устройство', { exact: true })).toBeVisible();
+    const primaryCta = page.getByTestId('ultima-primary-cta');
+    await expect(primaryCta).toContainText('Купить подписку');
+    await primaryCta.click();
+    await expect(page).toHaveURL(/\/subscription$/);
   });
 });

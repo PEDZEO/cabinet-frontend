@@ -3700,6 +3700,7 @@
   },
   "ultima": {
     "buySubscriptionActivate": "激活订阅",
+    "buySubscriptionTrial": "购买订阅",
     "chooseTariff": "选择套餐",
     "buySubscriptionRenew": "续费订阅",
     "buySubscriptionDaysLeft": "续费（{{daysLabel}}）",

@@ -5287,6 +5287,7 @@
   },
   "ultima": {
     "buySubscriptionActivate": "Активировать подписку",
+    "buySubscriptionTrial": "Купить подписку",
     "chooseTariff": "Выбрать тариф",
     "buySubscriptionRenew": "Продлить подписку",
     "buySubscriptionDaysLeft": "Продлить ({{daysLabel}})",

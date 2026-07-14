@@ -307,6 +307,9 @@ export function UltimaDashboard() {
               pulse: 'from-emerald-300/[0.34] via-emerald-200/[0.24] to-transparent',
             };
   const purchaseCtaLabel = useMemo(() => {
+    if (isActiveTrial) {
+      return t('ultima.buySubscriptionTrial', { defaultValue: 'Купить подписку' });
+    }
     if (!hasAnySubscription) {
       return t('ultima.chooseTariff', { defaultValue: 'Выбрать тариф' });
     }
@@ -317,7 +320,7 @@ export function UltimaDashboard() {
       return t('subscription.renew', { defaultValue: 'Продлить' });
     }
     return t('subscription.extend', { defaultValue: 'Продлить подписку' });
-  }, [daysLeft, hasAnySubscription, isActive, t]);
+  }, [daysLeft, hasAnySubscription, isActive, isActiveTrial, t]);
   const purchaseFromLabel = useMemo(() => {
     if (!purchaseOptions || purchaseOptions.sales_mode !== 'tariffs')
       return `от 199 ${currencySymbol}`;
@@ -889,7 +892,7 @@ export function UltimaDashboard() {
     !hasHomeLogoLoadError &&
     (Boolean(ultimaThemeConfig?.homeUseBrandLogo) || isHomeLogoDecisionPending);
 
-  const primaryActionKind = getUltimaNextAction({
+  const suggestedPrimaryActionKind = getUltimaNextAction({
     hasAnySubscription,
     isActive,
     isExpired: Boolean(subscription?.is_expired),
@@ -898,6 +901,8 @@ export function UltimaDashboard() {
     connectedDevicesCount,
     deviceLimit: dashboardDeviceLimit,
   });
+  const primaryActionKind: UltimaNextActionKind =
+    isActiveTrial && suggestedPrimaryActionKind === 'device' ? 'buy' : suggestedPrimaryActionKind;
 
   useEffect(() => {
     if (!isSubscriptionReady || dashboardViewTrackedRef.current) {
@@ -1542,6 +1547,7 @@ export function UltimaDashboard() {
           <button
             type="button"
             onClick={handlePrimaryAction}
+            data-testid="ultima-primary-cta"
             className="ultima-btn-pill ultima-btn-primary mb-3 flex w-full items-center gap-3 px-4 py-3 text-left text-[15px] min-[360px]:px-5 min-[360px]:text-[16px]"
           >
             <span className="flex min-w-0 flex-1 items-center gap-2.5">

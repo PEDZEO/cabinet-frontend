@@ -4717,6 +4717,7 @@
   },
   "ultima": {
     "buySubscriptionActivate": "Activate subscription",
+    "buySubscriptionTrial": "Buy subscription",
     "chooseTariff": "Choose tariff",
     "buySubscriptionRenew": "Renew subscription",
     "buySubscriptionDaysLeft": "Renew ({{daysLabel}})",

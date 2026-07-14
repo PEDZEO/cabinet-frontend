@@ -3701,6 +3701,7 @@
   },
   "ultima": {
     "buySubscriptionActivate": "فعال‌سازی اشتراک",
+    "buySubscriptionTrial": "خرید اشتراک",
     "chooseTariff": "انتخاب تعرفه",
     "buySubscriptionRenew": "تمدید اشتراک",
     "buySubscriptionDaysLeft": "تمدید ({{daysLabel}})",
