@@ -734,7 +734,7 @@ export default function AdminTariffs() {
               <p className="text-xs text-dark-500">
                 {t('admin.tariffs.trialQuickPriorityHint', {
                   defaultValue:
-                    'Если выбран триальный тариф, его лимит трафика имеет приоритет над глобальным значением.',
+                    'Эти лимиты применяются к триалу. Выбранный тариф задаёт доступные серверы и название.',
                 })}
               </p>
 

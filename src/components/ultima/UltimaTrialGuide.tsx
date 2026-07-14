@@ -84,7 +84,7 @@ export function UltimaTrialGuide({
     return (
       <>
         <div className="ultima-mobile-overlay-backdrop" />
-        <div className="ultima-mobile-overlay">
+        <div className="ultima-mobile-overlay" data-testid="ultima-trial-guide-overlay">
           <div className="ultima-mobile-overlay-panel">
             <div className="relative overflow-hidden rounded-[30px] border border-emerald-200/20 bg-[linear-gradient(160deg,rgba(7,16,25,0.96),rgba(4,11,18,0.98))] p-5 shadow-[0_28px_60px_rgba(0,0,0,0.52),inset_0_1px_0_rgba(255,255,255,0.08)]">
               <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(45,212,191,0.22),transparent_48%),radial-gradient(circle_at_bottom_right,rgba(16,185,129,0.12),transparent_42%)]" />
@@ -153,6 +153,7 @@ export function UltimaTrialGuide({
                     <button
                       type="button"
                       onClick={onDismiss}
+                      data-testid="ultima-trial-guide-dismiss"
                       className="ultima-btn-pill ultima-btn-secondary w-full px-4 py-3 text-[15px] min-[390px]:w-auto"
                     >
                       {t('ultima.trialGuide.dismissAction', { defaultValue: 'Позже' })}

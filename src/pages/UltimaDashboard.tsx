@@ -602,17 +602,12 @@ export function UltimaDashboard() {
       setIsTrialGuideVisible(false);
       return;
     }
-    if (isTrialGuideAcknowledged) {
-      return;
-    }
 
-    writeUltimaConnectionStep(user?.id, 1);
-    writeUltimaConnectionCompleted(user?.id, false);
-    writeUltimaConnectionReminderHidden(user?.id, false);
-    setConnectionStep(1);
-    setIsConnectionCompleted(false);
-    setIsReminderHidden(false);
-  }, [isActiveTrial, isTrialGuideAcknowledged, trialSignature, user?.id]);
+    if (isConnectionCompleted && !isTrialGuideAcknowledged) {
+      writeUltimaTrialGuideAcknowledged(user?.id, trialSignature);
+      setIsTrialGuideVisible(false);
+    }
+  }, [isActiveTrial, isConnectionCompleted, isTrialGuideAcknowledged, trialSignature, user?.id]);
 
   useEffect(() => {
     if (!trialSignature || !isActiveTrial || isConnectionCompleted || connectionStep !== 1) {

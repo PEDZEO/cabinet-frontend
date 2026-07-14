@@ -74,6 +74,21 @@ const SUBSCRIPTION = {
   traffic_purchases: [],
 };
 
+const TRIAL_SUBSCRIPTION = {
+  ...SUBSCRIPTION,
+  id: 991,
+  is_trial: true,
+  end_date: '2030-07-17T20:47:00.000Z',
+  days_left: 3,
+  time_left_display: '3 дня',
+  traffic_limit_gb: 2,
+  traffic_used_gb: 0,
+  traffic_used_percent: 0,
+  device_limit: 1,
+  tariff_id: 2,
+  tariff_name: 'Стандарт + LTE',
+};
+
 const TARIFF = {
   id: 1,
   name: 'Обычный',
@@ -110,24 +125,35 @@ function createFakeJwt(): string {
   return `${header}.${payload}.signature`;
 }
 
-async function bootstrapUltimaDesktop(page: Page): Promise<void> {
+async function bootstrapUltimaDesktop(
+  page: Page,
+  { connectionCompleted = true }: { connectionCompleted?: boolean } = {},
+): Promise<void> {
   await page.addInitScript(
-    ({ jwt, themeConfig }) => {
+    ({ jwt, themeConfig, connectionCompleted }) => {
       sessionStorage.setItem('access_token', jwt);
       sessionStorage.setItem('refresh_token', jwt);
       localStorage.setItem('cabinet_ultima_mode', 'true');
       localStorage.setItem('cabinet_lite_mode', 'false');
       localStorage.setItem('cabinet_ultima_theme_config', JSON.stringify(themeConfig));
-      localStorage.setItem('ultima_connection_completed_v1:99', '1');
-      localStorage.setItem('ultima_connection_flow_v1:99', '3');
+      if (connectionCompleted) {
+        localStorage.setItem('ultima_connection_completed_v1:99', '1');
+        localStorage.setItem('ultima_connection_flow_v1:99', '3');
+      } else {
+        localStorage.removeItem('ultima_connection_completed_v1:99');
+        localStorage.setItem('ultima_connection_flow_v1:99', '1');
+      }
     },
-    { jwt: createFakeJwt(), themeConfig: THEME_CONFIG },
+    { jwt: createFakeJwt(), themeConfig: THEME_CONFIG, connectionCompleted },
   );
 }
 
 async function mockUltimaDesktopApi(
   page: Page,
-  { isAdmin = false }: { isAdmin?: boolean } = {},
+  {
+    isAdmin = false,
+    subscription = SUBSCRIPTION,
+  }: { isAdmin?: boolean; subscription?: typeof SUBSCRIPTION } = {},
 ): Promise<void> {
   await page.route('**/api/**', async (route: Route) => {
     const request = route.request();
@@ -163,7 +189,7 @@ async function mockUltimaDesktopApi(
     if (path === '/cabinet/branding/analytics') return respond({});
     if (path === '/cabinet/branding/gift-enabled') return respond({ enabled: false });
     if (path === '/cabinet/subscription') {
-      return respond({ has_subscription: true, subscription: SUBSCRIPTION });
+      return respond({ has_subscription: true, subscription });
     }
     if (path === '/cabinet/subscription/purchase-options') {
       return respond({
@@ -401,5 +427,46 @@ test.describe('Ultima desktop workspace', () => {
     await expect(page).toHaveURL(/\/connection$/);
     await expect(page.locator('.ultima-desktop-workspace')).toBeVisible();
     await expectNoHorizontalOverflow(page);
+  });
+});
+
+test.describe('Ultima trial onboarding persistence', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+  });
+
+  test('does not reopen onboarding after the connection flow was completed', async ({ page }) => {
+    await bootstrapUltimaDesktop(page, { connectionCompleted: true });
+    await mockUltimaDesktopApi(page, { subscription: TRIAL_SUBSCRIPTION });
+
+    await page.goto('/');
+
+    await expect
+      .poll(() =>
+        page.evaluate(
+          (signature) => localStorage.getItem(`ultima_trial_guide_signature_ack_v1:${signature}`),
+          `${TRIAL_SUBSCRIPTION.id}:${TRIAL_SUBSCRIPTION.end_date}`,
+        ),
+      )
+      .toBe('1');
+    await expect(page.getByTestId('ultima-trial-guide-overlay')).toHaveCount(0);
+
+    await page.reload();
+    await page.waitForTimeout(650);
+    await expect(page.getByTestId('ultima-trial-guide-overlay')).toHaveCount(0);
+  });
+
+  test('keeps the Later dismissal after refresh', async ({ page }) => {
+    await bootstrapUltimaDesktop(page, { connectionCompleted: false });
+    await mockUltimaDesktopApi(page, { subscription: TRIAL_SUBSCRIPTION });
+
+    await page.goto('/');
+    await expect(page.getByTestId('ultima-trial-guide-overlay')).toBeVisible();
+    await page.getByTestId('ultima-trial-guide-dismiss').click();
+    await expect(page.getByTestId('ultima-trial-guide-overlay')).toHaveCount(0);
+
+    await page.reload();
+    await page.waitForTimeout(650);
+    await expect(page.getByTestId('ultima-trial-guide-overlay')).toHaveCount(0);
   });
 });
