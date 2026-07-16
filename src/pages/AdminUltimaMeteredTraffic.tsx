@@ -1,12 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router';
 import {
   Activity,
   AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
   CheckCircle2,
+  ExternalLink,
   Gauge,
   Network,
   Play,
+  Plus,
   RefreshCw,
   RotateCcw,
   Save,
@@ -14,6 +19,7 @@ import {
   Server,
   Settings2,
   ShieldCheck,
+  Users,
   Wifi,
   WifiOff,
 } from 'lucide-react';
@@ -21,9 +27,18 @@ import {
   adminSettingsApi,
   type MeteredTrafficConfiguration,
   type MeteredTrafficConfigurationResponse,
+  type MeteredTrafficExhaustedUser,
   type MeteredTrafficNode,
 } from '@/api/adminSettings';
+import { adminUsersApi } from '@/api/adminUsers';
 import { AdminBackButton, Toggle } from '@/components/admin';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/primitives';
 import { cn } from '@/lib/utils';
 
 const TEMPLATE_VARIABLES = ['percent', 'used_gb', 'limit_gb', 'remaining_gb'] as const;
@@ -66,11 +81,31 @@ function formatLastRun(value: string | null): string {
   }).format(date);
 }
 
+function formatDateTime(value: string | null): string {
+  if (!value) return 'Время неизвестно';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Время неизвестно';
+  return new Intl.DateTimeFormat('ru-RU', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+}
+
 export default function AdminUltimaMeteredTraffic() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [form, setForm] = useState<MeteredTrafficConfiguration | null>(null);
   const [savedForm, setSavedForm] = useState<MeteredTrafficConfiguration | null>(null);
   const [search, setSearch] = useState('');
+  const [exhaustedSearch, setExhaustedSearch] = useState('');
+  const [debouncedExhaustedSearch, setDebouncedExhaustedSearch] = useState('');
+  const [exhaustedPage, setExhaustedPage] = useState(1);
+  const [selectedExhaustedUser, setSelectedExhaustedUser] =
+    useState<MeteredTrafficExhaustedUser | null>(null);
+  const [grantTrafficGb, setGrantTrafficGb] = useState(10);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -84,6 +119,32 @@ export default function AdminUltimaMeteredTraffic() {
     setForm(configurationQuery.data.configuration);
     setSavedForm(configurationQuery.data.configuration);
   }, [configurationQuery.data]);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedExhaustedSearch(exhaustedSearch.trim());
+      setExhaustedPage(1);
+    }, 300);
+    return () => window.clearTimeout(timeoutId);
+  }, [exhaustedSearch]);
+
+  const exhaustedUsersQuery = useQuery({
+    queryKey: [
+      'admin',
+      'ultima',
+      'metered-traffic',
+      'exhausted-users',
+      debouncedExhaustedSearch,
+      exhaustedPage,
+    ],
+    queryFn: () =>
+      adminSettingsApi.getMeteredTrafficExhaustedUsers({
+        search: debouncedExhaustedSearch || undefined,
+        page: exhaustedPage,
+        page_size: 10,
+      }),
+    staleTime: 15_000,
+  });
 
   const saveMutation = useMutation({
     mutationFn: adminSettingsApi.updateMeteredTrafficConfiguration,
@@ -133,6 +194,27 @@ export default function AdminUltimaMeteredTraffic() {
     onError: (mutationError) => {
       setSuccess(null);
       setError(getErrorMessage(mutationError, 'Проверка завершилась с ошибкой.'));
+    },
+  });
+
+  const grantTrafficMutation = useMutation({
+    mutationFn: ({ userId, trafficGb }: { userId: number; trafficGb: number }) =>
+      adminUsersApi.updateSubscription(userId, {
+        action: 'add_traffic',
+        traffic_gb: trafficGb,
+      }),
+    onSuccess: async (_, variables) => {
+      setSelectedExhaustedUser(null);
+      setGrantTrafficGb(10);
+      setExhaustedPage(1);
+      setError(null);
+      setSuccess(`Пользователю выдано ${variables.trafficGb} ГБ на 30 дней. Доступ восстановлен.`);
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ['admin', 'ultima', 'metered-traffic'],
+        }),
+        queryClient.invalidateQueries({ queryKey: ['admin-user', variables.userId] }),
+      ]);
     },
   });
 
@@ -261,12 +343,19 @@ export default function AdminUltimaMeteredTraffic() {
         <button
           type="button"
           className="btn-secondary inline-flex h-10 w-10 items-center justify-center p-0"
-          onClick={() => configurationQuery.refetch()}
-          disabled={configurationQuery.isFetching || isBusy}
+          onClick={() => {
+            void Promise.all([configurationQuery.refetch(), exhaustedUsersQuery.refetch()]);
+          }}
+          disabled={configurationQuery.isFetching || exhaustedUsersQuery.isFetching || isBusy}
           title="Обновить данные из Remnawave"
           aria-label="Обновить данные из Remnawave"
         >
-          <RefreshCw size={17} className={configurationQuery.isFetching ? 'animate-spin' : ''} />
+          <RefreshCw
+            size={17}
+            className={
+              configurationQuery.isFetching || exhaustedUsersQuery.isFetching ? 'animate-spin' : ''
+            }
+          />
         </button>
       </div>
 
@@ -303,6 +392,169 @@ export default function AdminUltimaMeteredTraffic() {
           disabled={isBusy}
           aria-label="Включить раздельный учет трафика"
         />
+      </section>
+
+      <section className="overflow-hidden rounded-lg border border-dark-700/50 bg-dark-800/30">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-dark-700/45 px-4 py-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="rounded-lg bg-warning-500/10 p-2 text-warning-300">
+              <Users size={18} />
+            </span>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-sm font-semibold text-dark-100">Трафик закончился</h2>
+                <span className="rounded-full border border-warning-500/25 bg-warning-500/10 px-2 py-0.5 text-[11px] font-medium text-warning-200">
+                  {exhaustedUsersQuery.data?.total ?? status.subscriptions.blocked}
+                </span>
+              </div>
+              <p className="mt-0.5 text-xs leading-5 text-dark-500">
+                Активные пользователи без доступа к спецсерверам
+              </p>
+            </div>
+          </div>
+          <label className="relative w-full sm:w-64">
+            <Search
+              size={15}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-dark-500"
+            />
+            <input
+              type="search"
+              className="input h-9 w-full pl-9 text-sm"
+              value={exhaustedSearch}
+              onChange={(event) => setExhaustedSearch(event.target.value)}
+              placeholder="Имя, логин или ID"
+              aria-label="Найти пользователя с исчерпанным трафиком"
+            />
+          </label>
+        </div>
+
+        {exhaustedUsersQuery.isLoading ? (
+          <div className="space-y-2 p-3">
+            {[0, 1].map((item) => (
+              <div key={item} className="h-16 animate-pulse rounded-lg bg-dark-900/35" />
+            ))}
+          </div>
+        ) : exhaustedUsersQuery.isError ? (
+          <div className="flex flex-wrap items-center justify-between gap-3 p-4">
+            <p className="text-sm text-error-300">Не удалось загрузить список пользователей.</p>
+            <button
+              type="button"
+              className="btn-secondary text-xs"
+              onClick={() => exhaustedUsersQuery.refetch()}
+            >
+              Повторить
+            </button>
+          </div>
+        ) : exhaustedUsersQuery.data?.items.length ? (
+          <>
+            <div className="divide-y divide-dark-700/40">
+              {exhaustedUsersQuery.data.items.map((item) => (
+                <div
+                  key={item.subscription_id}
+                  className="grid gap-3 px-4 py-3 sm:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)_auto] sm:items-center"
+                >
+                  <div className="min-w-0">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="truncate text-sm font-medium text-dark-100">
+                        {item.full_name}
+                      </span>
+                      {item.tariff_name ? (
+                        <span className="shrink-0 rounded bg-dark-700/70 px-1.5 py-0.5 text-[10px] text-dark-300">
+                          {item.tariff_name}
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-[11px] text-dark-500">
+                      {item.username ? <span>@{item.username}</span> : null}
+                      {item.telegram_id ? <span>ID {item.telegram_id}</span> : null}
+                      {!item.telegram_id && item.email ? <span>{item.email}</span> : null}
+                      <span>с {formatDateTime(item.blocked_at)}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex min-w-0 flex-wrap gap-2 text-xs">
+                    <span className="rounded-md border border-warning-500/20 bg-warning-500/10 px-2 py-1 text-warning-200">
+                      {item.traffic_used_gb.toLocaleString('ru-RU', { maximumFractionDigits: 2 })} /{' '}
+                      {item.traffic_limit_gb} ГБ
+                    </span>
+                    {item.purchased_traffic_gb > 0 ? (
+                      <span className="rounded-md border border-dark-700/60 bg-dark-900/35 px-2 py-1 text-dark-400">
+                        докуплено {item.purchased_traffic_gb} ГБ
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <div className="flex items-center gap-2 sm:justify-end">
+                    <button
+                      type="button"
+                      className="btn-secondary inline-flex h-9 w-9 items-center justify-center p-0"
+                      onClick={() => navigate(`/admin/users/${item.user_id}`)}
+                      title="Открыть профиль пользователя"
+                      aria-label="Открыть профиль пользователя"
+                    >
+                      <ExternalLink size={15} />
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-primary inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 px-3 text-xs sm:flex-none"
+                      onClick={() => {
+                        grantTrafficMutation.reset();
+                        setSelectedExhaustedUser(item);
+                        setGrantTrafficGb(10);
+                      }}
+                    >
+                      <Plus size={15} />
+                      Выдать трафик
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {exhaustedUsersQuery.data.pages > 1 ? (
+              <div className="flex items-center justify-between gap-3 border-t border-dark-700/45 px-4 py-3">
+                <span className="text-xs text-dark-500">
+                  Страница {exhaustedUsersQuery.data.page} из {exhaustedUsersQuery.data.pages}
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="btn-secondary inline-flex h-8 w-8 items-center justify-center p-0"
+                    disabled={exhaustedUsersQuery.data.page <= 1 || exhaustedUsersQuery.isFetching}
+                    onClick={() => setExhaustedPage((current) => Math.max(1, current - 1))}
+                    aria-label="Предыдущая страница"
+                  >
+                    <ChevronLeft size={15} />
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-secondary inline-flex h-8 w-8 items-center justify-center p-0"
+                    disabled={
+                      exhaustedUsersQuery.data.page >= exhaustedUsersQuery.data.pages ||
+                      exhaustedUsersQuery.isFetching
+                    }
+                    onClick={() => setExhaustedPage((current) => current + 1)}
+                    aria-label="Следующая страница"
+                  >
+                    <ChevronRight size={15} />
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </>
+        ) : (
+          <div className="flex items-center gap-3 px-4 py-5">
+            <span className="rounded-full bg-success-500/10 p-2 text-success-300">
+              <CheckCircle2 size={17} />
+            </span>
+            <div>
+              <p className="text-sm font-medium text-dark-200">Нет пользователей без трафика</p>
+              <p className="mt-0.5 text-xs text-dark-500">
+                Все активные подписки имеют доступ к спецсерверам.
+              </p>
+            </div>
+          </div>
+        )}
       </section>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
@@ -553,7 +805,7 @@ export default function AdminUltimaMeteredTraffic() {
               <div className="rounded-lg bg-dark-900/35 px-2 py-3">
                 <dt className="text-[10px] uppercase text-dark-500">Лимит</dt>
                 <dd className="mt-1 text-lg font-semibold text-warning-200">
-                  {status.subscriptions.blocked}
+                  {exhaustedUsersQuery.data?.total ?? status.subscriptions.blocked}
                 </dd>
               </div>
             </dl>
@@ -751,6 +1003,134 @@ export default function AdminUltimaMeteredTraffic() {
           {saveMutation.isPending ? 'Применяем...' : 'Сохранить и применить'}
         </button>
       </div>
+
+      <Dialog
+        open={!!selectedExhaustedUser}
+        onOpenChange={(open) => {
+          if (!open && !grantTrafficMutation.isPending) {
+            setSelectedExhaustedUser(null);
+            setGrantTrafficGb(10);
+            grantTrafficMutation.reset();
+          }
+        }}
+      >
+        <DialogContent className="max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-sm gap-4 overflow-y-auto p-4 sm:max-w-md sm:p-5">
+          {selectedExhaustedUser ? (
+            <form
+              className="space-y-4"
+              onSubmit={(event) => {
+                event.preventDefault();
+                const trafficGb = Math.trunc(grantTrafficGb);
+                if (trafficGb < 1) return;
+                grantTrafficMutation.mutate({
+                  userId: selectedExhaustedUser.user_id,
+                  trafficGb,
+                });
+              }}
+            >
+              <DialogHeader className="pr-8 text-left">
+                <DialogTitle className="text-base">Выдать дополнительный трафик</DialogTitle>
+                <DialogDescription className="text-xs">
+                  Спецсерверы станут доступны сразу после синхронизации с Remnawave.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="rounded-lg border border-dark-700 bg-dark-800/70 p-3">
+                <div className="truncate text-sm font-semibold text-dark-100">
+                  {selectedExhaustedUser.full_name}
+                </div>
+                <div className="mt-1 flex flex-wrap gap-x-2 text-xs text-dark-500">
+                  {selectedExhaustedUser.username ? (
+                    <span>@{selectedExhaustedUser.username}</span>
+                  ) : null}
+                  <span>
+                    использовано{' '}
+                    {selectedExhaustedUser.traffic_used_gb.toLocaleString('ru-RU', {
+                      maximumFractionDigits: 2,
+                    })}{' '}
+                    из {selectedExhaustedUser.traffic_limit_gb} ГБ
+                  </span>
+                </div>
+              </div>
+
+              <label className="block space-y-2">
+                <span className="text-xs font-medium uppercase text-dark-400">
+                  Сколько добавить
+                </span>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    className="input min-w-0 flex-1"
+                    min={1}
+                    max={10000}
+                    step={1}
+                    value={grantTrafficGb}
+                    onChange={(event) => setGrantTrafficGb(Number(event.target.value))}
+                    disabled={grantTrafficMutation.isPending}
+                    autoFocus
+                  />
+                  <span className="text-sm text-dark-400">ГБ</span>
+                </div>
+              </label>
+
+              <div className="grid grid-cols-4 gap-2">
+                {[5, 10, 20, 50].map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className={cn(
+                      'min-h-9 rounded-lg border px-2 text-xs font-medium transition-colors',
+                      grantTrafficGb === value
+                        ? 'border-accent-500/50 bg-accent-500/15 text-accent-200'
+                        : 'border-dark-700 bg-dark-800 text-dark-400 hover:text-dark-200',
+                    )}
+                    onClick={() => setGrantTrafficGb(value)}
+                    disabled={grantTrafficMutation.isPending}
+                  >
+                    +{value}
+                  </button>
+                ))}
+              </div>
+
+              <div className="rounded-lg border border-accent-500/20 bg-accent-500/10 p-3 text-xs leading-5 text-dark-300">
+                Новый общий лимит: {selectedExhaustedUser.traffic_limit_gb + (grantTrafficGb || 0)}{' '}
+                ГБ. Добавленный пакет действует ровно 30 дней.
+              </div>
+
+              {grantTrafficMutation.isError ? (
+                <div className="rounded-lg border border-error-500/30 bg-error-500/10 p-3 text-xs text-error-300">
+                  {getErrorMessage(
+                    grantTrafficMutation.error,
+                    'Не удалось выдать трафик. Проверьте подписку пользователя.',
+                  )}
+                </div>
+              ) : null}
+
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  className="btn-secondary justify-center px-3 py-2 text-sm"
+                  onClick={() => setSelectedExhaustedUser(null)}
+                  disabled={grantTrafficMutation.isPending}
+                >
+                  Отмена
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary justify-center px-3 py-2 text-sm"
+                  disabled={
+                    grantTrafficMutation.isPending ||
+                    !Number.isFinite(grantTrafficGb) ||
+                    grantTrafficGb < 1
+                  }
+                >
+                  {grantTrafficMutation.isPending ? 'Выдаём...' : `Выдать ${grantTrafficGb} ГБ`}
+                </button>
+              </div>
+            </form>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

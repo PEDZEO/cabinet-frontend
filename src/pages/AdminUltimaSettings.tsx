@@ -446,7 +446,7 @@ export default function AdminUltimaSettings() {
             title="Раздельный трафик"
             subtitle={
               meteredTrafficStatus?.enabled
-                ? `${meteredTrafficStatus.running ? 'работает' : 'ожидает'} · отключено ${meteredTrafficStatus.subscriptions.blocked}`
+                ? `${meteredTrafficStatus.running ? 'работает' : 'ожидает'} · без трафика ${meteredTrafficStatus.subscriptions.blocked}`
                 : 'спецсерверы и безлимитные ноды'
             }
           />

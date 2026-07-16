@@ -107,6 +107,30 @@ export interface MeteredTrafficRunResponse extends MeteredTrafficStatus {
   run: MeteredTrafficRunStats;
 }
 
+export interface MeteredTrafficExhaustedUser {
+  user_id: number;
+  subscription_id: number;
+  telegram_id: number | null;
+  username: string | null;
+  email: string | null;
+  full_name: string;
+  tariff_name: string | null;
+  traffic_limit_gb: number;
+  traffic_used_gb: number;
+  purchased_traffic_gb: number;
+  blocked_at: string | null;
+  last_checked_at: string | null;
+  subscription_end_date: string;
+}
+
+export interface MeteredTrafficExhaustedUsersResponse {
+  items: MeteredTrafficExhaustedUser[];
+  total: number;
+  page: number;
+  page_size: number;
+  pages: number;
+}
+
 export const adminSettingsApi = {
   // Get list of setting categories
   getCategories: async (): Promise<SettingCategorySummary[]> => {
@@ -155,6 +179,18 @@ export const adminSettingsApi = {
   getMeteredTrafficConfiguration: async (): Promise<MeteredTrafficConfigurationResponse> => {
     const response = await apiClient.get<MeteredTrafficConfigurationResponse>(
       '/cabinet/admin/settings/metered-traffic/configuration',
+    );
+    return response.data;
+  },
+
+  getMeteredTrafficExhaustedUsers: async (params?: {
+    search?: string;
+    page?: number;
+    page_size?: number;
+  }): Promise<MeteredTrafficExhaustedUsersResponse> => {
+    const response = await apiClient.get<MeteredTrafficExhaustedUsersResponse>(
+      '/cabinet/admin/settings/metered-traffic/exhausted-users',
+      { params },
     );
     return response.data;
   },
