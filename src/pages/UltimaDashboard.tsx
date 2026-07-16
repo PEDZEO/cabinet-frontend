@@ -1551,19 +1551,23 @@ export function UltimaDashboard() {
 
           {mobileTrafficWarning}
 
-          {showReferralEntry && (
-            <div className="mb-4">
-              <UltimaReferralCta
-                commissionPercent={referralCommissionPercent}
-                onClick={openReferral}
-                title={referralInviteTitle}
-                description={referralInviteDescription}
-                badgeLabel={referralInviteBadgeLabel}
-              />
-            </div>
-          )}
+          {!shouldShowTrafficWarning ? (
+            <>
+              {showReferralEntry && (
+                <div className="mb-4">
+                  <UltimaReferralCta
+                    commissionPercent={referralCommissionPercent}
+                    onClick={openReferral}
+                    title={referralInviteTitle}
+                    description={referralInviteDescription}
+                    badgeLabel={referralInviteBadgeLabel}
+                  />
+                </div>
+              )}
 
-          {devicesHomeCta ? <div className="mb-4">{devicesHomeCta}</div> : null}
+              {devicesHomeCta ? <div className="mb-4">{devicesHomeCta}</div> : null}
+            </>
+          ) : null}
 
           {showPromoCard && (
             <div

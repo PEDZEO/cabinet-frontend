@@ -426,6 +426,8 @@ test.describe('Ultima desktop workspace', () => {
       await expect(warning).toBeVisible();
       await expect(warning).toContainText('Трафик заканчивается');
       await expect(warning).toContainText('Осталось 8 ГБ из 100 ГБ');
+      await expect(page.getByText('Позови друга', { exact: true })).toHaveCount(0);
+      await expect(page.getByText('Подключить новое устройство', { exact: true })).toHaveCount(0);
       await expectNoHorizontalOverflow(page);
 
       await page.getByTestId('ultima-traffic-warning-action').click();

@@ -559,7 +559,9 @@ export function UltimaDesktopDashboard({
                       ) : null}
                     </div>
 
-                    {referralCta || devicesCta ? (
+                    {trafficWarning ? (
+                      <div className="mt-5">{trafficWarning}</div>
+                    ) : referralCta || devicesCta ? (
                       <div className="mt-5 grid gap-3 2xl:grid-cols-2">
                         {referralCta}
                         {devicesCta}
@@ -572,8 +574,6 @@ export function UltimaDesktopDashboard({
                   </div>
                 </div>
               </section>
-
-              {trafficWarning}
 
               <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-4">
                 <DesktopMetricCard
