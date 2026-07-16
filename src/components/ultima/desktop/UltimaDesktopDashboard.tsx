@@ -298,7 +298,7 @@ export function UltimaDesktopDashboard({
   isActivatingOffer,
   bottomNav,
 }: UltimaDesktopDashboardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const tone = toneMap[statusTone];
   const normalizedDeviceLimit = Math.max(0, subscription?.device_limit ?? 0);
   const serversCount = Math.max(0, subscription?.servers.length ?? 0);
@@ -336,6 +336,15 @@ export function UltimaDesktopDashboard({
     trafficLimitGb > 0
       ? `${trafficLimitGb} ${t('common.units.gb', { defaultValue: 'ГБ' })}`
       : t('subscription.unlimited', { defaultValue: 'Безлимит' });
+  const trafficNumberFormatter = new Intl.NumberFormat(i18n.language, {
+    maximumFractionDigits: 1,
+  });
+  const trafficUsageLabel =
+    trafficLimitGb > 0
+      ? `${trafficNumberFormatter.format(trafficUsedGb)} / ${trafficNumberFormatter.format(
+          trafficLimitGb,
+        )} ${t('common.units.gb', { defaultValue: 'ГБ' })}`
+      : trafficLimitLabel;
   const planName =
     subscription?.tariff_name ||
     (subscription?.is_trial
@@ -718,8 +727,8 @@ export function UltimaDesktopDashboard({
                         {planName}
                       </span>
                       <span className="mt-1 block truncate text-xs text-white/[0.58]">
-                        {trafficLimitLabel}
-                        {isMeteredTraffic ? ` ${meteredTrafficLabel.toLowerCase()}` : ''} ·{' '}
+                        {trafficUsageLabel}
+                        {isMeteredTraffic ? ` · ${meteredTrafficLabel.toLowerCase()}` : ''} ·{' '}
                         {t('lite.devicesTotal', { defaultValue: 'Устройства' })}:{' '}
                         {normalizedDeviceLimit}
                       </span>

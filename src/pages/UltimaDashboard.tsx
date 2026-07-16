@@ -1190,11 +1190,20 @@ export function UltimaDashboard() {
     (isActiveTrial
       ? t('subscription.trialStatus', { defaultValue: 'Пробный период' })
       : t('subscription.infoTitle', { defaultValue: 'Подписка' }));
-  const subscriptionTrafficLabel =
-    (subscription?.traffic_limit_gb ?? 0) > 0
-      ? `${subscription?.traffic_limit_gb ?? 0} ${t('common.units.gb', { defaultValue: 'ГБ' })}${
-          subscription?.metered_traffic_enabled ? ' · спец' : ''
-        }`
+  const subscriptionTrafficLimitGb = Math.max(0, subscription?.traffic_limit_gb ?? 0);
+  const subscriptionTrafficUsedGb = Math.max(0, subscription?.traffic_used_gb ?? 0);
+  const subscriptionTrafficPercent = Math.max(
+    0,
+    Math.min(100, subscription?.traffic_used_percent ?? 0),
+  );
+  const trafficNumberFormatter = new Intl.NumberFormat(i18n.language, {
+    maximumFractionDigits: 1,
+  });
+  const subscriptionTrafficUsageLabel =
+    subscriptionTrafficLimitGb > 0
+      ? `${trafficNumberFormatter.format(subscriptionTrafficUsedGb)} / ${trafficNumberFormatter.format(
+          subscriptionTrafficLimitGb,
+        )} ${t('common.units.gb', { defaultValue: 'ГБ' })}`
       : t('subscription.unlimited', { defaultValue: 'Безлимит' });
   const subscriptionPlanCard = hasAnySubscription ? (
     <div
@@ -1227,12 +1236,37 @@ export function UltimaDashboard() {
             <span className="shrink-0 rounded-full border border-white/[0.08] bg-black/[0.08] px-2 py-0.5 text-[11px] font-medium text-white/[0.68]">
               {connectedDevicesCount}/{dashboardDeviceLimit}
             </span>
+          </span>
+          <span className="mt-1.5 flex min-w-0 items-center gap-2">
+            {subscriptionTrafficLimitGb > 0 && (
+              <span
+                className="h-1 w-12 shrink-0 overflow-hidden rounded-full bg-white/[0.1] min-[360px]:w-16"
+                aria-hidden="true"
+              >
+                <span
+                  className="block h-full rounded-full transition-[width] duration-300"
+                  style={{
+                    width: `${subscriptionTrafficPercent}%`,
+                    background: subscription?.metered_access_blocked
+                      ? 'rgb(251 191 36 / 0.9)'
+                      : 'var(--ultima-color-primary)',
+                  }}
+                />
+              </span>
+            )}
             <span
-              className="hidden max-w-[112px] shrink-0 truncate rounded-full border border-white/[0.08] bg-black/[0.08] px-2 py-0.5 text-[11px] font-medium text-white/[0.62] min-[390px]:inline"
-              title={subscriptionTrafficLabel}
+              className={cn(
+                'shrink-0 text-[11px] font-medium leading-none',
+                subscription?.metered_access_blocked ? 'text-amber-200/[0.92]' : 'text-white/[0.7]',
+              )}
             >
-              {subscriptionTrafficLabel}
+              {subscriptionTrafficUsageLabel}
             </span>
+            {subscription?.metered_traffic_enabled && (
+              <span className="hidden min-w-0 truncate text-[10px] leading-none text-white/[0.42] min-[390px]:inline">
+                {t('ultima.meteredTraffic.defaultLabel', { defaultValue: 'Спецсерверы' })}
+              </span>
+            )}
           </span>
         </button>
         <button
