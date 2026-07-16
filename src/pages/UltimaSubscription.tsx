@@ -935,6 +935,28 @@ export function UltimaSubscription() {
     navigate('/balance/top-up?returnTo=/subscription');
   };
 
+  const trafficTopUpSection =
+    canTopUpSelectedTariffTraffic && subscription ? (
+      <UltimaTrafficTopUpSection
+        t={t}
+        formatPrice={formatPrice}
+        trafficLimitGb={subscription.traffic_limit_gb}
+        trafficUsedGb={subscription.traffic_used_gb}
+        trafficPurchases={subscription.traffic_purchases}
+        trafficPackages={trafficPackages}
+        selectedTrafficPackage={selectedTrafficPackage}
+        setSelectedTrafficPackage={setSelectedTrafficPackage}
+        purchaseBalanceKopeks={currentBalanceKopeks}
+        isPending={purchaseTrafficMutation.isPending}
+        error={trafficPurchaseErrorMessage}
+        initiallyExpanded={shouldOpenTrafficTopUp}
+        onPurchaseTraffic={(gb) => purchaseTrafficMutation.mutate(gb)}
+        onTopUpBalance={(gb) => {
+          void openTopUpForTraffic(gb);
+        }}
+      />
+    ) : null;
+
   const openTopUpForSubscription = async () => {
     setError(null);
     if (
@@ -1191,6 +1213,7 @@ export function UltimaSubscription() {
         <div className="ultima-shell-aura" />
         <UltimaDesktopSubscription
           planSelector={desktopTariffSelector}
+          trafficTopUp={trafficTopUpSection}
           title={
             selectedTariff?.name ??
             t('subscription.purchaseTitle', { defaultValue: 'Покупка подписки' })
@@ -1651,27 +1674,8 @@ export function UltimaSubscription() {
             </div>
           )}
 
-          {canTopUpSelectedTariffTraffic && subscription ? (
-            <div className={isCompactHeight ? 'mt-2.5' : 'mt-3'}>
-              <UltimaTrafficTopUpSection
-                t={t}
-                formatPrice={formatPrice}
-                trafficLimitGb={subscription.traffic_limit_gb}
-                trafficUsedGb={subscription.traffic_used_gb}
-                trafficPurchases={subscription.traffic_purchases}
-                trafficPackages={trafficPackages}
-                selectedTrafficPackage={selectedTrafficPackage}
-                setSelectedTrafficPackage={setSelectedTrafficPackage}
-                purchaseBalanceKopeks={currentBalanceKopeks}
-                isPending={purchaseTrafficMutation.isPending}
-                error={trafficPurchaseErrorMessage}
-                initiallyExpanded={shouldOpenTrafficTopUp}
-                onPurchaseTraffic={(gb) => purchaseTrafficMutation.mutate(gb)}
-                onTopUpBalance={(gb) => {
-                  void openTopUpForTraffic(gb);
-                }}
-              />
-            </div>
+          {trafficTopUpSection ? (
+            <div className={isCompactHeight ? 'mt-2.5' : 'mt-3'}>{trafficTopUpSection}</div>
           ) : null}
         </section>
 

@@ -81,6 +81,12 @@ const SUBSCRIPTION = {
   traffic_purchases: [],
 };
 
+const LOW_TRAFFIC_SUBSCRIPTION = {
+  ...SUBSCRIPTION,
+  traffic_used_gb: 92,
+  traffic_used_percent: 92,
+};
+
 const TRIAL_SUBSCRIPTION = {
   ...SUBSCRIPTION,
   id: 991,
@@ -200,6 +206,18 @@ async function mockUltimaDesktopApi(
     if (path === '/cabinet/branding/fullscreen') return respond({ enabled: false });
     if (path === '/cabinet/branding/analytics') return respond({});
     if (path === '/cabinet/branding/gift-enabled') return respond({ enabled: false });
+    if (path === '/cabinet/notifications') {
+      return respond({
+        subscription_expiry_enabled: true,
+        subscription_expiry_days: 7,
+        traffic_warning_enabled: true,
+        traffic_warning_percent: 80,
+        balance_low_enabled: true,
+        balance_low_threshold: 100,
+        news_enabled: true,
+        promo_offers_enabled: true,
+      });
+    }
     if (path === '/cabinet/subscription') {
       return respond({ has_subscription: true, subscription });
     }
@@ -393,6 +411,32 @@ test.describe('Ultima desktop workspace', () => {
       'true',
     );
   });
+
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 1366, height: 768 },
+  ]) {
+    test(`shows traffic warning and opens top-up at ${viewport.width}px`, async ({ page }) => {
+      await page.setViewportSize(viewport);
+      await bootstrapUltimaDesktop(page);
+      await mockUltimaDesktopApi(page, { subscription: LOW_TRAFFIC_SUBSCRIPTION });
+      await page.goto('/');
+
+      const warning = page.getByTestId('ultima-traffic-warning');
+      await expect(warning).toBeVisible();
+      await expect(warning).toContainText('Трафик заканчивается');
+      await expect(warning).toContainText('Осталось 8 ГБ из 100 ГБ');
+      await expectNoHorizontalOverflow(page);
+
+      await page.getByTestId('ultima-traffic-warning-action').click();
+      await expect(page).toHaveURL(/\/subscription\?trafficTopUp=1$/);
+      await expect(page.locator('#ultima-traffic-top-up')).toBeVisible();
+      await expect(
+        page.locator('#ultima-traffic-top-up button[aria-expanded]').first(),
+      ).toHaveAttribute('aria-expanded', 'true');
+      await expectNoHorizontalOverflow(page);
+    });
+  }
 
   test('keeps the admin action inside the rail', async ({ page }) => {
     await page.setViewportSize({ width: 1366, height: 768 });

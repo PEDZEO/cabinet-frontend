@@ -3720,6 +3720,16 @@
     "setupCompactTitle": "VPN 尚未设置",
     "setupCompactDesc": "方便时打开安装流程并完成连接。",
     "referralCtaDescription": "邀请最高返 {{percent}}%",
+    "trafficWarning": {
+      "title": "流量即将用完",
+      "trialTitle": "试用流量即将用完",
+      "exhaustedTitle": "流量已用完",
+      "description": "剩余 {{remaining}} GB，共 {{limit}} GB。",
+      "meteredDescription": "{{server}} 剩余 {{remaining}} GB。其他服务器仍为无限流量。",
+      "meteredExhaustedDescription": "{{server}} 暂时不可用。无限流量服务器仍可继续使用。",
+      "buyTraffic": "购买流量",
+      "buySubscription": "购买订阅"
+    },
     "trialGuide": {
       "badge": "试用已激活",
       "title": "现在就可以开始连接",

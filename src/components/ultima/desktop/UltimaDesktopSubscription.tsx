@@ -26,6 +26,7 @@ type UltimaDesktopIncludedItem = {
 
 type UltimaDesktopSubscriptionProps = {
   planSelector?: ReactNode;
+  trafficTopUp?: ReactNode;
   title: string;
   subtitle: string;
   selectedDeviceLimit: number;
@@ -57,6 +58,7 @@ const accentCardStyle: CSSProperties = ultimaAccentSurfaceStyle;
 
 export function UltimaDesktopSubscription({
   planSelector,
+  trafficTopUp,
   title,
   subtitle,
   selectedDeviceLimit,
@@ -97,6 +99,7 @@ export function UltimaDesktopSubscription({
           <main className="ultima-desktop-main">
             <div className="space-y-4">
               {planSelector}
+              {trafficTopUp}
 
               <section
                 className={cn(

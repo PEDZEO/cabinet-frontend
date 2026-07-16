@@ -3723,6 +3723,16 @@
     "setupCompactTitle": "VPN هنوز تنظیم نشده است",
     "setupCompactDesc": "هر زمان آماده بودید، نصب را باز کنید و اتصال را کامل کنید.",
     "referralCtaDescription": "تا {{percent}}٪ از دعوت‌ها",
+    "trafficWarning": {
+      "title": "ترافیک رو به پایان است",
+      "trialTitle": "ترافیک دوره آزمایشی رو به پایان است",
+      "exhaustedTitle": "ترافیک تمام شده است",
+      "description": "{{remaining}} گیگابایت از {{limit}} گیگابایت باقی مانده است.",
+      "meteredDescription": "{{remaining}} گیگابایت برای {{server}} باقی مانده است. سایر سرورها نامحدود می‌مانند.",
+      "meteredExhaustedDescription": "{{server}} موقتاً در دسترس نیست. سرورهای نامحدود همچنان کار می‌کنند.",
+      "buyTraffic": "خرید ترافیک",
+      "buySubscription": "خرید اشتراک"
+    },
     "trialGuide": {
       "badge": "دوره آزمایشی فعال شد",
       "title": "الان می‌توانید متصل شوید",

@@ -5317,6 +5317,16 @@
     "referralInviteDescription": "Бонус к балансу за приглашение друга.",
     "referralInviteDescriptionWithDays": "+{{count}} дн. к подписке за приглашение друга.",
     "referralInviteBadge": "Бонус",
+    "trafficWarning": {
+      "title": "Трафик заканчивается",
+      "trialTitle": "Трафик триала заканчивается",
+      "exhaustedTitle": "Трафик закончился",
+      "description": "Осталось {{remaining}} ГБ из {{limit}} ГБ.",
+      "meteredDescription": "Осталось {{remaining}} ГБ на {{server}}. Остальные серверы остаются безлимитными.",
+      "meteredExhaustedDescription": "{{server}} временно недоступны. Остальные серверы продолжают работать без лимита.",
+      "buyTraffic": "Докупить трафик",
+      "buySubscription": "Купить подписку"
+    },
     "desktop": {
       "daysLeftValue": "{{count}}",
       "daysLeftMeta": "до следующего обновления доступа",

@@ -4743,6 +4743,16 @@
     "referralInviteDescription": "Balance bonus for inviting a friend.",
     "referralInviteDescriptionWithDays": "+{{count}} d. subscription for inviting a friend.",
     "referralInviteBadge": "Bonus",
+    "trafficWarning": {
+      "title": "Traffic is running low",
+      "trialTitle": "Trial traffic is running low",
+      "exhaustedTitle": "Traffic has run out",
+      "description": "{{remaining}} GB of {{limit}} GB remain.",
+      "meteredDescription": "{{remaining}} GB remain for {{server}}. Other servers remain unlimited.",
+      "meteredExhaustedDescription": "{{server}} are temporarily unavailable. Unlimited servers continue to work.",
+      "buyTraffic": "Buy traffic",
+      "buySubscription": "Buy subscription"
+    },
     "desktop": {
       "daysLeftValue": "{{count}}",
       "daysLeftMeta": "until the next access update",

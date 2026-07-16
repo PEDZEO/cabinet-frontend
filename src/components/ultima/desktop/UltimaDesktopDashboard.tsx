@@ -17,6 +17,7 @@ type UltimaDesktopDashboardProps = {
   heroButton: ReactNode;
   referralCta?: ReactNode;
   devicesCta?: ReactNode;
+  trafficWarning?: ReactNode;
   subscription: Subscription | null;
   expiryLabel: string;
   statusLabel: string;
@@ -270,6 +271,7 @@ export function UltimaDesktopDashboard({
   heroButton,
   referralCta,
   devicesCta,
+  trafficWarning,
   subscription,
   expiryLabel,
   statusLabel,
@@ -570,6 +572,8 @@ export function UltimaDesktopDashboard({
                   </div>
                 </div>
               </section>
+
+              {trafficWarning}
 
               <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-4">
                 <DesktopMetricCard

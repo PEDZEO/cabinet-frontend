@@ -13,6 +13,7 @@ import {
 import { balanceApi } from '@/api/balance';
 import { brandingApi, getCachedUltimaThemeConfig } from '@/api/branding';
 import { infoApi } from '@/api/info';
+import { notificationsApi } from '@/api/notifications';
 import { promoApi } from '@/api/promo';
 import { referralApi } from '@/api/referral';
 import { subscriptionApi } from '@/api/subscription';
@@ -27,6 +28,7 @@ import {
 import { ticketsApi } from '@/api/tickets';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { UltimaTrialGuide } from '@/components/ultima/UltimaTrialGuide';
+import { UltimaTrafficWarningCard } from '@/components/ultima/UltimaTrafficWarningCard';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { usePendingTopUpFollowUpState } from '@/hooks/usePendingTopUpFollowUpState';
@@ -193,6 +195,13 @@ export function UltimaDashboard() {
     staleTime: 60000,
     placeholderData: (previousData) => previousData,
   });
+  const { data: notificationSettings } = useQuery({
+    queryKey: ['notification-settings'],
+    queryFn: notificationsApi.getSettings,
+    staleTime: 60000,
+    retry: false,
+    placeholderData: (previousData) => previousData,
+  });
   const { data: tapRewardProgress } = useQuery({
     queryKey: ['tap-rewards', 'progress'],
     queryFn: tapRewardsApi.getProgress,
@@ -259,6 +268,28 @@ export function UltimaDashboard() {
     isSubscriptionFetched || Boolean(subscriptionResponse) || isSubscriptionError;
   const isActive = Boolean(subscription?.is_active && !subscription?.is_expired);
   const isActiveTrial = Boolean(subscription?.is_trial && isActive);
+  const trafficWarningThreshold = Math.max(
+    25,
+    Math.min(95, notificationSettings?.traffic_warning_percent ?? 80),
+  );
+  const trafficWarningLimitGb = Math.max(0, subscription?.traffic_limit_gb ?? 0);
+  const trafficWarningUsedGb = Math.max(0, subscription?.traffic_used_gb ?? 0);
+  const trafficWarningPercent = Math.max(0, Math.min(100, subscription?.traffic_used_percent ?? 0));
+  const trafficWarningRemainingGb = Math.max(
+    0,
+    subscription?.metered_traffic_remaining_gb ?? trafficWarningLimitGb - trafficWarningUsedGb,
+  );
+  const isTrafficExhausted = Boolean(
+    subscription?.metered_access_blocked ||
+    trafficWarningPercent >= 100 ||
+    trafficWarningRemainingGb <= 0,
+  );
+  const shouldShowTrafficWarning = Boolean(
+    isActive &&
+    trafficWarningLimitGb > 0 &&
+    notificationSettings?.traffic_warning_enabled !== false &&
+    trafficWarningPercent >= trafficWarningThreshold,
+  );
   const statusLabel = isActiveTrial
     ? t('subscription.trialStatus')
     : isActive
@@ -838,6 +869,38 @@ export function UltimaDashboard() {
     navigate('/subscription');
   }, [haptic, navigate, queryClient]);
 
+  const openTrafficPurchase = useCallback(() => {
+    trackAnalyticsEvent('ultima_traffic_warning_click', {
+      source: 'dashboard',
+      percent: Math.round(trafficWarningPercent),
+      remaining_gb: trafficWarningRemainingGb,
+      is_trial: isActiveTrial,
+    });
+
+    if (isActiveTrial) {
+      openSubscriptionPurchase();
+      return;
+    }
+
+    haptic.impact('light');
+    void queryClient.prefetchQuery({
+      queryKey: ['traffic-packages', 'ultima-purchase', subscription?.tariff_id],
+      queryFn: subscriptionApi.getTrafficPackages,
+      staleTime: 60000,
+    });
+    void import('./Subscription');
+    navigate('/subscription?trafficTopUp=1');
+  }, [
+    haptic,
+    isActiveTrial,
+    navigate,
+    openSubscriptionPurchase,
+    queryClient,
+    subscription?.tariff_id,
+    trafficWarningPercent,
+    trafficWarningRemainingGb,
+  ]);
+
   const canPermanentlyHideReminder = Boolean(
     subscription?.is_active && !subscription?.is_expired && !subscription?.is_trial,
   );
@@ -1285,6 +1348,34 @@ export function UltimaDashboard() {
       </div>
     </div>
   ) : null;
+  const mobileTrafficWarning = shouldShowTrafficWarning ? (
+    <UltimaTrafficWarningCard
+      usedGb={trafficWarningUsedGb}
+      limitGb={trafficWarningLimitGb}
+      remainingGb={trafficWarningRemainingGb}
+      percent={trafficWarningPercent}
+      isExhausted={isTrafficExhausted}
+      isMetered={subscription?.metered_traffic_enabled}
+      isTrial={isActiveTrial}
+      serverLabel={subscription?.metered_server_label}
+      onAction={openTrafficPurchase}
+      className="mb-4"
+    />
+  ) : null;
+  const desktopTrafficWarning = shouldShowTrafficWarning ? (
+    <UltimaTrafficWarningCard
+      usedGb={trafficWarningUsedGb}
+      limitGb={trafficWarningLimitGb}
+      remainingGb={trafficWarningRemainingGb}
+      percent={trafficWarningPercent}
+      isExhausted={isTrafficExhausted}
+      isMetered={subscription?.metered_traffic_enabled}
+      isTrial={isActiveTrial}
+      serverLabel={subscription?.metered_server_label}
+      variant="desktop"
+      onAction={openTrafficPurchase}
+    />
+  ) : null;
   const desktopPendingPaymentCta = pendingTopUp?.paymentUrl ? (
     <UltimaPendingPaymentCard source="dashboard_desktop" compact />
   ) : null;
@@ -1355,6 +1446,7 @@ export function UltimaDashboard() {
           heroButton={renderShieldButton('h-[108px] w-[108px] lg:h-[124px] lg:w-[124px]')}
           referralCta={desktopActionCtaStack}
           devicesCta={devicesHomeCta}
+          trafficWarning={desktopTrafficWarning}
           subscription={subscription}
           expiryLabel={expiryLabel}
           statusLabel={statusLabel}
@@ -1456,6 +1548,8 @@ export function UltimaDashboard() {
           {pendingTopUp?.paymentUrl ? (
             <UltimaPendingPaymentCard source="dashboard_mobile" className="mb-4" />
           ) : null}
+
+          {mobileTrafficWarning}
 
           {showReferralEntry && (
             <div className="mb-4">
