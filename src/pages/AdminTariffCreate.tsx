@@ -150,6 +150,7 @@ export default function AdminTariffCreate() {
   const [deviceLimit, setDeviceLimit] = useState<number | ''>(1);
   const [devicePriceKopeks, setDevicePriceKopeks] = useState<number | ''>(0);
   const [maxDeviceLimit, setMaxDeviceLimit] = useState<number | ''>(0);
+  const [deviceTrafficGb, setDeviceTrafficGb] = useState<number | ''>(0);
   const [tierLevel, setTierLevel] = useState<number | ''>(1);
   const [periodPrices, setPeriodPrices] = useState<PeriodPrice[]>([]);
   const [selectedSquads, setSelectedSquads] = useState<string[]>([]);
@@ -227,6 +228,7 @@ export default function AdminTariffCreate() {
     setDeviceLimit(tariffData.device_limit || 1);
     setDevicePriceKopeks(tariffData.device_price_kopeks || 0);
     setMaxDeviceLimit(tariffData.max_device_limit || 0);
+    setDeviceTrafficGb(tariffData.device_traffic_gb || 0);
     setTierLevel(tariffData.tier_level || 1);
     setPeriodPrices(normalizePeriodPrices(rawPeriods));
     setSelectedSquads(tariffData.allowed_squads || []);
@@ -274,6 +276,7 @@ export default function AdminTariffCreate() {
       device_price_kopeks:
         toNumber(devicePriceKopeks) > 0 ? toNumber(devicePriceKopeks) : undefined,
       max_device_limit: toNumber(maxDeviceLimit) > 0 ? toNumber(maxDeviceLimit) : undefined,
+      device_traffic_gb: toNumber(deviceTrafficGb),
       tier_level: toNumber(tierLevel, 1),
       period_prices: isDaily ? [] : periodPrices.filter((p) => p.price_kopeks >= 0),
       allowed_squads: selectedSquads,
@@ -876,6 +879,29 @@ export default function AdminTariffCreate() {
               />
             </div>
             <p className="text-xs text-dark-500">{t('admin.tariffs.noLimitHint')}</p>
+            <div className="flex flex-wrap items-center gap-3 border-t border-dark-700/60 pt-3">
+              <span className="w-48 text-sm text-dark-400">
+                {t('admin.tariffs.deviceTrafficLabel')}
+              </span>
+              <input
+                type="number"
+                value={deviceTrafficGb}
+                onChange={createNumberInputHandler(setDeviceTrafficGb, 0)}
+                className="input w-24"
+                min={0}
+                placeholder="0"
+              />
+              <span className="text-sm text-dark-400">{t('admin.tariffs.gbUnit')}</span>
+            </div>
+            <p className="text-xs text-dark-500">{t('admin.tariffs.deviceTrafficHint')}</p>
+            {toNumber(deviceTrafficGb) > 0 && (
+              <p className="rounded-md bg-accent-500/10 px-3 py-2 text-xs text-accent-300">
+                {t('admin.tariffs.deviceTrafficExample', {
+                  devices: 10,
+                  traffic: toNumber(deviceTrafficGb) * 10,
+                })}
+              </p>
+            )}
           </div>
 
           {/* Traffic topup */}
