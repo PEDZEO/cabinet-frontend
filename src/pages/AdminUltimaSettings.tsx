@@ -238,6 +238,12 @@ export default function AdminUltimaSettings() {
     queryFn: adminUltimaApi.getOverview,
   });
 
+  const { data: meteredTrafficStatus } = useQuery({
+    queryKey: ['admin', 'ultima', 'metered-traffic'],
+    queryFn: adminSettingsApi.getMeteredTrafficStatus,
+    refetchInterval: 30000,
+  });
+
   const ultimaSettings = useMemo(
     () => (allSettings ?? []).filter((setting) => isUltimaSetting(setting)),
     [allSettings],
@@ -434,6 +440,15 @@ export default function AdminUltimaSettings() {
             to="/admin/ultima-settings/traffic-warning"
             title="Заканчивается трафик"
             subtitle="порог, текст и кнопка докупки"
+          />
+          <SmallLinkCard
+            to="/admin/ultima-settings/params/METERED_TRAFFIC"
+            title="Раздельный трафик"
+            subtitle={
+              meteredTrafficStatus?.enabled
+                ? `${meteredTrafficStatus.running ? 'работает' : 'ожидает'} · отключено ${meteredTrafficStatus.subscriptions.blocked}`
+                : 'спецсерверы и безлимитные ноды'
+            }
           />
         </div>
       </Section>

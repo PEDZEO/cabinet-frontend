@@ -1192,7 +1192,9 @@ export function UltimaDashboard() {
       : t('subscription.infoTitle', { defaultValue: 'Подписка' }));
   const subscriptionTrafficLabel =
     (subscription?.traffic_limit_gb ?? 0) > 0
-      ? `${subscription?.traffic_limit_gb ?? 0} ${t('common.units.gb', { defaultValue: 'ГБ' })}`
+      ? `${subscription?.traffic_limit_gb ?? 0} ${t('common.units.gb', { defaultValue: 'ГБ' })}${
+          subscription?.metered_traffic_enabled ? ' · спец' : ''
+        }`
       : t('subscription.unlimited', { defaultValue: 'Безлимит' });
   const subscriptionPlanCard = hasAnySubscription ? (
     <div

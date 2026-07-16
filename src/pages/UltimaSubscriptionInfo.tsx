@@ -264,6 +264,23 @@ export function UltimaSubscriptionInfo() {
                   })
                 : t('subscription.unlimited')}
             </p>
+            {subscription.metered_traffic_enabled ? (
+              <p
+                className={`mt-2 text-[12px] leading-snug ${
+                  subscription.metered_access_blocked ? 'text-amber-200' : 'text-emerald-200/80'
+                }`}
+              >
+                {subscription.metered_access_blocked
+                  ? t('ultima.meteredTraffic.blockedNotice', {
+                      defaultValue:
+                        'Лимит спецсерверов исчерпан. Безлимитные серверы работают, доступ вернется после докупки.',
+                    })
+                  : t('ultima.meteredTraffic.activeNotice', {
+                      label: subscription.metered_server_label || 'Спецсерверы',
+                      defaultValue: `${subscription.metered_server_label || 'Спецсерверы'} расходуют лимит. Остальные серверы безлимитны.`,
+                    })}
+              </p>
+            ) : null}
           </div>
           {canOpenTariffs ? (
             <button

@@ -182,6 +182,11 @@ export interface Subscription {
   tariff_id?: number;
   tariff_name?: string;
   traffic_reset_mode?: string;
+  metered_traffic_enabled?: boolean;
+  metered_access_blocked?: boolean;
+  metered_server_label?: string | null;
+  metered_traffic_remaining_gb?: number | null;
+  standard_traffic_unlimited?: boolean;
 }
 
 // Response wrapper for subscription status endpoint

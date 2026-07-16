@@ -39,6 +39,20 @@ export interface SettingDefinition {
   hint?: SettingHint | null;
 }
 
+export interface MeteredTrafficStatus {
+  enabled: boolean;
+  running: boolean;
+  squad_uuid: string;
+  interval_seconds: number;
+  last_run_at: string | null;
+  last_error: string | null;
+  subscriptions: {
+    active: number;
+    initialized: number;
+    blocked: number;
+  };
+}
+
 export const adminSettingsApi = {
   // Get list of setting categories
   getCategories: async (): Promise<SettingCategorySummary[]> => {
@@ -74,6 +88,13 @@ export const adminSettingsApi = {
   // Reset a setting to default
   resetSetting: async (key: string): Promise<SettingDefinition> => {
     const response = await apiClient.delete<SettingDefinition>(`/cabinet/admin/settings/${key}`);
+    return response.data;
+  },
+
+  getMeteredTrafficStatus: async (): Promise<MeteredTrafficStatus> => {
+    const response = await apiClient.get<MeteredTrafficStatus>(
+      '/cabinet/admin/settings/metered-traffic/status',
+    );
     return response.data;
   },
 };
