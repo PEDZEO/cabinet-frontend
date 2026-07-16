@@ -104,6 +104,10 @@ export const adminRoutes: RouteConfig[] = [
     element: withAdminLayout(<AdminUltimaMeteredTraffic />),
   },
   {
+    path: '/admin/ultima-settings/params/METERED_TRAFFIC',
+    element: withAdminLayout(<AdminUltimaMeteredTraffic />),
+  },
+  {
     path: '/admin/ultima-settings/theme',
     element: withAdminLayout(<AdminUltimaTheme />),
   },

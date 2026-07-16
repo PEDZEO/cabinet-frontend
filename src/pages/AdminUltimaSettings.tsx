@@ -485,7 +485,11 @@ export default function AdminUltimaSettings() {
             {groupedUltimaSettings.map((group) => (
               <Link
                 key={group.key}
-                to={`/admin/ultima-settings/params/${encodeURIComponent(group.key)}`}
+                to={
+                  group.key === 'METERED_TRAFFIC'
+                    ? '/admin/ultima-settings/metered-traffic'
+                    : `/admin/ultima-settings/params/${encodeURIComponent(group.key)}`
+                }
                 className="group flex min-w-0 items-center justify-between gap-3 rounded-lg border border-dark-700/45 bg-dark-900/30 px-3 py-2.5 transition hover:border-violet-400/40 hover:bg-dark-800/60"
               >
                 <span className="min-w-0">
