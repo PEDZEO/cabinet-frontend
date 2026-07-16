@@ -10,6 +10,7 @@ import {
   ServerInfo,
 } from '../api/tariffs';
 import { AdminBackButton } from '../components/admin';
+import { Switch } from '@/components/primitives';
 import { createNumberInputHandler, toNumber } from '../utils/inputHelpers';
 
 // Icons
@@ -152,6 +153,7 @@ export default function AdminTariffCreate() {
   const [tierLevel, setTierLevel] = useState<number | ''>(1);
   const [periodPrices, setPeriodPrices] = useState<PeriodPrice[]>([]);
   const [selectedSquads, setSelectedSquads] = useState<string[]>([]);
+  const [specialServersEnabled, setSpecialServersEnabled] = useState(false);
   const [selectedPromoGroups, setSelectedPromoGroups] = useState<number[]>([]);
   const [dailyPriceKopeks, setDailyPriceKopeks] = useState<number | ''>(0);
 
@@ -228,6 +230,7 @@ export default function AdminTariffCreate() {
     setTierLevel(tariffData.tier_level || 1);
     setPeriodPrices(normalizePeriodPrices(rawPeriods));
     setSelectedSquads(tariffData.allowed_squads || []);
+    setSpecialServersEnabled(tariffData.special_servers_enabled ?? false);
     setSelectedPromoGroups(
       tariffData.promo_groups?.filter((pg) => pg.is_selected).map((pg) => pg.id) || [],
     );
@@ -274,6 +277,7 @@ export default function AdminTariffCreate() {
       tier_level: toNumber(tierLevel, 1),
       period_prices: isDaily ? [] : periodPrices.filter((p) => p.price_kopeks >= 0),
       allowed_squads: selectedSquads,
+      special_servers_enabled: specialServersEnabled,
       promo_group_ids: selectedPromoGroups.length > 0 ? selectedPromoGroups : undefined,
       traffic_topup_enabled: trafficTopupEnabled,
       traffic_topup_packages: trafficTopupPackages,
@@ -747,6 +751,42 @@ export default function AdminTariffCreate() {
           <div className="card space-y-4">
             <h4 className="text-sm font-medium text-dark-200">{t('admin.tariffs.serversTitle')}</h4>
             <p className="text-sm text-dark-400">{t('admin.tariffs.serversTabHint')}</p>
+            <div
+              className={`flex items-center justify-between gap-4 rounded-lg border p-3 transition-colors ${
+                specialServersEnabled
+                  ? 'border-accent-500/35 bg-accent-500/10'
+                  : 'border-dark-700 bg-dark-800/70'
+              }`}
+            >
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-medium text-dark-100">
+                    {t('admin.tariffs.specialServersTitle')}
+                  </span>
+                  <span
+                    className={`rounded px-2 py-0.5 text-[11px] font-medium ${
+                      specialServersEnabled
+                        ? 'bg-accent-500/20 text-accent-300'
+                        : 'bg-dark-700 text-dark-400'
+                    }`}
+                  >
+                    {t(
+                      specialServersEnabled
+                        ? 'admin.tariffs.specialServersEnabled'
+                        : 'admin.tariffs.specialServersDisabled',
+                    )}
+                  </span>
+                </div>
+                <p className="mt-1 text-xs leading-relaxed text-dark-400">
+                  {t('admin.tariffs.specialServersHint')}
+                </p>
+              </div>
+              <Switch
+                checked={specialServersEnabled}
+                onCheckedChange={setSpecialServersEnabled}
+                aria-label={t('admin.tariffs.specialServersTitle')}
+              />
+            </div>
             {servers.length === 0 ? (
               <p className="py-4 text-center text-dark-500">
                 {t('admin.tariffs.noServersAvailable')}

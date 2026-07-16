@@ -221,6 +221,11 @@ function SortableTariffCard({
                 {t('admin.tariffs.trial')}
               </span>
             )}
+            {tariff.special_servers_enabled && (
+              <span className="shrink-0 rounded bg-warning-500/20 px-2 py-0.5 text-xs leading-none text-warning-300">
+                {t('admin.tariffs.specialServersBadge')}
+              </span>
+            )}
             {tariff.show_in_gift && (
               <span className="inline-flex shrink-0 items-center gap-1 rounded bg-purple-500/20 px-2 py-0.5 text-xs leading-none text-purple-400">
                 <svg

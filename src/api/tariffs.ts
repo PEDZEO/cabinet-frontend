@@ -35,6 +35,7 @@ export interface TariffListItem {
   show_in_gift: boolean;
   is_daily: boolean;
   daily_price_kopeks: number;
+  special_servers_enabled: boolean;
   traffic_limit_gb: number;
   device_limit: number;
   tier_level: number;
@@ -64,6 +65,7 @@ export interface TariffDetail {
   display_order: number;
   period_prices: PeriodPrice[];
   allowed_squads: string[];
+  special_servers_enabled: boolean;
   server_traffic_limits: Record<string, ServerTrafficLimit>;
   servers: ServerInfo[];
   promo_groups: PromoGroupInfo[];
@@ -103,6 +105,7 @@ export interface TariffCreateRequest {
   tier_level?: number;
   period_prices?: PeriodPrice[];
   allowed_squads?: string[];
+  special_servers_enabled?: boolean;
   server_traffic_limits?: Record<string, ServerTrafficLimit>;
   promo_group_ids?: number[];
   // Произвольное количество дней
@@ -139,6 +142,7 @@ export interface TariffUpdateRequest {
   display_order?: number;
   period_prices?: PeriodPrice[];
   allowed_squads?: string[];
+  special_servers_enabled?: boolean;
   server_traffic_limits?: Record<string, ServerTrafficLimit>;
   promo_group_ids?: number[];
   // Произвольное количество дней
