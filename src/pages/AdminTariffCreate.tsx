@@ -664,9 +664,10 @@ export default function AdminTariffCreate() {
                 <input
                   type="number"
                   value={newPeriodPrice}
-                  onChange={createNumberInputHandler(setNewPeriodPrice, 1)}
+                  onChange={createNumberInputHandler(setNewPeriodPrice, 0)}
                   className="input w-28"
                   placeholder="300"
+                  min={0}
                 />
               </div>
               <button
