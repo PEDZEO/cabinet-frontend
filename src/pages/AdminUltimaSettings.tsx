@@ -442,7 +442,7 @@ export default function AdminUltimaSettings() {
             subtitle="порог, текст и кнопка докупки"
           />
           <SmallLinkCard
-            to="/admin/ultima-settings/params/METERED_TRAFFIC"
+            to="/admin/ultima-settings/metered-traffic"
             title="Раздельный трафик"
             subtitle={
               meteredTrafficStatus?.enabled

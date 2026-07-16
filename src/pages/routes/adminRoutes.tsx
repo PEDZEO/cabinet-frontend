@@ -70,6 +70,7 @@ const AdminUltimaSettings = lazy(() => import('../AdminUltimaSettings'));
 const AdminUltimaAgreement = lazy(() => import('../AdminUltimaAgreement'));
 const AdminUltimaStartMessage = lazy(() => import('../AdminUltimaStartMessage'));
 const AdminUltimaTrafficWarning = lazy(() => import('../AdminUltimaTrafficWarning'));
+const AdminUltimaMeteredTraffic = lazy(() => import('../AdminUltimaMeteredTraffic'));
 const AdminUltimaCategorySettings = lazy(() => import('../AdminUltimaCategorySettings'));
 const AdminUltimaTheme = lazy(() => import('../AdminUltimaTheme'));
 
@@ -97,6 +98,10 @@ export const adminRoutes: RouteConfig[] = [
   {
     path: '/admin/ultima-settings/traffic-warning',
     element: withAdminLayout(<AdminUltimaTrafficWarning />),
+  },
+  {
+    path: '/admin/ultima-settings/metered-traffic',
+    element: withAdminLayout(<AdminUltimaMeteredTraffic />),
   },
   {
     path: '/admin/ultima-settings/theme',
