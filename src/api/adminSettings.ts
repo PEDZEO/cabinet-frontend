@@ -42,7 +42,9 @@ export interface SettingDefinition {
 export interface MeteredTrafficStatus {
   enabled: boolean;
   running: boolean;
-  squad_uuid: string;
+  squad_uuids: string[];
+  /** Compatibility field returned for older cabinet builds. */
+  squad_uuid?: string;
   node_uuids?: string[];
   interval_seconds: number;
   last_run_at: string | null;
@@ -69,7 +71,9 @@ export interface MeteredTrafficRunStats {
 
 export interface MeteredTrafficConfiguration {
   enabled: boolean;
-  squad_uuid: string;
+  squad_uuids: string[];
+  /** Compatibility field returned for older cabinet builds. */
+  squad_uuid?: string;
   metered_node_uuids: string[];
   metered_node_multipliers: Record<string, number>;
   check_interval_seconds: number;
@@ -199,9 +203,11 @@ export const adminSettingsApi = {
   updateMeteredTrafficConfiguration: async (
     configuration: MeteredTrafficConfiguration,
   ): Promise<MeteredTrafficConfigurationResponse> => {
+    const payload = { ...configuration };
+    delete payload.squad_uuid;
     const response = await apiClient.put<MeteredTrafficConfigurationResponse>(
       '/cabinet/admin/settings/metered-traffic/configuration',
-      configuration,
+      payload,
     );
     return response.data;
   },

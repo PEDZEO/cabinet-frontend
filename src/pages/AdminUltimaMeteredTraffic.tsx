@@ -53,9 +53,15 @@ function getErrorMessage(error: unknown, fallback: string): string {
 }
 
 function normalizedConfiguration(configuration: MeteredTrafficConfiguration) {
+  const squadUuids =
+    configuration.squad_uuids?.length > 0
+      ? configuration.squad_uuids
+      : configuration.squad_uuid
+        ? [configuration.squad_uuid]
+        : [];
   return {
     ...configuration,
-    squad_uuid: configuration.squad_uuid.trim(),
+    squad_uuids: [...new Set(squadUuids.map((uuid) => uuid.trim()).filter(Boolean))].sort(),
     server_label: configuration.server_label.trim(),
     exhausted_message_ru: configuration.exhausted_message_ru.trim(),
     metered_node_uuids: [...configuration.metered_node_uuids].sort(),
@@ -121,8 +127,9 @@ export default function AdminUltimaMeteredTraffic() {
 
   useEffect(() => {
     if (!configurationQuery.data) return;
-    setForm(configurationQuery.data.configuration);
-    setSavedForm(configurationQuery.data.configuration);
+    const configuration = normalizedConfiguration(configurationQuery.data.configuration);
+    setForm(configuration);
+    setSavedForm(configuration);
   }, [configurationQuery.data]);
 
   useEffect(() => {
@@ -235,8 +242,11 @@ export default function AdminUltimaMeteredTraffic() {
     );
   }, [configurationQuery.data?.nodes, search]);
 
-  const selectedSquad = configurationQuery.data?.squads.find(
-    (squad) => squad.uuid === form?.squad_uuid,
+  const selectedSquadUuids = useMemo(() => new Set(form?.squad_uuids ?? []), [form]);
+  const selectedSquads = useMemo(
+    () =>
+      (configurationQuery.data?.squads ?? []).filter((squad) => selectedSquadUuids.has(squad.uuid)),
+    [configurationQuery.data?.squads, selectedSquadUuids],
   );
   const desiredNodeMultiplier = (nodeUuid: string): number => {
     if (!selectedNodes.has(nodeUuid)) return 0;
@@ -279,10 +289,21 @@ export default function AdminUltimaMeteredTraffic() {
     setSuccess(null);
   };
 
+  const toggleSquad = (squadUuid: string) => {
+    setForm((current) => {
+      if (!current) return current;
+      const next = new Set(current.squad_uuids);
+      if (next.has(squadUuid)) next.delete(squadUuid);
+      else next.add(squadUuid);
+      return { ...current, squad_uuids: [...next] };
+    });
+    setSuccess(null);
+  };
+
   const save = () => {
     if (!form) return;
-    if (form.enabled && !form.squad_uuid) {
-      setError('Выберите сквад, который будет отключаться после расходования лимита.');
+    if (form.enabled && form.squad_uuids.length === 0) {
+      setError('Выберите хотя бы один сквад, который будет отключаться после расходования лимита.');
       return;
     }
     if (form.enabled && form.metered_node_uuids.length === 0) {
@@ -368,7 +389,7 @@ export default function AdminUltimaMeteredTraffic() {
           <AdminBackButton to="/admin/ultima-settings" />
           <div className="min-w-0">
             <h1 className="truncate text-xl font-semibold text-dark-100">Раздельный трафик</h1>
-            <p className="text-sm text-dark-400">Сквад, учет нод и коэффициенты в одном месте</p>
+            <p className="text-sm text-dark-400">Сквады, учет нод и коэффициенты в одном месте</p>
           </div>
         </div>
         <button
@@ -409,7 +430,7 @@ export default function AdminUltimaMeteredTraffic() {
           <div className="min-w-0">
             <h2 className="text-sm font-semibold text-dark-100">Раздельный учет включен</h2>
             <p className="text-xs leading-5 text-dark-500">
-              После лимита отключается только выбранный сквад, остальные серверы работают
+              После лимита отключаются только выбранные сквады, остальные серверы работают
               безлимитно.
             </p>
           </div>
@@ -593,53 +614,83 @@ export default function AdminUltimaMeteredTraffic() {
           <div className="flex items-center gap-2">
             <ShieldCheck size={18} className="text-accent-300" />
             <div>
-              <h2 className="text-sm font-semibold text-dark-100">Технический сквад</h2>
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-sm font-semibold text-dark-100">Технические сквады</h2>
+                <span className="rounded-full border border-accent-500/25 bg-accent-500/10 px-2 py-0.5 text-[11px] font-medium text-accent-300">
+                  Выбрано: {selectedSquadUuids.size}
+                </span>
+              </div>
               <p className="text-xs text-dark-500">
-                Он скрыт от выбора пользователя и снимается по лимиту.
+                Они скрыты от выбора пользователя и отключаются вместе после исчерпания лимита.
               </p>
             </div>
           </div>
 
-          <label className="block space-y-2">
-            <span className="text-xs font-medium uppercase tracking-wide text-dark-400">
-              Сквад Remnawave
-            </span>
-            <select
-              className="input w-full"
-              value={form.squad_uuid}
-              onChange={(event) => {
-                setForm((current) =>
-                  current ? { ...current, squad_uuid: event.target.value } : current,
-                );
-                setSuccess(null);
-              }}
-              disabled={isBusy}
-            >
-              <option value="">Выберите сквад</option>
-              {squads.map((squad) => (
-                <option key={squad.uuid} value={squad.uuid}>
-                  {squad.name} · {squad.inbounds_count} входящих подключений
-                </option>
-              ))}
-            </select>
-          </label>
+          <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
+            {squads.map((squad) => {
+              const selected = selectedSquadUuids.has(squad.uuid);
+              return (
+                <button
+                  key={squad.uuid}
+                  type="button"
+                  className={cn(
+                    'flex min-w-0 items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors',
+                    selected
+                      ? 'border-accent-500/35 bg-accent-500/10'
+                      : 'border-dark-700/50 bg-dark-900/25 hover:border-dark-600 hover:bg-dark-800/55',
+                  )}
+                  onClick={() => toggleSquad(squad.uuid)}
+                  disabled={isBusy}
+                  aria-pressed={selected}
+                >
+                  <span
+                    className={cn(
+                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border',
+                      selected
+                        ? 'border-accent-400/40 bg-accent-500/15 text-accent-300'
+                        : 'border-dark-700/60 bg-dark-800/60 text-dark-500',
+                    )}
+                  >
+                    {selected ? <CheckCircle2 size={16} /> : <Network size={16} />}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium text-dark-100">
+                      {squad.name}
+                    </span>
+                    <span className="mt-0.5 block truncate text-[11px] text-dark-500">
+                      {squad.members_count} польз. · {squad.inbounds_count} inbounds
+                    </span>
+                  </span>
+                  <span
+                    className={cn(
+                      'shrink-0 text-[11px] font-medium',
+                      selected ? 'text-accent-300' : 'text-dark-500',
+                    )}
+                  >
+                    {selected ? 'Включен' : 'Добавить'}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
 
-          {selectedSquad ? (
-            <div className="grid grid-cols-2 gap-2 rounded-lg border border-dark-700/45 bg-dark-900/35 p-3 text-xs">
-              <div>
-                <span className="block text-dark-500">Пользователей</span>
-                <span className="mt-1 block font-semibold text-dark-100">
-                  {selectedSquad.members_count}
+          {selectedSquads.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5 text-[11px] text-dark-400">
+              {selectedSquads.map((squad) => (
+                <span
+                  key={squad.uuid}
+                  className="max-w-full truncate rounded-full border border-dark-700/55 bg-dark-900/35 px-2 py-1"
+                  title={squad.name}
+                >
+                  {squad.name}
                 </span>
-              </div>
-              <div>
-                <span className="block text-dark-500">Inbounds</span>
-                <span className="mt-1 block font-semibold text-dark-100">
-                  {selectedSquad.inbounds_count}
-                </span>
-              </div>
+              ))}
             </div>
-          ) : null}
+          ) : (
+            <p className="rounded-lg border border-dashed border-dark-700/60 px-3 py-2 text-xs text-dark-500">
+              Выберите один или несколько сквадов Remnawave.
+            </p>
+          )}
 
           <div className="border-t border-dark-700/45 pt-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
