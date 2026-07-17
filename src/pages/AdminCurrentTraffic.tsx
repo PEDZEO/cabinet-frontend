@@ -217,6 +217,7 @@ function DesktopRow({
   return (
     <button
       type="button"
+      data-testid={`traffic-desktop-user-${item.user_id}`}
       onClick={onOpen}
       className={`grid w-full grid-cols-[minmax(180px,1.4fr)_minmax(120px,1fr)_90px_90px_minmax(150px,1.2fr)_100px] items-center gap-3 border-t px-4 py-3 text-left transition-colors hover:bg-dark-700/40 ${
         tone === 'exhausted' ? 'border-error-500/20 bg-error-500/5' : 'border-dark-700'
@@ -275,6 +276,7 @@ function MobileRow({
   return (
     <button
       type="button"
+      data-testid={`traffic-mobile-user-${item.user_id}`}
       onClick={onOpen}
       className={`w-full rounded-lg border p-3 text-left transition-colors hover:bg-dark-700/40 ${
         tone === 'exhausted'
