@@ -59,6 +59,8 @@ export interface MeteredTrafficStatus {
 }
 
 export interface MeteredTrafficRunStats {
+  scanned?: number;
+  candidates?: number;
   checked: number;
   initialized: number;
   warned: number;
@@ -66,7 +68,11 @@ export interface MeteredTrafficRunStats {
   restored: number;
   reconciled: number;
   errors: number;
+  deferred?: number;
   skipped: boolean;
+  aborted?: boolean;
+  pages?: number;
+  duration_seconds?: number;
 }
 
 export interface MeteredTrafficConfiguration {

@@ -192,7 +192,7 @@ export default function AdminUltimaMeteredTraffic() {
       setError(null);
       setSuccess(
         status.last_stats
-          ? `Проверено подписок: ${status.last_stats.checked}. Ошибок: ${status.last_stats.errors}.`
+          ? `Проверено подписок: ${status.last_stats.checked}. Ошибок: ${status.last_stats.errors}. Время: ${(status.last_stats.duration_seconds ?? 0).toFixed(1)} с.`
           : 'Проверка завершена.',
       );
       queryClient.setQueryData<MeteredTrafficConfigurationResponse>(
@@ -928,6 +928,17 @@ export default function AdminUltimaMeteredTraffic() {
               {status.running ? <Wifi size={14} /> : <WifiOff size={14} />}
               Последняя проверка: {formatLastRun(status.last_run_at)}
             </div>
+
+            {status.last_stats ? (
+              <p className="mt-2 text-xs leading-5 text-dark-500">
+                Проход {(status.last_stats.duration_seconds ?? 0).toFixed(1)} с · просмотрено{' '}
+                {(status.last_stats.scanned ?? status.last_stats.checked).toLocaleString('ru-RU')} ·
+                активных{' '}
+                {(status.last_stats.candidates ?? status.last_stats.checked).toLocaleString(
+                  'ru-RU',
+                )}
+              </p>
+            ) : null}
 
             {status.last_error ? (
               <div className="mt-3 rounded-lg border border-error-500/25 bg-error-500/10 p-2.5 text-xs leading-5 text-error-300">
