@@ -61,6 +61,10 @@ const getBackFallbackPath = (pathname: string): string | null => {
     return '/admin';
   }
 
+  if (pathname === '/admin/current-traffic') {
+    return '/admin';
+  }
+
   if (/^\/admin\/users\/[^/]+$/.test(pathname)) {
     return '/admin/users';
   }

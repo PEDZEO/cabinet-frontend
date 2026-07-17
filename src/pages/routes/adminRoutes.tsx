@@ -48,6 +48,7 @@ const AdminRemnawave = lazy(() => import('../AdminRemnawave'));
 const AdminRemnawaveSquadDetail = lazy(() => import('../AdminRemnawaveSquadDetail'));
 const AdminEmailTemplates = lazy(() => import('../AdminEmailTemplates'));
 const AdminTrafficUsage = lazy(() => import('../AdminTrafficUsage'));
+const AdminCurrentTraffic = lazy(() => import('../AdminCurrentTraffic'));
 const AdminSalesStats = lazy(() => import('../AdminSalesStats'));
 const AdminUpdates = lazy(() => import('../AdminUpdates'));
 const AdminUserDetail = lazy(() => import('../AdminUserDetail'));
@@ -160,6 +161,7 @@ export const adminRoutes: RouteConfig[] = [
   { path: '/admin/users', element: withAdminLayout(<AdminUsers />) },
   { path: '/admin/users/:id', element: withAdminLayout(<AdminUserDetail />) },
   { path: '/admin/payments', element: withAdminLayout(<AdminPayments />) },
+  { path: '/admin/current-traffic', element: withAdminLayout(<AdminCurrentTraffic />) },
   { path: '/admin/traffic-usage', element: withAdminLayout(<AdminTrafficUsage />) },
   { path: '/admin/sales-stats', element: withAdminLayout(<AdminSalesStats />) },
   { path: '/admin/payment-methods', element: withAdminLayout(<AdminPaymentMethods />) },

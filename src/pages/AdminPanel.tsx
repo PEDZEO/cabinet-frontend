@@ -812,6 +812,15 @@ export default function AdminPanel() {
             permission: 'payments:read',
           },
           {
+            to: '/admin/current-traffic',
+            icon: <UptimeIcon />,
+            title: t('admin.nav.currentTraffic', { defaultValue: 'Лимиты трафика' }),
+            description: t('admin.panel.currentTrafficDesc', {
+              defaultValue: 'Сколько использовано и осталось у пользователей',
+            }),
+            permission: 'traffic:read',
+          },
+          {
             to: '/admin/traffic-usage',
             icon: <ArrowsUpDownIcon />,
             title: t('admin.nav.trafficUsage'),
