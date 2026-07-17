@@ -71,6 +71,7 @@ export interface MeteredTrafficConfiguration {
   enabled: boolean;
   squad_uuid: string;
   metered_node_uuids: string[];
+  metered_node_multipliers: Record<string, number>;
   check_interval_seconds: number;
   warning_percent: number;
   server_label: string;

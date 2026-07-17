@@ -59,6 +59,11 @@ function normalizedConfiguration(configuration: MeteredTrafficConfiguration) {
     server_label: configuration.server_label.trim(),
     exhausted_message_ru: configuration.exhausted_message_ru.trim(),
     metered_node_uuids: [...configuration.metered_node_uuids].sort(),
+    metered_node_multipliers: Object.fromEntries(
+      Object.entries(configuration.metered_node_multipliers ?? {}).sort(([left], [right]) =>
+        left.localeCompare(right),
+      ),
+    ),
   };
 }
 
@@ -233,8 +238,12 @@ export default function AdminUltimaMeteredTraffic() {
   const selectedSquad = configurationQuery.data?.squads.find(
     (squad) => squad.uuid === form?.squad_uuid,
   );
+  const desiredNodeMultiplier = (nodeUuid: string): number => {
+    if (!selectedNodes.has(nodeUuid)) return 0;
+    return form?.metered_node_multipliers?.[nodeUuid] ?? 1;
+  };
   const desiredChanges = (configurationQuery.data?.nodes ?? []).filter((node) => {
-    const desired = selectedNodes.has(node.uuid) ? 1 : 0;
+    const desired = desiredNodeMultiplier(node.uuid);
     return Math.abs(node.consumption_multiplier - desired) > 0.001;
   }).length;
   const isDirty = Boolean(
@@ -246,13 +255,26 @@ export default function AdminUltimaMeteredTraffic() {
   const hasPendingChanges = isDirty || desiredChanges > 0;
   const isBusy = saveMutation.isPending || runMutation.isPending;
 
-  const setNodeMetered = (nodeUuid: string, metered: boolean) => {
+  const setNodeMultiplier = (nodeUuid: string, value: number) => {
     setForm((current) => {
       if (!current) return current;
       const next = new Set(current.metered_node_uuids);
-      if (metered) next.add(nodeUuid);
-      else next.delete(nodeUuid);
-      return { ...current, metered_node_uuids: [...next] };
+      const nextMultipliers = { ...(current.metered_node_multipliers ?? {}) };
+      const normalized = Number.isFinite(value)
+        ? Math.min(100, Math.max(0, Math.round(value * 10) / 10))
+        : 0;
+      if (normalized >= 0.1) {
+        next.add(nodeUuid);
+        nextMultipliers[nodeUuid] = normalized;
+      } else {
+        next.delete(nodeUuid);
+        delete nextMultipliers[nodeUuid];
+      }
+      return {
+        ...current,
+        metered_node_uuids: [...next],
+        metered_node_multipliers: nextMultipliers,
+      };
     });
     setSuccess(null);
   };
@@ -264,7 +286,16 @@ export default function AdminUltimaMeteredTraffic() {
       return;
     }
     if (form.enabled && form.metered_node_uuids.length === 0) {
-      setError('Выберите хотя бы одну ноду с коэффициентом 1×.');
+      setError('Выберите хотя бы одну тарифицируемую ноду.');
+      return;
+    }
+    if (
+      form.metered_node_uuids.some((nodeUuid) => {
+        const multiplier = form.metered_node_multipliers?.[nodeUuid] ?? 1;
+        return !Number.isFinite(multiplier) || multiplier < 0.1 || multiplier > 100;
+      })
+    ) {
+      setError('Коэффициент каждой выбранной ноды должен быть от 0.1× до 100×.');
       return;
     }
     if (!form.server_label.trim()) {
@@ -617,13 +648,13 @@ export default function AdminUltimaMeteredTraffic() {
                 <div>
                   <h2 className="text-sm font-semibold text-dark-100">Коэффициенты нод</h2>
                   <p className="text-xs text-dark-500">
-                    1× расходует лимит, 0× остается безлимитной.
+                    0× не расходует лимит; положительный коэффициент задает скорость списания.
                   </p>
                 </div>
               </div>
               <div className="flex flex-wrap gap-1.5 text-[11px]">
                 <span className="rounded-full border border-accent-500/25 bg-accent-500/10 px-2 py-1 text-accent-300">
-                  1×: {selectedNodes.size}
+                  Тарифицируются: {selectedNodes.size}
                 </span>
                 <span className="rounded-full border border-dark-700/60 bg-dark-900/40 px-2 py-1 text-dark-400">
                   0×: {Math.max(0, nodes.length - selectedNodes.size)}
@@ -654,7 +685,15 @@ export default function AdminUltimaMeteredTraffic() {
                 type="button"
                 className="btn-secondary text-xs"
                 onClick={() =>
-                  setForm((current) => (current ? { ...current, metered_node_uuids: [] } : current))
+                  setForm((current) =>
+                    current
+                      ? {
+                          ...current,
+                          metered_node_uuids: [],
+                          metered_node_multipliers: {},
+                        }
+                      : current,
+                  )
                 }
                 disabled={isBusy || selectedNodes.size === 0}
               >
@@ -669,8 +708,16 @@ export default function AdminUltimaMeteredTraffic() {
                       ? {
                           ...current,
                           metered_node_uuids: nodes
-                            .filter((node) => Math.abs(node.consumption_multiplier - 1) <= 0.001)
+                            .filter((node) => node.consumption_multiplier >= 0.1)
                             .map((node) => node.uuid),
+                          metered_node_multipliers: Object.fromEntries(
+                            nodes
+                              .filter((node) => node.consumption_multiplier >= 0.1)
+                              .map((node) => [
+                                node.uuid,
+                                Math.round(node.consumption_multiplier * 10) / 10,
+                              ]),
+                          ),
                         }
                       : current,
                   )
@@ -690,8 +737,9 @@ export default function AdminUltimaMeteredTraffic() {
                 <div className="divide-y divide-dark-700/40">
                   {filteredNodes.map((node) => {
                     const isMetered = selectedNodes.has(node.uuid);
+                    const desiredMultiplier = desiredNodeMultiplier(node.uuid);
                     const liveMismatch =
-                      Math.abs(node.consumption_multiplier - (isMetered ? 1 : 0)) > 0.001;
+                      Math.abs(node.consumption_multiplier - desiredMultiplier) > 0.001;
                     const statusInfo = nodeStatus(node);
                     return (
                       <div
@@ -730,7 +778,7 @@ export default function AdminUltimaMeteredTraffic() {
                           </div>
                         </div>
                         <div
-                          className="grid w-full shrink-0 grid-cols-2 rounded-lg border border-dark-700/60 bg-dark-950/40 p-1 sm:w-[210px]"
+                          className="grid w-full shrink-0 grid-cols-[minmax(84px,0.8fr)_minmax(110px,1fr)] rounded-lg border border-dark-700/60 bg-dark-950/40 p-1 sm:w-[230px]"
                           role="group"
                           aria-label={`Коэффициент ноды ${node.name}`}
                         >
@@ -742,24 +790,39 @@ export default function AdminUltimaMeteredTraffic() {
                                 ? 'bg-dark-700/75 text-dark-100 shadow-sm'
                                 : 'text-dark-500 hover:text-dark-300',
                             )}
-                            onClick={() => setNodeMetered(node.uuid, false)}
+                            onClick={() => setNodeMultiplier(node.uuid, 0)}
                             disabled={isBusy}
                           >
                             0× Безлимит
                           </button>
-                          <button
-                            type="button"
+                          <label
                             className={cn(
-                              'min-h-8 rounded-md px-2 text-xs font-medium transition',
+                              'flex min-h-8 items-center rounded-md px-2 text-xs font-medium transition',
                               isMetered
-                                ? 'bg-accent-500 text-dark-950 shadow-sm'
+                                ? 'bg-accent-500/15 text-accent-200 ring-1 ring-inset ring-accent-500/35'
                                 : 'text-dark-500 hover:text-dark-300',
                             )}
-                            onClick={() => setNodeMetered(node.uuid, true)}
-                            disabled={isBusy}
                           >
-                            1× Считать
-                          </button>
+                            <input
+                              type="number"
+                              min={0.1}
+                              max={100}
+                              step={0.1}
+                              inputMode="decimal"
+                              className="min-w-0 flex-1 bg-transparent text-center text-xs font-semibold text-inherit outline-none placeholder:text-dark-600"
+                              value={isMetered ? desiredMultiplier : ''}
+                              placeholder="1.0"
+                              onFocus={() => {
+                                if (!isMetered) setNodeMultiplier(node.uuid, 1);
+                              }}
+                              onChange={(event) =>
+                                setNodeMultiplier(node.uuid, Number(event.target.value))
+                              }
+                              disabled={isBusy}
+                              aria-label={`Множитель трафика для ${node.name}`}
+                            />
+                            <span className="ml-1 shrink-0">×</span>
+                          </label>
                         </div>
                       </div>
                     );
@@ -860,7 +923,7 @@ export default function AdminUltimaMeteredTraffic() {
                 <p className="mt-1 text-xs leading-5 text-dark-400">
                   {topologyErrors.length > 0 || desiredChanges > 0
                     ? `После сохранения будет обновлено нод: ${desiredChanges}.`
-                    : 'Все выбранные ноды имеют коэффициент 1×, остальные — 0×.'}
+                    : 'Коэффициенты всех нод совпадают с сохраненной конфигурацией.'}
                 </p>
               </div>
             </div>
