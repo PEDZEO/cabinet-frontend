@@ -2,6 +2,7 @@ import type { RefObject } from 'react';
 import type { TFunction } from 'i18next';
 
 import InsufficientBalancePrompt from '@/components/InsufficientBalancePrompt';
+import { getDeviceTrafficBreakdown } from '@/features/subscription/utils/deviceTraffic';
 import type { Tariff, TariffPeriod } from '@/types';
 
 import type { ApplyPromoDiscount } from '../types';
@@ -61,6 +62,14 @@ export const TariffPurchaseForm = ({
     (selectedTariff.daily_price_kopeks && selectedTariff.daily_price_kopeks > 0);
   const hasEnoughBalance =
     purchaseBalanceKopeks === undefined || dailyPrice <= purchaseBalanceKopeks;
+  const deviceTrafficBreakdown = getDeviceTrafficBreakdown(
+    selectedTariff,
+    selectedTariff.device_limit,
+  );
+  const trafficLimitLabel =
+    selectedTariff.is_unlimited_traffic || selectedTariff.traffic_limit_gb <= 0
+      ? selectedTariff.traffic_limit_label
+      : `${deviceTrafficBreakdown.totalTrafficGb} ${t('common.units.gb')}`;
 
   return (
     <div ref={tariffPurchaseRef} className="space-y-6">
@@ -75,7 +84,7 @@ export const TariffPurchaseForm = ({
         <div className="flex flex-wrap gap-4 text-sm">
           <div>
             <span className="text-dark-500">{t('subscription.traffic')}:</span>
-            <span className="ml-2 text-dark-200">{selectedTariff.traffic_limit_label}</span>
+            <span className="ml-2 text-dark-200">{trafficLimitLabel}</span>
           </div>
           <div>
             <span className="text-dark-500">{t('subscription.devices')}:</span>
@@ -89,6 +98,15 @@ export const TariffPurchaseForm = ({
             </span>
           </div>
         </div>
+        {deviceTrafficBreakdown.bonusTrafficGb > 0 && (
+          <div className="mt-3 text-xs font-medium text-accent-400">
+            {t('ultima.deviceTrafficBonusSummary', {
+              count: deviceTrafficBreakdown.extraDevices,
+              bonus: deviceTrafficBreakdown.bonusTrafficGb,
+              total: deviceTrafficBreakdown.totalTrafficGb,
+            })}
+          </div>
+        )}
       </div>
 
       {isDailyTariff ? (

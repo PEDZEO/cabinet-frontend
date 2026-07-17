@@ -371,6 +371,7 @@ export interface Tariff {
   device_limit: number;
   base_device_limit?: number;
   max_device_limit?: number;
+  device_traffic_gb?: number;
   extra_devices_count: number;
   servers_count: number;
   servers: TariffServer[];

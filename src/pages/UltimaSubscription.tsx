@@ -9,6 +9,7 @@ import { UltimaDesktopSubscription } from '@/components/ultima/desktop/UltimaDes
 import { UltimaTariffSelector } from '@/components/ultima/UltimaTariffSelector';
 import { UltimaTrafficTopUpSection } from '@/components/ultima/UltimaTrafficTopUpSection';
 import { UltimaPendingPaymentCard } from '@/components/ultima/UltimaPendingPaymentCard';
+import { getDeviceTrafficBreakdown } from '@/features/subscription/utils/deviceTraffic';
 import { createApplyPromoDiscount } from '@/features/subscription/utils/pricing';
 import {
   getSortedUltimaTariffs,
@@ -851,6 +852,35 @@ export function UltimaSubscription() {
     ? getUltimaBaseDeviceLimit(selectedTariff)
     : 1;
   const selectedExtraDevices = Math.max(0, selectedDeviceLimit - currentTariffBaseDeviceLimit);
+  const deviceTrafficBreakdown = getDeviceTrafficBreakdown(selectedTariff, selectedDeviceLimit);
+  const trafficUnit = t('common.units.gb', { defaultValue: 'ГБ' });
+  const selectedTrafficLabel = isUltimaTariffUnlimited(selectedTariff)
+    ? selectedTariff.traffic_limit_label ||
+      t('subscription.unlimited', { defaultValue: 'Безлимит' })
+    : `${deviceTrafficBreakdown.totalTrafficGb} ${trafficUnit}`;
+  const deviceTrafficLabel =
+    deviceTrafficBreakdown.trafficPerExtraDeviceGb > 0
+      ? deviceTrafficBreakdown.bonusTrafficGb > 0
+        ? t('ultima.deviceTrafficBonusSummary', {
+            count: deviceTrafficBreakdown.extraDevices,
+            bonus: deviceTrafficBreakdown.bonusTrafficGb,
+            total: deviceTrafficBreakdown.totalTrafficGb,
+          })
+        : t('ultima.deviceTrafficPerDevice', {
+            traffic: deviceTrafficBreakdown.trafficPerExtraDeviceGb,
+          })
+      : null;
+  const deviceTrafficBadgeLabel =
+    deviceTrafficBreakdown.trafficPerExtraDeviceGb > 0
+      ? deviceTrafficBreakdown.bonusTrafficGb > 0
+        ? t('ultima.deviceTrafficBadge', {
+            bonus: deviceTrafficBreakdown.bonusTrafficGb,
+            total: deviceTrafficBreakdown.totalTrafficGb,
+          })
+        : t('ultima.deviceTrafficPerDeviceShort', {
+            traffic: deviceTrafficBreakdown.trafficPerExtraDeviceGb,
+          })
+      : null;
   const extraDeviceChargeKopeks =
     selectedExtraDevices * extraDevicePricePerMonth * Math.max(1, selectedPeriod?.months ?? 1);
   const hasLegacyDeviceOverhang =
@@ -1182,9 +1212,7 @@ export function UltimaSubscription() {
     },
     {
       label: t('ultima.checkoutTraffic', { defaultValue: 'Трафик' }),
-      value:
-        selectedTariff.traffic_limit_label ||
-        t('subscription.unlimited', { defaultValue: 'Безлимит' }),
+      value: selectedTrafficLabel,
     },
   ];
 
@@ -1232,6 +1260,7 @@ export function UltimaSubscription() {
           includedItems={checkoutIncludedItems}
           baseDeviceLimitLabel={baseDeviceLimitLabel}
           extraDeviceChargeLabel={extraDeviceChargeLabel}
+          deviceTrafficLabel={deviceTrafficLabel}
           legacyDeviceNotice={legacyDeviceNotice}
           onReduceDevices={legacyDeviceNotice ? () => navigate('/ultima/devices') : null}
           totalPriceLabel={formatPrice(selectedPriceKopeks)}
@@ -1399,8 +1428,15 @@ export function UltimaSubscription() {
                     >
                       {t('subscription.devices')}
                     </p>
-                    <p className="min-w-0 truncate rounded-full border border-white/[0.1] bg-white/[0.06] px-2 py-0.5 text-[11px] leading-tight text-white/70">
-                      {selectedTariff?.traffic_limit_label ?? 'Одновременно в подписке'}
+                    <p
+                      className={`min-w-0 truncate rounded-full border px-2 py-0.5 text-[11px] leading-tight ${
+                        deviceTrafficBadgeLabel
+                          ? 'border-emerald-200/[0.22] bg-emerald-300/[0.1] text-emerald-50/90'
+                          : 'border-white/[0.1] bg-white/[0.06] text-white/70'
+                      }`}
+                      title={deviceTrafficLabel ?? selectedTrafficLabel}
+                    >
+                      {deviceTrafficBadgeLabel ?? selectedTrafficLabel}
                     </p>
                   </div>
                   <p className="mt-1 truncate text-[11px] leading-tight text-white/[0.48]">

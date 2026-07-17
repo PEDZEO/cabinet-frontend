@@ -36,6 +36,7 @@ type UltimaDesktopSubscriptionProps = {
   includedItems: UltimaDesktopIncludedItem[];
   baseDeviceLimitLabel?: string | null;
   extraDeviceChargeLabel?: string | null;
+  deviceTrafficLabel?: string | null;
   legacyDeviceNotice?: string | null;
   onReduceDevices?: (() => void) | null;
   totalPriceLabel: string;
@@ -68,6 +69,7 @@ export function UltimaDesktopSubscription({
   includedItems,
   baseDeviceLimitLabel,
   extraDeviceChargeLabel,
+  deviceTrafficLabel,
   legacyDeviceNotice,
   onReduceDevices,
   totalPriceLabel,
@@ -169,6 +171,14 @@ export function UltimaDesktopSubscription({
                         </button>
                       </div>
                     </div>
+                    {deviceTrafficLabel ? (
+                      <div
+                        className="mt-2 truncate text-xs font-medium text-emerald-100/[0.9]"
+                        title={deviceTrafficLabel}
+                      >
+                        {deviceTrafficLabel}
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               </section>
