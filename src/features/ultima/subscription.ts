@@ -11,6 +11,7 @@ export const getUltimaBaseDeviceLimit = (tariff: Tariff): number =>
 export const getUltimaTariffMaxDeviceLimit = (
   tariff: Tariff,
   currentSubscriptionLimit: number,
+  isCurrentTariff = tariff.is_current,
 ): number => {
   const baseLimit = getUltimaBaseDeviceLimit(tariff);
   const periodMaxLimit = tariff.periods.reduce((maxLimit, period) => {
@@ -18,7 +19,7 @@ export const getUltimaTariffMaxDeviceLimit = (
     return Math.max(maxLimit, baseLimit + extraDevices);
   }, baseLimit);
 
-  if (tariff.is_current) {
+  if (isCurrentTariff) {
     return Math.max(
       periodMaxLimit,
       tariff.max_device_limit ?? periodMaxLimit,
@@ -27,21 +28,6 @@ export const getUltimaTariffMaxDeviceLimit = (
   }
 
   return Math.max(periodMaxLimit, tariff.max_device_limit ?? periodMaxLimit);
-};
-
-export const getUltimaDeviceLimitsForTariff = (
-  tariff: Tariff,
-  subscription: Subscription | null,
-): number[] => {
-  const baseLimit = getUltimaBaseDeviceLimit(tariff);
-  const currentSubscriptionLimit = Math.max(1, subscription?.device_limit ?? 1);
-  const minLimit = baseLimit;
-  const maxLimit = getUltimaTariffMaxDeviceLimit(tariff, currentSubscriptionLimit);
-
-  return Array.from(
-    { length: Math.max(1, maxLimit - minLimit + 1) },
-    (_, index) => minLimit + index,
-  );
 };
 
 export const getUltimaPeriodsForDeviceLimit = (

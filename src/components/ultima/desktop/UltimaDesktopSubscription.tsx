@@ -1,6 +1,6 @@
 import { type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Minus, Plus } from 'lucide-react';
+import { UltimaDeviceStepper } from '@/components/ultima/UltimaDeviceStepper';
 import {
   ultimaAccentSurfaceStyle,
   ultimaCardClassName,
@@ -30,7 +30,8 @@ type UltimaDesktopSubscriptionProps = {
   title: string;
   subtitle: string;
   selectedDeviceLimit: number;
-  deviceLimits: number[];
+  minDeviceLimit: number;
+  maxDeviceLimit: number;
   periods: UltimaDesktopSubscriptionPeriod[];
   selectedPeriodLabel: string;
   includedItems: UltimaDesktopIncludedItem[];
@@ -49,7 +50,7 @@ type UltimaDesktopSubscriptionProps = {
   isFinalizingPending: boolean;
   isPayDisabled: boolean;
   bottomNav: ReactNode;
-  onSelectDevice: (index: number) => void;
+  onSelectDevice: (limit: number) => void;
   onSelectPeriod: (days: number) => void;
   onPay: () => void;
 };
@@ -63,7 +64,8 @@ export function UltimaDesktopSubscription({
   title,
   subtitle,
   selectedDeviceLimit,
-  deviceLimits,
+  minDeviceLimit,
+  maxDeviceLimit,
   periods,
   selectedPeriodLabel,
   includedItems,
@@ -87,10 +89,8 @@ export function UltimaDesktopSubscription({
   onPay,
 }: UltimaDesktopSubscriptionProps) {
   const { t } = useTranslation();
-  const selectedDeviceIndex = deviceLimits.indexOf(selectedDeviceLimit);
-  const canDecreaseDevices = selectedDeviceIndex > 0;
-  const canIncreaseDevices =
-    selectedDeviceIndex >= 0 && selectedDeviceIndex < deviceLimits.length - 1;
+  const canDecreaseDevices = selectedDeviceLimit > minDeviceLimit;
+  const canIncreaseDevices = selectedDeviceLimit < maxDeviceLimit;
 
   return (
     <div className="ultima-shell-inner ultima-desktop-workspace">
@@ -129,47 +129,18 @@ export function UltimaDesktopSubscription({
                           {t('lite.devicesTotal', { defaultValue: 'Устройства' })}
                         </div>
                         <div className="mt-1 text-xs text-white/[0.58]">
-                          {deviceLimits[0]}–{deviceLimits[deviceLimits.length - 1]}
+                          {minDeviceLimit}–{maxDeviceLimit}
                         </div>
                       </div>
-                      <div className="grid grid-cols-[40px_minmax(88px,1fr)_40px] overflow-hidden rounded-[8px] border border-white/[0.12] bg-black/20">
-                        <button
-                          type="button"
-                          data-testid="ultima-desktop-devices-minus"
-                          onClick={() => onSelectDevice(selectedDeviceIndex - 1)}
-                          disabled={!canDecreaseDevices}
-                          aria-label={t('common.decrease', { defaultValue: 'Уменьшить' })}
-                          className="flex h-10 items-center justify-center border-r border-white/[0.1] text-white/[0.74] transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-30"
-                        >
-                          <Minus className="h-4 w-4" strokeWidth={2} />
-                        </button>
-                        <select
-                          data-testid="ultima-desktop-device-select"
-                          value={selectedDeviceLimit}
-                          onChange={(event) => {
-                            const nextIndex = deviceLimits.indexOf(Number(event.target.value));
-                            if (nextIndex >= 0) onSelectDevice(nextIndex);
-                          }}
-                          aria-label={t('lite.devicesTotal', { defaultValue: 'Устройства' })}
-                          className="h-10 min-w-0 appearance-none bg-transparent px-3 text-center text-sm font-semibold text-white outline-none"
-                        >
-                          {deviceLimits.map((limit) => (
-                            <option key={limit} value={limit} className="bg-[#10171c] text-white">
-                              {limit}
-                            </option>
-                          ))}
-                        </select>
-                        <button
-                          type="button"
-                          data-testid="ultima-desktop-devices-plus"
-                          onClick={() => onSelectDevice(selectedDeviceIndex + 1)}
-                          disabled={!canIncreaseDevices}
-                          aria-label={t('common.increase', { defaultValue: 'Увеличить' })}
-                          className="flex h-10 items-center justify-center border-l border-white/[0.1] text-white/[0.74] transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-30"
-                        >
-                          <Plus className="h-4 w-4" strokeWidth={2} />
-                        </button>
-                      </div>
+                      <UltimaDeviceStepper
+                        value={selectedDeviceLimit}
+                        canDecrease={canDecreaseDevices}
+                        canIncrease={canIncreaseDevices}
+                        onDecrease={() => onSelectDevice(selectedDeviceLimit - 1)}
+                        onIncrease={() => onSelectDevice(selectedDeviceLimit + 1)}
+                        testIdPrefix="ultima-desktop"
+                        variant="desktop"
+                      />
                     </div>
                     {deviceTrafficLabel ? (
                       <div
@@ -177,6 +148,11 @@ export function UltimaDesktopSubscription({
                         title={deviceTrafficLabel}
                       >
                         {deviceTrafficLabel}
+                      </div>
+                    ) : null}
+                    {extraDeviceChargeLabel ? (
+                      <div className="mt-1 truncate text-xs font-medium text-amber-100/[0.86]">
+                        {extraDeviceChargeLabel}
                       </div>
                     ) : null}
                   </div>

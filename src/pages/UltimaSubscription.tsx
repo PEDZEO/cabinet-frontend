@@ -9,13 +9,14 @@ import { UltimaDesktopSubscription } from '@/components/ultima/desktop/UltimaDes
 import { UltimaTariffSelector } from '@/components/ultima/UltimaTariffSelector';
 import { UltimaTrafficTopUpSection } from '@/components/ultima/UltimaTrafficTopUpSection';
 import { UltimaPendingPaymentCard } from '@/components/ultima/UltimaPendingPaymentCard';
+import { UltimaDeviceStepper } from '@/components/ultima/UltimaDeviceStepper';
 import { getDeviceTrafficBreakdown } from '@/features/subscription/utils/deviceTraffic';
 import { createApplyPromoDiscount } from '@/features/subscription/utils/pricing';
 import {
   getSortedUltimaTariffs,
   getUltimaBaseDeviceLimit,
-  getUltimaDeviceLimitsForTariff,
   getUltimaPeriodsForDeviceLimit,
+  getUltimaTariffMaxDeviceLimit,
   isUltimaTariffUnlimited,
 } from '@/features/ultima/subscription';
 import { useCurrency } from '@/hooks/useCurrency';
@@ -175,7 +176,7 @@ export function UltimaSubscription() {
   const { openLink, openTelegramLink } = usePlatform();
   const isDesktopViewport = useMediaQuery('(min-width: 1024px)');
 
-  const [selectedDeviceIndex, setSelectedDeviceIndex] = useState(0);
+  const [selectedDeviceLimitState, setSelectedDeviceLimit] = useState(1);
   const [selectedPeriodDays, setSelectedPeriodDays] = useState<number | null>(null);
   const [selectedTrafficPackage, setSelectedTrafficPackage] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -188,7 +189,7 @@ export function UltimaSubscription() {
     typeof window === 'undefined' ? 420 : window.innerWidth,
   );
   const lastTariffIdRef = useRef<number | null>(null);
-  const lastHapticDeviceIndexRef = useRef<number | null>(null);
+  const lastHapticDeviceLimitRef = useRef<number | null>(null);
   const autoPurchaseAttemptRef = useRef<string | null>(null);
   const finalizeInProgressRef = useRef(false);
   const checkoutViewTrackedRef = useRef(false);
@@ -200,7 +201,7 @@ export function UltimaSubscription() {
     refetchOnMount: true,
     placeholderData: (previousData) => previousData,
   });
-  const { data: subscriptionResponse } = useQuery({
+  const { data: subscriptionResponse, isLoading: isSubscriptionLoading } = useQuery({
     queryKey: ['subscription'],
     queryFn: subscriptionApi.getSubscription,
     staleTime: 15000,
@@ -225,20 +226,8 @@ export function UltimaSubscription() {
     placeholderData: (previousData) => previousData,
   });
 
-  useEffect(() => {
-    // Warm dashboard route/data for seamless return transition.
-    void import('./Dashboard');
-    void queryClient.prefetchQuery({
-      queryKey: ['subscription'],
-      queryFn: subscriptionApi.getSubscription,
-    });
-    void queryClient.prefetchQuery({
-      queryKey: ['purchase-options'],
-      queryFn: subscriptionApi.getPurchaseOptions,
-    });
-  }, [queryClient]);
-
   const subscription = subscriptionResponse?.subscription ?? null;
+  const isCheckoutLoading = isLoading || isSubscriptionLoading;
 
   const tariffs = useMemo(() => {
     if (!purchaseOptions || purchaseOptions.sales_mode !== 'tariffs') return [];
@@ -315,67 +304,58 @@ export function UltimaSubscription() {
     placeholderData: (previousData) => previousData,
   });
 
-  const deviceLimits = useMemo(() => {
-    if (!selectedTariff) return [1];
-    return getUltimaDeviceLimitsForTariff(selectedTariff, subscription);
-  }, [selectedTariff, subscription]);
-
-  const closestDeviceIndex = useMemo(() => {
-    if (!selectedTariff || !deviceLimits.length) return 0;
-    const preferredLimit = selectedTariff.is_current
-      ? Math.max(1, subscription?.device_limit ?? getUltimaBaseDeviceLimit(selectedTariff))
-      : getUltimaBaseDeviceLimit(selectedTariff);
-    const exactIndex = deviceLimits.findIndex((value) => value === preferredLimit);
-    if (exactIndex >= 0) return exactIndex;
-
-    let bestIndex = 0;
-    let bestDistance = Number.POSITIVE_INFINITY;
-    deviceLimits.forEach((value, index) => {
-      const distance = Math.abs(value - preferredLimit);
-      if (distance < bestDistance) {
-        bestIndex = index;
-        bestDistance = distance;
-      }
-    });
-    return bestIndex;
-  }, [selectedTariff, deviceLimits, subscription?.device_limit]);
+  const minDeviceLimit = selectedTariff ? getUltimaBaseDeviceLimit(selectedTariff) : 1;
+  const maxDeviceLimit = selectedTariff
+    ? getUltimaTariffMaxDeviceLimit(
+        selectedTariff,
+        subscription?.device_limit ?? 1,
+        selectedTariffIsCurrent,
+      )
+    : 1;
+  const preferredDeviceLimit = selectedTariffIsCurrent
+    ? Math.max(minDeviceLimit, subscription?.device_limit ?? minDeviceLimit)
+    : minDeviceLimit;
+  const selectedDeviceLimit =
+    selectedTariff && selectedTariff.id !== lastTariffIdRef.current
+      ? Math.min(Math.max(minDeviceLimit, preferredDeviceLimit), maxDeviceLimit)
+      : Math.min(Math.max(minDeviceLimit, selectedDeviceLimitState), maxDeviceLimit);
 
   useEffect(() => {
-    if (!deviceLimits.length) {
-      setSelectedDeviceIndex(0);
+    if (isSubscriptionLoading) return;
+
+    if (!selectedTariff) {
+      setSelectedDeviceLimit(1);
       lastTariffIdRef.current = null;
       return;
     }
 
-    if (selectedTariff?.id !== lastTariffIdRef.current) {
-      lastTariffIdRef.current = selectedTariff?.id ?? null;
-      setSelectedDeviceIndex(closestDeviceIndex);
+    if (selectedTariff.id !== lastTariffIdRef.current) {
+      lastTariffIdRef.current = selectedTariff.id;
+      setSelectedDeviceLimit(
+        Math.min(Math.max(minDeviceLimit, preferredDeviceLimit), maxDeviceLimit),
+      );
       return;
     }
 
-    setSelectedDeviceIndex((previous) =>
-      Math.min(Math.max(0, previous), Math.max(0, deviceLimits.length - 1)),
+    setSelectedDeviceLimit((previous) =>
+      Math.min(Math.max(minDeviceLimit, previous), maxDeviceLimit),
     );
-  }, [deviceLimits, closestDeviceIndex, selectedTariff?.id]);
+  }, [isSubscriptionLoading, maxDeviceLimit, minDeviceLimit, preferredDeviceLimit, selectedTariff]);
 
-  const selectedDeviceLimit =
-    deviceLimits[Math.min(selectedDeviceIndex, Math.max(0, deviceLimits.length - 1))] ?? 1;
-
-  const applyDeviceIndex = useCallback(
-    (nextIndex: number, options?: { withHaptic?: boolean }) => {
-      const maxIndex = Math.max(0, deviceLimits.length - 1);
-      const clamped = Math.min(Math.max(0, nextIndex), maxIndex);
-      setSelectedDeviceIndex(clamped);
+  const applyDeviceLimit = useCallback(
+    (nextLimit: number, options?: { withHaptic?: boolean }) => {
+      const clamped = Math.min(Math.max(minDeviceLimit, nextLimit), maxDeviceLimit);
+      setSelectedDeviceLimit(clamped);
       const withHaptic = options?.withHaptic ?? true;
-      if (withHaptic && lastHapticDeviceIndexRef.current !== clamped) {
+      if (withHaptic && lastHapticDeviceLimitRef.current !== clamped) {
         haptic.selection();
-        lastHapticDeviceIndexRef.current = clamped;
+        lastHapticDeviceLimitRef.current = clamped;
         trackAnalyticsEvent('ultima_device_select', {
-          device_limit: deviceLimits[clamped] ?? null,
+          device_limit: clamped,
         });
       }
     },
-    [deviceLimits, haptic],
+    [haptic, maxDeviceLimit, minDeviceLimit],
   );
 
   const displayPeriods = useMemo(() => {
@@ -409,10 +389,8 @@ export function UltimaSubscription() {
   }, [displayPeriods, selectedPeriodDays]);
 
   const selectedTariffIdForPurchase = selectedTariff?.id ?? selectedPeriod?.tariffId ?? null;
-  const minDeviceLimit = deviceLimits[0] ?? selectedDeviceLimit;
-  const maxDeviceLimit = deviceLimits[deviceLimits.length - 1] ?? selectedDeviceLimit;
-  const canDecreaseDevices = selectedDeviceIndex > 0;
-  const canIncreaseDevices = selectedDeviceIndex < deviceLimits.length - 1;
+  const canDecreaseDevices = selectedDeviceLimit > minDeviceLimit;
+  const canIncreaseDevices = selectedDeviceLimit < maxDeviceLimit;
   const autoTariffId = Number(searchParams.get('autoTariffId'));
   const autoPeriodDays = Number(searchParams.get('autoPeriodDays'));
   const autoDeviceLimit = Number(searchParams.get('autoDeviceLimit'));
@@ -775,7 +753,7 @@ export function UltimaSubscription() {
   }, []);
 
   useEffect(() => {
-    if (isLoading || checkoutViewTrackedRef.current || !selectedTariff || !selectedPeriod) {
+    if (isCheckoutLoading || checkoutViewTrackedRef.current || !selectedTariff || !selectedPeriod) {
       return;
     }
     checkoutViewTrackedRef.current = true;
@@ -784,9 +762,9 @@ export function UltimaSubscription() {
       period_days: selectedPeriod.days,
       device_limit: selectedDeviceLimit,
     });
-  }, [isLoading, selectedDeviceLimit, selectedPeriod, selectedTariff]);
+  }, [isCheckoutLoading, selectedDeviceLimit, selectedPeriod, selectedTariff]);
 
-  if (isLoading) {
+  if (isCheckoutLoading) {
     if (isDesktopViewport) {
       return (
         <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-subscription-desktop">
@@ -1254,7 +1232,8 @@ export function UltimaSubscription() {
             })
           }
           selectedDeviceLimit={selectedDeviceLimit}
-          deviceLimits={deviceLimits}
+          minDeviceLimit={minDeviceLimit}
+          maxDeviceLimit={maxDeviceLimit}
           periods={desktopPeriods}
           selectedPeriodLabel={checkoutPeriodValue}
           includedItems={checkoutIncludedItems}
@@ -1289,7 +1268,7 @@ export function UltimaSubscription() {
             isTariffSwitchPreviewPending
           }
           bottomNav={bottomNav}
-          onSelectDevice={(index) => applyDeviceIndex(index)}
+          onSelectDevice={(limit) => applyDeviceLimit(limit)}
           onSelectPeriod={(days) => {
             haptic.impact('light');
             setSelectedPeriodDays(days);
@@ -1429,90 +1408,59 @@ export function UltimaSubscription() {
                       {t('subscription.devices')}
                     </p>
                     <p
-                      className={`min-w-0 truncate rounded-full border px-2 py-0.5 text-[11px] leading-tight ${
-                        deviceTrafficBadgeLabel
-                          ? 'border-emerald-200/[0.22] bg-emerald-300/[0.1] text-emerald-50/90'
-                          : 'border-white/[0.1] bg-white/[0.06] text-white/70'
-                      }`}
-                      title={deviceTrafficLabel ?? selectedTrafficLabel}
+                      className="min-w-0 truncate rounded-full border border-white/[0.1] bg-white/[0.06] px-2 py-0.5 text-[11px] leading-tight text-white/70"
+                      title={selectedTrafficLabel}
                     >
-                      {deviceTrafficBadgeLabel ?? selectedTrafficLabel}
+                      {selectedTrafficLabel}
                     </p>
                   </div>
                   <p className="mt-1 truncate text-[11px] leading-tight text-white/[0.48]">
                     {baseDeviceLimitLabel}
                   </p>
                 </div>
-                <div
-                  className="flex h-9 shrink-0 items-center rounded-full border p-0.5 shadow-[0_0_14px_color-mix(in_srgb,var(--ultima-color-primary)_22%,transparent)]"
-                  style={{
-                    borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 38%, transparent)',
-                    background:
-                      'linear-gradient(180deg,color-mix(in srgb, var(--ultima-color-surface) 70%, transparent),color-mix(in srgb, var(--ultima-color-secondary) 62%, transparent))',
-                  }}
-                >
-                  <button
-                    type="button"
-                    aria-label="decrease-devices"
-                    disabled={!canDecreaseDevices}
-                    onClick={() => applyDeviceIndex(selectedDeviceIndex - 1)}
-                    className="flex h-8 w-8 items-center justify-center rounded-full text-[18px] font-medium leading-none text-white/80 transition enabled:hover:bg-white/[0.08] enabled:active:scale-95 disabled:cursor-not-allowed disabled:text-white/[0.28]"
-                  >
-                    -
-                  </button>
-                  <span className="min-w-7 text-center text-[15px] font-semibold leading-none text-white">
-                    {selectedDeviceLimit}
-                  </span>
-                  <button
-                    type="button"
-                    aria-label="increase-devices"
-                    disabled={!canIncreaseDevices}
-                    onClick={() => applyDeviceIndex(selectedDeviceIndex + 1)}
-                    className="flex h-8 w-8 items-center justify-center rounded-full text-[18px] font-medium leading-none text-white/80 transition enabled:hover:bg-white/[0.08] enabled:active:scale-95 disabled:cursor-not-allowed disabled:text-white/[0.28]"
-                  >
-                    +
-                  </button>
-                </div>
+                <UltimaDeviceStepper
+                  value={selectedDeviceLimit}
+                  canDecrease={canDecreaseDevices}
+                  canIncrease={canIncreaseDevices}
+                  onDecrease={() => applyDeviceLimit(selectedDeviceLimit - 1)}
+                  onIncrease={() => applyDeviceLimit(selectedDeviceLimit + 1)}
+                  testIdPrefix="ultima-mobile"
+                />
               </div>
 
-              <div
-                className="rounded-[16px] border px-2.5 py-2"
-                style={{
-                  borderColor:
-                    'color-mix(in srgb, var(--ultima-color-surface-border) 22%, transparent)',
-                  background:
-                    'linear-gradient(180deg,color-mix(in srgb, var(--ultima-color-surface) 58%, transparent) 0%,color-mix(in srgb, var(--ultima-color-secondary) 46%, transparent) 100%)',
-                }}
-              >
-                <div className="scrollbar-hide flex gap-1.5 overflow-x-auto">
-                  {deviceLimits.map((limit, index) => {
-                    const active = limit === selectedDeviceLimit;
-                    return (
-                      <button
-                        key={limit}
-                        type="button"
-                        onClick={() => applyDeviceIndex(index)}
-                        className={`shrink-0 rounded-full border px-3 py-1.5 text-[12px] font-semibold transition ${
-                          active
-                            ? 'border-emerald-200/[0.42] bg-emerald-300/[0.16] text-emerald-50'
-                            : 'border-white/[0.1] bg-white/[0.045] text-white/[0.62] hover:bg-white/[0.075]'
-                        }`}
-                        aria-pressed={active}
-                      >
-                        {limit}
-                      </button>
-                    );
+              {selectedExtraDevices > 0 ? (
+                <div
+                  data-testid="ultima-mobile-extra-device-summary"
+                  className="flex items-center justify-between gap-3 rounded-[14px] border border-amber-200/[0.16] bg-amber-300/[0.07] px-2.5 py-2"
+                >
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-semibold leading-tight text-amber-50/[0.9]">
+                      {t('ultima.extraDevicesCompact', {
+                        count: selectedExtraDevices,
+                        base: currentTariffBaseDeviceLimit,
+                        defaultValue: 'Дополнительно: +{{count}} к базовым {{base}}',
+                      })}
+                    </p>
+                    {deviceTrafficBadgeLabel ? (
+                      <p className="mt-0.5 truncate text-[10px] leading-tight text-emerald-100/[0.78]">
+                        {deviceTrafficBadgeLabel}
+                      </p>
+                    ) : null}
+                  </div>
+                  <span className="shrink-0 text-[12px] font-semibold text-amber-50/[0.92]">
+                    {extraDeviceChargeKopeks > 0
+                      ? `+${formatPrice(extraDeviceChargeKopeks)}`
+                      : t('ultima.noExtraDeviceCharge', { defaultValue: 'Без доплаты' })}
+                  </span>
+                </div>
+              ) : (
+                <p className="px-1 text-[10px] leading-tight text-white/[0.42]">
+                  {t('ultima.deviceLimitRange', {
+                    max: maxDeviceLimit,
+                    defaultValue: 'Можно выбрать до {{max}} устройств',
                   })}
-                </div>
-                <div className="mt-1.5 flex items-center justify-between gap-2 text-[10px] leading-none text-white/[0.46]">
-                  <span>
-                    {minDeviceLimit}-{maxDeviceLimit}
-                  </span>
-                  <span className="truncate font-medium text-white/[0.7]">
-                    {t('subscription.devices', { count: selectedDeviceLimit })}
-                  </span>
-                </div>
-              </div>
+                </p>
+              )}
             </>
           )}
         </section>

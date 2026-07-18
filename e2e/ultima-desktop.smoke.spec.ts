@@ -113,6 +113,8 @@ const TARIFF = {
   device_limit: 3,
   base_device_limit: 2,
   max_device_limit: 3,
+  device_price_kopeks: 5000,
+  device_traffic_gb: 35,
   extra_devices_count: 1,
   servers_count: 1,
   servers: [{ uuid: 'server-1', name: 'Нидерланды' }],
@@ -168,11 +170,13 @@ async function mockUltimaDesktopApi(
     subscription = SUBSCRIPTION,
     connectedDevices = [CONNECTED_DEVICE],
     devicesGate,
+    subscriptionGate,
   }: {
     isAdmin?: boolean;
     subscription?: typeof SUBSCRIPTION;
     connectedDevices?: Array<typeof CONNECTED_DEVICE>;
     devicesGate?: Promise<void>;
+    subscriptionGate?: Promise<void>;
   } = {},
 ): Promise<void> {
   await page.route('**/api/**', async (route: Route) => {
@@ -221,6 +225,9 @@ async function mockUltimaDesktopApi(
       });
     }
     if (path === '/cabinet/subscription') {
+      if (subscriptionGate) {
+        await subscriptionGate;
+      }
       return respond({ has_subscription: true, subscription });
     }
     if (path === '/cabinet/subscription/purchase-options') {
@@ -498,15 +505,58 @@ test.describe('Ultima desktop workspace', () => {
     await expect(page.locator('h1').first()).toBeVisible();
 
     await page.goto('/subscription');
-    const deviceSelect = page.getByTestId('ultima-desktop-device-select');
-    await expect(deviceSelect).toBeVisible();
-    await expect(deviceSelect.locator('option')).toHaveCount(2);
-    await deviceSelect.selectOption({ label: '2' });
-    await expect(deviceSelect).toHaveValue('2');
+    const deviceStepper = page.getByTestId('ultima-desktop-device-stepper');
+    await expect(deviceStepper).toBeVisible();
+    await expect(deviceStepper.locator('button')).toHaveCount(2);
+    await expect(page.getByTestId('ultima-desktop-device-count')).toHaveText('3');
+    await expect(page.getByTestId('ultima-desktop-device-select')).toHaveCount(0);
+    await page.getByTestId('ultima-desktop-devices-minus').click();
+    await expect(page.getByTestId('ultima-desktop-device-count')).toHaveText('2');
+    await page.getByTestId('ultima-desktop-devices-plus').click();
+    await expect(page.getByTestId('ultima-desktop-device-count')).toHaveText('3');
 
     await page.locator('[data-ultima-nav-btn="1"]').nth(1).click();
     await expect(page).toHaveURL(/\/connection$/);
     await expect(page.locator('.ultima-desktop-workspace')).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+  });
+});
+
+test.describe('Ultima subscription device selection', () => {
+  test('uses one compact device control and explains the extra charge on mobile', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page);
+
+    let releaseSubscription!: () => void;
+    const subscriptionGate = new Promise<void>((resolve) => {
+      releaseSubscription = resolve;
+    });
+    await mockUltimaDesktopApi(page, { subscriptionGate });
+    await page.goto('/subscription');
+
+    await expect(page.getByTestId('ultima-mobile-device-stepper')).toHaveCount(0);
+    releaseSubscription();
+
+    const deviceStepper = page.getByTestId('ultima-mobile-device-stepper');
+    await expect(deviceStepper).toBeVisible();
+    await expect(deviceStepper.locator('button')).toHaveCount(2);
+    await expect(page.getByTestId('ultima-mobile-device-count')).toHaveText('3');
+    await expect(page.getByTestId('ultima-desktop-device-select')).toHaveCount(0);
+
+    const extraSummary = page.getByTestId('ultima-mobile-extra-device-summary');
+    await expect(extraSummary).toContainText('Дополнительно: +1');
+    await expect(extraSummary).toContainText('+50 ₽');
+    await expect(extraSummary).toContainText('+35 ГБ');
+
+    await page.getByTestId('ultima-mobile-devices-minus').click();
+    await expect(page.getByTestId('ultima-mobile-device-count')).toHaveText('2');
+    await expect(extraSummary).toHaveCount(0);
+
+    await page.getByTestId('ultima-mobile-devices-plus').click();
+    await expect(page.getByTestId('ultima-mobile-device-count')).toHaveText('3');
+    await expect(page.getByTestId('ultima-mobile-extra-device-summary')).toBeVisible();
     await expectNoHorizontalOverflow(page);
   });
 });
