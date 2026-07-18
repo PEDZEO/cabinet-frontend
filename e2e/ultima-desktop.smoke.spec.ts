@@ -540,7 +540,20 @@ test.describe('Ultima mobile scrolling', () => {
       expect(navBox!.x + navBox!.width).toBeLessThanOrEqual(viewport.width);
       expect(navBox!.y + navBox!.height).toBeLessThanOrEqual(viewport.height);
 
-      await expect(page.getByTestId('ultima-scroll-cue')).toHaveCount(0);
+      const remainingScroll = await scrollRegion.evaluate(
+        (element) => element.scrollHeight - element.clientHeight,
+      );
+      const cue = page.getByTestId('ultima-scroll-cue');
+      if (remainingScroll > 56) {
+        await expect(cue).toBeVisible();
+        const cueBox = await cue.boundingBox();
+        expect(cueBox).not.toBeNull();
+        expect(cueBox!.x).toBeGreaterThanOrEqual(viewport.width - 60);
+        expect(cueBox!.x + cueBox!.width).toBeLessThanOrEqual(viewport.width);
+        expect(cueBox!.y + cueBox!.height).toBeLessThanOrEqual(navBox!.y);
+      } else {
+        await expect(cue).toHaveCount(0);
+      }
 
       await page.screenshot({
         path: testInfo.outputPath(`ultima-mobile-${viewport.width}x${viewport.height}.png`),
