@@ -256,13 +256,20 @@ async function mockUltimaDesktopApi(
     if (path === '/cabinet/subscription/devices/reduction-info') {
       return respond({
         available: true,
-        current_device_limit: 3,
+        current_device_limit: subscription.device_limit,
         min_device_limit: 2,
-        connected_devices: 1,
+        can_reduce: Math.max(0, subscription.device_limit - 2),
+        connected_devices_count: connectedDevices.length,
       });
     }
     if (path === '/cabinet/subscription/devices/price') {
-      return respond({ available: true, can_add: 7, total_price_kopeks: 5000 });
+      const devices = Math.max(1, Number(url.searchParams.get('devices') ?? 1));
+      return respond({
+        available: true,
+        devices,
+        can_add: 7,
+        total_price_kopeks: devices * 5000,
+      });
     }
     if (path === '/cabinet/subscription/connection-link') {
       return respond({
@@ -558,6 +565,83 @@ test.describe('Ultima subscription device selection', () => {
     await expect(page.getByTestId('ultima-mobile-device-count')).toHaveText('3');
     await expect(page.getByTestId('ultima-mobile-extra-device-summary')).toBeVisible();
     await expectNoHorizontalOverflow(page);
+  });
+});
+
+test.describe('Ultima device management', () => {
+  test('uses one target limit control for adding and reducing slots', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+    await page.goto('/ultima/devices');
+
+    await expect(page.getByTestId('ultima-device-capacity')).toBeVisible();
+    await expect(page.getByTestId('ultima-device-free-slots')).toContainText('2 свободно');
+    await expect(page.getByTestId('ultima-devices-limit-device-count')).toHaveText('3');
+    await expect(page.getByTestId('ultima-device-limit-summary')).toHaveCount(0);
+    await expect(page.getByText('Купить слоты для устройств', { exact: true })).toHaveCount(0);
+    await expect(page.getByText('Уменьшить количество устройств', { exact: true })).toHaveCount(0);
+
+    await page.getByTestId('ultima-devices-limit-devices-plus').click();
+    await expect(page.getByTestId('ultima-devices-limit-device-count')).toHaveText('4');
+    const increaseSummary = page.getByTestId('ultima-device-limit-summary');
+    await expect(increaseSummary).toContainText('Новый лимит: 4');
+    await expect(increaseSummary).toContainText('Добавится мест: +1');
+    await expect(increaseSummary).toContainText('+35 ГБ');
+    await expect(increaseSummary).toContainText('50.00 ₽');
+    await expect(page.getByTestId('ultima-device-limit-apply')).toContainText('Добавить +1');
+
+    await page.getByTestId('ultima-devices-limit-devices-minus').click();
+    await page.getByTestId('ultima-devices-limit-devices-minus').click();
+    await expect(page.getByTestId('ultima-devices-limit-device-count')).toHaveText('2');
+    const reductionSummary = page.getByTestId('ultima-device-limit-summary');
+    await expect(reductionSummary).toContainText('Новый лимит: 2');
+    await expect(reductionSummary).toContainText('Уменьшится на 1');
+    await expect(page.getByTestId('ultima-device-limit-apply')).toContainText('Уменьшить до 2');
+
+    await page.getByTestId('ultima-device-primary-action').click();
+    await expect(page.locator('#ultima-connect-new-device[role="dialog"]')).toBeVisible();
+    await expect(page.getByTestId('ultima-device-qr')).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+  });
+
+  test('keeps a long device list compact until it is expanded', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page);
+    const connectedDevices = Array.from({ length: 7 }, (_, index) => ({
+      ...CONNECTED_DEVICE,
+      hwid: `device-${index + 1}`,
+      device_model: `Device ${index + 1}`,
+    }));
+    await mockUltimaDesktopApi(page, {
+      connectedDevices,
+      subscription: { ...SUBSCRIPTION, device_limit: 10 },
+    });
+    await page.goto('/ultima/devices');
+
+    await expect(page.getByTestId('ultima-device-row')).toHaveCount(5);
+    await expect(page.getByTestId('ultima-devices-list-toggle')).toContainText('Показать еще 2');
+    await page.getByTestId('ultima-devices-list-toggle').click();
+    await expect(page.getByTestId('ultima-device-row')).toHaveCount(7);
+    await expect(page.getByTestId('ultima-devices-list-toggle')).toContainText('Свернуть список');
+    await expectNoHorizontalOverflow(page);
+  });
+
+  test('does not show zero capacity while devices are loading', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page);
+    let releaseDevices!: () => void;
+    const devicesGate = new Promise<void>((resolve) => {
+      releaseDevices = resolve;
+    });
+    await mockUltimaDesktopApi(page, { devicesGate });
+    await page.goto('/ultima/devices');
+
+    await expect(page.getByTestId('ultima-devices-loading')).toBeVisible();
+    await expect(page.getByTestId('ultima-device-capacity')).toHaveCount(0);
+    releaseDevices();
+    await expect(page.getByTestId('ultima-devices-loading')).toHaveCount(0);
+    await expect(page.getByTestId('ultima-device-free-slots')).toContainText('2 свободно');
   });
 });
 
