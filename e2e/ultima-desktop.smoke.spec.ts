@@ -167,10 +167,12 @@ async function mockUltimaDesktopApi(
     isAdmin = false,
     subscription = SUBSCRIPTION,
     connectedDevices = [CONNECTED_DEVICE],
+    devicesGate,
   }: {
     isAdmin?: boolean;
     subscription?: typeof SUBSCRIPTION;
     connectedDevices?: Array<typeof CONNECTED_DEVICE>;
+    devicesGate?: Promise<void>;
   } = {},
 ): Promise<void> {
   await page.route('**/api/**', async (route: Route) => {
@@ -235,6 +237,9 @@ async function mockUltimaDesktopApi(
       return respond({ is_available: false, reason_unavailable: 'already_used' });
     }
     if (path === '/cabinet/subscription/devices') {
+      if (devicesGate) {
+        await devicesGate;
+      }
       return respond({
         devices: connectedDevices,
         total: connectedDevices.length,
@@ -503,6 +508,39 @@ test.describe('Ultima desktop workspace', () => {
     await expect(page).toHaveURL(/\/connection$/);
     await expect(page.locator('.ultima-desktop-workspace')).toBeVisible();
     await expectNoHorizontalOverflow(page);
+  });
+});
+
+test.describe('Ultima device loading state', () => {
+  test('does not flash a zero device count before the device request finishes', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page);
+
+    let releaseDevices!: () => void;
+    const devicesGate = new Promise<void>((resolve) => {
+      releaseDevices = resolve;
+    });
+    const connectedDevices = [
+      CONNECTED_DEVICE,
+      { ...CONNECTED_DEVICE, hwid: 'desktop-smoke-device-2' },
+      { ...CONNECTED_DEVICE, hwid: 'desktop-smoke-device-3' },
+    ];
+
+    await mockUltimaDesktopApi(page, { connectedDevices, devicesGate });
+    await page.goto('/');
+
+    await expect(page.getByTestId('ultima-device-cta-loading')).toBeVisible();
+    await expect(page.getByTestId('ultima-plan-device-count-loading')).toBeVisible();
+    await expect(page.getByTestId('ultima-device-home-cta-title')).toHaveCount(0);
+    await expect(page.getByTestId('ultima-plan-device-count')).not.toContainText('0/3');
+
+    releaseDevices();
+
+    await expect(page.getByTestId('ultima-device-cta-loading')).toHaveCount(0);
+    await expect(page.getByTestId('ultima-plan-device-count')).toHaveText('3/3');
+    await expect(page.getByTestId('ultima-device-home-cta-title')).toHaveText('Купить слот');
   });
 });
 

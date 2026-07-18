@@ -257,7 +257,7 @@ export function UltimaDashboard() {
   });
   const subscription = subscriptionResponse?.subscription ?? null;
   const hasAnySubscription = subscriptionResponse?.has_subscription === true;
-  const { data: dashboardDevicesData } = useQuery({
+  const { data: dashboardDevicesData, isError: isDashboardDevicesError } = useQuery({
     queryKey: ['devices'],
     queryFn: subscriptionApi.getDevices,
     enabled: hasAnySubscription,
@@ -952,6 +952,10 @@ export function UltimaDashboard() {
   const connectedDevicesCount = dashboardDevicesData?.devices?.length ?? 0;
   const dashboardDeviceLimit = Math.max(0, subscription?.device_limit ?? 0);
   const dashboardFreeDeviceSlots = Math.max(0, dashboardDeviceLimit - connectedDevicesCount);
+  const isDashboardDevicesPending =
+    hasAnySubscription && dashboardDevicesData === undefined && !isDashboardDevicesError;
+  const isDashboardDevicesUnavailable =
+    hasAnySubscription && dashboardDevicesData === undefined && isDashboardDevicesError;
   const showBrandLogoOnHome = Boolean(
     ultimaThemeConfig?.homeUseBrandLogo && hasCustomLogo && logoUrl && !hasHomeLogoLoadError,
   );
@@ -1168,15 +1172,18 @@ export function UltimaDashboard() {
   );
   const bottomNav = <UltimaBottomNav active="home" onSupportClick={openSupport} />;
   const PrimaryCtaIcon = primaryActionKind === 'setup' ? SetupIcon : GlobeIcon;
-  const shouldConnectDeviceFromHome = connectedDevicesCount <= 0 || dashboardFreeDeviceSlots > 0;
-  const devicesHomeCtaTitle =
-    connectedDevicesCount <= 0
+  const shouldConnectDeviceFromHome =
+    isDashboardDevicesUnavailable || connectedDevicesCount <= 0 || dashboardFreeDeviceSlots > 0;
+  const devicesHomeCtaTitle = isDashboardDevicesUnavailable
+    ? t('devices.title', { defaultValue: 'Устройства' })
+    : connectedDevicesCount <= 0
       ? t('devices.connectFirstDevice', { defaultValue: 'Подключить первое устройство' })
       : dashboardFreeDeviceSlots > 0
         ? t('devices.connectNewDeviceTitle', { defaultValue: 'Подключить новое устройство' })
         : t('devices.buySlot', { defaultValue: 'Купить слот' });
-  const devicesHomeCtaSubtitle =
-    connectedDevicesCount <= 0
+  const devicesHomeCtaSubtitle = isDashboardDevicesUnavailable
+    ? t('devices.homeCtaUnavailable', { defaultValue: 'Не удалось обновить данные' })
+    : connectedDevicesCount <= 0
       ? t('devices.homeCtaSubscriptionReady', {
           defaultValue: 'QR-код и ссылка подписки уже готовы',
         })
@@ -1191,9 +1198,11 @@ export function UltimaDashboard() {
             total: dashboardDeviceLimit,
             defaultValue: 'Подключено {{count}} из {{total}}',
           });
-  const devicesHomeCtaAction = shouldConnectDeviceFromHome
-    ? t('devices.subscriptionQrShort', { defaultValue: 'QR' })
-    : t('devices.buySlotShort', { defaultValue: 'Слот' });
+  const devicesHomeCtaAction = isDashboardDevicesUnavailable
+    ? t('common.open', { defaultValue: 'Открыть' })
+    : shouldConnectDeviceFromHome
+      ? t('devices.subscriptionQrShort', { defaultValue: 'QR' })
+      : t('devices.buySlotShort', { defaultValue: 'Слот' });
   const devicesHomeCta = hasAnySubscription ? (
     <button
       type="button"
@@ -1203,7 +1212,9 @@ export function UltimaDashboard() {
           shouldConnectDeviceFromHome ? 'home_device_connect_card' : 'home_device_slots_card',
         )
       }
-      className="group relative w-full overflow-hidden rounded-[20px] border px-3.5 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_22px_rgba(3,14,24,0.16)] backdrop-blur-md transition hover:bg-white/[0.04]"
+      disabled={isDashboardDevicesPending}
+      aria-busy={isDashboardDevicesPending}
+      className="group relative w-full overflow-hidden rounded-[20px] border px-3.5 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_22px_rgba(3,14,24,0.16)] backdrop-blur-md transition hover:bg-white/[0.04] disabled:cursor-wait"
       style={{
         borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
         background:
@@ -1220,17 +1231,36 @@ export function UltimaDashboard() {
         >
           <DevicesHomeIcon />
         </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-[14px] font-semibold leading-tight text-white/[0.96]">
-            {devicesHomeCtaTitle}
-          </span>
-          <span className="mt-0.5 block truncate text-[11px] leading-tight text-white/[0.62]">
-            {devicesHomeCtaSubtitle}
-          </span>
-        </span>
-        <span className="shrink-0 rounded-full border border-white/10 px-2.5 py-1 text-[11px] font-semibold text-white/[0.86]">
-          {devicesHomeCtaAction}
-        </span>
+        {isDashboardDevicesPending ? (
+          <>
+            <span
+              data-testid="ultima-device-cta-loading"
+              className="min-w-0 flex-1"
+              aria-label={t('common.loading', { defaultValue: 'Загрузка...' })}
+            >
+              <span className="block h-3.5 w-36 max-w-full animate-pulse rounded-full bg-white/[0.12]" />
+              <span className="mt-2 block h-2.5 w-48 max-w-[82%] animate-pulse rounded-full bg-white/[0.07]" />
+            </span>
+            <span className="h-7 w-11 shrink-0 animate-pulse rounded-full border border-white/[0.08] bg-white/[0.05]" />
+          </>
+        ) : (
+          <>
+            <span className="min-w-0 flex-1">
+              <span
+                data-testid="ultima-device-home-cta-title"
+                className="block text-[14px] font-semibold leading-tight text-white/[0.96]"
+              >
+                {devicesHomeCtaTitle}
+              </span>
+              <span className="mt-0.5 block truncate text-[11px] leading-tight text-white/[0.62]">
+                {devicesHomeCtaSubtitle}
+              </span>
+            </span>
+            <span className="shrink-0 rounded-full border border-white/10 px-2.5 py-1 text-[11px] font-semibold text-white/[0.86]">
+              {devicesHomeCtaAction}
+            </span>
+          </>
+        )}
       </span>
     </button>
   ) : null;
@@ -1282,8 +1312,21 @@ export function UltimaDashboard() {
             <span className="truncate text-[14px] font-semibold leading-tight text-white/[0.96]">
               {subscriptionPlanName}
             </span>
-            <span className="shrink-0 rounded-full border border-white/[0.08] bg-black/[0.08] px-2 py-0.5 text-[11px] font-medium text-white/[0.68]">
-              {connectedDevicesCount}/{dashboardDeviceLimit}
+            <span
+              data-testid="ultima-plan-device-count"
+              aria-busy={isDashboardDevicesPending}
+              className="inline-flex min-h-[22px] min-w-[38px] shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-black/[0.08] px-2 py-0.5 text-[11px] font-medium text-white/[0.68]"
+            >
+              {isDashboardDevicesPending ? (
+                <span
+                  data-testid="ultima-plan-device-count-loading"
+                  className="h-2.5 w-5 animate-pulse rounded-full bg-white/[0.1]"
+                />
+              ) : isDashboardDevicesUnavailable ? (
+                '—'
+              ) : (
+                `${connectedDevicesCount}/${dashboardDeviceLimit}`
+              )}
             </span>
           </span>
           <span className="mt-1.5 flex min-w-0 items-center gap-2">
