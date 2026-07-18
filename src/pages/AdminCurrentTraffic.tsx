@@ -13,7 +13,7 @@ import {
   Users,
   WifiOff,
 } from 'lucide-react';
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import {
   adminCurrentTrafficApi,
@@ -347,6 +347,7 @@ export default function AdminCurrentTraffic() {
   const [pageSize, setPageSize] = useState(25);
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
+  const appliedSearchRef = useRef('');
   const [tariffId, setTariffId] = useState<number | undefined>();
   const [status, setStatus] = useState<CurrentTrafficStatus>('current');
   const [usage, setUsage] = useState<CurrentTrafficUsage>('all');
@@ -355,7 +356,11 @@ export default function AdminCurrentTraffic() {
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      setSearch(searchInput.trim());
+      const nextSearch = searchInput.trim();
+      if (nextSearch === appliedSearchRef.current) return;
+
+      appliedSearchRef.current = nextSearch;
+      setSearch(nextSearch);
       setPage(1);
     }, 350);
     return () => window.clearTimeout(timer);
