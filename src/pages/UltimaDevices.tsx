@@ -857,7 +857,7 @@ export function UltimaDevices() {
           </p>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto pr-1 lg:overflow-visible lg:pr-0">
+        <div className="ultima-scrollbar min-h-0 flex-1 overflow-y-auto pr-1 lg:overflow-visible lg:pr-0">
           {devicesContent}
         </div>
 

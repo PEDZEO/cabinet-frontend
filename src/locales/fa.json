@@ -3711,6 +3711,7 @@
     "buySubscriptionActivate": "فعال‌سازی اشتراک",
     "buySubscriptionTrial": "خرید اشتراک",
     "chooseTariff": "انتخاب تعرفه",
+    "scrollCueLabel": "نمایش ادامه محتوا",
     "buySubscriptionRenew": "تمدید اشتراک",
     "buySubscriptionDaysLeft": "تمدید ({{daysLabel}})",
     "checkoutIncludedTitle": "موارد شامل",

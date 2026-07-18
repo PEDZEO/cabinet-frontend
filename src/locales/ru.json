@@ -5297,6 +5297,7 @@
     "buySubscriptionActivate": "Активировать подписку",
     "buySubscriptionTrial": "Купить подписку",
     "chooseTariff": "Выбрать тариф",
+    "scrollCueLabel": "Показать ниже",
     "buySubscriptionRenew": "Продлить подписку",
     "buySubscriptionDaysLeft": "Продлить ({{daysLabel}})",
     "checkoutIncludedTitle": "Что входит",

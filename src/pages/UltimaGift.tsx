@@ -868,7 +868,7 @@ export function UltimaGift() {
           </p>
         </header>
 
-        <section className="min-h-0 flex-1 overflow-y-auto rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:overflow-visible lg:p-4">
+        <section className="ultima-scrollbar min-h-0 flex-1 overflow-y-auto rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:overflow-visible lg:p-4">
           <div ref={formAnchorRef} />
           {!isGiftConfigLoaded ? (
             <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2.5">

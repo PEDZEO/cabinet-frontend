@@ -147,6 +147,9 @@ type ShieldDigit = {
   scale: number;
 };
 
+const MAX_VISIBLE_SHIELD_RIPPLES = 10;
+const MAX_VISIBLE_SHIELD_DIGITS = 16;
+
 export function UltimaDashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -697,7 +700,10 @@ export function UltimaDashboard() {
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
       const size = Math.max(rect.width, rect.height) * 1.85;
-      setShieldRipples((previous) => [...previous, { id, x, y, size }]);
+      setShieldRipples((previous) => [
+        ...previous.slice(-(MAX_VISIBLE_SHIELD_RIPPLES - 1)),
+        { id, x, y, size },
+      ]);
 
       const side = nextTapNumber % 2 === 0 ? 1 : -1;
       const digitId = digitIdRef.current++;
@@ -715,7 +721,7 @@ export function UltimaDashboard() {
         endRotate: side * (8 + Math.random() * 8),
         scale: 1.04 + Math.random() * 0.1,
       } satisfies ShieldDigit;
-      setShieldDigits((previous) => [...previous, digit]);
+      setShieldDigits((previous) => [...previous.slice(-(MAX_VISIBLE_SHIELD_DIGITS - 1)), digit]);
 
       window.setTimeout(() => {
         setShieldRipples((previous) => previous.filter((ripple) => ripple.id !== id));
@@ -1091,6 +1097,7 @@ export function UltimaDashboard() {
     (className?: string) => (
       <button
         type="button"
+        data-testid="ultima-shield-tap-target"
         aria-label={t('nav.dashboard')}
         onPointerDown={handleShieldTap}
         className={cn(
@@ -1099,7 +1106,11 @@ export function UltimaDashboard() {
         )}
         style={{ WebkitTapHighlightColor: 'transparent' }}
       >
-        <span aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-visible">
+        <span
+          aria-hidden
+          data-ultima-transient-visual
+          className="pointer-events-none absolute inset-0 z-0 overflow-visible"
+        >
           {shieldRipples.map((ripple) => (
             <span
               key={ripple.id}
@@ -1114,7 +1125,11 @@ export function UltimaDashboard() {
           ))}
         </span>
         {renderHomeBrandMark()}
-        <span aria-hidden className="pointer-events-none absolute inset-0 z-30 overflow-visible">
+        <span
+          aria-hidden
+          data-ultima-transient-visual
+          className="pointer-events-none absolute inset-0 z-30 overflow-visible"
+        >
           {shieldDigits.map((digit) => {
             const style = {
               left: digit.x,
@@ -1462,7 +1477,10 @@ export function UltimaDashboard() {
       )}
 
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[680px] lg:justify-between">
-        <section className="ultima-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto pb-[clamp(14px,2.8vh,24px)] pr-1 pt-[clamp(46px,10vh,104px)] lg:flex-none lg:overflow-visible lg:pb-2 lg:pr-0 lg:pt-8">
+        <section
+          data-testid="ultima-dashboard-scroll-region"
+          className="ultima-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto pb-[clamp(14px,2.8vh,24px)] pr-1 pt-[clamp(46px,10vh,104px)] lg:flex-none lg:overflow-visible lg:pb-2 lg:pr-0 lg:pt-8"
+        >
           {renderShieldButton('mb-[clamp(12px,3.4vh,40px)] lg:mb-5')}
 
           {promoMessage && !showPromoCard && (

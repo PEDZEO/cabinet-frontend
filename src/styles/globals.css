@@ -745,6 +745,109 @@
   }
 }
 
+.ultima-scroll-cue {
+  --ultima-scroll-progress: 0%;
+  position: fixed;
+  right: calc(clamp(10px, 3vw, 16px) + env(safe-area-inset-right, 0px));
+  bottom: calc(
+    var(--ultima-shared-nav-height, 56px) + var(--ultima-shared-nav-offset, 14px) +
+      var(--ultima-shell-safe-bottom, 0px) - 6px
+  );
+  z-index: 35;
+  display: inline-flex;
+  width: 30px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent);
+  border-radius: 11px 11px 5px 5px;
+  padding: 0 4px 3px;
+  color: color-mix(in srgb, var(--ultima-color-primary-text) 92%, #fff);
+  background: color-mix(in srgb, var(--ultima-color-nav-bg) 94%, #061115);
+  box-shadow:
+    0 -5px 14px rgba(0, 0, 0, 0.2),
+    0 0 12px color-mix(in srgb, var(--ultima-color-primary) 12%, transparent);
+  transform: translateZ(0);
+  isolation: isolate;
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.ultima-scroll-cue::before {
+  content: '';
+  position: absolute;
+  right: 4px;
+  bottom: 2px;
+  left: 4px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--ultima-color-primary) 92%, #fff) 0 var(--ultima-scroll-progress),
+    color-mix(in srgb, var(--ultima-color-surface-border) 22%, transparent)
+      var(--ultima-scroll-progress) 100%
+  );
+}
+
+.ultima-scroll-cue svg {
+  width: 14px;
+  height: 14px;
+  animation: ultima-scroll-cue-arrow 1.55s ease-in-out infinite;
+}
+
+.ultima-scroll-cue:active {
+  transform: scale(0.94) translateZ(0);
+}
+
+@keyframes ultima-scroll-cue-arrow {
+  0%,
+  100% {
+    transform: translateY(-1px);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+}
+
+@media (max-width: 1023px) {
+  .ultima-shell,
+  .ultima-shell * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .ultima-shell::-webkit-scrollbar,
+  .ultima-shell *::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  .ultima-scrollbar {
+    padding-right: 0 !important;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ultima-ring-wave {
+    filter: none;
+    box-shadow: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .ultima-scroll-cue {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ultima-scroll-cue svg {
+    animation: none;
+  }
+}
+
 html:not(.ultima-frames-enabled) .ultima-flat-frames [class*='border'] {
   border-color: transparent !important;
 }

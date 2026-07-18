@@ -93,7 +93,7 @@ export function UltimaPromocode() {
   const bottomNav = <UltimaBottomNav active="profile" />;
 
   const promocodeContent = (
-    <section className="min-h-0 flex-1 overflow-y-auto rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:overflow-visible lg:p-4">
+    <section className="ultima-scrollbar min-h-0 flex-1 overflow-y-auto rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:overflow-visible lg:p-4">
       <p className="mb-2 text-[13px] text-white/[0.68]">
         {t('balance.promocode.inputLabel', { defaultValue: 'Введите промокод' })}
       </p>

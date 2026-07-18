@@ -674,7 +674,9 @@ export function UltimaInfo() {
           bottomNav={bottomNav}
         >
           <UltimaDesktopPanel title={activeTabConfig.label} subtitle={activeTabConfig.description}>
-            <div className="max-h-[min(58svh,720px)] overflow-y-auto pr-1">{renderContent()}</div>
+            <div className="ultima-scrollbar max-h-[min(58svh,720px)] overflow-y-auto pr-1">
+              {renderContent()}
+            </div>
           </UltimaDesktopPanel>
         </UltimaDesktopSectionLayout>
       </div>
@@ -707,7 +709,9 @@ export function UltimaInfo() {
           style={ultimaSurfaceStyle}
         >
           {renderTabs(false)}
-          <div className="mt-3 min-h-0 flex-1 overflow-y-auto pr-1">{renderContent()}</div>
+          <div className="ultima-scrollbar mt-3 min-h-0 flex-1 overflow-y-auto pr-1">
+            {renderContent()}
+          </div>
         </section>
 
         <div className="ultima-mobile-dock-footer">

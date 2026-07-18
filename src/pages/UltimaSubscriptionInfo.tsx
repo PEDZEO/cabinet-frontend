@@ -483,7 +483,7 @@ export function UltimaSubscriptionInfo() {
     !hasSubscription || !subscription ? (
       emptyState
     ) : (
-      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1 lg:overflow-visible lg:pr-0">
+      <div className="ultima-scrollbar min-h-0 flex-1 space-y-4 overflow-y-auto pr-1 lg:overflow-visible lg:pr-0">
         {actionSection}
         {linkSection}
         {statGrid}
@@ -506,7 +506,7 @@ export function UltimaSubscriptionInfo() {
         {emptyState}
       </>
     ) : (
-      <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto pb-3 pr-1 lg:overflow-visible lg:pb-0 lg:pr-0">
+      <div className="ultima-scrollbar min-h-0 flex-1 space-y-2.5 overflow-y-auto pb-3 pr-1 lg:overflow-visible lg:pb-0 lg:pr-0">
         {mobileOverview}
         {actionSection}
         {linkSection}

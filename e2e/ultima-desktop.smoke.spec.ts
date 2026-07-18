@@ -506,6 +506,121 @@ test.describe('Ultima desktop workspace', () => {
   });
 });
 
+test.describe('Ultima mobile scrolling', () => {
+  for (const viewport of [
+    { width: 360, height: 640 },
+    { width: 390, height: 844 },
+    { width: 430, height: 932 },
+  ]) {
+    test(`keeps the mobile workspace inside ${viewport.width}x${viewport.height}`, async ({
+      page,
+    }, testInfo) => {
+      await page.setViewportSize(viewport);
+      await bootstrapUltimaDesktop(page);
+      await mockUltimaDesktopApi(page);
+      await page.goto('/');
+
+      const scrollRegion = page.getByTestId('ultima-dashboard-scroll-region');
+      const nav = page.locator('.ultima-shared-nav-shell');
+      await expect(scrollRegion).toBeVisible();
+      await expect(nav).toBeVisible();
+      await expectNoHorizontalOverflow(page);
+      await expect(page.locator('.ultima-ring-wave')).toHaveCount(3);
+
+      const scrollbarStyles = await scrollRegion.evaluate((element) => ({
+        firefox: getComputedStyle(element).scrollbarWidth,
+        webkit: getComputedStyle(element, '::-webkit-scrollbar').display,
+      }));
+      expect(scrollbarStyles.firefox).toBe('none');
+      expect(scrollbarStyles.webkit).toBe('none');
+
+      const navBox = await nav.boundingBox();
+      expect(navBox).not.toBeNull();
+      expect(navBox!.x).toBeGreaterThanOrEqual(0);
+      expect(navBox!.x + navBox!.width).toBeLessThanOrEqual(viewport.width);
+      expect(navBox!.y + navBox!.height).toBeLessThanOrEqual(viewport.height);
+
+      await expect(page.getByTestId('ultima-scroll-cue')).toHaveCount(0);
+
+      await page.screenshot({
+        path: testInfo.outputPath(`ultima-mobile-${viewport.width}x${viewport.height}.png`),
+        animations: 'disabled',
+      });
+    });
+  }
+
+  test('scroll cue advances a long page and disappears at the end', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 360, height: 640 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+    await page.goto('/profile');
+
+    const scrollRegion = page.locator('section.ultima-scrollbar').first();
+    await expect(scrollRegion).toBeVisible();
+    await expect
+      .poll(() => scrollRegion.evaluate((element) => element.scrollHeight - element.clientHeight))
+      .toBeGreaterThan(56);
+
+    const cue = page.getByTestId('ultima-scroll-cue');
+    await expect(cue).toBeVisible();
+    const cueBox = await cue.boundingBox();
+    const navBox = await page.locator('.ultima-shared-nav-shell').boundingBox();
+    expect(cueBox).not.toBeNull();
+    expect(navBox).not.toBeNull();
+    expect(cueBox!.x + cueBox!.width).toBeLessThanOrEqual(360);
+    expect(cueBox!.y).toBeGreaterThanOrEqual(navBox!.y - 24);
+    expect(cueBox!.y + cueBox!.height).toBeLessThanOrEqual(navBox!.y);
+
+    await page.screenshot({
+      path: testInfo.outputPath('ultima-mobile-scroll-cue.png'),
+      animations: 'disabled',
+    });
+
+    await cue.click();
+    await expect
+      .poll(() => scrollRegion.evaluate((element) => element.scrollTop))
+      .toBeGreaterThan(0);
+
+    await scrollRegion.evaluate((element) => {
+      element.scrollTop = element.scrollHeight;
+    });
+    await expect(cue).toHaveCount(0);
+  });
+
+  test('bounds transient effects during rapid shield taps', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+    await page.goto('/');
+
+    const shield = page.getByTestId('ultima-shield-tap-target');
+    await expect(shield).toBeVisible();
+    await shield.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      for (let index = 0; index < 80; index += 1) {
+        element.dispatchEvent(
+          new PointerEvent('pointerdown', {
+            bubbles: true,
+            clientX: rect.left + rect.width / 2,
+            clientY: rect.top + rect.height / 2,
+            pointerId: index + 1,
+            pointerType: 'touch',
+          }),
+        );
+      }
+    });
+
+    const effectCounts = await shield.evaluate((element) => ({
+      digits: element.querySelectorAll('.ultima-float-number').length,
+      ripples: element.querySelectorAll('.ultima-tap-ring').length,
+    }));
+    expect(effectCounts.ripples).toBeGreaterThan(0);
+    expect(effectCounts.ripples).toBeLessThanOrEqual(10);
+    expect(effectCounts.digits).toBeGreaterThan(0);
+    expect(effectCounts.digits).toBeLessThanOrEqual(16);
+  });
+});
+
 test.describe('Ultima trial onboarding persistence', () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });

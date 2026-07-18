@@ -4,6 +4,7 @@ import {
   useState,
   useCallback,
   useRef,
+  type CSSProperties,
   type SyntheticEvent,
 } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router';
@@ -21,6 +22,7 @@ import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 import { useLiteMode } from '@/hooks/useLiteMode';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { usePendingTopUpFollowUp } from '@/hooks/usePendingTopUpFollowUp';
+import { useUltimaScrollCue } from '@/hooks/useUltimaScrollCue';
 import { getCachedUltimaMode, useUltimaMode } from '@/hooks/useUltimaMode';
 import { themeColorsApi } from '@/api/themeColors';
 import { isLogoPreloaded } from '@/api/branding';
@@ -48,6 +50,8 @@ import { AppHeader } from './AppHeader';
 import { LiteModeHeader } from './LiteModeHeader';
 
 const ULTIMA_RING_DURATION_SEC = 18;
+const ULTIMA_RING_DELAYS_MOBILE = [0, 6, 12] as const;
+const ULTIMA_RING_DELAYS_DESKTOP = [0, 3, 6, 9, 12, 15] as const;
 
 // Desktop nav icons
 const HomeIcon = ({ className }: { className?: string }) => (
@@ -227,7 +231,10 @@ export function AppShell({ children }: AppShellProps) {
     contentSafeAreaInset,
     platform,
     isMobile,
+    isTelegramWebApp,
     viewportStableHeight,
+    disableVerticalSwipes,
+    enableVerticalSwipes,
   } = useTelegramSDK();
   const haptic = useHaptic();
   const { toggleTheme, isDark } = useTheme();
@@ -267,6 +274,21 @@ export function AppShell({ children }: AppShellProps) {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const {
+    isVisible: isUltimaScrollCueVisible,
+    progress: ultimaScrollProgress,
+    scrollForward: scrollUltimaForward,
+  } = useUltimaScrollCue(
+    isUltimaMode && isUltimaTopLevelRoute && !isDesktopViewport && !isKeyboardOpen,
+    location.pathname,
+  );
+
+  useEffect(() => {
+    if (!isUltimaMode || !isTelegramWebApp || !isMobile) return;
+
+    disableVerticalSwipes();
+    return enableVerticalSwipes;
+  }, [disableVerticalSwipes, enableVerticalSwipes, isMobile, isTelegramWebApp, isUltimaMode]);
 
   // Keyboard detection for hiding bottom nav
   useEffect(() => {
@@ -468,13 +490,15 @@ export function AppShell({ children }: AppShellProps) {
                 : 'var(--ultima-bg-page-scrim-mobile)',
             }}
           />
-          {[0, 3, 6, 9, 12, 15].map((delay) => (
-            <div
-              key={delay}
-              className="ultima-ring-wave absolute left-1/2 top-1/2 h-[170vmax] w-[170vmax] -translate-x-1/2 -translate-y-1/2 transform-gpu rounded-full border"
-              style={{ animationDelay: `${ultimaWavePhaseShiftSecRef.current + delay}s` }}
-            />
-          ))}
+          {(isDesktopViewport ? ULTIMA_RING_DELAYS_DESKTOP : ULTIMA_RING_DELAYS_MOBILE).map(
+            (delay) => (
+              <div
+                key={delay}
+                className="ultima-ring-wave absolute left-1/2 top-1/2 h-[170vmax] w-[170vmax] -translate-x-1/2 -translate-y-1/2 transform-gpu rounded-full border"
+                style={{ animationDelay: `${ultimaWavePhaseShiftSecRef.current + delay}s` }}
+              />
+            ),
+          )}
         </div>
       )}
 
@@ -704,6 +728,34 @@ export function AppShell({ children }: AppShellProps) {
           children
         )}
       </main>
+
+      {shouldShowUltimaSharedNav && isUltimaScrollCueVisible && !isKeyboardOpen ? (
+        <button
+          type="button"
+          data-testid="ultima-scroll-cue"
+          className="ultima-scroll-cue"
+          style={
+            {
+              ['--ultima-scroll-progress' as string]: `${Math.max(0, ultimaScrollProgress)}%`,
+            } as CSSProperties
+          }
+          onClick={() => {
+            haptic.impact('light');
+            scrollUltimaForward();
+          }}
+          aria-label={t('ultima.scrollCueLabel', { defaultValue: 'Показать ниже' })}
+        >
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="m7 10 5 5 5-5"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      ) : null}
 
       {shouldShowUltimaSharedNav && ultimaTopLevelTab ? (
         <div
