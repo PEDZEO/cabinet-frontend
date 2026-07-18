@@ -481,7 +481,7 @@ test.describe('Ultima desktop workspace', () => {
     await mockUltimaDesktopApi(page);
     await page.goto('/');
 
-    await page.locator('[data-ultima-nav-btn="1"]').nth(2).click();
+    await page.locator('[data-ultima-nav-target="news"]').click();
     await expect(page).toHaveURL(/\/ultima\/news$/);
     await expect(page.locator('h1').first()).toBeVisible();
     await expect(page.locator('.ultima-desktop-workspace')).toHaveClass(
@@ -493,11 +493,11 @@ test.describe('Ultima desktop workspace', () => {
     expect(newsMainWidth).toBeGreaterThan(1100);
     await expectNoHorizontalOverflow(page);
 
-    await page.locator('[data-ultima-nav-btn="1"]').nth(3).click();
+    await page.locator('[data-ultima-nav-target="profile"]').click();
     await expect(page).toHaveURL(/\/profile$/);
     await expect(page.locator('h1').first()).toBeVisible();
 
-    await page.locator('[data-ultima-nav-btn="1"]').nth(4).click();
+    await page.locator('[data-ultima-nav-target="support"]').click();
     await expect(page).toHaveURL(/\/support$/);
     await expect(page.locator('h1').first()).toBeVisible();
 
@@ -515,7 +515,7 @@ test.describe('Ultima desktop workspace', () => {
     await page.getByTestId('ultima-desktop-devices-plus').click();
     await expect(page.getByTestId('ultima-desktop-device-count')).toHaveText('3');
 
-    await page.locator('[data-ultima-nav-btn="1"]').nth(1).click();
+    await page.locator('[data-ultima-nav-target="connection"]').click();
     await expect(page).toHaveURL(/\/connection$/);
     await expect(page.locator('.ultima-desktop-workspace')).toBeVisible();
     await expectNoHorizontalOverflow(page);

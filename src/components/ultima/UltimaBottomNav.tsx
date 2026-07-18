@@ -67,6 +67,7 @@ export function UltimaBottomNav({
       <button
         type="button"
         data-ultima-nav-btn="1"
+        data-ultima-nav-target="home"
         className={getButtonClassName(active === 'home')}
         style={getButtonStyle(active === 'home')}
         onClick={onHomeClick ?? (() => navigate('/'))}
@@ -81,6 +82,7 @@ export function UltimaBottomNav({
       <button
         type="button"
         data-ultima-nav-btn="1"
+        data-ultima-nav-target="connection"
         className={getButtonClassName(active === 'connection')}
         style={getButtonStyle(active === 'connection')}
         onClick={onConnectionClick ?? (() => navigate('/connection'))}
@@ -95,6 +97,7 @@ export function UltimaBottomNav({
       <button
         type="button"
         data-ultima-nav-btn="1"
+        data-ultima-nav-target="news"
         className={getButtonClassName(active === 'news')}
         style={getButtonStyle(active === 'news')}
         onClick={onNewsClick ?? (() => navigate('/ultima/news'))}
@@ -109,6 +112,7 @@ export function UltimaBottomNav({
       <button
         type="button"
         data-ultima-nav-btn="1"
+        data-ultima-nav-target="profile"
         className={getButtonClassName(active === 'profile')}
         style={getButtonStyle(active === 'profile')}
         onClick={onProfileClick ?? (() => navigate('/profile'))}
@@ -123,6 +127,7 @@ export function UltimaBottomNav({
       <button
         type="button"
         data-ultima-nav-btn="1"
+        data-ultima-nav-target="support"
         className={getButtonClassName(active === 'support')}
         style={getButtonStyle(active === 'support')}
         onClick={onSupportClick ?? (() => navigate('/support'))}
