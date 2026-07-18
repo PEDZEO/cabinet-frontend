@@ -546,20 +546,19 @@ test.describe('Ultima trial onboarding persistence', () => {
     await expect(page.getByTestId('ultima-trial-guide-overlay')).toHaveCount(0);
   });
 
-  test('uses the primary trial CTA for subscription purchase without removing device access', async ({
-    page,
-  }) => {
+  test('keeps the device card while the primary CTA opens tariff purchase', async ({ page }) => {
     await bootstrapUltimaDesktop(page, { connectionCompleted: true });
     await mockUltimaDesktopApi(page, {
-      subscription: TRIAL_SUBSCRIPTION,
+      subscription: SUBSCRIPTION,
       connectedDevices: [],
     });
 
     await page.goto('/');
 
     await expect(page.getByText('Подключить первое устройство', { exact: true })).toBeVisible();
+    await expect(page.getByText('Установка и настройка', { exact: true })).toBeVisible();
     const primaryCta = page.getByTestId('ultima-primary-cta');
-    await expect(primaryCta).toContainText('Купить подписку');
+    await expect(primaryCta).toContainText('Продлить подписку');
     await primaryCta.click();
     await expect(page).toHaveURL(/\/subscription$/);
   });

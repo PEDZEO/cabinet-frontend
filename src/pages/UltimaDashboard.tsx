@@ -965,7 +965,7 @@ export function UltimaDashboard() {
     deviceLimit: dashboardDeviceLimit,
   });
   const primaryActionKind: UltimaNextActionKind =
-    isActiveTrial && suggestedPrimaryActionKind === 'device' ? 'buy' : suggestedPrimaryActionKind;
+    suggestedPrimaryActionKind === 'device' ? 'buy' : suggestedPrimaryActionKind;
 
   useEffect(() => {
     if (!isSubscriptionReady || dashboardViewTrackedRef.current) {
@@ -1011,26 +1011,8 @@ export function UltimaDashboard() {
     if (primaryActionKind === 'subscription') {
       return statusLabel;
     }
-    if (primaryActionKind === 'device') {
-      return dashboardFreeDeviceSlots > 0
-        ? t('devices.homeCtaFreeSlots', {
-            count: dashboardFreeDeviceSlots,
-            total: dashboardDeviceLimit,
-            defaultValue: 'Свободно {{count}} из {{total}}',
-          })
-        : t('devices.noFreeSlotsTitle', { defaultValue: 'Слотов нет' });
-    }
     return purchaseFromLabel;
-  }, [
-    connectionStep,
-    dashboardDeviceLimit,
-    dashboardFreeDeviceSlots,
-    isConnectionCompleted,
-    primaryActionKind,
-    purchaseFromLabel,
-    statusLabel,
-    t,
-  ]);
+  }, [connectionStep, isConnectionCompleted, primaryActionKind, purchaseFromLabel, statusLabel, t]);
 
   const handlePrimaryAction = useCallback(() => {
     trackAnalyticsEvent('ultima_main_cta_click', {
@@ -1044,11 +1026,6 @@ export function UltimaDashboard() {
       return;
     }
 
-    if (primaryActionKind === 'device') {
-      openDevices(true, 'main_cta');
-      return;
-    }
-
     if (primaryActionKind === 'subscription') {
       openSubscriptionInfo();
       return;
@@ -1059,7 +1036,6 @@ export function UltimaDashboard() {
     daysLeft,
     isConnectionCompleted,
     openConnection,
-    openDevices,
     openSubscriptionInfo,
     openSubscriptionPurchase,
     primaryActionKind,
@@ -1176,12 +1152,7 @@ export function UltimaDashboard() {
     isDesktopViewport && 'ultima-flat-frames ultima-shell-dashboard-desktop',
   );
   const bottomNav = <UltimaBottomNav active="home" onSupportClick={openSupport} />;
-  const PrimaryCtaIcon =
-    primaryActionKind === 'setup'
-      ? SetupIcon
-      : primaryActionKind === 'device'
-        ? DevicesHomeIcon
-        : GlobeIcon;
+  const PrimaryCtaIcon = primaryActionKind === 'setup' ? SetupIcon : GlobeIcon;
   const shouldConnectDeviceFromHome = connectedDevicesCount <= 0 || dashboardFreeDeviceSlots > 0;
   const devicesHomeCtaTitle =
     connectedDevicesCount <= 0
