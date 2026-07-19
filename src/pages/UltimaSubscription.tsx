@@ -1,15 +1,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { ArrowLeft } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { balanceApi } from '@/api/balance';
 import { promoApi } from '@/api/promo';
 import { subscriptionApi } from '@/api/subscription';
 import { UltimaDesktopSubscription } from '@/components/ultima/desktop/UltimaDesktopSubscription';
+import {
+  UltimaSubscriptionConfigurator,
+  type UltimaSubscriptionPeriodOption,
+} from '@/components/ultima/UltimaSubscriptionConfigurator';
 import { UltimaTariffSelector } from '@/components/ultima/UltimaTariffSelector';
 import { UltimaTrafficTopUpSection } from '@/components/ultima/UltimaTrafficTopUpSection';
 import { UltimaPendingPaymentCard } from '@/components/ultima/UltimaPendingPaymentCard';
-import { UltimaDeviceStepper } from '@/components/ultima/UltimaDeviceStepper';
 import { getDeviceTrafficBreakdown } from '@/features/subscription/utils/deviceTraffic';
 import { createApplyPromoDiscount } from '@/features/subscription/utils/pricing';
 import {
@@ -182,12 +186,6 @@ export function UltimaSubscription() {
   const [error, setError] = useState<string | null>(null);
   const [awaitingPaymentCompletion, setAwaitingPaymentCompletion] = useState(false);
   const [isFinalizingPending, setIsFinalizingPending] = useState(false);
-  const [viewportHeight, setViewportHeight] = useState<number>(() =>
-    typeof window === 'undefined' ? 900 : window.innerHeight,
-  );
-  const [viewportWidth, setViewportWidth] = useState<number>(() =>
-    typeof window === 'undefined' ? 420 : window.innerWidth,
-  );
   const lastTariffIdRef = useRef<number | null>(null);
   const lastHapticDeviceLimitRef = useRef<number | null>(null);
   const autoPurchaseAttemptRef = useRef<string | null>(null);
@@ -240,7 +238,8 @@ export function UltimaSubscription() {
   );
 
   const [selectedTariffId, setSelectedTariffId] = useState<number | null>(null);
-  const [isMobileTariffChooserOpen, setIsMobileTariffChooserOpen] = useState(true);
+  const [isMobileTariffChooserOpen, setIsMobileTariffChooserOpen] = useState(false);
+  const [hasChosenMobileTariff, setHasChosenMobileTariff] = useState(false);
 
   useEffect(() => {
     if (!tariffs.length) {
@@ -259,9 +258,7 @@ export function UltimaSubscription() {
   useEffect(() => {
     if (isDesktopViewport || tariffs.length <= 1) {
       setIsMobileTariffChooserOpen(false);
-      return;
     }
-    setIsMobileTariffChooserOpen(true);
   }, [isDesktopViewport, tariffs.length]);
 
   const selectedTariff = useMemo(() => {
@@ -389,8 +386,6 @@ export function UltimaSubscription() {
   }, [displayPeriods, selectedPeriodDays]);
 
   const selectedTariffIdForPurchase = selectedTariff?.id ?? selectedPeriod?.tariffId ?? null;
-  const canDecreaseDevices = selectedDeviceLimit > minDeviceLimit;
-  const canIncreaseDevices = selectedDeviceLimit < maxDeviceLimit;
   const autoTariffId = Number(searchParams.get('autoTariffId'));
   const autoPeriodDays = Number(searchParams.get('autoPeriodDays'));
   const autoDeviceLimit = Number(searchParams.get('autoDeviceLimit'));
@@ -740,19 +735,6 @@ export function UltimaSubscription() {
   }, [autoPurchaseKey, autoTariffId, autoPeriodDays, autoDeviceLimit, purchaseMutation]);
 
   useEffect(() => {
-    const updateViewportHeight = () => setViewportHeight(window.innerHeight);
-    const updateViewportWidth = () => setViewportWidth(window.innerWidth);
-    updateViewportHeight();
-    updateViewportWidth();
-    window.addEventListener('resize', updateViewportHeight);
-    window.addEventListener('resize', updateViewportWidth);
-    return () => {
-      window.removeEventListener('resize', updateViewportHeight);
-      window.removeEventListener('resize', updateViewportWidth);
-    };
-  }, []);
-
-  useEffect(() => {
     if (isCheckoutLoading || checkoutViewTrackedRef.current || !selectedTariff || !selectedPeriod) {
       return;
     }
@@ -878,11 +860,6 @@ export function UltimaSubscription() {
           },
         )
       : null;
-  const baseDeviceLimitLabel = t(
-    'ultima.baseDeviceLimitLabel',
-    'База тарифа: {{count}} устройства',
-    { count: currentTariffBaseDeviceLimit },
-  );
   const extraDeviceChargeLabel =
     selectedExtraDevices > 0 && extraDeviceChargeKopeks > 0
       ? t('ultima.extraDeviceChargeLabel', 'Доп. устройства: {{count}} · +{{price}}', {
@@ -933,9 +910,6 @@ export function UltimaSubscription() {
     selectedTariffHasTopUp && (trafficPackages?.length ?? 0) > 0;
   const trafficPurchaseErrorMessage =
     purchaseTrafficMutation.error instanceof Error ? purchaseTrafficMutation.error.message : null;
-  const isCompactHeight = viewportHeight < 780;
-  const isUltraCompactHeight = viewportHeight < 700;
-  const isNarrowWidth = viewportWidth < 390;
   const bottomNav = <UltimaBottomNav active="home" />;
 
   const openTopUpForTraffic = async (gb: number) => {
@@ -1102,6 +1076,10 @@ export function UltimaSubscription() {
       .filter(Boolean)
       .join(' · ');
   const showTariffSelector = tariffs.length > 1;
+  const shouldShowMobileTariffChooser =
+    showTariffSelector &&
+    !isDesktopViewport &&
+    (isMobileTariffChooserOpen || (currentTariffId === null && !hasChosenMobileTariff));
   const desktopTariffSelector =
     showTariffSelector && isDesktopViewport ? (
       <UltimaTariffSelector
@@ -1131,11 +1109,13 @@ export function UltimaSubscription() {
       t={t}
       formatPrice={formatPrice}
       applyPromoDiscount={applyPromoDiscount}
+      showHeading={false}
       onSelectTariff={(tariffId) => {
         haptic.selection();
         setError(null);
         setSelectedTariffId(tariffId);
         setSelectedPeriodDays(null);
+        setHasChosenMobileTariff(true);
         setIsMobileTariffChooserOpen(false);
         trackAnalyticsEvent('ultima_tariff_select', {
           tariff_id: tariffId,
@@ -1171,30 +1151,7 @@ export function UltimaSubscription() {
         defaultValue: '{{count}} дн. осталось',
       })
     : periodLabel(selectedPeriod);
-  const checkoutDeviceValue = isTariffSwitchFlow
-    ? String(subscription?.device_limit ?? selectedDeviceLimit)
-    : String(selectedDeviceLimit);
-
-  const checkoutIncludedItems = [
-    {
-      label: t('ultima.checkoutPlan', { defaultValue: 'Тариф' }),
-      value: selectedTariff.name,
-    },
-    {
-      label: t('ultima.checkoutPeriod', { defaultValue: 'Период' }),
-      value: checkoutPeriodValue,
-    },
-    {
-      label: t('ultima.checkoutDevices', { defaultValue: 'Устройства' }),
-      value: checkoutDeviceValue,
-    },
-    {
-      label: t('ultima.checkoutTraffic', { defaultValue: 'Трафик' }),
-      value: selectedTrafficLabel,
-    },
-  ];
-
-  const desktopPeriods = displayPeriods.map((period) => {
+  const periodOptions: UltimaSubscriptionPeriodOption[] = displayPeriods.map((period) => {
     const preview = applyPromoDiscount(
       calculateRawPeriodPrice(period),
       period.original_price_kopeks ?? null,
@@ -1212,6 +1169,35 @@ export function UltimaSubscription() {
       isBestDeal: period.days === bestDealPeriodDays,
     };
   });
+  const isRenewalFlow = Boolean(
+    selectedTariffIsCurrent &&
+    subscription?.is_active &&
+    !subscription.is_expired &&
+    !subscription.is_trial,
+  );
+  const primaryActionLabel = isTariffSwitchFlow
+    ? payableAmountKopeks > 0
+      ? t('subscription.switchTariff.topUpAndSwitch', { defaultValue: 'Пополнить и сменить' })
+      : t('subscription.switchTariff.action', { defaultValue: 'Сменить тариф' })
+    : payableAmountKopeks > 0
+      ? t('ultima.topUpAndBuy', { defaultValue: 'Пополнить и купить' })
+      : isRenewalFlow
+        ? t('ultima.subscriptionBuilder.renewFor', { period: checkoutPeriodValue })
+        : t('ultima.subscriptionBuilder.buyFor', { period: checkoutPeriodValue });
+  const primaryActionPriceLabel = formatPrice(
+    payableAmountKopeks > 0 ? actionAmountKopeks : selectedPriceKopeks,
+  );
+  const primaryActionMetaLabel =
+    payableAmountKopeks > 0
+      ? t('ultima.subscriptionBuilder.toTopUp')
+      : t('ultima.subscriptionBuilder.fromBalance');
+  const switchHint = isTariffSwitchFlow
+    ? t('subscription.switchTariff.keepPeriodHint', {
+        count: switchRemainingDays,
+        defaultValue:
+          'Срок подписки сохранится: {{count}} дн. Если нужна доплата, спишем только разницу.',
+      })
+    : null;
 
   if (isDesktopViewport) {
     return (
@@ -1231,13 +1217,17 @@ export function UltimaSubscription() {
                 'Выберите количество устройств и подходящий период, а итоговая оплата пересчитается автоматически.',
             })
           }
+          isCurrentTariff={selectedTariffIsCurrent}
+          isTariffSwitchFlow={isTariffSwitchFlow}
+          switchFromLabel={tariffSwitchPreview?.current_tariff_name ?? subscription?.tariff_name}
+          switchHint={switchHint}
+          trafficLabel={selectedTrafficLabel}
+          baseDeviceLimit={currentTariffBaseDeviceLimit}
           selectedDeviceLimit={selectedDeviceLimit}
           minDeviceLimit={minDeviceLimit}
           maxDeviceLimit={maxDeviceLimit}
-          periods={desktopPeriods}
+          periods={periodOptions}
           selectedPeriodLabel={checkoutPeriodValue}
-          includedItems={checkoutIncludedItems}
-          baseDeviceLimitLabel={baseDeviceLimitLabel}
           extraDeviceChargeLabel={extraDeviceChargeLabel}
           deviceTrafficLabel={deviceTrafficLabel}
           legacyDeviceNotice={legacyDeviceNotice}
@@ -1245,13 +1235,12 @@ export function UltimaSubscription() {
           totalPriceLabel={formatPrice(selectedPriceKopeks)}
           balanceAppliedLabel={formatPrice(balanceAppliedKopeks)}
           payablePriceLabel={formatPrice(payableAmountKopeks)}
-          originalPriceLabel={
-            !isTariffSwitchFlow &&
-            selectedPricePreview.original &&
-            selectedPricePreview.original > selectedPriceKopeks
-              ? formatPrice(selectedPricePreview.original)
-              : null
-          }
+          hasBalanceApplied={balanceAppliedKopeks > 0}
+          requiresTopUp={payableAmountKopeks > 0}
+          isFree={selectedPriceKopeks === 0}
+          actionLabel={primaryActionLabel}
+          actionPriceLabel={primaryActionPriceLabel}
+          actionMetaLabel={primaryActionMetaLabel}
           error={error}
           paymentRecoveryCard={
             pendingTopUp?.paymentUrl ? (
@@ -1287,20 +1276,30 @@ export function UltimaSubscription() {
     );
   }
 
-  if (showTariffSelector && isMobileTariffChooserOpen) {
+  if (shouldShowMobileTariffChooser) {
     return (
       <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
         <div className="ultima-shell-aura" />
         <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
           <section className="ultima-scrollbar min-h-0 flex-1 overflow-y-auto pr-1">
             <header className="mb-3">
-              <h1 className="break-words text-[clamp(32px,8.4vw,42px)] font-semibold leading-[0.95] text-white">
-                {t('dashboard.expired.tariffs')}
+              <div className="mb-1 flex h-8 items-center">
+                {currentTariffId !== null ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsMobileTariffChooserOpen(false)}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/[0.12] bg-white/[0.05] text-white/[0.76]"
+                    aria-label={t('common.back')}
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </button>
+                ) : null}
+              </div>
+              <h1 className="text-[30px] font-semibold leading-none text-white">
+                {t('ultima.subscriptionBuilder.choosePlan')}
               </h1>
-              <p className="mt-1.5 text-[14px] leading-snug text-white/[0.72]">
-                {t('subscription.selectTariffDescription', {
-                  defaultValue: 'Выберите тариф, затем настройте устройства и период оплаты.',
-                })}
+              <p className="mt-1.5 text-[12px] leading-[1.45] text-white/[0.62]">
+                {t('ultima.subscriptionBuilder.choosePlanHint')}
               </p>
             </header>
             {mobileTariffSelector}
@@ -1317,414 +1316,88 @@ export function UltimaSubscription() {
   return (
     <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
       <div className="ultima-shell-aura" />
-      <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
-        <header className={isUltraCompactHeight ? 'mb-2' : 'mb-3'}>
-          <h1
-            className={`break-words font-semibold leading-[0.95] text-white ${
-              isUltraCompactHeight
-                ? 'text-[32px]'
-                : isNarrowWidth
-                  ? 'text-[clamp(30px,8vw,36px)]'
-                  : 'text-[clamp(32px,8.4vw,40px)]'
-            }`}
-          >
-            {selectedTariff?.name ?? 'Покупка подписки'}
-          </h1>
-          <p
-            className={`break-words leading-tight text-white/75 ${
-              isUltraCompactHeight
-                ? 'mt-1 text-[12px]'
-                : isNarrowWidth
-                  ? 'mt-1 text-[13px]'
-                  : 'mt-1.5 text-[clamp(13px,3.8vw,15px)]'
-            }`}
-          >
-            {selectedTariffSubtitle ||
-              'Подключайте больше устройств и пользуйтесь сервисом вместе с друзьями и близкими'}
-          </p>
-          {showTariffSelector ? (
-            <button
-              type="button"
-              onClick={() => {
-                haptic.selection();
-                setIsMobileTariffChooserOpen(true);
-              }}
-              className="mt-2 rounded-full border border-white/[0.12] bg-white/[0.06] px-3 py-1.5 text-[12px] font-medium text-white/[0.78]"
-            >
-              {t('subscription.changeTariff', { defaultValue: 'Сменить тариф' })}
-            </button>
-          ) : null}
-        </header>
-
-        <section
-          className={`w-full rounded-[24px] border border-white/10 bg-white/5 backdrop-blur ${
-            isUltraCompactHeight ? 'mb-2 p-2' : 'mb-2.5 p-2.5'
-          }`}
-        >
-          {isTariffSwitchFlow ? (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-[13px] font-medium text-white">
-                    {t('subscription.switchTariff.title', { defaultValue: 'Смена тарифа' })}
-                  </p>
-                  <p className="mt-0.5 truncate text-[11px] text-white/[0.55]">
-                    {tariffSwitchPreview?.current_tariff_name ?? subscription?.tariff_name ?? '—'} →{' '}
-                    {selectedTariff.name}
-                  </p>
-                </div>
-                <div className="shrink-0 rounded-full border border-emerald-200/[0.24] bg-emerald-300/[0.1] px-2.5 py-1 text-[11px] font-semibold text-emerald-50">
-                  {isTariffSwitchPreviewPending
-                    ? '...'
-                    : selectedPriceKopeks > 0
-                      ? formatPrice(selectedPriceKopeks)
-                      : t('subscription.free', { defaultValue: 'Бесплатно' })}
-                </div>
-              </div>
-              <p className="text-[11px] leading-snug text-white/[0.58]">
-                {t('subscription.switchTariff.keepPeriodHint', {
-                  count: switchRemainingDays,
-                  defaultValue:
-                    'Срок подписки сохранится: {{count}} дн. Если нужна доплата, спишем только разницу.',
-                })}
-              </p>
-            </div>
-          ) : (
-            <>
-              <div
-                className={`flex items-center gap-2.5 ${isUltraCompactHeight ? 'mb-1.5' : 'mb-2'}`}
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <p
-                      className={`shrink-0 ${
-                        isUltraCompactHeight
-                          ? 'text-[17px]'
-                          : isNarrowWidth
-                            ? 'text-[18px]'
-                            : 'text-[19px]'
-                      } font-medium leading-none text-white`}
-                    >
-                      {t('subscription.devices')}
-                    </p>
-                    <p
-                      className="min-w-0 truncate rounded-full border border-white/[0.1] bg-white/[0.06] px-2 py-0.5 text-[11px] leading-tight text-white/70"
-                      title={selectedTrafficLabel}
-                    >
-                      {selectedTrafficLabel}
-                    </p>
-                  </div>
-                  <p className="mt-1 truncate text-[11px] leading-tight text-white/[0.48]">
-                    {baseDeviceLimitLabel}
-                  </p>
-                </div>
-                <UltimaDeviceStepper
-                  value={selectedDeviceLimit}
-                  canDecrease={canDecreaseDevices}
-                  canIncrease={canIncreaseDevices}
-                  onDecrease={() => applyDeviceLimit(selectedDeviceLimit - 1)}
-                  onIncrease={() => applyDeviceLimit(selectedDeviceLimit + 1)}
-                  testIdPrefix="ultima-mobile"
-                />
-              </div>
-
-              {selectedExtraDevices > 0 ? (
-                <div
-                  data-testid="ultima-mobile-extra-device-summary"
-                  className="flex items-center justify-between gap-3 rounded-[14px] border border-amber-200/[0.16] bg-amber-300/[0.07] px-2.5 py-2"
-                >
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-semibold leading-tight text-amber-50/[0.9]">
-                      {t('ultima.extraDevicesCompact', {
-                        count: selectedExtraDevices,
-                        base: currentTariffBaseDeviceLimit,
-                        defaultValue: 'Дополнительно: +{{count}} к базовым {{base}}',
-                      })}
-                    </p>
-                    {deviceTrafficBadgeLabel ? (
-                      <p className="mt-0.5 truncate text-[10px] leading-tight text-emerald-100/[0.78]">
-                        {deviceTrafficBadgeLabel}
-                      </p>
-                    ) : null}
-                  </div>
-                  <span className="shrink-0 text-[12px] font-semibold text-amber-50/[0.92]">
-                    {extraDeviceChargeKopeks > 0
-                      ? `+${formatPrice(extraDeviceChargeKopeks)}`
-                      : t('ultima.noExtraDeviceCharge', { defaultValue: 'Без доплаты' })}
-                  </span>
-                </div>
-              ) : (
-                <p className="px-1 text-[10px] leading-tight text-white/[0.42]">
-                  {t('ultima.deviceLimitRange', {
-                    max: maxDeviceLimit,
-                    defaultValue: 'Можно выбрать до {{max}} устройств',
-                  })}
-                </p>
-              )}
-            </>
-          )}
-        </section>
-
-        <section
-          className={`ultima-scrollbar min-h-0 flex-1 overflow-y-auto lg:overflow-visible ${
-            isUltraCompactHeight ? 'pb-0' : 'pb-1'
-          }`}
-        >
-          <div
-            className={`rounded-[18px] border border-white/10 bg-black/20 backdrop-blur ${
-              isUltraCompactHeight ? 'mb-1.5 p-1.5' : 'mb-2 p-2'
-            }`}
-          >
-            <div className="flex items-center justify-between gap-2">
-              <div className="min-w-0">
-                <h2 className="text-[13px] font-semibold leading-tight text-white">
-                  {t('ultima.checkoutIncludedTitle', { defaultValue: 'Что входит' })}
-                </h2>
-                <p className="mt-0.5 truncate text-[10px] leading-tight text-white/55">
-                  {t('ultima.checkoutIncludedSubtitle', {
-                    defaultValue: 'Применится сразу после оплаты',
-                  })}
-                </p>
-              </div>
-              <div className="shrink-0 rounded-full border border-white/10 bg-white/[0.06] px-2 py-0.5 text-[10px] text-white/70">
-                {checkoutPeriodValue}
-              </div>
-            </div>
-            <div className="mt-1.5 grid grid-cols-4 gap-1">
-              {checkoutIncludedItems.map((item) => (
-                <div
-                  key={item.label}
-                  className="min-w-0 rounded-[11px] bg-white/[0.05] px-1.5 py-1"
-                  title={String(item.value)}
-                >
-                  <div className="truncate text-[8px] uppercase tracking-[0.08em] text-white/[0.42]">
-                    {item.label}
-                  </div>
-                  <div className="mt-0.5 truncate text-[10px] font-medium leading-tight text-white/90">
-                    {item.value}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {isTariffSwitchFlow ? (
-            <div className="rounded-[18px] border border-white/10 bg-black/20 px-3 py-2.5">
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-[12px] uppercase tracking-[0.08em] text-white/[0.45]">
-                    {t('subscription.switchTariff.toPay', { defaultValue: 'К смене тарифа' })}
-                  </p>
-                  <p className="mt-1 text-[20px] font-semibold leading-none text-white">
-                    {isTariffSwitchPreviewPending ? '...' : formatPrice(selectedPriceKopeks)}
-                  </p>
-                </div>
-                <div className="min-w-0 text-right text-[11px] leading-snug text-white/[0.58]">
-                  <div>
-                    {t('balance.title', { defaultValue: 'Баланс' })}:{' '}
-                    {formatPrice(currentBalanceKopeks)}
-                  </div>
-                  <div>
-                    {payableAmountKopeks > 0
-                      ? t('subscription.switchTariff.missing', {
-                          amount: formatPrice(payableAmountKopeks),
-                          defaultValue: 'Не хватает {{amount}}',
-                        })
-                      : t('subscription.switchTariff.ready', {
-                          defaultValue: 'Можно применить сразу',
-                        })}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div
-              className={`grid auto-rows-fr grid-cols-1 min-[360px]:grid-cols-2 ${isCompactHeight ? 'gap-2.5' : 'gap-3'}`}
-            >
-              {displayPeriods.map((period) => {
-                const active = period.days === selectedPeriod.days;
-                return (
-                  <button
-                    key={period.days}
-                    type="button"
-                    onClick={() => {
-                      haptic.impact('light');
-                      setSelectedPeriodDays(period.days);
-                      trackAnalyticsEvent('ultima_period_select', {
-                        tariff_id: selectedTariffIdForPurchase,
-                        period_days: period.days,
-                        device_limit: selectedDeviceLimit,
-                        source: 'mobile',
-                      });
-                    }}
-                    className={`h-full rounded-3xl border text-left transition-colors ${
-                      isUltraCompactHeight
-                        ? 'min-h-[92px] p-2.5'
-                        : isNarrowWidth
-                          ? 'min-h-[102px] p-2.5'
-                          : isCompactHeight
-                            ? 'min-h-[108px] p-3'
-                            : 'min-h-[116px] p-3'
-                    } ${
-                      active
-                        ? 'border bg-black/20'
-                        : 'border-white/[0.12] bg-black/20 hover:border-white/25'
-                    }`}
-                    style={
-                      active
-                        ? {
-                            borderColor:
-                              'color-mix(in srgb, var(--ultima-color-surface-border) 70%, transparent)',
-                            boxShadow:
-                              'inset 0 1px 0 color-mix(in srgb, #ffffff 14%, transparent), 0 0 0 1px color-mix(in srgb, var(--ultima-color-primary) 28%, transparent)',
-                            background:
-                              'color-mix(in srgb, var(--ultima-color-surface) 74%, #000000)',
-                          }
-                        : undefined
-                    }
-                  >
-                    <div
-                      className={`${isUltraCompactHeight ? 'mb-1.5' : 'mb-2'} flex flex-wrap items-center justify-between gap-2`}
-                    >
-                      <span
-                        className={`font-medium text-white ${
-                          isUltraCompactHeight
-                            ? 'text-[15px]'
-                            : isNarrowWidth
-                              ? 'text-[16px]'
-                              : 'text-[clamp(16px,4.2vw,18px)]'
-                        }`}
-                      >
-                        {periodLabel(period)}
-                      </span>
-                      {period.days === bestDealPeriodDays ? (
-                        <span
-                          className="rounded-full border px-2 py-[1px] text-[11px] font-semibold"
-                          style={{
-                            borderColor:
-                              'color-mix(in srgb, var(--ultima-color-surface-border) 52%, transparent)',
-                            background:
-                              'color-mix(in srgb, var(--ultima-color-primary) 26%, transparent)',
-                            color: 'color-mix(in srgb, var(--ultima-color-ring) 84%, #ffffff)',
-                          }}
-                        >
-                          Выгодно
-                        </span>
-                      ) : (
-                        <span
-                          className={active ? 'opacity-100' : 'opacity-0'}
-                          style={{
-                            color: 'color-mix(in srgb, var(--ultima-color-primary) 82%, #ffffff)',
-                          }}
-                        >
-                          ★
-                        </span>
-                      )}
-                    </div>
-                    <p
-                      className={`font-semibold leading-none text-white ${
-                        isUltraCompactHeight
-                          ? 'text-[23px]'
-                          : isNarrowWidth
-                            ? 'text-[24px]'
-                            : 'text-[clamp(24px,7vw,28px)]'
-                      }`}
-                    >
-                      {formatPrice(
-                        applyPromoDiscount(
-                          calculateRawPeriodPrice(period),
-                          period.original_price_kopeks ?? null,
-                        ).price,
-                      )}
-                    </p>
-                    <p className="mt-1 text-[11px] text-white/[0.68]">
-                      {`${formatPrice(
-                        Math.max(
-                          0,
-                          Math.round(
-                            (applyPromoDiscount(
-                              calculateRawPeriodPrice(period),
-                              period.original_price_kopeks ?? null,
-                            ).price /
-                              Math.max(1, period.days)) *
-                              30,
-                          ),
-                        ),
-                      )} / ${t('ultima.monthShort', { defaultValue: 'мес' })}`}
-                    </p>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          {trafficTopUpSection ? (
-            <div className={isCompactHeight ? 'mt-2.5' : 'mt-3'}>{trafficTopUpSection}</div>
-          ) : null}
-        </section>
-
-        <div className={`ultima-mobile-dock-footer ${isUltraCompactHeight ? 'pt-2' : 'pt-3'}`}>
-          {pendingTopUp?.paymentUrl ? (
-            <UltimaPendingPaymentCard
-              source="subscription_mobile"
-              compact
-              className={isUltraCompactHeight ? 'mb-2' : 'mb-2.5'}
-            />
-          ) : null}
-          {!error && requiresMinTopUpBump && defaultPaymentMethod && (
-            <p className="mb-2 text-center text-[13px] leading-relaxed text-white/70">
-              {t(
-                'ultima.minimumTopUpHint',
-                'Не хватает {{missing}}. Минимальное пополнение этим способом — {{minimum}}. Остаток останется на балансе.',
-                {
-                  missing: formatPrice(payableAmountKopeks),
-                  minimum: formatPrice(actionAmountKopeks),
-                },
-              )}
-            </p>
-          )}
-          {error && <p className="mb-2.5 text-center text-[16px] text-red-300">{error}</p>}
-          <button
-            type="button"
-            onClick={() => {
-              void openTopUpForSubscription();
-            }}
-            disabled={
-              purchaseMutation.isPending ||
-              switchTariffMutation.isPending ||
-              createPaymentMutation.isPending ||
-              isFinalizingPending ||
-              isTariffSwitchPreviewPending
-            }
-            className={`ultima-btn-pill ultima-btn-primary flex w-full items-center gap-3 px-4 text-left min-[360px]:px-5 ${
-              isUltraCompactHeight ? 'py-2.5 text-[15px]' : 'py-3 text-[16px]'
-            } disabled:cursor-not-allowed disabled:opacity-75`}
-          >
-            <span className="min-w-0 flex-1 break-words leading-tight">
-              {isTariffSwitchFlow
-                ? payableAmountKopeks > 0
-                  ? t('subscription.switchTariff.topUpAndSwitch', {
-                      defaultValue: 'Пополнить и сменить',
-                    })
-                  : t('subscription.switchTariff.action', { defaultValue: 'Сменить тариф' })
-                : payableAmountKopeks > 0
-                  ? t('ultima.topUpAndBuy', 'Пополнить и купить')
-                  : t('ultima.buySubscription', 'Оплатить подписку')}
-            </span>
-            <span className="flex shrink-0 flex-col items-end text-right leading-none text-white/95">
-              <span>{formatPrice(actionAmountKopeks)}</span>
-              {!isTariffSwitchFlow &&
-              selectedPricePreview.original &&
-              selectedPricePreview.original > selectedPriceKopeks ? (
-                <span className="mt-1 text-[13px] text-white/60 line-through">
-                  {formatPrice(selectedPricePreview.original)}
-                </span>
-              ) : null}
-            </span>
-          </button>
-          <div className="ultima-nav-dock">{bottomNav}</div>
-        </div>
-      </div>
+      <UltimaSubscriptionConfigurator
+        title={selectedTariff.name}
+        subtitle={selectedTariffSubtitle}
+        isCurrentTariff={selectedTariffIsCurrent}
+        canChangeTariff={showTariffSelector}
+        isTariffSwitchFlow={isTariffSwitchFlow}
+        switchFromLabel={tariffSwitchPreview?.current_tariff_name ?? subscription?.tariff_name}
+        switchHint={switchHint}
+        trafficLabel={selectedTrafficLabel}
+        baseDeviceLimit={currentTariffBaseDeviceLimit}
+        selectedDeviceLimit={selectedDeviceLimit}
+        minDeviceLimit={minDeviceLimit}
+        maxDeviceLimit={maxDeviceLimit}
+        extraDeviceSummary={
+          selectedExtraDevices > 0
+            ? t('ultima.extraDevicesCompact', {
+                count: selectedExtraDevices,
+                base: currentTariffBaseDeviceLimit,
+              })
+            : null
+        }
+        extraDevicePriceLabel={
+          selectedExtraDevices > 0
+            ? extraDeviceChargeKopeks > 0
+              ? `+${formatPrice(extraDeviceChargeKopeks)}`
+              : t('ultima.noExtraDeviceCharge')
+            : null
+        }
+        deviceTrafficLabel={deviceTrafficBadgeLabel}
+        periods={periodOptions}
+        selectedPeriodLabel={checkoutPeriodValue}
+        totalPriceLabel={formatPrice(selectedPriceKopeks)}
+        balanceAppliedLabel={formatPrice(balanceAppliedKopeks)}
+        payablePriceLabel={formatPrice(payableAmountKopeks)}
+        hasBalanceApplied={balanceAppliedKopeks > 0}
+        requiresTopUp={payableAmountKopeks > 0}
+        isFree={selectedPriceKopeks === 0}
+        actionLabel={primaryActionLabel}
+        actionPriceLabel={primaryActionPriceLabel}
+        actionMetaLabel={primaryActionMetaLabel}
+        error={error}
+        minimumTopUpHint={
+          !error && requiresMinTopUpBump && defaultPaymentMethod
+            ? t('ultima.minimumTopUpHint', {
+                missing: formatPrice(payableAmountKopeks),
+                minimum: formatPrice(actionAmountKopeks),
+              })
+            : null
+        }
+        paymentRecoveryCard={
+          pendingTopUp?.paymentUrl ? (
+            <UltimaPendingPaymentCard source="subscription_mobile" compact />
+          ) : null
+        }
+        trafficTopUp={trafficTopUpSection}
+        bottomNav={bottomNav}
+        isPayDisabled={
+          purchaseMutation.isPending ||
+          switchTariffMutation.isPending ||
+          createPaymentMutation.isPending ||
+          isFinalizingPending ||
+          isTariffSwitchPreviewPending
+        }
+        onChangeTariff={() => {
+          haptic.selection();
+          setIsMobileTariffChooserOpen(true);
+        }}
+        onSelectDevice={(limit) => applyDeviceLimit(limit)}
+        onSelectPeriod={(days) => {
+          haptic.impact('light');
+          setSelectedPeriodDays(days);
+          trackAnalyticsEvent('ultima_period_select', {
+            tariff_id: selectedTariffIdForPurchase,
+            period_days: days,
+            device_limit: selectedDeviceLimit,
+            source: 'mobile',
+          });
+        }}
+        onPay={() => {
+          void openTopUpForSubscription();
+        }}
+      />
     </div>
   );
 }

@@ -134,6 +134,70 @@ const TARIFF = {
   ],
 };
 
+const PREMIUM_TARIFF = {
+  ...TARIFF,
+  id: 2,
+  name: 'Премиум',
+  description: 'Больше трафика и устройств',
+  tier_level: 2,
+  traffic_limit_gb: 250,
+  traffic_limit_label: '250 GB',
+  device_limit: 4,
+  base_device_limit: 3,
+  max_device_limit: 6,
+  device_price_kopeks: 7000,
+  is_current: false,
+  periods: [
+    {
+      days: 30,
+      months: 1,
+      label: '1 месяц',
+      price_kopeks: 50000,
+      price_label: '500 ₽',
+      price_per_month_kopeks: 50000,
+      price_per_month_label: '500 ₽',
+      extra_devices_count: 1,
+    },
+  ],
+};
+
+const MULTI_PERIOD_TARIFF = {
+  ...TARIFF,
+  periods: [
+    TARIFF.periods[0],
+    {
+      days: 90,
+      months: 3,
+      label: '3 месяца',
+      price_kopeks: 85000,
+      price_label: '850 ₽',
+      price_per_month_kopeks: 28333,
+      price_per_month_label: '283 ₽',
+      extra_devices_count: 1,
+    },
+    {
+      days: 180,
+      months: 6,
+      label: '6 месяцев',
+      price_kopeks: 150000,
+      price_label: '1 500 ₽',
+      price_per_month_kopeks: 25000,
+      price_per_month_label: '250 ₽',
+      extra_devices_count: 1,
+    },
+    {
+      days: 365,
+      months: 12,
+      label: '1 год',
+      price_kopeks: 280000,
+      price_label: '2 800 ₽',
+      price_per_month_kopeks: 23333,
+      price_per_month_label: '233 ₽',
+      extra_devices_count: 1,
+    },
+  ],
+};
+
 function createFakeJwt(): string {
   const header = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9';
   const payload = 'eyJleHAiOjQxMDI0NDQ4MDAsInN1YiI6Ijk5In0';
@@ -171,12 +235,18 @@ async function mockUltimaDesktopApi(
     connectedDevices = [CONNECTED_DEVICE],
     devicesGate,
     subscriptionGate,
+    tariffs = [TARIFF],
+    currentTariffId = 1,
+    balanceKopeks = 125_000,
   }: {
     isAdmin?: boolean;
     subscription?: typeof SUBSCRIPTION;
     connectedDevices?: Array<typeof CONNECTED_DEVICE>;
     devicesGate?: Promise<void>;
     subscriptionGate?: Promise<void>;
+    tariffs?: Array<typeof TARIFF>;
+    currentTariffId?: number | null;
+    balanceKopeks?: number;
   } = {},
 ): Promise<void> {
   await page.route('**/api/**', async (route: Route) => {
@@ -233,10 +303,10 @@ async function mockUltimaDesktopApi(
     if (path === '/cabinet/subscription/purchase-options') {
       return respond({
         sales_mode: 'tariffs',
-        tariffs: [TARIFF],
-        current_tariff_id: 1,
-        balance_kopeks: 125_000,
-        balance_label: '1 250 ₽',
+        tariffs,
+        current_tariff_id: currentTariffId,
+        balance_kopeks: balanceKopeks,
+        balance_label: `${balanceKopeks / 100} ₽`,
         has_subscription: true,
       });
     }
@@ -294,7 +364,7 @@ async function mockUltimaDesktopApi(
       ]);
     }
     if (path === '/cabinet/balance') {
-      return respond({ balance_kopeks: 125_000, balance_rubles: 1250 });
+      return respond({ balance_kopeks: balanceKopeks, balance_rubles: balanceKopeks / 100 });
     }
     if (path === '/cabinet/referral') {
       return respond({
@@ -557,13 +627,87 @@ test.describe('Ultima subscription device selection', () => {
     await expect(extraSummary).toContainText('+50 ₽');
     await expect(extraSummary).toContainText('+35 ГБ');
 
+    const priceSummary = page.getByTestId('ultima-subscription-price-summary');
+    await expect(priceSummary).toContainText('360 ₽');
+    await expect(priceSummary).toContainText('−360 ₽');
+    await expect(priceSummary).toContainText('Не нужно');
+    const primaryAction = page.getByTestId('ultima-subscription-primary-action');
+    await expect(primaryAction).toContainText('Продлить на 1 месяц');
+    await expect(primaryAction).toContainText('360 ₽');
+    await expect(primaryAction).toContainText('С баланса');
+    await expect(page.getByTestId('ultima-subscription-action-price')).toHaveText('360 ₽');
+
     await page.getByTestId('ultima-mobile-devices-minus').click();
     await expect(page.getByTestId('ultima-mobile-device-count')).toHaveText('2');
     await expect(extraSummary).toHaveCount(0);
+    await expect(priceSummary).toContainText('310 ₽');
 
     await page.getByTestId('ultima-mobile-devices-plus').click();
     await expect(page.getByTestId('ultima-mobile-device-count')).toHaveText('3');
     await expect(page.getByTestId('ultima-mobile-extra-device-summary')).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+  });
+
+  test('keeps the current plan open until the user chooses another tariff', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page, { tariffs: [TARIFF, PREMIUM_TARIFF] });
+    await page.goto('/subscription');
+
+    await expect(page.getByTestId('ultima-subscription-configurator')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Выберите тариф' })).toHaveCount(0);
+
+    await page.getByTestId('ultima-subscription-change-tariff').click();
+    await expect(page.getByRole('heading', { name: 'Выберите тариф' })).toBeVisible();
+    await page.getByRole('button', { name: /Премиум/ }).click();
+
+    const configurator = page.getByTestId('ultima-subscription-configurator');
+    await expect(configurator.getByRole('heading', { name: 'Премиум' })).toBeVisible();
+    await expect(page.getByTestId('ultima-mobile-period-selector')).toHaveCount(0);
+    await expect(page.getByTestId('ultima-subscription-primary-action')).toContainText(
+      'Сменить тариф',
+    );
+    await expectNoHorizontalOverflow(page);
+  });
+
+  test('keeps several periods compact and recalculates the order', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 640 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page, {
+      tariffs: [MULTI_PERIOD_TARIFF],
+      balanceKopeks: 500_000,
+    });
+    await page.goto('/subscription');
+
+    const periodSelector = page.getByTestId('ultima-mobile-period-selector');
+    await expect(periodSelector.getByRole('radio')).toHaveCount(4);
+    await expect(page.getByTestId('ultima-subscription-primary-action')).toContainText(
+      'Продлить на 6 месяцев',
+    );
+    await expect(page.getByTestId('ultima-subscription-action-price')).toHaveText('1800 ₽');
+
+    await page.getByTestId('ultima-mobile-period-90').click();
+    await expect(page.getByTestId('ultima-subscription-primary-action')).toContainText(
+      'Продлить на 3 месяца',
+    );
+    await expect(page.getByTestId('ultima-subscription-action-price')).toHaveText('1000 ₽');
+    await expectNoHorizontalOverflow(page);
+  });
+
+  test('separates subscription price, balance and required top-up', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page, { balanceKopeks: 10_000 });
+    await page.goto('/subscription');
+
+    const priceSummary = page.getByTestId('ultima-subscription-price-summary');
+    await expect(priceSummary).toContainText('360 ₽');
+    await expect(priceSummary).toContainText('−100 ₽');
+    await expect(priceSummary).toContainText('260 ₽');
+    await expect(page.getByTestId('ultima-subscription-primary-action')).toContainText(
+      'Пополнить и купить',
+    );
+    await expect(page.getByTestId('ultima-subscription-action-price')).toHaveText('260 ₽');
     await expectNoHorizontalOverflow(page);
   });
 });
