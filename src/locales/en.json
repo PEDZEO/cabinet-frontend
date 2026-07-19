@@ -4219,7 +4219,35 @@
       "promoOffersDesc": "Receive special offers and discounts",
       "unavailable": "Notification settings unavailable"
     },
-    "promocodeDescription": "Activate bonuses and discounts"
+    "promocodeDescription": "Activate bonuses and discounts",
+    "ultima": {
+      "fallbackName": "User",
+      "loginMethodCount_one": "{{count}} sign-in",
+      "loginMethodCount_other": "{{count}} sign-ins",
+      "accessProtected": "A backup sign-in is connected",
+      "accessNeedsBackup": "Add a backup sign-in",
+      "balance": "Balance",
+      "balanceHint": "Available for purchases and renewals",
+      "loginMethods": "Sign-in methods",
+      "registered": "Member since",
+      "availableActions_one": "{{count}} available action",
+      "availableActions_other": "{{count}} available actions",
+      "accountSection": "Account and security",
+      "accountSectionHint": "Devices and sign-in methods",
+      "benefitsSection": "Benefits and rewards",
+      "benefitsSectionHint": "Invites, promo codes and gifts",
+      "helpSection": "Help",
+      "helpSectionHint": "Support and service documents",
+      "accountCard": "Your account",
+      "accountCardHint": "Profile details and sign-in security",
+      "checkingAccess": "Checking sign-in methods",
+      "accountId": "Account ID",
+      "copyId": "Copy ID",
+      "logout": "Log out",
+      "checking": "Checking",
+      "protected": "Protected",
+      "oneLogin": "One sign-in"
+    }
   },
   "theme": {
     "colors": "Theme Colors",

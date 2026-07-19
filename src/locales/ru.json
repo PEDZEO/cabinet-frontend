@@ -4776,6 +4776,38 @@
         "targetMissing": "Аккаунт для привязки не найден",
         "targetMismatch": "Привязка относится к другой сессии кабинета. Запустите ее заново."
       }
+    },
+    "ultima": {
+      "fallbackName": "Пользователь",
+      "loginMethodCount_one": "{{count}} вход",
+      "loginMethodCount_few": "{{count}} входа",
+      "loginMethodCount_many": "{{count}} входов",
+      "loginMethodCount_other": "{{count}} входа",
+      "accessProtected": "Резервный способ входа подключён",
+      "accessNeedsBackup": "Добавьте резервный способ входа",
+      "balance": "Баланс",
+      "balanceHint": "Доступно для покупок и продления",
+      "loginMethods": "Способы входа",
+      "registered": "С нами с",
+      "availableActions_one": "{{count}} доступное действие",
+      "availableActions_few": "{{count}} доступных действия",
+      "availableActions_many": "{{count}} доступных действий",
+      "availableActions_other": "{{count}} доступных действия",
+      "accountSection": "Аккаунт и безопасность",
+      "accountSectionHint": "Устройства и способы входа",
+      "benefitsSection": "Бонусы и возможности",
+      "benefitsSectionHint": "Приглашения, промокоды и подарки",
+      "helpSection": "Помощь",
+      "helpSectionHint": "Поддержка и документы сервиса",
+      "accountCard": "Ваш аккаунт",
+      "accountCardHint": "Данные профиля и безопасность входа",
+      "checkingAccess": "Проверяем способы входа",
+      "accountId": "ID аккаунта",
+      "copyId": "Скопировать ID",
+      "logout": "Выйти",
+      "checking": "Проверка",
+      "protected": "Защищён",
+      "oneLogin": "Один вход"
     }
   },
   "theme": {

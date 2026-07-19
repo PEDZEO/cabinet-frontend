@@ -3333,6 +3333,32 @@
       "promoOffers": "پیشنهادات تبلیغاتی",
       "promoOffersDesc": "دریافت پیشنهادات ویژه و تخفیف‌ها",
       "unavailable": "تنظیمات اعلان در دسترس نیست"
+    },
+    "ultima": {
+      "fallbackName": "کاربر",
+      "loginMethodCount_other": "{{count}} روش ورود",
+      "accessProtected": "روش ورود پشتیبان متصل است",
+      "accessNeedsBackup": "یک روش ورود پشتیبان اضافه کنید",
+      "balance": "موجودی",
+      "balanceHint": "برای خرید و تمدید قابل استفاده است",
+      "loginMethods": "روش‌های ورود",
+      "registered": "عضویت از",
+      "availableActions_other": "{{count}} اقدام در دسترس",
+      "accountSection": "حساب و امنیت",
+      "accountSectionHint": "دستگاه‌ها و روش‌های ورود",
+      "benefitsSection": "مزایا و پاداش‌ها",
+      "benefitsSectionHint": "دعوت‌ها، کدهای تخفیف و هدایا",
+      "helpSection": "راهنما",
+      "helpSectionHint": "پشتیبانی و اسناد سرویس",
+      "accountCard": "حساب شما",
+      "accountCardHint": "اطلاعات پروفایل و امنیت ورود",
+      "checkingAccess": "در حال بررسی روش‌های ورود",
+      "accountId": "شناسه حساب",
+      "copyId": "کپی شناسه",
+      "logout": "خروج",
+      "checking": "بررسی",
+      "protected": "محافظت‌شده",
+      "oneLogin": "یک روش ورود"
     }
   },
   "theme": {

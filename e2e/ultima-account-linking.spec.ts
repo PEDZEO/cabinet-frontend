@@ -106,6 +106,14 @@ async function bootstrapUltimaModeOnly(page: Page): Promise<void> {
   );
 }
 
+async function expectNoHorizontalOverflow(page: Page): Promise<void> {
+  const viewport = await page.evaluate(() => ({
+    clientWidth: document.documentElement.clientWidth,
+    scrollWidth: document.documentElement.scrollWidth,
+  }));
+  expect(viewport.scrollWidth).toBeLessThanOrEqual(viewport.clientWidth + 1);
+}
+
 async function mockUltimaLinkingApi(page: Page): Promise<void> {
   await page.route('**/api/**', async (route: Route) => {
     const request = route.request();
@@ -158,6 +166,14 @@ async function mockUltimaLinkingApi(page: Page): Promise<void> {
 
     if (path === '/cabinet/auth/me/is-admin' && method === 'GET') {
       await route.fulfill({ status: 200, json: { is_admin: false } });
+      return;
+    }
+
+    if (path === '/cabinet/balance' && method === 'GET') {
+      await route.fulfill({
+        status: 200,
+        json: { balance_kopeks: 125000, balance_rubles: 1250 },
+      });
       return;
     }
 
@@ -435,12 +451,51 @@ test.describe('Ultima account linking callback', () => {
     ).toBeVisible();
   });
 
-  test('shows logout action in ultima profile card', async ({ page }) => {
+  test('keeps the mobile profile clear and usable without horizontal overflow', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
     await bootstrapUltimaAuth(page);
     await mockUltimaLinkingApi(page);
 
     await page.goto('/profile');
 
-    await expect(page.getByRole('button', { name: 'Выйти из аккаунта' })).toBeVisible();
+    await expect(page.getByTestId('ultima-profile-page')).toBeVisible();
+    await expect(page.getByTestId('ultima-profile-account')).toContainText('Ultima User');
+    await expect(page.getByTestId('ultima-profile-account')).toContainText('1 250');
+    await expect(page.getByTestId('ultima-profile-top-up')).toBeVisible();
+    await expect(page.getByTestId('ultima-profile-action-devices')).toHaveCount(1);
+    await expect(page.getByTestId('ultima-profile-action-linking')).toHaveCount(1);
+    await expect(page.getByTestId('ultima-profile-action-referral')).toHaveCount(1);
+    await expect(page.getByTestId('ultima-profile-action-promocode')).toHaveCount(1);
+    await expect(page.getByTestId('ultima-profile-action-gift')).toHaveCount(1);
+    await expect(page.getByTestId('ultima-profile-action-support')).toHaveCount(1);
+    await expect(page.getByTestId('ultima-profile-action-info')).toHaveCount(1);
+    await expect(page.getByRole('button', { name: 'Выйти' })).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+    await page.getByRole('button', { name: 'Выйти' }).scrollIntoViewIfNeeded();
+    await expect(page.getByText('Помощь', { exact: true })).toBeVisible();
+    await expect(
+      page.locator('.ultima-scrollbar').evaluate((element) => element.scrollTop),
+    ).resolves.toBeGreaterThan(0);
+  });
+
+  test('uses a focused desktop layout without duplicated profile actions', async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 768 });
+    await bootstrapUltimaAuth(page);
+    await mockUltimaLinkingApi(page);
+
+    await page.goto('/profile');
+
+    await expect(page.getByTestId('ultima-profile-page')).toBeVisible();
+    await expect(page.locator('.ultima-desktop-workspace')).toBeVisible();
+    await expect(page.getByTestId('ultima-profile-account')).toContainText('Ultima User');
+    await expect(page.getByText('Аккаунт и безопасность')).toBeVisible();
+    await expect(page.getByText('Бонусы и возможности')).toBeVisible();
+    await expect(page.getByText('Помощь', { exact: true })).toBeVisible();
+    await expect(page.getByTestId('ultima-profile-action-devices')).toHaveCount(1);
+    await expect(page.getByTestId('ultima-profile-action-gift')).toHaveCount(1);
+    await expect(page.getByRole('button', { name: 'Выйти' })).toBeVisible();
+    await expectNoHorizontalOverflow(page);
   });
 });

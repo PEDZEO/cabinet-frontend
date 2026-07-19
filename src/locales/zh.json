@@ -3332,6 +3332,32 @@
       "promoOffers": "促销活动",
       "promoOffersDesc": "接收特别优惠和折扣",
       "unavailable": "通知设置不可用"
+    },
+    "ultima": {
+      "fallbackName": "用户",
+      "loginMethodCount_other": "{{count}} 种登录方式",
+      "accessProtected": "已连接备用登录方式",
+      "accessNeedsBackup": "添加备用登录方式",
+      "balance": "余额",
+      "balanceHint": "可用于购买和续费",
+      "loginMethods": "登录方式",
+      "registered": "注册时间",
+      "availableActions_other": "{{count}} 个可用操作",
+      "accountSection": "账户与安全",
+      "accountSectionHint": "设备和登录方式",
+      "benefitsSection": "权益与奖励",
+      "benefitsSectionHint": "邀请、优惠码和礼物",
+      "helpSection": "帮助",
+      "helpSectionHint": "客服支持和服务文档",
+      "accountCard": "您的账户",
+      "accountCardHint": "个人资料和登录安全",
+      "checkingAccess": "正在检查登录方式",
+      "accountId": "账户 ID",
+      "copyId": "复制 ID",
+      "logout": "退出登录",
+      "checking": "检查中",
+      "protected": "已保护",
+      "oneLogin": "一种登录方式"
     }
   },
   "theme": {
