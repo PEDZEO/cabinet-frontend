@@ -902,9 +902,11 @@ test.describe('Ultima subscription information', () => {
     await expect(
       page.locator('#ultima-traffic-top-up button[aria-expanded]').first(),
     ).toHaveAttribute('aria-expanded', 'false');
-    await expect(page.getByTestId('ultima-subscription-link')).toContainText(
-      'Ссылка для подключения',
-    );
+    const subscriptionLink = page.getByTestId('ultima-subscription-link');
+    await expect(subscriptionLink).toContainText('Ссылка для подключения');
+    await expect(subscriptionLink).toHaveAttribute('data-link-kind', 'happ');
+    await expect(subscriptionLink).toContainText('happ://crypt5/backend-happ-payload');
+    await expect(subscriptionLink).not.toContainText(SUBSCRIPTION.subscription_url);
     await expect(page.getByTestId('ultima-subscription-info-primary-action')).toContainText(
       'Продлить подписку',
     );
@@ -923,8 +925,38 @@ test.describe('Ultima subscription information', () => {
     await expect(page.getByTestId('ultima-subscription-info-page')).toBeVisible();
     await expect(page.getByTestId('ultima-subscription-traffic-overview')).toContainText('82 ГБ');
     await expect(page.getByTestId('ultima-subscription-link')).toBeVisible();
+    await expect(page.getByTestId('ultima-subscription-link')).toHaveAttribute(
+      'data-link-kind',
+      'happ',
+    );
+    await expect(page.getByTestId('ultima-subscription-link')).not.toContainText(
+      SUBSCRIPTION.subscription_url,
+    );
     await expect(page.getByRole('button', { name: 'Продлить подписку' }).first()).toBeVisible();
     await expect(page.getByRole('button', { name: 'Устройства' }).first()).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+  });
+
+  test('shows the regular subscription URL only when protected links are disabled', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page, {
+      appConfig: {
+        ...CONNECTION_APP_CONFIG,
+        cryptoLinksEnabled: false,
+        subscriptionCryptoLink: null,
+        subscriptionIncyCryptoLink: null,
+      },
+    });
+    await page.goto('/ultima/subscription-info');
+
+    const subscriptionLink = page.getByTestId('ultima-subscription-link');
+    await expect(subscriptionLink).toHaveAttribute('data-link-kind', 'regular');
+    await expect(subscriptionLink).toContainText(SUBSCRIPTION.subscription_url);
+    await expect(subscriptionLink).not.toContainText('happ://crypt5/');
+    await expect(subscriptionLink).not.toContainText('incy://crypt1/');
     await expectNoHorizontalOverflow(page);
   });
 });

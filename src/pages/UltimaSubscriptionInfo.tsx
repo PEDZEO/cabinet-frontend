@@ -108,6 +108,13 @@ export function UltimaSubscriptionInfo() {
     staleTime: 15000,
     placeholderData: (previousData) => previousData,
   });
+  const { data: appConfig } = useQuery({
+    queryKey: ['appConfig'],
+    queryFn: subscriptionApi.getAppConfig,
+    enabled: subscriptionResponse?.has_subscription === true,
+    staleTime: 60000,
+    placeholderData: (previousData) => previousData,
+  });
   const { data: trafficPackages } = useQuery({
     queryKey: ['traffic-packages', 'ultima-info'],
     queryFn: subscriptionApi.getTrafficPackages,
@@ -133,10 +140,29 @@ export function UltimaSubscriptionInfo() {
     !isUnlimitedTraffic &&
     (subscription.is_active || !subscription.is_expired) &&
     (trafficPackages?.length ?? 0) > 0;
+  const rawSubscriptionLink = subscription?.subscription_url?.trim() ?? '';
+  const happCryptoLink = appConfig?.subscriptionCryptoLink?.trim() ?? '';
+  const incyCryptoLink = appConfig?.subscriptionIncyCryptoLink?.trim() ?? '';
+  const cryptoLinksEnabled = appConfig?.cryptoLinksEnabled !== false;
   const subscriptionLink =
-    subscription && !subscription.hide_subscription_link
-      ? (subscription.subscription_url ?? '')
+    subscription && !subscription.hide_subscription_link && appConfig
+      ? cryptoLinksEnabled
+        ? happCryptoLink || incyCryptoLink
+        : rawSubscriptionLink
       : '';
+  const subscriptionLinkKind = !subscriptionLink
+    ? null
+    : cryptoLinksEnabled
+      ? happCryptoLink
+        ? 'happ'
+        : 'incy'
+      : 'regular';
+  const subscriptionLinkMeta =
+    subscriptionLinkKind === 'happ'
+      ? 'Happ · crypt5'
+      : subscriptionLinkKind === 'incy'
+        ? 'INCY · crypt1'
+        : null;
 
   const trafficTotal = Math.max(0, subscription?.traffic_limit_gb ?? 0);
   const trafficUsed = Math.max(0, subscription?.traffic_used_gb ?? 0);
@@ -380,6 +406,7 @@ export function UltimaSubscriptionInfo() {
     hasSubscription && subscriptionLink ? (
       <section
         data-testid="ultima-subscription-link"
+        data-link-kind={subscriptionLinkKind}
         className={`${ultimaPanelClassName} p-4 lg:p-5`}
         style={ultimaSurfaceStyle}
       >
@@ -388,9 +415,16 @@ export function UltimaSubscriptionInfo() {
             <Link2 className="h-5 w-5" />
           </span>
           <div className="min-w-0 flex-1">
-            <h2 className="text-[15px] font-semibold leading-tight text-white">
-              {t('ultima.subscriptionInfo.subscriptionLink')}
-            </h2>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-[15px] font-semibold leading-tight text-white">
+                {t('ultima.subscriptionInfo.subscriptionLink')}
+              </h2>
+              {subscriptionLinkMeta ? (
+                <span className="rounded-full border border-emerald-200/[0.18] bg-emerald-300/[0.1] px-2 py-0.5 text-[9px] font-semibold uppercase text-emerald-100/[0.88]">
+                  {subscriptionLinkMeta}
+                </span>
+              ) : null}
+            </div>
             <p className="mt-1 text-[12px] leading-snug text-white/[0.5]">
               {t('ultima.subscriptionInfo.linkHint')}
             </p>
