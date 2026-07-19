@@ -1,5 +1,3 @@
-import { createHappCryptoLink } from '@kastov/cryptohapp';
-
 const TEMPLATE_RE = /\{\{[A-Z0-9_]+\}\}/;
 
 export function hasTemplates(url: string): boolean {
@@ -8,6 +6,8 @@ export function hasTemplates(url: string): boolean {
 
 interface ResolveContext {
   subscriptionUrl: string;
+  happCryptoLink?: string | null;
+  incyCryptoLink?: string | null;
   username?: string;
 }
 
@@ -20,13 +20,9 @@ export function resolveTemplate(template: string, ctx: ResolveContext): string {
     result = result.replace(/\{\{USERNAME\}\}/g, ctx.username);
   }
 
-  result = result.replace(/\{\{HAPP_CRYPT3_LINK\}\}/g, () => {
-    return createHappCryptoLink(ctx.subscriptionUrl, 'v3', true) ?? ctx.subscriptionUrl;
-  });
-
-  result = result.replace(/\{\{HAPP_CRYPT4_LINK\}\}/g, () => {
-    return createHappCryptoLink(ctx.subscriptionUrl, 'v4', true) ?? ctx.subscriptionUrl;
-  });
+  const happLink = ctx.happCryptoLink ?? ctx.subscriptionUrl;
+  result = result.replace(/\{\{HAPP_CRYPT[345]_LINK\}\}/g, happLink);
+  result = result.replace(/\{\{INCY_CRYPT1_LINK\}\}/g, ctx.incyCryptoLink ?? ctx.subscriptionUrl);
 
   return result;
 }

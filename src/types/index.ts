@@ -601,9 +601,13 @@ export interface RemnawaveBlockClient {
 }
 
 export interface RemnawaveAppClient {
+  id?: string;
   name: string;
   featured?: boolean;
+  isFeatured?: boolean;
   deepLink?: string | null;
+  urlScheme?: string | null;
+  usesCryptoLink?: boolean;
   svgIconKey?: string;
   buttons?: RemnawaveButtonClient[];
   downloadUrl?: string | null;
@@ -625,6 +629,7 @@ export interface AppConfig {
   hasSubscription: boolean;
   subscriptionUrl: string | null;
   subscriptionCryptoLink?: string | null;
+  subscriptionIncyCryptoLink?: string | null;
   hideLink?: boolean;
   branding?: {
     name?: string;

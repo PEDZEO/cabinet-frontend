@@ -7,7 +7,7 @@ import { subscriptionApi } from '../api/subscription';
 import { useTelegramSDK } from '../hooks/useTelegramSDK';
 import { useHaptic } from '@/platform';
 import { resolveTemplate, hasTemplates } from '../utils/templateEngine';
-import { isHappCryptolinkMode, resolveConnectionUrlForUi } from '../utils/connectionLink';
+import { resolveConnectionUrlForUi } from '../utils/connectionLink';
 import { useAuthStore } from '../store/auth';
 import type { AppConfig, RemnawavePlatformData } from '../types';
 import InstallationGuide from '../components/connection/InstallationGuide';
@@ -16,7 +16,7 @@ import { useUltimaMode } from '@/hooks/useUltimaMode';
 import { UltimaConnection } from './UltimaConnection';
 
 export default function Connection() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const isAdmin = useAuthStore((state) => state.isAdmin);
@@ -134,10 +134,17 @@ export default function Connection() {
       if (!hasTemplates(url) || !appConfig?.subscriptionUrl) return url;
       return resolveTemplate(url, {
         subscriptionUrl: appConfig.subscriptionUrl,
+        happCryptoLink: appConfig.subscriptionCryptoLink,
+        incyCryptoLink: appConfig.subscriptionIncyCryptoLink,
         username: user?.username ?? undefined,
       });
     },
-    [appConfig?.subscriptionUrl, user?.username],
+    [
+      appConfig?.subscriptionCryptoLink,
+      appConfig?.subscriptionIncyCryptoLink,
+      appConfig?.subscriptionUrl,
+      user?.username,
+    ],
   );
 
   const openDeepLink = useCallback(
@@ -145,36 +152,26 @@ export default function Connection() {
       markLiteOnboardingStep('subscription_added', user?.id);
 
       let resolved = deepLink;
-      if (isHappCryptolinkMode(connectionLink?.connect_mode) && qrConnectionUrl) {
-        resolved = qrConnectionUrl;
-      } else if (hasTemplates(resolved)) {
+      if (hasTemplates(resolved)) {
         resolved = resolveUrl(resolved);
       }
 
       const isHttpUrl = /^https?:\/\//i.test(resolved);
-      const finalUrl = isHttpUrl
-        ? resolved
-        : `${window.location.origin}/miniapp/redirect.html?url=${encodeURIComponent(resolved)}&lang=${i18n.language || 'en'}`;
-
-      if (isTelegramWebApp) {
+      if (isTelegramWebApp && isHttpUrl) {
         try {
-          sdkOpenLink(finalUrl, { tryInstantView: false });
+          sdkOpenLink(resolved, { tryInstantView: false });
           return;
         } catch {
           // SDK not available, fallback
         }
       }
 
-      window.location.href = isHttpUrl ? resolved : finalUrl;
+      // Custom client schemes must be launched directly. Wrapping them in an
+      // HTTP redirect loses the user gesture in desktop browsers and can open
+      // the wrong VPN client after returning to the cabinet.
+      window.location.href = resolved;
     },
-    [
-      connectionLink?.connect_mode,
-      i18n.language,
-      isTelegramWebApp,
-      qrConnectionUrl,
-      resolveUrl,
-      user?.id,
-    ],
+    [isTelegramWebApp, resolveUrl, user?.id],
   );
 
   // Check if any platform has configured apps

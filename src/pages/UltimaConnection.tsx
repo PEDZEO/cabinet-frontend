@@ -92,13 +92,16 @@ const resolveTemplateUrl = (
   value: string,
   subscriptionUrl: string | null,
   subscriptionCryptoLink?: string | null,
+  subscriptionIncyCryptoLink?: string | null,
 ): string => {
   if (!value) return value;
   return value
     .replace(/\{\{\s*subscriptionUrl\s*\}\}/gi, subscriptionUrl ?? '')
     .replace(/\{\{\s*SUBSCRIPTION_LINK\s*\}\}/gi, subscriptionUrl ?? '')
     .replace(/\{\{\s*HAPP_CRYPT3_LINK\s*\}\}/gi, subscriptionCryptoLink ?? '')
-    .replace(/\{\{\s*HAPP_CRYPT4_LINK\s*\}\}/gi, subscriptionCryptoLink ?? '');
+    .replace(/\{\{\s*HAPP_CRYPT4_LINK\s*\}\}/gi, subscriptionCryptoLink ?? '')
+    .replace(/\{\{\s*HAPP_CRYPT5_LINK\s*\}\}/gi, subscriptionCryptoLink ?? '')
+    .replace(/\{\{\s*INCY_CRYPT1_LINK\s*\}\}/gi, subscriptionIncyCryptoLink ?? '');
 };
 
 const getPlatformDisplayName = (appConfig: AppConfig, key: string, language: string): string => {
@@ -131,6 +134,11 @@ const getAvailablePlatformKeys = (appConfig: AppConfig): string[] => {
 };
 
 const getAppKey = (app: RemnawaveAppClient, index: number): string => `${app.name}:${index}`;
+
+const isClientApp = (app: RemnawaveAppClient, client: 'happ' | 'incy'): boolean =>
+  [app.id, app.name, app.urlScheme, app.deepLink]
+    .filter((value): value is string => typeof value === 'string')
+    .some((value) => value.toLowerCase().includes(client));
 
 const getButtonUrl = (button: RemnawaveButtonClient): string | null =>
   button.resolvedUrl || button.url || button.link || button.buttonLink || null;
@@ -206,6 +214,7 @@ const collectInstallOptions = (
       rawUrl,
       appConfig.subscriptionUrl,
       appConfig.subscriptionCryptoLink,
+      appConfig.subscriptionIncyCryptoLink,
     );
     if (!resolved || resolved.includes('{{') || seen.has(resolved)) return;
     seen.add(resolved);
@@ -251,7 +260,11 @@ const findSetupUrls = (
   const flatButtons = getAppButtons(app);
   const installOptions = collectInstallOptions(app, appConfig, language);
   let installUrl: string | null = null;
-  let addSubscriptionUrl: string | null = app.deepLink ?? null;
+  let addSubscriptionUrl: string | null = isClientApp(app, 'incy')
+    ? (appConfig.subscriptionIncyCryptoLink ?? app.deepLink ?? null)
+    : isClientApp(app, 'happ')
+      ? (appConfig.subscriptionCryptoLink ?? app.deepLink ?? null)
+      : (app.deepLink ?? null);
 
   for (const button of flatButtons) {
     const localized = getLocalizedText(button.text, language).toLowerCase();
@@ -283,13 +296,19 @@ const findSetupUrls = (
   const resolvedInstall = primaryInstall?.url
     ? primaryInstall.url
     : installUrl
-      ? resolveTemplateUrl(installUrl, appConfig.subscriptionUrl, appConfig.subscriptionCryptoLink)
+      ? resolveTemplateUrl(
+          installUrl,
+          appConfig.subscriptionUrl,
+          appConfig.subscriptionCryptoLink,
+          appConfig.subscriptionIncyCryptoLink,
+        )
       : null;
   const resolvedAdd = addSubscriptionUrl
     ? resolveTemplateUrl(
         addSubscriptionUrl,
         appConfig.subscriptionUrl,
         appConfig.subscriptionCryptoLink,
+        appConfig.subscriptionIncyCryptoLink,
       )
     : appConfig.subscriptionUrl;
 
@@ -355,7 +374,7 @@ export function UltimaConnection({
       if (current && currentPlatformApps.some((app, index) => getAppKey(app, index) === current)) {
         return current;
       }
-      const featuredIndex = currentPlatformApps.findIndex((app) => app.featured);
+      const featuredIndex = currentPlatformApps.findIndex((app) => app.featured || app.isFeatured);
       const index = featuredIndex >= 0 ? featuredIndex : 0;
       return getAppKey(currentPlatformApps[index]!, index);
     });
@@ -363,11 +382,15 @@ export function UltimaConnection({
 
   const selectedApp = useMemo(() => {
     if (!selectedAppKey) {
-      return currentPlatformApps.find((app) => app.featured) ?? currentPlatformApps[0] ?? null;
+      return (
+        currentPlatformApps.find((app) => app.featured || app.isFeatured) ??
+        currentPlatformApps[0] ??
+        null
+      );
     }
     return (
       currentPlatformApps.find((app, index) => getAppKey(app, index) === selectedAppKey) ??
-      currentPlatformApps.find((app) => app.featured) ??
+      currentPlatformApps.find((app) => app.featured || app.isFeatured) ??
       currentPlatformApps[0] ??
       null
     );
@@ -486,11 +509,15 @@ export function UltimaConnection({
     null;
   const appLaunchUrl = (() => {
     const addUrl = setupUrls.addSubscriptionUrl;
-    if (!addUrl) return null;
+    if (!addUrl || !selectedApp) return null;
     const scheme = addUrl.match(/^([a-z][a-z0-9+.-]*):\/\//i)?.[1]?.toLowerCase();
-    if (!scheme) return addUrl;
-    if (scheme === 'happ') return 'happ://toggle';
-    if (scheme !== 'http' && scheme !== 'https') return `${scheme}://`;
+    const configuredScheme = selectedApp.urlScheme
+      ?.match(/^([a-z][a-z0-9+.-]*):\/\//i)?.[1]
+      ?.toLowerCase();
+    const appScheme = scheme && scheme !== 'http' && scheme !== 'https' ? scheme : configuredScheme;
+    if (!appScheme) return addUrl;
+    if (appScheme === 'happ' || appScheme === 'incy') return `${appScheme}://toggle`;
+    if (appScheme !== 'http' && appScheme !== 'https') return `${appScheme}://`;
     return addUrl;
   })();
 
@@ -544,7 +571,7 @@ export function UltimaConnection({
     haptic.selection();
     setActivePlatformKey(platformKey);
     const apps = appConfig.platforms[platformKey]?.apps ?? [];
-    const featuredIndex = apps.findIndex((app) => app.featured);
+    const featuredIndex = apps.findIndex((app) => app.featured || app.isFeatured);
     const nextIndex = featuredIndex >= 0 ? featuredIndex : 0;
     setSelectedAppKey(apps[nextIndex] ? getAppKey(apps[nextIndex], nextIndex) : null);
   };
@@ -744,7 +771,7 @@ export function UltimaConnection({
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[12px] font-semibold">{app.name}</span>
-                    {app.featured ? (
+                    {app.featured || app.isFeatured ? (
                       <span className="mt-0.5 block text-[10px] text-amber-100/[0.72]">
                         {t('subscription.connection.featured', { defaultValue: 'Рекомендуем' })}
                       </span>

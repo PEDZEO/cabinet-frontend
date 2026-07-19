@@ -1,6 +1,8 @@
 import { type ReactNode } from 'react';
-import { ChevronRight, CreditCard, Settings, ShieldCheck, UserRound } from 'lucide-react';
+import { ChevronRight, Settings } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router';
+import { useBranding } from '@/hooks/useBranding';
+import { useBrandLogoImage } from '@/hooks/useBrandLogoImage';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
 
@@ -14,16 +16,31 @@ type UltimaDesktopWorkspaceProps = {
 export function UltimaDesktopRail({ bottomNav }: { bottomNav: ReactNode }) {
   const navigate = useNavigate();
   const isAdmin = useAuthStore((state) => state.isAdmin);
+  const { appName, logoLetter, hasCustomLogo, logoUrl } = useBranding();
+  const { isLoaded, hasError, handleLoad, handleError } = useBrandLogoImage(logoUrl);
+  const showLogo = Boolean(hasCustomLogo && logoUrl && !hasError);
 
   return (
-    <aside className="ultima-desktop-rail" aria-label="Ultimteam">
+    <aside className="ultima-desktop-rail" aria-label={appName}>
       <div className="ultima-desktop-brand">
         <span className="ultima-desktop-brand-mark" aria-hidden>
-          <ShieldCheck size={20} strokeWidth={1.8} />
+          {showLogo ? (
+            <img
+              src={logoUrl ?? undefined}
+              alt=""
+              className={cn(
+                'h-full w-full object-contain transition-opacity',
+                isLoaded ? 'opacity-100' : 'opacity-0',
+              )}
+              onLoad={handleLoad}
+              onError={handleError}
+            />
+          ) : (
+            <span className="ultima-desktop-brand-letter">{logoLetter}</span>
+          )}
         </span>
         <span className="ultima-desktop-brand-copy">
-          <strong>Ultimteam</strong>
-          <small>VPN кабинет</small>
+          <strong title={appName}>{appName}</strong>
         </span>
       </div>
 
@@ -43,14 +60,6 @@ export function UltimaDesktopRail({ bottomNav }: { bottomNav: ReactNode }) {
             <span>Админка</span>
           </button>
         ) : null}
-      </div>
-
-      <div className="ultima-desktop-rail-status">
-        <span aria-hidden />
-        <div>
-          <strong>Сервис работает</strong>
-          <small>Защищённое подключение</small>
-        </div>
       </div>
     </aside>
   );
@@ -72,38 +81,15 @@ function getWorkspaceTitle(pathname: string): string {
 
 export function UltimaDesktopTopbar() {
   const location = useLocation();
-  const navigate = useNavigate();
+  const { appName } = useBranding();
   const pageTitle = getWorkspaceTitle(location.pathname);
 
   return (
     <header className="ultima-desktop-topbar">
       <div className="ultima-desktop-breadcrumb">
-        <span>Ultimteam</span>
+        <span>{appName}</span>
         <ChevronRight className="h-4 w-4" strokeWidth={1.8} aria-hidden />
         <strong>{pageTitle}</strong>
-      </div>
-
-      <div className="ultima-desktop-topbar-actions">
-        <div className="ultima-desktop-security-label">
-          <ShieldCheck className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-          <span>Защищенный кабинет</span>
-        </div>
-        <button
-          type="button"
-          onClick={() => navigate('/subscription')}
-          aria-label="Тарифы и оплата"
-          title="Тарифы и оплата"
-        >
-          <CreditCard className="h-[18px] w-[18px]" strokeWidth={1.8} />
-        </button>
-        <button
-          type="button"
-          onClick={() => navigate('/profile')}
-          aria-label="Профиль"
-          title="Профиль"
-        >
-          <UserRound className="h-[18px] w-[18px]" strokeWidth={1.8} />
-        </button>
       </div>
     </header>
   );

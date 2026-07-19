@@ -225,7 +225,8 @@ const CONNECTION_APP_CONFIG = {
   },
   hasSubscription: true,
   subscriptionUrl: SUBSCRIPTION.subscription_url,
-  subscriptionCryptoLink: null,
+  subscriptionCryptoLink: 'happ://crypt5/backend-happ-payload',
+  subscriptionIncyCryptoLink: 'incy://crypt1/backend-incy-payload',
   hideLink: false,
   platforms: {
     android: {
@@ -251,10 +252,20 @@ const CONNECTION_APP_CONFIG = {
       displayName: { ru: 'Windows', en: 'Windows' },
       apps: [
         {
+          id: 'happ-windows',
           name: 'Happ Desktop',
           featured: true,
+          urlScheme: 'happ',
           deepLink: 'happ://add/{{SUBSCRIPTION_LINK}}',
           downloadUrl: 'https://example.com/happ-windows.exe',
+          blocks: [],
+        },
+        {
+          id: 'incy-windows',
+          name: 'INCY',
+          urlScheme: 'incy',
+          deepLink: '{{INCY_CRYPT1_LINK}}',
+          downloadUrl: 'https://example.com/incy-windows.exe',
           blocks: [],
         },
       ],
@@ -340,7 +351,13 @@ async function mockUltimaDesktopApi(
     if (path === '/cabinet/branding/lite-mode') return respond({ enabled: false });
     if (path === '/cabinet/branding/ultima-theme-config') return respond(THEME_CONFIG);
     if (path === '/cabinet/branding') {
-      return respond({ name: 'Ultimteam VPN', logo_url: null, logo_letter: 'U' });
+      return respond({
+        name: 'Ultimteam VPN',
+        logo_url:
+          'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"%3E%3Crect width="32" height="32" fill="%2300aa88"/%3E%3C/svg%3E',
+        logo_letter: 'U',
+        has_custom_logo: true,
+      });
     }
     if (path === '/cabinet/branding/colors') return respond(DEFAULT_THEME_COLORS);
     if (path === '/cabinet/branding/themes') return respond(DEFAULT_ENABLED_THEMES);
@@ -1224,14 +1241,35 @@ test.describe('Ultima connection setup', () => {
     await expect(page.getByText('Порядок подключения', { exact: true })).toBeVisible();
     await expect(page.getByTestId('ultima-connection-desktop-step-1')).toBeVisible();
     await expect(page.getByTestId('ultima-connection-primary-action')).toHaveCount(1);
+    await expect(page.locator('.ultima-desktop-brand-mark img')).toBeVisible();
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          getComputedStyle(document.documentElement)
+            .getPropertyValue('--ultima-color-primary')
+            .trim(),
+        ),
+      )
+      .toBe(THEME_CONFIG.primaryColor);
+    await expect(page.locator('.ultima-desktop-topbar-actions')).toHaveCount(0);
+    await expect(page.getByText('Сервис работает', { exact: true })).toHaveCount(0);
+    await expect(page.getByText('Защищённый кабинет', { exact: true })).toHaveCount(0);
+
+    await page.getByTestId('ultima-connection-app-1').click();
 
     await page.getByTestId('ultima-connection-secondary-action').click();
     await expect(page.getByTestId('ultima-connection-desktop-step-2')).toHaveAttribute(
       'aria-current',
       'step',
     );
+    await expect(page.getByTestId('ultima-connection-selection-summary')).toContainText('INCY');
     await expect(page.getByTestId('ultima-connection-primary-action')).toContainText(
-      'Добавить в Happ Desktop',
+      'Добавить в INCY',
+    );
+
+    await page.getByTestId('ultima-connection-secondary-action').click();
+    await expect(page.getByTestId('ultima-connection-primary-action')).toContainText(
+      'Открыть INCY',
     );
     await expectNoHorizontalOverflow(page);
   });

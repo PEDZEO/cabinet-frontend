@@ -1,25 +1,11 @@
-import { createHappCryptoLink } from '@kastov/cryptohapp';
-
 export function isHappCryptolinkMode(mode: string | null | undefined): boolean {
   const normalized = String(mode ?? '').toUpperCase();
   if (!normalized) return false;
   return normalized.includes('HAPP') && normalized.includes('CRYPT');
 }
 
-function isHttpUrl(url: string | null | undefined): url is string {
-  return typeof url === 'string' && /^https?:\/\//i.test(url);
-}
-
-function isHappSubscriptionLink(url: string | null | undefined): url is string {
-  return typeof url === 'string' && /^happ:\/\/sub/i.test(url);
-}
-
-function isCryptSourceUrl(url: string | null | undefined): url is string {
-  return isHttpUrl(url) || isHappSubscriptionLink(url);
-}
-
 function isHappCryptDeepLink(url: string | null | undefined): url is string {
-  return typeof url === 'string' && /^happ:\/\/crypt/i.test(url);
+  return typeof url === 'string' && /^happ:\/\/crypt[2-9]?\//i.test(url);
 }
 
 interface ResolveConnectionUrlInput {
@@ -50,18 +36,7 @@ export function resolveConnectionUrlForUi(input: ResolveConnectionUrlInput): str
     ].find((value) => isHappCryptDeepLink(value)) ?? null;
   if (backendCryptLink) return backendCryptLink;
 
-  const sourceSubscriptionUrl =
-    [input.subscriptionUrl, input.displayLink, input.fallbackUrl].find((value) =>
-      isCryptSourceUrl(value),
-    ) ?? null;
-
-  if (sourceSubscriptionUrl) {
-    return (
-      createHappCryptoLink(sourceSubscriptionUrl, 'v4', true) ??
-      createHappCryptoLink(sourceSubscriptionUrl, 'v3', true) ??
-      defaultUrl
-    );
-  }
-
+  // crypt5 cannot be generated with the former client-side crypt4 key.
+  // The cabinet API returns the current panel/official Happ link when available.
   return defaultUrl;
 }

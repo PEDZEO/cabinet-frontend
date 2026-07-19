@@ -2080,15 +2080,12 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
     box-shadow: 0 8px 20px color-mix(in srgb, var(--ultima-color-primary) 18%, transparent);
   }
 
-  .ultima-desktop-brand-copy,
-  .ultima-desktop-rail-status > div {
+  .ultima-desktop-brand-copy {
     display: none;
   }
 
   .ultima-desktop-brand-copy strong,
-  .ultima-desktop-brand-copy small,
-  .ultima-desktop-rail-status strong,
-  .ultima-desktop-rail-status small {
+  .ultima-desktop-brand-copy small {
     display: block;
   }
 
@@ -2116,38 +2113,6 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
 
   .ultima-desktop-navigation [data-ultima-nav-btn='1'] {
     width: 100%;
-  }
-
-  .ultima-desktop-rail-status {
-    margin-top: auto;
-    min-height: 42px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 10px;
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
-  }
-
-  .ultima-desktop-rail-status > span {
-    width: 8px;
-    height: 8px;
-    flex: 0 0 8px;
-    border-radius: 50%;
-    background: #55d9a6;
-    box-shadow: 0 0 14px rgba(85, 217, 166, 0.5);
-  }
-
-  .ultima-desktop-rail-status strong {
-    color: rgba(255, 255, 255, 0.78);
-    font-size: 12px;
-    font-weight: 600;
-  }
-
-  .ultima-desktop-rail-status small {
-    margin-top: 2px;
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 10px;
   }
 
   .ultima-desktop-main {
@@ -2326,14 +2291,9 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
     justify-content: flex-start;
   }
 
-  .ultima-desktop-brand-copy,
-  .ultima-desktop-rail-status > div {
+  .ultima-desktop-brand-copy {
     display: block;
     min-width: 0;
-  }
-
-  .ultima-desktop-rail-status {
-    justify-content: flex-start;
   }
 
   .ultima-desktop-context {
@@ -4039,7 +3999,7 @@ input[type='checkbox']:hover:not(:checked) {
     overflow: visible;
     overscroll-behavior: auto;
     padding: 0;
-    background: #0a0e13 !important;
+    background: var(--ultima-bg-page-desktop) !important;
   }
 
   .ultima-app-main .ultima-shell > .ultima-shell-aura,
@@ -4048,6 +4008,24 @@ input[type='checkbox']:hover:not(:checked) {
   }
 
   .ultima-desktop-workspace {
+    --ultima-desktop-bg: color-mix(in srgb, #05080c 64%, var(--ultima-color-bg-top) 36%);
+    --ultima-desktop-rail-bg: color-mix(in srgb, #070b10 58%, var(--ultima-color-nav-bg) 42%);
+    --ultima-desktop-surface: color-mix(in srgb, #0b1118 48%, var(--ultima-color-surface) 52%);
+    --ultima-desktop-surface-strong: color-mix(
+      in srgb,
+      #0c141c 42%,
+      var(--ultima-color-secondary) 58%
+    );
+    --ultima-desktop-border: color-mix(
+      in srgb,
+      var(--ultima-color-surface-border) 25%,
+      transparent
+    );
+    --ultima-desktop-border-strong: color-mix(
+      in srgb,
+      var(--ultima-color-surface-border) 36%,
+      transparent
+    );
     width: 100% !important;
     max-width: none !important;
     min-height: 100dvh;
@@ -4056,8 +4034,8 @@ input[type='checkbox']:hover:not(:checked) {
     grid-template-areas: 'rail stage';
     gap: 0;
     padding: 0;
-    color: #f4f7f9;
-    background: #0a0e13;
+    color: var(--ultima-text-strong);
+    background: var(--ultima-desktop-bg);
   }
 
   .ultima-desktop-rail {
@@ -4071,38 +4049,48 @@ input[type='checkbox']:hover:not(:checked) {
     padding: 14px 10px;
     overflow: hidden;
     border: 0;
-    border-right: 1px solid #202932;
+    border-right: 1px solid var(--ultima-desktop-border);
     border-radius: 0;
-    background: #0d1217;
+    background: var(--ultima-desktop-rail-bg);
     box-shadow: none;
   }
 
   .ultima-desktop-brand {
     min-height: 48px;
     padding: 0 0 14px;
-    border-bottom-color: #202932;
+    border-bottom-color: var(--ultima-desktop-border);
   }
 
   .ultima-desktop-brand-mark {
     width: 38px;
     height: 38px;
     flex-basis: 38px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 4px;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--ultima-color-ring) 34%, transparent);
     border-radius: 8px;
-    color: #07120e;
-    background: #26d5a0;
+    color: var(--ultima-color-primary-text);
+    background: color-mix(in srgb, var(--ultima-color-primary) 18%, var(--ultima-desktop-surface));
     box-shadow: none;
   }
 
   .ultima-desktop-brand-copy strong {
-    color: #f6f8fa;
+    overflow: hidden;
+    color: var(--ultima-text-strong);
     font-size: 15px;
     font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  .ultima-desktop-brand-copy small {
-    color: #72808d;
-    font-size: 11px;
+  .ultima-desktop-brand-letter {
+    display: inline-flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 750;
   }
 
   .ultima-desktop-navigation {
@@ -4112,7 +4100,7 @@ input[type='checkbox']:hover:not(:checked) {
   .ultima-desktop-navigation-label {
     display: none;
     margin: 0 10px 9px;
-    color: #65717d;
+    color: color-mix(in srgb, var(--ultima-color-nav-text) 48%, transparent);
     font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
@@ -4160,27 +4148,21 @@ input[type='checkbox']:hover:not(:checked) {
     display: none;
   }
 
-  .ultima-desktop-rail-status {
-    min-height: 46px;
-    padding: 12px 6px 0;
-    border-top-color: #202932;
-  }
-
-  .ultima-desktop-rail-status > span {
-    width: 7px;
-    height: 7px;
-    flex-basis: 7px;
-    background: #25d59f;
-    box-shadow: 0 0 0 4px rgba(37, 213, 159, 0.09);
-  }
-
   .ultima-desktop-stage {
     grid-area: stage;
     min-width: 0;
     min-height: 100dvh;
     background:
-      linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px), #0a0e13;
+      linear-gradient(
+        color-mix(in srgb, var(--ultima-color-ring) 3%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--ultima-color-ring) 3%, transparent) 1px,
+        transparent 1px
+      ),
+      var(--ultima-desktop-bg);
     background-size: 32px 32px;
   }
 
@@ -4194,8 +4176,8 @@ input[type='checkbox']:hover:not(:checked) {
     justify-content: space-between;
     gap: 20px;
     padding: 0 18px;
-    border-bottom: 1px solid #202932;
-    background: rgba(10, 14, 19, 0.94);
+    border-bottom: 1px solid var(--ultima-desktop-border);
+    background: color-mix(in srgb, var(--ultima-desktop-bg) 94%, transparent);
     backdrop-filter: blur(18px);
   }
 
@@ -4204,62 +4186,17 @@ input[type='checkbox']:hover:not(:checked) {
     display: flex;
     align-items: center;
     gap: 6px;
-    color: #65717d;
+    color: var(--ultima-text-muted);
     font-size: 13px;
   }
 
   .ultima-desktop-breadcrumb strong {
     min-width: 0;
     overflow: hidden;
-    color: #e8edf1;
+    color: var(--ultima-text-strong);
     font-weight: 650;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  .ultima-desktop-topbar-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .ultima-desktop-security-label {
-    display: none;
-    align-items: center;
-    gap: 7px;
-    height: 34px;
-    padding: 0 11px;
-    border: 1px solid #23303a;
-    border-radius: 7px;
-    color: #91a0ac;
-    background: #10161c;
-    font-size: 12px;
-  }
-
-  .ultima-desktop-security-label svg {
-    color: #25d59f;
-  }
-
-  .ultima-desktop-topbar-actions > button {
-    width: 34px;
-    height: 34px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #23303a;
-    border-radius: 7px;
-    color: #aeb8c1;
-    background: #10161c;
-    transition:
-      color 150ms ease,
-      background-color 150ms ease,
-      border-color 150ms ease;
-  }
-
-  .ultima-desktop-topbar-actions > button:hover {
-    border-color: #35434f;
-    color: #ffffff;
-    background: #172029;
   }
 
   .ultima-desktop-stage-body {
@@ -4296,9 +4233,9 @@ input[type='checkbox']:hover:not(:checked) {
   html .ultima-shell .ultima-desktop-workspace .ultima-panel,
   html .ultima-shell .ultima-desktop-workspace .ultima-pane,
   html .ultima-shell .ultima-desktop-workspace .ultima-desktop-panel {
-    border: 1px solid #222d37 !important;
+    border: 1px solid var(--ultima-desktop-border) !important;
     border-radius: 8px !important;
-    background: #12181f !important;
+    background: var(--ultima-desktop-surface) !important;
     box-shadow: 0 8px 26px rgba(0, 0, 0, 0.16) !important;
     backdrop-filter: none;
   }
@@ -4306,10 +4243,15 @@ input[type='checkbox']:hover:not(:checked) {
   html .ultima-shell .ultima-desktop-workspace .ultima-desktop-dashboard-hero,
   html .ultima-shell .ultima-desktop-workspace .ultima-desktop-connection-hero,
   html .ultima-shell .ultima-desktop-workspace .ultima-desktop-subscription-config {
-    border-color: #293640 !important;
-    border-left: 3px solid #25d59f !important;
+    border-color: var(--ultima-desktop-border-strong) !important;
+    border-left: 3px solid var(--ultima-color-primary) !important;
     background:
-      linear-gradient(105deg, rgba(37, 213, 159, 0.07), transparent 44%), #141c23 !important;
+      linear-gradient(
+        105deg,
+        color-mix(in srgb, var(--ultima-color-aura) 12%, transparent),
+        transparent 44%
+      ),
+      var(--ultima-desktop-surface-strong) !important;
     box-shadow: none !important;
   }
 
@@ -4333,26 +4275,26 @@ input[type='checkbox']:hover:not(:checked) {
   .ultima-desktop-page-header {
     min-height: 96px;
     padding: 4px 0 20px;
-    border-bottom-color: #202932;
+    border-bottom-color: var(--ultima-desktop-border);
   }
 
   .ultima-desktop-page-icon {
-    border-color: #28343e;
-    color: #75bfff;
-    background: #121a22;
+    border-color: var(--ultima-desktop-border-strong);
+    color: var(--ultima-color-ring);
+    background: var(--ultima-desktop-surface);
   }
 
   .ultima-desktop-eyebrow {
-    color: #6e7b87;
+    color: var(--ultima-text-muted);
   }
 
   .ultima-desktop-page-header h1 {
-    color: #f4f7f9;
+    color: var(--ultima-text-strong);
     font-size: clamp(27px, 2.2vw, 36px);
   }
 
   .ultima-desktop-page-header p {
-    color: #8895a0;
+    color: var(--ultima-text-muted);
   }
 
   .ultima-desktop-metrics {
@@ -4361,15 +4303,15 @@ input[type='checkbox']:hover:not(:checked) {
 
   .ultima-desktop-metrics > article {
     min-height: 104px;
-    border: 1px solid #222d37;
-    border-top: 2px solid #5cb7ff;
+    border: 1px solid var(--ultima-desktop-border);
+    border-top: 2px solid var(--ultima-color-ring);
     border-radius: 8px;
-    background: #12181f;
+    background: var(--ultima-desktop-surface);
     box-shadow: none;
   }
 
   .ultima-desktop-metrics > article:nth-child(2) {
-    border-top-color: #25d59f;
+    border-top-color: var(--ultima-color-primary);
   }
 
   .ultima-desktop-metrics > article:nth-child(3) {
@@ -4381,24 +4323,24 @@ input[type='checkbox']:hover:not(:checked) {
   }
 
   .ultima-desktop-metrics > article > div {
-    color: #71808c;
+    color: var(--ultima-text-muted);
   }
 
   .ultima-desktop-metrics > article > strong {
-    color: #f4f7f9;
+    color: var(--ultima-text-strong);
   }
 
   .ultima-desktop-metrics > article > p {
-    color: #7e8b96;
+    color: var(--ultima-text-muted);
   }
 
   .ultima-desktop-kpi {
     min-height: 126px;
-    border-top: 2px solid #5cb7ff !important;
+    border-top: 2px solid var(--ultima-color-ring) !important;
   }
 
   .ultima-desktop-kpi:nth-child(2) {
-    border-top-color: #25d59f !important;
+    border-top-color: var(--ultima-color-primary) !important;
   }
 
   .ultima-desktop-kpi:nth-child(3) {
@@ -4416,23 +4358,23 @@ input[type='checkbox']:hover:not(:checked) {
   }
 
   .ultima-desktop-workspace .ultima-btn-primary {
-    color: #06130f !important;
-    background: #25d59f !important;
+    color: var(--ultima-color-primary-text) !important;
+    background: var(--ultima-color-primary) !important;
   }
 
   .ultima-desktop-workspace .ultima-btn-primary:hover {
-    background: #37e1ad !important;
+    background: color-mix(in srgb, var(--ultima-color-primary) 86%, #ffffff) !important;
   }
 
   .ultima-desktop-workspace .ultima-btn-secondary {
-    border-color: #2b3742 !important;
-    color: #d8dfe5 !important;
-    background: #161e26 !important;
+    border-color: var(--ultima-desktop-border-strong) !important;
+    color: var(--ultima-text-strong) !important;
+    background: var(--ultima-desktop-surface-strong) !important;
   }
 
   .ultima-desktop-workspace .ultima-btn-secondary:hover {
-    border-color: #3b4956 !important;
-    background: #1b252e !important;
+    border-color: color-mix(in srgb, var(--ultima-color-ring) 38%, transparent) !important;
+    background: color-mix(in srgb, var(--ultima-desktop-surface-strong) 88%, #ffffff) !important;
   }
 
   .ultima-desktop-workspace [class*='rounded-[24px]'],
@@ -4446,11 +4388,11 @@ input[type='checkbox']:hover:not(:checked) {
   .ultima-desktop-workspace [class*='bg-white/[0.05]'],
   .ultima-desktop-workspace [class*='bg-white/[0.04]'],
   .ultima-desktop-workspace [class*='bg-white/[0.06]'] {
-    background-color: #171f27 !important;
+    background-color: color-mix(in srgb, var(--ultima-color-surface) 52%, transparent) !important;
   }
 
   .ultima-login {
-    background: #0a0e13 !important;
+    background: var(--ultima-bg-page-desktop) !important;
   }
 }
 
@@ -4469,8 +4411,7 @@ input[type='checkbox']:hover:not(:checked) {
     padding-left: 4px;
   }
 
-  .ultima-desktop-brand-copy,
-  .ultima-desktop-rail-status > div {
+  .ultima-desktop-brand-copy {
     display: block;
     min-width: 0;
   }
@@ -4496,14 +4437,6 @@ input[type='checkbox']:hover:not(:checked) {
 
   .ultima-desktop-admin-link > span {
     display: inline;
-  }
-
-  .ultima-desktop-rail-status {
-    justify-content: flex-start;
-  }
-
-  .ultima-desktop-security-label {
-    display: flex;
   }
 
   .ultima-desktop-stage-body.has-context {
