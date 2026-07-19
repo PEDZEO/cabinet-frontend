@@ -46,6 +46,8 @@ type QuickActionProps = {
   testId?: string;
 };
 
+type CryptoLinkKind = 'happ' | 'incy';
+
 function QuickAction({ icon, label, hint, onClick, primary = false, testId }: QuickActionProps) {
   return (
     <button
@@ -88,6 +90,7 @@ export function UltimaSubscriptionInfo() {
   const { openTelegramLink } = usePlatform();
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   const [linkCopied, setLinkCopied] = useState(false);
+  const [selectedCryptoLinkKind, setSelectedCryptoLinkKind] = useState<CryptoLinkKind>('happ');
   const [selectedTrafficPackage, setSelectedTrafficPackage] = useState<number | null>(null);
 
   const { data: purchaseOptions } = useQuery({
@@ -144,19 +147,21 @@ export function UltimaSubscriptionInfo() {
   const happCryptoLink = appConfig?.subscriptionCryptoLink?.trim() ?? '';
   const incyCryptoLink = appConfig?.subscriptionIncyCryptoLink?.trim() ?? '';
   const cryptoLinksEnabled = appConfig?.cryptoLinksEnabled !== false;
+  const activeCryptoLinkKind: CryptoLinkKind =
+    selectedCryptoLinkKind === 'incy' && incyCryptoLink ? 'incy' : happCryptoLink ? 'happ' : 'incy';
+  const activeCryptoLink = activeCryptoLinkKind === 'happ' ? happCryptoLink : incyCryptoLink;
   const subscriptionLink =
     subscription && !subscription.hide_subscription_link && appConfig
       ? cryptoLinksEnabled
-        ? happCryptoLink || incyCryptoLink
+        ? activeCryptoLink
         : rawSubscriptionLink
       : '';
   const subscriptionLinkKind = !subscriptionLink
     ? null
     : cryptoLinksEnabled
-      ? happCryptoLink
-        ? 'happ'
-        : 'incy'
+      ? activeCryptoLinkKind
       : 'regular';
+  const canChooseCryptoLink = cryptoLinksEnabled && !!happCryptoLink && !!incyCryptoLink;
   const subscriptionLinkMeta =
     subscriptionLinkKind === 'happ'
       ? 'Happ · crypt5'
@@ -271,6 +276,12 @@ export function UltimaSubscriptionInfo() {
     await copyToClipboard(subscriptionLink);
     setLinkCopied(true);
     window.setTimeout(() => setLinkCopied(false), 1400);
+  };
+
+  const selectCryptoLink = (kind: CryptoLinkKind) => {
+    haptic.selection();
+    setLinkCopied(false);
+    setSelectedCryptoLinkKind(kind);
   };
 
   const shareSubscriptionLink = async () => {
@@ -430,8 +441,43 @@ export function UltimaSubscriptionInfo() {
             </p>
           </div>
         </div>
+        {canChooseCryptoLink ? (
+          <div
+            data-testid="ultima-subscription-link-selector"
+            role="radiogroup"
+            aria-label={t('ultima.subscriptionInfo.linkApp')}
+            className="mt-3 grid grid-cols-2 gap-1 rounded-[14px] border border-white/[0.08] bg-black/[0.14] p-1 lg:rounded-[7px]"
+          >
+            {(
+              [
+                ['happ', 'Happ', 'crypt5'],
+                ['incy', 'INCY', 'crypt1'],
+              ] as const
+            ).map(([kind, label, protocol]) => {
+              const isSelected = subscriptionLinkKind === kind;
+              return (
+                <button
+                  key={kind}
+                  type="button"
+                  role="radio"
+                  aria-checked={isSelected}
+                  data-testid={`ultima-subscription-link-${kind}`}
+                  onClick={() => selectCryptoLink(kind)}
+                  className={`flex min-h-[38px] items-center justify-center gap-2 rounded-[10px] border px-3 py-2 text-[12px] font-semibold transition-colors lg:rounded-[5px] ${
+                    isSelected
+                      ? 'border-emerald-200/[0.24] bg-emerald-300/[0.14] text-emerald-50'
+                      : 'border-transparent text-white/[0.52] hover:bg-white/[0.05] hover:text-white/[0.78]'
+                  }`}
+                >
+                  <span>{label}</span>
+                  <span className="text-[9px] font-medium uppercase opacity-65">{protocol}</span>
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
         <div
-          className={`${ultimaPaneClassName} mt-3 flex min-w-0 items-center gap-2 px-3 py-2.5`}
+          className={`${ultimaPaneClassName} ${canChooseCryptoLink ? 'mt-2' : 'mt-3'} flex min-w-0 items-center gap-2 px-3 py-2.5`}
           style={ultimaPaneSurfaceStyle}
         >
           <p className="min-w-0 flex-1 truncate text-[12px] text-white/[0.72]">

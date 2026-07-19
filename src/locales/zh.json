@@ -3813,6 +3813,7 @@
       "manageDevices": "设备",
       "subscriptionLink": "连接链接",
       "linkHint": "复制链接或发送到其他设备。",
+      "linkApp": "连接应用",
       "copyLink": "复制",
       "shareLink": "分享",
       "copied": "链接已复制",

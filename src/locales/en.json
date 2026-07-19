@@ -4878,6 +4878,7 @@
       "manageDevices": "Devices",
       "subscriptionLink": "Connection link",
       "linkHint": "Copy the link or send it to another device.",
+      "linkApp": "Connection app",
       "copyLink": "Copy",
       "shareLink": "Share",
       "copied": "Link copied",

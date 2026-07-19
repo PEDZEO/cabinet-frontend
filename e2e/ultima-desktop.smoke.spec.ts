@@ -907,6 +907,17 @@ test.describe('Ultima subscription information', () => {
     await expect(subscriptionLink).toHaveAttribute('data-link-kind', 'happ');
     await expect(subscriptionLink).toContainText('happ://crypt5/backend-happ-payload');
     await expect(subscriptionLink).not.toContainText(SUBSCRIPTION.subscription_url);
+    const linkSelector = page.getByTestId('ultima-subscription-link-selector');
+    await expect(linkSelector).toBeVisible();
+    await expect(page.getByTestId('ultima-subscription-link-happ')).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    await page.getByTestId('ultima-subscription-link-incy').click();
+    await expect(subscriptionLink).toHaveAttribute('data-link-kind', 'incy');
+    await expect(subscriptionLink).toContainText('incy://crypt1/backend-incy-payload');
+    await expect(subscriptionLink).not.toContainText('happ://crypt5/backend-happ-payload');
+    await expect(subscriptionLink).not.toContainText(SUBSCRIPTION.subscription_url);
     await expect(page.getByTestId('ultima-subscription-info-primary-action')).toContainText(
       'Продлить подписку',
     );
@@ -957,6 +968,7 @@ test.describe('Ultima subscription information', () => {
     await expect(subscriptionLink).toContainText(SUBSCRIPTION.subscription_url);
     await expect(subscriptionLink).not.toContainText('happ://crypt5/');
     await expect(subscriptionLink).not.toContainText('incy://crypt1/');
+    await expect(page.getByTestId('ultima-subscription-link-selector')).toHaveCount(0);
     await expectNoHorizontalOverflow(page);
   });
 });
