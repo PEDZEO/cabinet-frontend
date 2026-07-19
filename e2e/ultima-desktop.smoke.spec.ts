@@ -925,8 +925,34 @@ test.describe('Ultima device management', () => {
     await expect(page.getByTestId('ultima-device-limit-apply')).toContainText('Уменьшить до 2');
 
     await page.getByTestId('ultima-device-primary-action').click();
-    await expect(page.locator('#ultima-connect-new-device[role="dialog"]')).toBeVisible();
-    await expect(page.getByTestId('ultima-device-qr')).toBeVisible();
+    const connectionDialog = page.locator('#ultima-connect-new-device[role="dialog"]');
+    await expect(connectionDialog).toBeVisible();
+    await expect(page.getByTestId('ultima-device-link-happ')).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    await expect(page.getByTestId('ultima-device-link-meta')).toContainText('crypt5');
+    await expect(page.getByTestId('ultima-device-qr')).toHaveAttribute(
+      'data-connection-kind',
+      'happ',
+    );
+    await expect(connectionDialog).not.toContainText(SUBSCRIPTION.subscription_url);
+
+    await page.getByTestId('ultima-device-link-incy').click();
+    await expect(page.getByTestId('ultima-device-link-meta')).toContainText('crypt1');
+    await expect(page.getByTestId('ultima-device-qr')).toHaveAttribute(
+      'data-connection-kind',
+      'incy',
+    );
+
+    await page.getByTestId('ultima-device-link-other').click();
+    await expect(page.getByTestId('ultima-device-raw-link')).toHaveText(
+      SUBSCRIPTION.subscription_url,
+    );
+    await expect(page.getByTestId('ultima-device-qr')).toHaveAttribute(
+      'data-connection-kind',
+      'other',
+    );
     await expectNoHorizontalOverflow(page);
   });
 

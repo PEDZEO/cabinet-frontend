@@ -12,15 +12,9 @@ import { useAuthStore } from '../store/auth';
 import type { AppConfig, RemnawavePlatformData } from '../types';
 import InstallationGuide from '../components/connection/InstallationGuide';
 import { markLiteOnboardingStep } from '@/features/lite/onboardingFlow';
+import { buildTelegramDeepLinkHandoff } from '@/utils/deepLinkHandoff';
 import { useUltimaMode } from '@/hooks/useUltimaMode';
 import { UltimaConnection } from './UltimaConnection';
-
-const buildTelegramDeepLinkHandoff = (deepLink: string): string => {
-  const handoffUrl = new URL('/miniapp/redirect.html', window.location.origin);
-  handoffUrl.searchParams.set('url', deepLink);
-  handoffUrl.searchParams.set('lang', document.documentElement.lang || navigator.language || 'ru');
-  return handoffUrl.toString();
-};
 
 export default function Connection() {
   const { t } = useTranslation();

@@ -1,9 +1,20 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { QRCodeSVG } from 'qrcode.react';
-import { Link2, MoreHorizontal, QrCode, Smartphone, Trash2, X } from 'lucide-react';
+import { openLink as sdkOpenLink } from '@telegram-apps/sdk-react';
+import {
+  ExternalLink,
+  Globe2,
+  Link2,
+  MoreHorizontal,
+  QrCode,
+  ShieldCheck,
+  Smartphone,
+  Trash2,
+  X,
+} from 'lucide-react';
 import { balanceApi } from '@/api/balance';
 import { subscriptionApi } from '@/api/subscription';
 import { UltimaDeviceStepper } from '@/components/ultima/UltimaDeviceStepper';
@@ -14,8 +25,10 @@ import {
 import { useCurrency } from '@/hooks/useCurrency';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useTelegramSDK } from '@/hooks/useTelegramSDK';
 import { copyToClipboard } from '@/utils/clipboard';
 import { trackAnalyticsEvent } from '@/utils/analyticsEvents';
+import { buildTelegramDeepLinkHandoff } from '@/utils/deepLinkHandoff';
 
 const DeviceIcon = () => <Smartphone className="h-5 w-5" strokeWidth={1.8} />;
 
@@ -33,6 +46,16 @@ type ApiErrorLike = {
   };
 };
 
+type DeviceConnectionKind = 'happ' | 'incy' | 'other';
+
+type DeviceConnectionOption = {
+  kind: DeviceConnectionKind;
+  label: string;
+  meta: string;
+  url: string;
+  protected: boolean;
+};
+
 export function UltimaDevices() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -40,6 +63,7 @@ export function UltimaDevices() {
   const queryClient = useQueryClient();
   const { formatAmount, currencySymbol } = useCurrency();
   const isDesktop = useMediaQuery('(min-width: 1024px)');
+  const { isTelegramWebApp } = useTelegramSDK();
 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -47,6 +71,8 @@ export function UltimaDevices() {
   const [isConnectionPanelOpen, setIsConnectionPanelOpen] = useState(false);
   const [isDevicesMenuOpen, setIsDevicesMenuOpen] = useState(false);
   const [showAllDevices, setShowAllDevices] = useState(false);
+  const [selectedConnectionKind, setSelectedConnectionKind] =
+    useState<DeviceConnectionKind>('happ');
   const autoConnectHandledRef = useRef(false);
 
   const { data: purchaseOptions } = useQuery({
@@ -76,6 +102,18 @@ export function UltimaDevices() {
     !subscriptionData?.subscription?.is_expired,
   );
   const currentLimit = subscriptionData?.subscription?.device_limit ?? 0;
+
+  const {
+    data: appConfig,
+    isLoading: appConfigLoading,
+    isError: appConfigFailed,
+  } = useQuery({
+    queryKey: ['appConfig'],
+    queryFn: subscriptionApi.getAppConfig,
+    enabled: hasSubscription,
+    staleTime: 60000,
+    placeholderData: (previousData) => previousData,
+  });
 
   const { data: devicesData, isLoading: devicesLoading } = useQuery({
     queryKey: ['devices'],
@@ -237,7 +275,64 @@ export function UltimaDevices() {
   const subscriptionLink = subscriptionData?.subscription?.subscription_url ?? '';
   const hideSubscriptionLink = Boolean(subscriptionData?.subscription?.hide_subscription_link);
   const canUseSubscriptionLink = subscriptionLink.length > 0;
-  const canCopySubscriptionLink = canUseSubscriptionLink && !hideSubscriptionLink;
+  const connectionOptions = useMemo<DeviceConnectionOption[]>(() => {
+    const options: DeviceConnectionOption[] = [];
+    const happCryptoLink = appConfig?.subscriptionCryptoLink?.trim();
+    const incyCryptoLink = appConfig?.subscriptionIncyCryptoLink?.trim();
+
+    if (happCryptoLink) {
+      options.push({
+        kind: 'happ',
+        label: 'Happ',
+        meta: t('devices.connectionMethodHappMeta', {
+          defaultValue: 'Защищенная ссылка · crypt5',
+        }),
+        url: happCryptoLink,
+        protected: true,
+      });
+    }
+
+    if (incyCryptoLink) {
+      options.push({
+        kind: 'incy',
+        label: 'INCY',
+        meta: t('devices.connectionMethodIncyMeta', {
+          defaultValue: 'Защищенная ссылка · crypt1',
+        }),
+        url: incyCryptoLink,
+        protected: true,
+      });
+    }
+
+    if (subscriptionLink && (!hideSubscriptionLink || options.length === 0)) {
+      options.push({
+        kind: 'other',
+        label: t('devices.connectionMethodOther', { defaultValue: 'Другие' }),
+        meta: t('devices.connectionMethodOtherMeta', {
+          defaultValue: 'Универсальная ссылка',
+        }),
+        url: subscriptionLink,
+        protected: false,
+      });
+    }
+
+    return options;
+  }, [
+    appConfig?.subscriptionCryptoLink,
+    appConfig?.subscriptionIncyCryptoLink,
+    hideSubscriptionLink,
+    subscriptionLink,
+    t,
+  ]);
+  const selectedConnectionOption =
+    connectionOptions.find((option) => option.kind === selectedConnectionKind) ??
+    connectionOptions[0] ??
+    null;
+  const selectedConnectionUrl = selectedConnectionOption?.url ?? '';
+  const isConnectionConfigPending = appConfigLoading && !appConfig && !appConfigFailed;
+  const canCopySelectedConnection =
+    Boolean(selectedConnectionUrl) &&
+    (selectedConnectionOption?.protected === true || !hideSubscriptionLink);
   const isBusy =
     purchaseMutation.isPending ||
     reduceMutation.isPending ||
@@ -323,8 +418,8 @@ export function UltimaDevices() {
     return () => window.removeEventListener('keydown', closeOnEscape);
   }, [isConnectionPanelOpen]);
 
-  const copySubscriptionLink = async () => {
-    if (!canCopySubscriptionLink) {
+  const copySelectedConnectionLink = async () => {
+    if (!canCopySelectedConnection || !selectedConnectionOption) {
       setSuccess(null);
       setError(
         t('devices.subscriptionLinkHidden', {
@@ -334,18 +429,50 @@ export function UltimaDevices() {
       return;
     }
 
-    await copyToClipboard(subscriptionLink);
+    await copyToClipboard(selectedConnectionOption.url);
     trackAnalyticsEvent('ultima_device_subscription_link_copy', {
       connected_devices: connectedCount,
       device_limit: currentLimit,
       free_slots: availableDeviceSlots,
+      client: selectedConnectionOption.kind,
+      protected_link: selectedConnectionOption.protected,
     });
     setError(null);
     setSuccess(
-      t('devices.subscriptionLinkCopied', {
-        defaultValue: 'Ссылка подписки скопирована',
+      t('devices.selectedConnectionLinkCopied', {
+        client: selectedConnectionOption.label,
+        defaultValue: `Ссылка для ${selectedConnectionOption.label} скопирована`,
       }),
     );
+  };
+
+  const openSelectedConnectionLink = () => {
+    if (!selectedConnectionOption) return;
+
+    const targetUrl = selectedConnectionOption.url;
+    const isHttpUrl = /^https?:\/\//i.test(targetUrl);
+    const externalUrl =
+      isTelegramWebApp && !isHttpUrl ? buildTelegramDeepLinkHandoff(targetUrl) : targetUrl;
+
+    trackAnalyticsEvent('ultima_device_subscription_link_open', {
+      connected_devices: connectedCount,
+      device_limit: currentLimit,
+      free_slots: availableDeviceSlots,
+      client: selectedConnectionOption.kind,
+      protected_link: selectedConnectionOption.protected,
+    });
+
+    if (isTelegramWebApp) {
+      try {
+        sdkOpenLink(externalUrl, { tryInstantView: false });
+        return;
+      } catch {
+        window.location.href = externalUrl;
+        return;
+      }
+    }
+
+    window.location.href = targetUrl;
   };
 
   const handleDeviceCapacityCta = () => {
@@ -781,48 +908,132 @@ export function UltimaDevices() {
                   </button>
                 </div>
 
-                <div className="mx-auto mt-4 w-fit rounded-xl bg-white p-3">
-                  <QRCodeSVG
-                    data-testid="ultima-device-qr"
-                    value={subscriptionLink}
-                    size={164}
-                    level="M"
-                    includeMargin={false}
-                  />
-                </div>
+                {isConnectionConfigPending ? (
+                  <div
+                    data-testid="ultima-device-connection-loading"
+                    className="mt-4 animate-pulse"
+                    aria-busy="true"
+                  >
+                    <div className="mx-auto h-[188px] w-[188px] rounded-xl bg-white/[0.08]" />
+                    <div className="mt-3 h-11 rounded-xl bg-white/[0.055]" />
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      <div className="h-10 rounded-xl bg-white/[0.055]" />
+                      <div className="h-10 rounded-xl bg-white/[0.055]" />
+                    </div>
+                  </div>
+                ) : selectedConnectionOption ? (
+                  <>
+                    {connectionOptions.length > 1 ? (
+                      <div className="mt-4">
+                        <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-white/[0.42]">
+                          {t('devices.connectionMethodTitle', {
+                            defaultValue: 'Выберите приложение',
+                          })}
+                        </p>
+                        <div
+                          role="radiogroup"
+                          aria-label={t('devices.connectionMethodTitle', {
+                            defaultValue: 'Выберите приложение',
+                          })}
+                          className="mt-2 grid grid-cols-3 gap-1 rounded-xl border border-white/[0.07] bg-black/20 p-1"
+                        >
+                          {connectionOptions.map((option) => {
+                            const isSelected = option.kind === selectedConnectionOption.kind;
+                            return (
+                              <button
+                                key={option.kind}
+                                type="button"
+                                role="radio"
+                                aria-checked={isSelected}
+                                data-testid={`ultima-device-link-${option.kind}`}
+                                onClick={() => setSelectedConnectionKind(option.kind)}
+                                className={`flex min-h-9 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-[11px] font-semibold transition-colors ${
+                                  isSelected
+                                    ? 'bg-emerald-300 text-emerald-950 shadow-[0_6px_18px_rgba(52,211,153,0.16)]'
+                                    : 'text-white/[0.58] hover:bg-white/[0.055] hover:text-white'
+                                }`}
+                              >
+                                {option.protected ? (
+                                  <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2} />
+                                ) : (
+                                  <Globe2 className="h-3.5 w-3.5" strokeWidth={2} />
+                                )}
+                                <span className="truncate">{option.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : null}
 
-                {hideSubscriptionLink ? (
-                  <p className="mt-4 text-center text-[11px] leading-relaxed text-white/[0.48]">
-                    {t('devices.subscriptionLinkHiddenText', {
-                      defaultValue: 'Ссылка скрыта настройками. Используйте QR-код.',
+                    <div className="mx-auto mt-4 w-fit rounded-xl bg-white p-3">
+                      <QRCodeSVG
+                        key={selectedConnectionOption.kind}
+                        data-testid="ultima-device-qr"
+                        data-connection-kind={selectedConnectionOption.kind}
+                        value={selectedConnectionUrl}
+                        size={164}
+                        level="M"
+                        includeMargin={false}
+                      />
+                    </div>
+
+                    <div
+                      data-testid="ultima-device-link-meta"
+                      className="mt-3 flex items-center justify-center gap-2 text-center text-[11px] text-emerald-100/[0.72]"
+                    >
+                      {selectedConnectionOption.protected ? (
+                        <ShieldCheck className="h-4 w-4 text-emerald-300" strokeWidth={2} />
+                      ) : (
+                        <Globe2 className="h-4 w-4 text-white/[0.52]" strokeWidth={2} />
+                      )}
+                      <span>{selectedConnectionOption.meta}</span>
+                    </div>
+
+                    {selectedConnectionOption.kind === 'other' ? (
+                      hideSubscriptionLink ? (
+                        <p className="mt-3 text-center text-[11px] leading-relaxed text-white/[0.48]">
+                          {t('devices.subscriptionLinkHiddenText', {
+                            defaultValue: 'Ссылка скрыта настройками. Используйте QR-код.',
+                          })}
+                        </p>
+                      ) : (
+                        <p
+                          data-testid="ultima-device-raw-link"
+                          className="mt-3 truncate rounded-xl bg-white/[0.045] px-3 py-2.5 font-mono text-[10px] text-white/[0.58]"
+                        >
+                          {selectedConnectionUrl}
+                        </p>
+                      )
+                    ) : null}
+
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => void copySelectedConnectionLink()}
+                        disabled={!canCopySelectedConnection}
+                        className="ultima-btn-pill ultima-btn-primary flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-[12px] font-semibold disabled:cursor-not-allowed disabled:opacity-45"
+                      >
+                        <Link2 className="h-4 w-4" strokeWidth={2} />
+                        {t('devices.copySubscriptionLink', { defaultValue: 'Копировать' })}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={openSelectedConnectionLink}
+                        className="ultima-btn-pill ultima-btn-secondary flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-center text-[12px] font-semibold"
+                      >
+                        <ExternalLink className="h-4 w-4" strokeWidth={2} />
+                        {t('common.open', { defaultValue: 'Открыть' })}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <p className="mt-4 rounded-xl border border-rose-200/[0.14] bg-rose-300/[0.06] px-3 py-3 text-center text-[12px] text-rose-100">
+                    {t('devices.subscriptionLinkUnavailable', {
+                      defaultValue: 'Ссылка подписки пока недоступна. Попробуйте позже.',
                     })}
                   </p>
-                ) : (
-                  <p className="mt-4 truncate rounded-xl bg-white/[0.045] px-3 py-2.5 font-mono text-[10px] text-white/[0.58]">
-                    {subscriptionLink}
-                  </p>
                 )}
-
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => void copySubscriptionLink()}
-                    disabled={!canCopySubscriptionLink}
-                    className="ultima-btn-pill ultima-btn-primary flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-[12px] font-semibold disabled:cursor-not-allowed disabled:opacity-45"
-                  >
-                    <Link2 className="h-4 w-4" strokeWidth={2} />
-                    {t('devices.copySubscriptionLink', { defaultValue: 'Копировать' })}
-                  </button>
-                  <a
-                    href={subscriptionLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="ultima-btn-pill ultima-btn-secondary flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-center text-[12px] font-semibold"
-                  >
-                    <QrCode className="h-4 w-4" strokeWidth={2} />
-                    {t('common.open', { defaultValue: 'Открыть' })}
-                  </a>
-                </div>
               </section>
             </div>
           ) : null}
