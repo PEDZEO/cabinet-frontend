@@ -1,148 +1,217 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirecting...</title>
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <title>Ultimteam VPN</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+        margin: 0;
+      }
+
+      body {
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background: #07131c;
+        color: #f4fffc;
+        font-family:
+          Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      main {
+        width: min(100%, 420px);
+        text-align: center;
+      }
+
+      .mark {
+        display: grid;
+        width: 72px;
+        height: 72px;
+        margin: 0 auto 24px;
+        place-items: center;
+        border: 1px solid rgba(129, 255, 218, 0.28);
+        border-radius: 50%;
+        background: #0d2528;
+        box-shadow: 0 0 36px rgba(32, 212, 162, 0.18);
+      }
+
+      .mark::after {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #28d7a6;
+        content: "";
+        box-shadow: 0 0 18px rgba(40, 215, 166, 0.8);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: 0;
+      }
+
+      p {
+        margin: 10px auto 0;
+        color: rgba(226, 245, 239, 0.68);
+        font-size: 15px;
+        line-height: 1.5;
+      }
+
+      .progress {
+        width: 128px;
+        height: 3px;
+        margin: 28px auto 0;
+        overflow: hidden;
+        border-radius: 3px;
+        background: rgba(255, 255, 255, 0.09);
+      }
+
+      .progress::after {
+        display: block;
+        width: 48%;
+        height: 100%;
+        border-radius: inherit;
+        background: #28d7a6;
+        content: "";
+        animation: loading 1s ease-in-out infinite alternate;
+      }
+
+      @keyframes loading {
+        from {
+          transform: translateX(-15%);
         }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
+        to {
+          transform: translateX(125%);
         }
-        @media (prefers-color-scheme: light) {
-            body {
-                background: linear-gradient(135deg, #f5f5f7 0%, #e5e7eb 100%);
-                color: #1d1d1f;
-            }
-            .spinner {
-                border-color: rgba(0,0,0,0.1);
-                border-top-color: #3b82f6;
-            }
-            .error {
-                background: rgba(0,0,0,0.05);
-            }
-            .btn {
-                background: #3b82f6;
-                color: #fff;
-            }
-        }
-        .container {
-            text-align: center;
-            padding: 2rem;
-        }
-        .spinner {
-            width: 48px;
-            height: 48px;
-            border: 4px solid rgba(255,255,255,0.2);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1.5rem;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        h1 {
-            font-size: 1.25rem;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-        }
-        p {
-            font-size: 0.875rem;
-            opacity: 0.7;
-        }
-        .error {
-            display: none;
-            margin-top: 1.5rem;
-            padding: 1rem;
-            background: rgba(255,255,255,0.1);
-            border-radius: 8px;
-        }
-        .error.show {
-            display: block;
-        }
-        .btn {
-            display: inline-block;
-            margin-top: 1rem;
-            padding: 0.75rem 1.5rem;
-            background: #fff;
-            color: #1a1a2e;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 500;
-        }
+      }
+
+      .fallback {
+        display: none;
+        margin-top: 28px;
+      }
+
+      .fallback.visible {
+        display: block;
+      }
+
+      .button {
+        display: flex;
+        min-height: 52px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: #28d7a6;
+        color: #04120f;
+        font-size: 16px;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .error .mark::after {
+        background: #ffb454;
+        box-shadow: 0 0 18px rgba(255, 180, 84, 0.65);
+      }
+
+      .error .progress {
+        display: none;
+      }
     </style>
-</head>
-<body>
-    <div class="container">
-        <div class="spinner"></div>
-        <h1 id="title">Opening app...</h1>
-        <p id="subtitle">Please wait</p>
-        <div class="error" id="errorBlock">
-            <p id="errorText">If the app didn't open, click the button below:</p>
-            <a class="btn" id="manualBtn" href="#">Open App</a>
-        </div>
-    </div>
+  </head>
+  <body>
+    <main id="content">
+      <div class="mark" aria-hidden="true"></div>
+      <h1 id="title">Открываем приложение</h1>
+      <p id="description">Передаем подписку в выбранный VPN-клиент.</p>
+      <div class="progress" aria-hidden="true"></div>
+      <div class="fallback" id="fallback">
+        <a class="button" id="openButton" href="#">Открыть приложение</a>
+        <p id="fallbackHint">Если приложение не открылось автоматически, нажмите кнопку.</p>
+      </div>
+    </main>
 
     <script>
-        (function() {
-            const params = new URLSearchParams(window.location.search);
-            const url = params.get('url');
-            const lang = params.get('lang') || 'en';
+      (() => {
+        const params = new URLSearchParams(window.location.search);
+        const deepLink = params.get('url') || '';
+        const shouldAutostart = params.get('autostart') !== '0';
+        const requestedLanguage = (params.get('lang') || navigator.language || 'ru').toLowerCase();
+        const language = requestedLanguage.startsWith('ru') ? 'ru' : 'en';
+        const texts = {
+          ru: {
+            title: 'Открываем приложение',
+            description: 'Передаем подписку в выбранный VPN-клиент.',
+            button: 'Открыть приложение',
+            hint: 'Если приложение не открылось автоматически, нажмите кнопку.',
+            errorTitle: 'Некорректная ссылка',
+            errorDescription: 'Вернитесь в кабинет и повторите добавление подписки.',
+          },
+          en: {
+            title: 'Opening the app',
+            description: 'Passing your subscription to the selected VPN client.',
+            button: 'Open app',
+            hint: 'If the app did not open automatically, tap the button.',
+            errorTitle: 'Invalid link',
+            errorDescription: 'Return to the cabinet and try adding the subscription again.',
+          },
+        };
+        const t = texts[language];
+        const content = document.getElementById('content');
+        const title = document.getElementById('title');
+        const description = document.getElementById('description');
+        const fallback = document.getElementById('fallback');
+        const openButton = document.getElementById('openButton');
+        const fallbackHint = document.getElementById('fallbackHint');
+        const blockedProtocols = new Set([
+          'about:',
+          'blob:',
+          'data:',
+          'file:',
+          'http:',
+          'https:',
+          'javascript:',
+          'vbscript:',
+        ]);
 
-            const texts = {
-                en: {
-                    title: 'Opening app...',
-                    subtitle: 'Please wait',
-                    error: "If the app didn't open, click the button below:",
-                    btn: 'Open App',
-                    noUrl: 'No URL provided'
-                },
-                ru: {
-                    title: 'Открываем приложение...',
-                    subtitle: 'Пожалуйста, подождите',
-                    error: 'Если приложение не открылось, нажмите кнопку:',
-                    btn: 'Открыть приложение',
-                    noUrl: 'URL не указан'
-                }
-            };
+        const isSafeCustomProtocol = (value) => {
+          try {
+            const parsed = new URL(value);
+            return /^[a-z][a-z0-9+.-]*:$/.test(parsed.protocol) && !blockedProtocols.has(parsed.protocol);
+          } catch {
+            return false;
+          }
+        };
 
-            const t = texts[lang] || texts.en;
+        title.textContent = t.title;
+        description.textContent = t.description;
+        openButton.textContent = t.button;
+        fallbackHint.textContent = t.hint;
 
-            document.getElementById('title').textContent = t.title;
-            document.getElementById('subtitle').textContent = t.subtitle;
-            document.getElementById('errorText').textContent = t.error;
-            document.getElementById('manualBtn').textContent = t.btn;
+        if (!isSafeCustomProtocol(deepLink)) {
+          content.classList.add('error');
+          title.textContent = t.errorTitle;
+          description.textContent = t.errorDescription;
+          return;
+        }
 
-            if (!url) {
-                document.getElementById('title').textContent = t.noUrl;
-                document.getElementById('subtitle').textContent = '';
-                document.querySelector('.spinner').style.display = 'none';
-                return;
-            }
-
-            const manualBtn = document.getElementById('manualBtn');
-            manualBtn.href = url;
-
-            // Try to open the URL scheme directly
-            // This page is opened in external browser, so custom schemes work
-            window.location.href = url;
-
-            // Show manual button after a delay in case redirect didn't work
-            setTimeout(function() {
-                document.getElementById('errorBlock').classList.add('show');
-            }, 2000);
-        })();
+        openButton.href = deepLink;
+        if (shouldAutostart) {
+          window.setTimeout(() => fallback.classList.add('visible'), 1400);
+          window.requestAnimationFrame(() => {
+            window.location.href = deepLink;
+          });
+        } else {
+          fallback.classList.add('visible');
+        }
+      })();
     </script>
-</body>
+  </body>
 </html>

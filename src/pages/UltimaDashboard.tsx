@@ -907,9 +907,6 @@ export function UltimaDashboard() {
     trafficWarningRemainingGb,
   ]);
 
-  const canPermanentlyHideReminder = Boolean(
-    subscription?.is_active && !subscription?.is_expired && !subscription?.is_trial,
-  );
   const hasSetupReminder = connectionStep === 2 && !isReminderHidden && !isConnectionCompleted;
   const showTrialSetupCard =
     isActiveTrial &&
@@ -917,11 +914,6 @@ export function UltimaDashboard() {
     !isConnectionCompleted &&
     !isTrialGuideVisible &&
     isTrialGuideAcknowledged;
-  const hasCompactSetupReminder =
-    connectionStep !== 3 &&
-    isReminderHidden &&
-    canPermanentlyHideReminder &&
-    !isConnectionCompleted;
   const showConnectionCtaHighlight =
     isTrialGuideVisible || (showTrialSetupCard && !hasSetupReminder);
   const firstPromoOffer = useMemo(
@@ -1491,8 +1483,6 @@ export function UltimaDashboard() {
           firstPromoOffer={firstPromoOffer}
           showTrialSetupCard={desktopShowTrialSetupCard}
           trialGuide={desktopTrialGuide}
-          hasSetupReminder={hasSetupReminder}
-          hasCompactSetupReminder={hasCompactSetupReminder}
           showConnectionCtaHighlight={showConnectionCtaHighlight}
           onPrimaryAction={handlePrimaryAction}
           onBuySubscription={openSubscriptionPurchase}
@@ -1533,48 +1523,6 @@ export function UltimaDashboard() {
             >
               {promoMessage}
             </div>
-          )}
-
-          {hasSetupReminder && (
-            <div className="mb-4 rounded-2xl border border-emerald-200/[0.24] bg-[rgba(12,45,42,0.38)] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_24px_rgba(3,14,24,0.28)] backdrop-blur-md">
-              <p className="text-[16px] font-semibold leading-tight text-white/95">
-                {t('ultima.setupNotFinishedTitle', { defaultValue: 'Установка не завершена' })}
-              </p>
-              <p className="mt-1 text-[13px] leading-snug text-white/75">
-                {t('ultima.setupNotFinishedDesc', {
-                  defaultValue: 'Вернитесь к настройке и завершите подключение VPN.',
-                })}
-              </p>
-              <button
-                type="button"
-                onClick={() => openConnection()}
-                className="ultima-btn-pill ultima-btn-primary mt-2.5 flex w-full items-center justify-center px-4 py-2.5 text-[15px]"
-              >
-                {t('ultima.finishSetup', { defaultValue: 'Завершить установку' })}
-              </button>
-            </div>
-          )}
-
-          {hasCompactSetupReminder && (
-            <button
-              type="button"
-              onClick={() => openConnection()}
-              className="mb-4 flex w-full items-center justify-between gap-3 rounded-2xl border border-emerald-200/[0.16] bg-[rgba(12,45,42,0.28)] px-4 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_24px_rgba(3,14,24,0.18)] backdrop-blur-md transition hover:bg-[rgba(16,58,54,0.34)]"
-            >
-              <div className="min-w-0">
-                <p className="text-[14px] font-semibold leading-tight text-white/95">
-                  {t('ultima.setupCompactTitle', { defaultValue: 'VPN ещё не настроен' })}
-                </p>
-                <p className="mt-1 text-[12px] leading-snug text-white/[0.68]">
-                  {t('ultima.setupCompactDesc', {
-                    defaultValue: 'Откройте установку и завершите подключение, когда будет удобно.',
-                  })}
-                </p>
-              </div>
-              <span className="shrink-0 text-[12px] font-medium text-emerald-200/90">
-                {t('ultima.finishSetup', { defaultValue: 'Завершить установку' })}
-              </span>
-            </button>
           )}
 
           {pendingTopUp?.paymentUrl ? (

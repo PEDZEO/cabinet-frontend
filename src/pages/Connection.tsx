@@ -15,6 +15,13 @@ import { markLiteOnboardingStep } from '@/features/lite/onboardingFlow';
 import { useUltimaMode } from '@/hooks/useUltimaMode';
 import { UltimaConnection } from './UltimaConnection';
 
+const buildTelegramDeepLinkHandoff = (deepLink: string): string => {
+  const handoffUrl = new URL('/miniapp/redirect.html', window.location.origin);
+  handoffUrl.searchParams.set('url', deepLink);
+  handoffUrl.searchParams.set('lang', document.documentElement.lang || navigator.language || 'ru');
+  return handoffUrl.toString();
+};
+
 export default function Connection() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -157,18 +164,20 @@ export default function Connection() {
       }
 
       const isHttpUrl = /^https?:\/\//i.test(resolved);
-      if (isTelegramWebApp && isHttpUrl) {
+      if (isTelegramWebApp) {
+        const externalUrl = isHttpUrl ? resolved : buildTelegramDeepLinkHandoff(resolved);
         try {
-          sdkOpenLink(resolved, { tryInstantView: false });
+          sdkOpenLink(externalUrl, { tryInstantView: false });
           return;
         } catch {
-          // SDK not available, fallback
+          window.location.href = externalUrl;
+          return;
         }
       }
 
-      // Custom client schemes must be launched directly. Wrapping them in an
-      // HTTP redirect loses the user gesture in desktop browsers and can open
-      // the wrong VPN client after returning to the cabinet.
+      // Regular browsers can hand a custom protocol directly to the OS. Telegram
+      // WebView only allows approved protocols through openLink, so it uses the
+      // HTTPS handoff above instead of rendering ERR_UNKNOWN_URL_SCHEME.
       window.location.href = resolved;
     },
     [isTelegramWebApp, resolveUrl, user?.id],

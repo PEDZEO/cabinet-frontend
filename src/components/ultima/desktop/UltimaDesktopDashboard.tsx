@@ -33,8 +33,6 @@ type UltimaDesktopDashboardProps = {
   firstPromoOffer: PromoOffer | null;
   showTrialSetupCard: boolean;
   trialGuide: ReactNode | null;
-  hasSetupReminder: boolean;
-  hasCompactSetupReminder: boolean;
   showConnectionCtaHighlight: boolean;
   onPrimaryAction: () => void;
   onBuySubscription: () => void;
@@ -287,8 +285,6 @@ export function UltimaDesktopDashboard({
   firstPromoOffer,
   showTrialSetupCard,
   trialGuide,
-  hasSetupReminder,
-  hasCompactSetupReminder,
   showConnectionCtaHighlight,
   onPrimaryAction,
   onBuySubscription,
@@ -370,49 +366,31 @@ export function UltimaDesktopDashboard({
     activeDiscount?.is_active === true
       ? activeDiscount.discount_percent
       : (firstPromoOffer?.discount_percent ?? null);
-  const supportCardTitle = hasSetupReminder
-    ? t('ultima.setupNotFinishedTitle', { defaultValue: 'Установка не завершена' })
-    : hasCompactSetupReminder
-      ? t('ultima.setupCompactTitle', { defaultValue: 'VPN ещё не настроен' })
-      : activeDiscount?.is_active === true
-        ? t('promo.offers.discountActiveTitle', {
-            percent: activeDiscount.discount_percent,
-            defaultValue: `Активна скидка ${activeDiscount.discount_percent}%`,
-          })
-        : firstPromoOffer
-          ? t('promo.offers.specialOffer', { defaultValue: 'Спецпредложение' })
-          : t('support.title', { defaultValue: 'Поддержка и навигация' });
-  const supportCardDescription = hasSetupReminder
-    ? t('ultima.setupNotFinishedDesc', {
-        defaultValue: 'Вернитесь к настройке и завершите подключение.',
-      })
-    : hasCompactSetupReminder
-      ? t('ultima.setupCompactDesc', {
-          defaultValue: 'Откройте установку и завершите подключение.',
+  const supportCardTitle =
+    activeDiscount?.is_active === true
+      ? t('promo.offers.discountActiveTitle', {
+          percent: activeDiscount.discount_percent,
+          defaultValue: `Активна скидка ${activeDiscount.discount_percent}%`,
         })
-      : activeDiscount?.is_active === true
-        ? t('promo.useNow', {
-            defaultValue: 'Скидка уже активна.',
-          })
-        : firstPromoOffer
-          ? t('promo.offers.activateDiscountHint', {
-              defaultValue: 'Зафиксируйте скидку перед оплатой.',
-            })
-          : t('ultima.desktop.supportHint', {
-              defaultValue: 'Откройте поддержку, устройства или детали доступа.',
-            });
-  const asideTitle =
-    hasSetupReminder || hasCompactSetupReminder
-      ? t('ultima.desktop.nextStepsTitle', { defaultValue: 'Что сделать дальше' })
-      : t('ultima.desktop.quickAccessTitle', { defaultValue: 'Под рукой' });
-  const asideSubtitle =
-    hasSetupReminder || hasCompactSetupReminder
-      ? t('ultima.desktop.nextStepsHint', {
-          defaultValue: 'Сначала завершите настройку, а потом откройте детали подписки.',
+      : firstPromoOffer
+        ? t('promo.offers.specialOffer', { defaultValue: 'Спецпредложение' })
+        : t('support.title', { defaultValue: 'Поддержка и навигация' });
+  const supportCardDescription =
+    activeDiscount?.is_active === true
+      ? t('promo.useNow', {
+          defaultValue: 'Скидка уже активна.',
         })
-      : t('ultima.desktop.quickAccessHint', {
-          defaultValue: 'Быстрый переход к подписке, поддержке и настройке VPN.',
-        });
+      : firstPromoOffer
+        ? t('promo.offers.activateDiscountHint', {
+            defaultValue: 'Зафиксируйте скидку перед оплатой.',
+          })
+        : t('ultima.desktop.supportHint', {
+            defaultValue: 'Откройте поддержку, устройства или детали доступа.',
+          });
+  const asideTitle = t('ultima.desktop.quickAccessTitle', { defaultValue: 'Под рукой' });
+  const asideSubtitle = t('ultima.desktop.quickAccessHint', {
+    defaultValue: 'Быстрый переход к подписке, поддержке и настройке VPN.',
+  });
 
   const renderSpotlightCard = () => {
     if (showTrialSetupCard && trialGuide) {
@@ -437,16 +415,7 @@ export function UltimaDesktopDashboard({
         </div>
 
         <div className="mt-5 flex flex-wrap gap-3">
-          {(hasSetupReminder || hasCompactSetupReminder) && (
-            <button
-              type="button"
-              onClick={onOpenConnection}
-              className="ultima-btn-pill ultima-btn-primary min-h-[48px] px-5 py-3 text-[15px]"
-            >
-              {t('ultima.finishSetup', { defaultValue: 'Завершить установку' })}
-            </button>
-          )}
-          {!hasSetupReminder && !hasCompactSetupReminder && onActivateOffer && firstPromoOffer && (
+          {onActivateOffer && firstPromoOffer && (
             <button
               type="button"
               onClick={onActivateOffer}
@@ -456,19 +425,17 @@ export function UltimaDesktopDashboard({
               {t('promo.activate', { defaultValue: 'Активировать' })}
             </button>
           )}
-          {!hasSetupReminder && !hasCompactSetupReminder && (
-            <button
-              type="button"
-              onClick={
-                firstPromoOffer || activeDiscount?.is_active ? onBuySubscription : onOpenSupport
-              }
-              className="ultima-btn-pill ultima-btn-primary min-h-[48px] px-5 py-3 text-[15px]"
-            >
-              {firstPromoOffer || activeDiscount?.is_active
-                ? t('promo.useNow', { defaultValue: 'Использовать' })
-                : t('support.title', { defaultValue: 'Поддержка' })}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={
+              firstPromoOffer || activeDiscount?.is_active ? onBuySubscription : onOpenSupport
+            }
+            className="ultima-btn-pill ultima-btn-primary min-h-[48px] px-5 py-3 text-[15px]"
+          >
+            {firstPromoOffer || activeDiscount?.is_active
+              ? t('promo.useNow', { defaultValue: 'Использовать' })
+              : t('support.title', { defaultValue: 'Поддержка' })}
+          </button>
         </div>
       </section>
     );

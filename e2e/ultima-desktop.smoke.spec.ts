@@ -1187,6 +1187,20 @@ test.describe('Ultima trial onboarding persistence', () => {
     await primaryCta.click();
     await expect(page).toHaveURL(/\/subscription$/);
   });
+
+  test('shows the unfinished setup action only once on mobile', async ({ page }) => {
+    await bootstrapUltimaDesktop(page, { connectionCompleted: false });
+    await page.addInitScript(() => {
+      localStorage.setItem('ultima_connection_flow_v1:99', '2');
+    });
+    await mockUltimaDesktopApi(page);
+
+    await page.goto('/');
+
+    await expect(page.getByTestId('ultima-primary-cta')).toContainText('Завершить установку');
+    await expect(page.getByText('Завершить установку', { exact: true })).toHaveCount(1);
+    await expect(page.getByText('Установка не завершена', { exact: true })).toHaveCount(0);
+  });
 });
 
 test.describe('Ultima connection setup', () => {
