@@ -198,6 +198,26 @@ const MULTI_PERIOD_TARIFF = {
   ],
 };
 
+const TRAFFIC_PACKAGES = [
+  {
+    gb: 10,
+    price_kopeks: 10000,
+    price_rubles: 100,
+    price_label: '100 ₽',
+    is_unlimited: false,
+    discount_percent: 0,
+  },
+  {
+    gb: 50,
+    price_kopeks: 35000,
+    price_rubles: 350,
+    price_label: '350 ₽',
+    is_unlimited: false,
+    base_price_kopeks: 50000,
+    discount_percent: 30,
+  },
+];
+
 function createFakeJwt(): string {
   const header = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9';
   const payload = 'eyJleHAiOjQxMDI0NDQ4MDAsInN1YiI6Ijk5In0';
@@ -238,6 +258,7 @@ async function mockUltimaDesktopApi(
     tariffs = [TARIFF],
     currentTariffId = 1,
     balanceKopeks = 125_000,
+    trafficPackages = TRAFFIC_PACKAGES,
   }: {
     isAdmin?: boolean;
     subscription?: typeof SUBSCRIPTION;
@@ -247,6 +268,7 @@ async function mockUltimaDesktopApi(
     tariffs?: Array<typeof TARIFF>;
     currentTariffId?: number | null;
     balanceKopeks?: number;
+    trafficPackages?: typeof TRAFFIC_PACKAGES;
   } = {},
 ): Promise<void> {
   await page.route('**/api/**', async (route: Route) => {
@@ -353,15 +375,7 @@ async function mockUltimaDesktopApi(
       return respond({ happ_enabled: false, platforms: {} });
     }
     if (path === '/cabinet/subscription/traffic-packages') {
-      return respond([
-        {
-          gb: 10,
-          price_kopeks: 10000,
-          price_label: '100 ₽',
-          is_unlimited: false,
-          expires_in_days: 30,
-        },
-      ]);
+      return respond(trafficPackages);
     }
     if (path === '/cabinet/balance') {
       return respond({ balance_kopeks: balanceKopeks, balance_rubles: balanceKopeks / 100 });
@@ -499,6 +513,11 @@ test.describe('Ultima desktop workspace', () => {
       'aria-expanded',
       'true',
     );
+    await expect(page.getByTestId('ultima-traffic-package-10')).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    await expect(page.getByTestId('ultima-traffic-order')).toContainText('30 дней');
   });
 
   for (const viewport of [
@@ -716,6 +735,53 @@ test.describe('Ultima subscription device selection', () => {
 });
 
 test.describe('Ultima subscription information', () => {
+  test('turns traffic top-up into one clear package and payment flow', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+    await page.goto('/ultima/subscription-info');
+
+    const topUp = page.getByTestId('ultima-traffic-top-up');
+    const toggle = page.getByTestId('ultima-traffic-top-up-toggle');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(topUp).toContainText('82 ГБ');
+    await expect(topUp).toContainText('от 100 ₽');
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.getByTestId('ultima-traffic-package-10')).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    const order = page.getByTestId('ultima-traffic-order');
+    await expect(order).toContainText('30 дней');
+    await expect(order).toContainText('1250 ₽');
+    await expect(page.getByTestId('ultima-traffic-purchase')).toHaveText('Купить 10 ГБ за 100 ₽');
+
+    await page.getByTestId('ultima-traffic-package-50').click();
+    await expect(page.getByTestId('ultima-traffic-purchase')).toHaveText('Купить 50 ГБ за 350 ₽');
+    await expectNoHorizontalOverflow(page);
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.getByTestId('ultima-traffic-package-10')).toHaveCount(0);
+    await expect(topUp).toBeVisible();
+  });
+
+  test('shows the exact balance shortage before opening payment', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 640 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page, { balanceKopeks: 5000 });
+    await page.goto('/ultima/subscription-info');
+
+    await page.getByTestId('ultima-traffic-top-up-toggle').click();
+    await expect(page.getByTestId('ultima-traffic-order')).toContainText(
+      'На балансе не хватает 50 ₽',
+    );
+    await expect(page.getByTestId('ultima-traffic-top-up-balance')).toHaveText('Пополнить на 50 ₽');
+    await expectNoHorizontalOverflow(page);
+  });
+
   test('keeps the active plan, traffic, connection link and renewal clear on mobile', async ({
     page,
   }) => {
