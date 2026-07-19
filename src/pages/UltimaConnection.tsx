@@ -1,21 +1,30 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { CSSProperties } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import {
+  Check,
+  CheckCircle2,
+  ChevronRight,
+  CircleHelp,
+  Download,
+  ExternalLink,
+  Info,
+  Laptop,
+  Link2,
+  Monitor,
+  Settings2,
+  ShieldCheck,
+  Smartphone,
+  X,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
+
 import { subscriptionApi } from '@/api/subscription';
-import { UltimaDesktopConnection } from '@/components/ultima/desktop/UltimaDesktopConnection';
-import { useHaptic } from '@/platform';
-import { useAuthStore } from '@/store/auth';
-import type {
-  AppConfig,
-  LocalizedText,
-  RemnawaveAppClient,
-  RemnawaveButtonClient,
-  RemnawavePlatformData,
-} from '@/types';
+import {
+  UltimaDesktopPanel,
+  UltimaDesktopSectionLayout,
+} from '@/components/ultima/desktop/UltimaDesktopSectionLayout';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
-import { useMediaQuery } from '@/hooks/useMediaQuery';
 import {
   ULTIMA_CONNECTION_PENDING_STEP2_KEY,
   ULTIMA_CONNECTION_PENDING_STEP3_KEY,
@@ -26,6 +35,23 @@ import {
   writeUltimaConnectionReminderHidden,
   writeUltimaConnectionStep,
 } from '@/features/ultima/connectionFlow';
+import {
+  ultimaPaneClassName,
+  ultimaPaneSurfaceStyle,
+  ultimaPanelClassName,
+  ultimaSurfaceStyle,
+} from '@/features/ultima/surfaces';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { cn } from '@/lib/utils';
+import { useHaptic } from '@/platform';
+import { useAuthStore } from '@/store/auth';
+import type {
+  AppConfig,
+  LocalizedText,
+  RemnawaveAppClient,
+  RemnawaveButtonClient,
+  RemnawavePlatformData,
+} from '@/types';
 import { trackAnalyticsEvent } from '@/utils/analyticsEvents';
 
 type Step = 1 | 2 | 3;
@@ -45,54 +71,6 @@ type InstallOption = {
 };
 
 const PLATFORM_ORDER = ['ios', 'android', 'windows', 'macos', 'linux', 'androidTV', 'appleTV'];
-
-const DownloadIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" className="h-[74px] w-[74px] text-white/90">
-    <path
-      d="M12 4.5v8m0 0 3-3m-3 3-3-3M6 15.5v1A2.5 2.5 0 0 0 8.5 19h7a2.5 2.5 0 0 0 2.5-2.5v-1"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
-const PlusIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" className="h-[74px] w-[74px] text-white/90">
-    <path
-      d="M12 5.5v13m6.5-6.5h-13"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
-const CheckIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" className="h-[74px] w-[74px] text-white/90">
-    <path
-      d="m6.7 12.2 3.6 3.6 7.1-7.1"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
-const StepDoneIcon = () => (
-  <svg viewBox="0 0 20 20" fill="none" className="h-3.5 w-3.5 text-emerald-100">
-    <path
-      d="m4.8 10.2 3.1 3.1 7.3-7.2"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
 
 const getLocalizedText = (text: LocalizedText | undefined, lang: string): string => {
   if (!text) return '';
@@ -145,10 +123,7 @@ const getPlatformDisplayName = (appConfig: AppConfig, key: string, language: str
 
 const getAvailablePlatformKeys = (appConfig: AppConfig): string[] => {
   const configuredKeys = Object.keys(appConfig.platforms ?? {});
-  const sorted = PLATFORM_ORDER.filter((key) => {
-    const platform = appConfig.platforms?.[key];
-    return platform?.apps?.length;
-  });
+  const sorted = PLATFORM_ORDER.filter((key) => appConfig.platforms?.[key]?.apps?.length);
   const extra = configuredKeys.filter(
     (key) => !PLATFORM_ORDER.includes(key) && appConfig.platforms?.[key]?.apps?.length,
   );
@@ -246,8 +221,7 @@ const collectInstallOptions = (
   getAppButtons(app).forEach((button, index) => {
     const label = getLocalizedText(button.text, language);
     const rawUrl = getButtonUrl(button);
-    const lowerLabel = label.toLowerCase();
-    if (rawUrl && isInstallButton(button, lowerLabel, rawUrl)) {
+    if (rawUrl && isInstallButton(button, label.toLowerCase(), rawUrl)) {
       addOption(label, rawUrl, `button-${index}`);
     }
   });
@@ -284,17 +258,13 @@ const findSetupUrls = (
     const rawUrl = getButtonUrl(button);
     if (!rawUrl) continue;
 
-    if (!addSubscriptionUrl && button.type === 'subscriptionLink') {
-      addSubscriptionUrl = rawUrl;
-    }
-
+    if (!addSubscriptionUrl && button.type === 'subscriptionLink') addSubscriptionUrl = rawUrl;
     if (
       !addSubscriptionUrl &&
       (localized.includes('подпис') || localized.includes('subscription'))
     ) {
       addSubscriptionUrl = rawUrl;
     }
-
     if (
       !installUrl &&
       (localized.includes('установ') ||
@@ -305,10 +275,7 @@ const findSetupUrls = (
     ) {
       installUrl = rawUrl;
     }
-
-    if (!installUrl && isInstallButton(button, localized, rawUrl)) {
-      installUrl = rawUrl;
-    }
+    if (!installUrl && isInstallButton(button, localized, rawUrl)) installUrl = rawUrl;
   }
 
   const primaryInstall =
@@ -339,26 +306,26 @@ export function UltimaConnection({
   const navigate = useNavigate();
   const haptic = useHaptic();
   const user = useAuthStore((state) => state.user);
-  const isDesktopViewport = useMediaQuery('(min-width: 1024px)');
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
   const detectedPlatform = useMemo(() => detectPlatformKey(), []);
+
   const [step, setStep] = useState<Step>(1);
-  const [showInfo, setShowInfo] = useState(true);
-  const [burst, setBurst] = useState(0);
-  const [showReturnConfetti, setShowReturnConfetti] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
   const [showFinishSuccess, setShowFinishSuccess] = useState(false);
   const [isReminderHidden, setIsReminderHidden] = useState(false);
-  const [activePlatformKey, setActivePlatformKey] = useState<string | null>(null);
-  const [selectedAppKey, setSelectedAppKey] = useState<string | null>(null);
-  const [viewportHeight, setViewportHeight] = useState<number>(() =>
-    typeof window === 'undefined' ? 820 : window.innerHeight,
-  );
-  const stepInitRef = useRef(false);
-  const centerActionRef = useRef<HTMLDivElement | null>(null);
-  const [successWaveOrigin, setSuccessWaveOrigin] = useState<{ x: number; y: number }>({
-    x: 0,
-    y: 0,
+  const [activePlatformKey, setActivePlatformKey] = useState<string | null>(() => {
+    const keys = getAvailablePlatformKeys(appConfig);
+    return detectedPlatform && keys.includes(detectedPlatform)
+      ? detectedPlatform
+      : (keys[0] ?? null);
   });
+  const [selectedAppKey, setSelectedAppKey] = useState<string | null>(null);
+  const [selectedInstallUrl, setSelectedInstallUrl] = useState<string | null>(null);
+  const [isPickerExpanded, setIsPickerExpanded] = useState(false);
+  const [returnNoticeStep, setReturnNoticeStep] = useState<2 | 3 | null>(null);
+  const stepInitRef = useRef(false);
 
+  const language = i18n.resolvedLanguage || i18n.language || 'ru';
   const availablePlatformKeys = useMemo(() => getAvailablePlatformKeys(appConfig), [appConfig]);
 
   useEffect(() => {
@@ -395,8 +362,9 @@ export function UltimaConnection({
   }, [currentPlatformApps]);
 
   const selectedApp = useMemo(() => {
-    if (!selectedAppKey)
+    if (!selectedAppKey) {
       return currentPlatformApps.find((app) => app.featured) ?? currentPlatformApps[0] ?? null;
+    }
     return (
       currentPlatformApps.find((app, index) => getAppKey(app, index) === selectedAppKey) ??
       currentPlatformApps.find((app) => app.featured) ??
@@ -406,9 +374,21 @@ export function UltimaConnection({
   }, [currentPlatformApps, selectedAppKey]);
 
   const setupUrls = useMemo(
-    () => findSetupUrls(appConfig, i18n.language || 'ru', selectedApp),
-    [appConfig, i18n.language, selectedApp],
+    () => findSetupUrls(appConfig, language, selectedApp),
+    [appConfig, language, selectedApp],
   );
+
+  useEffect(() => {
+    const preferred =
+      setupUrls.installOptions.find((option) => option.kind === 'apk') ??
+      setupUrls.installOptions[0];
+    setSelectedInstallUrl((current) =>
+      current && setupUrls.installOptions.some((option) => option.url === current)
+        ? current
+        : (preferred?.url ?? setupUrls.installUrl),
+    );
+  }, [setupUrls.installOptions, setupUrls.installUrl]);
+
   const { data: subscriptionResponse } = useQuery({
     queryKey: ['subscription'],
     queryFn: subscriptionApi.getSubscription,
@@ -434,51 +414,46 @@ export function UltimaConnection({
 
   useEffect(() => {
     const pendingStep2Key = `${ULTIMA_CONNECTION_PENDING_STEP2_KEY}:${user?.id ?? 'guest'}`;
-    const pendingKey = `${ULTIMA_CONNECTION_PENDING_STEP3_KEY}:${user?.id ?? 'guest'}`;
-    const pendingStep2GlobalKey = ULTIMA_CONNECTION_PENDING_STEP2_KEY;
-    const pendingGlobalKey = ULTIMA_CONNECTION_PENDING_STEP3_KEY;
+    const pendingStep3Key = `${ULTIMA_CONNECTION_PENDING_STEP3_KEY}:${user?.id ?? 'guest'}`;
 
-    const applyPendingReturn = () => {
-      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
-        return;
-      }
+    const consumePendingState = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
       try {
-        const pending =
-          localStorage.getItem(pendingKey) === '1' ||
-          localStorage.getItem(pendingGlobalKey) === '1';
+        const pendingStep3 =
+          localStorage.getItem(pendingStep3Key) === '1' ||
+          localStorage.getItem(ULTIMA_CONNECTION_PENDING_STEP3_KEY) === '1';
         const pendingStep2 =
           localStorage.getItem(pendingStep2Key) === '1' ||
-          localStorage.getItem(pendingStep2GlobalKey) === '1';
-        if (pending) {
-          localStorage.removeItem(pendingKey);
-          localStorage.removeItem(pendingGlobalKey);
+          localStorage.getItem(ULTIMA_CONNECTION_PENDING_STEP2_KEY) === '1';
+
+        if (pendingStep3) {
+          localStorage.removeItem(pendingStep3Key);
+          localStorage.removeItem(ULTIMA_CONNECTION_PENDING_STEP3_KEY);
           onRefreshAppConfig?.();
           setStep(3);
-          window.setTimeout(() => {
-            setShowReturnConfetti(true);
-            setBurst((prev) => prev + 1);
-          }, 180);
-          window.setTimeout(() => setShowReturnConfetti(false), 2580);
+          setIsPickerExpanded(false);
+          setReturnNoticeStep(3);
           return;
         }
         if (pendingStep2) {
           localStorage.removeItem(pendingStep2Key);
-          localStorage.removeItem(pendingStep2GlobalKey);
+          localStorage.removeItem(ULTIMA_CONNECTION_PENDING_STEP2_KEY);
           onRefreshAppConfig?.();
           setStep(2);
-          return;
+          setIsPickerExpanded(false);
+          setReturnNoticeStep(2);
         }
       } catch {
-        // ignore localStorage errors
+        // localStorage may be unavailable in a restricted webview.
       }
     };
 
-    applyPendingReturn();
-    window.addEventListener('focus', applyPendingReturn);
-    document.addEventListener('visibilitychange', applyPendingReturn);
+    consumePendingState();
+    window.addEventListener('focus', consumePendingState);
+    document.addEventListener('visibilitychange', consumePendingState);
     return () => {
-      window.removeEventListener('focus', applyPendingReturn);
-      document.removeEventListener('visibilitychange', applyPendingReturn);
+      window.removeEventListener('focus', consumePendingState);
+      document.removeEventListener('visibilitychange', consumePendingState);
     };
   }, [onRefreshAppConfig, user?.id]);
 
@@ -501,103 +476,130 @@ export function UltimaConnection({
     haptic.impact('light');
   }, [haptic, step]);
 
-  useEffect(() => {
-    const syncViewport = () => setViewportHeight(window.innerHeight);
-    syncViewport();
-    window.addEventListener('resize', syncViewport);
-    return () => window.removeEventListener('resize', syncViewport);
-  }, []);
+  const selectedPlatformLabel = activePlatformKey
+    ? getPlatformDisplayName(appConfig, activePlatformKey, language)
+    : '—';
+  const selectedAppName = selectedApp?.name || '—';
+  const selectedInstallOption =
+    setupUrls.installOptions.find((option) => option.url === selectedInstallUrl) ??
+    setupUrls.installOptions[0] ??
+    null;
+  const appLaunchUrl = (() => {
+    const addUrl = setupUrls.addSubscriptionUrl;
+    if (!addUrl) return null;
+    const scheme = addUrl.match(/^([a-z][a-z0-9+.-]*):\/\//i)?.[1]?.toLowerCase();
+    if (!scheme) return addUrl;
+    if (scheme === 'happ') return 'happ://toggle';
+    if (scheme !== 'http' && scheme !== 'https') return `${scheme}://`;
+    return addUrl;
+  })();
 
-  const isShortViewport = viewportHeight < 790;
-  const isVeryShortViewport = viewportHeight < 720;
+  const stepItems = [
+    {
+      step: 1 as Step,
+      short: t('subscription.connection.stepInstallShort', { defaultValue: 'Приложение' }),
+      title: t('subscription.connection.stepInstallTitle', {
+        defaultValue: 'Установите приложение',
+      }),
+      description: t('subscription.connection.stepInstallDesc', {
+        defaultValue: 'Выберите свое устройство и установите рекомендуемое VPN-приложение.',
+      }),
+      icon: Download,
+    },
+    {
+      step: 2 as Step,
+      short: t('subscription.connection.stepSubscriptionShort', { defaultValue: 'Подписка' }),
+      title: t('subscription.connection.stepSubscriptionTitle', {
+        defaultValue: 'Добавьте подписку',
+      }),
+      description: t('subscription.connection.stepSubscriptionDesc', {
+        defaultValue: 'Одна кнопка передаст вашу подписку в выбранное приложение.',
+      }),
+      icon: Link2,
+    },
+    {
+      step: 3 as Step,
+      short: t('subscription.connection.stepVpnShort', { defaultValue: 'VPN' }),
+      title: t('subscription.connection.stepDoneTitle', { defaultValue: 'Включите VPN' }),
+      description: t('subscription.connection.stepDoneDesc', {
+        defaultValue: 'Откройте приложение, включите подключение и проверьте интернет.',
+      }),
+      icon: ShieldCheck,
+    },
+  ];
+  const currentStep = stepItems[step - 1]!;
+  const CurrentStepIcon = currentStep.icon;
 
-  const title =
-    step === 1
-      ? t('subscription.connection.stepInstallTitle', { defaultValue: 'Приложение' })
-      : step === 2
-        ? t('subscription.connection.stepSubscriptionTitle', { defaultValue: 'Подписка' })
-        : t('subscription.connection.stepDoneTitle', { defaultValue: 'Готово!' });
-  const isDoneStep = step === 3;
-
-  const subtitle =
-    step === 1
-      ? t('subscription.connection.stepInstallDesc', {
-          defaultValue: 'Установите приложение Happ и вернитесь к этому экрану',
-        })
-      : step === 2
-        ? t('subscription.connection.stepSubscriptionDesc', {
-            defaultValue: 'Добавьте подписку в приложении Happ с помощью кнопки ниже',
-          })
-        : t('subscription.connection.stepDoneDesc', {
-            defaultValue: 'Нажмите на круглую кнопку включения VPN в приложении Happ',
-          });
   const importantInfoDescription = isActiveTrial
     ? t('ultima.trialGuide.connectionInfoDesc', {
         defaultValue:
-          'Пробный доступ уже активирован. После установки приложения вернитесь сюда и перейдите к следующему шагу, чтобы добавить подписку.',
+          'Пробный доступ уже активирован. Установите приложение, вернитесь сюда и добавьте подписку.',
       })
     : t('subscription.connection.importantInfoDesc', {
         defaultValue:
-          'После установки приложения Happ, обязательно вернитесь на этот экран и нажмите «Следующий шаг», чтобы добавить конфигурацию в приложение.',
+          'После установки вернитесь на этот экран. Второй шаг автоматически добавит вашу подписку в приложение.',
       });
 
-  const icon = step === 1 ? <DownloadIcon /> : step === 2 ? <PlusIcon /> : <CheckIcon />;
-  const isFinalStep = step === 3;
-  const progressRatio = step === 1 ? 0.34 : step === 2 ? 0.67 : 1;
-  const stepProgressPercent = step === 1 ? 0 : step === 2 ? 50 : 100;
-  const ringSizes = isFinalStep
-    ? isVeryShortViewport
-      ? { outer: 248, middle: 188, inner: 136, progress: 164, center: 92, button: 82 }
-      : isShortViewport
-        ? { outer: 284, middle: 214, inner: 152, progress: 182, center: 102, button: 90 }
-        : { outer: 320, middle: 238, inner: 168, progress: 198, center: 112, button: 98 }
-    : isVeryShortViewport
-      ? { outer: 286, middle: 218, inner: 156, progress: 186, center: 104, button: 92 }
-      : isShortViewport
-        ? { outer: 320, middle: 244, inner: 172, progress: 202, center: 114, button: 100 }
-        : { outer: 360, middle: 270, inner: 188, progress: 220, center: 124, button: 110 };
-  const ringRadius = 90;
-  const ringCircumference = 2 * Math.PI * ringRadius;
-  const ringOffset = ringCircumference * (1 - progressRatio);
+  const handlePlatformChange = (platformKey: string) => {
+    haptic.selection();
+    setActivePlatformKey(platformKey);
+    const apps = appConfig.platforms[platformKey]?.apps ?? [];
+    const featuredIndex = apps.findIndex((app) => app.featured);
+    const nextIndex = featuredIndex >= 0 ? featuredIndex : 0;
+    setSelectedAppKey(apps[nextIndex] ? getAppKey(apps[nextIndex], nextIndex) : null);
+  };
 
-  const openInstall = () => {
-    if (setupUrls.installUrl) {
-      onOpenDeepLink(setupUrls.installUrl);
-    }
+  const handleAppChange = (appKey: string) => {
+    haptic.selection();
+    setSelectedAppKey(appKey);
+  };
+
+  const goToStep = (nextStep: Step) => {
+    if (nextStep > step) return;
+    if (nextStep < 3) writeUltimaConnectionCompleted(user?.id, false);
+    setReturnNoticeStep(null);
+    setIsPickerExpanded(nextStep === 1);
+    setStep(nextStep);
   };
 
   const startInstallUrlFlow = (url: string) => {
     writeUltimaConnectionCompleted(user?.id, false);
+    setReturnNoticeStep(null);
     trackAnalyticsEvent('ultima_connection_install_start', {
       platform: activePlatformKey,
       app: selectedApp?.name ?? null,
+      source: selectedInstallOption?.kind ?? null,
       step,
     });
     try {
       localStorage.setItem(`${ULTIMA_CONNECTION_PENDING_STEP2_KEY}:${user?.id ?? 'guest'}`, '1');
       localStorage.setItem(ULTIMA_CONNECTION_PENDING_STEP2_KEY, '1');
     } catch {
-      // ignore localStorage errors
+      // localStorage may be unavailable in a restricted webview.
     }
     onOpenDeepLink(url);
   };
 
   const startInstallFlow = () => {
-    if (setupUrls.installUrl) {
-      startInstallUrlFlow(setupUrls.installUrl);
-      return;
-    }
-    openInstall();
+    const installUrl = selectedInstallUrl || setupUrls.installUrl;
+    if (installUrl) startInstallUrlFlow(installUrl);
   };
 
-  const openAddSubscription = () => {
-    if (setupUrls.addSubscriptionUrl) {
-      onOpenDeepLink(setupUrls.addSubscriptionUrl);
-    }
+  const confirmAppInstalled = () => {
+    writeUltimaConnectionCompleted(user?.id, false);
+    trackAnalyticsEvent('ultima_connection_install_confirmed', {
+      platform: activePlatformKey,
+      app: selectedApp?.name ?? null,
+    });
+    setReturnNoticeStep(null);
+    setIsPickerExpanded(false);
+    setStep(2);
   };
 
   const startAddSubscriptionFlow = () => {
+    if (!setupUrls.addSubscriptionUrl) return;
     writeUltimaConnectionCompleted(user?.id, false);
+    setReturnNoticeStep(null);
     trackAnalyticsEvent('ultima_connection_add_subscription_start', {
       platform: activePlatformKey,
       app: selectedApp?.name ?? null,
@@ -607,41 +609,32 @@ export function UltimaConnection({
       localStorage.setItem(`${ULTIMA_CONNECTION_PENDING_STEP3_KEY}:${user?.id ?? 'guest'}`, '1');
       localStorage.setItem(ULTIMA_CONNECTION_PENDING_STEP3_KEY, '1');
     } catch {
-      // ignore localStorage errors
+      // localStorage may be unavailable in a restricted webview.
     }
-    openAddSubscription();
+    onOpenDeepLink(setupUrls.addSubscriptionUrl);
+  };
+
+  const confirmSubscriptionAdded = () => {
+    writeUltimaConnectionCompleted(user?.id, false);
+    trackAnalyticsEvent('ultima_connection_subscription_confirmed', {
+      platform: activePlatformKey,
+      app: selectedApp?.name ?? null,
+    });
+    setReturnNoticeStep(null);
+    setIsPickerExpanded(false);
+    setStep(3);
   };
 
   const openToggleVpn = () => {
-    onOpenDeepLink('happ://toggle');
-  };
-
-  const advanceStep = () => {
-    if (step === 1) {
-      writeUltimaConnectionCompleted(user?.id, false);
-      setStep(2);
-      return;
-    }
-    if (step === 2) {
-      startAddSubscriptionFlow();
-      return;
-    }
-    setStep(1);
+    if (!appLaunchUrl) return;
+    trackAnalyticsEvent('ultima_connection_vpn_open', {
+      platform: activePlatformKey,
+      app: selectedApp?.name ?? null,
+    });
+    onOpenDeepLink(appLaunchUrl);
   };
 
   const finishFlow = () => {
-    const centerRect = centerActionRef.current?.getBoundingClientRect();
-    if (centerRect) {
-      setSuccessWaveOrigin({
-        x: centerRect.left + centerRect.width / 2,
-        y: centerRect.top + centerRect.height / 2,
-      });
-    } else {
-      setSuccessWaveOrigin({
-        x: window.innerWidth / 2,
-        y: window.innerHeight / 2,
-      });
-    }
     writeUltimaConnectionCompleted(user?.id, true);
     trackAnalyticsEvent('ultima_connection_flow_complete', {
       platform: activePlatformKey,
@@ -649,528 +642,653 @@ export function UltimaConnection({
       is_trial: isActiveTrial,
     });
     haptic.notification('success');
-    window.setTimeout(() => {
-      setShowFinishSuccess(true);
-    }, 180);
+    setShowFinishSuccess(true);
     window.setTimeout(() => {
       setShowFinishSuccess(false);
       writeUltimaConnectionStep(user?.id, 1);
       setStep(1);
       setShowInfo(false);
       onGoBack();
-    }, 1560);
+    }, 1200);
   };
 
-  const dismissReminderForNow = () => {
-    setShowInfo(false);
-  };
+  const dismissReminderForNow = () => setShowInfo(false);
 
   const hideReminderPermanently = () => {
-    if (!canPermanentlyHideReminder) {
-      setShowInfo(false);
-      return;
+    if (canPermanentlyHideReminder) {
+      writeUltimaConnectionReminderHidden(user?.id, true);
+      setIsReminderHidden(true);
     }
-    writeUltimaConnectionReminderHidden(user?.id, true);
-    setIsReminderHidden(true);
     setShowInfo(false);
   };
 
-  const bottomNav = <UltimaBottomNav active="connection" />;
-  const hasMultiplePlatforms = availablePlatformKeys.length > 1;
-  const hasMultipleApps = currentPlatformApps.length > 1;
+  const renderPicker = () => (
+    <div data-testid="ultima-connection-picker" className="space-y-4">
+      {availablePlatformKeys.length > 1 ? (
+        <div>
+          <div className="mb-2 flex items-center gap-2 text-[12px] font-medium text-white/[0.68]">
+            <Monitor className="h-4 w-4" strokeWidth={1.8} />
+            {t('subscription.connection.selectPlatform', { defaultValue: 'Выберите устройство' })}
+          </div>
+          <div className="grid grid-cols-2 gap-2 min-[460px]:grid-cols-3 lg:grid-cols-4">
+            {availablePlatformKeys.map((platformKey) => {
+              const isActive = platformKey === activePlatformKey;
+              const isDetected = platformKey === detectedPlatform;
+              return (
+                <button
+                  key={platformKey}
+                  type="button"
+                  data-testid={`ultima-connection-platform-${platformKey}`}
+                  aria-pressed={isActive}
+                  onClick={() => handlePlatformChange(platformKey)}
+                  className={cn(
+                    'flex min-h-[52px] min-w-0 items-center gap-2.5 rounded-[15px] border px-3 py-2.5 text-left transition-colors lg:rounded-[7px]',
+                    isActive
+                      ? 'border-emerald-200/[0.32] bg-emerald-300/[0.12] text-white'
+                      : 'border-white/[0.08] bg-white/[0.025] text-white/[0.64] hover:bg-white/[0.05]',
+                  )}
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[11px] bg-white/[0.05] lg:rounded-[5px]">
+                    {platformKey === 'android' || platformKey === 'ios' ? (
+                      <Smartphone className="h-4 w-4" strokeWidth={1.8} />
+                    ) : (
+                      <Laptop className="h-4 w-4" strokeWidth={1.8} />
+                    )}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[12px] font-semibold">
+                      {getPlatformDisplayName(appConfig, platformKey, language)}
+                    </span>
+                    {isDetected ? (
+                      <span className="mt-0.5 block truncate text-[10px] text-emerald-100/[0.68]">
+                        {t('subscription.connection.yourDevice', {
+                          defaultValue: 'Ваше устройство',
+                        })}
+                      </span>
+                    ) : null}
+                  </span>
+                  {isActive ? <Check className="h-4 w-4 shrink-0" strokeWidth={2.2} /> : null}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
 
-  const handlePlatformChange = (platformKey: string) => {
-    setActivePlatformKey(platformKey);
-    const apps = appConfig.platforms[platformKey]?.apps ?? [];
-    const featuredIndex = apps.findIndex((app) => app.featured);
-    const nextIndex = featuredIndex >= 0 ? featuredIndex : 0;
-    setSelectedAppKey(apps[nextIndex] ? getAppKey(apps[nextIndex], nextIndex) : null);
-  };
+      {currentPlatformApps.length > 1 ? (
+        <div>
+          <div className="mb-2 flex items-center gap-2 text-[12px] font-medium text-white/[0.68]">
+            <Settings2 className="h-4 w-4" strokeWidth={1.8} />
+            {t('subscription.connection.selectApp', { defaultValue: 'Выберите приложение' })}
+          </div>
+          <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
+            {currentPlatformApps.map((app, index) => {
+              const appKey = getAppKey(app, index);
+              const isActive = appKey === selectedAppKey;
+              return (
+                <button
+                  key={appKey}
+                  type="button"
+                  data-testid={`ultima-connection-app-${index}`}
+                  aria-pressed={isActive}
+                  onClick={() => handleAppChange(appKey)}
+                  className={cn(
+                    'flex min-h-[50px] min-w-0 items-center gap-3 rounded-[15px] border px-3 py-2.5 text-left transition-colors lg:rounded-[7px]',
+                    isActive
+                      ? 'border-emerald-200/[0.32] bg-emerald-300/[0.12] text-white'
+                      : 'border-white/[0.08] bg-white/[0.025] text-white/[0.64] hover:bg-white/[0.05]',
+                  )}
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[11px] bg-white/[0.05] lg:rounded-[5px]">
+                    <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[12px] font-semibold">{app.name}</span>
+                    {app.featured ? (
+                      <span className="mt-0.5 block text-[10px] text-amber-100/[0.72]">
+                        {t('subscription.connection.featured', { defaultValue: 'Рекомендуем' })}
+                      </span>
+                    ) : null}
+                  </span>
+                  {isActive ? <Check className="h-4 w-4 shrink-0" strokeWidth={2.2} /> : null}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
 
-  const renderConnectionPicker = (compact = false) => {
-    if (!hasMultiplePlatforms && !hasMultipleApps && setupUrls.installOptions.length <= 1) {
-      return null;
-    }
+      {step === 1 && setupUrls.installOptions.length > 1 ? (
+        <div>
+          <div className="mb-2 flex items-center gap-2 text-[12px] font-medium text-white/[0.68]">
+            <Download className="h-4 w-4" strokeWidth={1.8} />
+            {t('subscription.connection.downloadSource', { defaultValue: 'Способ установки' })}
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {setupUrls.installOptions.map((option, index) => {
+              const isActive = option.url === selectedInstallUrl;
+              return (
+                <button
+                  key={`${option.key}-${option.url}`}
+                  type="button"
+                  data-testid={`ultima-connection-source-${index}`}
+                  aria-pressed={isActive}
+                  onClick={() => {
+                    haptic.selection();
+                    setSelectedInstallUrl(option.url);
+                  }}
+                  className={cn(
+                    'flex min-h-[44px] min-w-0 items-center justify-between gap-2 rounded-[14px] border px-3 py-2 text-left text-[12px] font-semibold transition-colors lg:rounded-[7px]',
+                    isActive
+                      ? 'border-emerald-200/[0.3] bg-emerald-300/[0.11] text-white'
+                      : 'border-white/[0.08] bg-white/[0.025] text-white/[0.6] hover:bg-white/[0.05]',
+                  )}
+                >
+                  <span className="min-w-0 break-words">{option.label}</span>
+                  {isActive ? <Check className="h-4 w-4 shrink-0" strokeWidth={2.2} /> : null}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
 
-    return (
-      <section
-        className={`rounded-[22px] border border-white/10 bg-white/[0.045] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl ${
-          compact ? 'mb-3 p-2.5' : 'p-3.5'
-        }`}
-      >
-        {(hasMultiplePlatforms || hasMultipleApps) && (
-          <div className="space-y-2.5">
-            {hasMultiplePlatforms && (
-              <div
-                className={
-                  isDesktopViewport
-                    ? 'grid grid-cols-2 gap-1.5'
-                    : 'flex gap-1.5 overflow-x-auto pb-1'
-                }
+  const selectionSummary = (
+    <div className="grid grid-cols-2 gap-2" data-testid="ultima-connection-selection-summary">
+      <div className="min-w-0 rounded-[14px] border border-white/[0.07] bg-white/[0.025] px-3 py-2.5 lg:rounded-[7px]">
+        <div className="text-[10px] text-white/[0.42]">
+          {t('subscription.connection.deviceLabel', { defaultValue: 'Устройство' })}
+        </div>
+        <div className="mt-1 truncate text-[12px] font-semibold text-white">
+          {selectedPlatformLabel}
+        </div>
+      </div>
+      <div className="min-w-0 rounded-[14px] border border-white/[0.07] bg-white/[0.025] px-3 py-2.5 lg:rounded-[7px]">
+        <div className="text-[10px] text-white/[0.42]">
+          {t('subscription.connection.appLabel', { defaultValue: 'Приложение' })}
+        </div>
+        <div className="mt-1 truncate text-[12px] font-semibold text-white">{selectedAppName}</div>
+      </div>
+    </div>
+  );
+
+  const renderMobileProgress = () => (
+    <ol
+      data-testid="ultima-connection-progress"
+      className="grid grid-cols-3 gap-1.5 rounded-[18px] border border-white/[0.08] bg-white/[0.025] p-1.5 lg:hidden"
+    >
+      {stepItems.map((item) => {
+        const isActive = item.step === step;
+        const isDone = item.step < step;
+        return (
+          <li key={item.step} className="min-w-0">
+            <button
+              type="button"
+              data-testid={`ultima-connection-step-${item.step}`}
+              onClick={() => goToStep(item.step)}
+              disabled={item.step > step}
+              aria-current={isActive ? 'step' : undefined}
+              className={cn(
+                'flex min-h-[48px] w-full min-w-0 items-center justify-center gap-1.5 rounded-[13px] px-1.5 py-2 transition-colors',
+                isActive && 'bg-emerald-300/[0.13] text-white',
+                isDone && 'text-emerald-100/[0.84]',
+                !isActive && !isDone && 'text-white/[0.38]',
+              )}
+            >
+              <span
+                className={cn(
+                  'flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[10px] font-semibold',
+                  isActive || isDone
+                    ? 'border-emerald-200/[0.38] bg-emerald-300/[0.12]'
+                    : 'border-white/[0.12] bg-white/[0.03]',
+                )}
               >
-                {availablePlatformKeys.map((platformKey) => {
-                  const isActive = platformKey === activePlatformKey;
-                  return (
-                    <button
-                      key={platformKey}
-                      type="button"
-                      onClick={() => handlePlatformChange(platformKey)}
-                      className={`rounded-full border px-3 py-1.5 text-[12px] font-medium transition ${
-                        isDesktopViewport ? 'min-w-0 truncate text-center' : 'shrink-0'
-                      } ${
-                        isActive
-                          ? 'border-emerald-200/[0.45] bg-emerald-300/[0.16] text-white'
-                          : 'border-white/10 bg-white/[0.04] text-white/[0.62] hover:border-white/20 hover:text-white/85'
-                      }`}
-                    >
-                      {getPlatformDisplayName(appConfig, platformKey, i18n.language || 'ru')}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+                {isDone ? <Check className="h-3.5 w-3.5" strokeWidth={2.2} /> : item.step}
+              </span>
+              <span className="min-w-0 truncate text-[10px] font-medium">{item.short}</span>
+            </button>
+          </li>
+        );
+      })}
+    </ol>
+  );
 
-            {hasMultipleApps && (
-              <div className="grid grid-cols-1 gap-1.5 min-[380px]:grid-cols-2">
-                {currentPlatformApps.map((app, index) => {
-                  const appKey = getAppKey(app, index);
-                  const isActive = appKey === selectedAppKey;
+  const returnNotice =
+    returnNoticeStep === step ? (
+      <div
+        role="status"
+        className="flex items-start gap-3 rounded-[16px] border border-emerald-200/[0.18] bg-emerald-300/[0.08] px-3.5 py-3 text-emerald-50 lg:rounded-[7px]"
+      >
+        <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" strokeWidth={1.8} />
+        <div className="min-w-0">
+          <div className="text-[12px] font-semibold">
+            {returnNoticeStep === 2
+              ? t('subscription.connection.appOpenedTitle', { defaultValue: 'Приложение открыто' })
+              : t('subscription.connection.subscriptionAddedTitle', {
+                  defaultValue: 'Подписка передана',
+                })}
+          </div>
+          <div className="mt-0.5 text-[11px] leading-relaxed text-emerald-50/[0.66]">
+            {returnNoticeStep === 2
+              ? t('subscription.connection.appOpenedDesc', {
+                  defaultValue: 'Если установка завершена, переходите к добавлению подписки.',
+                })
+              : t('subscription.connection.subscriptionAddedDesc', {
+                  defaultValue: 'Осталось включить VPN и проверить подключение.',
+                })}
+          </div>
+        </div>
+      </div>
+    ) : null;
+
+  const primaryDisabled =
+    (step === 1 && !(selectedInstallUrl || setupUrls.installUrl)) ||
+    (step === 2 && !setupUrls.addSubscriptionUrl) ||
+    (step === 3 && !appLaunchUrl);
+  const primaryLabel =
+    step === 1
+      ? selectedInstallOption
+        ? selectedInstallOption.kind === 'download'
+          ? t('subscription.connection.downloadAppAction', {
+              defaultValue: 'Скачать приложение',
+            })
+          : t('subscription.connection.installVia', {
+              source: selectedInstallOption.label,
+              defaultValue: 'Установить через {{source}}',
+            })
+        : t('subscription.connection.installAction', { defaultValue: 'Установить приложение' })
+      : step === 2
+        ? t('subscription.connection.addToSelectedApp', {
+            app: selectedAppName,
+            defaultValue: 'Добавить в {{app}}',
+          })
+        : t('subscription.connection.openVpnApp', {
+            app: selectedAppName,
+            defaultValue: 'Открыть {{app}}',
+          });
+
+  const connectionContent = (
+    <div className="space-y-3 lg:space-y-4" data-testid="ultima-connection-guide">
+      {renderMobileProgress()}
+      {returnNotice}
+
+      <section
+        className={cn(ultimaPanelClassName, 'overflow-hidden p-4 sm:p-5 lg:p-6')}
+        style={ultimaSurfaceStyle}
+      >
+        <header className="flex items-start gap-3.5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] border border-emerald-200/[0.2] bg-emerald-300/[0.1] text-emerald-50 lg:rounded-[7px]">
+            <CurrentStepIcon className="h-5 w-5" strokeWidth={1.8} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-[10px] font-medium text-emerald-100/[0.62]">
+              {t('subscription.connection.stepCounter', {
+                current: step,
+                total: 3,
+                defaultValue: 'Шаг {{current}} из {{total}}',
+              })}
+            </div>
+            <h2 className="mt-1 text-[20px] font-semibold leading-tight text-white sm:text-[22px]">
+              {currentStep.title}
+            </h2>
+            <p className="mt-1.5 max-w-[62ch] text-[12px] leading-relaxed text-white/[0.56] sm:text-[13px]">
+              {currentStep.description}
+            </p>
+          </div>
+        </header>
+
+        {step === 1 && showInfo ? (
+          <div className="mt-4 flex items-start gap-3 rounded-[16px] border border-cyan-200/[0.12] bg-cyan-300/[0.055] px-3.5 py-3 lg:rounded-[7px]">
+            <Info className="mt-0.5 h-4 w-4 shrink-0 text-cyan-100/[0.74]" strokeWidth={1.8} />
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] leading-relaxed text-white/[0.65]">
+                {importantInfoDescription}
+              </p>
+              {canPermanentlyHideReminder ? (
+                <button
+                  type="button"
+                  onClick={hideReminderPermanently}
+                  className="mt-1.5 text-[10px] font-medium text-cyan-100/[0.65] hover:text-cyan-50"
+                >
+                  {t('subscription.connection.hideReminderPermanently', {
+                    defaultValue: 'Больше не показывать',
+                  })}
+                </button>
+              ) : null}
+            </div>
+            <button
+              type="button"
+              onClick={dismissReminderForNow}
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[9px] text-white/[0.44] hover:bg-white/[0.05] hover:text-white/[0.72]"
+              aria-label={t('common.close', { defaultValue: 'Закрыть' })}
+            >
+              <X className="h-4 w-4" strokeWidth={1.9} />
+            </button>
+          </div>
+        ) : null}
+
+        <div className="mt-5">
+          {step === 1 ? renderPicker() : null}
+
+          {step === 2 ? (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-[12px] font-medium text-white/[0.66]">
+                  {t('subscription.connection.currentSelection', { defaultValue: 'Ваш выбор' })}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsPickerExpanded((value) => !value)}
+                  className="text-[11px] font-medium text-emerald-100/[0.72] hover:text-emerald-50"
+                >
+                  {isPickerExpanded
+                    ? t('common.collapse', { defaultValue: 'Свернуть' })
+                    : t('subscription.connection.changeSelection', { defaultValue: 'Изменить' })}
+                </button>
+              </div>
+              {selectionSummary}
+              {isPickerExpanded ? renderPicker() : null}
+              <div
+                className={cn(ultimaPaneClassName, 'flex items-start gap-3 px-3.5 py-3')}
+                style={ultimaPaneSurfaceStyle}
+              >
+                <Link2
+                  className="mt-0.5 h-5 w-5 shrink-0 text-emerald-100/[0.76]"
+                  strokeWidth={1.8}
+                />
+                <div>
+                  <div className="text-[12px] font-semibold text-white">
+                    {t('subscription.connection.oneTapImportTitle', {
+                      defaultValue: 'Без ручного копирования',
+                    })}
+                  </div>
+                  <p className="mt-0.5 text-[11px] leading-relaxed text-white/[0.5]">
+                    {t('subscription.connection.oneTapImportDesc', {
+                      defaultValue:
+                        'Кнопка откроет выбранное приложение и передаст ссылку подписки автоматически.',
+                    })}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {step === 3 ? (
+            <div className="space-y-3">
+              <div
+                className={cn(
+                  ultimaPaneClassName,
+                  'flex items-start gap-3 border-emerald-200/[0.16] px-3.5 py-3.5',
+                )}
+                style={ultimaPaneSurfaceStyle}
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] bg-emerald-300/[0.12] text-emerald-50 lg:rounded-[6px]">
+                  <ShieldCheck className="h-5 w-5" strokeWidth={1.8} />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[14px] font-semibold text-white">
+                    {t('subscription.connection.readyTitle', {
+                      defaultValue: 'Все готово к подключению',
+                    })}
+                  </div>
+                  <p className="mt-1 text-[11px] leading-relaxed text-white/[0.54]">
+                    {t('subscription.connection.readyDesc', {
+                      app: selectedAppName,
+                      defaultValue:
+                        'Откройте {{app}}, включите VPN и вернитесь для завершения настройки.',
+                    })}
+                  </p>
+                </div>
+              </div>
+              {selectionSummary}
+            </div>
+          ) : null}
+        </div>
+
+        <div className="mt-5 border-t border-white/[0.07] pt-4">
+          <button
+            type="button"
+            data-testid="ultima-connection-primary-action"
+            onClick={
+              step === 1 ? startInstallFlow : step === 2 ? startAddSubscriptionFlow : openToggleVpn
+            }
+            disabled={primaryDisabled}
+            className="ultima-btn-pill ultima-btn-primary flex min-h-[48px] w-full items-center justify-center gap-2 px-4 py-3 text-[14px] font-semibold disabled:cursor-not-allowed disabled:opacity-45"
+          >
+            {step === 1 ? (
+              <Download className="h-4 w-4" strokeWidth={2} />
+            ) : step === 2 ? (
+              <Link2 className="h-4 w-4" strokeWidth={2} />
+            ) : (
+              <ExternalLink className="h-4 w-4" strokeWidth={2} />
+            )}
+            <span className="min-w-0 break-words text-center">{primaryLabel}</span>
+          </button>
+
+          {primaryDisabled ? (
+            <p className="mt-2 text-center text-[11px] leading-relaxed text-amber-100/[0.65]">
+              {t('subscription.connection.actionUnavailable', {
+                defaultValue: 'Для выбранного приложения действие пока не настроено.',
+              })}
+            </p>
+          ) : null}
+
+          {step === 1 ? (
+            <button
+              type="button"
+              data-testid="ultima-connection-secondary-action"
+              onClick={confirmAppInstalled}
+              className="mt-2.5 flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-[13px] text-[12px] font-medium text-white/[0.62] transition-colors hover:bg-white/[0.04] hover:text-white lg:rounded-[6px]"
+            >
+              {t('subscription.connection.alreadyInstalled', {
+                defaultValue: 'Приложение уже установлено',
+              })}
+              <ChevronRight className="h-4 w-4" strokeWidth={1.8} />
+            </button>
+          ) : step === 2 ? (
+            <button
+              type="button"
+              data-testid="ultima-connection-secondary-action"
+              onClick={confirmSubscriptionAdded}
+              className="mt-2.5 flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-[13px] text-[12px] font-medium text-white/[0.62] transition-colors hover:bg-white/[0.04] hover:text-white lg:rounded-[6px]"
+            >
+              {t('subscription.connection.alreadyAdded', {
+                defaultValue: 'Подписка уже добавлена',
+              })}
+              <ChevronRight className="h-4 w-4" strokeWidth={1.8} />
+            </button>
+          ) : (
+            <button
+              type="button"
+              data-testid="ultima-connection-finish-action"
+              onClick={finishFlow}
+              disabled={showFinishSuccess}
+              className="ultima-btn-pill ultima-btn-secondary mt-2.5 flex min-h-[46px] w-full items-center justify-center gap-2 px-4 py-2.5 text-[13px] font-semibold disabled:opacity-50"
+            >
+              <CheckCircle2 className="h-4 w-4" strokeWidth={1.9} />
+              {t('subscription.connection.confirmWorking', {
+                defaultValue: 'VPN работает — завершить',
+              })}
+            </button>
+          )}
+        </div>
+      </section>
+
+      <button
+        type="button"
+        onClick={() => navigate('/support')}
+        className="flex min-h-[48px] w-full items-center gap-3 rounded-[17px] border border-white/[0.07] bg-white/[0.025] px-3.5 py-2.5 text-left text-white/[0.66] transition-colors hover:bg-white/[0.05] hover:text-white lg:hidden"
+      >
+        <CircleHelp className="h-5 w-5 shrink-0" strokeWidth={1.8} />
+        <span className="min-w-0 flex-1">
+          <span className="block text-[12px] font-semibold">
+            {t('subscription.connection.needHelp', { defaultValue: 'Нужна помощь?' })}
+          </span>
+          <span className="mt-0.5 block text-[10px] text-white/[0.42]">
+            {t('subscription.connection.supportHint', {
+              defaultValue: 'Откроем поддержку и поможем с подключением.',
+            })}
+          </span>
+        </span>
+        <ChevronRight className="h-4 w-4 shrink-0" strokeWidth={1.8} />
+      </button>
+    </div>
+  );
+
+  const bottomNav = <UltimaBottomNav active="connection" />;
+  const completionOverlay = showFinishSuccess ? (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 p-5 backdrop-blur-sm">
+      <div
+        role="status"
+        className="w-full max-w-[330px] rounded-[20px] border border-emerald-200/[0.2] bg-[#071b1b] px-5 py-6 text-center shadow-2xl lg:rounded-[8px]"
+      >
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-300/[0.14] text-emerald-50">
+          <CheckCircle2 className="h-6 w-6" strokeWidth={1.8} />
+        </div>
+        <div className="mt-3 text-[17px] font-semibold text-white">
+          {t('subscription.connection.completedTitle', { defaultValue: 'Настройка завершена' })}
+        </div>
+        <p className="mt-1 text-[12px] leading-relaxed text-white/[0.52]">
+          {t('subscription.connection.completedDesc', {
+            defaultValue: 'VPN готов к работе. Возвращаемся на главную.',
+          })}
+        </p>
+      </div>
+    </div>
+  ) : null;
+
+  if (isDesktop) {
+    return (
+      <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-connection-desktop">
+        <div className="ultima-shell-aura" />
+        <UltimaDesktopSectionLayout
+          icon={<Settings2 className="h-5 w-5" strokeWidth={1.8} />}
+          eyebrow={t('subscription.connection.title', { defaultValue: 'Подключение' })}
+          title={t('subscription.connection.setupPageTitle', { defaultValue: 'Настройка VPN' })}
+          subtitle={t('subscription.connection.setupPageSubtitle', {
+            defaultValue: 'Установите приложение и добавьте подписку за три коротких шага.',
+          })}
+          metrics={[
+            {
+              label: t('subscription.connection.currentStepLabel', { defaultValue: 'Текущий шаг' }),
+              value: `${step} / 3`,
+              hint: currentStep.short,
+            },
+            {
+              label: t('subscription.connection.deviceLabel', { defaultValue: 'Устройство' }),
+              value: selectedPlatformLabel,
+              hint: t('subscription.connection.autoDetectedHint', {
+                defaultValue: 'Можно изменить в первом шаге.',
+              }),
+            },
+            {
+              label: t('subscription.connection.appLabel', { defaultValue: 'Приложение' }),
+              value: selectedAppName,
+              hint: t('subscription.connection.recommendedAppHint', {
+                defaultValue: 'Используется для импорта подписки.',
+              }),
+            },
+          ]}
+          aside={
+            <UltimaDesktopPanel
+              title={t('subscription.connection.routeTitle', {
+                defaultValue: 'Порядок подключения',
+              })}
+              subtitle={t('subscription.connection.routeSubtitle', {
+                defaultValue: 'Можно вернуться к уже пройденному шагу.',
+              })}
+            >
+              <div className="space-y-2">
+                {stepItems.map((item) => {
+                  const ItemIcon = item.icon;
+                  const isActive = item.step === step;
+                  const isDone = item.step < step;
                   return (
                     <button
-                      key={appKey}
+                      key={item.step}
                       type="button"
-                      onClick={() => setSelectedAppKey(appKey)}
-                      className={`flex min-h-[40px] items-center justify-between gap-2 rounded-2xl border px-3 py-2 text-left text-[12px] font-medium transition ${
+                      data-testid={`ultima-connection-desktop-step-${item.step}`}
+                      onClick={() => goToStep(item.step)}
+                      disabled={item.step > step}
+                      aria-current={isActive ? 'step' : undefined}
+                      className={cn(
+                        'flex w-full items-center gap-3 rounded-[7px] border px-3 py-3 text-left transition-colors',
                         isActive
-                          ? 'border-emerald-200/[0.36] bg-emerald-300/[0.12] text-white'
-                          : 'border-white/10 bg-white/[0.035] text-white/[0.66] hover:border-white/20 hover:text-white/90'
-                      }`}
+                          ? 'border-emerald-200/[0.26] bg-emerald-300/[0.1] text-white'
+                          : isDone
+                            ? 'border-white/[0.07] bg-white/[0.025] text-white/[0.7]'
+                            : 'border-white/[0.06] bg-white/[0.015] text-white/[0.38]',
+                      )}
                     >
-                      <span className="min-w-0 truncate">{app.name}</span>
-                      {app.featured ? (
-                        <span className="h-2 w-2 shrink-0 rounded-full bg-amber-300" />
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[6px] bg-white/[0.05]">
+                        {isDone ? (
+                          <Check className="h-4 w-4" strokeWidth={2} />
+                        ) : (
+                          <ItemIcon className="h-4 w-4" strokeWidth={1.8} />
+                        )}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-[12px] font-semibold">{item.short}</span>
+                        <span className="mt-0.5 block text-[10px] text-white/[0.44]">
+                          {t('subscription.connection.stepCounter', {
+                            current: item.step,
+                            total: 3,
+                            defaultValue: 'Шаг {{current}} из {{total}}',
+                          })}
+                        </span>
+                      </span>
+                      {isActive ? (
+                        <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-300" />
                       ) : null}
                     </button>
                   );
                 })}
               </div>
-            )}
-          </div>
-        )}
-
-        {setupUrls.installOptions.length > 1 && (
-          <div className={hasMultiplePlatforms || hasMultipleApps ? 'mt-3' : ''}>
-            <p className="mb-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-white/[0.46]">
-              {t('subscription.connection.downloadSource', { defaultValue: 'Откуда скачать' })}
-            </p>
-            <div className="grid grid-cols-1 gap-1.5 min-[380px]:grid-cols-2">
-              {setupUrls.installOptions.map((option) => (
-                <button
-                  key={`${option.key}-${option.url}`}
-                  type="button"
-                  onClick={() => startInstallUrlFlow(option.url)}
-                  className={`rounded-2xl border px-3 py-2 text-left text-[12px] font-semibold transition ${
-                    option.kind === 'apk'
-                      ? 'border-emerald-200/[0.36] bg-emerald-300/[0.14] text-emerald-50'
-                      : 'border-white/10 bg-white/[0.04] text-white/[0.72] hover:border-white/20 hover:text-white/90'
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </section>
-    );
-  };
-
-  if (isDesktopViewport) {
-    return (
-      <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-connection-desktop relative">
-        <div className="ultima-shell-aura" />
-        <UltimaDesktopConnection
-          step={step}
-          title={title}
-          subtitle={subtitle}
-          importantInfoDescription={importantInfoDescription}
-          showInfo={showInfo}
-          canPermanentlyHideReminder={canPermanentlyHideReminder}
+              <button
+                type="button"
+                onClick={() => navigate('/support')}
+                className="ultima-btn-pill ultima-btn-secondary mt-4 flex w-full items-center justify-center gap-2 px-4 py-2.5 text-[12px]"
+              >
+                <CircleHelp className="h-4 w-4" strokeWidth={1.8} />
+                {t('subscription.connection.needHelp', { defaultValue: 'Нужна помощь?' })}
+              </button>
+            </UltimaDesktopPanel>
+          }
           bottomNav={bottomNav}
-          setupControls={renderConnectionPicker()}
-          onStartInstall={startInstallFlow}
-          onStartAddSubscription={startAddSubscriptionFlow}
-          onAdvance={advanceStep}
-          onFinish={finishFlow}
-          onNeedHelp={() => navigate('/support')}
-          onToggleVpn={openToggleVpn}
-          onDismissInfo={dismissReminderForNow}
-          onHideReminderPermanently={hideReminderPermanently}
-        />
-        {showFinishSuccess && (
-          <div className="pointer-events-none absolute inset-0 z-40">
-            <div
-              className="absolute"
-              style={{
-                left: successWaveOrigin.x,
-                top: successWaveOrigin.y,
-                transform: 'translate(-50%, -50%)',
-              }}
-            >
-              <div
-                className="ultima-success-wave h-[54vmax] w-[54vmax] rounded-full border"
-                style={{
-                  borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 52%, transparent)',
-                }}
-              />
-            </div>
-          </div>
-        )}
+        >
+          {connectionContent}
+        </UltimaDesktopSectionLayout>
+        {completionOverlay}
       </div>
     );
   }
 
   return (
-    <div className="ultima-shell ultima-shell-shared-nav-docked ultima-shell-compact">
-      <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[560px] lg:justify-between">
-        <section className="ultima-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-none lg:pb-2">
-          <div
-            key={step}
-            className={`ultima-step-enter text-center lg:pt-3 ${isVeryShortViewport ? 'pt-0.5' : 'pt-2'}`}
-          >
-            <h1
-              className={`font-semibold leading-[0.96] text-white ${
-                isDoneStep
-                  ? isVeryShortViewport
-                    ? 'text-[clamp(26px,7.6vw,30px)]'
-                    : 'text-[clamp(30px,8.4vw,36px)]'
-                  : isVeryShortViewport
-                    ? 'text-[clamp(32px,9vw,38px)]'
-                    : 'text-[clamp(34px,10vw,42px)]'
-              }`}
-            >
-              {title}
-            </h1>
-            <p
-              className={`mx-auto mt-2 leading-[1.2] ${
-                isDoneStep
-                  ? isVeryShortViewport
-                    ? 'max-w-[280px] text-[13px] text-white/[0.72]'
-                    : 'max-w-[332px] text-[clamp(14px,3.8vw,15px)] text-white/[0.72]'
-                  : 'max-w-[360px] text-[clamp(14px,4.4vw,17px)] text-white/70'
-              }`}
-            >
-              {subtitle}
-            </p>
-            {step === 3 && (
-              <div
-                className={`mx-auto w-full max-w-[332px] rounded-2xl border border-emerald-200/[0.28] bg-[linear-gradient(130deg,rgba(28,171,142,0.30),rgba(8,27,24,0.58))] px-3.5 shadow-[0_10px_24px_rgba(4,16,14,0.35),inset_0_1px_0_rgba(255,255,255,0.16)] backdrop-blur-md ${isVeryShortViewport ? 'mt-1.5 py-1.5' : 'mt-2 py-2'}`}
-              >
-                <p className="text-[12px] font-medium leading-[1.22] text-emerald-50/95">
-                  {t('subscription.connection.tapCheckHint', {
-                    defaultValue: 'Можно нажать и здесь: галочка в центре тоже переключает VPN.',
-                  })}
-                </p>
-              </div>
-            )}
-            <div
-              className={`mx-auto flex w-fit items-center gap-2 lg:mt-3 ${isVeryShortViewport ? 'mt-2' : 'mt-4'}`}
-            >
-              {[1, 2, 3].map((index) => {
-                const done = step > index || (step === 3 && index === 3);
-                const active = step === index && !done;
-                return (
-                  <span
-                    key={index}
-                    className={`inline-flex h-7 min-w-7 items-center justify-center rounded-full border px-2 text-xs font-medium ${
-                      active
-                        ? 'border-emerald-200/70 bg-emerald-300/20 text-white'
-                        : done
-                          ? 'border-emerald-200/[0.55] bg-emerald-400/[0.35] text-emerald-50'
-                          : 'border-white/[0.18] bg-white/[0.08] text-white/60'
-                    } ${done ? 'ultima-step-done-pop' : ''}`}
-                  >
-                    {done ? <StepDoneIcon /> : index}
-                  </span>
-                );
-              })}
-            </div>
-            <div
-              className={`mx-auto h-1 w-full max-w-[168px] overflow-hidden rounded-full bg-white/[0.15] lg:mt-1.5 ${isVeryShortViewport ? 'mt-1.5' : 'mt-2'}`}
-            >
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-emerald-200/[0.85] via-emerald-300/90 to-emerald-200/[0.85] transition-[width] duration-500 ease-out"
-                style={{ width: `${stepProgressPercent}%` }}
-              />
-            </div>
-          </div>
+    <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
+      <div className="ultima-shell-aura" />
+      <div className="ultima-shell-inner ultima-shell-mobile-docked">
+        <header className="mb-2.5">
+          <h1 className="text-[clamp(30px,8vw,38px)] font-semibold leading-none text-white">
+            {t('subscription.connection.setupPageTitle', { defaultValue: 'Настройка VPN' })}
+          </h1>
+          <p className="mt-1.5 max-w-[42ch] text-[12px] leading-relaxed text-white/[0.54]">
+            {t('subscription.connection.setupPageSubtitle', {
+              defaultValue: 'Установите приложение и добавьте подписку за три коротких шага.',
+            })}
+          </p>
+        </header>
 
-          <div
-            className={`relative flex flex-1 items-center justify-center lg:mt-8 lg:min-h-[320px] lg:flex-none ${isFinalStep ? 'mb-2' : ''} ${isVeryShortViewport ? 'mt-3' : isShortViewport ? 'mt-5' : 'mt-7'}`}
-          >
-            <div
-              className="ultima-step-ring pointer-events-none absolute rounded-full border"
-              style={{
-                width: ringSizes.outer,
-                height: ringSizes.outer,
-                borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 22%, transparent)',
-              }}
-            />
-            <div
-              className="ultima-step-ring ultima-step-ring-delay-1 pointer-events-none absolute rounded-full border"
-              style={{
-                width: ringSizes.middle,
-                height: ringSizes.middle,
-                borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 18%, transparent)',
-              }}
-            />
-            <div
-              className="ultima-step-ring ultima-step-ring-delay-2 pointer-events-none absolute rounded-full border"
-              style={{
-                width: ringSizes.inner,
-                height: ringSizes.inner,
-                borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 46%, transparent)',
-              }}
-            />
-            <svg
-              viewBox="0 0 240 240"
-              className="pointer-events-none absolute -rotate-90"
-              style={{ width: ringSizes.progress, height: ringSizes.progress }}
-              aria-hidden
-            >
-              <circle
-                cx="120"
-                cy="120"
-                r={ringRadius}
-                fill="none"
-                strokeWidth="4"
-                style={{ stroke: 'color-mix(in srgb, var(--ultima-color-ring) 22%, transparent)' }}
-              />
-              <circle
-                cx="120"
-                cy="120"
-                r={ringRadius}
-                fill="none"
-                strokeWidth="4.5"
-                strokeLinecap="round"
-                strokeDasharray={ringCircumference}
-                strokeDashoffset={ringOffset}
-                style={{
-                  stroke: 'var(--ultima-color-primary)',
-                  transition:
-                    'stroke-dashoffset 880ms cubic-bezier(0.22,0.88,0.24,1), stroke 380ms ease',
-                }}
-              />
-            </svg>
-            <div
-              ref={centerActionRef}
-              className="relative flex items-center justify-center rounded-full bg-black/[0.08]"
-              style={{ width: ringSizes.center, height: ringSizes.center }}
-            >
-              {step === 3 ? (
-                <button
-                  type="button"
-                  onClick={openToggleVpn}
-                  className="group relative z-10 inline-flex items-center justify-center rounded-full transition-transform duration-200 hover:scale-[1.02] active:scale-[0.97]"
-                  style={{ width: ringSizes.button, height: ringSizes.button }}
-                  aria-label={t('subscription.connection.toggleVpnInApp', {
-                    defaultValue: 'Переключить VPN в приложении',
-                  })}
-                >
-                  {icon}
-                </button>
-              ) : step === 2 ? (
-                <button
-                  type="button"
-                  onClick={startAddSubscriptionFlow}
-                  className="group relative z-10 inline-flex items-center justify-center rounded-full transition-transform duration-200 hover:scale-[1.02] active:scale-[0.97]"
-                  style={{ width: ringSizes.button, height: ringSizes.button }}
-                  aria-label={t('subscription.connection.addSubscription', {
-                    defaultValue: 'Добавить подписку',
-                  })}
-                >
-                  {icon}
-                </button>
-              ) : step === 1 ? (
-                <button
-                  type="button"
-                  onClick={startInstallFlow}
-                  className="group relative z-10 inline-flex items-center justify-center rounded-full transition-transform duration-200 hover:scale-[1.02] active:scale-[0.97]"
-                  style={{ width: ringSizes.button, height: ringSizes.button }}
-                  aria-label={t('subscription.connection.installApp', {
-                    defaultValue: 'Установить приложение',
-                  })}
-                >
-                  {icon}
-                </button>
-              ) : (
-                icon
-              )}
-              {step === 3 && showReturnConfetti && (
-                <div className="pointer-events-none absolute inset-[-160px] overflow-visible">
-                  {Array.from({ length: 260 }).map((_, index) => {
-                    const angle = (index * 137.5) % 360;
-                    const distance = 140 + ((index * 23) % 420);
-                    const hue = (index * 37) % 360;
-                    const spin = 150 + ((index * 61) % 410);
-                    const duration = 1400 + ((index * 37) % 900);
-                    const width = 4 + ((index * 5) % 4);
-                    const height = 9 + ((index * 7) % 7);
-                    const delay = ((index * 11) % 260) / 1000;
-                    const confettiStyle = {
-                      background: `hsl(${hue} 95% 62%)`,
-                      width: `${width}px`,
-                      height: `${height}px`,
-                      animationDelay: `${delay}s`,
-                      opacity: 0,
-                      '--angle': `${angle}deg`,
-                      '--distance': `${distance}px`,
-                      '--spin': `${spin}deg`,
-                      '--duration': `${duration}ms`,
-                    } as CSSProperties;
-                    return (
-                      <span
-                        key={`${burst}-return-${index}`}
-                        className="ultima-confetti-chip absolute left-1/2 top-1/2 rounded-sm"
-                        style={confettiStyle}
-                      />
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-
-        <section className={`${isFinalStep ? 'pt-1' : ''} pb-0 lg:pt-3`}>
-          {step !== 3 && renderConnectionPicker(true)}
-          {step === 1 && (
-            <button
-              type="button"
-              onClick={startInstallFlow}
-              className="ultima-btn-pill ultima-btn-primary mb-3 flex w-full items-center justify-center gap-2 px-5 py-2.5 text-[16px] lg:mb-2"
-            >
-              <span aria-hidden>⟳</span>
-              {t('subscription.connection.installApp', { defaultValue: 'Установить приложение' })}
-            </button>
-          )}
-          {step === 2 && (
-            <button
-              type="button"
-              onClick={startAddSubscriptionFlow}
-              className="ultima-btn-pill ultima-btn-primary mb-3 flex w-full items-center justify-center gap-2 px-5 py-2.5 text-[16px] lg:mb-2"
-            >
-              <span aria-hidden>◌</span>
-              {t('subscription.connection.addSubscription', { defaultValue: 'Добавить подписку' })}
-            </button>
-          )}
-          {step === 3 && (
-            <>
-              <button
-                type="button"
-                onClick={finishFlow}
-                disabled={showFinishSuccess}
-                className={`ultima-btn-pill ultima-btn-primary mb-3 flex w-full items-center justify-center px-5 text-[16px] lg:mb-2 ${isVeryShortViewport ? 'py-2' : 'py-2.5'}`}
-              >
-                {t('subscription.connection.finishSetup', { defaultValue: 'Завершить настройку' })}
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate('/support')}
-                className={`ultima-btn-pill ultima-btn-secondary mb-3 flex w-full items-center justify-center px-5 text-[15px] lg:mb-2 ${isVeryShortViewport ? 'py-2' : 'py-2.5'}`}
-              >
-                {t('subscription.connection.needHelp', { defaultValue: 'Не получилось?' })}
-              </button>
-            </>
-          )}
-
-          {step !== 3 && (
-            <button
-              type="button"
-              onClick={advanceStep}
-              className={`ultima-btn-pill ultima-btn-secondary mb-3 flex w-full items-center justify-center gap-2 px-5 text-[16px] lg:mb-2 ${isVeryShortViewport ? 'py-2' : 'py-2.5'}`}
-            >
-              {t('subscription.connection.nextStep', { defaultValue: 'Следующий шаг' })}
-              <span aria-hidden className="text-white/70">
-                →
-              </span>
-            </button>
-          )}
-        </section>
-      </div>
-
-      {step === 1 && showInfo && (
-        <>
-          <div className="ultima-mobile-overlay-backdrop" />
-          <div className="ultima-mobile-overlay">
-            <div className="ultima-mobile-overlay-panel">
-              <div className="ultima-step-enter rounded-[24px] border border-white/[0.24] bg-[#05070B] p-4 text-white shadow-[0_26px_56px_rgba(0,0,0,0.72)] backdrop-blur-xl">
-                <div className="mb-2 flex items-start justify-between gap-3">
-                  <h3 className="text-[24px] font-semibold leading-[1.06] text-white/95">
-                    {t('subscription.connection.importantInfo', {
-                      defaultValue: 'Важная информация',
-                    })}
-                  </h3>
-                  <button
-                    type="button"
-                    onClick={dismissReminderForNow}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-white/90"
-                    aria-label="close-info-modal"
-                  >
-                    ×
-                  </button>
-                </div>
-                <p className="text-[15px] leading-[1.28] text-white/[0.92]">
-                  {importantInfoDescription}
-                </p>
-                <button
-                  type="button"
-                  onClick={dismissReminderForNow}
-                  className="ultima-btn-pill ultima-btn-secondary mt-4 flex w-full items-center justify-center px-5 py-2.5 text-[15px]"
-                >
-                  {canPermanentlyHideReminder
-                    ? t('subscription.connection.remindLater', {
-                        defaultValue: 'Напомнить позже',
-                      })
-                    : t('subscription.connection.gotIt', {
-                        defaultValue: 'Все понятно',
-                      })}
-                </button>
-                {canPermanentlyHideReminder && (
-                  <button
-                    type="button"
-                    onClick={hideReminderPermanently}
-                    className="ultima-btn-pill ultima-btn-secondary mt-2 flex w-full items-center justify-center px-5 py-2.5 text-[15px]"
-                  >
-                    {t('subscription.connection.hideReminderPermanently', {
-                      defaultValue: 'Больше не показывать',
-                    })}
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-      {showFinishSuccess && (
-        <div className="pointer-events-none absolute inset-0 z-40">
-          <div
-            className="absolute"
-            style={{
-              left: successWaveOrigin.x,
-              top: successWaveOrigin.y,
-              transform: 'translate(-50%, -50%)',
-            }}
-          >
-            <div
-              className="ultima-success-wave h-[54vmax] w-[54vmax] rounded-full border"
-              style={{
-                borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 52%, transparent)',
-              }}
-            />
-          </div>
+        <div className="ultima-scrollbar min-h-0 flex-1 overflow-y-auto pr-1">
+          {connectionContent}
         </div>
-      )}
+
+        <div className="ultima-mobile-dock-footer">
+          <div className="ultima-nav-dock">{bottomNav}</div>
+        </div>
+      </div>
+      {completionOverlay}
     </div>
   );
 }

@@ -218,6 +218,50 @@ const TRAFFIC_PACKAGES = [
   },
 ];
 
+const CONNECTION_APP_CONFIG = {
+  platformNames: {
+    android: { ru: 'Android', en: 'Android' },
+    windows: { ru: 'Windows', en: 'Windows' },
+  },
+  hasSubscription: true,
+  subscriptionUrl: SUBSCRIPTION.subscription_url,
+  subscriptionCryptoLink: null,
+  hideLink: false,
+  platforms: {
+    android: {
+      displayName: { ru: 'Android', en: 'Android' },
+      apps: [
+        {
+          name: 'Happ',
+          featured: true,
+          deepLink: 'happ://add/{{SUBSCRIPTION_LINK}}',
+          apkUrl: 'https://example.com/happ.apk',
+          downloadUrl: 'https://play.google.com/store/apps/details?id=com.happproxy',
+          blocks: [],
+        },
+        {
+          name: 'NekoBox',
+          deepLink: 'nekobox://import/{{SUBSCRIPTION_LINK}}',
+          downloadUrl: 'https://github.com/MatsuriDayo/NekoBoxForAndroid/releases',
+          blocks: [],
+        },
+      ],
+    },
+    windows: {
+      displayName: { ru: 'Windows', en: 'Windows' },
+      apps: [
+        {
+          name: 'Happ Desktop',
+          featured: true,
+          deepLink: 'happ://add/{{SUBSCRIPTION_LINK}}',
+          downloadUrl: 'https://example.com/happ-windows.exe',
+          blocks: [],
+        },
+      ],
+    },
+  },
+};
+
 function createFakeJwt(): string {
   const header = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9';
   const payload = 'eyJleHAiOjQxMDI0NDQ4MDAsInN1YiI6Ijk5In0';
@@ -371,6 +415,7 @@ async function mockUltimaDesktopApi(
         instructions: { steps: [] },
       });
     }
+    if (path === '/cabinet/subscription/app-config') return respond(CONNECTION_APP_CONFIG);
     if (path === '/cabinet/subscription/happ-downloads') {
       return respond({ happ_enabled: false, platforms: {} });
     }
@@ -1124,5 +1169,70 @@ test.describe('Ultima trial onboarding persistence', () => {
     await expect(primaryCta).toContainText('Продлить подписку');
     await primaryCta.click();
     await expect(page).toHaveURL(/\/subscription$/);
+  });
+});
+
+test.describe('Ultima connection setup', () => {
+  test('keeps platform, app and installation choices in one clear mobile flow', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page, { connectionCompleted: false });
+    await mockUltimaDesktopApi(page);
+
+    await page.goto('/connection');
+
+    await expect(page.getByRole('heading', { name: 'Настройка VPN' })).toBeVisible();
+    await expect(page.getByTestId('ultima-connection-guide')).toBeVisible();
+    await expect(page.getByTestId('ultima-connection-progress')).toBeVisible();
+    await expect(page.getByTestId('ultima-connection-platform-android')).toBeVisible();
+
+    await page.getByTestId('ultima-connection-platform-android').click();
+    await page.getByTestId('ultima-connection-app-0').click();
+    await page.getByTestId('ultima-connection-source-1').click();
+    await expect(page.getByTestId('ultima-connection-primary-action')).toContainText(
+      'Установить через Google Play',
+    );
+
+    await page.getByTestId('ultima-connection-secondary-action').click();
+    await expect(page.getByText('Добавьте подписку', { exact: true })).toBeVisible();
+    await expect(page.getByTestId('ultima-connection-selection-summary')).toContainText('Android');
+    await expect(page.getByTestId('ultima-connection-selection-summary')).toContainText('Happ');
+    await expect(page.getByTestId('ultima-connection-primary-action')).toContainText(
+      'Добавить в Happ',
+    );
+
+    await page.getByTestId('ultima-connection-secondary-action').click();
+    await expect(page.getByText('Все готово к подключению', { exact: true })).toBeVisible();
+    await expect(page.getByTestId('ultima-connection-finish-action')).toContainText(
+      'VPN работает — завершить',
+    );
+
+    await page.getByTestId('ultima-connection-step-1').click();
+    await expect(page.getByText('Установите приложение', { exact: true })).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+  });
+
+  test('uses the desktop workspace without duplicating setup actions', async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 768 });
+    await bootstrapUltimaDesktop(page, { connectionCompleted: false });
+    await mockUltimaDesktopApi(page);
+
+    await page.goto('/connection');
+
+    await expect(page.getByRole('heading', { name: 'Настройка VPN' })).toBeVisible();
+    await expect(page.getByText('Порядок подключения', { exact: true })).toBeVisible();
+    await expect(page.getByTestId('ultima-connection-desktop-step-1')).toBeVisible();
+    await expect(page.getByTestId('ultima-connection-primary-action')).toHaveCount(1);
+
+    await page.getByTestId('ultima-connection-secondary-action').click();
+    await expect(page.getByTestId('ultima-connection-desktop-step-2')).toHaveAttribute(
+      'aria-current',
+      'step',
+    );
+    await expect(page.getByTestId('ultima-connection-primary-action')).toContainText(
+      'Добавить в Happ Desktop',
+    );
+    await expectNoHorizontalOverflow(page);
   });
 });
