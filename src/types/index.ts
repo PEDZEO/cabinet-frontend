@@ -630,6 +630,7 @@ export interface AppConfig {
   subscriptionUrl: string | null;
   subscriptionCryptoLink?: string | null;
   subscriptionIncyCryptoLink?: string | null;
+  cryptoLinksEnabled?: boolean;
   hideLink?: boolean;
   branding?: {
     name?: string;

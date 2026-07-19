@@ -227,6 +227,7 @@ const CONNECTION_APP_CONFIG = {
   subscriptionUrl: SUBSCRIPTION.subscription_url,
   subscriptionCryptoLink: 'happ://crypt5/backend-happ-payload',
   subscriptionIncyCryptoLink: 'incy://crypt1/backend-incy-payload',
+  cryptoLinksEnabled: true,
   hideLink: false,
   platforms: {
     android: {
@@ -314,6 +315,8 @@ async function mockUltimaDesktopApi(
     currentTariffId = 1,
     balanceKopeks = 125_000,
     trafficPackages = TRAFFIC_PACKAGES,
+    appConfig = CONNECTION_APP_CONFIG,
+    cryptoLinksEnabled = true,
   }: {
     isAdmin?: boolean;
     subscription?: typeof SUBSCRIPTION;
@@ -324,8 +327,11 @@ async function mockUltimaDesktopApi(
     currentTariffId?: number | null;
     balanceKopeks?: number;
     trafficPackages?: typeof TRAFFIC_PACKAGES;
+    appConfig?: Record<string, unknown>;
+    cryptoLinksEnabled?: boolean;
   } = {},
 ): Promise<void> {
+  let currentCryptoLinksEnabled = cryptoLinksEnabled;
   await page.route('**/api/**', async (route: Route) => {
     const request = route.request();
     const url = new URL(request.url());
@@ -432,7 +438,7 @@ async function mockUltimaDesktopApi(
         instructions: { steps: [] },
       });
     }
-    if (path === '/cabinet/subscription/app-config') return respond(CONNECTION_APP_CONFIG);
+    if (path === '/cabinet/subscription/app-config') return respond(appConfig);
     if (path === '/cabinet/subscription/happ-downloads') {
       return respond({ happ_enabled: false, platforms: {} });
     }
@@ -498,6 +504,17 @@ async function mockUltimaDesktopApi(
     if (path === '/cabinet/contests/count') return respond({ count: 0 });
     if (path === '/cabinet/polls/count') return respond({ count: 0 });
     if (path === '/cabinet/config/theme/enabled') return respond({ enabled_themes: ['dark'] });
+    if (path === '/cabinet/admin/apps/crypto-links') {
+      if (method === 'PUT') {
+        const payload = request.postDataJSON() as { enabled?: boolean } | null;
+        currentCryptoLinksEnabled = Boolean(payload?.enabled);
+      }
+      return respond({ enabled: currentCryptoLinksEnabled });
+    }
+    if (path === '/cabinet/admin/apps/remnawave/status') {
+      return respond({ enabled: true, config_uuid: '11111111-1111-1111-1111-111111111111' });
+    }
+    if (path === '/cabinet/admin/apps/remnawave/configs') return respond([]);
 
     if (method === 'GET') return respond({});
     return respond({ success: true });
@@ -517,6 +534,25 @@ async function expectNoHorizontalOverflow(page: Page): Promise<void> {
       viewportWidth: page.viewportSize()?.width,
     });
 }
+
+test.describe('Admin crypto-link settings', () => {
+  test('toggles protected links without leaving the apps page', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page, { isAdmin: true, cryptoLinksEnabled: true });
+    await page.goto('/admin/apps');
+
+    const toggle = page.getByTestId('admin-crypto-links-toggle');
+    await expect(page.getByTestId('admin-crypto-links-settings')).toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-checked', 'true');
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-checked', 'false');
+    await expect(page.getByTestId('admin-crypto-links-settings')).toContainText(
+      'Отключено: используется обычная ссылка',
+    );
+    await expectNoHorizontalOverflow(page);
+  });
+});
 
 test.describe('Ultima desktop workspace', () => {
   for (const viewport of [
@@ -946,6 +982,37 @@ test.describe('Ultima device management', () => {
     );
 
     await page.getByTestId('ultima-device-link-other').click();
+    await expect(page.getByTestId('ultima-device-raw-link')).toHaveText(
+      SUBSCRIPTION.subscription_url,
+    );
+    await expect(page.getByTestId('ultima-device-qr')).toHaveAttribute(
+      'data-connection-kind',
+      'other',
+    );
+    await expectNoHorizontalOverflow(page);
+  });
+
+  test('uses only the regular subscription link when crypto links are disabled', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page, {
+      appConfig: {
+        ...CONNECTION_APP_CONFIG,
+        cryptoLinksEnabled: false,
+        subscriptionCryptoLink: null,
+        subscriptionIncyCryptoLink: null,
+      },
+    });
+    await page.goto('/ultima/devices');
+
+    await page.getByTestId('ultima-device-primary-action').click();
+    const connectionDialog = page.locator('#ultima-connect-new-device[role="dialog"]');
+    await expect(connectionDialog).toBeVisible();
+    await expect(page.getByTestId('ultima-device-link-happ')).toHaveCount(0);
+    await expect(page.getByTestId('ultima-device-link-incy')).toHaveCount(0);
+    await expect(page.getByTestId('ultima-device-link-other')).toHaveCount(0);
     await expect(page.getByTestId('ultima-device-raw-link')).toHaveText(
       SUBSCRIPTION.subscription_url,
     );

@@ -2506,7 +2506,18 @@
       "remnaWaveSettings": "Настройки RemnaWave",
       "remnaWaveConfigUuid": "UUID конфигурации",
       "remnaWaveConfigUuidHint": "UUID конфигурации страницы подписки из панели RemnaWave",
-      "availableConfigs": "Доступные конфигурации"
+      "availableConfigs": "Доступные конфигурации",
+      "cryptoLinksTitle": "Защищённые ссылки",
+      "cryptoLinksDescription": "Happ использует crypt5, INCY — crypt1. При отключении кабинет выдаёт обычную ссылку подписки.",
+      "cryptoLinksToggle": "Включить защищённые ссылки",
+      "cryptoLinksStatusEnabled": "Включено: Happ crypt5 и INCY crypt1",
+      "cryptoLinksStatusDisabled": "Отключено: используется обычная ссылка",
+      "cryptoLinksStatusError": "Не удалось загрузить состояние настройки",
+      "cryptoLinksSavedTitle": "Настройка сохранена",
+      "cryptoLinksEnabledMessage": "Защищённые ссылки включены.",
+      "cryptoLinksDisabledMessage": "Пользователям выдаются обычные ссылки.",
+      "cryptoLinksErrorTitle": "Не удалось сохранить",
+      "cryptoLinksErrorMessage": "Повторите попытку немного позже."
     },
     "tickets": {
       "title": "Управление тикетами",

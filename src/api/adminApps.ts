@@ -9,6 +9,18 @@ export interface LocalizedText {
 }
 
 export const adminAppsApi = {
+  getCryptoLinksSettings: async (): Promise<{ enabled: boolean }> => {
+    const response = await apiClient.get<{ enabled: boolean }>('/cabinet/admin/apps/crypto-links');
+    return response.data;
+  },
+
+  updateCryptoLinksSettings: async (enabled: boolean): Promise<{ enabled: boolean }> => {
+    const response = await apiClient.put<{ enabled: boolean }>('/cabinet/admin/apps/crypto-links', {
+      enabled,
+    });
+    return response.data;
+  },
+
   // Get RemnaWave config status
   getRemnaWaveStatus: async (): Promise<{ enabled: boolean; config_uuid: string | null }> => {
     const response = await apiClient.get<{ enabled: boolean; config_uuid: string | null }>(

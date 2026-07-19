@@ -2004,7 +2004,18 @@
       "remnaWaveSettings": "RemnaWave Settings",
       "remnaWaveConfigUuid": "Config UUID",
       "remnaWaveConfigUuidHint": "UUID of subscription page config from RemnaWave panel",
-      "availableConfigs": "Available configs"
+      "availableConfigs": "Available configs",
+      "cryptoLinksTitle": "Protected links",
+      "cryptoLinksDescription": "Happ uses crypt5 and INCY uses crypt1. When disabled, the cabinet provides the regular subscription link.",
+      "cryptoLinksToggle": "Enable protected links",
+      "cryptoLinksStatusEnabled": "Enabled: Happ crypt5 and INCY crypt1",
+      "cryptoLinksStatusDisabled": "Disabled: regular link is used",
+      "cryptoLinksStatusError": "Could not load the current setting",
+      "cryptoLinksSavedTitle": "Setting saved",
+      "cryptoLinksEnabledMessage": "Protected links are enabled.",
+      "cryptoLinksDisabledMessage": "Users now receive regular links.",
+      "cryptoLinksErrorTitle": "Could not save",
+      "cryptoLinksErrorMessage": "Please try again in a moment."
     },
     "tickets": {
       "title": "Ticket Management",

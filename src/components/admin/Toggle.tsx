@@ -5,6 +5,7 @@ interface ToggleProps {
   onChange: () => void;
   disabled?: boolean;
   'aria-label'?: string;
+  'data-testid'?: string;
   className?: string;
 }
 
@@ -13,6 +14,7 @@ export function Toggle({
   onChange,
   disabled,
   'aria-label': ariaLabel,
+  'data-testid': testId,
   className,
 }: ToggleProps) {
   return (
@@ -21,6 +23,7 @@ export function Toggle({
       role="switch"
       aria-checked={checked}
       aria-label={ariaLabel}
+      data-testid={testId}
       onClick={onChange}
       disabled={disabled}
       className={cn(

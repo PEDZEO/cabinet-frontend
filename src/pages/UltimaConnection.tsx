@@ -303,7 +303,7 @@ const findSetupUrls = (
           appConfig.subscriptionIncyCryptoLink,
         )
       : null;
-  const resolvedAdd = addSubscriptionUrl
+  const resolvedAddCandidate = addSubscriptionUrl
     ? resolveTemplateUrl(
         addSubscriptionUrl,
         appConfig.subscriptionUrl,
@@ -311,6 +311,10 @@ const findSetupUrls = (
         appConfig.subscriptionIncyCryptoLink,
       )
     : appConfig.subscriptionUrl;
+  const resolvedAdd =
+    resolvedAddCandidate && !resolvedAddCandidate.includes('{{')
+      ? resolvedAddCandidate
+      : appConfig.subscriptionUrl;
 
   return { installOptions, installUrl: resolvedInstall, addSubscriptionUrl: resolvedAdd };
 };
