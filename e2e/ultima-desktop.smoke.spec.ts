@@ -681,6 +681,9 @@ test.describe('Ultima subscription device selection', () => {
 
     const periodSelector = page.getByTestId('ultima-mobile-period-selector');
     await expect(periodSelector.getByRole('radio')).toHaveCount(4);
+    await expect(page.getByText('Выгодно', { exact: true })).toBeVisible();
+    await expect(page.getByTestId('ultima-mobile-period-90')).toContainText('3 месяца');
+    await expect(page.getByText('subscription.bestDeal', { exact: true })).toHaveCount(0);
     await expect(page.getByTestId('ultima-subscription-primary-action')).toContainText(
       'Продлить на 6 месяцев',
     );
@@ -708,6 +711,56 @@ test.describe('Ultima subscription device selection', () => {
       'Пополнить и купить',
     );
     await expect(page.getByTestId('ultima-subscription-action-price')).toHaveText('260 ₽');
+    await expectNoHorizontalOverflow(page);
+  });
+});
+
+test.describe('Ultima subscription information', () => {
+  test('keeps the active plan, traffic, connection link and renewal clear on mobile', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+    await page.goto('/ultima/subscription-info');
+
+    const infoPage = page.getByTestId('ultima-subscription-info-page');
+    await expect(infoPage).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Обычный', exact: true })).toBeVisible();
+    await expect(page.getByTestId('ultima-subscription-info-status')).toHaveText('Активна');
+    await expect(page.getByText('Действует до', { exact: true })).toBeVisible();
+
+    const trafficOverview = page.getByTestId('ultima-subscription-traffic-overview');
+    await expect(trafficOverview).toContainText('82 ГБ');
+    await expect(trafficOverview).toContainText('18 ГБ');
+    await expect(trafficOverview).toContainText('100 ГБ');
+    await expect(page.locator('#ultima-traffic-top-up')).toBeVisible();
+    await expect(
+      page.locator('#ultima-traffic-top-up button[aria-expanded]').first(),
+    ).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.getByTestId('ultima-subscription-link')).toContainText(
+      'Ссылка для подключения',
+    );
+    await expect(page.getByTestId('ultima-subscription-info-primary-action')).toContainText(
+      'Продлить подписку',
+    );
+    await expectNoHorizontalOverflow(page);
+    await page.getByTestId('ultima-subscription-info-devices').click();
+    await expect(page).toHaveURL(/\/ultima\/devices$/);
+  });
+
+  test('uses the full desktop workspace without losing subscription actions', async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 768 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+    await page.goto('/ultima/subscription-info');
+
+    await expect(page.locator('.ultima-desktop-workspace')).toBeVisible();
+    await expect(page.getByTestId('ultima-subscription-info-page')).toBeVisible();
+    await expect(page.getByTestId('ultima-subscription-traffic-overview')).toContainText('82 ГБ');
+    await expect(page.getByTestId('ultima-subscription-link')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Продлить подписку' }).first()).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Устройства' }).first()).toBeVisible();
     await expectNoHorizontalOverflow(page);
   });
 });

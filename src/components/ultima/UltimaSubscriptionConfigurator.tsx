@@ -94,7 +94,7 @@ export function UltimaSubscriptionPeriodGrid({
           )}
         >
           <div className="flex items-start justify-between gap-2">
-            <span className="min-w-0 truncate text-[14px] font-semibold text-white">
+            <span className="min-w-0 break-words text-[14px] font-semibold leading-tight text-white">
               {period.label}
             </span>
             {period.isSelected ? (
@@ -103,7 +103,7 @@ export function UltimaSubscriptionPeriodGrid({
               </span>
             ) : period.isBestDeal ? (
               <span className="shrink-0 rounded-full border border-emerald-200/[0.24] bg-emerald-300/[0.1] px-1.5 py-0.5 text-[9px] font-semibold text-emerald-50">
-                {t('subscription.bestDeal')}
+                {t('ultima.subscriptionBuilder.bestDeal')}
               </span>
             ) : null}
           </div>

@@ -1,61 +1,84 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  ArrowRight,
+  CalendarDays,
+  Clock3,
+  Copy,
+  Gauge,
+  Headphones,
+  Link2,
+  Server,
+  Share2,
+  ShieldCheck,
+  Smartphone,
+} from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
+
 import { balanceApi } from '@/api/balance';
+import { infoApi } from '@/api/info';
 import { subscriptionApi } from '@/api/subscription';
 import { ticketsApi } from '@/api/tickets';
-import { infoApi } from '@/api/info';
 import {
   UltimaDesktopPanel,
   UltimaDesktopSectionLayout,
 } from '@/components/ultima/desktop/UltimaDesktopSectionLayout';
+import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+import { UltimaTrafficTopUpSection } from '@/components/ultima/UltimaTrafficTopUpSection';
 import {
   ultimaPaneClassName,
   ultimaPaneSurfaceStyle,
   ultimaPanelClassName,
   ultimaSurfaceStyle,
 } from '@/features/ultima/surfaces';
-import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
-import { UltimaTrafficTopUpSection } from '@/components/ultima/UltimaTrafficTopUpSection';
-import { useMediaQuery } from '@/hooks/useMediaQuery';
-import { useHaptic } from '@/platform';
-import { usePlatform } from '@/platform';
 import { isUltimaTariffUnlimited } from '@/features/ultima/subscription';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useHaptic, usePlatform } from '@/platform';
 import { copyToClipboard } from '@/utils/clipboard';
 
-const CopyIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
-    <rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" strokeWidth="1.8" />
-    <path d="M5 15V6a2 2 0 0 1 2-2h9" stroke="currentColor" strokeWidth="1.8" />
-  </svg>
-);
+type QuickActionProps = {
+  icon: React.ReactNode;
+  label: string;
+  hint?: string;
+  onClick: () => void;
+  primary?: boolean;
+  testId?: string;
+};
 
-const ShareIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
-    <path d="M8 12h8m0 0-3-3m3 3-3 3" stroke="currentColor" strokeWidth="1.8" />
-    <path
-      d="M16 6h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2M8 6H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    />
-  </svg>
-);
-
-const ULTIMA_INFO_SURFACE_STYLE = ultimaSurfaceStyle;
-const ULTIMA_INFO_INNER_STYLE = ultimaPaneSurfaceStyle;
-
-const StatCard = ({ label, value, hint }: { label: string; value: string; hint?: string }) => (
-  <article className={`${ultimaPaneClassName} p-3.5`} style={ULTIMA_INFO_SURFACE_STYLE}>
-    <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-white/[0.54]">{label}</p>
-    <p className="mt-2 break-words text-[clamp(18px,5vw,20px)] font-semibold leading-tight text-white">
-      {value}
-    </p>
-    {hint ? (
-      <p className="mt-1.5 break-words text-[12px] leading-snug text-white/[0.56]">{hint}</p>
-    ) : null}
-  </article>
-);
+function QuickAction({ icon, label, hint, onClick, primary = false, testId }: QuickActionProps) {
+  return (
+    <button
+      type="button"
+      data-testid={testId}
+      onClick={onClick}
+      className={`flex min-h-[58px] w-full items-center gap-3 rounded-[18px] border px-3.5 py-3 text-left transition-colors lg:rounded-[8px] ${
+        primary
+          ? 'border-emerald-200/[0.28] bg-emerald-300/[0.12] text-white hover:bg-emerald-300/[0.17]'
+          : 'border-white/[0.09] bg-white/[0.035] text-white hover:bg-white/[0.065]'
+      }`}
+    >
+      <span
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[13px] border lg:rounded-[6px] ${
+          primary
+            ? 'border-emerald-200/[0.24] bg-emerald-300/[0.13] text-emerald-50'
+            : 'border-white/[0.09] bg-white/[0.04] text-white/[0.76]'
+        }`}
+      >
+        {icon}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block break-words text-[13px] font-semibold leading-tight">{label}</span>
+        {hint ? (
+          <span className="mt-1 block break-words text-[11px] leading-tight text-white/[0.48]">
+            {hint}
+          </span>
+        ) : null}
+      </span>
+      <ArrowRight className="hidden h-4 w-4 shrink-0 text-white/[0.52] min-[480px]:block" />
+    </button>
+  );
+}
 
 export function UltimaSubscriptionInfo() {
   const { t, i18n } = useTranslation();
@@ -94,130 +117,85 @@ export function UltimaSubscriptionInfo() {
   });
 
   const subscription = subscriptionResponse?.subscription ?? null;
-  const hasSubscription = subscriptionResponse?.has_subscription === true;
+  const hasSubscription = subscriptionResponse?.has_subscription === true && !!subscription;
   const currentTariff =
     purchaseOptions?.sales_mode === 'tariffs'
       ? (purchaseOptions.tariffs.find(
           (tariff) => tariff.id === subscription?.tariff_id || tariff.is_current,
         ) ?? null)
       : null;
+  const canOpenTariffs = purchaseOptions?.sales_mode === 'tariffs';
   const isUnlimitedTraffic = currentTariff
     ? isUltimaTariffUnlimited(currentTariff)
     : (subscription?.traffic_limit_gb ?? 0) <= 0;
-  const canOpenTariffs = purchaseOptions?.sales_mode === 'tariffs';
   const canTopUpTraffic =
     hasSubscription &&
-    !!subscription &&
-    (subscription.is_active || !isUnlimitedTraffic) &&
     !isUnlimitedTraffic &&
+    (subscription.is_active || !subscription.is_expired) &&
     (trafficPackages?.length ?? 0) > 0;
-  const subscriptionLink = subscription?.subscription_url ?? '';
-  const trafficTotal = subscription?.traffic_limit_gb ?? 0;
-  const trafficUsed = subscription?.traffic_used_gb ?? 0;
+  const subscriptionLink =
+    subscription && !subscription.hide_subscription_link
+      ? (subscription.subscription_url ?? '')
+      : '';
+
+  const trafficTotal = Math.max(0, subscription?.traffic_limit_gb ?? 0);
+  const trafficUsed = Math.max(0, subscription?.traffic_used_gb ?? 0);
   const trafficLeft = Math.max(0, trafficTotal - trafficUsed);
+  const trafficProgress = isUnlimitedTraffic
+    ? 0
+    : Math.min(100, Math.max(0, trafficTotal > 0 ? (trafficUsed / trafficTotal) * 100 : 0));
+  const language = i18n.resolvedLanguage || i18n.language || 'ru';
+  const numberFormatter = new Intl.NumberFormat(language, { maximumFractionDigits: 1 });
+  const formatTraffic = (value: number) =>
+    `${numberFormatter.format(value)} ${t('common.units.gb')}`;
+  const formatPrice = (kopeks: number) => `${(kopeks / 100).toFixed(kopeks % 100 === 0 ? 0 : 2)} ₽`;
+
   const endDateLabel = (() => {
     if (!subscription?.end_date) return t('subscription.notActive', { defaultValue: 'Не активна' });
     const date = new Date(subscription.end_date);
-    if (Number.isNaN(date.getTime()))
+    if (Number.isNaN(date.getTime())) {
       return t('subscription.notActive', { defaultValue: 'Не активна' });
-    return date.toLocaleDateString(i18n.language || 'ru-RU', {
+    }
+    return date.toLocaleDateString(language, {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
     });
   })();
+
   const timeLeftLabel = (() => {
-    if (!subscription) return '-';
+    if (!subscription) return '—';
     const days = Math.max(0, subscription.days_left ?? 0);
     const hours = Math.max(0, subscription.hours_left ?? 0);
     const minutes = Math.max(0, subscription.minutes_left ?? 0);
-    const isRu = (i18n.language || '').toLowerCase().startsWith('ru');
-    if (days > 0) {
-      if (hours > 0) return isRu ? `${days} дн. ${hours} ч.` : `${days}d ${hours}h`;
-      return isRu ? `${days} дн.` : `${days}d`;
-    }
+    const isRu = language.toLowerCase().startsWith('ru');
+    if (days > 0)
+      return hours > 0
+        ? isRu
+          ? `${days} дн. ${hours} ч.`
+          : `${days}d ${hours}h`
+        : isRu
+          ? `${days} дн.`
+          : `${days}d`;
     if (hours > 0) {
-      if (minutes > 0) return isRu ? `${hours} ч. ${minutes} мин.` : `${hours}h ${minutes}m`;
-      return isRu ? `${hours} ч.` : `${hours}h`;
+      return minutes > 0
+        ? isRu
+          ? `${hours} ч. ${minutes} мин.`
+          : `${hours}h ${minutes}m`
+        : isRu
+          ? `${hours} ч.`
+          : `${hours}h`;
     }
     return isRu ? `${minutes} мин.` : `${minutes}m`;
   })();
-  const tariffLabel = (i18n.language || '').toLowerCase().startsWith('ru') ? 'Тариф' : 'Tariff';
-  const statusLabel =
-    subscription?.is_active && !subscription?.is_expired
-      ? t('subscription.active', { defaultValue: 'Активна' })
-      : t('subscription.expired', { defaultValue: 'Истекла' });
-  const statusTone =
-    subscription?.is_active && !subscription?.is_expired
-      ? {
-          pill: 'border-emerald-200/[0.18] bg-emerald-300/10 text-emerald-50',
-          halo: 'bg-emerald-300/75',
-          dot: 'bg-emerald-300',
-        }
-      : {
-          pill: 'border-rose-200/[0.18] bg-rose-300/10 text-rose-50',
-          halo: 'bg-rose-300/75',
-          dot: 'bg-rose-300',
-        };
-  const subscriptionTitle =
-    subscription?.tariff_name || t('subscription.desktopTitle', { defaultValue: 'Подписка' });
-  const statCards =
-    hasSubscription && subscription
-      ? [
-          {
-            key: 'status',
-            label: t('subscription.status', { defaultValue: 'Статус' }),
-            value: statusLabel,
-          },
-          {
-            key: 'expiresAt',
-            label: t('subscription.expiresAt', { defaultValue: 'Действует до' }),
-            value: endDateLabel,
-          },
-          {
-            key: 'timeLeft',
-            label: t('subscription.timeLeft', { defaultValue: 'Осталось времени' }),
-            value: timeLeftLabel,
-          },
-          {
-            key: 'devices',
-            label: t('subscription.devices', { defaultValue: 'Устройства' }),
-            value: String(subscription.device_limit ?? 0),
-          },
-          {
-            key: 'tariff',
-            label: tariffLabel,
-            value:
-              subscription.tariff_name || t('common.notSpecified', { defaultValue: 'Не указан' }),
-          },
-          {
-            key: 'servers',
-            label: t('subscription.servers', { defaultValue: 'Серверы' }),
-            value: String(subscription.servers?.length ?? 0),
-          },
-          {
-            key: 'trafficUsed',
-            label: t('subscription.trafficUsed', { defaultValue: 'Трафик использован' }),
-            value: `${trafficUsed.toFixed(1)} GB`,
-            hint: isUnlimitedTraffic
-              ? t('subscription.unlimited', { defaultValue: 'Безлимит' })
-              : t('subscription.trafficLimit', {
-                  defaultValue: 'Лимит: {{limit}} GB',
-                  limit: trafficTotal,
-                }),
-          },
-          {
-            key: 'trafficRemaining',
-            label: t('subscription.trafficRemaining', { defaultValue: 'Осталось трафика' }),
-            value: isUnlimitedTraffic
-              ? t('subscription.unlimited', { defaultValue: 'Безлимит' })
-              : `${trafficLeft.toFixed(1)} GB`,
-            hint: isUnlimitedTraffic
-              ? '∞'
-              : `${Math.min(100, Math.max(0, 100 - (subscription.traffic_used_percent ?? 0))).toFixed(0)}%`,
-          },
-        ]
-      : [];
+
+  const isActive = subscription?.is_active === true && subscription.is_expired !== true;
+  const statusLabel = isActive
+    ? t('ultima.subscriptionInfo.active')
+    : t('ultima.subscriptionInfo.expired');
+  const subscriptionTitle = subscription?.tariff_name || t('ultima.subscriptionInfo.pageTitle');
+  const deviceCount = subscription?.device_limit ?? 0;
+  const serverCount = subscription?.servers?.length ?? 0;
 
   const purchaseTrafficMutation = useMutation({
     mutationFn: (gb: number) => subscriptionApi.purchaseTraffic(gb),
@@ -231,91 +209,13 @@ export function UltimaSubscriptionInfo() {
     },
   });
 
-  const trafficPurchaseError = purchaseTrafficMutation.error;
   const trafficPurchaseErrorMessage =
-    trafficPurchaseError instanceof Error ? trafficPurchaseError.message : null;
-
-  const formatPrice = (kopeks: number) => `${(kopeks / 100).toFixed(kopeks % 100 === 0 ? 0 : 2)} ₽`;
+    purchaseTrafficMutation.error instanceof Error ? purchaseTrafficMutation.error.message : null;
 
   const openTopUpForTraffic = async (gb: number) => {
     await subscriptionApi.saveTrafficCart(gb);
     navigate('/balance/top-up?returnTo=/ultima/subscription-info');
   };
-
-  const actionSection =
-    hasSubscription && subscription ? (
-      <section
-        className={`${ultimaPanelClassName} space-y-3 p-3.5`}
-        style={ULTIMA_INFO_SURFACE_STYLE}
-      >
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-white/[0.56]">
-              {t('subscription.title')}
-            </p>
-            <h2 className="mt-1 text-[20px] font-semibold leading-tight text-white">
-              {subscription.tariff_name || t('subscription.currentPlan')}
-            </h2>
-            <p className="mt-1.5 text-[13px] leading-snug text-white/[0.66]">
-              {subscription.traffic_limit_gb > 0
-                ? t('subscription.additionalOptions.currentTrafficLimit', {
-                    limit: subscription.traffic_limit_gb,
-                    used: subscription.traffic_used_gb.toFixed(1),
-                  })
-                : t('subscription.unlimited')}
-            </p>
-            {subscription.metered_traffic_enabled ? (
-              <p
-                className={`mt-2 text-[12px] leading-snug ${
-                  subscription.metered_access_blocked ? 'text-amber-200' : 'text-emerald-200/80'
-                }`}
-              >
-                {subscription.metered_access_blocked
-                  ? t('ultima.meteredTraffic.blockedNotice', {
-                      defaultValue:
-                        'Лимит спецсерверов исчерпан. Безлимитные серверы работают, доступ вернется после докупки.',
-                    })
-                  : t('ultima.meteredTraffic.activeNotice', {
-                      label: subscription.metered_server_label || 'Спецсерверы',
-                      defaultValue: `${subscription.metered_server_label || 'Спецсерверы'} расходуют лимит. Остальные серверы безлимитны.`,
-                    })}
-              </p>
-            ) : null}
-          </div>
-          {canOpenTariffs ? (
-            <button
-              type="button"
-              onClick={() => {
-                haptic.impact('light');
-                navigate('/subscription');
-              }}
-              className="ultima-btn-pill ultima-btn-secondary px-4 py-2.5 text-sm"
-            >
-              {t('dashboard.expired.tariffs')}
-            </button>
-          ) : null}
-        </div>
-        {canTopUpTraffic ? (
-          <UltimaTrafficTopUpSection
-            t={t}
-            formatPrice={formatPrice}
-            trafficLimitGb={subscription.traffic_limit_gb}
-            trafficUsedGb={subscription.traffic_used_gb}
-            trafficPurchases={subscription.traffic_purchases}
-            trafficPackages={trafficPackages}
-            selectedTrafficPackage={selectedTrafficPackage}
-            setSelectedTrafficPackage={setSelectedTrafficPackage}
-            purchaseBalanceKopeks={Math.max(0, balanceData?.balance_kopeks ?? 0)}
-            isPending={purchaseTrafficMutation.isPending}
-            error={trafficPurchaseErrorMessage}
-            onPurchaseTraffic={(gb) => purchaseTrafficMutation.mutate(gb)}
-            onTopUpBalance={(gb) => {
-              void openTopUpForTraffic(gb);
-            }}
-          />
-        ) : null}
-      </section>
-    ) : null;
 
   const openSupport = () => {
     void queryClient.prefetchQuery({
@@ -329,8 +229,19 @@ export function UltimaSubscriptionInfo() {
     navigate('/support');
   };
 
+  const openTariffs = () => {
+    haptic.impact('light');
+    navigate('/subscription');
+  };
+
+  const openDevices = () => {
+    haptic.impact('light');
+    navigate('/ultima/devices');
+  };
+
   const copySubscriptionLink = async () => {
     if (!subscriptionLink) return;
+    haptic.impact('light');
     await copyToClipboard(subscriptionLink);
     setLinkCopied(true);
     window.setTimeout(() => setLinkCopied(false), 1400);
@@ -338,9 +249,9 @@ export function UltimaSubscriptionInfo() {
 
   const shareSubscriptionLink = async () => {
     if (!subscriptionLink) return;
+    haptic.impact('light');
     const fallbackTelegramShare = () => {
-      const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(subscriptionLink)}`;
-      openTelegramLink(shareUrl);
+      openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(subscriptionLink)}`);
     };
     if (typeof navigator.share !== 'function') {
       fallbackTelegramShare();
@@ -348,7 +259,7 @@ export function UltimaSubscriptionInfo() {
     }
     try {
       await navigator.share({
-        title: t('profile.subscriptionLink', { defaultValue: 'Ваша ссылка на подписку' }),
+        title: t('ultima.subscriptionInfo.subscriptionLink'),
         text: subscriptionLink,
         url: subscriptionLink,
       });
@@ -357,249 +268,358 @@ export function UltimaSubscriptionInfo() {
     }
   };
 
+  const trafficNotice = subscription?.metered_traffic_enabled
+    ? subscription.metered_access_blocked
+      ? t('ultima.subscriptionInfo.meteredBlocked')
+      : t('ultima.subscriptionInfo.meteredActive', {
+          label: subscription.metered_server_label || t('ultima.subscriptionInfo.specialServers'),
+        })
+    : isUnlimitedTraffic
+      ? t('ultima.subscriptionInfo.unlimitedHint')
+      : t('ultima.subscriptionInfo.limitedHint');
+
+  const statusPill = (
+    <span
+      data-testid="ultima-subscription-info-status"
+      className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-medium ${
+        isActive
+          ? 'border-emerald-200/[0.2] bg-emerald-300/[0.11] text-emerald-50'
+          : 'border-rose-200/[0.2] bg-rose-300/[0.1] text-rose-50'
+      }`}
+    >
+      <span className={`h-1.5 w-1.5 rounded-full ${isActive ? 'bg-emerald-200' : 'bg-rose-200'}`} />
+      {statusLabel}
+    </span>
+  );
+
+  const trafficSection = hasSubscription ? (
+    <section
+      data-testid="ultima-subscription-traffic-overview"
+      className={`${ultimaPanelClassName} p-4 lg:p-5`}
+      style={ultimaSurfaceStyle}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] border border-white/[0.09] bg-white/[0.045] text-emerald-100 lg:rounded-[7px]">
+            <Gauge className="h-5 w-5" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-[11px] font-medium uppercase text-white/[0.46]">
+              {t('ultima.subscriptionInfo.trafficTitle')}
+            </p>
+            <h2 className="mt-0.5 break-words text-[19px] font-semibold leading-tight text-white">
+              {isUnlimitedTraffic
+                ? t('ultima.subscriptionInfo.unlimited')
+                : formatTraffic(trafficLeft)}
+            </h2>
+          </div>
+        </div>
+        {!isUnlimitedTraffic ? (
+          <span className="shrink-0 rounded-full border border-white/[0.09] bg-white/[0.04] px-2.5 py-1 text-[10px] font-medium text-white/[0.6]">
+            {numberFormatter.format(Math.max(0, 100 - trafficProgress))}%
+          </span>
+        ) : null}
+      </div>
+
+      {!isUnlimitedTraffic ? (
+        <>
+          <div className="mt-4 h-2 overflow-hidden rounded-full bg-black/[0.24]">
+            <div
+              className={`h-full rounded-full transition-[width] duration-500 ${
+                trafficProgress >= 90 ? 'bg-amber-300' : 'bg-emerald-300'
+              }`}
+              style={{ width: `${trafficProgress}%` }}
+            />
+          </div>
+          <div className="mt-3 grid grid-cols-3 divide-x divide-white/[0.08]">
+            {[
+              [t('ultima.subscriptionInfo.used'), formatTraffic(trafficUsed)],
+              [t('ultima.subscriptionInfo.remaining'), formatTraffic(trafficLeft)],
+              [t('ultima.subscriptionInfo.limit'), formatTraffic(trafficTotal)],
+            ].map(([label, value]) => (
+              <div key={label} className="min-w-0 px-2 first:pl-0 last:pr-0">
+                <p className="text-[9px] font-medium uppercase text-white/[0.38]">{label}</p>
+                <p className="mt-1 break-words text-[12px] font-semibold leading-tight text-white">
+                  {value}
+                </p>
+              </div>
+            ))}
+          </div>
+        </>
+      ) : null}
+
+      <p
+        className={`mt-4 border-t border-white/[0.07] pt-3 text-[12px] leading-relaxed ${
+          subscription.metered_access_blocked ? 'text-amber-100/[0.9]' : 'text-white/[0.55]'
+        }`}
+      >
+        {trafficNotice}
+      </p>
+    </section>
+  ) : null;
+
+  const topUpSection = canTopUpTraffic ? (
+    <UltimaTrafficTopUpSection
+      t={t}
+      formatPrice={formatPrice}
+      trafficLimitGb={subscription.traffic_limit_gb}
+      trafficUsedGb={subscription.traffic_used_gb}
+      trafficPurchases={subscription.traffic_purchases}
+      trafficPackages={trafficPackages}
+      selectedTrafficPackage={selectedTrafficPackage}
+      setSelectedTrafficPackage={setSelectedTrafficPackage}
+      purchaseBalanceKopeks={Math.max(0, balanceData?.balance_kopeks ?? 0)}
+      isPending={purchaseTrafficMutation.isPending}
+      error={trafficPurchaseErrorMessage}
+      onPurchaseTraffic={(gb) => purchaseTrafficMutation.mutate(gb)}
+      onTopUpBalance={(gb) => void openTopUpForTraffic(gb)}
+    />
+  ) : null;
+
+  const linkSection =
+    hasSubscription && subscriptionLink ? (
+      <section
+        data-testid="ultima-subscription-link"
+        className={`${ultimaPanelClassName} p-4 lg:p-5`}
+        style={ultimaSurfaceStyle}
+      >
+        <div className="flex items-start gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] border border-white/[0.09] bg-white/[0.045] text-white/[0.78] lg:rounded-[7px]">
+            <Link2 className="h-5 w-5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-[15px] font-semibold leading-tight text-white">
+              {t('ultima.subscriptionInfo.subscriptionLink')}
+            </h2>
+            <p className="mt-1 text-[12px] leading-snug text-white/[0.5]">
+              {t('ultima.subscriptionInfo.linkHint')}
+            </p>
+          </div>
+        </div>
+        <div
+          className={`${ultimaPaneClassName} mt-3 flex min-w-0 items-center gap-2 px-3 py-2.5`}
+          style={ultimaPaneSurfaceStyle}
+        >
+          <p className="min-w-0 flex-1 truncate text-[12px] text-white/[0.72]">
+            {subscriptionLink}
+          </p>
+          <button
+            type="button"
+            aria-label={t('ultima.subscriptionInfo.copyLink')}
+            title={t('ultima.subscriptionInfo.copyLink')}
+            onClick={() => void copySubscriptionLink()}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] border border-white/[0.08] bg-white/[0.04] text-white/[0.76] lg:rounded-[5px]"
+          >
+            <Copy className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => void copySubscriptionLink()}
+            className="ultima-btn-pill ultima-btn-secondary flex min-h-[42px] items-center justify-center gap-2 px-3 py-2 text-[12px]"
+          >
+            <Copy className="h-4 w-4" />
+            {linkCopied
+              ? t('ultima.subscriptionInfo.copied')
+              : t('ultima.subscriptionInfo.copyLink')}
+          </button>
+          <button
+            type="button"
+            onClick={() => void shareSubscriptionLink()}
+            className="ultima-btn-pill ultima-btn-secondary flex min-h-[42px] items-center justify-center gap-2 px-3 py-2 text-[12px]"
+          >
+            <Share2 className="h-4 w-4" />
+            {t('ultima.subscriptionInfo.shareLink')}
+          </button>
+        </div>
+      </section>
+    ) : null;
+
+  const emptyState = (
+    <section
+      className={`${ultimaPanelClassName} p-5 text-center`}
+      style={ultimaSurfaceStyle}
+      data-testid="ultima-subscription-empty"
+    >
+      <ShieldCheck className="mx-auto h-9 w-9 text-white/[0.42]" />
+      <h1 className="mt-3 text-[20px] font-semibold text-white">
+        {t('ultima.subscriptionInfo.noSubscription')}
+      </h1>
+      <p className="mt-2 text-[13px] leading-relaxed text-white/[0.54]">
+        {t('ultima.subscriptionInfo.description')}
+      </p>
+      <button
+        type="button"
+        onClick={openTariffs}
+        className="ultima-btn-pill ultima-btn-primary mt-4 w-full px-4 py-3 text-sm"
+      >
+        {t('ultima.subscriptionInfo.buySubscription')}
+      </button>
+    </section>
+  );
+
   if (isLoading) {
     return <div className="min-h-[100dvh] min-h-[100svh] w-full bg-transparent" />;
   }
 
   const bottomNav = <UltimaBottomNav active="home" onSupportClick={openSupport} />;
 
-  const emptyState = (
-    <section
-      className={`${ultimaPanelClassName} p-4 text-sm text-white/[0.82]`}
-      style={ULTIMA_INFO_SURFACE_STYLE}
-    >
-      {t('subscription.connection.needSubscription', {
-        defaultValue: 'Для просмотра информации нужна активная подписка.',
-      })}
-    </section>
-  );
-
-  const linkSection = hasSubscription && subscription && (
-    <section className={`${ultimaPanelClassName} p-3.5`} style={ULTIMA_INFO_SURFACE_STYLE}>
-      <p className="mb-2 text-[12px] font-medium uppercase tracking-[0.14em] text-white/[0.56]">
-        {t('profile.subscriptionLink', { defaultValue: 'Ваша ссылка на подписку' })}
-      </p>
-      <div
-        className={`${ultimaPaneClassName} rounded-[20px] px-3 py-2.5`}
-        style={ULTIMA_INFO_INNER_STYLE}
-      >
-        <p className="break-all text-[13px] leading-snug text-white/[0.92]">
-          {subscriptionLink || '-'}
-        </p>
-      </div>
-      <div className="mt-2 grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
-        <button
-          type="button"
-          onClick={() => void copySubscriptionLink()}
-          className="ultima-btn-pill ultima-btn-secondary flex w-full items-center gap-2.5 px-4 py-3 text-left text-[14px]"
-          disabled={!subscriptionLink}
-        >
-          <span className="flex min-w-0 flex-1 items-center gap-2">
-            <CopyIcon />
-            <span className="min-w-0 break-words leading-tight">
-              {linkCopied
-                ? t('common.copied', { defaultValue: 'Скопировано' })
-                : t('common.copy', { defaultValue: 'Копировать' })}
-            </span>
-          </span>
-        </button>
-        <button
-          type="button"
-          onClick={() => void shareSubscriptionLink()}
-          className="ultima-btn-pill ultima-btn-secondary flex w-full items-center gap-2.5 px-4 py-3 text-left text-[14px]"
-          disabled={!subscriptionLink}
-        >
-          <span className="flex min-w-0 flex-1 items-center gap-2">
-            <ShareIcon />
-            <span className="min-w-0 break-words leading-tight">
-              {t('common.share', { defaultValue: 'Поделиться' })}
-            </span>
-          </span>
-        </button>
-      </div>
-    </section>
-  );
-
-  const statGrid = hasSubscription && subscription && (
-    <div className="grid grid-cols-1 gap-2.5 min-[360px]:grid-cols-2 lg:grid-cols-4 lg:gap-4">
-      {statCards.map((item) => (
-        <StatCard key={item.key} label={item.label} value={item.value} hint={item.hint} />
-      ))}
-    </div>
-  );
-
-  const mobileOverview = hasSubscription && subscription && (
-    <section className={`${ultimaPanelClassName} p-3.5`} style={ULTIMA_INFO_SURFACE_STYLE}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-white/[0.56]">
-            {t('subscription.infoTitle', { defaultValue: 'Инфо о подписке' })}
-          </p>
-          <h1 className="mt-1 break-words text-[clamp(30px,8.4vw,36px)] font-semibold leading-[0.94] tracking-[-0.02em] text-white">
-            {subscriptionTitle}
-          </h1>
-          <p className="mt-1.5 break-words text-[13px] leading-snug text-white/[0.68]">
-            {endDateLabel}
-          </p>
-        </div>
-        <span
-          className={`relative inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1 text-xs shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ${statusTone.pill}`}
-        >
-          <span
-            className={`absolute left-1.5 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full blur-[4px] ${statusTone.halo}`}
-          />
-          <span className={`relative h-1.5 w-1.5 rounded-full ${statusTone.dot}`} />
-          {statusLabel}
-        </span>
-      </div>
-      <div className="mt-3 grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
-        <div
-          className={`${ultimaPaneClassName} rounded-[20px] px-3 py-2.5`}
-          style={ULTIMA_INFO_INNER_STYLE}
-        >
-          <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-white/[0.52]">
-            {t('subscription.timeLeft', { defaultValue: 'Осталось времени' })}
-          </p>
-          <p className="mt-1 break-words text-[15px] font-medium leading-snug text-white">
-            {timeLeftLabel}
-          </p>
-        </div>
-        <div
-          className={`${ultimaPaneClassName} rounded-[20px] px-3 py-2.5`}
-          style={ULTIMA_INFO_INNER_STYLE}
-        >
-          <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-white/[0.52]">
-            {t('subscription.devices', { defaultValue: 'Устройства' })}
-          </p>
-          <p className="mt-1 break-words text-[15px] font-medium leading-snug text-white">
-            {String(subscription.device_limit ?? 0)}
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-
-  const desktopInfoContent =
-    !hasSubscription || !subscription ? (
-      emptyState
-    ) : (
-      <div className="ultima-scrollbar min-h-0 flex-1 space-y-4 overflow-y-auto pr-1 lg:overflow-visible lg:pr-0">
-        {actionSection}
-        {linkSection}
-        {statGrid}
-      </div>
-    );
-
-  const mobileInfoContent =
-    !hasSubscription || !subscription ? (
-      <>
-        <header className="mb-3">
-          <h1 className="break-words text-[clamp(34px,9.2vw,42px)] font-semibold leading-[0.92] tracking-[-0.01em] text-white">
-            {t('subscription.infoTitle', { defaultValue: 'Инфо о подписке' })}
-          </h1>
-          <p className="mt-1.5 break-words text-[14px] leading-tight text-white/[0.62]">
-            {t('subscription.infoDescription', {
-              defaultValue: 'Ключевые параметры подписки и управления устройствами.',
-            })}
-          </p>
-        </header>
-        {emptyState}
-      </>
-    ) : (
-      <div className="ultima-scrollbar min-h-0 flex-1 space-y-2.5 overflow-y-auto pb-3 pr-1 lg:overflow-visible lg:pb-0 lg:pr-0">
-        {mobileOverview}
-        {actionSection}
-        {linkSection}
-        {statGrid}
-      </div>
-    );
-
   if (isDesktop) {
     return (
       <div className="ultima-shell ultima-shell-wide ultima-shell-profile-desktop">
         <div className="ultima-shell-aura" />
         <UltimaDesktopSectionLayout
-          icon={<ShareIcon />}
-          eyebrow={t('subscription.infoTitle', { defaultValue: 'Инфо о подписке' })}
-          title={t('subscription.desktopTitle', { defaultValue: 'Подписка' })}
-          subtitle={t('subscription.infoDescription', {
-            defaultValue:
-              'Срок действия, ссылка на подписку и быстрый переход к устройствам в одном окне.',
-          })}
-          metrics={[
-            {
-              label: t('subscription.status', { defaultValue: 'Статус' }),
-              value:
-                subscription?.is_active && !subscription?.is_expired
-                  ? t('subscription.active', { defaultValue: 'Активна' })
-                  : t('subscription.expired', { defaultValue: 'Истекла' }),
-              hint: endDateLabel,
-            },
-            {
-              label: t('subscription.devices', { defaultValue: 'Устройства' }),
-              value: String(subscription?.device_limit ?? 0),
-              hint: t('subscription.manageDevices', { defaultValue: 'Управление устройствами' }),
-            },
-            {
-              label: t('subscription.timeLeft', { defaultValue: 'Осталось времени' }),
-              value: timeLeftLabel,
-              hint: subscription?.tariff_name || tariffLabel,
-            },
-          ]}
+          icon={<ShieldCheck className="h-5 w-5" />}
+          eyebrow={t('ultima.subscriptionInfo.eyebrow')}
+          title={hasSubscription ? subscriptionTitle : t('ultima.subscriptionInfo.pageTitle')}
+          subtitle={
+            hasSubscription
+              ? `${t('ultima.subscriptionInfo.validUntil')} ${endDateLabel}`
+              : t('ultima.subscriptionInfo.description')
+          }
+          metrics={
+            hasSubscription
+              ? [
+                  {
+                    label: t('ultima.subscriptionInfo.timeLeft'),
+                    value: timeLeftLabel,
+                    hint: statusLabel,
+                  },
+                  {
+                    label: t('ultima.subscriptionInfo.remaining'),
+                    value: isUnlimitedTraffic
+                      ? t('ultima.subscriptionInfo.unlimited')
+                      : formatTraffic(trafficLeft),
+                    hint: isUnlimitedTraffic
+                      ? trafficNotice
+                      : `${t('ultima.subscriptionInfo.used')}: ${formatTraffic(trafficUsed)}`,
+                  },
+                  {
+                    label: t('ultima.subscriptionInfo.devices'),
+                    value: String(deviceCount),
+                    hint: `${serverCount} ${t('ultima.subscriptionInfo.servers').toLowerCase()}`,
+                  },
+                ]
+              : undefined
+          }
           heroActions={
             hasSubscription ? (
-              <button
-                type="button"
-                onClick={() => {
-                  haptic.impact('light');
-                  navigate('/ultima/devices');
-                }}
-                className="ultima-btn-pill ultima-btn-primary px-5 py-3 text-sm"
-              >
-                {t('subscription.desktopOpenDevices', { defaultValue: 'Открыть устройства' })}
-              </button>
+              <div className="flex flex-wrap gap-2">
+                {canOpenTariffs ? (
+                  <button
+                    type="button"
+                    onClick={openTariffs}
+                    className="ultima-btn-pill ultima-btn-primary px-5 py-2.5 text-sm"
+                  >
+                    {t('ultima.subscriptionInfo.renew')}
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={openDevices}
+                  className="ultima-btn-pill ultima-btn-secondary px-5 py-2.5 text-sm"
+                >
+                  {t('ultima.subscriptionInfo.manageDevices')}
+                </button>
+              </div>
             ) : undefined
           }
           aside={
             <UltimaDesktopPanel
-              title={t('subscription.desktopAsideTitle', { defaultValue: 'Ссылка и помощь' })}
-              subtitle={t('subscription.desktopAsideHint', {
-                defaultValue:
-                  'Скопируйте ссылку, отправьте ее себе или сразу откройте поддержку, если что-то не работает.',
-              })}
+              title={t('ultima.subscriptionInfo.quickActions')}
+              subtitle={t('ultima.subscriptionInfo.quickActionsHint')}
             >
-              <div className="space-y-3">
-                <button
-                  type="button"
-                  onClick={() => void copySubscriptionLink()}
-                  className="ultima-btn-pill ultima-btn-secondary w-full px-4 py-2.5 text-sm"
-                  disabled={!subscriptionLink}
-                >
-                  {linkCopied
-                    ? t('common.copied', { defaultValue: 'Скопировано' })
-                    : t('common.copy', { defaultValue: 'Копировать ссылку' })}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void shareSubscriptionLink()}
-                  className="ultima-btn-pill ultima-btn-secondary w-full px-4 py-2.5 text-sm"
-                  disabled={!subscriptionLink}
-                >
-                  {t('common.share', { defaultValue: 'Поделиться' })}
-                </button>
-                <button
-                  type="button"
+              <div className="space-y-2">
+                {canOpenTariffs ? (
+                  <QuickAction
+                    icon={<CalendarDays className="h-4 w-4" />}
+                    label={t('ultima.subscriptionInfo.renew')}
+                    hint={endDateLabel}
+                    onClick={openTariffs}
+                    primary
+                  />
+                ) : null}
+                <QuickAction
+                  icon={<Smartphone className="h-4 w-4" />}
+                  label={t('ultima.subscriptionInfo.manageDevices')}
+                  hint={t('ultima.subscriptionInfo.deviceCount', { count: deviceCount })}
+                  onClick={openDevices}
+                />
+                <QuickAction
+                  icon={<Headphones className="h-4 w-4" />}
+                  label={t('ultima.subscriptionInfo.support')}
                   onClick={openSupport}
-                  className="ultima-btn-pill ultima-btn-secondary w-full px-4 py-2.5 text-sm"
-                >
-                  {t('nav.support', { defaultValue: 'Поддержка' })}
-                </button>
+                />
               </div>
             </UltimaDesktopPanel>
           }
           bottomNav={bottomNav}
         >
-          {desktopInfoContent}
+          {!hasSubscription ? (
+            emptyState
+          ) : (
+            <div
+              data-testid="ultima-subscription-info-page"
+              className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]"
+            >
+              <div className="min-w-0 space-y-4">
+                {trafficSection}
+                {topUpSection}
+              </div>
+              <div className="min-w-0 space-y-4">
+                <section className={`${ultimaPanelClassName} p-5`} style={ultimaSurfaceStyle}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[11px] font-medium uppercase text-white/[0.44]">
+                        {t('ultima.subscriptionInfo.eyebrow')}
+                      </p>
+                      <h2 className="mt-1 text-[22px] font-semibold text-white">
+                        {subscriptionTitle}
+                      </h2>
+                    </div>
+                    {statusPill}
+                  </div>
+                  <div className="mt-5 divide-y divide-white/[0.07] border-y border-white/[0.07]">
+                    {[
+                      [
+                        <CalendarDays key="calendar" className="h-4 w-4" />,
+                        t('ultima.subscriptionInfo.validUntil'),
+                        endDateLabel,
+                      ],
+                      [
+                        <Clock3 key="clock" className="h-4 w-4" />,
+                        t('ultima.subscriptionInfo.timeLeft'),
+                        timeLeftLabel,
+                      ],
+                      [
+                        <Smartphone key="devices" className="h-4 w-4" />,
+                        t('ultima.subscriptionInfo.devices'),
+                        String(deviceCount),
+                      ],
+                      [
+                        <Server key="servers" className="h-4 w-4" />,
+                        t('ultima.subscriptionInfo.servers'),
+                        String(serverCount),
+                      ],
+                    ].map(([icon, label, value]) => (
+                      <div
+                        key={String(label)}
+                        className="grid grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-2.5 py-3 text-[12px]"
+                      >
+                        <span className="text-white/[0.44]">{icon}</span>
+                        <span className="text-white/[0.5]">{label}</span>
+                        <span className="max-w-[170px] break-words text-right font-semibold text-white">
+                          {value}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+                {linkSection}
+              </div>
+            </div>
+          )}
         </UltimaDesktopSectionLayout>
       </div>
     );
@@ -610,27 +630,93 @@ export function UltimaSubscriptionInfo() {
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
         <section className="flex min-h-0 flex-1 flex-col pt-[clamp(8px,2vh,16px)]">
-          {mobileInfoContent}
+          {!hasSubscription ? (
+            emptyState
+          ) : (
+            <div
+              data-testid="ultima-subscription-info-page"
+              className="ultima-scrollbar min-h-0 flex-1 space-y-2.5 overflow-y-auto pb-3 pr-1"
+            >
+              <section
+                className={`${ultimaPanelClassName} overflow-hidden p-4`}
+                style={ultimaSurfaceStyle}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] font-semibold uppercase text-white/[0.44]">
+                      {t('ultima.subscriptionInfo.eyebrow')}
+                    </p>
+                    <h1 className="mt-1 break-words text-[clamp(27px,7.6vw,34px)] font-semibold leading-none text-white">
+                      {subscriptionTitle}
+                    </h1>
+                  </div>
+                  {statusPill}
+                </div>
+
+                <div className="mt-3 flex items-center gap-2 border-t border-white/[0.07] pt-3 text-[12px] text-white/[0.62]">
+                  <CalendarDays className="h-4 w-4 shrink-0 text-emerald-100/[0.8]" />
+                  <span>{t('ultima.subscriptionInfo.validUntil')}</span>
+                  <strong className="ml-auto break-words text-right font-semibold text-white">
+                    {endDateLabel}
+                  </strong>
+                </div>
+
+                <div className="mt-3 grid grid-cols-3 divide-x divide-white/[0.08] rounded-[18px] border border-white/[0.08] bg-black/[0.12] py-3 lg:rounded-[8px]">
+                  {[
+                    [t('ultima.subscriptionInfo.timeLeft'), timeLeftLabel],
+                    [t('ultima.subscriptionInfo.devices'), String(deviceCount)],
+                    [t('ultima.subscriptionInfo.servers'), String(serverCount)],
+                  ].map(([label, value]) => (
+                    <div key={label} className="min-w-0 px-2.5">
+                      <p className="text-[9px] font-medium uppercase text-white/[0.38]">{label}</p>
+                      <p className="mt-1 break-words text-[12px] font-semibold leading-tight text-white">
+                        {value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  {canOpenTariffs ? (
+                    <QuickAction
+                      icon={<CalendarDays className="h-4 w-4" />}
+                      label={t('ultima.subscriptionInfo.renewShort')}
+                      onClick={openTariffs}
+                      primary
+                      testId="ultima-subscription-info-renew"
+                    />
+                  ) : null}
+                  <QuickAction
+                    icon={<Smartphone className="h-4 w-4" />}
+                    label={t('ultima.subscriptionInfo.manageDevices')}
+                    onClick={openDevices}
+                    testId="ultima-subscription-info-devices"
+                  />
+                </div>
+              </section>
+
+              {trafficSection}
+              {topUpSection}
+              {linkSection}
+            </div>
+          )}
         </section>
 
         <section className="mt-auto shrink-0 pb-0">
-          <button
-            type="button"
-            onClick={() => {
-              haptic.impact('light');
-              navigate('/ultima/devices');
-            }}
-            className="ultima-btn-pill ultima-btn-primary mb-3 flex w-full items-center gap-3 px-4 py-3 text-left text-[15px] min-[360px]:px-5 min-[360px]:text-[16px]"
-          >
-            <span className="min-w-0 flex-1 break-words leading-tight">
-              {t('subscription.manageDevices', { defaultValue: 'Управление устройствами' })}
-            </span>
-            {hasSubscription && subscription ? (
-              <span className="shrink-0 whitespace-nowrap text-white/90">
-                {subscription.device_limit ?? 0}
+          {hasSubscription && canOpenTariffs ? (
+            <button
+              type="button"
+              data-testid="ultima-subscription-info-primary-action"
+              onClick={openTariffs}
+              className="ultima-btn-pill ultima-btn-primary mb-3 flex w-full items-center gap-3 px-4 py-3 text-left text-[15px] min-[360px]:px-5 min-[360px]:text-[16px]"
+            >
+              <CalendarDays className="h-5 w-5 shrink-0" />
+              <span className="min-w-0 flex-1 break-words font-semibold leading-tight">
+                {t('ultima.subscriptionInfo.renew')}
               </span>
-            ) : null}
-          </button>
+              <ArrowRight className="h-4 w-4 shrink-0" />
+            </button>
+          ) : null}
           <div className="ultima-nav-dock">{bottomNav}</div>
         </section>
       </div>
