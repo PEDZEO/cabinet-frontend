@@ -8,6 +8,8 @@ import {
   Link2,
   LoaderCircle,
   LockKeyhole,
+  Mail,
+  Send,
   ShieldCheck,
   Smartphone,
   Unlink,
@@ -49,6 +51,12 @@ const getProviderLabel = (provider: string): string =>
 
 const getProviderDescription = (provider: string): string =>
   PROVIDER_DESCRIPTIONS[provider] ?? 'Дополнительный способ входа в этот профиль';
+
+function ProviderIcon({ provider }: { provider: string }) {
+  if (provider === 'telegram') return <Send className="h-5 w-5 text-sky-300" />;
+  if (provider === 'email') return <Mail className="h-5 w-5 text-emerald-200" />;
+  return <OAuthProviderIcon provider={provider} className="h-5 w-5" />;
+}
 
 const getManualMergeStatus = (request: ManualMergeTicketStatus): string => {
   if (request.decision === 'approve') return 'Одобрен';
@@ -289,7 +297,7 @@ export function UltimaProviderAccountLinkingView({
                       className="flex min-h-[72px] items-center gap-3 px-3 py-2.5"
                     >
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/[0.07]">
-                        <OAuthProviderIcon provider={identity.provider} className="h-5 w-5" />
+                        <ProviderIcon provider={identity.provider} />
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
@@ -362,7 +370,7 @@ export function UltimaProviderAccountLinkingView({
                     className="group flex min-h-[64px] w-full items-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.035] px-3 py-2.5 text-left transition hover:border-emerald-200/20 hover:bg-emerald-200/[0.06] disabled:cursor-wait disabled:opacity-50"
                   >
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/[0.07]">
-                      <OAuthProviderIcon provider="telegram" className="h-5 w-5" />
+                      <ProviderIcon provider="telegram" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="text-sm font-semibold text-white">Telegram</div>
@@ -387,7 +395,7 @@ export function UltimaProviderAccountLinkingView({
                     className="group flex min-h-[64px] w-full items-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.035] px-3 py-2.5 text-left transition hover:border-emerald-200/20 hover:bg-emerald-200/[0.06] disabled:cursor-wait disabled:opacity-50"
                   >
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/[0.07]">
-                      <OAuthProviderIcon provider={provider.name} className="h-5 w-5" />
+                      <ProviderIcon provider={provider.name} />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="text-sm font-semibold text-white">
@@ -544,7 +552,7 @@ export function UltimaProviderAccountLinkingView({
           </div>
         ) : null}
 
-        <div className="ultima-mobile-dock-footer">
+        <div className="ultima-mobile-dock-footer lg:hidden">
           <div className="ultima-nav-dock">
             <UltimaBottomNav active="profile" />
           </div>

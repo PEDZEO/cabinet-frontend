@@ -296,7 +296,7 @@ test.describe('Ultima account linking callback', () => {
     await page.goto('/auth/oauth/callback?code=test-code&state=server-flow-state');
 
     await page.waitForURL('**/account-linking');
-    await expect(page.getByText('Сохранение доступа')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Способы входа' })).toBeVisible();
     await expect(page.getByText('Аккаунты связаны!')).toBeVisible();
     await expect(page.getByText(/Minified React error #185/)).toHaveCount(0);
   });
@@ -478,6 +478,45 @@ test.describe('Ultima account linking callback', () => {
     await expect(
       page.locator('.ultima-scrollbar').evaluate((element) => element.scrollTop),
     ).resolves.toBeGreaterThan(0);
+  });
+
+  test('keeps login methods compact and usable on mobile', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaAuth(page);
+    await mockUltimaLinkingApi(page);
+
+    await page.goto('/account-linking');
+
+    await expect(page.getByRole('heading', { name: 'Способы входа' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Подключённые' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Добавить вход' })).toBeVisible();
+    await expect(page.getByText('Telegram', { exact: true })).toBeVisible();
+    await expect(page.getByText('Yandex', { exact: true })).toBeVisible();
+    await expect(page.getByText('VK', { exact: true })).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+    await page.screenshot({
+      path: testInfo.outputPath('login-methods-mobile.png'),
+      fullPage: true,
+    });
+  });
+
+  test('uses a balanced two-column login methods layout on desktop', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await bootstrapUltimaAuth(page);
+    await mockUltimaLinkingApi(page);
+
+    await page.goto('/account-linking');
+
+    await expect(page.getByRole('heading', { name: 'Способы входа' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Подключённые' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Добавить вход' })).toBeVisible();
+    await expect(page.getByText('Не получается подключить вход?')).toBeVisible();
+    await expect(page.locator('.ultima-mobile-dock-footer')).toBeHidden();
+    await expectNoHorizontalOverflow(page);
+    await page.screenshot({
+      path: testInfo.outputPath('login-methods-desktop.png'),
+      fullPage: true,
+    });
   });
 
   test('uses a focused desktop layout without duplicated profile actions', async ({ page }) => {
