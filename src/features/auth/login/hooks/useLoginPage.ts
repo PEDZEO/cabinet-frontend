@@ -76,7 +76,6 @@ export function useLoginPage() {
   const [forgotPasswordSent, setForgotPasswordSent] = useState(false);
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
   const [forgotPasswordError, setForgotPasswordError] = useState('');
-  const [showEmailForm, setShowEmailForm] = useState(() => !!referralCode);
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
 
   const { safeAreaInset, contentSafeAreaInset } = useTelegramSDK();
@@ -398,10 +397,6 @@ export function useLoginPage() {
     setAuthMode('login');
   }, []);
 
-  const handleToggleEmailForm = useCallback(() => {
-    setShowEmailForm((prev) => !prev);
-  }, []);
-
   const handleShowForgotPassword = useCallback(() => {
     setShowForgotPassword(true);
   }, []);
@@ -427,7 +422,6 @@ export function useLoginPage() {
     oauthProviders,
     oauthLoading,
     isEmailAuthLoading,
-    showEmailForm,
     showForgotPassword,
     forgotPasswordSent,
     forgotPasswordEmail,
@@ -448,7 +442,6 @@ export function useLoginPage() {
     handleBackToLogin,
     handleRetryTelegramAuth,
     handleOAuthLogin,
-    handleToggleEmailForm,
     handleForgotPassword,
     closeForgotPasswordModal,
     handleEmailSubmit,

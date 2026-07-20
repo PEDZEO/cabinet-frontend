@@ -1,10 +1,5 @@
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import PageLoader from '@/components/common/PageLoader';
-import { UltimaAuthBrandMark } from '@/features/auth/shared/UltimaAuthBrandMark';
-import { AuthSupportAction } from '@/features/auth/shared/AuthSupportAction';
-import { useUltimaAuthBranding } from '@/features/auth/shared/useUltimaAuthBranding';
-import { useTranslation } from 'react-i18next';
-import { useUltimaMode } from '@/hooks/useUltimaMode';
 import {
   LoginBranding,
   LoginCheckEmailCard,
@@ -13,6 +8,12 @@ import {
   LoginTelegramSection,
   useLoginPage,
 } from '@/features/auth/login';
+import { AuthSupportAction } from '@/features/auth/shared/AuthSupportAction';
+import { UltimaAuthBrandMark } from '@/features/auth/shared/UltimaAuthBrandMark';
+import { useUltimaAuthBranding } from '@/features/auth/shared/useUltimaAuthBranding';
+import { useUltimaMode } from '@/hooks/useUltimaMode';
+import { ShieldCheck } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function Login() {
   const { t } = useTranslation();
@@ -39,7 +40,6 @@ export default function Login() {
     oauthProviders,
     oauthLoading,
     isEmailAuthLoading,
-    showEmailForm,
     showForgotPassword,
     forgotPasswordSent,
     forgotPasswordEmail,
@@ -60,7 +60,6 @@ export default function Login() {
     handleBackToLogin,
     handleRetryTelegramAuth,
     handleOAuthLogin,
-    handleToggleEmailForm,
     handleForgotPassword,
     closeForgotPasswordModal,
     handleEmailSubmit,
@@ -71,19 +70,83 @@ export default function Login() {
     return <PageLoader variant="ultima" />;
   }
 
+  const authPanelContent = registeredEmail ? (
+    <LoginCheckEmailCard email={registeredEmail} onBackToLogin={handleBackToLogin} />
+  ) : (
+    <>
+      {error && (
+        <>
+          <div className="mb-4 rounded-lg border border-error-400/25 bg-error-500/10 px-4 py-3 text-sm leading-5 text-error-200">
+            {error}
+          </div>
+          <AuthSupportAction visible={errorNeedsSupport} containerClassName="mb-4" />
+        </>
+      )}
+
+      <LoginEmailAuthSection
+        isEmailAuthLoading={isEmailAuthLoading}
+        isEmailAuthEnabled={isEmailAuthEnabled}
+        showForgotPassword={showForgotPassword}
+        forgotPasswordSent={forgotPasswordSent}
+        forgotPasswordEmail={forgotPasswordEmail}
+        onForgotPasswordEmailChange={setForgotPasswordEmail}
+        forgotPasswordError={forgotPasswordError}
+        forgotPasswordLoading={forgotPasswordLoading}
+        onForgotPasswordSubmit={handleForgotPassword}
+        onCloseForgotPassword={closeForgotPasswordModal}
+        authMode={authMode}
+        onAuthModeChange={setAuthMode}
+        onEmailSubmit={handleEmailSubmit}
+        firstName={firstName}
+        onFirstNameChange={setFirstName}
+        email={email}
+        onEmailChange={setEmail}
+        password={password}
+        onPasswordChange={setPassword}
+        confirmPassword={confirmPassword}
+        onConfirmPasswordChange={setConfirmPassword}
+        isLoading={isLoading}
+        onShowForgotPassword={handleShowForgotPassword}
+      />
+
+      {!showForgotPassword && (
+        <div className="mt-5 border-t border-dark-700/45 pt-1">
+          <LoginOAuthSection
+            isLoading={isOAuthProvidersLoading}
+            providers={oauthProviders}
+            oauthLoading={oauthLoading}
+            onOAuthLogin={handleOAuthLogin}
+          />
+
+          <div className="mt-3">
+            <LoginTelegramSection
+              isLoading={isLoading}
+              isTelegramWebApp={isTelegramWebApp}
+              hasError={Boolean(error)}
+              botUsername={botUsername}
+              referralCode={referralCode || undefined}
+              onRetryTelegramAuth={handleRetryTelegramAuth}
+            />
+          </div>
+        </div>
+      )}
+    </>
+  );
+
+  const safeAreaStyle = {
+    paddingTop: safeTop > 0 ? `${safeTop + 16}px` : 'calc(1rem + env(safe-area-inset-top, 0px))',
+    paddingBottom:
+      safeBottom > 0 ? `${safeBottom + 16}px` : 'calc(1rem + env(safe-area-inset-bottom, 0px))',
+  };
+
   if (isUltimaMode) {
     return (
       <div
-        className="ultima-login relative min-h-[100dvh] overflow-hidden"
+        className="ultima-login relative min-h-[100dvh] overflow-x-hidden"
         style={{
+          ...safeAreaStyle,
           background:
             'linear-gradient(160deg, color-mix(in srgb, var(--ultima-color-bg-top) 28%, transparent) 0%, color-mix(in srgb, var(--ultima-color-bg-bottom) 40%, #000000) 100%)',
-          paddingTop:
-            safeTop > 0 ? `${safeTop + 16}px` : 'calc(1rem + env(safe-area-inset-top, 0px))',
-          paddingBottom:
-            safeBottom > 0
-              ? `${safeBottom + 16}px`
-              : 'calc(1rem + env(safe-area-inset-bottom, 0px))',
         }}
       >
         <div className="ultima-shell-aura" />
@@ -104,150 +167,54 @@ export default function Login() {
           <LanguageSwitcher />
         </div>
 
-        <div className="relative z-10 mx-auto flex w-full max-w-md flex-col px-4 lg:grid lg:min-h-[calc(100dvh-64px)] lg:max-w-[1040px] lg:grid-cols-[minmax(0,0.8fr)_minmax(420px,1fr)] lg:items-center lg:gap-16 lg:px-8">
-          <header className="mb-4 flex flex-col items-center pt-8 text-center lg:mb-0 lg:items-start lg:pt-0 lg:text-left">
+        <main className="relative z-10 mx-auto grid w-full max-w-md gap-7 px-4 lg:min-h-[calc(100dvh-64px)] lg:max-w-[1100px] lg:grid-cols-[minmax(0,0.9fr)_minmax(420px,480px)] lg:items-center lg:gap-20 lg:px-8">
+          <header className="flex flex-col items-center pt-8 text-center lg:items-start lg:pt-0 lg:text-left">
             <UltimaAuthBrandMark
               appName={appName}
               logoUrl={logoUrl}
               showBrandLogo={showUltimaBrandLogo}
-              className="mb-3 lg:mb-5"
+              className="mb-4 lg:mb-6"
             />
             <h1 className="text-[34px] font-semibold leading-none text-white lg:text-[48px]">
               {appName}
             </h1>
-            <p className="text-white/62 mt-2 max-w-[34ch] text-[14px] lg:mt-3 lg:text-[16px]">
-              {t('auth.loginToAccount', { defaultValue: 'Войдите в аккаунт для продолжения' })}
+            <p className="mt-3 max-w-[34ch] text-[14px] leading-6 text-white/60 lg:text-[16px]">
+              {authMode === 'register'
+                ? t(
+                    'auth.registerPageIntro',
+                    'Create one account for your subscription and devices.',
+                  )
+                : t('auth.loginToAccount', 'Sign in to manage your subscription and devices.')}
             </p>
+            <div className="mt-5 hidden items-center gap-2 text-sm text-white/45 lg:flex">
+              <ShieldCheck className="h-4 w-4 text-accent-300" />
+              {t('auth.secureLoginHint', 'Secure sign-in with email, Telegram or OAuth.')}
+            </div>
           </header>
 
-          <div className="min-w-0">
-            {registeredEmail ? (
-              <div
-                className="rounded-[28px] border p-4 backdrop-blur-md lg:rounded-[8px] lg:p-5"
-                style={{
-                  borderColor:
-                    'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
-                  background: 'color-mix(in srgb, var(--ultima-color-surface) 44%, transparent)',
-                }}
-              >
-                <LoginCheckEmailCard email={registeredEmail} onBackToLogin={handleBackToLogin} />
-              </div>
-            ) : (
-              <div
-                className="rounded-[28px] border p-4 backdrop-blur-md lg:rounded-[8px] lg:p-5"
-                style={{
-                  borderColor:
-                    'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
-                  background: 'color-mix(in srgb, var(--ultima-color-surface) 44%, transparent)',
-                }}
-              >
-                {error && (
-                  <>
-                    <div className="bg-rose-500/12 mb-3 rounded-xl border border-rose-300/35 px-4 py-2.5 text-sm text-rose-100">
-                      {error}
-                    </div>
-                    <AuthSupportAction
-                      visible={errorNeedsSupport}
-                      containerClassName="mb-4"
-                      buttonClassName="border-white/10 bg-white/6 text-white hover:bg-white/10 hover:text-white"
-                      usernameClassName="text-white/55"
-                    />
-                  </>
-                )}
+          <section
+            className="min-w-0 rounded-2xl border p-5 shadow-2xl shadow-black/20 backdrop-blur-md sm:p-6 lg:rounded-lg"
+            style={{
+              borderColor:
+                'color-mix(in srgb, var(--ultima-color-surface-border) 28%, transparent)',
+              background: 'color-mix(in srgb, var(--ultima-color-surface) 72%, #071013)',
+            }}
+          >
+            {authPanelContent}
+          </section>
 
-                <div
-                  className="rounded-2xl border p-3 lg:rounded-[8px] lg:p-4"
-                  style={{
-                    borderColor:
-                      'color-mix(in srgb, var(--ultima-color-surface-border) 20%, transparent)',
-                    background: 'color-mix(in srgb, var(--ultima-color-surface) 34%, transparent)',
-                  }}
-                >
-                  <LoginTelegramSection
-                    isLoading={isLoading}
-                    isTelegramWebApp={isTelegramWebApp}
-                    hasError={Boolean(error)}
-                    botUsername={botUsername}
-                    referralCode={referralCode || undefined}
-                    onRetryTelegramAuth={handleRetryTelegramAuth}
-                  />
-                </div>
-
-                <div
-                  className="mt-3 rounded-2xl border p-3 lg:rounded-[8px] lg:p-4"
-                  style={{
-                    borderColor:
-                      'color-mix(in srgb, var(--ultima-color-surface-border) 20%, transparent)',
-                    background: 'color-mix(in srgb, var(--ultima-color-surface) 34%, transparent)',
-                  }}
-                >
-                  <LoginOAuthSection
-                    isLoading={isOAuthProvidersLoading}
-                    providers={oauthProviders}
-                    oauthLoading={oauthLoading}
-                    onOAuthLogin={handleOAuthLogin}
-                  />
-                </div>
-
-                <div
-                  className="mt-3 rounded-2xl border p-3 lg:rounded-[8px] lg:p-4"
-                  style={{
-                    borderColor:
-                      'color-mix(in srgb, var(--ultima-color-surface-border) 20%, transparent)',
-                    background: 'color-mix(in srgb, var(--ultima-color-surface) 34%, transparent)',
-                  }}
-                >
-                  <LoginEmailAuthSection
-                    isEmailAuthLoading={isEmailAuthLoading}
-                    isEmailAuthEnabled={isEmailAuthEnabled}
-                    showEmailForm={showEmailForm}
-                    onToggleEmailForm={handleToggleEmailForm}
-                    showForgotPassword={showForgotPassword}
-                    forgotPasswordSent={forgotPasswordSent}
-                    forgotPasswordEmail={forgotPasswordEmail}
-                    onForgotPasswordEmailChange={setForgotPasswordEmail}
-                    forgotPasswordError={forgotPasswordError}
-                    forgotPasswordLoading={forgotPasswordLoading}
-                    onForgotPasswordSubmit={handleForgotPassword}
-                    onCloseForgotPassword={closeForgotPasswordModal}
-                    authMode={authMode}
-                    onAuthModeChange={setAuthMode}
-                    onEmailSubmit={handleEmailSubmit}
-                    firstName={firstName}
-                    onFirstNameChange={setFirstName}
-                    email={email}
-                    onEmailChange={setEmail}
-                    password={password}
-                    onPasswordChange={setPassword}
-                    confirmPassword={confirmPassword}
-                    onConfirmPasswordChange={setConfirmPassword}
-                    isLoading={isLoading}
-                    onShowForgotPassword={handleShowForgotPassword}
-                  />
-                </div>
-              </div>
-            )}
-
-            <p className="mt-4 text-center text-[11px] text-white/45">
-              {t('auth.secureLoginHint', {
-                defaultValue: 'Безопасный вход через Telegram, OAuth или email.',
-              })}
-            </p>
-          </div>
-        </div>
+          <p className="pb-2 text-center text-[11px] text-white/40 lg:hidden">
+            {t('auth.secureLoginHint', 'Secure sign-in with email, Telegram or OAuth.')}
+          </p>
+        </main>
       </div>
     );
   }
 
   return (
     <div
-      className="flex min-h-[100dvh] items-center justify-center px-4 sm:px-6 lg:px-8"
-      style={{
-        paddingTop:
-          safeTop > 0 ? `${safeTop + 16}px` : 'calc(1rem + env(safe-area-inset-top, 0px))',
-        paddingBottom:
-          safeBottom > 0 ? `${safeBottom + 16}px` : 'calc(1rem + env(safe-area-inset-bottom, 0px))',
-      }}
+      className="relative flex min-h-[100dvh] items-center justify-center overflow-x-hidden px-4 sm:px-6 lg:px-8"
+      style={safeAreaStyle}
     >
       <div className="fixed inset-0 bg-gradient-to-br from-dark-950 via-dark-900 to-dark-950" />
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-accent-500/10 via-transparent to-transparent" />
@@ -261,80 +228,23 @@ export default function Login() {
         <LanguageSwitcher />
       </div>
 
-      <div className="relative w-full max-w-md space-y-5">
-        <LoginBranding
-          branding={branding}
-          logoShape={logoShape}
-          logoLoaded={logoLoaded}
-          appLogo={appLogo}
-          appName={appName}
-          logoUrl={logoUrl}
-          onLogoLoad={handleLogoLoad}
-          referralCode={referralCode}
-          isEmailAuthEnabled={isEmailAuthEnabled}
-        />
+      <main className="relative grid w-full max-w-md gap-6 lg:max-w-[980px] lg:grid-cols-[minmax(0,0.8fr)_minmax(420px,480px)] lg:items-center lg:gap-16">
+        <div>
+          <LoginBranding
+            branding={branding}
+            logoShape={logoShape}
+            logoLoaded={logoLoaded}
+            appLogo={appLogo}
+            appName={appName}
+            logoUrl={logoUrl}
+            onLogoLoad={handleLogoLoad}
+            referralCode={referralCode}
+            isEmailAuthEnabled={isEmailAuthEnabled}
+          />
+        </div>
 
-        {registeredEmail ? (
-          <LoginCheckEmailCard email={registeredEmail} onBackToLogin={handleBackToLogin} />
-        ) : (
-          <div className="card">
-            {error && (
-              <>
-                <div className="mb-3 rounded-xl border border-error-500/30 bg-error-500/10 px-4 py-2.5 text-sm text-error-400">
-                  {error}
-                </div>
-                <AuthSupportAction visible={errorNeedsSupport} containerClassName="mb-4" />
-              </>
-            )}
-
-            <div className="space-y-3">
-              <LoginTelegramSection
-                isLoading={isLoading}
-                isTelegramWebApp={isTelegramWebApp}
-                hasError={Boolean(error)}
-                botUsername={botUsername}
-                referralCode={referralCode || undefined}
-                onRetryTelegramAuth={handleRetryTelegramAuth}
-              />
-            </div>
-
-            <LoginOAuthSection
-              isLoading={isOAuthProvidersLoading}
-              providers={oauthProviders}
-              oauthLoading={oauthLoading}
-              onOAuthLogin={handleOAuthLogin}
-            />
-
-            <LoginEmailAuthSection
-              isEmailAuthLoading={isEmailAuthLoading}
-              isEmailAuthEnabled={isEmailAuthEnabled}
-              showEmailForm={showEmailForm}
-              onToggleEmailForm={handleToggleEmailForm}
-              showForgotPassword={showForgotPassword}
-              forgotPasswordSent={forgotPasswordSent}
-              forgotPasswordEmail={forgotPasswordEmail}
-              onForgotPasswordEmailChange={setForgotPasswordEmail}
-              forgotPasswordError={forgotPasswordError}
-              forgotPasswordLoading={forgotPasswordLoading}
-              onForgotPasswordSubmit={handleForgotPassword}
-              onCloseForgotPassword={closeForgotPasswordModal}
-              authMode={authMode}
-              onAuthModeChange={setAuthMode}
-              onEmailSubmit={handleEmailSubmit}
-              firstName={firstName}
-              onFirstNameChange={setFirstName}
-              email={email}
-              onEmailChange={setEmail}
-              password={password}
-              onPasswordChange={setPassword}
-              confirmPassword={confirmPassword}
-              onConfirmPasswordChange={setConfirmPassword}
-              isLoading={isLoading}
-              onShowForgotPassword={handleShowForgotPassword}
-            />
-          </div>
-        )}
-      </div>
+        <section className="card rounded-lg p-5 sm:p-6">{authPanelContent}</section>
+      </main>
     </div>
   );
 }
