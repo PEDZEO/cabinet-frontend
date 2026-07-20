@@ -1,65 +1,139 @@
-import { useState } from 'react';
+import { type CSSProperties, type ReactNode, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { referralApi } from '@/api/referral';
+import {
+  ArrowUpRight,
+  BadgePercent,
+  Check,
+  ChevronDown,
+  Clock3,
+  Coins,
+  Copy,
+  Gift,
+  HandCoins,
+  Share2,
+  UserCheck,
+  UsersRound,
+  WalletCards,
+} from 'lucide-react';
 import { brandingApi } from '@/api/branding';
 import { partnerApi } from '@/api/partners';
+import { referralApi } from '@/api/referral';
 import { withdrawalApi } from '@/api/withdrawals';
+import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import {
   UltimaDesktopPanel,
   UltimaDesktopSectionLayout,
 } from '@/components/ultima/desktop/UltimaDesktopSectionLayout';
+import {
+  ultimaAccentSurfaceStyle,
+  ultimaCardClassName,
+  ultimaSurfaceStyle,
+} from '@/features/ultima/surfaces';
 import { useCurrency } from '@/hooks/useCurrency';
-import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
-import { getReferralBonusParts } from '@/utils/referralBonus';
+import { cn } from '@/lib/utils';
 import { trackAnalyticsEvent } from '@/utils/analyticsEvents';
 import { copyToClipboard } from '@/utils/clipboard';
+import { getReferralBonusParts } from '@/utils/referralBonus';
 
-const CopyIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
-    <rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" strokeWidth="1.8" />
-    <path d="M5 15V6a2 2 0 0 1 2-2h9" stroke="currentColor" strokeWidth="1.8" />
-  </svg>
-);
-
-const CheckIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
-    <path d="m5 13 4 4L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-  </svg>
-);
-
-const ShareIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
-    <path d="M7 12V6.5a2.5 2.5 0 0 1 2.5-2.5h5" stroke="currentColor" strokeWidth="1.8" />
-    <path d="M12 5h7m0 0-3-3m3 3-3 3" stroke="currentColor" strokeWidth="1.8" />
-    <path
-      d="M7 11.5v7A2.5 2.5 0 0 0 9.5 21h9a2.5 2.5 0 0 0 2.5-2.5v-3"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    />
-  </svg>
-);
+const PREVIEW_LIMIT = 5;
+const defaultCardStyle: CSSProperties = ultimaSurfaceStyle;
+const accentCardStyle: CSSProperties = ultimaAccentSurfaceStyle;
 
 const statusClassMap: Record<string, string> = {
-  completed: 'text-emerald-200 border-emerald-200/30 bg-emerald-500/[0.15]',
-  approved: 'text-sky-200 border-sky-200/30 bg-sky-500/[0.15]',
-  pending: 'text-amber-200 border-amber-200/30 bg-amber-500/[0.15]',
-  rejected: 'text-rose-200 border-rose-200/30 bg-rose-500/[0.15]',
-  cancelled: 'text-rose-200 border-rose-200/30 bg-rose-500/[0.15]',
+  completed: 'border-emerald-200/25 bg-emerald-300/[0.1] text-emerald-100',
+  approved: 'border-sky-200/25 bg-sky-300/[0.1] text-sky-100',
+  pending: 'border-amber-200/25 bg-amber-300/[0.1] text-amber-100',
+  rejected: 'border-rose-200/25 bg-rose-300/[0.1] text-rose-100',
+  cancelled: 'border-rose-200/25 bg-rose-300/[0.1] text-rose-100',
 };
 
 const getStatusClass = (status: string) =>
-  statusClassMap[status] ?? 'text-white/80 border-white/20 bg-white/10';
+  statusClassMap[status] ?? 'border-white/[0.12] bg-white/[0.05] text-white/[0.72]';
+
+type MetricProps = {
+  icon: ReactNode;
+  label: string;
+  value: string;
+  tone?: 'default' | 'success' | 'info';
+};
+
+function Metric({ icon, label, value, tone = 'default' }: MetricProps) {
+  return (
+    <div className="min-w-0 px-2 first:pl-0 last:pr-0">
+      <div className="flex items-center gap-1.5 text-white/[0.4]">
+        {icon}
+        <span className="truncate text-[8px] font-semibold uppercase">{label}</span>
+      </div>
+      <p
+        className={cn(
+          'mt-1.5 truncate text-[13px] font-semibold',
+          tone === 'success'
+            ? 'text-emerald-100'
+            : tone === 'info'
+              ? 'text-sky-100'
+              : 'text-white/[0.94]',
+        )}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function SectionHeading({ icon, title, hint }: { icon: ReactNode; title: string; hint?: string }) {
+  return (
+    <div className="flex items-start gap-3">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[7px] border border-white/[0.08] bg-white/[0.04] text-emerald-100/[0.82]">
+        {icon}
+      </span>
+      <div className="min-w-0">
+        <h2 className="text-[15px] font-semibold leading-tight text-white/[0.94]">{title}</h2>
+        {hint ? <p className="mt-1 text-[11px] leading-snug text-white/[0.46]">{hint}</p> : null}
+      </div>
+    </div>
+  );
+}
+
+function ExpandButton({
+  expanded,
+  hiddenCount,
+  onClick,
+  showMoreLabel,
+  showLessLabel,
+}: {
+  expanded: boolean;
+  hiddenCount: number;
+  onClick: () => void;
+  showMoreLabel: string;
+  showLessLabel: string;
+}) {
+  if (hiddenCount <= 0) return null;
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="mt-2 flex min-h-[40px] w-full items-center justify-center gap-2 border-t border-white/[0.07] pt-2 text-[12px] font-medium text-white/[0.66] transition-colors hover:text-white"
+    >
+      {expanded ? showLessLabel : showMoreLabel}
+      <ChevronDown className={cn('h-4 w-4 transition-transform', expanded && 'rotate-180')} />
+    </button>
+  );
+}
 
 export function UltimaReferral() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { formatPositive, formatWithCurrency } = useCurrency();
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   const [copied, setCopied] = useState(false);
+  const [showAllReferrals, setShowAllReferrals] = useState(false);
+  const [showAllEarnings, setShowAllEarnings] = useState(false);
+  const [showAllWithdrawals, setShowAllWithdrawals] = useState(false);
 
   const { data: info, isLoading } = useQuery({
     queryKey: ['referral-info'],
@@ -98,7 +172,12 @@ export function UltimaReferral() {
     placeholderData: (previousData) => previousData,
   });
 
-  const isPartner = partnerStatus?.partner_status === 'approved';
+  const partnerStatusValue = partnerStatus?.partner_status ?? 'none';
+  const isPartner = partnerStatusValue === 'approved';
+  const showApplySection = partnerStatusValue === 'none';
+  const showPendingSection = partnerStatusValue === 'pending';
+  const showRejectedSection = partnerStatusValue === 'rejected';
+  const showPartnerSection = terms?.partner_section_visible !== false;
 
   const { data: withdrawalBalance } = useQuery({
     queryKey: ['withdrawal-balance'],
@@ -122,6 +201,12 @@ export function UltimaReferral() {
     },
   });
 
+  const dateFormatter = new Intl.DateTimeFormat(i18n.language || 'ru', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+  const formatDate = (value: string) => dateFormatter.format(new Date(value));
   const referralLink = info?.referral_code
     ? `${window.location.origin}/login?ref=${info.referral_code}`
     : '';
@@ -150,11 +235,7 @@ export function UltimaReferral() {
     });
 
     if (navigator.share) {
-      void navigator.share({
-        title: t('referral.title'),
-        text: shareText,
-        url: referralLink,
-      });
+      void navigator.share({ title: t('referral.title'), text: shareText, url: referralLink });
       return;
     }
 
@@ -164,33 +245,35 @@ export function UltimaReferral() {
     window.open(telegramUrl, '_blank', 'noopener,noreferrer');
   };
 
-  const partnerStatusValue = partnerStatus?.partner_status ?? 'none';
-  const showApplySection = partnerStatusValue === 'none';
-  const showPendingSection = partnerStatusValue === 'pending';
-  const showRejectedSection = partnerStatusValue === 'rejected';
-
-  const bottomNav = <UltimaBottomNav active="profile" />;
   const formatReferralDaysBonus = (days: number) =>
     t('referral.terms.subscriptionDaysBonus', {
       count: days,
       defaultValue: '+{{count}} d. subscription',
     });
-  const firstTopupBonus = terms
-    ? getReferralBonusParts({
-        rubles: terms.first_topup_bonus_rubles,
-        days: terms.first_topup_bonus_days,
-        formatPositive,
-        formatDays: formatReferralDaysBonus,
-      })
-    : null;
-  const inviterBonus = terms
-    ? getReferralBonusParts({
-        rubles: terms.inviter_bonus_rubles,
-        days: terms.inviter_bonus_days,
-        formatPositive,
-        formatDays: formatReferralDaysBonus,
-      })
-    : null;
+  const hasFirstTopupBonus = Boolean(
+    terms && ((terms.first_topup_bonus_rubles ?? 0) > 0 || (terms.first_topup_bonus_days ?? 0) > 0),
+  );
+  const hasInviterBonus = Boolean(
+    terms && ((terms.inviter_bonus_rubles ?? 0) > 0 || (terms.inviter_bonus_days ?? 0) > 0),
+  );
+  const firstTopupBonus =
+    terms && hasFirstTopupBonus
+      ? getReferralBonusParts({
+          rubles: terms.first_topup_bonus_rubles,
+          days: terms.first_topup_bonus_days,
+          formatPositive,
+          formatDays: formatReferralDaysBonus,
+        })
+      : null;
+  const inviterBonus =
+    terms && hasInviterBonus
+      ? getReferralBonusParts({
+          rubles: terms.inviter_bonus_rubles,
+          days: terms.inviter_bonus_days,
+          formatPositive,
+          formatDays: formatReferralDaysBonus,
+        })
+      : null;
   const referralBenefitItems = [
     inviterBonus?.primary
       ? t('referral.inviterBenefitShort', {
@@ -204,419 +287,610 @@ export function UltimaReferral() {
           defaultValue: 'Другу {{value}}',
         })
       : null,
-  ].filter(Boolean);
+  ].filter((item): item is string => Boolean(item));
 
-  const referralContent = (
-    <section className="min-h-0 flex-1 overflow-hidden rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:p-4">
-      <div className="ultima-scrollbar h-full space-y-3 overflow-y-auto pr-1 lg:overflow-visible lg:pr-0">
-        {isLoading ? (
-          <div className="flex h-40 items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-300/40 border-t-transparent" />
+  const referrals = referralList?.items ?? [];
+  const earningsItems = earnings?.items ?? [];
+  const withdrawalItems = withdrawalHistory?.items ?? [];
+  const visibleReferrals = showAllReferrals ? referrals : referrals.slice(0, PREVIEW_LIMIT);
+  const visibleEarnings = showAllEarnings ? earningsItems : earningsItems.slice(0, PREVIEW_LIMIT);
+  const visibleWithdrawals = showAllWithdrawals
+    ? withdrawalItems
+    : withdrawalItems.slice(0, PREVIEW_LIMIT);
+  const activeReferrals =
+    info?.active_referrals ?? referrals.filter((item) => item.has_paid).length;
+  const showMoreLabel = (count: number) =>
+    t('referral.showMore', { count, defaultValue: `Показать ещё ${count}` });
+  const showLessLabel = t('referral.showLess', { defaultValue: 'Свернуть' });
+
+  const metrics = [
+    {
+      icon: <UsersRound className="h-4 w-4" />,
+      label: t('referral.stats.totalReferrals'),
+      value: String(info?.total_referrals || 0),
+      tone: 'default' as const,
+    },
+    {
+      icon: <UserCheck className="h-4 w-4" />,
+      label: t('referral.stats.activeReferrals'),
+      value: String(activeReferrals),
+      tone: 'success' as const,
+    },
+    {
+      icon: <Coins className="h-4 w-4" />,
+      label: t('referral.stats.totalEarnings'),
+      value: formatPositive(info?.total_earnings_rubles || 0),
+      tone: 'info' as const,
+    },
+  ];
+
+  const inviteCard = (
+    <section
+      data-testid="ultima-referral-hero"
+      className={cn(ultimaCardClassName, 'relative overflow-hidden p-4 lg:p-6')}
+      style={accentCardStyle}
+    >
+      <div className="flex items-start gap-3 lg:gap-4">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[8px] border border-emerald-100/[0.12] bg-emerald-300/[0.08] text-emerald-100 lg:h-12 lg:w-12">
+          <Gift className="h-5 w-5 lg:h-6 lg:w-6" strokeWidth={1.8} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[9px] font-semibold uppercase text-white/[0.42]">
+              {t('referral.linkReady', { defaultValue: 'Ссылка готова' })}
+            </span>
+            <span className="rounded-full border border-emerald-200/[0.18] bg-emerald-300/[0.1] px-2.5 py-1 text-[10px] font-semibold text-emerald-50">
+              {info?.commission_percent || 0}%
+            </span>
           </div>
-        ) : terms && !terms.is_enabled ? (
-          <div className="rounded-2xl border border-emerald-200/[0.12] bg-emerald-950/25 px-3 py-5 text-center text-white/[0.72]">
-            {t('referral.disabled')}
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-3 gap-2">
-              <div className="rounded-2xl border border-emerald-200/[0.12] bg-emerald-950/[0.28] px-2.5 py-2.5">
-                <p className="text-[10px] text-white/[0.52]">
-                  {t('referral.stats.totalReferrals')}
-                </p>
-                <p className="mt-1 text-[19px] font-semibold leading-none text-white">
-                  {info?.total_referrals || 0}
-                </p>
-              </div>
-              <div className="rounded-2xl border border-emerald-200/[0.12] bg-emerald-950/[0.28] px-2.5 py-2.5">
-                <p className="text-[10px] text-white/[0.52]">{t('referral.stats.totalEarnings')}</p>
-                <p className="mt-1 text-[16px] font-semibold leading-none text-emerald-200">
-                  {formatPositive(info?.total_earnings_rubles || 0)}
-                </p>
-              </div>
-              <div className="rounded-2xl border border-emerald-200/[0.12] bg-emerald-950/[0.28] px-2.5 py-2.5">
-                <p className="text-[10px] text-white/[0.52]">
-                  {t('referral.stats.commissionRate')}
-                </p>
-                <p className="mt-1 text-[19px] font-semibold leading-none text-sky-200">
-                  {info?.commission_percent || 0}%
-                </p>
-              </div>
-            </div>
+          <h2 className="mt-2 max-w-[24ch] text-[22px] font-semibold leading-[1.05] text-white/[0.98] lg:text-[30px]">
+            {t('referral.inviteTitle', {
+              defaultValue: 'Приглашайте друзей и получайте бонусы',
+            })}
+          </h2>
+          <p className="mt-2 max-w-[62ch] text-[12px] leading-relaxed text-white/[0.56] lg:text-[13px]">
+            {t('referral.inviteSubtitle', {
+              percent: info?.commission_percent || 0,
+              defaultValue: 'Друг получает бонус, а вы — вознаграждение после его оплаты.',
+            })}
+          </p>
+        </div>
+      </div>
 
-            <div className="rounded-2xl border border-emerald-200/[0.12] bg-emerald-950/[0.28] p-3">
-              <p className="text-[12px] text-white/[0.74]">{t('referral.yourLink')}</p>
-              <p className="mt-1 text-[11px] text-white/[0.52]">
-                {t('referral.shareHint', { percent: info?.commission_percent || 0 })}
-              </p>
-              {referralBenefitItems.length > 0 ? (
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {referralBenefitItems.map((item) => (
-                    <span
-                      key={String(item)}
-                      className="rounded-full border border-emerald-200/[0.18] bg-emerald-300/[0.1] px-2.5 py-1 text-[11px] font-medium text-emerald-50"
-                    >
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-              <div className="mt-2 rounded-xl border border-emerald-200/[0.12] bg-emerald-950/40 px-3 py-2 text-[12px] text-white/[0.86]">
-                <p className="break-all leading-snug">{referralLink || '—'}</p>
-              </div>
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={copyLink}
-                  disabled={!referralLink}
-                  className="flex h-10 items-center justify-center gap-1.5 rounded-xl border border-emerald-200/[0.15] bg-emerald-900/[0.45] text-[12px] text-white/90 disabled:opacity-45"
-                >
-                  {copied ? <CheckIcon /> : <CopyIcon />}
-                  {copied ? t('referral.copied') : t('referral.copyLink')}
-                </button>
-                <button
-                  type="button"
-                  onClick={shareLink}
-                  disabled={!referralLink}
-                  className="flex h-10 items-center justify-center gap-1.5 rounded-xl border border-sky-200/[0.22] bg-sky-500/[0.78] text-[12px] font-medium text-white disabled:opacity-45"
-                >
-                  <ShareIcon />
-                  {t('referral.shareButton')}
-                </button>
-              </div>
-            </div>
+      {referralBenefitItems.length > 0 ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {referralBenefitItems.map((item) => (
+            <span
+              key={item}
+              className="rounded-full border border-white/[0.09] bg-white/[0.04] px-3 py-1.5 text-[11px] font-medium text-white/[0.82]"
+            >
+              {item}
+            </span>
+          ))}
+        </div>
+      ) : null}
 
-            {terms ? (
-              <div className="rounded-2xl border border-emerald-200/[0.12] bg-emerald-950/[0.28] p-3">
-                <div className="mb-2 flex items-center justify-between gap-2">
-                  <p className="text-[13px] text-white/[0.88]">{t('referral.terms.title')}</p>
-                  <span className="rounded-full border border-emerald-200/20 bg-emerald-500/[0.14] px-2 py-0.5 text-[11px] font-medium text-emerald-100">
-                    {terms.commission_percent}%
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="rounded-xl border border-emerald-200/[0.1] bg-emerald-950/[0.35] p-2">
-                    <p className="text-[10px] text-white/[0.48]">{t('referral.terms.minTopup')}</p>
-                    <p className="mt-1 text-[13px] font-semibold leading-tight text-white/[0.92]">
-                      {formatWithCurrency(terms.minimum_topup_rubles)}
-                    </p>
-                  </div>
-                  <div className="rounded-xl border border-emerald-200/[0.1] bg-emerald-950/[0.35] p-2">
-                    <p className="text-[10px] text-white/[0.48]">
-                      {t('referral.terms.newUserBonus')}
-                    </p>
-                    <p className="mt-1 text-[13px] font-semibold leading-tight text-emerald-200">
-                      {firstTopupBonus?.primary}
-                    </p>
-                    {firstTopupBonus?.secondary ? (
-                      <p className="mt-0.5 text-[11px] font-medium leading-tight text-emerald-200/80">
-                        {firstTopupBonus.secondary}
-                      </p>
-                    ) : null}
-                  </div>
-                  <div className="rounded-xl border border-emerald-200/[0.1] bg-emerald-950/[0.35] p-2">
-                    <p className="text-[10px] text-white/[0.48]">
-                      {t('referral.terms.commission')}
-                    </p>
-                    <p className="mt-1 text-[13px] font-semibold leading-tight text-sky-200">
-                      {terms.commission_percent}%
-                    </p>
-                  </div>
-                  <div className="rounded-xl border border-emerald-200/[0.1] bg-emerald-950/[0.35] p-2">
-                    <p className="text-[10px] text-white/[0.48]">
-                      {t('referral.terms.inviterBonus')}
-                    </p>
-                    <p className="mt-1 text-[13px] font-semibold leading-tight text-emerald-200">
-                      {inviterBonus?.primary}
-                    </p>
-                    {inviterBonus?.secondary ? (
-                      <p className="mt-0.5 text-[11px] font-medium leading-tight text-emerald-200/80">
-                        {inviterBonus.secondary}
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-            ) : null}
+      <div className="mt-4 flex min-w-0 items-center gap-2 rounded-[8px] border border-white/[0.08] bg-black/[0.12] p-2">
+        <p
+          data-testid="ultima-referral-link"
+          className="min-w-0 flex-1 truncate px-1 text-[11px] text-white/[0.68] lg:text-[12px]"
+        >
+          {referralLink || '—'}
+        </p>
+        <button
+          type="button"
+          data-testid="ultima-referral-copy"
+          onClick={copyLink}
+          disabled={!referralLink}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[7px] border border-white/[0.09] bg-white/[0.05] text-white/[0.78] transition-colors hover:bg-white/[0.09] disabled:opacity-40"
+          aria-label={copied ? t('referral.copied') : t('referral.copyLink')}
+        >
+          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+        </button>
+      </div>
 
-            <div className="rounded-2xl border border-emerald-200/[0.12] bg-emerald-950/[0.28] p-3">
-              <p className="mb-2 text-[13px] text-white/[0.88]">{t('referral.yourReferrals')}</p>
-              {referralList?.items && referralList.items.length > 0 ? (
-                <div className="space-y-2">
-                  {referralList.items.slice(0, 10).map((ref) => (
-                    <div
-                      key={ref.id}
-                      className="flex items-center justify-between rounded-xl border border-emerald-200/10 bg-emerald-950/40 px-2.5 py-2"
-                    >
-                      <div>
-                        <p className="text-[13px] text-white/[0.92]">
-                          {ref.first_name || ref.username || `User #${ref.id}`}
-                        </p>
-                        <p className="text-[11px] text-white/[0.45]">
-                          {new Date(ref.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <span
-                        className={`rounded-full border px-2 py-0.5 text-[10px] ${ref.has_paid ? 'border-emerald-200/30 bg-emerald-500/[0.15] text-emerald-200' : 'border-white/20 bg-white/10 text-white/75'}`}
-                      >
-                        {ref.has_paid ? t('referral.status.paid') : t('referral.status.pending')}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-[12px] text-white/[0.55]">{t('referral.noReferrals')}</p>
-              )}
-            </div>
-
-            {earnings?.items && earnings.items.length > 0 ? (
-              <div className="rounded-2xl border border-emerald-200/[0.12] bg-emerald-950/[0.28] p-3">
-                <p className="mb-2 text-[13px] text-white/[0.88]">
-                  {t('referral.earningsHistory')}
-                </p>
-                <div className="space-y-2">
-                  {earnings.items.slice(0, 10).map((earning) => (
-                    <div
-                      key={earning.id}
-                      className="flex items-center justify-between rounded-xl border border-emerald-200/10 bg-emerald-950/40 px-2.5 py-2"
-                    >
-                      <div>
-                        <p className="text-[12px] text-white/[0.88]">
-                          {earning.referral_first_name || earning.referral_username || 'Referral'}
-                        </p>
-                        <p className="text-[11px] text-white/[0.45]">
-                          {new Date(earning.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <p className="text-[13px] font-medium text-emerald-200">
-                        {formatPositive(earning.amount_rubles)}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-
-            {terms?.partner_section_visible !== false && showApplySection ? (
-              <div className="rounded-2xl border border-emerald-200/[0.12] bg-emerald-950/[0.28] p-3">
-                <p className="text-[14px] font-medium text-white/[0.92]">
-                  {t('referral.partner.becomePartner')}
-                </p>
-                <p className="mt-1 text-[12px] text-white/[0.58]">
-                  {t('referral.partner.becomePartnerDesc')}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => navigate('/referral/partner/apply')}
-                  className="mt-2 h-10 rounded-xl border border-emerald-200/20 bg-emerald-500/[0.85] px-4 text-[12px] font-medium text-white"
-                >
-                  {t('referral.partner.applyButton')}
-                </button>
-              </div>
-            ) : null}
-
-            {terms?.partner_section_visible !== false && showPendingSection ? (
-              <div className="rounded-2xl border border-amber-200/20 bg-amber-500/10 p-3">
-                <p className="text-[14px] font-medium text-amber-100">
-                  {t('referral.partner.underReview')}
-                </p>
-                <p className="mt-1 text-[12px] text-amber-100/70">
-                  {t('referral.partner.underReviewDesc')}
-                </p>
-              </div>
-            ) : null}
-
-            {terms?.partner_section_visible !== false && showRejectedSection ? (
-              <div className="rounded-2xl border border-rose-200/20 bg-rose-500/10 p-3">
-                <p className="text-[14px] font-medium text-rose-100">
-                  {t('referral.partner.rejected')}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => navigate('/referral/partner/apply')}
-                  className="mt-2 h-10 rounded-xl border border-rose-200/20 bg-rose-500/70 px-4 text-[12px] font-medium text-white"
-                >
-                  {t('referral.partner.reapplyButton')}
-                </button>
-              </div>
-            ) : null}
-
-            {terms?.partner_section_visible !== false && isPartner && withdrawalBalance ? (
-              <div className="rounded-2xl border border-emerald-200/[0.12] bg-emerald-950/[0.28] p-3">
-                <p className="text-[14px] font-medium text-white/[0.92]">
-                  {t('referral.withdrawal.title')}
-                </p>
-                <div className="mt-2 grid grid-cols-2 gap-2">
-                  <div className="rounded-xl border border-emerald-200/[0.12] bg-emerald-950/[0.35] p-2">
-                    <p className="text-[10px] text-white/[0.48]">
-                      {t('referral.withdrawal.available')}
-                    </p>
-                    <p className="mt-1 text-[16px] font-semibold text-emerald-200">
-                      {formatWithCurrency(withdrawalBalance.available_total / 100)}
-                    </p>
-                  </div>
-                  <div className="rounded-xl border border-emerald-200/[0.12] bg-emerald-950/[0.35] p-2">
-                    <p className="text-[10px] text-white/[0.48]">
-                      {t('referral.withdrawal.pending')}
-                    </p>
-                    <p className="mt-1 text-[14px] font-semibold text-amber-200">
-                      {formatWithCurrency(withdrawalBalance.pending / 100)}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => navigate('/referral/withdrawal/request')}
-                  disabled={!withdrawalBalance.can_request}
-                  className="mt-2 h-10 w-full rounded-xl border border-emerald-200/20 bg-emerald-500/[0.85] text-[12px] font-medium text-white disabled:opacity-45"
-                >
-                  {t('referral.withdrawal.requestButton')}
-                </button>
-              </div>
-            ) : null}
-
-            {terms?.partner_section_visible !== false &&
-            isPartner &&
-            withdrawalHistory?.items &&
-            withdrawalHistory.items.length > 0 ? (
-              <div className="rounded-2xl border border-emerald-200/[0.12] bg-emerald-950/[0.28] p-3">
-                <p className="mb-2 text-[13px] text-white/[0.88]">
-                  {t('referral.withdrawal.history')}
-                </p>
-                <div className="space-y-2">
-                  {withdrawalHistory.items.slice(0, 10).map((item) => (
-                    <div
-                      key={item.id}
-                      className="rounded-xl border border-emerald-200/10 bg-emerald-950/40 px-2.5 py-2"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-[12px] font-medium text-white/[0.92]">
-                          {formatWithCurrency(item.amount_rubles)}
-                        </p>
-                        <span
-                          className={`rounded-full border px-2 py-0.5 text-[10px] ${getStatusClass(item.status)}`}
-                        >
-                          {t(`referral.withdrawal.status.${item.status}`, item.status)}
-                        </span>
-                      </div>
-                      <p className="mt-0.5 text-[11px] text-white/[0.45]">
-                        {new Date(item.created_at).toLocaleDateString()}
-                      </p>
-                      {item.status === 'pending' ? (
-                        <button
-                          type="button"
-                          onClick={() => cancelWithdrawalMutation.mutate(item.id)}
-                          disabled={cancelWithdrawalMutation.isPending}
-                          className="mt-1 text-[11px] text-rose-200/90"
-                        >
-                          {t('common.cancel')}
-                        </button>
-                      ) : null}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-          </>
-        )}
+      <div className="mt-3">
+        <button
+          type="button"
+          data-testid="ultima-referral-share"
+          onClick={shareLink}
+          disabled={!referralLink}
+          className="ultima-btn-pill ultima-btn-primary flex min-h-[44px] w-full items-center justify-center gap-2 px-3 text-[12px] disabled:opacity-40"
+        >
+          <Share2 className="h-4 w-4" />
+          {t('referral.shareButton')}
+        </button>
       </div>
     </section>
   );
 
-  if (isDesktop) {
-    return (
-      <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-profile-desktop">
-        <div className="ultima-shell-aura" />
-        <UltimaDesktopSectionLayout
-          icon={<ShareIcon />}
-          eyebrow={t('referral.title')}
-          title={t('referral.title')}
-          subtitle={t('profile.referralDescription', {
-            defaultValue: 'Приглашайте друзей, следите за начислениями и выводите вознаграждение.',
+  const mobileStats = (
+    <section
+      data-testid="ultima-referral-stats"
+      className={cn(ultimaCardClassName, 'grid grid-cols-3 divide-x divide-white/[0.07] p-4')}
+      style={defaultCardStyle}
+    >
+      {metrics.map((metric) => (
+        <Metric key={metric.label} {...metric} />
+      ))}
+    </section>
+  );
+
+  const termsCard = terms ? (
+    <section
+      data-testid="ultima-referral-terms"
+      className={cn(ultimaCardClassName, 'p-4 lg:p-5')}
+      style={defaultCardStyle}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <SectionHeading
+          icon={<BadgePercent className="h-4 w-4" />}
+          title={t('referral.terms.title')}
+          hint={t('referral.howItWorks', {
+            defaultValue: 'Бонусы начисляются после выполнения условий программы.',
           })}
-          metrics={[
-            {
-              label: t('referral.stats.totalReferrals'),
-              value: String(info?.total_referrals || 0),
-              hint: t('referral.desktopReferralsHint', {
-                defaultValue: 'Количество пользователей, пришедших по вашей ссылке.',
-              }),
-            },
-            {
-              label: t('referral.stats.totalEarnings'),
-              value: formatPositive(info?.total_earnings_rubles || 0),
-              hint: t('referral.desktopEarningsHint', {
-                defaultValue: 'Все начисления по реферальной программе и партнерским выплатам.',
-              }),
-            },
-            {
-              label: t('referral.stats.commissionRate'),
-              value: `${info?.commission_percent || 0}%`,
-              hint: t('referral.desktopCommissionHint', {
-                defaultValue:
-                  'Текущая ставка вознаграждения за активных приглашенных пользователей.',
-              }),
-            },
-          ]}
-          aside={
-            <UltimaDesktopPanel
-              title={t('referral.desktopAsideTitle', { defaultValue: 'Партнерский кабинет' })}
-              subtitle={t('referral.desktopAsideHint', {
-                defaultValue:
-                  'Здесь собраны статус партнера, ссылка и основные действия по программе.',
-              })}
+        />
+        <span className="shrink-0 rounded-full border border-emerald-200/[0.18] bg-emerald-300/[0.1] px-2.5 py-1 text-[11px] font-semibold text-emerald-50">
+          {terms.commission_percent}%
+        </span>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 border-y border-white/[0.07] py-1">
+        {[
+          [t('referral.terms.minTopup'), formatWithCurrency(terms.minimum_topup_rubles ?? 0)],
+          [t('referral.terms.newUserBonus'), firstTopupBonus?.primary ?? '—'],
+          [t('referral.terms.commission'), `${terms.commission_percent}%`],
+          [t('referral.terms.inviterBonus'), inviterBonus?.primary ?? '—'],
+        ].map(([label, value], index) => (
+          <div
+            key={String(label)}
+            className={cn(
+              'min-w-0 px-3 py-3 first:pl-0 even:border-l even:border-white/[0.07]',
+              index >= 2 && 'border-t border-white/[0.07]',
+            )}
+          >
+            <p className="text-[9px] font-medium uppercase leading-snug text-white/[0.4]">
+              {label}
+            </p>
+            <p className="mt-1.5 break-words text-[13px] font-semibold leading-snug text-white/[0.9]">
+              {value}
+            </p>
+            {index === 1 && firstTopupBonus?.secondary ? (
+              <p className="mt-0.5 text-[10px] text-emerald-100/[0.72]">
+                {firstTopupBonus.secondary}
+              </p>
+            ) : null}
+            {index === 3 && inviterBonus?.secondary ? (
+              <p className="mt-0.5 text-[10px] text-emerald-100/[0.72]">{inviterBonus.secondary}</p>
+            ) : null}
+          </div>
+        ))}
+      </div>
+    </section>
+  ) : null;
+
+  const referralsCard = (
+    <section
+      data-testid="ultima-referral-list"
+      className={cn(ultimaCardClassName, 'min-w-0 p-4 lg:p-5')}
+      style={defaultCardStyle}
+    >
+      <SectionHeading
+        icon={<UsersRound className="h-4 w-4" />}
+        title={t('referral.yourReferrals')}
+        hint={t('referral.referralsHint', {
+          defaultValue: 'Кто зарегистрировался по вашей ссылке и выполнил условие.',
+        })}
+      />
+
+      {visibleReferrals.length > 0 ? (
+        <div className="mt-4">
+          {visibleReferrals.map((ref) => (
+            <div
+              key={ref.id}
+              className="flex min-h-[54px] items-center justify-between gap-3 border-t border-white/[0.07] py-3 first:border-t-0 first:pt-0"
             >
-              <div className="space-y-3">
-                <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3">
-                  <div className="text-[11px] uppercase tracking-[0.2em] text-white/[0.42]">
-                    {t('common.status', { defaultValue: 'Статус' })}
-                  </div>
-                  <div className="mt-2 text-sm font-medium text-white/90">{partnerStatusValue}</div>
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04] text-[11px] font-semibold text-white/[0.7]">
+                  {(ref.first_name || ref.username || String(ref.id))
+                    .trim()
+                    .charAt(0)
+                    .toUpperCase()}
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-[13px] font-medium text-white/[0.9]">
+                    {ref.first_name || ref.username || t('referral.anonymousUser', { id: ref.id })}
+                  </p>
+                  <p className="mt-0.5 text-[10px] text-white/[0.42]">
+                    {formatDate(ref.created_at)}
+                  </p>
                 </div>
+              </div>
+              <span
+                className={cn(
+                  'shrink-0 rounded-full border px-2.5 py-1 text-[9px] font-semibold',
+                  ref.has_paid
+                    ? 'border-emerald-200/[0.18] bg-emerald-300/[0.1] text-emerald-100'
+                    : 'border-white/[0.1] bg-white/[0.04] text-white/[0.58]',
+                )}
+              >
+                {ref.has_paid ? t('referral.status.paid') : t('referral.status.pending')}
+              </span>
+            </div>
+          ))}
+          <ExpandButton
+            expanded={showAllReferrals}
+            hiddenCount={Math.max(referrals.length - PREVIEW_LIMIT, 0)}
+            onClick={() => setShowAllReferrals((value) => !value)}
+            showMoreLabel={showMoreLabel(Math.max(referrals.length - PREVIEW_LIMIT, 0))}
+            showLessLabel={showLessLabel}
+          />
+        </div>
+      ) : (
+        <div className="mt-4 border-t border-white/[0.07] pt-4">
+          <p className="text-[12px] leading-relaxed text-white/[0.5]">
+            {t('referral.noReferrals')}
+          </p>
+          <button
+            type="button"
+            onClick={shareLink}
+            disabled={!referralLink}
+            className="mt-3 inline-flex items-center gap-2 text-[12px] font-medium text-emerald-100 disabled:opacity-40"
+          >
+            {t('referral.shareButton')}
+            <ArrowUpRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+    </section>
+  );
+
+  const earningsCard = (
+    <section
+      data-testid="ultima-referral-earnings"
+      className={cn(ultimaCardClassName, 'min-w-0 p-4 lg:p-5')}
+      style={defaultCardStyle}
+    >
+      <SectionHeading
+        icon={<HandCoins className="h-4 w-4" />}
+        title={t('referral.earningsHistory')}
+        hint={t('referral.earningsHint', {
+          defaultValue: 'Последние начисления за приглашённых пользователей.',
+        })}
+      />
+
+      {visibleEarnings.length > 0 ? (
+        <div className="mt-4">
+          {visibleEarnings.map((earning) => (
+            <div
+              key={earning.id}
+              className="flex min-h-[54px] items-center justify-between gap-3 border-t border-white/[0.07] py-3 first:border-t-0 first:pt-0"
+            >
+              <div className="min-w-0">
+                <p className="truncate text-[13px] font-medium text-white/[0.9]">
+                  {earning.referral_first_name ||
+                    earning.referral_username ||
+                    t('referral.anonymousReferral')}
+                </p>
+                <p className="mt-0.5 truncate text-[10px] text-white/[0.42]">
+                  {t(`referral.reasons.${earning.reason}`, { defaultValue: earning.reason })} ·{' '}
+                  {formatDate(earning.created_at)}
+                </p>
+              </div>
+              <p className="shrink-0 text-[13px] font-semibold text-emerald-100">
+                {formatPositive(earning.amount_rubles)}
+              </p>
+            </div>
+          ))}
+          <ExpandButton
+            expanded={showAllEarnings}
+            hiddenCount={Math.max(earningsItems.length - PREVIEW_LIMIT, 0)}
+            onClick={() => setShowAllEarnings((value) => !value)}
+            showMoreLabel={showMoreLabel(Math.max(earningsItems.length - PREVIEW_LIMIT, 0))}
+            showLessLabel={showLessLabel}
+          />
+        </div>
+      ) : (
+        <p className="mt-4 border-t border-white/[0.07] pt-4 text-[12px] text-white/[0.5]">
+          {t('referral.emptyEarnings', { defaultValue: 'Начислений пока нет.' })}
+        </p>
+      )}
+    </section>
+  );
+
+  const partnerBody = (
+    <div data-testid="ultima-referral-partner" className="min-w-0">
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-[10px] font-semibold uppercase text-white/[0.42]">
+          {t('referral.partnerStatusLabel', { defaultValue: 'Статус партнёра' })}
+        </span>
+        <span
+          className={cn(
+            'rounded-full border px-2.5 py-1 text-[10px]',
+            getStatusClass(partnerStatusValue),
+          )}
+        >
+          {t(`referral.partnerStatus.${partnerStatusValue}`, {
+            defaultValue: partnerStatusValue,
+          })}
+        </span>
+      </div>
+
+      {showApplySection ? (
+        <>
+          <h2 className="mt-4 text-[17px] font-semibold text-white/[0.94]">
+            {t('referral.partner.becomePartner')}
+          </h2>
+          <p className="mt-1.5 text-[12px] leading-relaxed text-white/[0.5]">
+            {t('referral.partner.becomePartnerDesc')}
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate('/referral/partner/apply')}
+            className="ultima-btn-pill ultima-btn-primary mt-4 flex min-h-[42px] w-full items-center justify-center gap-2 px-4 text-[12px]"
+          >
+            {t('referral.partner.applyButton')}
+            <ArrowUpRight className="h-4 w-4" />
+          </button>
+        </>
+      ) : null}
+
+      {showPendingSection ? (
+        <>
+          <h2 className="mt-4 text-[17px] font-semibold text-amber-100">
+            {t('referral.partner.underReview')}
+          </h2>
+          <p className="mt-1.5 text-[12px] leading-relaxed text-white/[0.5]">
+            {t('referral.partner.underReviewDesc')}
+          </p>
+        </>
+      ) : null}
+
+      {showRejectedSection ? (
+        <>
+          <h2 className="mt-4 text-[17px] font-semibold text-rose-100">
+            {t('referral.partner.rejected')}
+          </h2>
+          <button
+            type="button"
+            onClick={() => navigate('/referral/partner/apply')}
+            className="mt-4 flex min-h-[42px] w-full items-center justify-center rounded-[7px] border border-rose-200/[0.16] bg-rose-300/[0.08] px-4 text-[12px] font-medium text-rose-50"
+          >
+            {t('referral.partner.reapplyButton')}
+          </button>
+        </>
+      ) : null}
+
+      {isPartner && withdrawalBalance ? (
+        <>
+          <div className="mt-4 grid grid-cols-2 divide-x divide-white/[0.07] border-y border-white/[0.07] py-3">
+            <div className="min-w-0 pr-3">
+              <p className="text-[9px] uppercase text-white/[0.4]">
+                {t('referral.withdrawal.available')}
+              </p>
+              <p className="mt-1.5 truncate text-[15px] font-semibold text-emerald-100">
+                {formatWithCurrency(withdrawalBalance.available_total / 100)}
+              </p>
+            </div>
+            <div className="min-w-0 pl-3">
+              <p className="text-[9px] uppercase text-white/[0.4]">
+                {t('referral.withdrawal.pending')}
+              </p>
+              <p className="mt-1.5 truncate text-[15px] font-semibold text-amber-100">
+                {formatWithCurrency(withdrawalBalance.pending / 100)}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate('/referral/withdrawal/request')}
+            disabled={!withdrawalBalance.can_request}
+            className="ultima-btn-pill ultima-btn-primary mt-4 flex min-h-[42px] w-full items-center justify-center gap-2 px-4 text-[12px] disabled:opacity-40"
+          >
+            <WalletCards className="h-4 w-4" />
+            {t('referral.withdrawal.requestButton')}
+          </button>
+        </>
+      ) : null}
+    </div>
+  );
+
+  const mobilePartnerCard = showPartnerSection ? (
+    <section className={cn(ultimaCardClassName, 'p-4')} style={defaultCardStyle}>
+      {partnerBody}
+    </section>
+  ) : null;
+
+  const withdrawalHistoryCard =
+    showPartnerSection && isPartner && withdrawalItems.length > 0 ? (
+      <section className={cn(ultimaCardClassName, 'p-4 lg:p-5')} style={defaultCardStyle}>
+        <SectionHeading
+          icon={<Clock3 className="h-4 w-4" />}
+          title={t('referral.withdrawal.history')}
+          hint={t('referral.withdrawalHistoryHint', {
+            defaultValue: 'Статусы последних запросов на вывод.',
+          })}
+        />
+        <div className="mt-4">
+          {visibleWithdrawals.map((item) => (
+            <div
+              key={item.id}
+              className="border-t border-white/[0.07] py-3 first:border-t-0 first:pt-0"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[13px] font-semibold text-white/[0.9]">
+                    {formatWithCurrency(item.amount_rubles)}
+                  </p>
+                  <p className="mt-0.5 text-[10px] text-white/[0.42]">
+                    {formatDate(item.created_at)}
+                  </p>
+                </div>
+                <span
+                  className={cn(
+                    'rounded-full border px-2.5 py-1 text-[9px] font-semibold',
+                    getStatusClass(item.status),
+                  )}
+                >
+                  {t(`referral.withdrawal.status.${item.status}`, { defaultValue: item.status })}
+                </span>
+              </div>
+              {item.status === 'pending' ? (
                 <button
                   type="button"
-                  onClick={copyLink}
-                  disabled={!referralLink}
-                  className="ultima-btn-pill ultima-btn-secondary w-full px-4 py-2.5 text-sm disabled:opacity-50"
+                  onClick={() => cancelWithdrawalMutation.mutate(item.id)}
+                  disabled={cancelWithdrawalMutation.isPending}
+                  className="mt-2 text-[11px] font-medium text-rose-100/[0.82] disabled:opacity-40"
                 >
-                  {copied ? t('referral.copied') : t('referral.copyLink')}
+                  {t('common.cancel')}
                 </button>
-                {showApplySection || showRejectedSection ? (
-                  <button
-                    type="button"
-                    onClick={() => navigate('/referral/partner/apply')}
-                    className="ultima-btn-pill ultima-btn-primary w-full px-4 py-2.5 text-sm"
-                  >
-                    {showRejectedSection
-                      ? t('referral.partner.reapplyButton')
-                      : t('referral.partner.applyButton')}
-                  </button>
-                ) : null}
-              </div>
-            </UltimaDesktopPanel>
+              ) : null}
+            </div>
+          ))}
+          <ExpandButton
+            expanded={showAllWithdrawals}
+            hiddenCount={Math.max(withdrawalItems.length - PREVIEW_LIMIT, 0)}
+            onClick={() => setShowAllWithdrawals((value) => !value)}
+            showMoreLabel={showMoreLabel(Math.max(withdrawalItems.length - PREVIEW_LIMIT, 0))}
+            showLessLabel={showLessLabel}
+          />
+        </div>
+      </section>
+    ) : null;
+
+  const loadingContent = (
+    <div data-testid="ultima-referral-loading" className="space-y-3">
+      <div className={cn(ultimaCardClassName, 'h-[252px] animate-pulse')} style={accentCardStyle} />
+      <div className="grid grid-cols-2 gap-3">
+        <div
+          className={cn(ultimaCardClassName, 'h-[180px] animate-pulse')}
+          style={defaultCardStyle}
+        />
+        <div
+          className={cn(ultimaCardClassName, 'h-[180px] animate-pulse')}
+          style={defaultCardStyle}
+        />
+      </div>
+    </div>
+  );
+
+  const disabledContent = (
+    <section
+      className={cn(
+        ultimaCardClassName,
+        'flex min-h-[260px] flex-col items-center justify-center p-6 text-center',
+      )}
+      style={defaultCardStyle}
+    >
+      <span className="flex h-12 w-12 items-center justify-center rounded-[8px] border border-white/[0.08] bg-white/[0.04] text-white/[0.6]">
+        <UsersRound className="h-5 w-5" />
+      </span>
+      <h2 className="mt-4 text-[18px] font-semibold text-white/[0.9]">{t('referral.title')}</h2>
+      <p className="mt-2 max-w-[42ch] text-[12px] leading-relaxed text-white/[0.5]">
+        {t('referral.disabled')}
+      </p>
+    </section>
+  );
+
+  const mainContent = isLoading ? (
+    loadingContent
+  ) : terms && !terms.is_enabled ? (
+    disabledContent
+  ) : (
+    <>
+      {inviteCard}
+      {!isDesktop ? mobileStats : null}
+      {termsCard}
+      <div className="grid min-w-0 gap-3 lg:grid-cols-2 lg:gap-4">
+        {referralsCard}
+        {earningsCard}
+      </div>
+      {!isDesktop ? mobilePartnerCard : null}
+      {withdrawalHistoryCard}
+    </>
+  );
+
+  const bottomNav = <UltimaBottomNav active="profile" />;
+
+  if (isDesktop) {
+    return (
+      <div
+        data-testid="ultima-referral-page"
+        className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-profile-desktop ultima-shell-muted-aura"
+      >
+        <div className="ultima-shell-aura" />
+        <UltimaDesktopSectionLayout
+          icon={<UsersRound className="h-5 w-5" />}
+          eyebrow={t('nav.referral', { defaultValue: 'Рефералы' })}
+          title={t('referral.title')}
+          subtitle={t('referral.inviteSubtitle', {
+            percent: info?.commission_percent || 0,
+            defaultValue: 'Друг получает бонус, а вы — вознаграждение после его оплаты.',
+          })}
+          metrics={metrics.map((metric) => ({
+            label: metric.label,
+            value: metric.value,
+            hint:
+              metric.tone === 'success'
+                ? t('referral.desktopActiveHint', {
+                    defaultValue: 'Выполнили условие программы.',
+                  })
+                : metric.tone === 'info'
+                  ? t('referral.desktopEarningsHint', {
+                      defaultValue: 'Все начисления за приглашения.',
+                    })
+                  : t('referral.desktopReferralsHint', {
+                      defaultValue: 'Зарегистрировались по вашей ссылке.',
+                    }),
+          }))}
+          aside={
+            showPartnerSection ? (
+              <UltimaDesktopPanel
+                title={t('referral.desktopAsideTitle', { defaultValue: 'Партнёрская программа' })}
+                subtitle={t('referral.desktopAsideHint', {
+                  defaultValue: 'Статус партнёра и вывод вознаграждений.',
+                })}
+              >
+                {partnerBody}
+              </UltimaDesktopPanel>
+            ) : undefined
           }
           bottomNav={bottomNav}
         >
-          {referralContent}
+          <div data-testid="ultima-referral-content" className="space-y-4">
+            {mainContent}
+          </div>
         </UltimaDesktopSectionLayout>
       </div>
     );
   }
 
   return (
-    <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
+    <div
+      data-testid="ultima-referral-page"
+      className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-muted-aura"
+    >
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
-        <header className="mb-3">
-          <h1 className="text-[clamp(34px,9vw,42px)] font-semibold leading-[0.9] tracking-[-0.01em] text-white">
-            {t('referral.title')}
-          </h1>
-          <p className="mt-1.5 text-[13px] text-white/[0.62]">
-            {t('profile.referralDescription', { defaultValue: 'Получайте бонусы за приглашения' })}
-          </p>
-        </header>
+        <section className="ultima-scrollbar flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1 pt-[clamp(8px,2vh,16px)]">
+          <header className="flex items-end justify-between gap-3 px-1">
+            <div className="min-w-0">
+              <p className="text-[9px] font-semibold uppercase text-white/[0.4]">
+                {t('nav.referral', { defaultValue: 'Рефералы' })}
+              </p>
+              <h1 className="mt-1 text-[25px] font-semibold leading-none text-white/[0.97]">
+                {t('referral.title')}
+              </h1>
+            </div>
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[7px] border border-white/[0.08] bg-white/[0.04] text-emerald-100/[0.8]">
+              <Share2 className="h-4 w-4" />
+            </span>
+          </header>
 
-        {referralContent}
+          <div data-testid="ultima-referral-content" className="space-y-3 pb-3">
+            {mainContent}
+          </div>
+        </section>
 
         <div className="ultima-mobile-dock-footer">
           <div className="ultima-nav-dock">{bottomNav}</div>

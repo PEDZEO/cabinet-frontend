@@ -462,7 +462,60 @@ async function mockUltimaDesktopApi(
       });
     }
     if (path === '/cabinet/referral/terms') {
-      return respond({ is_enabled: true, commission_percent: 25, inviter_bonus_days: 3 });
+      return respond({
+        is_enabled: true,
+        commission_percent: 25,
+        minimum_topup_rubles: 100,
+        first_topup_bonus_rubles: 50,
+        first_topup_bonus_days: 2,
+        inviter_bonus_rubles: 25,
+        inviter_bonus_days: 3,
+        partner_section_visible: true,
+      });
+    }
+    if (path === '/cabinet/referral/list') {
+      return respond({
+        items: Array.from({ length: 7 }, (_, index) => ({
+          id: index + 1,
+          username: `friend_${index + 1}`,
+          first_name: `Друг ${index + 1}`,
+          created_at: `2026-07-${String(index + 1).padStart(2, '0')}T12:00:00.000Z`,
+          has_subscription: index < 4,
+          has_paid: index < 3,
+        })),
+        total: 7,
+        page: 1,
+        per_page: 20,
+        pages: 1,
+      });
+    }
+    if (path === '/cabinet/referral/earnings') {
+      return respond({
+        items: Array.from({ length: 7 }, (_, index) => ({
+          id: index + 1,
+          amount_kopeks: (index + 1) * 1000,
+          amount_rubles: (index + 1) * 10,
+          reason: index === 0 ? 'referral_first_payment' : 'referral_bonus',
+          referral_username: `friend_${index + 1}`,
+          referral_first_name: `Друг ${index + 1}`,
+          campaign_name: null,
+          created_at: `2026-07-${String(index + 1).padStart(2, '0')}T12:00:00.000Z`,
+        })),
+        total: 7,
+        page: 1,
+        per_page: 20,
+        pages: 1,
+        total_amount_kopeks: 28000,
+        total_amount_rubles: 280,
+      });
+    }
+    if (path === '/cabinet/referral/partner/status') {
+      return respond({
+        partner_status: 'none',
+        commission_percent: null,
+        latest_application: null,
+        campaigns: [],
+      });
     }
     if (path === '/cabinet/tap-rewards/progress') {
       return respond({
@@ -550,6 +603,71 @@ test.describe('Admin crypto-link settings', () => {
     await expect(page.getByTestId('admin-crypto-links-settings')).toContainText(
       'Отключено: используется обычная ссылка',
     );
+    await expectNoHorizontalOverflow(page);
+  });
+});
+
+test.describe('Ultima referral program', () => {
+  test('keeps rewards, terms and long referral lists clear on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+    await page.goto('/referral');
+
+    await expect(page.getByTestId('ultima-referral-page')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Реферальная программа' })).toHaveCount(1);
+    await expect(page.getByTestId('ultima-referral-hero')).toContainText(
+      'Приглашайте друзей и получайте бонусы',
+    );
+    await expect(page.getByTestId('ultima-referral-link')).toContainText('/login?ref=DESKTOP99');
+    await expect(page.getByTestId('ultima-referral-copy')).toHaveCount(1);
+    await expect(page.getByTestId('ultima-referral-share')).toHaveCount(1);
+    await expect(page.getByTestId('ultima-referral-stats')).toContainText('4');
+    await expect(page.getByTestId('ultima-referral-stats')).toContainText('3');
+    await expect(page.getByTestId('ultima-referral-stats')).toContainText('150');
+    await expect(page.getByTestId('ultima-referral-terms')).toContainText('+2 дн. к подписке');
+
+    const referrals = page.getByTestId('ultima-referral-list');
+    await expect(referrals.getByText('Друг 5', { exact: true })).toBeVisible();
+    await expect(referrals.getByText('Друг 6', { exact: true })).toHaveCount(0);
+    await referrals.getByRole('button', { name: 'Показать ещё 2' }).click();
+    await expect(referrals.getByText('Друг 6', { exact: true })).toBeVisible();
+    const scroller = page.locator('.ultima-scrollbar').first();
+    await expect
+      .poll(() => scroller.evaluate((element) => element.scrollHeight > element.clientHeight))
+      .toBe(true);
+    await scroller.evaluate((element) => element.scrollTo({ top: element.scrollHeight }));
+    await expect(page.getByTestId('ultima-referral-partner')).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+  });
+
+  test('fits the referral workspace at the 1024px desktop boundary', async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+    await page.goto('/referral');
+
+    await expect(page.locator('.ultima-desktop-workspace')).toBeVisible();
+    await expect(page.getByTestId('ultima-referral-hero')).toBeVisible();
+    await expect(page.getByTestId('ultima-referral-partner')).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+  });
+
+  test('uses one focused referral workspace on desktop', async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 768 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+    await page.goto('/referral');
+
+    await expect(page.getByTestId('ultima-referral-page')).toBeVisible();
+    await expect(page.locator('.ultima-desktop-workspace')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Реферальная программа' })).toHaveCount(1);
+    await expect(page.getByTestId('ultima-referral-hero')).toBeVisible();
+    await expect(page.getByTestId('ultima-referral-list')).toBeVisible();
+    await expect(page.getByTestId('ultima-referral-earnings')).toBeVisible();
+    await expect(page.getByTestId('ultima-referral-partner')).toBeVisible();
+    await expect(page.getByTestId('ultima-referral-copy')).toHaveCount(1);
+    await expect(page.getByTestId('ultima-referral-share')).toHaveCount(1);
     await expectNoHorizontalOverflow(page);
   });
 });
