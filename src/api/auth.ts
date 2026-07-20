@@ -104,9 +104,14 @@ export const authApi = {
   },
 
   // Verify email and get auth tokens
-  verifyEmail: async (token: string, campaignSlug?: string | null): Promise<AuthResponse> => {
+  verifyEmail: async (
+    token: string,
+    campaignSlug?: string | null,
+    email?: string,
+  ): Promise<AuthResponse> => {
     const response = await apiClient.post<AuthResponse>('/cabinet/auth/email/verify', {
       token,
+      email: email || undefined,
       campaign_slug: campaignSlug || undefined,
     });
     return response.data;
