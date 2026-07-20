@@ -118,6 +118,12 @@ export const authApi = {
     return response.data;
   },
 
+  // Resend verification for standalone accounts that cannot log in yet
+  resendVerificationStandalone: async (email: string): Promise<{ message: string }> => {
+    const response = await apiClient.post('/cabinet/auth/email/resend/standalone', { email });
+    return response.data;
+  },
+
   // Refresh token
   refreshToken: async (refreshToken: string): Promise<TokenResponse> => {
     const response = await apiClient.post<TokenResponse>('/cabinet/auth/refresh', {

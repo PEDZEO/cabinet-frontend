@@ -1,3 +1,6 @@
+import { authApi } from '@/api/auth';
+import { RefreshCw } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface LoginCheckEmailCardProps {
@@ -7,6 +10,41 @@ interface LoginCheckEmailCardProps {
 
 export function LoginCheckEmailCard({ email, onBackToLogin }: LoginCheckEmailCardProps) {
   const { t } = useTranslation();
+  const [isResending, setIsResending] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = window.setTimeout(() => setCooldown((value) => Math.max(0, value - 1)), 1000);
+    return () => window.clearTimeout(timer);
+  }, [cooldown]);
+
+  const handleResend = async () => {
+    if (isResending || cooldown > 0) return;
+    setIsResending(true);
+    setFeedback(null);
+    try {
+      await authApi.resendVerificationStandalone(email);
+      setCooldown(60);
+      setFeedback({
+        type: 'success',
+        message: t('auth.verificationResent', 'Verification email sent again.'),
+      });
+    } catch {
+      setFeedback({
+        type: 'error',
+        message: t(
+          'auth.verificationResendFailed',
+          'Could not send the email. Please try again later.',
+        ),
+      });
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   return (
     <div className="card text-center">
@@ -32,13 +70,43 @@ export function LoginCheckEmailCard({ email, onBackToLogin }: LoginCheckEmailCar
         {t('auth.verificationSent', 'We sent a verification link to:')}
       </p>
       <p className="mb-4 text-sm font-medium text-accent-400">{email}</p>
-      <p className="mb-5 text-xs text-dark-500">
+      <p className="mb-3 text-xs text-dark-500">
         {t(
           'auth.clickLinkToVerify',
           'Click the link in the email to verify your account and log in.',
         )}
       </p>
-      <button onClick={onBackToLogin} className="btn-secondary w-full">
+      <p className="mb-5 text-xs text-dark-500">
+        {t('auth.checkSpamFolder', 'If the email is missing, check the Spam folder.')}
+      </p>
+      {feedback && (
+        <p
+          className={`mb-3 rounded-lg border px-3 py-2 text-xs ${
+            feedback.type === 'success'
+              ? 'border-success-500/30 bg-success-500/10 text-success-400'
+              : 'border-error-500/30 bg-error-500/10 text-error-400'
+          }`}
+          aria-live="polite"
+        >
+          {feedback.message}
+        </p>
+      )}
+      <button
+        type="button"
+        onClick={handleResend}
+        disabled={isResending || cooldown > 0}
+        className="btn-primary mb-2 flex min-h-11 w-full items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        <RefreshCw className={`h-4 w-4 ${isResending ? 'animate-spin' : ''}`} aria-hidden="true" />
+        <span>
+          {isResending
+            ? t('auth.verificationSending', 'Sending...')
+            : cooldown > 0
+              ? t('auth.resendIn', 'Resend in {{seconds}} sec.', { seconds: cooldown })
+              : t('auth.resendVerification', 'Send again')}
+        </span>
+      </button>
+      <button type="button" onClick={onBackToLogin} className="btn-secondary w-full">
         {t('auth.backToLogin', 'Back to login')}
       </button>
     </div>
