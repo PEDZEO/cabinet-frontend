@@ -1165,6 +1165,9 @@ test.describe('Ultima device management', () => {
       'aria-checked',
       'true',
     );
+    await expect(connectionDialog.getByRole('radio')).toHaveCount(2);
+    await expect(page.getByTestId('ultima-device-link-other')).toHaveCount(0);
+    await expect(page.getByTestId('ultima-device-raw-link')).toHaveCount(0);
     await expect(page.getByTestId('ultima-device-link-meta')).toContainText('crypt5');
     await expect(page.getByTestId('ultima-device-qr')).toHaveAttribute(
       'data-connection-kind',
@@ -1177,15 +1180,6 @@ test.describe('Ultima device management', () => {
     await expect(page.getByTestId('ultima-device-qr')).toHaveAttribute(
       'data-connection-kind',
       'incy',
-    );
-
-    await page.getByTestId('ultima-device-link-other').click();
-    await expect(page.getByTestId('ultima-device-raw-link')).toHaveText(
-      SUBSCRIPTION.subscription_url,
-    );
-    await expect(page.getByTestId('ultima-device-qr')).toHaveAttribute(
-      'data-connection-kind',
-      'other',
     );
     await expectNoHorizontalOverflow(page);
   });
