@@ -54,10 +54,11 @@ export function LoginCheckEmailCard({ email, onBackToLogin }: LoginCheckEmailCar
       checkAdminStatus();
       navigate('/', { replace: true });
     } catch (error: unknown) {
-      const apiError = error as { response?: { data?: { detail?: string } } };
+      const apiError = error as { response?: { status?: number; data?: { detail?: string } } };
       setVerifyError(
-        apiError.response?.data?.detail ||
-          t('auth.invalidVerificationCode', 'The code is invalid or has expired.'),
+        apiError.response?.status === 400
+          ? t('auth.invalidVerificationCode', 'The code is invalid or has expired.')
+          : apiError.response?.data?.detail || t('common.error', 'Something went wrong.'),
       );
     } finally {
       setIsVerifying(false);
