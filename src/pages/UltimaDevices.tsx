@@ -274,6 +274,7 @@ export function UltimaDevices() {
   const availableDeviceSlots = Math.max(0, currentLimit - connectedCount);
   const subscriptionLink = subscriptionData?.subscription?.subscription_url ?? '';
   const hideSubscriptionLink = Boolean(subscriptionData?.subscription?.hide_subscription_link);
+  const cryptoLinksEnabled = appConfig?.cryptoLinksEnabled === true;
   const canUseSubscriptionLink = subscriptionLink.length > 0;
   const connectionOptions = useMemo<DeviceConnectionOption[]>(() => {
     const options: DeviceConnectionOption[] = [];
@@ -304,7 +305,11 @@ export function UltimaDevices() {
       });
     }
 
-    if (subscriptionLink && (!hideSubscriptionLink || options.length === 0)) {
+    if (
+      !cryptoLinksEnabled &&
+      subscriptionLink &&
+      (!hideSubscriptionLink || options.length === 0)
+    ) {
       options.push({
         kind: 'other',
         label: t('devices.connectionMethodOther', { defaultValue: 'Другие' }),
@@ -320,6 +325,7 @@ export function UltimaDevices() {
   }, [
     appConfig?.subscriptionCryptoLink,
     appConfig?.subscriptionIncyCryptoLink,
+    cryptoLinksEnabled,
     hideSubscriptionLink,
     subscriptionLink,
     t,
@@ -935,7 +941,9 @@ export function UltimaDevices() {
                           aria-label={t('devices.connectionMethodTitle', {
                             defaultValue: 'Выберите приложение',
                           })}
-                          className="mt-2 grid grid-cols-3 gap-1 rounded-xl border border-white/[0.07] bg-black/20 p-1"
+                          className={`mt-2 grid gap-1 rounded-xl border border-white/[0.07] bg-black/20 p-1 ${
+                            connectionOptions.length === 2 ? 'grid-cols-2' : 'grid-cols-3'
+                          }`}
                         >
                           {connectionOptions.map((option) => {
                             const isSelected = option.kind === selectedConnectionOption.kind;
