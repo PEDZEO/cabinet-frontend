@@ -4856,6 +4856,18 @@
     }
   },
   "ultima": {
+    "home": {
+      "quickActions": "Quick actions",
+      "quickActionsHint": "Invites and device connections",
+      "daysLabel": "Days left",
+      "daysMeta": "days of access",
+      "devicesMeta": "connected / available",
+      "usage": "Usage",
+      "usageHint": "Traffic and connection readiness",
+      "trafficMeta": "Usage for the current period",
+      "connectionReady": "The subscription is connected and ready",
+      "connectionPending": "Finish setting up the app"
+    },
     "buySubscriptionActivate": "Activate subscription",
     "buySubscriptionTrial": "Buy subscription",
     "chooseTariff": "Choose tariff",

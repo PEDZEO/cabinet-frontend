@@ -3790,6 +3790,18 @@
     }
   },
   "ultima": {
+    "home": {
+      "quickActions": "اقدامات سریع",
+      "quickActionsHint": "دعوت‌ها و اتصال دستگاه‌ها",
+      "daysLabel": "روز باقی‌مانده",
+      "daysMeta": "روز دسترسی",
+      "devicesMeta": "متصل / در دسترس",
+      "usage": "میزان استفاده",
+      "usageHint": "ترافیک و آمادگی اتصال",
+      "trafficMeta": "استفاده در دوره فعلی",
+      "connectionReady": "اشتراک متصل و آماده استفاده است",
+      "connectionPending": "راه‌اندازی برنامه را کامل کنید"
+    },
     "buySubscriptionActivate": "فعال‌سازی اشتراک",
     "buySubscriptionTrial": "خرید اشتراک",
     "chooseTariff": "انتخاب تعرفه",

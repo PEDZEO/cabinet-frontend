@@ -5430,6 +5430,18 @@
     }
   },
   "ultima": {
+    "home": {
+      "quickActions": "Быстрые действия",
+      "quickActionsHint": "Приглашения и подключение устройств",
+      "daysLabel": "Дней осталось",
+      "daysMeta": "дней доступа",
+      "devicesMeta": "подключено / доступно",
+      "usage": "Использование",
+      "usageHint": "Трафик и готовность подключения",
+      "trafficMeta": "Использование за текущий период",
+      "connectionReady": "Подписка добавлена и готова к работе",
+      "connectionPending": "Завершите настройку приложения"
+    },
     "buySubscriptionActivate": "Активировать подписку",
     "buySubscriptionTrial": "Купить подписку",
     "chooseTariff": "Выбрать тариф",

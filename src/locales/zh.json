@@ -3789,6 +3789,18 @@
     }
   },
   "ultima": {
+    "home": {
+      "quickActions": "快捷操作",
+      "quickActionsHint": "邀请好友和连接设备",
+      "daysLabel": "剩余天数",
+      "daysMeta": "剩余天数",
+      "devicesMeta": "已连接 / 可用",
+      "usage": "使用情况",
+      "usageHint": "流量和连接状态",
+      "trafficMeta": "当前周期使用量",
+      "connectionReady": "订阅已连接并可使用",
+      "connectionPending": "请完成应用设置"
+    },
     "buySubscriptionActivate": "激活订阅",
     "buySubscriptionTrial": "购买订阅",
     "chooseTariff": "选择套餐",

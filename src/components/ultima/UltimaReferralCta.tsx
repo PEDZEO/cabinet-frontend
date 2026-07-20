@@ -1,39 +1,16 @@
 import { useTranslation } from 'react-i18next';
+import { ArrowUpRight, UsersRound } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type UltimaReferralCtaProps = {
   commissionPercent?: number | null;
   onClick: () => void;
-  variant?: 'mobile' | 'desktop';
+  variant?: 'mobile' | 'desktop' | 'inline';
   className?: string;
   title?: string;
   description?: string;
   badgeLabel?: string;
 };
-
-const ReferralIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
-    <path
-      d="M8 13.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM16.5 12a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM3.5 19a4.5 4.5 0 0 1 9 0M13 19a3.5 3.5 0 0 1 7 0"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
-const ArrowUpRightIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
-    <path
-      d="M7 17 17 7M9 7h8v8"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
 
 export function UltimaReferralCta({
   commissionPercent,
@@ -62,48 +39,46 @@ export function UltimaReferralCta({
       type="button"
       onClick={onClick}
       className={cn(
-        'group relative isolate w-full overflow-hidden text-left transition-transform duration-200 hover:translate-y-[-1px] active:translate-y-0',
+        'group relative isolate w-full overflow-hidden text-left transition-colors duration-200',
         variant === 'desktop'
           ? 'rounded-[22px] border px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_14px_32px_rgba(3,14,24,0.16)] backdrop-blur-xl'
-          : 'rounded-[20px] border px-3.5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_22px_rgba(3,14,24,0.16)] backdrop-blur-md',
+          : variant === 'inline'
+            ? 'min-h-[64px] border-b border-white/[0.07] px-1 py-3 last:border-b-0 hover:bg-white/[0.025]'
+            : 'rounded-[20px] border px-3.5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_22px_rgba(3,14,24,0.16)] backdrop-blur-md',
         className,
       )}
-      style={{
-        borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
-        background:
-          'linear-gradient(180deg, color-mix(in srgb, var(--ultima-color-surface) 50%, transparent), color-mix(in srgb, var(--ultima-color-secondary) 68%, transparent))',
-      }}
+      style={
+        variant === 'inline'
+          ? undefined
+          : {
+              borderColor:
+                'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
+              background:
+                'linear-gradient(180deg, color-mix(in srgb, var(--ultima-color-surface) 50%, transparent), color-mix(in srgb, var(--ultima-color-secondary) 68%, transparent))',
+            }
+      }
       aria-label={title}
     >
-      <span
-        aria-hidden
-        className="pointer-events-none absolute -right-5 -top-5 h-24 w-24 rounded-full opacity-70 blur-2xl"
-        style={{
-          background: 'color-mix(in srgb, var(--ultima-color-aura) 16%, transparent)',
-        }}
-      />
-
-      <div className="relative flex min-w-0 items-center gap-3">
+      <div
+        className={cn(
+          'relative flex min-w-0 items-center',
+          variant === 'desktop' ? 'gap-2.5' : 'gap-3',
+        )}
+      >
         <span
           className={cn(
-            'flex shrink-0 items-center justify-center rounded-[18px] border text-white/[0.88]',
-            variant === 'desktop' ? 'h-10 w-10' : 'h-9 w-9',
+            'flex h-9 w-9 shrink-0 items-center justify-center rounded-[18px] border text-white/[0.88]',
           )}
           style={{
             borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 18%, transparent)',
             background: 'color-mix(in srgb, var(--ultima-color-surface) 42%, transparent)',
           }}
         >
-          <ReferralIcon />
+          <UsersRound className="h-5 w-5" strokeWidth={1.8} />
         </span>
 
         <div className="min-w-0 flex-1">
-          <p
-            className={cn(
-              'truncate font-semibold leading-tight text-white/[0.96]',
-              variant === 'desktop' ? 'text-[15px]' : 'text-[14px]',
-            )}
-          >
+          <p className={cn('truncate text-[14px] font-semibold leading-tight text-white/[0.96]')}>
             {title}
           </p>
           <p
@@ -116,12 +91,17 @@ export function UltimaReferralCta({
           </p>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2 pl-1">
+        <div
+          className={cn(
+            'flex shrink-0 items-center',
+            variant === 'desktop' ? 'gap-1' : 'gap-2 pl-1',
+          )}
+        >
           {showBadge ? (
             <span
               className={cn(
                 'rounded-full border px-2 py-1 text-center font-semibold text-white/[0.94] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]',
-                variant === 'desktop' ? 'min-w-[54px] text-[11px]' : 'text-[10px]',
+                variant === 'desktop' ? 'min-w-[46px] px-1.5 text-[10px]' : 'text-[10px]',
               )}
               style={{
                 borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 22%, transparent)',
@@ -133,14 +113,12 @@ export function UltimaReferralCta({
           ) : null}
 
           <span
-            className="flex h-8 w-8 items-center justify-center rounded-full border text-white/[0.72] transition-colors group-hover:text-white/[0.92]"
-            style={{
-              borderColor:
-                'color-mix(in srgb, var(--ultima-color-surface-border) 18%, transparent)',
-              background: 'color-mix(in srgb, #ffffff 4%, transparent)',
-            }}
+            className={cn(
+              'flex items-center justify-center text-white/[0.52] transition-colors group-hover:text-white/[0.9]',
+              variant === 'desktop' ? 'h-6 w-5' : 'h-8 w-8',
+            )}
           >
-            <ArrowUpRightIcon />
+            <ArrowUpRight className="h-4 w-4" strokeWidth={1.8} />
           </span>
         </div>
       </div>

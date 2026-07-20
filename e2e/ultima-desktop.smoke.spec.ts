@@ -574,6 +574,42 @@ test.describe('Ultima desktop workspace', () => {
     });
   }
 
+  test('keeps the mobile home summary clear on the first screen', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+    await page.goto('/');
+
+    const overview = page.getByTestId('ultima-home-overview');
+    await expect(overview).toBeVisible();
+    await expect(overview).toContainText('Обычный');
+    await expect(page.getByTestId('ultima-home-traffic')).toContainText('82 ГБ');
+    await expect(page.getByTestId('ultima-plan-device-count')).toContainText('1/3');
+    await expect(page.getByTestId('ultima-home-days')).not.toContainText('—');
+    await expect(page.getByTestId('ultima-home-quick-actions')).toBeVisible();
+    await expect(page.getByText('Позови друга', { exact: true })).toHaveCount(1);
+    await expect(page.getByTestId('ultima-device-home-cta-title')).toHaveCount(1);
+    await expect(page.getByTestId('ultima-device-home-cta-title')).toContainText('Подключить');
+    await expect(page.getByTestId('ultima-primary-cta')).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+  });
+
+  test('uses one focused desktop home workspace without duplicated actions', async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 768 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+    await page.goto('/');
+
+    await expect(page.getByTestId('ultima-home-desktop')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Обычный', exact: true })).toHaveCount(1);
+    await expect(page.getByTestId('ultima-home-usage')).toContainText('18 / 100 ГБ');
+    await expect(page.getByText('Позови друга', { exact: true })).toHaveCount(1);
+    await expect(page.getByTestId('ultima-device-home-cta-title')).toHaveCount(1);
+    await expect(page.getByTestId('ultima-device-home-cta-title')).toContainText('Подключить');
+    await expect(page.getByRole('button', { name: 'Связаться с поддержкой' })).toHaveCount(1);
+    await expectNoHorizontalOverflow(page);
+  });
+
   test('scrolls long desktop pages with the document wheel', async ({ page }) => {
     await page.setViewportSize({ width: 1366, height: 768 });
     await bootstrapUltimaDesktop(page);
@@ -1135,7 +1171,7 @@ test.describe('Ultima device loading state', () => {
     releaseDevices();
 
     await expect(page.getByTestId('ultima-device-cta-loading')).toHaveCount(0);
-    await expect(page.getByTestId('ultima-plan-device-count')).toHaveText('3/3');
+    await expect(page.getByTestId('ultima-plan-device-count')).toContainText('3/3');
     await expect(page.getByTestId('ultima-device-home-cta-title')).toHaveText('Купить слот');
   });
 });
