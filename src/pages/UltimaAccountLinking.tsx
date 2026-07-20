@@ -624,6 +624,8 @@ export default function UltimaAccountLinking() {
       <UltimaProviderAccountLinkingView
         isDesktop={isDesktop}
         userId={user?.id}
+        identitiesLoading={linkedIdentitiesData === undefined}
+        providersLoading={oauthProvidersData === undefined}
         linkedIdentities={linkedIdentities}
         telegramRelink={telegramRelink}
         telegramIdentity={telegramIdentity}
