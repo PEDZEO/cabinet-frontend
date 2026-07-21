@@ -491,6 +491,7 @@ test.describe('Ultima account linking callback', () => {
     await expect(page.getByRole('heading', { name: 'Подключённые' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Добавить вход' })).toBeVisible();
     await expect(page.getByText('Telegram', { exact: true })).toBeVisible();
+    await expect(page.getByTestId('telegram-provider-icon')).toBeVisible();
     await expect(page.getByText('Yandex', { exact: true })).toBeVisible();
     await expect(page.getByText('VK', { exact: true })).toBeVisible();
     await expectNoHorizontalOverflow(page);

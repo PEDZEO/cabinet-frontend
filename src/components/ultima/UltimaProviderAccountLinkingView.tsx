@@ -9,7 +9,6 @@ import {
   LoaderCircle,
   LockKeyhole,
   Mail,
-  Send,
   ShieldCheck,
   Smartphone,
   Unlink,
@@ -52,8 +51,26 @@ const getProviderLabel = (provider: string): string =>
 const getProviderDescription = (provider: string): string =>
   PROVIDER_DESCRIPTIONS[provider] ?? 'Дополнительный способ входа в этот профиль';
 
+function TelegramProviderIcon() {
+  return (
+    <svg
+      data-testid="telegram-provider-icon"
+      className="h-6 w-6 shrink-0"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <circle cx="12" cy="12" r="11" fill="#2AABEE" />
+      <path
+        fill="#FFFFFF"
+        d="M16.78 7.91 6.87 11.73c-.68.27-.67.65-.12.82l2.55.8 5.9-3.72c.28-.17.54-.08.33.11l-4.78 4.32-.18 2.67c.27 0 .39-.13.54-.28l1.3-1.27 2.7 2c.5.28.86.14.99-.46l1.68-7.93c.19-.73-.28-1.06-.83-.81Z"
+      />
+    </svg>
+  );
+}
+
 function ProviderIcon({ provider }: { provider: string }) {
-  if (provider === 'telegram') return <Send className="h-5 w-5 text-sky-300" />;
+  if (provider === 'telegram') return <TelegramProviderIcon />;
   if (provider === 'email') return <Mail className="h-5 w-5 text-emerald-200" />;
   return <OAuthProviderIcon provider={provider} className="h-5 w-5" />;
 }
