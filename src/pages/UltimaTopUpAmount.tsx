@@ -1,88 +1,48 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  ArrowLeft,
+  Check,
+  CircleAlert,
+  Copy,
+  ExternalLink,
+  History,
+  LoaderCircle,
+  LockKeyhole,
+  ReceiptText,
+  ShieldCheck,
+  WalletCards,
+} from 'lucide-react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { balanceApi } from '@/api/balance';
+import PaymentMethodIcon from '@/components/PaymentMethodIcon';
+import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import {
   UltimaDesktopPanel,
   UltimaDesktopSectionLayout,
 } from '@/components/ultima/desktop/UltimaDesktopSectionLayout';
+import {
+  ultimaCardClassName,
+  ultimaPaneClassName,
+  ultimaPaneSurfaceStyle,
+  ultimaSurfaceStyle,
+} from '@/features/ultima/surfaces';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
-import { usePlatform } from '@/platform';
+import { useHaptic, usePlatform } from '@/platform';
 import { useCloseOnSuccessNotification } from '@/store/successNotification';
 import { useAuthStore } from '@/store/auth';
 import type { PaymentMethod } from '@/types';
-import { writePendingTopUpFollowUp } from '@/utils/topUpFollowUp';
-import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { copyToClipboard } from '@/utils/clipboard';
+import { checkRateLimit, getRateLimitResetTime, RATE_LIMIT_KEYS } from '@/utils/rateLimit';
+import { writePendingTopUpFollowUp } from '@/utils/topUpFollowUp';
 
-const OpenIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
-    />
-  </svg>
-);
+type CreatedPayment =
+  | { kind: 'external'; url: string }
+  | { kind: 'stars'; status: Awaited<ReturnType<ReturnType<typeof usePlatform>['openInvoice']>> };
 
-const CopyIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <rect x="9" y="9" width="11" height="11" rx="2" />
-    <path d="M5 15V6a2 2 0 0 1 2-2h9" />
-  </svg>
-);
-
-const CheckIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="m5 13 4 4L19 7" />
-  </svg>
-);
-
-const MethodIcon = ({ methodId }: { methodId: string }) => {
-  const id = methodId.toLowerCase();
-  if (id.includes('stars')) {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
-        <path
-          d="m12 2.8 2.6 5.3 5.8.84-4.2 4.1 1 5.8L12 16.2 6.8 18.8l1-5.8-4.2-4.1 5.8-.84L12 2.8Z"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
-  }
-  if (id.includes('crypto') || id.includes('usdt') || id.includes('ton')) {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
-        <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.8" />
-        <path
-          d="M9 9.8h4a1.8 1.8 0 0 1 0 3.6H9V9.8Zm0 3.6h4.4a1.8 1.8 0 0 1 0 3.6H9v-3.6Z"
-          stroke="currentColor"
-          strokeWidth="1.6"
-        />
-        <path d="M11 8v8M13 8v8" stroke="currentColor" strokeWidth="1.4" />
-      </svg>
-    );
-  }
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
-      <rect
-        x="3.5"
-        y="6.5"
-        width="17"
-        height="11"
-        rx="2.5"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-      <path d="M3.5 10h17" stroke="currentColor" strokeWidth="1.8" />
-      <path d="M7.5 14h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-    </svg>
-  );
-};
+const normalizeAmount = (value: string) => Number(value.replace(',', '.'));
 
 export function UltimaTopUpAmount() {
   const { t } = useTranslation();
@@ -93,11 +53,19 @@ export function UltimaTopUpAmount() {
   const userId = useAuthStore((state) => state.user?.id ?? null);
   const { formatAmount, convertAmount, convertToRub, currencySymbol, targetCurrency } =
     useCurrency();
-  const { openTelegramLink, openLink } = usePlatform();
+  const { openInvoice, openTelegramLink, openLink } = usePlatform();
+  const haptic = useHaptic();
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const autoStartedRef = useRef(false);
+  const submitRef = useRef<() => void>(() => undefined);
 
-  const { data: methodsData } = useQuery({
+  const {
+    data: methodsData,
+    isLoading: methodsLoading,
+    isError: methodsError,
+    refetch: refetchMethods,
+  } = useQuery({
     queryKey: ['payment-methods'],
     queryFn: balanceApi.getPaymentMethods,
     staleTime: 60000,
@@ -118,28 +86,76 @@ export function UltimaTopUpAmount() {
     ? Number(searchParams.get('amount'))
     : undefined;
   const returnTo = searchParams.get('returnTo');
+  const autoStartPayment = searchParams.get('autostart') === '1';
+  const autoOpenPayment = searchParams.get('autoopen') !== '0';
   const [amount, setAmount] = useState(() => {
     if (!initialAmountRub || Number.isNaN(initialAmountRub) || initialAmountRub <= 0) return '';
-    if (targetCurrency === 'RUB' || targetCurrency === 'IRR')
+    if (targetCurrency === 'RUB' || targetCurrency === 'IRR') {
       return String(Math.ceil(convertAmount(initialAmountRub)));
+    }
     return convertAmount(initialAmountRub).toFixed(2);
   });
-  const [selectedOption, setSelectedOption] = useState<string | null>(
-    method?.options?.[0]?.id ?? null,
-  );
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
+  useEffect(() => {
+    const options = method?.options ?? [];
+    if (options.length === 0) {
+      setSelectedOption(null);
+      return;
+    }
+    setSelectedOption((current) =>
+      current && options.some((option) => option.id === current) ? current : options[0].id,
+    );
+  }, [method]);
+
   const minRub = (method?.min_amount_kopeks ?? 0) / 100;
   const maxRub = (method?.max_amount_kopeks ?? 0) / 100;
-  const quickRubles = [100, 300, 500, 1000].filter((value) => value >= minRub && value <= maxRub);
+  const amountInSelectedCurrency = normalizeAmount(amount);
+  const amountRub = Number.isFinite(amountInSelectedCurrency)
+    ? convertToRub(amountInSelectedCurrency)
+    : 0;
+  const isAmountEntered = amountRub > 0;
+  const isAmountInRange = isAmountEntered && amountRub >= minRub && amountRub <= maxRub;
+  const balanceRub = balanceData?.balance_rubles ?? 0;
+  const balanceAfterRub = balanceRub + Math.max(0, amountRub);
+  const isStarsMethod = method?.id.toLowerCase().replace(/-/g, '_').includes('stars') ?? false;
+  const hasSelectedOption = !method?.options?.length || Boolean(selectedOption);
 
   const methodName = useMemo(() => {
     if (!method) return '';
     const key = method.id.toLowerCase().replace(/-/g, '_');
     return t(`balance.paymentMethods.${key}.name`, { defaultValue: method.name });
   }, [method, t]);
+
+  const methodDescription = useMemo(() => {
+    if (!method) return '';
+    const key = method.id.toLowerCase().replace(/-/g, '_');
+    return t(`balance.paymentMethods.${key}.description`, {
+      defaultValue:
+        method.description ||
+        t('balance.paymentOnlineDescription', { defaultValue: 'Онлайн-оплата' }),
+    });
+  }, [method, t]);
+
+  const quickRubles = useMemo(() => {
+    if (!method) return [];
+    const values = [100, 300, 500, 1000].filter((value) => value >= minRub && value <= maxRub);
+    if (values.length > 0) return values;
+    return Array.from(new Set([minRub, maxRub]))
+      .filter((value) => value > 0)
+      .slice(0, 4);
+  }, [maxRub, method, minRub]);
+
+  const quickValue = useCallback(
+    (valueRub: number) =>
+      targetCurrency === 'RUB' || targetCurrency === 'IRR'
+        ? String(Math.round(convertAmount(valueRub)))
+        : convertAmount(valueRub).toFixed(2),
+    [convertAmount, targetCurrency],
+  );
 
   const openPayment = useCallback(
     (url: string) => {
@@ -153,63 +169,121 @@ export function UltimaTopUpAmount() {
   );
 
   const handleSuccess = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: ['balance'] });
+    void queryClient.invalidateQueries({ queryKey: ['transactions'] });
     navigate(returnTo || '/subscription', { replace: true });
-  }, [navigate, returnTo]);
+  }, [navigate, queryClient, returnTo]);
 
   useCloseOnSuccessNotification(handleSuccess);
 
-  const topUpMutation = useMutation({
-    mutationFn: async (amountKopeks: number) => {
+  const paymentMutation = useMutation<CreatedPayment, unknown, number>({
+    mutationFn: async (amountKopeks) => {
       if (!method) throw new Error('method_not_found');
-      return balanceApi.createTopUp(amountKopeks, method.id, selectedOption || undefined);
+
+      if (isStarsMethod) {
+        const invoice = await balanceApi.createStarsInvoice(amountKopeks);
+        if (!invoice.invoice_url) throw new Error('payment_url_missing');
+        const status = await openInvoice(invoice.invoice_url);
+        return { kind: 'stars', status };
+      }
+
+      const result = await balanceApi.createTopUp(
+        amountKopeks,
+        method.id,
+        selectedOption || undefined,
+      );
+      if (!result.payment_url) throw new Error('payment_url_missing');
+      return { kind: 'external', url: result.payment_url };
     },
     onSuccess: (result, amountKopeks) => {
-      if (!method) return;
       setError(null);
-      const url = result.payment_url;
+
+      if (result.kind === 'stars') {
+        if (result.status === 'paid') {
+          haptic.notification('success');
+          handleSuccess();
+        } else if (result.status === 'failed') {
+          haptic.notification('error');
+          setError(t('wheel.starsPaymentFailed'));
+        }
+        return;
+      }
+
       writePendingTopUpFollowUp(userId, {
         amountKopeks,
         balanceBeforeKopeks: Math.max(0, balanceData?.balance_kopeks ?? 0),
-        paymentUrl: url,
-        paymentMethodId: method.id,
+        paymentUrl: result.url,
+        paymentMethodId: method?.id,
         paymentMethodName: methodName,
         returnTo: returnTo || '/subscription',
       });
-      setPaymentUrl(url);
-      openPayment(url);
+      setPaymentUrl(result.url);
+      if (autoOpenPayment) openPayment(result.url);
     },
-    onError: (err: unknown) => {
+    onError: (requestError: unknown) => {
+      haptic.notification('error');
       const detail =
-        (err as { response?: { data?: { detail?: string; message?: string } } })?.response?.data
-          ?.detail ??
-        (err as { response?: { data?: { detail?: string; message?: string } } })?.response?.data
-          ?.message;
-      setError(detail || t('common.error'));
+        (requestError as { response?: { data?: { detail?: string; message?: string } } })?.response
+          ?.data?.detail ??
+        (requestError as { response?: { data?: { detail?: string; message?: string } } })?.response
+          ?.data?.message;
+      setError(
+        detail ||
+          (requestError instanceof Error && requestError.message === 'payment_url_missing'
+            ? t('balance.errors.noPaymentLink')
+            : t('common.error')),
+      );
     },
   });
 
-  const handleCreatePayment = () => {
+  const handleCreatePayment = useCallback(() => {
     setError(null);
     setPaymentUrl(null);
-    const value = Number(amount);
-    if (!Number.isFinite(value) || value <= 0) {
+    inputRef.current?.blur();
+
+    if (!checkRateLimit(RATE_LIMIT_KEYS.PAYMENT, 3, 30000)) {
+      setError(
+        t('balance.errors.rateLimit', { seconds: getRateLimitResetTime(RATE_LIMIT_KEYS.PAYMENT) }),
+      );
+      return;
+    }
+    if (method?.options?.length && !selectedOption) {
+      setError(t('balance.errors.selectMethod'));
+      return;
+    }
+    if (!isAmountEntered) {
       setError(t('balance.errors.enterAmount'));
       return;
     }
-    const rubles = convertToRub(value);
-    if (rubles < minRub || rubles > maxRub) {
+    if (!isAmountInRange) {
       setError(t('balance.errors.amountRange', { min: minRub, max: maxRub }));
       return;
     }
-    topUpMutation.mutate(Math.round(rubles * 100));
-  };
 
-  const handleQuick = (valueRub: number) => {
-    const converted =
-      targetCurrency === 'RUB' || targetCurrency === 'IRR'
-        ? String(Math.round(convertAmount(valueRub)))
-        : convertAmount(valueRub).toFixed(2);
-    setAmount(converted);
+    paymentMutation.mutate(Math.round(amountRub * 100));
+  }, [
+    amountRub,
+    isAmountEntered,
+    isAmountInRange,
+    method?.options,
+    minRub,
+    maxRub,
+    paymentMutation,
+    selectedOption,
+    t,
+  ]);
+  submitRef.current = handleCreatePayment;
+
+  useEffect(() => {
+    if (!autoStartPayment || autoStartedRef.current || !method || paymentMutation.isPending) return;
+    if (!isAmountEntered || !hasSelectedOption) return;
+    autoStartedRef.current = true;
+    submitRef.current();
+  }, [autoStartPayment, hasSelectedOption, isAmountEntered, method, paymentMutation.isPending]);
+
+  const handleQuickAmount = (valueRub: number) => {
+    setAmount(quickValue(valueRub));
+    setError(null);
     inputRef.current?.focus();
   };
 
@@ -217,240 +291,412 @@ export function UltimaTopUpAmount() {
     if (!paymentUrl) return;
     await copyToClipboard(paymentUrl);
     setCopied(true);
-    window.setTimeout(() => setCopied(false), 1200);
+    window.setTimeout(() => setCopied(false), 1400);
   };
 
-  if (!method) {
-    return <div className="min-h-[100dvh] min-h-[100svh] w-full bg-transparent" />;
-  }
+  const backToMethods = () => {
+    const params = new URLSearchParams();
+    if (initialAmountRub) params.set('amount', String(initialAmountRub));
+    if (returnTo) params.set('returnTo', returnTo);
+    const query = params.toString();
+    navigate(`/balance/top-up${query ? `?${query}` : ''}`);
+  };
 
   const bottomNav = <UltimaBottomNav active="profile" />;
 
-  const amountContent = (
-    <>
-      <section className="ultima-scrollbar min-h-0 flex-1 overflow-y-auto rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:overflow-visible lg:p-4">
-        <div className="mb-3 flex items-center gap-3 rounded-2xl border border-emerald-200/10 bg-emerald-950/30 px-3 py-2.5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-200/[0.15] bg-emerald-900/[0.45] text-emerald-100">
-            <MethodIcon methodId={method.id} />
-          </div>
-          <div className="min-w-0">
-            <p className="line-clamp-2 break-words text-[15px] font-medium leading-tight text-white/95">
-              {methodName}
-            </p>
-            <p className="text-[11px] text-white/[0.55]">
-              {formatAmount(minRub, 0)} - {formatAmount(maxRub, 0)} {currencySymbol}
-            </p>
-          </div>
+  if (
+    (methodsLoading && methods.length === 0) ||
+    (!method && !methodsError && methods.length === 0)
+  ) {
+    return (
+      <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
+        <div className="ultima-shell-aura" />
+        <div className="ultima-shell-inner flex items-center justify-center">
+          <LoaderCircle className="h-7 w-7 animate-spin text-[color:var(--ultima-color-primary)]" />
         </div>
+      </div>
+    );
+  }
 
-        {method.options && method.options.length > 0 ? (
-          <div className="mb-3 grid grid-cols-1 gap-2 min-[390px]:grid-cols-2">
-            {method.options.map((option) => (
-              <button
-                key={option.id}
-                type="button"
-                onClick={() => setSelectedOption(option.id)}
-                className={`min-w-0 rounded-xl border px-3 py-2 text-left text-sm ${
-                  selectedOption === option.id
-                    ? 'border-emerald-300/[0.45] bg-emerald-500/[0.12] text-white'
-                    : 'border-emerald-200/10 bg-emerald-950/30 text-white/75'
-                }`}
-              >
-                {option.name}
-              </button>
-            ))}
-          </div>
-        ) : null}
-
-        <div className="mb-2 text-[12px] text-white/[0.62]">{t('balance.enterAmount')}</div>
-        <div className="flex flex-col gap-2 min-[390px]:flex-row">
-          <div className="relative flex-1 rounded-2xl border border-emerald-200/[0.12] bg-emerald-950/[0.35]">
-            <input
-              ref={inputRef}
-              type="number"
-              value={amount}
-              onChange={(event) => setAmount(event.target.value)}
-              className="h-12 w-full bg-transparent px-3 pr-10 text-lg font-semibold text-white outline-none"
-              placeholder="0"
-              inputMode="decimal"
-            />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50">
-              {currencySymbol}
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={handleCreatePayment}
-            disabled={topUpMutation.isPending}
-            className="w-full rounded-2xl border border-[#52ecc6]/40 bg-[#12cd97] px-4 py-3 text-sm font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] disabled:opacity-60 min-[390px]:w-auto min-[390px]:py-0"
+  if (!method || methodsError) {
+    return (
+      <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
+        <div className="ultima-shell-aura" />
+        <div className="ultima-shell-inner flex items-center justify-center px-4">
+          <section
+            className={`${ultimaCardClassName} w-full max-w-md text-center`}
+            style={ultimaSurfaceStyle}
           >
-            {t('balance.topUp')}
-          </button>
+            <CircleAlert className="mx-auto h-8 w-8 text-amber-200" />
+            <h1 className="mt-3 text-xl font-semibold text-white">
+              {t('balance.paymentUnavailable', { defaultValue: 'Способ оплаты недоступен' })}
+            </h1>
+            <div className="mt-4 flex gap-2">
+              <button
+                type="button"
+                onClick={backToMethods}
+                className="ultima-btn-pill ultima-btn-secondary flex-1 px-4 py-3 text-sm"
+              >
+                {t('common.back')}
+              </button>
+              <button
+                type="button"
+                onClick={() => void refetchMethods()}
+                className="ultima-btn-pill ultima-btn-primary flex-1 px-4 py-3 text-sm"
+              >
+                {t('common.retry', { defaultValue: 'Повторить' })}
+              </button>
+            </div>
+          </section>
         </div>
+      </div>
+    );
+  }
 
-        {quickRubles.length > 0 ? (
-          <div className="mt-3 grid grid-cols-2 gap-2 min-[390px]:grid-cols-4">
-            {quickRubles.map((value) => (
+  const amountLabel = isAmountEntered
+    ? `${formatAmount(amountRub, amountRub % 1 === 0 ? 0 : 2)} ${currencySymbol}`
+    : `0 ${currencySymbol}`;
+  const rangeLabel = `${formatAmount(minRub, 0)} - ${formatAmount(maxRub, 0)} ${currencySymbol}`;
+  const buttonLabel = paymentMutation.isPending
+    ? t('balance.paymentCreating', { defaultValue: 'Создаём платёж' })
+    : isAmountEntered
+      ? t('balance.paymentContinueWithAmount', {
+          amount: amountLabel,
+          defaultValue: `Перейти к оплате · ${amountLabel}`,
+        })
+      : t('balance.paymentContinue', { defaultValue: 'Перейти к оплате' });
+
+  const paymentComposer = (
+    <section
+      data-testid="ultima-payment-amount-card"
+      className={ultimaCardClassName}
+      style={ultimaSurfaceStyle}
+    >
+      <div
+        data-testid="ultima-payment-selected-method"
+        className="flex items-center gap-3 border-b border-white/[0.08] pb-4"
+      >
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/[0.07] ring-1 ring-inset ring-white/[0.08]">
+          <PaymentMethodIcon method={method.id} className="h-9 w-9" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] uppercase tracking-[0.12em] text-white/[0.40]">
+            {t('balance.paymentSelectedMethod', { defaultValue: 'Способ оплаты' })}
+          </p>
+          <p className="mt-0.5 truncate text-[15px] font-semibold text-white">{methodName}</p>
+          <p className="mt-0.5 line-clamp-1 text-xs text-white/[0.45]">{methodDescription}</p>
+        </div>
+        <button
+          type="button"
+          onClick={backToMethods}
+          className="flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl px-2.5 text-xs font-medium text-white/[0.65] transition hover:bg-white/[0.06] hover:text-white"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          {t('common.change', { defaultValue: 'Изменить' })}
+        </button>
+      </div>
+
+      {method.options && method.options.length > 0 ? (
+        <fieldset className="mt-4">
+          <legend className="mb-2 text-xs font-medium text-white/[0.55]">
+            {t('balance.topUp.paymentOptionTitle', { defaultValue: 'Вариант оплаты' })}
+          </legend>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {method.options.map((option) => {
+              const selected = selectedOption === option.id;
+              return (
+                <button
+                  key={option.id}
+                  data-testid={`ultima-payment-option-${option.id}`}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  onClick={() => setSelectedOption(option.id)}
+                  className={`flex min-h-12 items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5 text-left text-sm transition ${selected ? 'border-[color:color-mix(in_srgb,var(--ultima-color-primary)_52%,transparent)] bg-[color:color-mix(in_srgb,var(--ultima-color-primary)_13%,transparent)] text-white' : 'border-white/[0.08] bg-white/[0.035] text-white/[0.68] hover:border-white/[0.16]'}`}
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate font-medium">{option.name}</span>
+                    {option.description ? (
+                      <span className="mt-0.5 line-clamp-1 block text-[11px] text-white/[0.42]">
+                        {option.description}
+                      </span>
+                    ) : null}
+                  </span>
+                  <span
+                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${selected ? 'border-[color:var(--ultima-color-primary)] bg-[color:var(--ultima-color-primary)] text-[color:var(--ultima-color-primary-text)]' : 'border-white/[0.20] text-transparent'}`}
+                  >
+                    <Check className="h-3 w-3" strokeWidth={2.5} />
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </fieldset>
+      ) : null}
+
+      <div className="mt-5">
+        <div className="flex items-end justify-between gap-3">
+          <label htmlFor="ultima-payment-amount" className="text-xs font-medium text-white/[0.55]">
+            {t('balance.enterAmount')}
+          </label>
+          <span className="text-[11px] text-white/[0.38]">{rangeLabel}</span>
+        </div>
+        <div className="mt-2 flex min-h-[72px] items-center rounded-2xl border border-white/[0.1] bg-black/[0.15] px-4 focus-within:border-[color:color-mix(in_srgb,var(--ultima-color-primary)_58%,transparent)] focus-within:ring-2 focus-within:ring-[color:color-mix(in_srgb,var(--ultima-color-primary)_12%,transparent)]">
+          <input
+            id="ultima-payment-amount"
+            data-testid="ultima-payment-amount-input"
+            ref={inputRef}
+            type="text"
+            inputMode="decimal"
+            enterKeyHint="done"
+            value={amount}
+            onChange={(event) => {
+              setAmount(event.target.value.replace(/[^0-9.,]/g, ''));
+              setError(null);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                handleCreatePayment();
+              }
+            }}
+            className="min-w-0 flex-1 bg-transparent text-[32px] font-semibold leading-none text-white outline-none placeholder:text-white/[0.18]"
+            placeholder="0"
+            autoComplete="off"
+          />
+          <span className="ml-3 text-xl font-medium text-white/[0.45]">{currencySymbol}</span>
+        </div>
+      </div>
+
+      {quickRubles.length > 0 ? (
+        <div
+          className="mt-2.5 grid grid-cols-4 gap-2"
+          aria-label={t('balance.quickAmounts', { defaultValue: 'Быстрые суммы' })}
+        >
+          {quickRubles.map((value) => {
+            const selected = amount === quickValue(value);
+            return (
               <button
                 key={value}
+                data-testid={`ultima-payment-quick-${value}`}
                 type="button"
-                className={`rounded-xl border px-2 py-2 text-[13px] transition ${
-                  amount ===
-                  (targetCurrency === 'RUB' || targetCurrency === 'IRR'
-                    ? String(Math.round(convertAmount(value)))
-                    : convertAmount(value).toFixed(2))
-                    ? 'border-emerald-300/[0.45] bg-emerald-500/[0.12] text-white'
-                    : 'border-emerald-200/10 bg-emerald-950/30 text-white/[0.85] hover:border-emerald-200/25'
-                }`}
-                onClick={() => handleQuick(value)}
+                onClick={() => handleQuickAmount(value)}
+                className={`min-h-10 rounded-xl border px-1.5 text-xs font-medium transition ${selected ? 'border-[color:color-mix(in_srgb,var(--ultima-color-primary)_48%,transparent)] bg-[color:color-mix(in_srgb,var(--ultima-color-primary)_12%,transparent)] text-white' : 'border-white/[0.08] bg-white/[0.03] text-white/[0.58] hover:border-white/[0.16] hover:text-white/[0.80]'}`}
               >
                 {formatAmount(value, 0)}
               </button>
-            ))}
-          </div>
-        ) : null}
+            );
+          })}
+        </div>
+      ) : null}
 
-        {error ? (
-          <div className="mt-3 rounded-xl border border-red-400/30 bg-red-500/[0.12] px-3 py-2 text-sm text-red-200">
-            {error}
-          </div>
-        ) : null}
+      <div
+        data-testid="ultima-payment-summary"
+        className={`${ultimaPaneClassName} mt-4 grid grid-cols-3 divide-x divide-white/[0.08] p-0`}
+        style={ultimaPaneSurfaceStyle}
+      >
+        <div className="min-w-0 px-3 py-3">
+          <p className="text-[10px] uppercase tracking-[0.08em] text-white/[0.35]">
+            {t('balance.amount', { defaultValue: 'Сумма' })}
+          </p>
+          <p className="mt-1 truncate text-sm font-semibold text-white">{amountLabel}</p>
+        </div>
+        <div className="min-w-0 px-3 py-3">
+          <p className="text-[10px] uppercase tracking-[0.08em] text-white/[0.35]">
+            {t('balance.currentBalance')}
+          </p>
+          <p className="mt-1 truncate text-sm font-semibold text-white/[0.75]">
+            {formatAmount(balanceRub)} {currencySymbol}
+          </p>
+        </div>
+        <div className="min-w-0 px-3 py-3">
+          <p className="text-[10px] uppercase tracking-[0.08em] text-white/[0.35]">
+            {t('balance.afterTopUp', { defaultValue: 'Будет' })}
+          </p>
+          <p className="mt-1 truncate text-sm font-semibold text-[color:color-mix(in_srgb,var(--ultima-color-primary)_74%,white)]">
+            {formatAmount(balanceAfterRub)} {currencySymbol}
+          </p>
+        </div>
+      </div>
 
-        {paymentUrl ? (
-          <div className="mt-3 rounded-2xl border border-emerald-300/30 bg-emerald-500/10 p-3">
-            <p className="text-[13px] font-medium text-emerald-100">{t('balance.paymentReady')}</p>
+      {error ? (
+        <div
+          role="alert"
+          className="mt-3 flex items-start gap-2.5 rounded-xl border border-rose-300/[0.20] bg-rose-500/[0.09] px-3 py-2.5 text-sm text-rose-100"
+        >
+          <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>{error}</span>
+        </div>
+      ) : null}
+
+      {paymentUrl ? (
+        <div
+          data-testid="ultima-payment-ready"
+          className="mt-3 rounded-2xl border border-[color:color-mix(in_srgb,var(--ultima-color-primary)_34%,transparent)] bg-[color:color-mix(in_srgb,var(--ultima-color-primary)_9%,transparent)] p-3.5"
+        >
+          <div className="flex items-start gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[color:color-mix(in_srgb,var(--ultima-color-primary)_15%,transparent)] text-[color:color-mix(in_srgb,var(--ultima-color-primary)_72%,white)]">
+              <ReceiptText className="h-5 w-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-white">{t('balance.paymentReady')}</p>
+              <p className="mt-0.5 text-xs leading-relaxed text-white/[0.48]">
+                {t('balance.paymentReadyHint', {
+                  defaultValue: 'Платёжная ссылка создана и готова к открытию.',
+                })}
+              </p>
+            </div>
+          </div>
+          <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] gap-2">
             <button
               type="button"
               onClick={() => openPayment(paymentUrl)}
-              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-[#52ecc6]/40 bg-[#12cd97] px-3 py-2.5 text-sm font-medium text-white"
+              className="ultima-btn-pill ultima-btn-primary flex min-h-11 items-center justify-center gap-2 px-4 text-sm font-semibold"
             >
-              <OpenIcon />
+              <ExternalLink className="h-4 w-4" />
               {t('balance.openPaymentPage')}
             </button>
-            <div className="mt-2 flex items-center gap-2">
-              <div className="min-w-0 flex-1 rounded-lg border border-emerald-200/10 bg-emerald-950/30 px-2.5 py-2">
-                <p className="break-all text-[11px] text-white/[0.55]">{paymentUrl}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => void handleCopyUrl()}
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-emerald-200/[0.15] bg-emerald-900/40 text-white/80"
-              >
-                {copied ? <CheckIcon /> : <CopyIcon />}
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => void handleCopyUrl()}
+              aria-label={t('common.copy')}
+              className="ultima-btn-pill ultima-btn-secondary flex h-11 w-12 items-center justify-center"
+            >
+              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+            </button>
           </div>
-        ) : null}
-      </section>
+        </div>
+      ) : null}
 
-      <section className="rounded-2xl border border-emerald-200/10 bg-emerald-950/20 px-3 py-2.5">
-        <p className="text-[11px] leading-snug text-white/[0.58]">
-          {t('balance.ultimaBalanceNotice', {
-            defaultValue:
-              'После пополнения сумма попадает на баланс и затем списывается в оплату подписки.',
-          })}
-        </p>
-      </section>
-    </>
+      <button
+        data-testid="ultima-payment-submit"
+        type="button"
+        onClick={handleCreatePayment}
+        disabled={
+          paymentMutation.isPending ||
+          !isAmountEntered ||
+          !hasSelectedOption ||
+          !method.is_available
+        }
+        className="ultima-btn-pill ultima-btn-primary mt-4 flex min-h-[52px] w-full items-center justify-between gap-3 px-5 text-[15px] font-semibold"
+      >
+        <span className="flex min-w-0 items-center gap-2">
+          {paymentMutation.isPending ? (
+            <LoaderCircle className="h-4 w-4 animate-spin" />
+          ) : (
+            <LockKeyhole className="h-4 w-4" />
+          )}
+          <span className="truncate">{buttonLabel}</span>
+        </span>
+        {!paymentMutation.isPending ? <ExternalLink className="h-4 w-4" /> : null}
+      </button>
+    </section>
   );
 
   if (isDesktop) {
     return (
-      <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-profile-desktop">
+      <div
+        data-testid="ultima-payment-amount-page"
+        className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-profile-desktop"
+      >
         <div className="ultima-shell-aura" />
         <UltimaDesktopSectionLayout
-          icon={<MethodIcon methodId={method.id} />}
-          eyebrow={methodName}
-          title={methodName}
-          subtitle={t('balance.ultimaBalanceNotice', {
-            defaultValue:
-              'Укажите сумму, получите ссылку и сразу откройте оплату в выбранном методе.',
+          icon={<WalletCards className="h-5 w-5" />}
+          eyebrow={t('balance.topUpBalance')}
+          title={t('balance.paymentAmountTitle', { defaultValue: 'Сумма пополнения' })}
+          subtitle={t('balance.paymentAmountSubtitle', {
+            defaultValue: 'Проверьте способ оплаты, укажите сумму и перейдите к платежу.',
           })}
           metrics={[
             {
-              label: t('balance.amount', { defaultValue: 'Диапазон' }),
-              value: `${formatAmount(minRub, 0)} - ${formatAmount(maxRub, 0)} ${currencySymbol}`,
-              hint: t('payment.desktopRangeHint', {
-                defaultValue: 'Минимальная и максимальная сумма зависят от платежного метода.',
-              }),
+              label: t('balance.currentBalance'),
+              value: `${formatAmount(balanceRub)} ${currencySymbol}`,
             },
             {
-              label: t('balance.enterAmount', { defaultValue: 'Сумма' }),
-              value: amount || '0',
-              hint: t('payment.desktopAmountHint', {
-                defaultValue: 'Введите сумму вручную или используйте быстрые варианты ниже.',
-              }),
+              label: t('balance.paymentSelectedMethod', { defaultValue: 'Способ' }),
+              value: methodName,
+              hint: methodDescription,
             },
-            {
-              label: t('common.status', { defaultValue: 'Статус' }),
-              value: topUpMutation.isPending
-                ? t('common.loading', { defaultValue: 'Загрузка...' })
-                : paymentUrl
-                  ? t('payment.desktopReady', { defaultValue: 'Ссылка готова' })
-                  : t('payment.desktopDraft', { defaultValue: 'Черновик' }),
-              hint:
-                error ||
-                t('payment.desktopStatusHint', {
-                  defaultValue: 'После создания ссылки откроется окно платежа.',
-                }),
-            },
+            { label: t('balance.amount', { defaultValue: 'Диапазон' }), value: rangeLabel },
           ]}
+          heroActions={
+            <button
+              type="button"
+              onClick={backToMethods}
+              className="ultima-btn-pill ultima-btn-secondary flex items-center gap-2 px-4 py-2.5 text-sm"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              {t('balance.selectPaymentMethod')}
+            </button>
+          }
           aside={
             <UltimaDesktopPanel
-              title={t('payment.desktopAsideTitle', { defaultValue: 'Оплата' })}
-              subtitle={t('payment.desktopAsideHint', {
-                defaultValue:
-                  'Ссылка на оплату создается под выбранную сумму и открывается сразу после генерации.',
+              title={t('balance.paymentSummary', { defaultValue: 'Итого' })}
+              subtitle={t('balance.paymentSummaryHint', {
+                defaultValue: 'Платёж будет создан для указанной суммы.',
               })}
             >
               <div className="space-y-3">
-                {quickRubles.length > 0 ? (
-                  <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3">
-                    <div className="text-[11px] uppercase tracking-[0.2em] text-white/[0.42]">
-                      {t('balance.quickAmounts', { defaultValue: 'Быстрые суммы' })}
-                    </div>
-                    <div className="mt-2 text-sm font-medium text-white/90">
-                      {quickRubles.map((value) => formatAmount(value, 0)).join(' • ')}
-                    </div>
+                <div className="rounded-xl border border-white/[0.08] bg-white/[0.035] p-4">
+                  <p className="text-xs uppercase tracking-[0.12em] text-white/[0.38]">
+                    {t('balance.toPay', { defaultValue: 'К оплате' })}
+                  </p>
+                  <p className="mt-1 text-2xl font-semibold text-white">{amountLabel}</p>
+                  <div className="mt-3 flex items-center gap-2 text-xs text-white/[0.48]">
+                    <ShieldCheck className="h-4 w-4 text-[color:var(--ultima-color-primary)]" />
+                    {methodName}
                   </div>
-                ) : null}
-                <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-[1.6] text-white/[0.72]">
-                  {t('balance.ultimaBalanceNotice', {
-                    defaultValue:
-                      'После пополнения сумма попадает на баланс и затем списывается в оплату подписки.',
-                  })}
                 </div>
+                <button
+                  type="button"
+                  onClick={() => navigate('/balance')}
+                  className="ultima-btn-pill ultima-btn-secondary flex w-full items-center justify-center gap-2 px-4 py-2.5 text-sm"
+                >
+                  <History className="h-4 w-4" />
+                  {t('profile.transactionsTitle', { defaultValue: 'История операций' })}
+                </button>
               </div>
             </UltimaDesktopPanel>
           }
           bottomNav={bottomNav}
         >
-          {amountContent}
+          {paymentComposer}
         </UltimaDesktopSectionLayout>
       </div>
     );
   }
 
   return (
-    <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
+    <div
+      data-testid="ultima-payment-amount-page"
+      className="ultima-shell ultima-shell-wide ultima-flat-frames"
+    >
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
         <header className="mb-3">
-          <h1 className="text-[clamp(32px,8.5vw,36px)] font-semibold leading-[0.9] tracking-[-0.01em] text-white [overflow-wrap:anywhere]">
-            {methodName}
+          <div className="mb-2 flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.12em] text-[color:color-mix(in_srgb,var(--ultima-color-primary)_70%,white)]">
+            <WalletCards className="h-4 w-4" />
+            {t('balance.topUpBalance')}
+          </div>
+          <h1 className="text-[34px] font-semibold leading-[0.96] text-white">
+            {t('balance.paymentAmountTitle', { defaultValue: 'Сумма пополнения' })}
           </h1>
-          <p className="mt-1.5 text-[13px] leading-tight text-white/[0.62]">
-            {t('balance.ultimaBalanceNotice', {
-              defaultValue:
-                'Средства поступят на баланс и автоматически учтутся в стоимости подписки.',
-            })}
-          </p>
-          <p className="mt-1 text-[11px] text-white/[0.45]">
-            {formatAmount(minRub, 0)} - {formatAmount(maxRub, 0)} {currencySymbol}
+          <p className="mt-1.5 text-[13px] text-white/[0.52]">
+            {methodName} · {rangeLabel}
           </p>
         </header>
 
-        {amountContent}
+        <main className="ultima-scrollbar min-h-0 flex-1 overflow-y-auto pb-3">
+          {paymentComposer}
+          <div className="mt-3 flex items-start gap-2.5 px-1 text-[11px] leading-relaxed text-white/[0.42]">
+            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[color:color-mix(in_srgb,var(--ultima-color-primary)_70%,white)]" />
+            <span>
+              {t('balance.paymentBalanceDestinationHint', {
+                defaultValue: 'Средства появятся на балансе после подтверждения платежа.',
+              })}
+            </span>
+          </div>
+        </main>
 
         <div className="ultima-mobile-dock-footer">
           <div className="ultima-nav-dock">{bottomNav}</div>

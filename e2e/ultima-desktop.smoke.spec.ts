@@ -55,7 +55,10 @@ const PAYMENT_METHODS = [
     min_amount_kopeks: 10_000,
     max_amount_kopeks: 1_000_000,
     is_available: true,
-    options: null,
+    options: [
+      { id: 'bank_card', name: 'Банковская карта', description: 'Карты российских банков' },
+      { id: 'sbp', name: 'СБП', description: 'Оплата через приложение банка' },
+    ],
   },
   {
     id: 'cryptobot',
@@ -83,6 +86,42 @@ const PAYMENT_METHODS = [
     max_amount_kopeks: 2_000_000,
     is_available: false,
     options: null,
+  },
+];
+
+const TRANSACTIONS = [
+  {
+    id: 701,
+    type: 'DEPOSIT',
+    amount_kopeks: 42_000,
+    amount_rubles: 420,
+    description: 'Пополнение баланса',
+    payment_method: 'yookassa',
+    is_completed: true,
+    created_at: '2026-07-20T12:30:00.000Z',
+    completed_at: '2026-07-20T12:31:00.000Z',
+  },
+  {
+    id: 702,
+    type: 'SUBSCRIPTION_PAYMENT',
+    amount_kopeks: -31_000,
+    amount_rubles: -310,
+    description: 'Продление подписки',
+    payment_method: 'balance',
+    is_completed: true,
+    created_at: '2026-07-19T09:15:00.000Z',
+    completed_at: '2026-07-19T09:15:00.000Z',
+  },
+  {
+    id: 703,
+    type: 'DEPOSIT',
+    amount_kopeks: 10_000,
+    amount_rubles: 100,
+    description: 'Платёж обрабатывается',
+    payment_method: 'cryptobot',
+    is_completed: false,
+    created_at: '2026-07-18T18:45:00.000Z',
+    completed_at: null,
   },
 ];
 
@@ -492,7 +531,31 @@ async function mockUltimaDesktopApi(
     if (path === '/cabinet/balance') {
       return respond({ balance_kopeks: balanceKopeks, balance_rubles: balanceKopeks / 100 });
     }
+    if (path === '/cabinet/balance/transactions') {
+      return respond({
+        items: TRANSACTIONS,
+        total: TRANSACTIONS.length,
+        page: 1,
+        per_page: 20,
+        pages: 1,
+      });
+    }
     if (path === '/cabinet/balance/payment-methods') return respond(PAYMENT_METHODS);
+    if (path === '/cabinet/balance/topup' && method === 'POST') {
+      const payload = request.postDataJSON() as {
+        amount_kopeks: number;
+        payment_method: string;
+        payment_option?: string;
+      };
+      return respond({
+        payment_id: 'payment-701',
+        payment_url: 'https://pay.example.test/payment-701',
+        amount_kopeks: payload.amount_kopeks,
+        amount_rubles: payload.amount_kopeks / 100,
+        status: 'pending',
+        expires_at: '2026-07-20T13:00:00.000Z',
+      });
+    }
     if (path === '/cabinet/referral') {
       return respond({
         referral_code: USER.referral_code,
@@ -694,6 +757,106 @@ test.describe('Ultima payment method selection', () => {
     await expect(page.getByRole('button', { name: /История операций/ })).toBeVisible();
     await expect(page.locator('.ultima-mobile-dock-footer')).toBeVisible();
     await expectNoHorizontalOverflow(page);
+  });
+});
+
+test.describe('Ultima payment and operation history', () => {
+  test('creates a payment from a clear mobile composer', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+
+    await page.goto('/balance/top-up/yookassa?amount=420&returnTo=/subscription&autoopen=0');
+
+    await expect(page.getByTestId('ultima-payment-amount-page')).toBeVisible();
+    await expect(page.getByTestId('ultima-payment-selected-method')).toBeVisible();
+    await expect(page.getByTestId('ultima-payment-option-bank_card')).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    await expect(page.getByTestId('ultima-payment-amount-input')).toHaveValue('420');
+    await expect(page.getByTestId('ultima-payment-summary')).toBeVisible();
+
+    await page.getByTestId('ultima-payment-submit').click();
+    await expect(page.getByTestId('ultima-payment-ready')).toBeVisible();
+    await expect(page.getByText('https://pay.example.test/payment-701')).toHaveCount(0);
+    await expectNoHorizontalOverflow(page);
+    await page.screenshot({
+      path: testInfo.outputPath('payment-composer-mobile.png'),
+      fullPage: true,
+    });
+  });
+
+  test('keeps payment controls reachable on a compact phone', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 640 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+
+    await page.goto('/balance/top-up/cryptobot?amount=420&autoopen=0');
+
+    await expect(page.getByTestId('ultima-payment-amount-card')).toBeVisible();
+    await page.getByTestId('ultima-payment-submit').scrollIntoViewIfNeeded();
+    await expect(page.getByTestId('ultima-payment-submit')).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+  });
+
+  test('autostarts only after a payment option is selected', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+
+    await page.goto('/balance/top-up/yookassa?amount=420&autostart=1&autoopen=0');
+
+    await expect(page.getByTestId('ultima-payment-option-bank_card')).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    await expect(page.getByTestId('ultima-payment-ready')).toBeVisible();
+  });
+
+  test('uses a focused payment workspace on desktop', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1366, height: 768 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+
+    await page.goto('/balance/top-up/yookassa?amount=420&autoopen=0');
+
+    await expect(page.locator('.ultima-desktop-workspace')).toBeVisible();
+    await expect(page.getByTestId('ultima-payment-amount-card')).toBeVisible();
+    await expect(page.getByTestId('ultima-payment-option-bank_card')).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    await expectNoHorizontalOverflow(page);
+    await page.screenshot({
+      path: testInfo.outputPath('payment-composer-desktop.png'),
+      fullPage: true,
+    });
+  });
+
+  test('shows readable balance operations on mobile and desktop', async ({ page }, testInfo) => {
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/balance');
+    await expect(page.getByTestId('ultima-balance-overview')).toBeVisible();
+    await expect(page.getByTestId('ultima-transaction-row')).toHaveCount(3);
+    await expectNoHorizontalOverflow(page);
+    await page.screenshot({
+      path: testInfo.outputPath('operation-history-mobile.png'),
+      fullPage: true,
+    });
+
+    await page.setViewportSize({ width: 1366, height: 768 });
+    await page.reload();
+    await expect(page.locator('.ultima-desktop-workspace')).toBeVisible();
+    await expect(page.getByTestId('ultima-transaction-row')).toHaveCount(3);
+    await expectNoHorizontalOverflow(page);
+    await page.screenshot({
+      path: testInfo.outputPath('operation-history-desktop.png'),
+      fullPage: true,
+    });
   });
 });
 
