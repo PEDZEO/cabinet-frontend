@@ -296,7 +296,7 @@ test.describe('Ultima account linking callback', () => {
     await page.goto('/auth/oauth/callback?code=test-code&state=server-flow-state');
 
     await page.waitForURL('**/account-linking');
-    await expect(page.getByRole('heading', { name: 'Способы входа' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Способы входа', exact: true })).toBeVisible();
     await expect(page.getByText('Аккаунты связаны!')).toBeVisible();
     await expect(page.getByText(/Minified React error #185/)).toHaveCount(0);
   });
