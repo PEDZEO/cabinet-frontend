@@ -1,42 +1,36 @@
-import { useMemo } from 'react';
-import type { ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import { adminSettingsApi } from '@/api/adminSettings';
 import {
-  adminUltimaApi,
-  type UltimaDiagnosticStatus,
-  type UltimaOverview,
-  type UltimaOverviewDiagnostic,
-} from '@/api/adminUltima';
+  BellRing,
+  ChevronRight,
+  CircleCheck,
+  FileText,
+  Gauge,
+  Headphones,
+  Info,
+  LayoutDashboard,
+  MessageSquareText,
+  MonitorSmartphone,
+  Palette,
+  Settings2,
+  ShieldCheck,
+  Smartphone,
+  Users,
+  type LucideIcon,
+} from 'lucide-react';
+import { adminSettingsApi } from '@/api/adminSettings';
+import { adminUltimaApi, type UltimaOverview } from '@/api/adminUltima';
 import { AdminBackButton } from '@/components/admin';
 import { groupUltimaSettings, isUltimaSetting } from './adminUltimaSettings/utils';
-
-const statusClasses: Record<UltimaDiagnosticStatus, string> = {
-  ok: 'border-success-500/25 bg-success-500/10 text-success-300',
-  warning: 'border-warning-500/25 bg-warning-500/10 text-warning-300',
-  error: 'border-error-500/25 bg-error-500/10 text-error-300',
-};
-
-const statusDotClasses: Record<UltimaDiagnosticStatus, string> = {
-  ok: 'bg-success-400',
-  warning: 'bg-warning-400',
-  error: 'bg-error-400',
-};
-
-const statusLabel = (status: UltimaDiagnosticStatus) => {
-  if (status === 'ok') return 'OK';
-  if (status === 'warning') return 'Внимание';
-  return 'Ошибка';
-};
 
 const supportLabel = (type: string) =>
   (
     ({
       tickets: 'Тикеты',
-      both: 'Тикеты + профиль',
-      profile: 'Профиль Telegram',
+      both: 'Тикеты и Telegram',
+      profile: 'Telegram',
       url: 'Внешняя ссылка',
     }) as Record<string, string>
   )[type] || type;
@@ -44,185 +38,152 @@ const supportLabel = (type: string) =>
 const mainMenuModeLabel = (mode: string) =>
   (
     ({
-      cabinet: 'кабинет',
-      bot: 'бот',
-      default: 'обычное меню',
+      cabinet: 'Кабинет',
+      bot: 'Бот',
+      default: 'Обычное меню',
     }) as Record<string, string>
   )[mode] || mode;
 
-const accountModeLabel = (mode: string) =>
-  (
-    ({
-      provider_auth: 'авторизация провайдера',
-      telegram: 'Telegram',
-      email: 'email',
-      disabled: 'выключено',
-    }) as Record<string, string>
-  )[mode] || mode;
+const compactUrl = (value?: string) =>
+  value?.replace(/^https?:\/\//, '').replace(/\/$/, '') || 'Не настроен';
 
-const diagnosticCopy: Record<
-  string,
-  { label: string; ok: string; warning?: string; error?: string }
-> = {
-  ultima_mode: {
-    label: 'Режим Ultima',
-    ok: 'Включен для пользователей',
-    warning: 'Выключен для пользователей',
-  },
-  miniapp_url: {
-    label: 'Miniapp URL',
-    ok: 'Основная ссылка настроена',
-    error: 'Не задан MINIAPP_CUSTOM_URL',
-  },
-  start_message: {
-    label: '/start',
-    ok: 'Поведение настроено корректно',
-    warning: 'Включен fallback на обычное меню',
-    error: 'Ошибка настройки /start',
-  },
-  support: {
-    label: 'Поддержка',
-    ok: 'Канал поддержки доступен',
-    warning: 'Есть неполная настройка поддержки',
-    error: 'Поддержка настроена некорректно',
-  },
-  notification_buttons: {
-    label: 'Кнопки уведомлений',
-    ok: 'Кнопки для Ultima настроены',
-    warning: 'Кнопки уведомлений выключены или пустые',
-  },
-  purchase_url: {
-    label: 'Покупка',
-    ok: 'Ссылка покупки корректна',
-    warning: 'Используется основной Miniapp URL',
-    error: 'Ссылка покупки некорректна',
-  },
+const formatSettingsCount = (count: number) => {
+  const mod100 = count % 100;
+  const mod10 = count % 10;
+  if (mod100 >= 11 && mod100 <= 14) return `${count} параметров`;
+  if (mod10 === 1) return `${count} параметр`;
+  if (mod10 >= 2 && mod10 <= 4) return `${count} параметра`;
+  return `${count} параметров`;
 };
 
-const getDiagnosticLabel = (item: UltimaOverviewDiagnostic) =>
-  diagnosticCopy[item.key]?.label || item.label;
-
-const getDiagnosticMessage = (item: UltimaOverviewDiagnostic) => {
-  const copy = diagnosticCopy[item.key];
-  if (!copy) return item.message;
-  return copy[item.status] || copy.ok;
-};
-
-const isCustomStartActive = (overview: UltimaOverview) =>
-  overview.start.enabled && !overview.start.fallback_to_regular_menu;
-
-const compactUrl = (value: string) =>
-  value.replace(/^https?:\/\//, '').replace(/\/$/, '') || 'не задано';
-
-const Section = ({
+const SettingsSection = ({
   title,
-  action,
+  description,
   children,
 }: {
   title: string;
-  action?: ReactNode;
+  description: string;
   children: ReactNode;
 }) => (
-  <section className="rounded-xl border border-dark-700/45 bg-dark-800/25 p-3.5">
-    <div className="mb-3 flex items-center justify-between gap-3">
+  <section className="min-w-0">
+    <div className="mb-2.5 px-1">
       <h2 className="text-sm font-semibold text-dark-100">{title}</h2>
-      {action}
+      <p className="mt-0.5 text-xs leading-5 text-dark-500">{description}</p>
     </div>
-    {children}
+    <div className="overflow-hidden rounded-lg border border-dark-700/55 bg-dark-900/25">
+      {children}
+    </div>
   </section>
 );
 
-const MiniStat = ({
+const SettingLink = ({
+  to,
+  icon: Icon,
+  title,
+  description,
+  badge,
+  badgeTone = 'neutral',
+  testId,
+}: {
+  to: string;
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  badge?: string;
+  badgeTone?: 'neutral' | 'success' | 'warning';
+  testId?: string;
+}) => {
+  const badgeClasses = {
+    neutral: 'border-dark-600/70 bg-dark-800/75 text-dark-300',
+    success: 'border-success-500/25 bg-success-500/10 text-success-300',
+    warning: 'border-warning-500/25 bg-warning-500/10 text-warning-300',
+  }[badgeTone];
+
+  return (
+    <Link
+      to={to}
+      data-testid={testId}
+      className="group flex min-h-[68px] min-w-0 items-center gap-3 border-b border-dark-700/45 px-3.5 py-3 last:border-b-0 hover:bg-dark-800/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-400/60 sm:px-4"
+    >
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-dark-700/65 bg-dark-800/65 text-dark-300 transition group-hover:border-accent-400/30 group-hover:text-accent-300">
+        <Icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="flex min-w-0 items-center gap-2">
+          <span className="truncate text-sm font-semibold text-dark-100">{title}</span>
+          {badge ? (
+            <span
+              className={`hidden shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium sm:inline-flex ${badgeClasses}`}
+            >
+              {badge}
+            </span>
+          ) : null}
+        </span>
+        <span className="mt-0.5 block truncate text-xs text-dark-500">{description}</span>
+      </span>
+      {badge ? (
+        <span
+          className={`max-w-[96px] shrink-0 truncate rounded-full border px-2 py-0.5 text-[10px] font-medium sm:hidden ${badgeClasses}`}
+        >
+          {badge}
+        </span>
+      ) : null}
+      <ChevronRight
+        className="h-4 w-4 shrink-0 text-dark-600 transition group-hover:translate-x-0.5 group-hover:text-dark-300"
+        strokeWidth={1.8}
+      />
+    </Link>
+  );
+};
+
+const StatusItem = ({
+  icon: Icon,
   label,
   value,
-  hint,
-  status = 'ok',
 }: {
+  icon: LucideIcon;
   label: string;
   value: string;
-  hint?: string;
-  status?: UltimaDiagnosticStatus;
 }) => (
-  <div className="min-w-0 rounded-xl border border-dark-700/45 bg-dark-900/35 px-3 py-2.5">
-    <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-dark-500">
-      <span className={`h-1.5 w-1.5 rounded-full ${statusDotClasses[status]}`} />
-      <span className="truncate">{label}</span>
-    </div>
-    <div className="mt-1 truncate text-base font-semibold text-dark-100">{value}</div>
-    {hint ? <div className="mt-0.5 truncate text-xs text-dark-500">{hint}</div> : null}
+  <div className="flex min-w-0 items-center gap-2.5 px-3 py-2.5 sm:px-4">
+    <Icon className="h-4 w-4 shrink-0 text-dark-500" strokeWidth={1.8} />
+    <span className="min-w-0">
+      <span className="block text-[10px] font-medium uppercase text-dark-600">{label}</span>
+      <span className="block truncate text-xs font-medium text-dark-200">{value}</span>
+    </span>
   </div>
 );
 
-const SmallLinkCard = ({
-  to,
-  title,
-  subtitle,
-  external = false,
-}: {
-  to: string;
-  title: string;
-  subtitle: string;
-  external?: boolean;
-}) => (
-  <Link
-    to={to}
-    target={external ? '_blank' : undefined}
-    className="group min-w-0 rounded-lg border border-dark-700/45 bg-dark-900/30 px-3 py-2.5 transition hover:border-violet-400/40 hover:bg-dark-800/60"
-  >
-    <div className="flex items-center justify-between gap-2">
-      <span className="truncate text-sm font-medium text-dark-100">{title}</span>
-      <span className="shrink-0 text-xs text-dark-500 transition group-hover:text-violet-300">
-        →
-      </span>
-    </div>
-    <div className="mt-0.5 truncate text-xs text-dark-500">{subtitle}</div>
-  </Link>
-);
-
-function getSummaryItems(overview?: UltimaOverview) {
-  if (!overview) return [];
-  const customStartActive = isCustomStartActive(overview);
-  return [
-    {
-      label: 'Режим',
-      value: overview.mode.enabled ? 'Включен' : 'Выключен',
-      hint: `меню: ${mainMenuModeLabel(overview.mode.main_menu_mode)}`,
-      status: overview.mode.enabled ? ('ok' as const) : ('warning' as const),
-    },
-    {
-      label: '/start',
-      value: customStartActive ? 'Кастомный' : 'Обычное меню',
-      hint: customStartActive
-        ? overview.start.button_text
-        : overview.start.enabled
-          ? 'fallback из-за ссылки'
-          : 'кастом выключен',
-      status: overview.start.fallback_to_regular_menu ? ('warning' as const) : ('ok' as const),
-    },
-    {
-      label: 'Поддержка',
-      value: supportLabel(overview.support.support_type),
-      hint: overview.support.tickets_enabled ? 'тикеты доступны' : 'тикеты недоступны',
-      status:
-        overview.support.tickets_enabled || overview.support.support_username
-          ? ('ok' as const)
-          : ('warning' as const),
-    },
-    {
-      label: 'Ошибки',
-      value: String(overview.diagnostics.filter((item) => item.status === 'error').length),
-      hint: `${overview.diagnostics.filter((item) => item.status === 'warning').length} предупреждений`,
-      status: overview.status,
-    },
-  ];
+function startState(overview?: UltimaOverview) {
+  if (!overview) return undefined;
+  if (!overview.start.enabled) return { label: 'Выключено', tone: 'warning' as const };
+  if (overview.start.fallback_to_regular_menu) {
+    return { label: 'Обычное меню', tone: 'warning' as const };
+  }
+  return { label: 'Настроено', tone: 'success' as const };
 }
 
-function getTicketHealth(overview: UltimaOverview) {
-  const active = overview.metrics.tickets_open + overview.metrics.tickets_pending;
-  if (active > 0) return `${active} требуют внимания`;
-  if (overview.metrics.tickets_created_7d > 0)
-    return `${overview.metrics.tickets_created_7d} за 7 дней`;
-  return 'очередь пустая';
+function groupPresentation(key: string, fallbackLabel: string) {
+  const normalized = key.toUpperCase();
+  if (normalized === 'HAPP') {
+    return {
+      icon: Smartphone,
+      title: 'Happ и ссылки',
+      description: 'Клиент, deeplink и защищенные ссылки',
+    };
+  }
+  if (normalized.includes('MINIAPP') || normalized.includes('MINI_APP')) {
+    return {
+      icon: MonitorSmartphone,
+      title: 'Mini App',
+      description: 'Покупка, поддержка и поведение кабинета',
+    };
+  }
+  return {
+    icon: Settings2,
+    title: fallbackLabel,
+    description: 'Дополнительные параметры Ultima',
+  };
 }
 
 export default function AdminUltimaSettings() {
@@ -252,258 +213,187 @@ export default function AdminUltimaSettings() {
     () => groupUltimaSettings(ultimaSettings).filter((group) => group.key !== 'METERED_TRAFFIC'),
     [ultimaSettings],
   );
-  const summaryItems = useMemo(() => getSummaryItems(overview), [overview]);
+  const currentStartState = startState(overview);
 
   return (
-    <div className="animate-fade-in space-y-4">
-      <div className="flex flex-wrap items-center gap-3">
+    <div
+      className="mx-auto max-w-6xl animate-fade-in space-y-6 pb-6"
+      data-testid="admin-ultima-settings"
+    >
+      <header className="flex items-center gap-3">
         <AdminBackButton to="/admin" />
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-lg font-semibold text-dark-100 sm:text-xl">
-              {t('admin.nav.ultimaSettings', { defaultValue: 'Ultima настройки' })}
-            </h1>
-            {overview ? (
-              <span
-                className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${statusClasses[overview.status]}`}
-              >
-                {statusLabel(overview.status)}
-              </span>
-            ) : null}
-          </div>
+          <h1 className="truncate text-lg font-semibold text-dark-100 sm:text-xl">
+            {t('admin.nav.ultimaSettings', { defaultValue: 'Настройки Ultima' })}
+          </h1>
           <p className="truncate text-xs text-dark-500 sm:text-sm">
-            Режим, /start, поддержка, диагностика, информация и параметры miniapp
+            Кабинет, бот, трафик и способы подключения
           </p>
         </div>
-      </div>
+      </header>
 
-      <div className="grid grid-cols-2 gap-2 xl:grid-cols-4">
-        {overviewLoading
-          ? Array.from({ length: 4 }).map((_, index) => (
-              <div
-                key={index}
-                className="h-[76px] animate-pulse rounded-xl border border-dark-700/45 bg-dark-800/35"
-              />
-            ))
-          : summaryItems.map((item) => (
-              <MiniStat
-                key={item.label}
-                label={item.label}
-                value={item.value}
-                hint={item.hint}
-                status={item.status}
-              />
-            ))}
-      </div>
-
-      {overview ? (
-        <div className="grid grid-cols-1 gap-3 xl:grid-cols-[1fr_360px]">
-          <Section
-            title="Диагностика"
-            action={
-              <span
-                className={`rounded-full border px-2 py-0.5 text-[11px] ${statusClasses[overview.status]}`}
-              >
-                {statusLabel(overview.status)}
-              </span>
-            }
-          >
-            <div className="grid grid-cols-1 gap-2 md:grid-cols-2 2xl:grid-cols-3">
-              {overview.diagnostics.map((item) => (
-                <div
-                  key={item.key}
-                  className="min-w-0 rounded-lg border border-dark-700/45 bg-dark-900/30 px-3 py-2"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="truncate text-sm font-medium text-dark-100">
-                      {getDiagnosticLabel(item)}
-                    </div>
-                    <span
-                      className={`shrink-0 rounded-full border px-1.5 py-0.5 text-[10px] ${statusClasses[item.status]}`}
-                    >
-                      {statusLabel(item.status)}
-                    </span>
-                  </div>
-                  <div className="mt-1 line-clamp-2 text-xs leading-5 text-dark-500">
-                    {getDiagnosticMessage(item)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Section>
-
-          <Section title="Превью /start">
-            <div className="rounded-lg border border-dark-700/45 bg-dark-950/35 p-3">
-              <div className="mb-2 flex items-center justify-between gap-2 text-[11px] uppercase tracking-wide text-dark-500">
-                <span>Telegram</span>
-                <span
-                  className={`rounded-full border px-2 py-0.5 normal-case tracking-normal ${
-                    isCustomStartActive(overview)
-                      ? 'border-violet-400/25 bg-violet-500/10 text-violet-200'
-                      : 'border-success-500/25 bg-success-500/10 text-success-300'
-                  }`}
-                >
-                  {isCustomStartActive(overview) ? 'кастомный /start' : 'обычное меню'}
-                </span>
-              </div>
-              {isCustomStartActive(overview) ? (
-                <>
-                  <div className="max-h-32 overflow-auto whitespace-pre-wrap rounded-md bg-dark-900/70 p-2.5 text-xs leading-5 text-dark-200">
-                    {overview.start.message_text}
-                  </div>
-                  <div className="mt-2 truncate rounded-md border border-accent-400/25 bg-accent-500/10 px-2.5 py-1.5 text-center text-sm font-medium text-accent-200">
-                    {overview.start.button_text}
-                  </div>
-                  <div className="mt-1 truncate text-[11px] text-dark-500">
-                    {compactUrl(overview.start.button_url)}
-                  </div>
-                </>
+      {overviewLoading ? (
+        <div className="h-[118px] animate-pulse rounded-lg border border-dark-700/45 bg-dark-800/30" />
+      ) : overview ? (
+        <section
+          className="overflow-hidden rounded-lg border border-dark-700/55 bg-dark-900/30"
+          data-testid="ultima-current-state"
+        >
+          <div className="flex flex-wrap items-center gap-3 px-3.5 py-3 sm:px-4">
+            <span
+              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${
+                overview.mode.enabled
+                  ? 'border-success-500/25 bg-success-500/10 text-success-300'
+                  : 'border-warning-500/25 bg-warning-500/10 text-warning-300'
+              }`}
+            >
+              {overview.mode.enabled ? (
+                <ShieldCheck className="h-[18px] w-[18px]" strokeWidth={1.8} />
               ) : (
-                <div className="rounded-md bg-dark-900/70 p-2.5 text-xs leading-5 text-dark-300">
-                  При /start бот покажет стандартный текст и обычные кнопки меню.
-                </div>
+                <Settings2 className="h-[18px] w-[18px]" strokeWidth={1.8} />
               )}
-            </div>
-          </Section>
-        </div>
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold text-dark-100">
+                {overview.mode.enabled ? 'Ultima включена' : 'Ultima выключена'}
+              </span>
+              <span className="block truncate text-xs text-dark-500">
+                {overview.mode.enabled
+                  ? 'Новый кабинет доступен пользователям'
+                  : 'Пользователи работают в обычном режиме'}
+              </span>
+            </span>
+            <span
+              className={`rounded-full border px-2.5 py-1 text-[11px] font-medium ${
+                overview.mode.enabled
+                  ? 'border-success-500/25 bg-success-500/10 text-success-300'
+                  : 'border-warning-500/25 bg-warning-500/10 text-warning-300'
+              }`}
+            >
+              {overview.mode.enabled ? 'Активна' : 'Отключена'}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 divide-y divide-dark-700/45 border-t border-dark-700/45 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+            <StatusItem
+              icon={LayoutDashboard}
+              label="Главное меню"
+              value={mainMenuModeLabel(overview.mode.main_menu_mode)}
+            />
+            <StatusItem
+              icon={Headphones}
+              label="Поддержка"
+              value={supportLabel(overview.support.support_type)}
+            />
+            <StatusItem
+              icon={MonitorSmartphone}
+              label="Mini App"
+              value={compactUrl(overview.config.miniapp_url)}
+            />
+          </div>
+        </section>
       ) : null}
 
-      {overview ? (
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
-          <Section title="Поддержка">
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
-              <span className="text-dark-500">Канал</span>
-              <span className="truncate text-right font-medium text-dark-100">
-                {supportLabel(overview.support.support_type)}
-              </span>
-              <span className="text-dark-500">Тикеты</span>
-              <span className="text-right font-medium text-dark-100">
-                {overview.support.tickets_enabled ? 'доступны' : 'недоступны'}
-              </span>
-              <span className="text-dark-500">Профиль</span>
-              <span className="truncate text-right font-medium text-dark-100">
-                {overview.support.support_username || 'не задан'}
-              </span>
-            </div>
-          </Section>
-
-          <Section title="Тикеты">
-            <div className="grid grid-cols-4 gap-2">
-              <MiniStat label="Всего" value={String(overview.metrics.tickets_total)} />
-              <MiniStat label="7 дней" value={String(overview.metrics.tickets_created_7d)} />
-              <MiniStat label="Открыто" value={String(overview.metrics.tickets_open)} />
-              <MiniStat label="Ждут" value={String(overview.metrics.tickets_pending)} />
-            </div>
-            <div className="mt-2 truncate text-xs text-dark-500">{getTicketHealth(overview)}</div>
-          </Section>
-
-          <Section title="Miniapp">
-            <div className="space-y-1.5 text-xs">
-              <div className="flex justify-between gap-3">
-                <span className="text-dark-500">URL</span>
-                <span className="truncate text-right font-medium text-dark-100">
-                  {compactUrl(overview.config.miniapp_url)}
-                </span>
-              </div>
-              <div className="flex justify-between gap-3">
-                <span className="text-dark-500">Покупка</span>
-                <span className="truncate text-right font-medium text-dark-100">
-                  {overview.config.purchase_url
-                    ? compactUrl(overview.config.purchase_url)
-                    : 'основной URL'}
-                </span>
-              </div>
-              <div className="flex justify-between gap-3">
-                <span className="text-dark-500">Аккаунт</span>
-                <span className="truncate text-right font-medium text-dark-100">
-                  {accountModeLabel(overview.mode.account_linking_mode)}
-                </span>
-              </div>
-            </div>
-          </Section>
-        </div>
-      ) : null}
-
-      <Section title="Быстрые настройки">
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <SmallLinkCard
-            to="/admin/ultima-settings/start-message"
-            title="Сообщение /start"
-            subtitle="текст, WebApp и кнопки"
-          />
-          <SmallLinkCard
+      <div className="grid grid-cols-1 gap-x-8 gap-y-7 lg:grid-cols-2">
+        <SettingsSection title="Основное" description="То, что пользователи видят в первую очередь">
+          <SettingLink
             to="/admin/ultima-settings/theme"
-            title="Темы и сцены"
-            subtitle="цвета, фон и анимации"
+            icon={Palette}
+            title="Внешний вид"
+            description="Темы, цвета, фон и анимации"
           />
-          <SmallLinkCard
+          <SettingLink
+            to="/admin/ultima-settings/start-message"
+            icon={MessageSquareText}
+            title="Сообщение /start"
+            description="Текст, кнопка приложения и быстрые действия"
+            badge={currentStartState?.label}
+            badgeTone={currentStartState?.tone}
+          />
+          <SettingLink
+            to="/ultima/info"
+            icon={Info}
+            title="Информация в кабинете"
+            description="FAQ, правила, политика и оферта"
+          />
+          <SettingLink
+            to="/admin/ultima-settings/agreement"
+            icon={FileText}
+            title="Соглашение Ultima"
+            description="Текст согласия перед использованием"
+          />
+        </SettingsSection>
+
+        <SettingsSection title="Сервис" description="Трафик, уведомления и работа с пользователями">
+          <SettingLink
             to="/admin/ultima-settings/traffic-warning"
+            icon={BellRing}
             title="Заканчивается трафик"
-            subtitle="порог, текст и кнопка докупки"
+            description="Порог, сообщение и кнопка докупки"
           />
-          <SmallLinkCard
+          <SettingLink
             to="/admin/ultima-settings/metered-traffic"
+            icon={Gauge}
             title="Раздельный трафик"
-            subtitle={
+            description={
               meteredTrafficStatus?.enabled
-                ? `${meteredTrafficStatus.running ? 'работает' : 'ожидает'} · без трафика ${meteredTrafficStatus.subscriptions.blocked}`
-                : 'спецсерверы и безлимитные ноды'
+                ? `${meteredTrafficStatus.subscriptions.active} активных · ${meteredTrafficStatus.subscriptions.blocked} без трафика`
+                : 'Спецсерверы, сквады и коэффициенты нод'
+            }
+            badge={
+              meteredTrafficStatus?.enabled
+                ? meteredTrafficStatus.running
+                  ? 'Работает'
+                  : 'Ожидает'
+                : 'Выключен'
+            }
+            badgeTone={
+              meteredTrafficStatus?.enabled && meteredTrafficStatus.running ? 'success' : 'neutral'
             }
           />
-        </div>
-      </Section>
-
-      <Section title="Информация">
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
-          <SmallLinkCard
-            to="/ultima/info"
-            title="Раздел в miniapp"
-            subtitle="как видит пользователь"
+          <SettingLink
+            to="/admin/tickets/settings"
+            icon={Headphones}
+            title="Поддержка и тикеты"
+            description="Канал связи, уведомления и время ответа"
           />
-          <SmallLinkCard to="/ultima/info" title="FAQ" subtitle="вопросы и ответы" />
-          <SmallLinkCard to="/ultima/info" title="Правила" subtitle="условия сервиса" />
-          <SmallLinkCard
-            to="/admin/ultima-settings/agreement"
-            title="Соглашение"
-            subtitle="редактирование Ultima"
+          <SettingLink
+            to="/admin/promo-groups"
+            icon={Users}
+            title="Лояльность"
+            description="Промогруппы, скидки и условия доступа"
           />
-          <SmallLinkCard to="/ultima/info" title="Политика" subtitle="конфиденциальность" />
-          <SmallLinkCard to="/ultima/info" title="Оферта" subtitle="публичные условия" />
-          <SmallLinkCard to="/admin/promo-groups" title="Лояльность" subtitle="уровни и группы" />
-        </div>
-      </Section>
+        </SettingsSection>
+      </div>
 
-      <Section title="Параметры Ultima">
+      <SettingsSection
+        title="Приложение и подключения"
+        description="Технические параметры клиентов собраны по назначению"
+      >
         {isLoading ? (
-          <div className="py-6 text-center text-sm text-dark-400">{t('common.loading')}</div>
+          <div className="flex min-h-[76px] items-center justify-center px-4 text-sm text-dark-400">
+            {t('common.loading')}
+          </div>
         ) : groupedUltimaSettings.length === 0 ? (
-          <div className="rounded-lg border border-dark-700/40 bg-dark-900/35 p-4 text-center text-sm text-dark-400">
-            Параметры Ultima не найдены. Проверьте категории MINIAPP/HAPP в системных настройках.
+          <div className="flex min-h-[76px] items-center gap-3 px-4 py-3 text-sm text-dark-400">
+            <CircleCheck className="h-5 w-5 shrink-0 text-dark-600" />
+            Дополнительные параметры не найдены
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-            {groupedUltimaSettings.map((group) => (
-              <Link
+          groupedUltimaSettings.map((group) => {
+            const presentation = groupPresentation(group.key, group.label);
+            return (
+              <SettingLink
                 key={group.key}
                 to={`/admin/ultima-settings/params/${encodeURIComponent(group.key)}`}
-                className="group flex min-w-0 items-center justify-between gap-3 rounded-lg border border-dark-700/45 bg-dark-900/30 px-3 py-2.5 transition hover:border-violet-400/40 hover:bg-dark-800/60"
-              >
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-medium text-dark-100">
-                    {group.label}
-                  </span>
-                  <span className="block text-xs text-dark-500">
-                    {group.items.length} параметров
-                  </span>
-                </span>
-                <span className="shrink-0 text-xs text-dark-500 transition group-hover:text-violet-300">
-                  →
-                </span>
-              </Link>
-            ))}
-          </div>
+                icon={presentation.icon}
+                title={presentation.title}
+                description={presentation.description}
+                badge={formatSettingsCount(group.items.length)}
+              />
+            );
+          })
         )}
-      </Section>
+      </SettingsSection>
     </div>
   );
 }
