@@ -381,6 +381,23 @@ async function bootstrapUltimaDesktop(
   );
 }
 
+async function seedPendingTopUp(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'pending_topup_followup_v1:99',
+      JSON.stringify({
+        amountKopeks: 42_000,
+        balanceBeforeKopeks: 125_000,
+        paymentUrl: 'https://pay.example.test/payment-701',
+        paymentMethodId: 'yookassa',
+        paymentMethodName: 'Банковская карта',
+        returnTo: '/subscription',
+        createdAt: Date.now(),
+      }),
+    );
+  });
+}
+
 async function mockUltimaDesktopApi(
   page: Page,
   {
@@ -855,6 +872,51 @@ test.describe('Ultima payment and operation history', () => {
     await expectNoHorizontalOverflow(page);
     await page.screenshot({
       path: testInfo.outputPath('operation-history-desktop.png'),
+      fullPage: true,
+    });
+  });
+});
+
+test.describe('Ultima pending payment recovery', () => {
+  test('keeps the payment link fully visible on mobile and desktop', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page);
+    await seedPendingTopUp(page);
+    await mockUltimaDesktopApi(page);
+
+    await page.goto('/');
+
+    const card = page.getByTestId('ultima-pending-payment-card');
+    const openPayment = page.getByTestId('ultima-pending-payment-open');
+    await card.scrollIntoViewIfNeeded();
+    await expect(card).toBeVisible();
+    await expect(openPayment).toBeVisible();
+    const mobileMetrics = await card.evaluate((element) => ({
+      clientHeight: element.clientHeight,
+      scrollHeight: element.scrollHeight,
+    }));
+    expect(mobileMetrics.clientHeight).toBeGreaterThan(120);
+    expect(mobileMetrics.scrollHeight).toBeLessThanOrEqual(mobileMetrics.clientHeight + 1);
+    await expectNoHorizontalOverflow(page);
+    await page.screenshot({
+      path: testInfo.outputPath('pending-payment-mobile.png'),
+      fullPage: true,
+    });
+
+    await page.setViewportSize({ width: 360, height: 640 });
+    await page.reload();
+    await card.scrollIntoViewIfNeeded();
+    await expect(openPayment).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+
+    await page.setViewportSize({ width: 1366, height: 768 });
+    await page.reload();
+    await expect(page.locator('.ultima-desktop-workspace')).toBeVisible();
+    await expect(card).toBeVisible();
+    await expect(openPayment).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+    await page.screenshot({
+      path: testInfo.outputPath('pending-payment-desktop.png'),
       fullPage: true,
     });
   });

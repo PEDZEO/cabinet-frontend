@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { ArrowUpRight, Clock3, CreditCard, X } from 'lucide-react';
 import { useCurrency } from '@/hooks/useCurrency';
 import { usePendingTopUpFollowUpState } from '@/hooks/usePendingTopUpFollowUpState';
 import { cn } from '@/lib/utils';
@@ -10,19 +11,6 @@ type UltimaPendingPaymentCardProps = {
   source: string;
   compact?: boolean;
 };
-
-const PaymentIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
-    <rect x="3.5" y="5.5" width="17" height="13" rx="3" stroke="currentColor" strokeWidth="1.8" />
-    <path d="M4 10h16M8 15h3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-  </svg>
-);
-
-const CloseIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
-    <path d="m7 7 10 10M17 7 7 17" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-  </svg>
-);
 
 export function UltimaPendingPaymentCard({
   className,
@@ -69,49 +57,65 @@ export function UltimaPendingPaymentCard({
 
   return (
     <section
+      data-testid="ultima-pending-payment-card"
+      aria-live="polite"
       className={cn(
-        'relative overflow-hidden rounded-[20px] border border-amber-200/[0.22] bg-amber-300/[0.1] p-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_24px_rgba(3,14,24,0.2)] backdrop-blur-md',
-        compact ? 'px-3 py-2.5' : 'px-3.5 py-3',
+        'relative shrink-0 overflow-hidden rounded-[20px] border border-amber-200/[0.22] bg-amber-300/[0.1] text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_24px_rgba(3,14,24,0.2)] backdrop-blur-md',
+        compact ? 'p-3' : 'p-3.5',
         className,
       )}
     >
-      <div className="flex min-w-0 items-center gap-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[16px] border border-amber-200/[0.26] bg-amber-300/[0.16] text-amber-50">
-          <PaymentIcon />
+      <div className="pointer-events-none absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-amber-100/[0.55] to-transparent" />
+
+      <div className="flex min-w-0 items-start gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] border border-amber-200/[0.26] bg-amber-300/[0.16] text-amber-50">
+          <CreditCard className="h-[18px] w-[18px]" strokeWidth={1.8} />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[14px] font-semibold leading-tight text-white/[0.96]">
+          <p className="text-[14px] font-semibold leading-tight text-white/[0.96]">
             {t('balance.pendingReminderTitle', { defaultValue: 'Оплата не завершена' })}
           </p>
-          <p className="mt-0.5 truncate text-[11px] leading-tight text-white/[0.64]">
-            {pendingTopUp.paymentMethodName
-              ? t('balance.pendingReminderInlineMessageWithMethod', {
-                  amount: amountLabel,
-                  method: pendingTopUp.paymentMethodName,
-                  defaultValue: '{{amount}} через {{method}}',
-                })
-              : t('balance.pendingReminderInlineMessage', {
-                  amount: amountLabel,
-                  defaultValue: '{{amount}} ожидает оплаты',
-                })}
-          </p>
+          {!compact ? (
+            <p className="mt-1 text-[11px] leading-[1.4] text-white/[0.58]">
+              {t('balance.pendingReminderMessage', {
+                defaultValue: 'Нажмите, чтобы снова открыть страницу оплаты.',
+              })}
+            </p>
+          ) : null}
         </div>
         <button
           type="button"
-          onClick={openPayment}
-          className="ultima-btn-pill ultima-btn-primary shrink-0 px-3 py-2 text-[12px] font-semibold"
-        >
-          {t('balance.pendingReminderContinue', { defaultValue: 'Продолжить' })}
-        </button>
-        <button
-          type="button"
           onClick={dismiss}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/[0.62] transition hover:text-white"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/[0.62] transition hover:bg-white/[0.08] hover:text-white"
           aria-label={t('common.close', { defaultValue: 'Закрыть' })}
         >
-          <CloseIcon />
+          <X className="h-4 w-4" strokeWidth={1.9} />
         </button>
       </div>
+
+      <div className="mt-3 flex min-w-0 flex-wrap items-center gap-1.5 text-[10px] font-medium">
+        <span className="inline-flex min-h-7 items-center gap-1.5 rounded-full border border-amber-100/[0.16] bg-black/[0.12] px-2.5 text-amber-50/[0.92]">
+          <Clock3 className="h-3.5 w-3.5" strokeWidth={1.8} />
+          {amountLabel}
+        </span>
+        {pendingTopUp.paymentMethodName ? (
+          <span className="min-h-7 max-w-full truncate rounded-full border border-white/[0.08] bg-white/[0.035] px-2.5 py-1.5 text-white/[0.62]">
+            {pendingTopUp.paymentMethodName}
+          </span>
+        ) : null}
+      </div>
+
+      <button
+        data-testid="ultima-pending-payment-open"
+        type="button"
+        onClick={openPayment}
+        className="ultima-btn-pill ultima-btn-primary mt-3 flex min-h-11 w-full items-center justify-between gap-3 px-4 text-[12px] font-semibold"
+      >
+        <span className="truncate">
+          {t('balance.openPaymentPage', { defaultValue: 'Открыть страницу оплаты' })}
+        </span>
+        <ArrowUpRight className="h-4 w-4 shrink-0" strokeWidth={1.9} />
+      </button>
     </section>
   );
 }
