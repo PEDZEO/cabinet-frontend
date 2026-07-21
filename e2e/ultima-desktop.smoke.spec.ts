@@ -47,6 +47,45 @@ const USER = {
   auth_type: 'telegram',
 };
 
+const PAYMENT_METHODS = [
+  {
+    id: 'yookassa',
+    name: 'Банковская карта',
+    description: 'Карты РФ и СБП',
+    min_amount_kopeks: 10_000,
+    max_amount_kopeks: 1_000_000,
+    is_available: true,
+    options: null,
+  },
+  {
+    id: 'cryptobot',
+    name: 'Crypto Bot',
+    description: 'USDT, TON и другие валюты',
+    min_amount_kopeks: 20_000,
+    max_amount_kopeks: 2_000_000,
+    is_available: true,
+    options: null,
+  },
+  {
+    id: 'telegram_stars',
+    name: 'Telegram Stars',
+    description: 'Оплата звёздами Telegram',
+    min_amount_kopeks: 5_000,
+    max_amount_kopeks: 300_000,
+    is_available: true,
+    options: null,
+  },
+  {
+    id: 'heleket',
+    name: 'Heleket',
+    description: 'Оплата криптовалютой',
+    min_amount_kopeks: 20_000,
+    max_amount_kopeks: 2_000_000,
+    is_available: false,
+    options: null,
+  },
+];
+
 const CONNECTED_DEVICE = {
   hwid: 'desktop-smoke-device',
   platform: 'windows',
@@ -448,6 +487,7 @@ async function mockUltimaDesktopApi(
     if (path === '/cabinet/balance') {
       return respond({ balance_kopeks: balanceKopeks, balance_rubles: balanceKopeks / 100 });
     }
+    if (path === '/cabinet/balance/payment-methods') return respond(PAYMENT_METHODS);
     if (path === '/cabinet/referral') {
       return respond({
         referral_code: USER.referral_code,
@@ -587,6 +627,70 @@ async function expectNoHorizontalOverflow(page: Page): Promise<void> {
       viewportWidth: page.viewportSize()?.width,
     });
 }
+
+test.describe('Ultima payment method selection', () => {
+  test('keeps the requested amount and payment methods clear on mobile', async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+
+    await page.goto('/balance/top-up?amount=420&returnTo=/subscription');
+
+    await expect(page.getByTestId('ultima-payment-method-page')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Выберите способ оплаты' })).toBeVisible();
+    await expect(page.getByTestId('ultima-payment-requested-amount')).toContainText('420 ₽');
+    await expect(page.getByTestId('ultima-payment-method-yookassa')).toBeVisible();
+    await expect(page.getByTestId('ultima-payment-method-cryptobot')).toBeVisible();
+    await expect(page.getByTestId('ultima-payment-method-heleket')).toBeDisabled();
+    await expectNoHorizontalOverflow(page);
+
+    await page.screenshot({
+      path: testInfo.outputPath('payment-methods-mobile.png'),
+      fullPage: true,
+    });
+
+    await page.getByTestId('ultima-payment-method-yookassa').click();
+    await expect(page).toHaveURL(
+      /\/balance\/top-up\/yookassa\?amount=420&returnTo=%2Fsubscription$/,
+    );
+  });
+
+  test('uses a balanced payment workspace on desktop', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1366, height: 768 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+
+    await page.goto('/balance/top-up?amount=420&returnTo=/subscription');
+
+    await expect(page.locator('.ultima-desktop-workspace')).toBeVisible();
+    await expect(page.getByTestId('ultima-payment-method-page')).toBeVisible();
+    await expect(page.getByTestId('ultima-payment-method-yookassa')).toBeVisible();
+    await expect(page.getByText('Защищённая оплата')).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+
+    await page.screenshot({
+      path: testInfo.outputPath('payment-methods-desktop.png'),
+      fullPage: true,
+    });
+  });
+
+  test('keeps every payment action reachable on a compact phone', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 640 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+
+    await page.goto('/balance/top-up');
+
+    const scrollArea = page.locator('main.ultima-scrollbar');
+    await expect(scrollArea).toBeVisible();
+    await scrollArea.evaluate((element) => element.scrollTo({ top: element.scrollHeight }));
+    await expect(page.getByRole('button', { name: /История операций/ })).toBeVisible();
+    await expect(page.locator('.ultima-mobile-dock-footer')).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+  });
+});
 
 test.describe('Admin crypto-link settings', () => {
   test('toggles protected links without leaving the apps page', async ({ page }) => {
