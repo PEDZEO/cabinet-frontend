@@ -325,15 +325,45 @@ export default function AdminBroadcastDetail() {
       )}
 
       {/* Media */}
-      {broadcast.has_media && (
+      {broadcast.has_media && broadcast.media_file_id && (
         <div className="rounded-xl border border-dark-700 bg-dark-800/50 p-4">
-          <p className="mb-2 text-sm text-dark-400">{t('admin.broadcasts.media')}</p>
-          <div className="flex items-center gap-3 text-dark-100">
+          <div className="mb-3 flex items-center gap-3 text-dark-100">
             {broadcast.media_type === 'photo' && <PhotoIcon />}
             {broadcast.media_type === 'video' && <VideoIcon />}
             {broadcast.media_type === 'document' && <DocumentIcon />}
-            <span className="capitalize">{broadcast.media_type}</span>
+            <div>
+              <p className="text-sm font-medium">{t('admin.broadcasts.media')}</p>
+              <p className="text-xs text-success-400">{t('admin.broadcasts.mediaAttached')}</p>
+            </div>
           </div>
+
+          {broadcast.media_type === 'photo' && (
+            <img
+              src={`/api/cabinet/media/${encodeURIComponent(broadcast.media_file_id)}`}
+              alt={t('admin.broadcasts.mediaPreview')}
+              className="max-h-80 w-full rounded-lg bg-dark-900 object-contain"
+              loading="lazy"
+            />
+          )}
+          {broadcast.media_type === 'video' && (
+            <video
+              src={`/api/cabinet/media/${encodeURIComponent(broadcast.media_file_id)}`}
+              controls
+              preload="metadata"
+              className="max-h-80 w-full rounded-lg bg-black object-contain"
+            />
+          )}
+          {broadcast.media_type === 'document' && (
+            <a
+              href={`/api/cabinet/media/${encodeURIComponent(broadcast.media_file_id)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="btn-secondary inline-flex items-center gap-2"
+            >
+              <DocumentIcon />
+              {t('admin.broadcasts.openMedia')}
+            </a>
+          )}
         </div>
       )}
 

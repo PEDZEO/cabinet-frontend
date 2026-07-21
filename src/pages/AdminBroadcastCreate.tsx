@@ -2,6 +2,7 @@ import { useState, useRef, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import {
   adminBroadcastsApi,
   BroadcastFilter,
@@ -111,6 +112,24 @@ const FILTER_GROUP_LABEL_KEYS: Record<string, string> = {
   email: 'admin.broadcasts.filterGroups.email',
 };
 
+const MAX_MEDIA_SIZE_BYTES = 10 * 1024 * 1024;
+const TELEGRAM_CAPTION_MAX_LENGTH = 1024;
+
+type BroadcastMediaType = 'photo' | 'video' | 'document';
+
+function resolveMediaType(file: File): BroadcastMediaType {
+  if (file.type.startsWith('image/')) return 'photo';
+  if (file.type.startsWith('video/')) return 'video';
+  return 'document';
+}
+
+function getUploadErrorDetail(error: unknown): string | null {
+  if (!error || typeof error !== 'object' || !('response' in error)) return null;
+
+  const response = (error as { response?: { data?: { detail?: unknown } } }).response;
+  return typeof response?.data?.detail === 'string' ? response.data.detail : null;
+}
+
 export default function AdminBroadcastCreate() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -131,11 +150,13 @@ export default function AdminBroadcastCreate() {
   const [messageText, setMessageText] = useState('');
   const [selectedButtons, setSelectedButtons] = useState<string[]>(['home']);
   const [mediaFile, setMediaFile] = useState<File | null>(null);
-  const [mediaType, setMediaType] = useState<'photo' | 'video' | 'document'>('photo');
+  const [mediaType, setMediaType] = useState<BroadcastMediaType>('photo');
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [uploadedFileId, setUploadedFileId] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [mediaUploadError, setMediaUploadError] = useState<string | null>(null);
   const mediaPreviewRef = useRef<string | null>(null);
+  const mediaUploadAttemptRef = useRef(0);
 
   // Revoke blob URLs on unmount to prevent memory leaks
   useEffect(() => {
@@ -275,37 +296,58 @@ export default function AdminBroadcastCreate() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setMediaFile(file);
+    const uploadAttempt = mediaUploadAttemptRef.current + 1;
+    mediaUploadAttemptRef.current = uploadAttempt;
+    const nextMediaType = resolveMediaType(file);
 
-    if (file.type.startsWith('image/')) {
-      setMediaType('photo');
+    if (file.size > MAX_MEDIA_SIZE_BYTES) {
+      if (mediaPreviewRef.current) URL.revokeObjectURL(mediaPreviewRef.current);
+      mediaPreviewRef.current = null;
+      setMediaUploadError(t('admin.broadcasts.mediaTooLarge'));
+      setMediaFile(null);
+      setMediaPreview(null);
+      setUploadedFileId(null);
+      e.target.value = '';
+      return;
+    }
+
+    setMediaFile(file);
+    setMediaType(nextMediaType);
+    setUploadedFileId(null);
+    setMediaUploadError(null);
+
+    if (nextMediaType === 'photo' || nextMediaType === 'video') {
       if (mediaPreviewRef.current) URL.revokeObjectURL(mediaPreviewRef.current);
       const url = URL.createObjectURL(file);
       mediaPreviewRef.current = url;
       setMediaPreview(url);
-    } else if (file.type.startsWith('video/')) {
-      setMediaType('video');
-      setMediaPreview(null);
     } else {
-      setMediaType('document');
+      if (mediaPreviewRef.current) URL.revokeObjectURL(mediaPreviewRef.current);
+      mediaPreviewRef.current = null;
       setMediaPreview(null);
     }
 
     setIsUploading(true);
     try {
-      const result = await adminBroadcastsApi.uploadMedia(file, mediaType);
+      const result = await adminBroadcastsApi.uploadMedia(file, nextMediaType);
+      if (mediaUploadAttemptRef.current !== uploadAttempt) return;
+
       setUploadedFileId(result.file_id);
+      setMediaType(result.media_type as BroadcastMediaType);
     } catch (err) {
       console.error('Upload failed:', err);
-      setMediaFile(null);
-      setMediaPreview(null);
+      if (mediaUploadAttemptRef.current !== uploadAttempt) return;
+
+      setMediaUploadError(getUploadErrorDetail(err) || t('admin.broadcasts.mediaUploadFailed'));
+      setUploadedFileId(null);
     } finally {
-      setIsUploading(false);
+      if (mediaUploadAttemptRef.current === uploadAttempt) setIsUploading(false);
     }
   };
 
   // Remove media
   const handleRemoveMedia = () => {
+    mediaUploadAttemptRef.current += 1;
     if (mediaPreviewRef.current) {
       URL.revokeObjectURL(mediaPreviewRef.current);
       mediaPreviewRef.current = null;
@@ -313,6 +355,8 @@ export default function AdminBroadcastCreate() {
     setMediaFile(null);
     setMediaPreview(null);
     setUploadedFileId(null);
+    setMediaUploadError(null);
+    setIsUploading(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -326,7 +370,18 @@ export default function AdminBroadcastCreate() {
   };
 
   // Validate form
-  const isTelegramValid = telegramEnabled && telegramTarget && messageText.trim().length > 0;
+  const mediaCaptionTooLong = Boolean(
+    mediaFile && messageText.trim().length > TELEGRAM_CAPTION_MAX_LENGTH,
+  );
+  const mediaIsReady = !mediaFile || Boolean(uploadedFileId);
+  const isTelegramValid = Boolean(
+    telegramEnabled &&
+    telegramTarget &&
+    messageText.trim().length > 0 &&
+    !mediaCaptionTooLong &&
+    mediaIsReady &&
+    !isUploading,
+  );
   const isEmailValid =
     emailEnabled && emailTarget && emailSubject.trim().length > 0 && emailContent.trim().length > 0;
 
@@ -570,7 +625,18 @@ export default function AdminBroadcastCreate() {
               maxLength={4000}
               className="input min-h-[150px] resize-y"
             />
-            <div className="mt-1 text-right text-xs text-dark-400">{messageText.length}/4000</div>
+            <div className="mt-1 flex items-start justify-between gap-3 text-xs">
+              <span className={mediaCaptionTooLong ? 'text-error-400' : 'text-dark-400'}>
+                {mediaFile
+                  ? t('admin.broadcasts.mediaCaptionLimit', {
+                      count: TELEGRAM_CAPTION_MAX_LENGTH,
+                    })
+                  : t('admin.broadcasts.textMessageLimit', { count: 4000 })}
+              </span>
+              <span className={mediaCaptionTooLong ? 'text-error-400' : 'text-dark-400'}>
+                {messageText.length}/{mediaFile ? TELEGRAM_CAPTION_MAX_LENGTH : 4000}
+              </span>
+            </div>
           </div>
 
           {/* Media upload */}
@@ -600,17 +666,40 @@ export default function AdminBroadcastCreate() {
                     <XIcon />
                   </button>
                 </div>
-                {mediaPreview && (
+                {mediaPreview && mediaType === 'photo' && (
                   <img
                     src={mediaPreview}
                     alt="Preview"
-                    className="mt-3 max-h-48 rounded-lg object-cover"
+                    className="mt-3 max-h-64 w-full rounded-lg bg-dark-900 object-contain"
+                  />
+                )}
+                {mediaPreview && mediaType === 'video' && (
+                  <video
+                    src={mediaPreview}
+                    controls
+                    preload="metadata"
+                    className="mt-3 max-h-64 w-full rounded-lg bg-black object-contain"
                   />
                 )}
                 {isUploading && (
-                  <div className="mt-2 flex items-center gap-2 text-sm text-accent-400">
+                  <div
+                    className="mt-3 flex items-center gap-2 rounded-lg border border-accent-500/20 bg-accent-500/10 px-3 py-2 text-sm text-accent-400"
+                    role="status"
+                    aria-live="polite"
+                  >
                     <RefreshIcon />
                     {t('admin.broadcasts.uploading')}
+                  </div>
+                )}
+                {!isUploading && uploadedFileId && (
+                  <div
+                    className="mt-3 flex items-center gap-2 rounded-lg border border-success-500/20 bg-success-500/10 px-3 py-2 text-sm text-success-400"
+                    role="status"
+                    aria-live="polite"
+                    data-testid="broadcast-media-ready"
+                  >
+                    <CheckCircle2 className="h-4 w-4 shrink-0" />
+                    <span>{t('admin.broadcasts.mediaReady')}</span>
                   </div>
                 )}
               </div>
@@ -619,9 +708,10 @@ export default function AdminBroadcastCreate() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*,video/*,application/*"
+                  accept="image/*,video/*,.pdf,.zip,.doc,.docx,.xls,.xlsx,.txt"
                   onChange={handleFileSelect}
                   className="hidden"
+                  data-testid="broadcast-media-input"
                 />
                 <button
                   onClick={() => fileInputRef.current?.click()}
@@ -630,6 +720,17 @@ export default function AdminBroadcastCreate() {
                   <PhotoIcon />
                   <span>{t('admin.broadcasts.addMedia')}</span>
                 </button>
+                <p className="mt-2 text-xs text-dark-400">{t('admin.broadcasts.mediaHint')}</p>
+              </div>
+            )}
+            {mediaUploadError && (
+              <div
+                className="mt-3 flex items-start gap-2 rounded-lg border border-error-500/30 bg-error-500/10 px-3 py-2 text-sm text-error-400"
+                role="alert"
+                data-testid="broadcast-media-error"
+              >
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{mediaUploadError}</span>
               </div>
             )}
           </div>
