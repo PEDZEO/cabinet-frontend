@@ -355,7 +355,7 @@ export function UltimaDesktopGift({
 
             <div>
               <div className="mb-3 text-[12px] uppercase tracking-[0.22em] text-white/[0.42]">
-                {t('subscription.tariff', { defaultValue: 'Тариф' })}
+                {t('gift.tariff', { defaultValue: 'Тариф' })}
               </div>
               <div className="grid gap-3 md:grid-cols-2">
                 {tariffs.map((tariff) => (

@@ -2,6 +2,21 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import {
+  Check,
+  ChevronDown,
+  ChevronUp,
+  CircleAlert,
+  Clock3,
+  Copy,
+  Gift as GiftIcon,
+  History,
+  LoaderCircle,
+  PackageCheck,
+  Send,
+  Sparkles,
+  WalletCards,
+} from 'lucide-react';
 import { balanceApi } from '@/api/balance';
 import { type GiftPurchaseRequest, giftApi, type SentGift } from '@/api/gift';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
@@ -40,6 +55,7 @@ export function UltimaGift() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [historyExpanded, setHistoryExpanded] = useState(false);
+  const [historyTab, setHistoryTab] = useState<'sent' | 'received'>('sent');
   const [giftExtendPeriods, setGiftExtendPeriods] = useState<Record<string, number>>({});
   const formAnchorRef = useRef<HTMLDivElement | null>(null);
 
@@ -352,17 +368,17 @@ export function UltimaGift() {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'delivered':
-        return { text: 'Активирован', cls: 'bg-emerald-500/20 text-emerald-200' };
+        return { text: 'Активирован', cls: 'bg-emerald-500/[0.20] text-emerald-200' };
       case 'pending_activation':
       case 'paid':
-        return { text: 'Ожидает активации', cls: 'bg-sky-500/20 text-sky-100' };
+        return { text: 'Ожидает активации', cls: 'bg-sky-500/[0.20] text-sky-100' };
       case 'pending':
-        return { text: 'Ожидает оплаты', cls: 'bg-amber-500/20 text-amber-200' };
+        return { text: 'Ожидает оплаты', cls: 'bg-amber-500/[0.20] text-amber-200' };
       case 'failed':
       case 'expired':
-        return { text: 'Неактивен', cls: 'bg-rose-500/20 text-rose-200' };
+        return { text: 'Неактивен', cls: 'bg-rose-500/[0.20] text-rose-200' };
       default:
-        return { text: status, cls: 'bg-white/10 text-white/70' };
+        return { text: status, cls: 'bg-white/[0.10] text-white/[0.70]' };
     }
   };
 
@@ -574,9 +590,10 @@ export function UltimaGift() {
         description:
           method.description ??
           (method.min_amount_kopeks
-            ? `${t('gift.desktopMinTopup', {
-                defaultValue: 'Мин. пополнение',
-              })}: ${formatCurrency(method.min_amount_kopeks)}`
+            ? t('gift.desktopMinTopup', {
+                amount: formatCurrency(method.min_amount_kopeks),
+                defaultValue: 'Минимальное пополнение: {{amount}}',
+              })
             : null),
         isSelected: method.method_id === giftPaymentMethod,
       })),
@@ -596,11 +613,11 @@ export function UltimaGift() {
   const desktopSummaryRows = useMemo(() => {
     const rows = [
       {
-        label: t('subscription.tariff', { defaultValue: 'Тариф' }),
+        label: t('gift.tariff', { defaultValue: 'Тариф' }),
         value: selectedGiftTariff?.name ?? '—',
       },
       {
-        label: t('subscription.period', { defaultValue: 'Период' }),
+        label: t('gift.period', { defaultValue: 'Период' }),
         value:
           selectedGiftPeriod != null
             ? `${selectedGiftPeriod.days} ${t('gift.days', { defaultValue: 'дн.' })}`
@@ -611,7 +628,7 @@ export function UltimaGift() {
         value: formatCurrency(currentBalanceKopeks),
       },
       {
-        label: t('subscription.price', { defaultValue: 'Стоимость' }),
+        label: t('gift.total', { defaultValue: 'Стоимость' }),
         value: selectedGiftPeriod?.price_label ?? '—',
       },
     ];
@@ -688,14 +705,18 @@ export function UltimaGift() {
 
         return {
           token: gift.token,
-          title: `${gift.tariff_name ?? t('subscription.tariff', { defaultValue: 'Тариф' })} • ${gift.period_days} ${t('gift.days', { defaultValue: 'дн.' })}`,
+          title: `${gift.tariff_name ?? t('gift.tariff', { defaultValue: 'Тариф' })} • ${gift.period_days} ${t('gift.days', { defaultValue: 'дн.' })}`,
           subtitle: gift.created_at
-            ? `${t('gift.desktopCreatedAt', { defaultValue: 'Создан' })}: ${new Date(gift.created_at).toLocaleDateString()}`
+            ? t('gift.desktopCreatedAt', {
+                date: new Date(gift.created_at).toLocaleDateString(),
+                defaultValue: 'Создан {{date}}',
+              })
             : t('gift.desktopCreatedRecently', { defaultValue: 'Создан недавно' }),
           detail: gift.activated_by_username
-            ? `${t('gift.desktopActivatedBy', {
-                defaultValue: 'Активировал',
-              })}: ${gift.activated_by_username}`
+            ? t('gift.desktopActivatedBy', {
+                name: gift.activated_by_username,
+                defaultValue: 'Активировал {{name}}',
+              })
             : gift.gift_recipient_value
               ? `${t('gift.desktopRecipient', { defaultValue: 'Получатель' })}: ${gift.gift_recipient_value}`
               : t('gift.desktopReadyToShare', {
@@ -731,13 +752,19 @@ export function UltimaGift() {
         const messageText = gift.gift_message?.trim();
         return {
           token: gift.token,
-          title: `${gift.tariff_name ?? t('subscription.tariff', { defaultValue: 'Тариф' })} • ${gift.period_days} ${t('gift.days', { defaultValue: 'дн.' })}`,
+          title: `${gift.tariff_name ?? t('gift.tariff', { defaultValue: 'Тариф' })} • ${gift.period_days} ${t('gift.days', { defaultValue: 'дн.' })}`,
           subtitle: gift.created_at
-            ? `${t('gift.desktopReceivedAt', { defaultValue: 'Получен' })}: ${new Date(gift.created_at).toLocaleDateString()}`
+            ? t('gift.desktopReceivedAt', {
+                date: new Date(gift.created_at).toLocaleDateString(),
+                defaultValue: 'Получен {{date}}',
+              })
             : t('gift.desktopReceivedRecently', { defaultValue: 'Получен недавно' }),
           detail: messageText
             ? `${t('gift.desktopMessage', { defaultValue: 'Сообщение' })}: ${messageText}`
-            : `${t('gift.desktopFrom', { defaultValue: 'От' })}: ${gift.sender_display ?? '—'}`,
+            : t('gift.desktopFrom', {
+                name: gift.sender_display ?? '—',
+                defaultValue: 'От {{name}}',
+              }),
           statusLabel: status.text,
           statusClassName: status.cls,
         };
@@ -751,8 +778,8 @@ export function UltimaGift() {
     return {
       tokenLabel: `GIFT-${pendingGiftExtend.token}`,
       description: t('gift.desktopPendingExtendDescription', {
-        defaultValue:
-          'Пополните баланс и подтвердите продление вручную. После подтверждения срок подарка обновится сразу.',
+        token: `GIFT-${pendingGiftExtend.token}`,
+        defaultValue: 'Подарок {{token}} ожидает подтверждения продления.',
       }),
       canConfirm: (balanceData?.balance_kopeks ?? 0) >= pendingGiftExtend.requiredAmountKopeks,
       isPending: extendGiftMutation.isPending,
@@ -850,318 +877,383 @@ export function UltimaGift() {
     );
   }
 
+  const isGiftActionDisabled =
+    createGiftMutation.isPending ||
+    giftTariffId == null ||
+    giftPeriodDays == null ||
+    (requiresGatewayPayment && !giftPaymentMethod);
+
   return (
     <div
-      className={`ultima-shell ultima-shell-wide ultima-flat-frames${isDesktop ? 'ultima-shell-profile-desktop' : ''}`}
+      className="ultima-shell ultima-shell-wide ultima-flat-frames"
+      data-testid="ultima-gift-page"
     >
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
-        <header className="mb-3">
-          <h1 className="text-[clamp(34px,9.5vw,44px)] font-semibold leading-[0.9] tracking-[-0.01em] text-white">
-            {t('nav.gift', { defaultValue: 'Подарок' })}
-          </h1>
-          <p className="mt-1.5 text-[14px] leading-tight text-white/[0.62]">
-            {t('balance.promocode.createGiftDescription', {
-              defaultValue:
-                'Код генерируется автоматически. Получатель просто вводит его на странице промокода и активирует подарок.',
-            })}
-          </p>
+        <header className="mb-4 flex items-start gap-3 px-1">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-emerald-200/[0.16] bg-emerald-300/[0.09] text-emerald-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+            <GiftIcon className="h-6 w-6" strokeWidth={1.8} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-[30px] font-semibold leading-none text-white">
+                {t('gift.title', { defaultValue: 'Подарить подписку' })}
+              </h1>
+              <span className="rounded-full border border-emerald-200/[0.16] bg-emerald-300/[0.08] px-2.5 py-1 text-[10px] font-medium uppercase text-emerald-100/[0.80]">
+                {t('gift.giftLabel', { defaultValue: 'Подарок' })}
+              </span>
+            </div>
+            <p className="mt-2 text-[13px] leading-[1.45] text-white/[0.58]">
+              {t('balance.promocode.createGiftDescription', {
+                defaultValue:
+                  'Выберите подписку, получите код и отправьте его получателю любым удобным способом.',
+              })}
+            </p>
+          </div>
         </header>
 
-        <section className="ultima-scrollbar min-h-0 flex-1 overflow-y-auto rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:overflow-visible lg:p-4">
-          <div ref={formAnchorRef} />
-          {!isGiftConfigLoaded ? (
-            <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2.5">
-              <p className="text-[12px] leading-snug text-white/70">{t('common.loading')}</p>
-            </div>
-          ) : giftConfig?.is_enabled === false ? (
-            <div className="rounded-xl border border-amber-300/20 bg-amber-500/10 px-3 py-2.5">
-              <p className="text-[12px] leading-snug text-amber-100">
-                {t('gift.disabled', {
-                  defaultValue: 'Подарки отключены администратором.',
-                })}
-              </p>
-            </div>
-          ) : (
-            <>
-              <p className="text-[11px] leading-snug text-white/[0.56]">
-                {t('balance.promocode.giftAutoBalanceTopupDescription', {
-                  defaultValue:
-                    'Если на балансе хватает средств — подарок оплачивается сразу. Если не хватает — к оплате уйдет только недостающая сумма.',
-                })}
-              </p>
-
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                <select
-                  value={giftTariffId ?? ''}
-                  onChange={(event) => {
-                    const next = Number(event.target.value);
-                    setGiftTariffId(Number.isFinite(next) ? next : null);
-                  }}
-                  className="h-10 min-w-0 rounded-xl border border-emerald-200/[0.12] bg-emerald-950/[0.35] px-2.5 text-[13px] text-white"
-                >
-                  {giftTariffOptions.map((tariff) => (
-                    <option key={tariff.id} value={tariff.id}>
-                      {tariff.name}
-                    </option>
-                  ))}
-                </select>
-
-                <select
-                  value={giftPeriodDays ?? ''}
-                  onChange={(event) => {
-                    const next = Number(event.target.value);
-                    setGiftPeriodDays(Number.isFinite(next) ? next : null);
-                  }}
-                  className="h-10 min-w-0 rounded-xl border border-emerald-200/[0.12] bg-emerald-950/[0.35] px-2.5 text-[13px] text-white"
-                >
-                  {giftPeriods.map((period) => (
-                    <option key={period.days} value={period.days}>
-                      {period.days} {t('gift.days', { defaultValue: 'дн.' })}
-                    </option>
-                  ))}
-                </select>
+        <main
+          className="ultima-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto pb-2"
+          data-testid="ultima-gift-scroll"
+        >
+          <section
+            ref={formAnchorRef}
+            className="rounded-[28px] border border-emerald-200/[0.14] bg-[rgba(9,35,34,0.58)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl"
+            data-testid="ultima-gift-builder"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-medium uppercase text-emerald-100/[0.55]">
+                  {t('gift.desktopBuilderTitle', { defaultValue: 'Новый подарок' })}
+                </p>
+                <h2 className="mt-1 text-[21px] font-semibold leading-tight text-white">
+                  {selectedGiftTariff?.name ?? t('common.loading', { defaultValue: 'Загрузка...' })}
+                </h2>
               </div>
+              <div className="flex items-center gap-1.5" aria-label="3 шага">
+                {[1, 2, 3].map((step) => (
+                  <span
+                    key={step}
+                    className={`h-1.5 rounded-full transition-all ${
+                      step === 1 ||
+                      (step === 2 && giftPeriodDays) ||
+                      (step === 3 && giftPaymentMethod)
+                        ? 'w-6 bg-emerald-300'
+                        : 'w-2.5 bg-white/[0.15]'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
 
-              {requiresGatewayPayment ? (
-                <div className="mt-2 space-y-2">
-                  <div className="rounded-xl border border-sky-300/20 bg-sky-500/10 px-2.5 py-2">
-                    <p className="text-[11px] leading-snug text-sky-100">
+            {!isGiftConfigLoaded ? (
+              <div className="flex min-h-36 items-center justify-center text-white/[0.60]">
+                <LoaderCircle className="h-6 w-6 animate-spin" />
+              </div>
+            ) : giftConfig?.is_enabled === false ? (
+              <div className="mt-4 flex gap-3 rounded-2xl border border-amber-200/[0.20] bg-amber-400/[0.08] p-3 text-amber-100">
+                <CircleAlert className="mt-0.5 h-5 w-5 shrink-0" />
+                <p className="text-[13px] leading-relaxed">
+                  {t('gift.disabled', { defaultValue: 'Подарки отключены администратором.' })}
+                </p>
+              </div>
+            ) : (
+              <div className="mt-5 space-y-5">
+                <div>
+                  <div className="mb-2.5 flex items-center gap-2 text-[11px] font-medium uppercase text-white/[0.45]">
+                    <Sparkles className="h-4 w-4 text-emerald-200/[0.70]" />
+                    {t('gift.tariff', { defaultValue: 'Тариф' })}
+                  </div>
+                  <div className="grid gap-2">
+                    {giftTariffOptions.map((tariff) => {
+                      const selected = tariff.id === giftTariffId;
+                      return (
+                        <button
+                          key={tariff.id}
+                          type="button"
+                          onClick={() => setGiftTariffId(tariff.id)}
+                          aria-pressed={selected}
+                          data-testid={`ultima-gift-tariff-${tariff.id}`}
+                          className={`flex min-h-[70px] items-center gap-3 rounded-2xl border px-3.5 py-3 text-left transition ${
+                            selected
+                              ? 'border-emerald-200/[0.35] bg-emerald-300/[0.1]'
+                              : 'border-white/[0.09] bg-white/[0.035]'
+                          }`}
+                        >
+                          <span
+                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border ${
+                              selected
+                                ? 'border-emerald-200/[0.30] bg-emerald-300/[0.15] text-emerald-100'
+                                : 'border-white/[0.10] bg-white/[0.04] text-white/[0.45]'
+                            }`}
+                          >
+                            {selected ? (
+                              <Check className="h-4 w-4" />
+                            ) : (
+                              <GiftIcon className="h-4 w-4" />
+                            )}
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block text-[15px] font-medium text-white">
+                              {tariff.name}
+                            </span>
+                            <span className="mt-1 line-clamp-2 block text-[11px] leading-snug text-white/[0.50]">
+                              {tariff.description ??
+                                `${tariff.device_limit} ${t('lite.devicesTotal', { defaultValue: 'устр.' })} · ${tariff.traffic_limit_gb} ГБ`}
+                            </span>
+                          </span>
+                          <span className="shrink-0 rounded-full border border-white/[0.10] px-2.5 py-1 text-[10px] text-white/[0.55]">
+                            {tariff.device_limit}{' '}
+                            {t('lite.devicesTotal', { defaultValue: 'устр.' })}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-2.5 flex items-center gap-2 text-[11px] font-medium uppercase text-white/[0.45]">
+                    <Clock3 className="h-4 w-4 text-emerald-200/[0.70]" />
+                    {t('subscription.period', { defaultValue: 'Срок подписки' })}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {giftPeriods.map((period) => {
+                      const selected = period.days === giftPeriodDays;
+                      return (
+                        <button
+                          key={period.days}
+                          type="button"
+                          onClick={() => setGiftPeriodDays(period.days)}
+                          aria-pressed={selected}
+                          data-testid={`ultima-gift-period-${period.days}`}
+                          className={`relative min-h-[88px] rounded-2xl border p-3 text-left transition ${
+                            selected
+                              ? 'border-emerald-200/[0.35] bg-emerald-300/[0.1]'
+                              : 'border-white/[0.09] bg-white/[0.035]'
+                          }`}
+                        >
+                          {period.discount_percent ? (
+                            <span className="absolute right-2.5 top-2.5 rounded-full bg-emerald-300/[0.15] px-2 py-0.5 text-[9px] font-medium text-emerald-100">
+                              -{period.discount_percent}%
+                            </span>
+                          ) : null}
+                          <span className="block text-[14px] font-medium text-white">
+                            {period.days} {t('gift.days', { defaultValue: 'дн.' })}
+                          </span>
+                          <span className="mt-3 block text-[20px] font-semibold leading-none text-white">
+                            {period.price_label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {requiresGatewayPayment ? (
+                  <div>
+                    <div className="mb-2.5 flex items-center gap-2 text-[11px] font-medium uppercase text-white/[0.45]">
+                      <WalletCards className="h-4 w-4 text-amber-200/[0.80]" />
+                      {t('balance.topUp.paymentMethodTitle', { defaultValue: 'Способ оплаты' })}
+                    </div>
+                    <div className="mb-2.5 rounded-2xl border border-amber-200/[0.18] bg-amber-300/[0.07] px-3 py-2.5 text-[11px] leading-relaxed text-amber-50/[0.80]">
                       {t('balance.promocode.giftNeedTopupHint', {
                         defaultValue:
-                          'Для покупки подарка не хватает средств на балансе. Оплатите недостающую сумму через выбранную платежку.',
+                          'Баланс будет использован первым. Через платежную страницу нужно внести только недостающую сумму.',
                       })}
-                    </p>
+                    </div>
+                    <div className="grid gap-2">
+                      {gatewayMethods.map((method) => {
+                        const selected = method.method_id === giftPaymentMethod;
+                        return (
+                          <button
+                            key={method.method_id}
+                            type="button"
+                            onClick={() => setGiftPaymentMethod(method.method_id)}
+                            aria-pressed={selected}
+                            className={`flex min-h-14 items-center justify-between gap-3 rounded-2xl border px-3.5 py-2.5 text-left ${
+                              selected
+                                ? 'border-emerald-200/[0.35] bg-emerald-300/[0.1]'
+                                : 'border-white/[0.09] bg-white/[0.035]'
+                            }`}
+                          >
+                            <span className="min-w-0">
+                              <span className="block text-[14px] font-medium text-white">
+                                {method.display_name}
+                              </span>
+                              {method.description ? (
+                                <span className="mt-0.5 block truncate text-[10px] text-white/[0.45]">
+                                  {method.description}
+                                </span>
+                              ) : null}
+                            </span>
+                            <span
+                              className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
+                                selected
+                                  ? 'border-emerald-200/[0.40] bg-emerald-300/[0.20] text-emerald-100'
+                                  : 'border-white/[0.15] text-transparent'
+                              }`}
+                            >
+                              <Check className="h-3.5 w-3.5" />
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {(selectedGatewayMethod?.sub_options?.length ?? 0) > 0 ? (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {selectedGatewayMethod?.sub_options?.map((option) => {
+                          const selected = option.id === giftPaymentOption;
+                          return (
+                            <button
+                              key={option.id}
+                              type="button"
+                              onClick={() => setGiftPaymentOption(option.id)}
+                              aria-pressed={selected}
+                              className={`rounded-full border px-3 py-2 text-[11px] ${
+                                selected
+                                  ? 'border-emerald-200/[0.35] bg-emerald-300/[0.12] text-emerald-50'
+                                  : 'border-white/[0.10] bg-white/[0.035] text-white/[0.55]'
+                              }`}
+                            >
+                              {option.name}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : null}
                   </div>
-                  <select
-                    value={giftPaymentMethod ?? ''}
-                    onChange={(event) => setGiftPaymentMethod(event.target.value || null)}
-                    className="h-10 w-full rounded-xl border border-emerald-200/[0.12] bg-emerald-950/[0.35] px-2.5 text-[13px] text-white"
-                  >
-                    {gatewayMethods.map((method) => (
-                      <option key={method.method_id} value={method.method_id}>
-                        {method.display_name}
-                      </option>
-                    ))}
-                  </select>
+                ) : null}
 
-                  {(selectedGatewayMethod?.sub_options?.length ?? 0) > 0 ? (
-                    <select
-                      value={giftPaymentOption ?? ''}
-                      onChange={(event) => setGiftPaymentOption(event.target.value || null)}
-                      className="h-10 w-full rounded-xl border border-emerald-200/[0.12] bg-emerald-950/[0.35] px-2.5 text-[13px] text-white"
+                <div className="grid grid-cols-3 divide-x divide-white/[0.08] rounded-2xl border border-white/[0.09] bg-black/[0.10] px-2 py-3">
+                  <div className="min-w-0 px-2">
+                    <span className="block text-[9px] uppercase text-white/[0.35]">
+                      {t('balance.promocode.balanceAvailable', { defaultValue: 'Баланс' })}
+                    </span>
+                    <span className="mt-1 block truncate text-[13px] font-medium text-white">
+                      {formatCurrency(currentBalanceKopeks)}
+                    </span>
+                  </div>
+                  <div className="min-w-0 px-2">
+                    <span className="block text-[9px] uppercase text-white/[0.35]">
+                      {t('balance.promocode.giftPrice', { defaultValue: 'Стоимость' })}
+                    </span>
+                    <span className="mt-1 block truncate text-[13px] font-medium text-white">
+                      {selectedGiftPeriod?.price_label ?? '—'}
+                    </span>
+                  </div>
+                  <div className="min-w-0 px-2">
+                    <span className="block text-[9px] uppercase text-white/[0.35]">
+                      {t('balance.promocode.needToPay', { defaultValue: 'К оплате' })}
+                    </span>
+                    <span
+                      className={`mt-1 block truncate text-[13px] font-medium ${requiresGatewayPayment ? 'text-amber-100' : 'text-emerald-100'}`}
                     >
-                      {selectedGatewayMethod?.sub_options?.map((option) => (
-                        <option key={option.id} value={option.id}>
-                          {option.name}
-                        </option>
-                      ))}
-                    </select>
-                  ) : null}
+                      {requiresGatewayPayment
+                        ? formatCurrency(topupAmountKopeks)
+                        : t('gift.fromBalance', { defaultValue: 'С баланса' })}
+                    </span>
+                  </div>
                 </div>
-              ) : null}
 
-              <div className="mt-2 flex items-center justify-between rounded-xl border border-emerald-200/[0.12] bg-emerald-950/[0.35] px-2.5 py-2">
-                <span className="text-[11px] text-white/[0.65]">
-                  {t('balance.promocode.giftPrice', { defaultValue: 'Цена подарка' })}
-                </span>
-                <span className="text-[13px] font-medium text-white">
-                  {selectedGiftPeriod?.price_label ?? '—'}
-                </span>
-              </div>
+                {pendingPurchaseMessage ? (
+                  <div className="flex gap-2.5 rounded-2xl border border-sky-200/[0.16] bg-sky-300/[0.07] p-3 text-[12px] leading-relaxed text-sky-50/[0.85]">
+                    <LoaderCircle className="mt-0.5 h-4 w-4 shrink-0 animate-spin" />
+                    {pendingPurchaseMessage}
+                  </div>
+                ) : null}
 
-              <div className="mt-2 flex items-center justify-between rounded-xl border border-emerald-200/[0.12] bg-emerald-950/[0.35] px-2.5 py-2">
-                <span className="text-[11px] text-white/[0.65]">
-                  {t('balance.promocode.balanceAvailable', { defaultValue: 'Баланс' })}
-                </span>
-                <span className="text-[13px] font-medium text-white">
-                  {(currentBalanceKopeks / 100).toFixed(2)} ₽
-                </span>
-              </div>
+                {error ? (
+                  <div
+                    className="flex gap-2.5 rounded-2xl border border-rose-200/[0.18] bg-rose-300/[0.08] p-3 text-[12px] leading-relaxed text-rose-100"
+                    role="alert"
+                  >
+                    <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+                    {error}
+                  </div>
+                ) : null}
+                {success ? (
+                  <div
+                    className="flex gap-2.5 rounded-2xl border border-emerald-200/[0.18] bg-emerald-300/[0.08] p-3 text-[12px] leading-relaxed text-emerald-100"
+                    role="status"
+                  >
+                    <PackageCheck className="mt-0.5 h-4 w-4 shrink-0" />
+                    {success}
+                  </div>
+                ) : null}
 
-              {requiresGatewayPayment ? (
-                <div className="mt-2 flex items-center justify-between rounded-xl border border-sky-300/20 bg-sky-500/10 px-2.5 py-2">
-                  <span className="text-[11px] text-sky-100/[0.85]">
-                    {t('balance.promocode.needToPay', { defaultValue: 'К оплате (недостающее)' })}
+                <button
+                  type="button"
+                  onClick={onCreateGift}
+                  disabled={isGiftActionDisabled}
+                  data-testid="ultima-gift-create"
+                  className="ultima-btn-pill ultima-btn-primary flex min-h-[52px] w-full items-center justify-between gap-3 px-5 text-[15px] font-medium disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <span className="flex min-w-0 items-center gap-2.5">
+                    {createGiftMutation.isPending ? (
+                      <LoaderCircle className="h-5 w-5 shrink-0 animate-spin" />
+                    ) : (
+                      <Send className="h-5 w-5 shrink-0" />
+                    )}
+                    <span className="truncate">
+                      {createGiftMutation.isPending
+                        ? t('common.loading', { defaultValue: 'Создаем...' })
+                        : requiresGatewayPayment
+                          ? t('balance.promocode.createGiftAndPayButton', {
+                              defaultValue: 'Оплатить и создать код',
+                            })
+                          : t('balance.promocode.createGiftButton', {
+                              defaultValue: 'Создать подарочный код',
+                            })}
+                    </span>
                   </span>
-                  <span className="text-[13px] font-semibold text-sky-100">
-                    {(topupAmountKopeks / 100).toFixed(2)} ₽
+                  <span className="shrink-0 text-[13px] text-white/[0.80]">
+                    {requiresGatewayPayment
+                      ? formatCurrency(topupAmountKopeks)
+                      : selectedGiftPeriod?.price_label}
                   </span>
-                </div>
-              ) : null}
+                </button>
 
-              <button
-                type="button"
-                onClick={onCreateGift}
-                disabled={
-                  createGiftMutation.isPending ||
-                  giftTariffId == null ||
-                  giftPeriodDays == null ||
-                  (requiresGatewayPayment && !giftPaymentMethod)
-                }
-                className="mt-2 h-10 w-full rounded-xl border border-emerald-200/25 bg-emerald-400/[0.85] px-3 text-[13px] font-medium text-slate-900 transition hover:bg-emerald-300/90 disabled:cursor-not-allowed disabled:opacity-45"
-              >
-                {createGiftMutation.isPending
-                  ? t('common.loading')
-                  : requiresGatewayPayment
-                    ? t('balance.promocode.createGiftAndPayButton', {
-                        defaultValue: 'Оплатить и создать код',
-                      })
-                    : t('balance.promocode.createGiftButton', {
-                        defaultValue: 'Сгенерировать подарочный код',
+                {generatedGiftCode ? (
+                  <div
+                    className="rounded-[24px] border border-emerald-200/[0.24] bg-emerald-300/[0.09] p-4"
+                    data-testid="ultima-gift-generated-code"
+                  >
+                    <div className="flex items-center gap-2 text-[12px] font-medium text-emerald-100">
+                      <PackageCheck className="h-5 w-5" />
+                      {t('balance.promocode.generatedGiftCode', {
+                        defaultValue: 'Подарочный код готов',
                       })}
-              </button>
-
-              {generatedGiftCode ? (
-                <div className="mt-2 rounded-xl border border-emerald-200/[0.15] bg-emerald-950/[0.35] px-2.5 py-2">
-                  <p className="text-[11px] text-white/[0.56]">
-                    {t('balance.promocode.generatedGiftCode', { defaultValue: 'Подарочный код' })}
-                  </p>
-                  <div className="mt-1 flex items-center gap-2">
-                    <p className="min-w-0 flex-1 break-all font-mono text-[13px] text-emerald-100">
+                    </div>
+                    <p className="mt-3 break-all rounded-2xl border border-white/[0.10] bg-black/[0.15] px-3 py-3 font-mono text-[14px] text-white">
                       {generatedGiftCode}
                     </p>
                     <button
                       type="button"
                       onClick={() => void copyGiftCodeValue(generatedGiftCode)}
-                      className="h-8 shrink-0 rounded-lg border border-emerald-200/20 bg-emerald-900/[0.35] px-2 text-[12px] text-white/[0.85]"
+                      className="ultima-btn-pill ultima-btn-secondary mt-3 flex min-h-11 w-full items-center justify-center gap-2 px-4 text-[13px]"
                     >
-                      {t('common.copy', { defaultValue: 'Копировать' })}
+                      <Copy className="h-4 w-4" />
+                      {t('common.copy', { defaultValue: 'Копировать код' })}
                     </button>
                   </div>
-                </div>
-              ) : null}
-            </>
-          )}
-
-          {giftConfig?.is_enabled ? (
-            <div className="mt-3 rounded-2xl border border-emerald-200/10 bg-emerald-950/20 p-3">
-              <button
-                type="button"
-                onClick={() => setHistoryExpanded((prev) => !prev)}
-                className="flex w-full items-center justify-between text-left"
-              >
-                <p className="text-[13px] font-medium text-white/90">История подарков</p>
-                <span className="text-[11px] text-white/60">
-                  {historyExpanded ? 'Свернуть' : 'Развернуть'}
-                </span>
-              </button>
-
-              {historyExpanded ? (
-                <div className="mt-2 space-y-2">
-                  <div className="space-y-2">
-                    <p className="text-[12px] text-white/70">Отправленные</p>
-                    {sentGifts.length === 0 ? (
-                      <p className="text-[11px] text-white/[0.45]">Подарков пока нет</p>
-                    ) : (
-                      sentGifts.slice(0, 20).map((gift) => {
-                        const status = getStatusLabel(gift.status);
-                        return (
-                          <div
-                            key={`sent-${gift.token}`}
-                            className="rounded-xl border border-white/10 bg-white/5 px-2.5 py-2"
-                          >
-                            <div className="mb-1 flex items-center justify-between gap-2">
-                              <p className="line-clamp-2 break-words text-[12px] leading-snug text-white/90">
-                                {gift.tariff_name ?? 'Тариф'} • {gift.period_days} дн.
-                              </p>
-                              <span className={`rounded px-2 py-0.5 text-[10px] ${status.cls}`}>
-                                {status.text}
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-white/[0.55]">
-                              Код:{' '}
-                              <button
-                                type="button"
-                                onClick={() => void copyGiftCode(gift.token)}
-                                className="inline text-left font-medium text-emerald-200 underline decoration-dotted underline-offset-2 transition hover:text-emerald-100"
-                              >
-                                GIFT-{gift.token}
-                              </button>
-                              {gift.activated_by_username ? ` • ${gift.activated_by_username}` : ''}{' '}
-                              •{' +'}
-                              {gift.period_days} дн.
-                            </p>
-                            <div className="mt-1 flex items-center gap-2">
-                              <select
-                                value={giftExtendPeriods[gift.token] ?? gift.period_days}
-                                onChange={(event) => {
-                                  const next = Number(event.target.value);
-                                  if (!Number.isFinite(next)) return;
-                                  setGiftExtendPeriods((prev) => ({ ...prev, [gift.token]: next }));
-                                }}
-                                className="h-8 min-w-0 rounded-lg border border-white/[0.15] bg-white/10 px-2 text-[11px] text-white"
-                              >
-                                {(gift.tariff_id != null
-                                  ? tariffPeriodsById.get(gift.tariff_id)
-                                  : undefined
-                                )?.map((period) => (
-                                  <option key={`${gift.token}-${period.days}`} value={period.days}>
-                                    {period.days} {t('gift.days', { defaultValue: 'дн.' })}
-                                  </option>
-                                )) ?? (
-                                  <option value={gift.period_days}>
-                                    {gift.period_days} {t('gift.days', { defaultValue: 'дн.' })}
-                                  </option>
-                                )}
-                              </select>
-                              <button
-                                type="button"
-                                onClick={() => onRenewFromHistory(gift)}
-                                disabled={
-                                  extendGiftMutation.isPending && extendingToken === gift.token
-                                }
-                                className="rounded-lg border border-emerald-200/25 bg-emerald-400/[0.85] px-2 py-1 text-[11px] font-medium text-slate-950 disabled:cursor-not-allowed disabled:opacity-55"
-                              >
-                                {extendGiftMutation.isPending && extendingToken === gift.token
-                                  ? 'Продлеваем...'
-                                  : 'Продлить подарок'}
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <p className="text-[12px] text-white/70">Полученные</p>
-                    {receivedGifts.length === 0 ? (
-                      <p className="text-[11px] text-white/[0.45]">Полученных подарков нет</p>
-                    ) : (
-                      receivedGifts.slice(0, 20).map((gift) => {
-                        const status = getStatusLabel(gift.status);
-                        return (
-                          <div
-                            key={`recv-${gift.token}`}
-                            className="rounded-xl border border-white/10 bg-white/5 px-2.5 py-2"
-                          >
-                            <div className="mb-1 flex items-center justify-between gap-2">
-                              <p className="line-clamp-2 break-words text-[12px] leading-snug text-white/90">
-                                {gift.tariff_name ?? 'Тариф'} • {gift.period_days} дн.
-                              </p>
-                              <span className={`rounded px-2 py-0.5 text-[10px] ${status.cls}`}>
-                                {status.text}
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-white/[0.55]">
-                              От: {gift.sender_display ?? '—'} • Добавлено: +{gift.period_days} дн.
-                            </p>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
-              ) : null}
-            </div>
-          ) : null}
+                ) : null}
+              </div>
+            )}
+          </section>
 
           {pendingGiftExtend ? (
-            <div className="mt-2 rounded-xl border border-amber-200/20 bg-amber-500/10 px-2.5 py-2 text-[11px] text-amber-100">
-              Ожидается продление кода GIFT-{pendingGiftExtend.token}. После пополнения подтвердите
-              продление вручную.
-              <div className="mt-2 flex items-center gap-2">
+            <section className="rounded-[24px] border border-amber-200/[0.2] bg-amber-300/[0.08] p-4 text-amber-50">
+              <div className="flex gap-3">
+                <CircleAlert className="mt-0.5 h-5 w-5 shrink-0" />
+                <div className="min-w-0">
+                  <h3 className="text-[14px] font-medium">Ожидается продление подарка</h3>
+                  <p className="mt-1 break-all text-[11px] leading-relaxed text-amber-50/[0.65]">
+                    GIFT-{pendingGiftExtend.token}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() =>
@@ -1175,25 +1267,194 @@ export function UltimaGift() {
                     extendGiftMutation.isPending ||
                     (balanceData?.balance_kopeks ?? 0) < pendingGiftExtend.requiredAmountKopeks
                   }
-                  className="rounded-lg border border-emerald-200/25 bg-emerald-400/[0.85] px-2 py-1 text-[11px] font-medium text-slate-950 disabled:cursor-not-allowed disabled:opacity-55"
+                  className="ultima-btn-pill ultima-btn-primary min-h-11 px-3 text-[12px] disabled:opacity-50"
                 >
-                  Подтвердить продление
+                  Подтвердить
                 </button>
                 <button
                   type="button"
                   onClick={() => setPendingGiftExtend(null)}
                   disabled={extendGiftMutation.isPending}
-                  className="rounded-lg border border-white/20 bg-white/10 px-2 py-1 text-[11px] text-white/90 disabled:cursor-not-allowed disabled:opacity-55"
+                  className="ultima-btn-pill ultima-btn-secondary min-h-11 px-3 text-[12px] disabled:opacity-50"
                 >
-                  Отменить
+                  {t('common.cancel', { defaultValue: 'Отменить' })}
                 </button>
               </div>
-            </div>
+            </section>
           ) : null}
 
-          {error ? <p className="mt-2 text-[12px] text-rose-200">{error}</p> : null}
-          {success ? <p className="mt-2 text-[12px] text-emerald-200">{success}</p> : null}
-        </section>
+          {giftConfig?.is_enabled ? (
+            <section
+              className="rounded-[28px] border border-emerald-200/[0.12] bg-[rgba(9,35,34,0.5)] p-4 backdrop-blur-xl"
+              data-testid="ultima-gift-history"
+            >
+              <button
+                type="button"
+                onClick={() => setHistoryExpanded((prev) => !prev)}
+                aria-expanded={historyExpanded}
+                className="flex w-full items-center gap-3 text-left"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/[0.10] bg-white/[0.04] text-white/[0.65]">
+                  <History className="h-5 w-5" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[16px] font-medium text-white">История подарков</span>
+                  <span className="mt-0.5 block text-[11px] text-white/[0.45]">
+                    {sentGifts.length} отправлено · {receivedGifts.length} получено
+                  </span>
+                </span>
+                {historyExpanded ? (
+                  <ChevronUp className="h-5 w-5 shrink-0 text-white/[0.55]" />
+                ) : (
+                  <ChevronDown className="h-5 w-5 shrink-0 text-white/[0.55]" />
+                )}
+              </button>
+
+              {historyExpanded ? (
+                <div className="mt-4">
+                  <div className="grid grid-cols-2 rounded-2xl border border-white/[0.08] bg-black/[0.10] p-1">
+                    <button
+                      type="button"
+                      onClick={() => setHistoryTab('sent')}
+                      aria-pressed={historyTab === 'sent'}
+                      className={`min-h-10 rounded-xl text-[12px] font-medium ${
+                        historyTab === 'sent' ? 'bg-white/[0.09] text-white' : 'text-white/[0.45]'
+                      }`}
+                    >
+                      Отправленные · {sentGifts.length}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setHistoryTab('received')}
+                      aria-pressed={historyTab === 'received'}
+                      className={`min-h-10 rounded-xl text-[12px] font-medium ${
+                        historyTab === 'received'
+                          ? 'bg-white/[0.09] text-white'
+                          : 'text-white/[0.45]'
+                      }`}
+                    >
+                      Полученные · {receivedGifts.length}
+                    </button>
+                  </div>
+
+                  <div className="mt-3 space-y-2">
+                    {historyTab === 'sent' ? (
+                      sentGifts.length === 0 ? (
+                        <p className="rounded-2xl border border-dashed border-white/[0.10] p-4 text-center text-[12px] text-white/[0.40]">
+                          Отправленных подарков пока нет
+                        </p>
+                      ) : (
+                        sentGifts.slice(0, 20).map((gift) => {
+                          const status = getStatusLabel(gift.status);
+                          return (
+                            <article
+                              key={`sent-${gift.token}`}
+                              className="rounded-2xl border border-white/[0.09] bg-white/[0.035] p-3"
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="min-w-0">
+                                  <p className="truncate text-[13px] font-medium text-white">
+                                    {gift.tariff_name ?? 'Тариф'} · {gift.period_days} дн.
+                                  </p>
+                                  <button
+                                    type="button"
+                                    onClick={() => void copyGiftCode(gift.token)}
+                                    className="mt-1 flex max-w-full items-center gap-1.5 text-left text-[10px] text-emerald-100/[0.70]"
+                                  >
+                                    <Copy className="h-3 w-3 shrink-0" />
+                                    <span className="truncate font-mono">GIFT-{gift.token}</span>
+                                  </button>
+                                </div>
+                                <span
+                                  className={`shrink-0 rounded-full px-2 py-1 text-[9px] ${status.cls}`}
+                                >
+                                  {status.text}
+                                </span>
+                              </div>
+                              <div className="mt-3 flex items-center gap-2">
+                                <select
+                                  value={giftExtendPeriods[gift.token] ?? gift.period_days}
+                                  onChange={(event) => {
+                                    const next = Number(event.target.value);
+                                    if (!Number.isFinite(next)) return;
+                                    setGiftExtendPeriods((prev) => ({
+                                      ...prev,
+                                      [gift.token]: next,
+                                    }));
+                                  }}
+                                  aria-label={`Период продления GIFT-${gift.token}`}
+                                  className="h-10 min-w-0 flex-1 rounded-xl border border-white/[0.12] bg-white/[0.05] px-2.5 text-[11px] text-white"
+                                >
+                                  {(gift.tariff_id != null
+                                    ? tariffPeriodsById.get(gift.tariff_id)
+                                    : undefined
+                                  )?.map((period) => (
+                                    <option
+                                      key={`${gift.token}-${period.days}`}
+                                      value={period.days}
+                                    >
+                                      {period.days} {t('gift.days', { defaultValue: 'дн.' })}
+                                    </option>
+                                  )) ?? (
+                                    <option value={gift.period_days}>
+                                      {gift.period_days} {t('gift.days', { defaultValue: 'дн.' })}
+                                    </option>
+                                  )}
+                                </select>
+                                <button
+                                  type="button"
+                                  onClick={() => onRenewFromHistory(gift)}
+                                  disabled={
+                                    extendGiftMutation.isPending && extendingToken === gift.token
+                                  }
+                                  className="ultima-btn-pill ultima-btn-secondary min-h-10 shrink-0 px-3 text-[11px] disabled:opacity-50"
+                                >
+                                  {extendGiftMutation.isPending && extendingToken === gift.token
+                                    ? 'Продлеваем...'
+                                    : 'Продлить'}
+                                </button>
+                              </div>
+                            </article>
+                          );
+                        })
+                      )
+                    ) : receivedGifts.length === 0 ? (
+                      <p className="rounded-2xl border border-dashed border-white/[0.10] p-4 text-center text-[12px] text-white/[0.40]">
+                        Полученных подарков пока нет
+                      </p>
+                    ) : (
+                      receivedGifts.slice(0, 20).map((gift) => {
+                        const status = getStatusLabel(gift.status);
+                        return (
+                          <article
+                            key={`recv-${gift.token}`}
+                            className="rounded-2xl border border-white/[0.09] bg-white/[0.035] p-3"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <p className="truncate text-[13px] font-medium text-white">
+                                  {gift.tariff_name ?? 'Тариф'} · {gift.period_days} дн.
+                                </p>
+                                <p className="mt-1 truncate text-[10px] text-white/[0.45]">
+                                  От: {gift.sender_display ?? 'Не указан'}
+                                </p>
+                              </div>
+                              <span
+                                className={`shrink-0 rounded-full px-2 py-1 text-[9px] ${status.cls}`}
+                              >
+                                {status.text}
+                              </span>
+                            </div>
+                          </article>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              ) : null}
+            </section>
+          ) : null}
+        </main>
 
         <div className="ultima-mobile-dock-footer">
           <div className="ultima-nav-dock">

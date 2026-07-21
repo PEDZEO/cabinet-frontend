@@ -125,6 +125,98 @@ const TRANSACTIONS = [
   },
 ];
 
+const GIFT_CONFIG = {
+  is_enabled: true,
+  tariffs: [
+    {
+      id: 1,
+      name: 'Обычный',
+      description: 'Все основные серверы и 100 ГБ трафика',
+      traffic_limit_gb: 100,
+      device_limit: 3,
+      periods: [
+        {
+          days: 30,
+          price_kopeks: 31_000,
+          price_label: '310 ₽',
+          original_price_kopeks: null,
+          discount_percent: null,
+        },
+        {
+          days: 90,
+          price_kopeks: 79_000,
+          price_label: '790 ₽',
+          original_price_kopeks: 93_000,
+          discount_percent: 15,
+        },
+      ],
+    },
+    {
+      id: 2,
+      name: 'Премиум',
+      description: 'Больше трафика и пять устройств',
+      traffic_limit_gb: 250,
+      device_limit: 5,
+      periods: [
+        {
+          days: 30,
+          price_kopeks: 59_000,
+          price_label: '590 ₽',
+          original_price_kopeks: null,
+          discount_percent: null,
+        },
+      ],
+    },
+  ],
+  payment_methods: [
+    {
+      method_id: 'yookassa',
+      display_name: 'Банковская карта',
+      description: 'Карты РФ и СБП',
+      icon_url: null,
+      min_amount_kopeks: 10_000,
+      max_amount_kopeks: 1_000_000,
+      sub_options: [
+        { id: 'bank_card', name: 'Карта' },
+        { id: 'sbp', name: 'СБП' },
+      ],
+    },
+  ],
+  balance_kopeks: 125_000,
+  currency_symbol: '₽',
+  promo_group_name: null,
+  active_discount_percent: null,
+  active_discount_expires_at: null,
+};
+
+const SENT_GIFTS = [
+  {
+    token: 'SENT-2026',
+    tariff_id: 1,
+    tariff_name: 'Обычный',
+    period_days: 30,
+    device_limit: 3,
+    status: 'paid',
+    gift_recipient_value: null,
+    gift_message: null,
+    activated_by_username: null,
+    created_at: '2026-07-20T12:00:00.000Z',
+  },
+];
+
+const RECEIVED_GIFTS = [
+  {
+    token: 'RECEIVED-2026',
+    tariff_name: 'Премиум',
+    period_days: 90,
+    device_limit: 5,
+    status: 'delivered',
+    sender_display: '@friend',
+    gift_message: null,
+    created_at: '2026-07-19T12:00:00.000Z',
+  },
+];
+
 const CONNECTED_DEVICE = {
   hwid: 'desktop-smoke-device',
   platform: 'windows',
@@ -573,6 +665,32 @@ async function mockUltimaDesktopApi(
         expires_at: '2026-07-20T13:00:00.000Z',
       });
     }
+    if (path === '/cabinet/promocode/activate' && method === 'POST') {
+      const payload = request.postDataJSON() as { code?: string };
+      const isGiftCode = payload.code === 'GIFT-SAMPLE';
+      return respond({
+        success: true,
+        message: 'Код применён',
+        balance_before: balanceKopeks,
+        balance_after: balanceKopeks + (isGiftCode ? 0 : 10_000),
+        bonus_description: isGiftCode ? null : 'На баланс начислено 100 ₽',
+        activated_gift: isGiftCode,
+        gift_tariff_name: isGiftCode ? 'Премиум' : null,
+        gift_period_days: isGiftCode ? 90 : null,
+        gift_sender_display: isGiftCode ? '@friend' : null,
+      });
+    }
+    if (path === '/cabinet/gift/config') return respond(GIFT_CONFIG);
+    if (path === '/cabinet/gift/sent') return respond(SENT_GIFTS);
+    if (path === '/cabinet/gift/received') return respond(RECEIVED_GIFTS);
+    if (path === '/cabinet/gift/purchase' && method === 'POST') {
+      return respond({
+        status: 'paid',
+        purchase_token: 'NEW-GIFT-2026',
+        payment_url: null,
+        warning: null,
+      });
+    }
     if (path === '/cabinet/referral') {
       return respond({
         referral_code: USER.referral_code,
@@ -712,6 +830,96 @@ async function expectNoHorizontalOverflow(page: Page): Promise<void> {
       viewportWidth: page.viewportSize()?.width,
     });
 }
+
+test.describe('Ultima gifts and promocodes', () => {
+  test('keeps the complete gift flow clear on a small phone', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 360, height: 640 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+
+    await page.goto('/ultima/gift');
+
+    await expect(page.getByTestId('ultima-gift-page')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Подарить подписку' })).toBeVisible();
+    await expect(page.getByTestId('ultima-gift-tariff-1')).toHaveAttribute('aria-pressed', 'true');
+    await page.screenshot({
+      path: testInfo.outputPath('ultima-gift-mobile-initial.png'),
+      fullPage: true,
+    });
+    await page.getByTestId('ultima-gift-period-90').click();
+    await expect(page.getByTestId('ultima-gift-period-90')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByTestId('ultima-gift-create')).toContainText('Создать подарочный код');
+    await page.getByTestId('ultima-gift-create').click();
+    await expect(page.getByTestId('ultima-gift-generated-code')).toContainText(
+      'GIFT-NEW-GIFT-2026',
+    );
+
+    await page.getByTestId('ultima-gift-history').getByRole('button').first().click();
+    await expect(page.getByText('Отправленные · 1', { exact: true })).toBeVisible();
+    await page.getByText('Полученные · 1', { exact: true }).click();
+    await expect(page.getByText('От: @friend', { exact: true })).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+    await page.screenshot({
+      path: testInfo.outputPath('ultima-gift-mobile.png'),
+      fullPage: true,
+    });
+  });
+
+  test('uses the full desktop gift workspace without losing the primary action', async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width: 1366, height: 768 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+
+    await page.goto('/ultima/gift');
+
+    await expect(page.getByRole('heading', { name: 'Подарок' })).toBeVisible();
+    await expect(page.getByText('Новый подарок', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Сгенерировать подарочный код/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'История подарков' })).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+    await page.screenshot({
+      path: testInfo.outputPath('ultima-gift-desktop.png'),
+      fullPage: true,
+    });
+  });
+
+  test('activates a gift code with a visible result on mobile and desktop', async ({
+    page,
+  }, testInfo) => {
+    for (const viewport of [
+      { width: 390, height: 844, name: 'mobile' },
+      { width: 1366, height: 768, name: 'desktop' },
+    ]) {
+      await page.setViewportSize(viewport);
+      await bootstrapUltimaDesktop(page);
+      await mockUltimaDesktopApi(page);
+      await page.goto('/promocode');
+
+      await expect(page.getByTestId('ultima-promocode-page')).toBeVisible();
+      if (viewport.name === 'mobile') {
+        await page.screenshot({
+          path: testInfo.outputPath('ultima-promocode-mobile-initial.png'),
+          fullPage: true,
+        });
+      }
+      await page.getByTestId('ultima-promocode-input').fill('gift-sample');
+      await expect(page.getByTestId('ultima-promocode-input')).toHaveValue('GIFT-SAMPLE');
+      await page.getByTestId('ultima-promocode-submit').click();
+      await expect(page.getByTestId('ultima-promocode-gift-dialog')).toContainText(
+        'Подарок активирован',
+      );
+      await expect(page.getByTestId('ultima-promocode-gift-dialog')).toContainText('Премиум');
+      await expectNoHorizontalOverflow(page);
+      await page.screenshot({
+        path: testInfo.outputPath(`ultima-promocode-${viewport.name}.png`),
+        fullPage: true,
+      });
+      await page.getByRole('button', { name: 'Закрыть' }).click();
+    }
+  });
+});
 
 test.describe('Ultima payment method selection', () => {
   test('keeps the requested amount and payment methods clear on mobile', async ({

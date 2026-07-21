@@ -1,5 +1,16 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  BadgePercent,
+  Check,
+  CircleAlert,
+  Gift,
+  LoaderCircle,
+  Sparkles,
+  TicketCheck,
+  WalletCards,
+  X,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { balanceApi } from '@/api/balance';
 import {
@@ -16,17 +27,116 @@ type GiftActivationNotice = {
   periodDays: number | null;
 };
 
-const PromocodeIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6">
-    <path
-      d="M4.5 8.5A2.5 2.5 0 0 1 7 6h10a2.5 2.5 0 0 1 2.5 2.5v1.4a1.6 1.6 0 0 0 0 3.2v1.4A2.5 2.5 0 0 1 17 17H7a2.5 2.5 0 0 1-2.5-2.5v-1.4a1.6 1.6 0 0 0 0-3.2V8.5Z"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinejoin="round"
-    />
-    <path d="M9.5 9.5h5M9.5 14.5h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-  </svg>
-);
+type ActivationState = 'idle' | 'pending' | 'success' | 'error';
+
+function GiftActivationDialog({
+  notice,
+  isDesktop,
+  onClose,
+}: {
+  notice: GiftActivationNotice;
+  isDesktop: boolean;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+
+  const dialog = (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="gift-activation-title"
+      className="ultima-step-enter w-full max-w-[480px] rounded-[28px] border border-emerald-200/[0.2] bg-[#07110f]/[0.95] p-5 text-white shadow-[0_28px_70px_rgba(0,0,0,0.72)] backdrop-blur-2xl"
+      data-testid="ultima-promocode-gift-dialog"
+    >
+      <div className="flex items-start gap-3">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-emerald-200/[0.20] bg-emerald-300/[0.12] text-emerald-100">
+          <Gift className="h-5 w-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] font-medium uppercase text-emerald-100/[0.55]">
+            {t('promocode.desktopApplied', { defaultValue: 'Код применён' })}
+          </p>
+          <h2 id="gift-activation-title" className="mt-1 text-[22px] font-semibold leading-tight">
+            {t('balance.promocode.giftNoticeTitle', { defaultValue: 'Подарок активирован' })}
+          </h2>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/[0.10] bg-white/[0.04] text-white/[0.65]"
+          aria-label={t('common.close', { defaultValue: 'Закрыть' })}
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+
+      <p className="mt-4 text-[13px] leading-relaxed text-white/[0.60]">
+        {t('balance.promocode.giftNoticeDesc', {
+          defaultValue:
+            'Подарочная подписка уже применена к вашему аккаунту. Параметры подписки обновлены автоматически.',
+        })}
+      </p>
+
+      <div className="mt-4 divide-y divide-white/[0.08] rounded-2xl border border-white/[0.09] bg-white/[0.035] px-3">
+        <div className="flex items-center justify-between gap-3 py-3 text-[13px]">
+          <span className="text-white/[0.45]">
+            {t('balance.promocode.giftSender', { defaultValue: 'Отправитель' })}
+          </span>
+          <span className="min-w-0 truncate text-right font-medium text-white/[0.90]">
+            {notice.senderDisplay ?? t('common.notSpecified', { defaultValue: 'Не указан' })}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-3 py-3 text-[13px]">
+          <span className="text-white/[0.45]">
+            {t('balance.promocode.giftTariff', { defaultValue: 'Тариф' })}
+          </span>
+          <span className="min-w-0 truncate text-right font-medium text-white/[0.90]">
+            {notice.tariffName ?? t('common.notSpecified', { defaultValue: 'Не указан' })}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-3 py-3 text-[13px]">
+          <span className="text-white/[0.45]">
+            {t('balance.promocode.giftPeriod', { defaultValue: 'Срок подарка' })}
+          </span>
+          <span className="font-medium text-white/[0.90]">
+            {notice.periodDays != null
+              ? `${notice.periodDays} ${t('gift.days', { defaultValue: 'дн.' })}`
+              : t('common.notSpecified', { defaultValue: 'Не указан' })}
+          </span>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={onClose}
+        className="ultima-btn-pill ultima-btn-primary mt-4 min-h-[48px] w-full px-5 text-[14px] font-medium"
+      >
+        {t('subscription.connection.gotIt', { defaultValue: 'Готово' })}
+      </button>
+    </div>
+  );
+
+  if (isDesktop) {
+    return (
+      <>
+        <div
+          className="absolute inset-0 z-[18] bg-black/[0.60] backdrop-blur-sm"
+          onClick={onClose}
+        />
+        <div className="absolute inset-0 z-20 flex items-center justify-center p-6">{dialog}</div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div className="ultima-mobile-overlay-backdrop" onClick={onClose} />
+      <div className="ultima-mobile-overlay">
+        <div className="ultima-mobile-overlay-panel">{dialog}</div>
+      </div>
+    </>
+  );
+}
 
 export function UltimaPromocode() {
   const { t } = useTranslation();
@@ -90,287 +200,316 @@ export function UltimaPromocode() {
     activateMutation.mutate(code);
   };
 
+  const activationState: ActivationState = activateMutation.isPending
+    ? 'pending'
+    : error
+      ? 'error'
+      : success
+        ? 'success'
+        : 'idle';
   const bottomNav = <UltimaBottomNav active="profile" />;
 
-  const promocodeContent = (
-    <section className="ultima-scrollbar min-h-0 flex-1 overflow-y-auto rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.18)] p-3 backdrop-blur-md lg:overflow-visible lg:p-4">
-      <p className="mb-2 text-[13px] text-white/[0.68]">
-        {t('balance.promocode.inputLabel', { defaultValue: 'Введите промокод' })}
-      </p>
-      <div className="flex flex-col gap-2 min-[390px]:flex-row">
-        <input
-          type="text"
-          value={promocode}
-          onChange={(event) => setPromocode(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') {
-              onApply();
-            }
-          }}
-          placeholder={t('balance.promocode.placeholder')}
-          disabled={activateMutation.isPending}
-          className="h-11 min-w-0 flex-1 rounded-xl border border-emerald-200/[0.12] bg-emerald-950/[0.35] px-3 text-[14px] text-white placeholder:text-white/[0.35] focus:border-emerald-200/30 focus:outline-none disabled:opacity-60"
-        />
-        <button
-          type="button"
-          onClick={onApply}
-          disabled={activateMutation.isPending || !promocode.trim()}
-          className="h-11 w-full shrink-0 rounded-xl border border-emerald-200/30 bg-emerald-400/90 px-3 text-[13px] font-medium text-slate-950 transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-45 min-[390px]:w-auto"
+  const activationCard = (
+    <section
+      className="rounded-[28px] border border-emerald-200/[0.14] bg-[rgba(9,35,34,0.58)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl sm:p-5"
+      data-testid="ultima-promocode-card"
+    >
+      <div className="flex items-start gap-3">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-emerald-200/[0.18] bg-emerald-300/[0.1] text-emerald-100">
+          <TicketCheck className="h-5 w-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] font-medium uppercase text-emerald-100/[0.50]">
+            {t('balance.promocode.title', { defaultValue: 'Промокод' })}
+          </p>
+          <h2 className="mt-1 text-[20px] font-semibold leading-tight text-white">
+            {t('balance.promocode.inputLabel', { defaultValue: 'Активировать код' })}
+          </h2>
+          <p className="mt-1 text-[12px] leading-relaxed text-white/[0.48]">
+            {t('balance.promocode.ultimaDescription', {
+              defaultValue: 'Введите промокод на скидку, бонус или подарочную подписку.',
+            })}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5">
+        <label htmlFor="ultima-promocode-input" className="sr-only">
+          {t('balance.promocode.inputLabel', { defaultValue: 'Введите промокод' })}
+        </label>
+        <div
+          className={`flex min-h-[56px] items-center gap-2 rounded-2xl border bg-black/[0.15] px-3 transition ${
+            error
+              ? 'border-rose-200/[0.30]'
+              : success
+                ? 'border-emerald-200/[0.35]'
+                : 'border-white/[0.12] focus-within:border-emerald-200/[0.35]'
+          }`}
         >
-          {activateMutation.isPending ? t('common.loading') : t('balance.promocode.activate')}
-        </button>
+          <TicketCheck className="h-5 w-5 shrink-0 text-white/[0.35]" />
+          <input
+            id="ultima-promocode-input"
+            type="text"
+            inputMode="text"
+            autoCapitalize="characters"
+            autoComplete="off"
+            spellCheck={false}
+            value={promocode}
+            onChange={(event) => {
+              setPromocode(event.target.value.toUpperCase().replace(/\s+/g, ''));
+              if (error) setError(null);
+              if (success) setSuccess(null);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') onApply();
+            }}
+            placeholder={t('balance.promocode.placeholder', {
+              defaultValue: 'Например, GIFT-XXXX',
+            })}
+            disabled={activateMutation.isPending}
+            data-testid="ultima-promocode-input"
+            className="min-w-0 flex-1 bg-transparent font-mono text-[15px] font-medium text-white outline-none placeholder:font-sans placeholder:text-white/[0.25] disabled:opacity-60"
+          />
+          {promocode ? (
+            <button
+              type="button"
+              onClick={() => {
+                setPromocode('');
+                setError(null);
+                setSuccess(null);
+              }}
+              disabled={activateMutation.isPending}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white/[0.40]"
+              aria-label={t('common.clear', { defaultValue: 'Очистить' })}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          ) : null}
+        </div>
       </div>
 
-      {error ? <p className="mt-2 text-[12px] text-rose-200">{error}</p> : null}
-      {success ? <p className="mt-2 text-[12px] text-emerald-200">{success}</p> : null}
+      <button
+        type="button"
+        onClick={onApply}
+        disabled={activateMutation.isPending || !promocode.trim()}
+        data-testid="ultima-promocode-submit"
+        className="ultima-btn-pill ultima-btn-primary mt-3 flex min-h-[50px] w-full items-center justify-center gap-2.5 px-5 text-[14px] font-medium disabled:cursor-not-allowed disabled:opacity-45"
+      >
+        {activateMutation.isPending ? (
+          <LoaderCircle className="h-5 w-5 animate-spin" />
+        ) : (
+          <Sparkles className="h-5 w-5" />
+        )}
+        {activateMutation.isPending
+          ? t('common.loading', { defaultValue: 'Проверяем код...' })
+          : t('balance.promocode.activate', { defaultValue: 'Активировать' })}
+      </button>
 
-      <div className="mt-3 rounded-2xl border border-emerald-200/10 bg-emerald-950/20 px-3 py-2.5">
-        <p className="text-[11px] leading-snug text-white/[0.58]">
-          {t('balance.promocode.ultimaHint', {
-            defaultValue:
-              'Если промокод действителен, бонус применится сразу и отразится в истории операций.',
-          })}
-        </p>
+      {activationState !== 'idle' ? (
+        <div
+          className={`mt-3 flex gap-2.5 rounded-2xl border p-3 text-[12px] leading-relaxed ${
+            activationState === 'error'
+              ? 'border-rose-200/[0.2] bg-rose-300/[0.08] text-rose-100'
+              : activationState === 'success'
+                ? 'border-emerald-200/[0.2] bg-emerald-300/[0.08] text-emerald-100'
+                : 'border-sky-200/[0.18] bg-sky-300/[0.07] text-sky-50/[0.85]'
+          }`}
+          role={activationState === 'error' ? 'alert' : 'status'}
+          data-testid="ultima-promocode-status"
+        >
+          {activationState === 'pending' ? (
+            <LoaderCircle className="mt-0.5 h-4 w-4 shrink-0 animate-spin" />
+          ) : activationState === 'success' ? (
+            <Check className="mt-0.5 h-4 w-4 shrink-0" />
+          ) : (
+            <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+          )}
+          <span>
+            {activationState === 'pending'
+              ? t('promocode.desktopChecking', {
+                  defaultValue: 'Проверяем код и применяем бонус...',
+                })
+              : success || error}
+          </span>
+        </div>
+      ) : null}
+
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <div className="flex min-h-[70px] items-center gap-2.5 rounded-2xl border border-white/[0.08] bg-white/[0.03] px-3 py-2.5">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/[0.05] text-emerald-100/[0.70]">
+            <BadgePercent className="h-4 w-4" />
+          </span>
+          <span className="min-w-0">
+            <span className="block text-[12px] font-medium text-white/[0.85]">Промокод</span>
+            <span className="mt-0.5 block text-[9px] leading-tight text-white/[0.38]">
+              Скидка или бонус
+            </span>
+          </span>
+        </div>
+        <div className="flex min-h-[70px] items-center gap-2.5 rounded-2xl border border-white/[0.08] bg-white/[0.03] px-3 py-2.5">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/[0.05] text-emerald-100/[0.70]">
+            <Gift className="h-4 w-4" />
+          </span>
+          <span className="min-w-0">
+            <span className="block text-[12px] font-medium text-white/[0.85]">Подарочный код</span>
+            <span className="mt-0.5 block text-[9px] leading-tight text-white/[0.38]">
+              Готовая подписка
+            </span>
+          </span>
+        </div>
       </div>
+
+      <p className="mt-4 text-center text-[10px] leading-relaxed text-white/[0.35]">
+        {t('balance.promocode.ultimaHint', {
+          defaultValue: 'Результат сразу появится в подписке, балансе или истории операций.',
+        })}
+      </p>
     </section>
   );
 
+  const dialog = giftActivationNotice ? (
+    <GiftActivationDialog
+      notice={giftActivationNotice}
+      isDesktop={isDesktop}
+      onClose={() => setGiftActivationNotice(null)}
+    />
+  ) : null;
+
   if (isDesktop) {
     return (
-      <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-profile-desktop">
+      <div
+        className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-profile-desktop"
+        data-testid="ultima-promocode-page"
+      >
         <div className="ultima-shell-aura" />
         <UltimaDesktopSectionLayout
-          icon={<PromocodeIcon />}
+          icon={<TicketCheck className="h-6 w-6" />}
           eyebrow={t('balance.promocode.title', { defaultValue: 'Промокод' })}
           title={t('balance.promocode.title', { defaultValue: 'Промокод' })}
           subtitle={t('balance.promocode.ultimaDescription', {
-            defaultValue:
-              'Введите промокод или подарочный код и сразу увидите результат применения.',
+            defaultValue: 'Активируйте скидку, бонус или подарочную подписку в одном месте.',
           })}
           metrics={[
             {
               label: t('balance.promocode.inputLabel', { defaultValue: 'Код' }),
-              value: promocode.trim().length > 0 ? promocode.trim().toUpperCase() : '—',
+              value: promocode || '—',
               hint: t('promocode.desktopCodeHint', {
-                defaultValue: 'Код можно вставить вручную или ввести из подарочной ссылки.',
+                defaultValue: 'Поддерживаются обычные и подарочные коды.',
               }),
             },
             {
               label: t('common.status', { defaultValue: 'Статус' }),
-              value: activateMutation.isPending
-                ? t('common.loading', { defaultValue: 'Загрузка...' })
-                : success
-                  ? t('promocode.desktopApplied', { defaultValue: 'Применен' })
-                  : t('promocode.desktopWaiting', { defaultValue: 'Ожидает' }),
+              value:
+                activationState === 'pending'
+                  ? t('common.loading', { defaultValue: 'Проверяем' })
+                  : activationState === 'success'
+                    ? t('promocode.desktopApplied', { defaultValue: 'Применён' })
+                    : activationState === 'error'
+                      ? t('common.error', { defaultValue: 'Ошибка' })
+                      : t('promocode.desktopWaiting', { defaultValue: 'Готов' }),
               hint:
-                error ||
                 success ||
+                error ||
                 t('promocode.desktopStatusHint', {
-                  defaultValue: 'После активации обновятся баланс и параметры подписки.',
+                  defaultValue: 'Изменения применяются к аккаунту автоматически.',
                 }),
             },
             {
-              label: t('nav.gift', { defaultValue: 'Подарок' }),
+              label: t('common.result', { defaultValue: 'Результат' }),
               value: giftActivationNotice
-                ? t('promocode.desktopGiftCode', { defaultValue: 'Есть код' })
-                : '—',
+                ? t('nav.gift', { defaultValue: 'Подарок' })
+                : success
+                  ? t('promocode.desktopApplied', { defaultValue: 'Применён' })
+                  : '—',
               hint: t('promocode.desktopGiftHint', {
-                defaultValue: 'Подарочные коды активируются в этом же окне.',
+                defaultValue: 'Подарочная подписка активируется в этом же поле.',
               }),
             },
           ]}
           aside={
             <UltimaDesktopPanel
-              title={t('promocode.desktopAsideTitle', { defaultValue: 'Что произойдет' })}
+              title={t('promocode.desktopAsideTitle', { defaultValue: 'Что можно активировать' })}
               subtitle={t('promocode.desktopAsideHint', {
-                defaultValue:
-                  'Если код подойдет, изменения сразу появятся в подписке и истории операций.',
+                defaultValue: 'Один экран для скидок, бонусов и подарочных подписок.',
               })}
             >
-              <div className="space-y-3">
-                <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-[1.6] text-white/[0.72]">
-                  {t('balance.promocode.ultimaHint', {
-                    defaultValue:
-                      'Если промокод действителен, бонус применится сразу и отразится в истории операций.',
-                  })}
-                </div>
-                <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3">
-                  <div className="text-[11px] uppercase tracking-[0.2em] text-white/[0.42]">
-                    {t('common.result', { defaultValue: 'Результат' })}
+              <div className="space-y-2">
+                {[
+                  {
+                    icon: <BadgePercent className="h-5 w-5" />,
+                    title: 'Скидка на тариф',
+                    description: 'Будет учтена при следующей покупке или продлении.',
+                  },
+                  {
+                    icon: <WalletCards className="h-5 w-5" />,
+                    title: 'Бонус на баланс',
+                    description: 'Сумма появится на балансе сразу после активации.',
+                  },
+                  {
+                    icon: <Gift className="h-5 w-5" />,
+                    title: 'Подарочная подписка',
+                    description: 'Тариф и срок автоматически добавятся к аккаунту.',
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.title}
+                    className="flex gap-3 rounded-[20px] border border-white/[0.08] bg-white/[0.035] p-3"
+                  >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-300/[0.08] text-emerald-100/[0.75]">
+                      {item.icon}
+                    </span>
+                    <div>
+                      <p className="text-[13px] font-medium text-white/[0.90]">{item.title}</p>
+                      <p className="mt-1 text-[11px] leading-relaxed text-white/[0.45]">
+                        {item.description}
+                      </p>
+                    </div>
                   </div>
-                  <div className="mt-2 text-sm font-medium text-white/90">
-                    {success ||
-                      error ||
-                      t('promocode.desktopReady', { defaultValue: 'Ожидает активации' })}
-                  </div>
-                </div>
+                ))}
               </div>
             </UltimaDesktopPanel>
           }
           bottomNav={bottomNav}
         >
-          {promocodeContent}
+          {activationCard}
         </UltimaDesktopSectionLayout>
-
-        {giftActivationNotice && (
-          <>
-            <div className="absolute inset-0 z-[18] bg-black/[0.52]" />
-            <div className="absolute inset-x-0 top-24 z-20 flex justify-center px-6">
-              <div className="w-full max-w-[520px]">
-                <div className="ultima-step-enter rounded-[24px] border border-white/[0.24] bg-[#05070B] p-4 text-white shadow-[0_26px_56px_rgba(0,0,0,0.72)] backdrop-blur-xl">
-                  <div className="mb-2 flex items-start justify-between gap-3">
-                    <h3 className="text-[24px] font-semibold leading-[1.06] text-white/95">
-                      {t('balance.promocode.giftNoticeTitle', {
-                        defaultValue: 'Подарок активирован',
-                      })}
-                    </h3>
-                    <button
-                      type="button"
-                      onClick={() => setGiftActivationNotice(null)}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-white/90"
-                      aria-label="close-gift-activation-modal"
-                    >
-                      ×
-                    </button>
-                  </div>
-                  <p className="text-[14px] leading-[1.28] text-white/[0.88]">
-                    {t('balance.promocode.giftNoticeDesc', {
-                      defaultValue:
-                        'Подарочная подписка успешно активирована. Данные подарка уже применены к вашему аккаунту.',
-                    })}
-                  </p>
-                  <div className="mt-3 space-y-2 text-[14px] text-white/[0.92]">
-                    <p>
-                      <span className="text-white/[0.65]">
-                        {t('balance.promocode.giftSender', { defaultValue: 'Отправитель:' })}
-                      </span>{' '}
-                      {giftActivationNotice.senderDisplay ??
-                        t('common.notSpecified', { defaultValue: 'Не указан' })}
-                    </p>
-                    <p>
-                      <span className="text-white/[0.65]">
-                        {t('balance.promocode.giftPeriod', { defaultValue: 'Срок подарка:' })}
-                      </span>{' '}
-                      {giftActivationNotice.periodDays != null
-                        ? `${giftActivationNotice.periodDays} ${t('gift.days', { defaultValue: 'дн.' })}`
-                        : t('common.notSpecified', { defaultValue: 'Не указан' })}
-                    </p>
-                    {giftActivationNotice.tariffName ? (
-                      <p>
-                        <span className="text-white/[0.65]">
-                          {t('balance.promocode.giftTariff', { defaultValue: 'Тариф:' })}
-                        </span>{' '}
-                        {giftActivationNotice.tariffName}
-                      </p>
-                    ) : null}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setGiftActivationNotice(null)}
-                    className="mt-4 flex w-full items-center justify-center rounded-full border border-emerald-200/[0.22] bg-[rgba(12,45,42,0.34)] px-5 py-2.5 text-[15px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] backdrop-blur-md"
-                  >
-                    {t('subscription.connection.gotIt', {
-                      defaultValue: 'Все понятно',
-                    })}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
+        {dialog}
       </div>
     );
   }
 
   return (
-    <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
+    <div
+      className="ultima-shell ultima-shell-wide ultima-flat-frames"
+      data-testid="ultima-promocode-page"
+    >
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
-        <header className="mb-3">
-          <h1 className="break-words text-[clamp(32px,9vw,42px)] font-semibold leading-[0.9] tracking-[-0.01em] text-white">
-            {t('balance.promocode.title', { defaultValue: 'Промокод' })}
-          </h1>
-          <p className="mt-1.5 text-[14px] leading-tight text-white/[0.62]">
-            {t('balance.promocode.ultimaDescription', {
-              defaultValue:
-                'Активируйте промокод для бонусов. Скидки и бонусы будут учтены в подписке автоматически.',
-            })}
-          </p>
+        <header className="mb-4 flex items-start gap-3 px-1">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-emerald-200/[0.16] bg-emerald-300/[0.09] text-emerald-100">
+            <TicketCheck className="h-6 w-6" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-[30px] font-semibold leading-none text-white">
+              {t('balance.promocode.title', { defaultValue: 'Промокод' })}
+            </h1>
+            <p className="mt-2 text-[13px] leading-[1.45] text-white/[0.58]">
+              {t('balance.promocode.ultimaDescription', {
+                defaultValue: 'Скидки, бонусы и подарки активируются здесь.',
+              })}
+            </p>
+          </div>
         </header>
 
-        {promocodeContent}
+        <main className="ultima-scrollbar min-h-0 flex-1 overflow-y-auto pb-2">
+          {activationCard}
+        </main>
 
         <div className="ultima-mobile-dock-footer">
           <div className="ultima-nav-dock">{bottomNav}</div>
         </div>
       </div>
-
-      {giftActivationNotice && (
-        <>
-          <div className="ultima-mobile-overlay-backdrop" />
-          <div className="ultima-mobile-overlay">
-            <div className="ultima-mobile-overlay-panel">
-              <div className="ultima-step-enter rounded-[24px] border border-white/[0.24] bg-[#05070B] p-4 text-white shadow-[0_26px_56px_rgba(0,0,0,0.72)] backdrop-blur-xl">
-                <div className="mb-2 flex items-start justify-between gap-3">
-                  <h3 className="text-[24px] font-semibold leading-[1.06] text-white/95">
-                    {t('balance.promocode.giftNoticeTitle', {
-                      defaultValue: 'Подарок активирован',
-                    })}
-                  </h3>
-                  <button
-                    type="button"
-                    onClick={() => setGiftActivationNotice(null)}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-white/90"
-                    aria-label="close-gift-activation-modal"
-                  >
-                    ×
-                  </button>
-                </div>
-                <p className="text-[14px] leading-[1.28] text-white/[0.88]">
-                  {t('balance.promocode.giftNoticeDesc', {
-                    defaultValue:
-                      'Подарочная подписка успешно активирована. Данные подарка уже применены к вашему аккаунту.',
-                  })}
-                </p>
-                <div className="mt-3 space-y-2 break-words text-[14px] text-white/[0.92]">
-                  <p>
-                    <span className="text-white/[0.65]">
-                      {t('balance.promocode.giftSender', { defaultValue: 'Отправитель:' })}
-                    </span>{' '}
-                    {giftActivationNotice.senderDisplay ??
-                      t('common.notSpecified', { defaultValue: 'Не указан' })}
-                  </p>
-                  <p>
-                    <span className="text-white/[0.65]">
-                      {t('balance.promocode.giftPeriod', { defaultValue: 'Срок подарка:' })}
-                    </span>{' '}
-                    {giftActivationNotice.periodDays != null
-                      ? `${giftActivationNotice.periodDays} ${t('gift.days', { defaultValue: 'дн.' })}`
-                      : t('common.notSpecified', { defaultValue: 'Не указан' })}
-                  </p>
-                  {giftActivationNotice.tariffName ? (
-                    <p>
-                      <span className="text-white/[0.65]">
-                        {t('balance.promocode.giftTariff', { defaultValue: 'Тариф:' })}
-                      </span>{' '}
-                      {giftActivationNotice.tariffName}
-                    </p>
-                  ) : null}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setGiftActivationNotice(null)}
-                  className="mt-4 flex w-full items-center justify-center rounded-full border border-emerald-200/[0.22] bg-[rgba(12,45,42,0.34)] px-5 py-2.5 text-[15px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] backdrop-blur-md"
-                >
-                  {t('subscription.connection.gotIt', {
-                    defaultValue: 'Все понятно',
-                  })}
-                </button>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+      {dialog}
     </div>
   );
 }
