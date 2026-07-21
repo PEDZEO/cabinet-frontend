@@ -441,7 +441,7 @@ export function AppShell({ children }: AppShellProps) {
     void import('@/pages/Dashboard');
     void import('@/pages/Subscription');
     void import('@/pages/Support');
-    void import('@/pages/Connection');
+    prefetchUltimaTopLevelTab(queryClient, 'connection');
     void import('@/pages/UltimaNews');
     void import('@/pages/Profile');
     void import('@/pages/Referral');
@@ -449,7 +449,7 @@ export function AppShell({ children }: AppShellProps) {
     void import('@/pages/TopUpMethodSelect');
     void import('@/pages/TopUpAmount');
     void import('@/pages/AccountLinking');
-  }, [isUltimaMode]);
+  }, [isUltimaMode, queryClient]);
 
   if (!isLiteModeReady || !isUltimaModeReady) {
     return (

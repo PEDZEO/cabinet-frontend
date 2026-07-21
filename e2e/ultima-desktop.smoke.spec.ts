@@ -350,6 +350,7 @@ async function mockUltimaDesktopApi(
     connectedDevices = [CONNECTED_DEVICE],
     devicesGate,
     subscriptionGate,
+    connectionLinkGate,
     tariffs = [TARIFF],
     currentTariffId = 1,
     balanceKopeks = 125_000,
@@ -362,6 +363,7 @@ async function mockUltimaDesktopApi(
     connectedDevices?: Array<typeof CONNECTED_DEVICE>;
     devicesGate?: Promise<void>;
     subscriptionGate?: Promise<void>;
+    connectionLinkGate?: Promise<void>;
     tariffs?: Array<typeof TARIFF>;
     currentTariffId?: number | null;
     balanceKopeks?: number;
@@ -470,6 +472,9 @@ async function mockUltimaDesktopApi(
       });
     }
     if (path === '/cabinet/subscription/connection-link') {
+      if (connectionLinkGate) {
+        await connectionLinkGate;
+      }
       return respond({
         subscription_url: SUBSCRIPTION.subscription_url,
         connect_mode: 'url',
@@ -1593,6 +1598,28 @@ test.describe('Ultima trial onboarding persistence', () => {
 });
 
 test.describe('Ultima connection setup', () => {
+  test('opens immediately without waiting for the auxiliary connection link', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page, { connectionCompleted: false });
+
+    let releaseConnectionLink!: () => void;
+    const connectionLinkGate = new Promise<void>((resolve) => {
+      releaseConnectionLink = resolve;
+    });
+    await mockUltimaDesktopApi(page, { connectionLinkGate });
+
+    try {
+      await page.goto('/');
+      await page.locator('[data-ultima-nav-target="connection"]').click();
+
+      await expect(page).toHaveURL(/\/connection$/);
+      await expect(page.getByRole('heading', { name: 'Настройка VPN' })).toBeVisible();
+      await expect(page.getByTestId('ultima-connection-guide')).toBeVisible();
+    } finally {
+      releaseConnectionLink();
+    }
+  });
+
   test('keeps platform, app and installation choices in one clear mobile flow', async ({
     page,
   }) => {

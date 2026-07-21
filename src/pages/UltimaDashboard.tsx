@@ -733,11 +733,11 @@ export function UltimaDashboard() {
         setIsReminderHidden(false);
       }
 
-      void import('./UltimaConnection');
+      void import('./Connection');
       void queryClient.prefetchQuery({
         queryKey: ['appConfig'],
         queryFn: () => subscriptionApi.getAppConfig(),
-        staleTime: 0,
+        staleTime: 15000,
       });
       navigate('/connection');
     },

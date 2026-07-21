@@ -45,9 +45,9 @@ export default function Connection() {
   } = useQuery<AppConfig>({
     queryKey: ['appConfig'],
     queryFn: () => subscriptionApi.getAppConfig(),
-    staleTime: 0,
-    refetchOnMount: 'always',
+    staleTime: 15000,
     refetchOnWindowFocus: true,
+    placeholderData: (previousData) => previousData,
   });
 
   const { data: trialInfo } = useQuery({
@@ -60,8 +60,9 @@ export default function Connection() {
     queryKey: ['connectionLink'],
     queryFn: subscriptionApi.getConnectionLink,
     retry: false,
-    staleTime: 0,
-    enabled: Boolean(appConfig?.hasSubscription),
+    staleTime: 15000,
+    enabled: Boolean(appConfig?.hasSubscription && !isUltimaMode),
+    placeholderData: (previousData) => previousData,
   });
 
   const qrConnectionUrl = useMemo(
@@ -186,7 +187,7 @@ export default function Connection() {
   }, [appConfig?.platforms]);
 
   // Loading
-  if (isLoading || isConnectionLinkLoading) {
+  if (isLoading || (!isUltimaMode && isConnectionLinkLoading)) {
     return (
       <div className="flex flex-1 items-center justify-center py-20">
         <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-accent-500/30 border-t-accent-500" />
