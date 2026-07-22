@@ -1,5 +1,74 @@
 # Changelog
 
+## [1.14.0](https://github.com/PEDZEO/cabinet-frontend/compare/v1.13.1...v1.14.0) (2026-07-21)
+
+
+### Features
+
+* add crypto link delivery toggle ([391c32b](https://github.com/PEDZEO/cabinet-frontend/commit/391c32b536d6455eb8c624cec9b173240feb3c51))
+* add email verification code flow ([7a90e3c](https://github.com/PEDZEO/cabinet-frontend/commit/7a90e3cd68b80323bf503877a0c1b6475af18be9))
+* add exhausted traffic admin registry ([9b5c0f7](https://github.com/PEDZEO/cabinet-frontend/commit/9b5c0f74fd94ffb8f7ffc46d5f2334a079e9dd80))
+* add metered squad multi-select ([9566987](https://github.com/PEDZEO/cabinet-frontend/commit/956698772a5e3715317104b240cdd9526f3b220b))
+* add split traffic admin workspace ([41688a1](https://github.com/PEDZEO/cabinet-frontend/commit/41688a1a28fe20870429e0c1e8e26ed64da4aab4))
+* add Ultima traffic warning settings ([1590024](https://github.com/PEDZEO/cabinet-frontend/commit/1590024ab699c1074afce47f063237c763364ba1))
+* **admin:** add paginated traffic limits page ([efa3dd5](https://github.com/PEDZEO/cabinet-frontend/commit/efa3dd56fefd72ccdf1b55aff5935771a9dd5da2))
+* choose protected subscription link ([707644b](https://github.com/PEDZEO/cabinet-frontend/commit/707644b9b937d49aa5f3b5b5b72073c46de2aab5))
+* configure per-node traffic multipliers ([7f9f4e6](https://github.com/PEDZEO/cabinet-frontend/commit/7f9f4e6648d2bb0dc7e0eef6141a2dee06a8c3c5))
+* configure special servers per tariff ([d80b74d](https://github.com/PEDZEO/cabinet-frontend/commit/d80b74db56c0aedb499a0abd8ab4514105fd1ff9))
+* configure traffic per extra device ([4880b83](https://github.com/PEDZEO/cabinet-frontend/commit/4880b83e73a1912c76acc7293e1335336e38cddf))
+* explain split traffic in Ultima cabinet ([32aabfb](https://github.com/PEDZEO/cabinet-frontend/commit/32aabfb0dca6055c40bf7210b56d469567b0b177))
+* modernize desktop connection flow ([b7864ef](https://github.com/PEDZEO/cabinet-frontend/commit/b7864ef30e54ffb7218a3a132cde2b9ef367412a))
+* promote subscription purchase during trial ([4d9854b](https://github.com/PEDZEO/cabinet-frontend/commit/4d9854b4bc527486fd0e54ade533e086adab9913))
+* protect device connection links ([3f20f2c](https://github.com/PEDZEO/cabinet-frontend/commit/3f20f2c8a3cb17afad9c2112525af9d56e32ec20))
+* rebuild Ultima desktop workspace ([f1ed8f4](https://github.com/PEDZEO/cabinet-frontend/commit/f1ed8f46dcf9799d1e118bf167f24e85028e38a3))
+* redesign account login methods ([b10c0e0](https://github.com/PEDZEO/cabinet-frontend/commit/b10c0e02783f447c1265c2235977442f60905509))
+* redesign email registration flow ([0b646e9](https://github.com/PEDZEO/cabinet-frontend/commit/0b646e9cb62897523559a1fff1ec49a0b0f47fc8))
+* redesign ultima dashboard ([eac1300](https://github.com/PEDZEO/cabinet-frontend/commit/eac1300e8db0c9b013ef42d58a561c752a1e7b9c))
+* redesign Ultima desktop cabinet ([6704c69](https://github.com/PEDZEO/cabinet-frontend/commit/6704c69dd6e22cc97f408ab2e8b7a8526250ddb3))
+* redesign Ultima payment method selection ([c9f20f9](https://github.com/PEDZEO/cabinet-frontend/commit/c9f20f9fc31bdbe5806c3c6334265216b09f667f))
+* redesign ultima profile ([ae280c1](https://github.com/PEDZEO/cabinet-frontend/commit/ae280c17d10f081bafbfcc34e8ea4afadf3b21db))
+* redesign ultima referral page ([e98352c](https://github.com/PEDZEO/cabinet-frontend/commit/e98352c5da7bfb789e17700666f4e1301595807b))
+* show device traffic bonus during purchase ([c1d9f17](https://github.com/PEDZEO/cabinet-frontend/commit/c1d9f17d64b904a6bd7cffe7b1984cdf797c8003))
+* show metered traffic run metrics ([5f4df72](https://github.com/PEDZEO/cabinet-frontend/commit/5f4df7241644f93b6a34a27a24c11ca665b87406))
+* show traffic usage in tariff summary ([7c8c09f](https://github.com/PEDZEO/cabinet-frontend/commit/7c8c09f928eadff8a85b3e34699df782aa4f0f7c))
+* show traffic warnings in Ultima cabinet ([7ce9012](https://github.com/PEDZEO/cabinet-frontend/commit/7ce90122d1ba08861f58bea0bd01a41984526431))
+* **ultima:** redesign gifts and promocodes ([1fa4bf4](https://github.com/PEDZEO/cabinet-frontend/commit/1fa4bf4d5139da8fcd8d0e93339bfeb2ccdb344c))
+* **ultima:** redesign payment flow and history ([8d5249e](https://github.com/PEDZEO/cabinet-frontend/commit/8d5249e6a166b2ce136671abbbb211d8408622f1))
+
+
+### Bug Fixes
+
+* add email verification resend flow ([87b5841](https://github.com/PEDZEO/cabinet-frontend/commit/87b58410941cc5aa8a491c463561b3a4393698b8))
+* **admin:** make broadcast media delivery explicit ([1ebcead](https://github.com/PEDZEO/cabinet-frontend/commit/1ebceaddbee14baf2d548c0b94fd7c75c2413026))
+* allow free tariff periods on creation ([780e606](https://github.com/PEDZEO/cabinet-frontend/commit/780e60623a4769a5e81c9f45721502796a5e27f4))
+* allow unauthenticated verification resend ([a2248a9](https://github.com/PEDZEO/cabinet-frontend/commit/a2248a96b7a2ac63a9073ca1d214eb0806a28e08))
+* compact desktop device selection ([6ac736d](https://github.com/PEDZEO/cabinet-frontend/commit/6ac736dbb4582744deb895a8ad19c482591e9ab1))
+* complete yandex oauth after browser handoff ([a1980b5](https://github.com/PEDZEO/cabinet-frontend/commit/a1980b5fcf660b1a26cf281c71812caa98366fcf))
+* hide generic device link in crypto mode ([54ad487](https://github.com/PEDZEO/cabinet-frontend/commit/54ad487203fe45af3da2d63ff72164c41356dc28))
+* improve balancer admin settings ([054d2b0](https://github.com/PEDZEO/cabinet-frontend/commit/054d2b010e59a06bf682c15bed5a19affa50a0d7))
+* keep dashboard primary CTA on tariffs ([041f658](https://github.com/PEDZEO/cabinet-frontend/commit/041f658e94577da1d33658d68d0816b77ba6736f))
+* keep traffic pagination stable ([82ae824](https://github.com/PEDZEO/cabinet-frontend/commit/82ae8249806a7e0918ee0108ba25ac5801228f0e))
+* localize invalid verification codes ([8bb9c42](https://github.com/PEDZEO/cabinet-frontend/commit/8bb9c42edae6146a66ec11802bfc7817bf27a329))
+* move Ultima admin action into desktop rail ([ff377a0](https://github.com/PEDZEO/cabinet-frontend/commit/ff377a04cc54bda97bd8fdce8d271928e51a89fa))
+* open Ultima setup without loading flash ([281096f](https://github.com/PEDZEO/cabinet-frontend/commit/281096f98e49a638028159bbc7bdee82c51be8bb))
+* open vpn links outside telegram webview ([3476bad](https://github.com/PEDZEO/cabinet-frontend/commit/3476bad97add86e1ec165dc2e995d9000876a7a3))
+* persist Ultima trial onboarding state ([b94f621](https://github.com/PEDZEO/cabinet-frontend/commit/b94f62148553da32e3faf6f7298fa2c4820320a5))
+* polish balancer admin settings ([804c3a9](https://github.com/PEDZEO/cabinet-frontend/commit/804c3a95fa99dca22284a24ea947deb1ce949ac0))
+* prevent device count loading flash ([06d761b](https://github.com/PEDZEO/cabinet-frontend/commit/06d761b2f2c0e43a4060fcb912ff70c9d57189b7))
+* protect subscription link display ([1535fac](https://github.com/PEDZEO/cabinet-frontend/commit/1535facde93915f8b8195fa6b295aeddb95b24df))
+* remove legacy split traffic entry ([a6d9fc7](https://github.com/PEDZEO/cabinet-frontend/commit/a6d9fc705304ae29da1b6eaa529c05f6e530a0c2))
+* render Telegram login icon reliably ([0fabcd0](https://github.com/PEDZEO/cabinet-frontend/commit/0fabcd048d0d42f53077078badd0f8d0023ba135))
+* route split traffic settings to workspace ([f867175](https://github.com/PEDZEO/cabinet-frontend/commit/f867175a86a26d8c1c6e54faafe78918e4f9e94b))
+* route websocket through configured API ([a45c8c3](https://github.com/PEDZEO/cabinet-frontend/commit/a45c8c32df1f4035e03b3669e83588a605918c28))
+* secure cabinet sessions and release checks ([6594127](https://github.com/PEDZEO/cabinet-frontend/commit/6594127ec96b6f807986115ff903bd0a1d3103c3))
+* **ultima:** keep pending payment action visible ([782b0a2](https://github.com/PEDZEO/cabinet-frontend/commit/782b0a2cbc47d6f2006ac986f7467e8a9c421753))
+* use full desktop width without context panel ([e662c9e](https://github.com/PEDZEO/cabinet-frontend/commit/e662c9e2772d31c136ff1e8850154229300002b2))
+
+
+### Performance Improvements
+
+* refine Ultima mobile scrolling ([bd0702e](https://github.com/PEDZEO/cabinet-frontend/commit/bd0702eb81d4979e3ee6036b36100e98e0242ac8))
+
 ## [1.12.0](https://github.com/PEDZEO/cabinet-frontend/compare/v1.11.0...v1.12.0) (2026-05-27)
 
 
