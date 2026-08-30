@@ -1260,7 +1260,7 @@
       "salesStats": "Sales Statistics",
       "mainMenuButtons": "Main Menu Buttons",
       "accountLinking": "Account Merges",
-      "balancer": "Balancer",
+      "balancer": "Server groups",
       "landings": "Landings",
       "referralNetwork": "Referral Network",
       "referralSettings": "Referral Program",
@@ -3620,7 +3620,7 @@
       }
     },
     "balancer": {
-      "subtitle": "Manage xray-balancer middleware from cabinet",
+      "subtitle": "Server groups, automatic selection, and connection status",
       "rawJson": "raw JSON",
       "status": {
         "configured": "Configured",
@@ -3646,26 +3646,35 @@
         "refreshGroupsSuccess": "Groups updated",
         "refreshStats": "Refresh stats",
         "refreshStatsSuccess": "Stats updated",
+        "refreshAll": "Refresh data",
         "removeQuarantine": "Remove",
         "releaseProtection": "Return",
         "enableAttackMode": "Isolate",
         "tokenError": "Token debug failed"
       },
       "cards": {
-        "debugStats": "Debug stats",
-        "health": "Health",
+        "debugStats": "System activity",
+        "health": "Service connection",
         "nodeStats": "Node stats",
         "nodeStatsEmpty": "No node stats yet.",
         "nodeStatsHint": "Showing real nodes without inbound aliases.",
         "nodeStatsUnitsHint": "RAM load and CPU load are user density metrics (users per GB/core), not used memory/CPU percent.",
         "ready": "Ready",
-        "tokenDebug": "Token debug result"
+        "tokenDebug": "Subscription check result"
+      },
+      "sections": {
+        "groups": "Groups",
+        "quality": "Servers",
+        "service": "More"
       },
       "groups": {
         "add": "Add group",
         "advancedTitle": "Additional settings",
+        "automaticSettingsTitle": "Automatic selection and delivery rules",
         "advancedHint": "These settings are saved with groups and sent to the balancer immediately.",
         "collapseList": "Collapse list",
+        "collapseAll": "Collapse all",
+        "expandAll": "Expand all",
         "autoDrainEnabled": "Temporarily avoid overloaded servers",
         "autoDrainFailures": "How many bad checks are needed",
         "autoDrainLoadThreshold": "Load threshold",
@@ -3708,6 +3717,11 @@
         "hostsLoadError": "Failed to load hosts from panel",
         "hostsSearch": "Search by name or address",
         "hostsSelected": "Selected: {{count}}",
+        "hostsFree": "Free: {{count}}",
+        "hostsAssigned": "In other groups: {{count}}",
+        "hostAssignedTo": "In groups: {{groups}}",
+        "hostsFreeOnly": "Free only",
+        "hostsAll": "All servers",
         "hostsTitle": "Hosts from panel",
         "hostUnavailable": "Host is temporarily unavailable in the panel",
         "hiddenGroupsDesc": "Selected groups stay in config but are not published into generated subscription groups.",
@@ -3729,6 +3743,8 @@
         "nodeStatsExcludeTitle": "Keep these groups in your original order",
         "patterns": "Patterns separated by comma or new line",
         "patternsCount": "{{count}} items",
+        "serverCount": "Servers: {{count}}",
+        "ruleCount": "Rules: {{count}}",
         "patternsTitle": "Patterns",
         "previewHint": "This is the config that will be sent to the balancer when you save.",
         "previewTitle": "Config preview",
@@ -3846,7 +3862,14 @@
         "status": "Status",
         "subPage": "Sub page",
         "timeout": "Timeout",
-        "token": "Token"
+        "token": "Access",
+        "working": "Working",
+        "issues": "There are problems",
+        "readyNow": "Ready to work",
+        "notReady": "Not ready",
+        "accessReady": "Access configured",
+        "accessMissing": "Access not configured",
+        "connectionDetails": "Connection details"
       },
       "quarantine": {
         "title": "Quarantine",
@@ -3858,6 +3881,28 @@
         "manual": "Manual",
         "automatic": "Automatic",
         "normal": "Normal"
+      },
+      "quality": {
+        "title": "Connection quality",
+        "hint": "Actual server delay and stability from the latest checks.",
+        "loadError": "Failed to load connection quality.",
+        "empty": "There are no completed server checks yet.",
+        "stable": "Stable",
+        "fluctuations": "Minor fluctuations",
+        "unstable": "Unstable",
+        "restrictionsDetected": "Connection restrictions detected",
+        "speedLimited": "Connection speed is limited",
+        "partiallyUnavailable": "Some sites may be unavailable",
+        "noRestrictions": "No restrictions detected",
+        "notChecked": "Not checked yet",
+        "checkedAt": "Last check",
+        "latency": "Latency",
+        "jitter": "Fluctuation",
+        "loss": "Loss",
+        "breaks": "Breaks",
+        "showAll": "Show all servers: {{count}}",
+        "showLess": "Show less",
+        "ms": "ms"
       },
       "table": {
         "action": "Action",
@@ -3873,9 +3918,9 @@
         "users": "Users"
       },
       "tokenDebug": {
-        "placeholder": "Paste subscription token",
-        "run": "Run debug",
-        "title": "Token debug"
+        "placeholder": "Paste the subscription code",
+        "run": "Check",
+        "title": "Subscription check"
       }
     }
   },

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { Activity, ArrowDown, ArrowUp, ChevronDown, Server, Trash2, Wrench } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -19,6 +20,11 @@ type GroupDraft = {
   hostIds: string[];
 };
 
+type HostAssignment = {
+  groupId: string;
+  groupName: string;
+};
+
 const DEFAULT_FASTEST_GROUP_NAME = '🏁 🇪🇺 Самые быстрые';
 const DEFAULT_FASTEST_PROBE_URL = 'https://ya.ru';
 const DEFAULT_PROBE_INTERVAL = '30s';
@@ -28,6 +34,7 @@ type BalancerStrategy = (typeof STRATEGY_OPTIONS)[number];
 type StickyMode = 'pin' | 'prefer';
 
 type AlertTone = 'default' | 'success' | 'error';
+type BalancerPageSection = 'groups' | 'quality' | 'service';
 
 type MetricItem = {
   label: string;
@@ -310,6 +317,9 @@ function ChecklistCard({
 function HostPicker({
   hosts,
   selectedHostIds,
+  assignmentsByHost,
+  currentGroupId,
+  compact,
   loading,
   error,
   onToggle,
@@ -318,11 +328,19 @@ function HostPicker({
   emptyText,
   loadErrorText,
   selectedText,
+  freeText,
+  assignedText,
+  assignedToText,
+  freeOnlyText,
+  allHostsText,
   disabledText,
   unavailableText,
 }: {
   hosts: BalancerHost[];
   selectedHostIds: string[];
+  assignmentsByHost: ReadonlyMap<string, HostAssignment[]>;
+  currentGroupId: string;
+  compact: boolean;
   loading: boolean;
   error: boolean;
   onToggle: (hostId: string) => void;
@@ -331,10 +349,16 @@ function HostPicker({
   emptyText: string;
   loadErrorText: string;
   selectedText: string;
+  freeText: string;
+  assignedText: string;
+  assignedToText: string;
+  freeOnlyText: string;
+  allHostsText: string;
   disabledText: string;
   unavailableText: string;
 }) {
   const [search, setSearch] = useState('');
+  const [freeOnly, setFreeOnly] = useState(false);
   const selectedSet = useMemo(() => new Set(selectedHostIds.filter(Boolean)), [selectedHostIds]);
   const availableHostIds = useMemo(() => new Set(hosts.map((host) => host.uuid)), [hosts]);
   const unavailableHostIds = selectedHostIds.filter((hostId) => !availableHostIds.has(hostId));
@@ -342,33 +366,84 @@ function HostPicker({
     const needle = search.trim().toLowerCase();
     return hosts
       .filter((host) => {
+        const assignments = assignmentsByHost.get(host.uuid) || [];
+        const selectedHere = assignments.some(
+          (assignment) => assignment.groupId === currentGroupId,
+        );
+        if (freeOnly && assignments.length > 0 && !selectedHere) return false;
         if (!needle) return true;
-        return `${host.remark} ${host.address}`.toLowerCase().includes(needle);
+        const groupNames = assignments.map((assignment) => assignment.groupName).join(' ');
+        return `${host.remark} ${host.address} ${groupNames}`.toLowerCase().includes(needle);
       })
       .sort((left, right) => {
         const leftSelected = selectedSet.has(left.uuid);
         const rightSelected = selectedSet.has(right.uuid);
         if (leftSelected !== rightSelected) return leftSelected ? -1 : 1;
+        const leftAssignedElsewhere = (assignmentsByHost.get(left.uuid) || []).some(
+          (assignment) => assignment.groupId !== currentGroupId,
+        );
+        const rightAssignedElsewhere = (assignmentsByHost.get(right.uuid) || []).some(
+          (assignment) => assignment.groupId !== currentGroupId,
+        );
+        if (leftAssignedElsewhere !== rightAssignedElsewhere) {
+          return leftAssignedElsewhere ? 1 : -1;
+        }
         if (left.is_disabled !== right.is_disabled) return left.is_disabled ? 1 : -1;
         return left.remark.localeCompare(right.remark);
       });
-  }, [hosts, search, selectedSet]);
+  }, [assignmentsByHost, currentGroupId, freeOnly, hosts, search, selectedSet]);
   const selectedCount = selectedSet.size;
+  const freeCount = hosts.filter(
+    (host) => (assignmentsByHost.get(host.uuid) || []).length === 0,
+  ).length;
+  const assignedElsewhereCount = hosts.filter((host) =>
+    (assignmentsByHost.get(host.uuid) || []).some(
+      (assignment) => assignment.groupId !== currentGroupId,
+    ),
+  ).length;
 
   return (
     <div>
-      <div className="mb-1 flex items-center justify-between gap-3 text-xs text-dark-400">
-        <span>{title}</span>
-        <span>{selectedText.replace('{{count}}', String(selectedCount))}</span>
+      <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2 text-xs text-dark-400">
+        <span className="font-medium text-dark-300">{title}</span>
+        <div className="flex flex-wrap items-center justify-end gap-1.5">
+          <span className="rounded-md bg-accent-500/10 px-2 py-1 text-accent-300">
+            {selectedText.replace('{{count}}', String(selectedCount))}
+          </span>
+          <span className="rounded-md bg-dark-700/70 px-2 py-1">
+            {freeText.replace('{{count}}', String(freeCount))}
+          </span>
+          {assignedElsewhereCount > 0 && (
+            <span className="rounded-md bg-warning-500/10 px-2 py-1 text-warning-300">
+              {assignedText.replace('{{count}}', String(assignedElsewhereCount))}
+            </span>
+          )}
+        </div>
       </div>
-      <input
-        type="search"
-        value={search}
-        onChange={(event) => setSearch(event.target.value)}
-        placeholder={searchPlaceholder}
-        className="mb-2 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none placeholder:text-dark-500 focus:border-accent-500"
-      />
-      <div className="max-h-52 overflow-y-auto rounded-lg border border-dark-700 bg-dark-950/40 p-1.5">
+      <div className="mb-2 grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+        <input
+          type="search"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder={searchPlaceholder}
+          className="min-w-0 rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none placeholder:text-dark-500 focus:border-accent-500"
+        />
+        <button
+          type="button"
+          aria-pressed={freeOnly}
+          onClick={() => setFreeOnly((value) => !value)}
+          className={`rounded-lg border px-3 py-2 text-xs transition-colors ${
+            freeOnly
+              ? 'border-accent-500/50 bg-accent-500/15 text-accent-300'
+              : 'border-dark-600 bg-dark-800 text-dark-300 hover:bg-dark-700'
+          }`}
+        >
+          {freeOnly ? allHostsText : freeOnlyText}
+        </button>
+      </div>
+      <div
+        className={`${compact ? 'max-h-44' : 'max-h-64'} overflow-y-auto rounded-lg border border-dark-700 bg-dark-950/40 p-1.5`}
+      >
         {loading ? (
           <p className="px-2 py-3 text-xs text-dark-500">...</p>
         ) : error ? (
@@ -376,16 +451,26 @@ function HostPicker({
         ) : visibleHosts.length === 0 && unavailableHostIds.length === 0 ? (
           <p className="px-2 py-3 text-xs text-dark-500">{emptyText}</p>
         ) : (
-          <div className="grid grid-cols-1 gap-1 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-1 lg:grid-cols-2 2xl:grid-cols-3">
             {visibleHosts.map((host) => {
               const selected = selectedSet.has(host.uuid);
+              const otherAssignments = (assignmentsByHost.get(host.uuid) || []).filter(
+                (assignment) => assignment.groupId !== currentGroupId,
+              );
+              const assignmentNames = otherAssignments.map((assignment) => assignment.groupName);
+              const assignmentLabel = assignedToText.replace(
+                '{{groups}}',
+                assignmentNames.join(', '),
+              );
               return (
                 <label
                   key={host.uuid}
-                  className={`flex min-w-0 cursor-pointer items-center gap-2 rounded-md border px-2.5 py-2 transition-colors ${
+                  className={`flex min-w-0 cursor-pointer items-center gap-2 rounded-md border px-2.5 py-1.5 transition-colors ${
                     selected
                       ? 'border-accent-500/40 bg-accent-500/10'
-                      : 'border-transparent hover:border-dark-700 hover:bg-dark-900/70'
+                      : otherAssignments.length > 0
+                        ? 'border-warning-500/20 bg-warning-500/5 hover:border-warning-500/40'
+                        : 'border-transparent hover:border-dark-700 hover:bg-dark-900/70'
                   }`}
                 >
                   <input type="checkbox" checked={selected} onChange={() => onToggle(host.uuid)} />
@@ -396,23 +481,33 @@ function HostPicker({
                       {host.port ? `:${host.port}` : ''}
                     </span>
                   </span>
-                  {host.is_disabled && (
-                    <span className="shrink-0 rounded border border-dark-600 px-1.5 py-0.5 text-[11px] text-dark-400">
-                      {disabledText}
-                    </span>
-                  )}
+                  <span className="flex max-w-[42%] shrink-0 flex-col items-end gap-1">
+                    {otherAssignments.length > 0 && (
+                      <span
+                        title={assignmentLabel}
+                        className="max-w-full truncate rounded border border-warning-500/30 bg-warning-500/10 px-1.5 py-0.5 text-[11px] text-warning-300"
+                      >
+                        {assignmentLabel}
+                      </span>
+                    )}
+                    {host.is_disabled && (
+                      <span className="rounded border border-dark-600 px-1.5 py-0.5 text-[11px] text-dark-400">
+                        {disabledText}
+                      </span>
+                    )}
+                  </span>
                 </label>
               );
             })}
             {unavailableHostIds.map((hostId) => (
               <label
                 key={hostId}
+                title={hostId}
                 className="flex min-w-0 cursor-pointer items-center gap-2 rounded-md border border-warning-500/40 bg-warning-500/10 px-2.5 py-2"
               >
                 <input type="checkbox" checked onChange={() => onToggle(hostId)} />
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm text-warning-200">{unavailableText}</span>
-                  <span className="block truncate text-xs text-dark-500">{hostId}</span>
                 </span>
               </label>
             ))}
@@ -1014,7 +1109,10 @@ export default function AdminBalancer() {
   const [advancedSettings, setAdvancedSettings] =
     useState<BalancerAdvancedSettings>(DEFAULT_ADVANCED_SETTINGS);
   const [groupsDirty, setGroupsDirty] = useState(false);
-  const [compactGroupsView, setCompactGroupsView] = useState(true);
+  const compactGroupsView = true;
+  const [qualityExpanded, setQualityExpanded] = useState(false);
+  const [activeSection, setActiveSection] = useState<BalancerPageSection>('groups');
+  const [expandedGroupIds, setExpandedGroupIds] = useState<Set<string>>(new Set());
 
   const {
     data: status,
@@ -1063,6 +1161,17 @@ export default function AdminBalancer() {
   } = useQuery({
     queryKey: ['admin', 'balancer', 'node-stats'],
     queryFn: adminBalancerApi.getNodeStats,
+    refetchInterval: 60_000,
+  });
+
+  const {
+    data: nodeHealthMetrics,
+    refetch: refetchNodeHealthMetrics,
+    isLoading: nodeHealthMetricsLoading,
+    isError: nodeHealthMetricsError,
+  } = useQuery({
+    queryKey: ['admin', 'balancer', 'health-metrics'],
+    queryFn: adminBalancerApi.getHealthMetrics,
     refetchInterval: 60_000,
   });
 
@@ -1144,6 +1253,7 @@ export default function AdminBalancer() {
       setAlert(t('admin.balancer.actions.refreshStatsSuccess', 'Stats updated'), 'success');
       await Promise.all([
         refetchNodeStats(),
+        refetchNodeHealthMetrics(),
         refetchDebugStats(),
         refetchReady(),
         refetchQuarantine(),
@@ -1309,6 +1419,22 @@ export default function AdminBalancer() {
     return duplicates;
   }, [groupsDraft]);
 
+  const hostAssignments = useMemo(() => {
+    const result = new Map<string, HostAssignment[]>();
+    groupsDraft.forEach((group, index) => {
+      const groupName =
+        group.name.trim() ||
+        t('admin.balancer.groups.groupNumber', 'Group #{{index}}', { index: index + 1 });
+      for (const hostId of group.hostIds) {
+        if (!hostId) continue;
+        const assignments = result.get(hostId) || [];
+        assignments.push({ groupId: group.id, groupName });
+        result.set(hostId, assignments);
+      }
+    });
+    return result;
+  }, [groupsDraft, t]);
+
   const quarantineSet = useMemo(
     () =>
       new Set(
@@ -1353,6 +1479,58 @@ export default function AdminBalancer() {
     return primaryRows.length > 0 ? primaryRows : nodeRows;
   }, [nodeRows]);
 
+  const nodeQualityRows = useMemo(() => {
+    const locale = i18n.resolvedLanguage?.startsWith('ru') ? 'ru-RU' : 'en-US';
+    return Object.entries(nodeHealthMetrics || {})
+      .map(([key, metric]) => {
+        const latency = metric.avgRttMs ?? metric.lastRttMs;
+        const hasRestrictions = metric.throttled || metric.partialBlock;
+        const unstable = metric.lossPercent > 5 || metric.jitterMs > 60 || metric.rstCount > 0;
+        const stability =
+          metric.lossPercent > 10 || metric.jitterMs > 60
+            ? t('admin.balancer.quality.unstable', 'Unstable')
+            : metric.lossPercent > 0 || metric.jitterMs > 20
+              ? t('admin.balancer.quality.fluctuations', 'Minor fluctuations')
+              : t('admin.balancer.quality.stable', 'Stable');
+        const restriction =
+          metric.throttled && metric.partialBlock
+            ? t('admin.balancer.quality.restrictionsDetected', 'Restrictions detected')
+            : metric.throttled
+              ? t('admin.balancer.quality.speedLimited', 'Speed is limited')
+              : metric.partialBlock
+                ? t('admin.balancer.quality.partiallyUnavailable', 'Some sites are unavailable')
+                : t('admin.balancer.quality.noRestrictions', 'No restrictions');
+
+        return {
+          key,
+          nodeName: metric.nodeName || key,
+          latency,
+          jitter: metric.jitterMs,
+          loss: metric.lossPercent,
+          breaks: metric.rstCount,
+          stability,
+          restriction,
+          hasRestrictions,
+          unstable,
+          checkedAt: metric.lastCheckAt
+            ? new Intl.DateTimeFormat(locale, {
+                day: '2-digit',
+                month: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+              }).format(new Date(metric.lastCheckAt))
+            : t('admin.balancer.quality.notChecked', 'Not checked yet'),
+        };
+      })
+      .sort((left, right) => {
+        if (left.hasRestrictions !== right.hasRestrictions) return left.hasRestrictions ? -1 : 1;
+        if (left.unstable !== right.unstable) return left.unstable ? -1 : 1;
+        return left.nodeName.localeCompare(right.nodeName);
+      });
+  }, [i18n.resolvedLanguage, nodeHealthMetrics, t]);
+
+  const visibleNodeQualityRows = qualityExpanded ? nodeQualityRows : nodeQualityRows.slice(0, 12);
+
   const availableNodeNames = useMemo(
     () =>
       visibleNodeRows
@@ -1363,11 +1541,13 @@ export default function AdminBalancer() {
   );
 
   const addGroup = () => {
+    const id = `${Date.now()}-${groupsDraft.length}`;
     setGroupsDirty(true);
+    setExpandedGroupIds((prev) => new Set(prev).add(id));
     setGroupsDraft((prev) => [
       ...prev,
       {
-        id: `${Date.now()}-${prev.length}`,
+        id,
         name: '',
         patterns: '',
         hostIds: [],
@@ -1377,7 +1557,30 @@ export default function AdminBalancer() {
 
   const removeGroup = (id: string) => {
     setGroupsDirty(true);
+    setExpandedGroupIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
     setGroupsDraft((prev) => prev.filter((group) => group.id !== id));
+  };
+
+  const toggleGroupExpanded = (id: string) => {
+    setExpandedGroupIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const allGroupsExpanded =
+    groupsDraft.length > 0 && groupsDraft.every((group) => expandedGroupIds.has(group.id));
+
+  const toggleAllGroups = () => {
+    setExpandedGroupIds(
+      allGroupsExpanded ? new Set() : new Set(groupsDraft.map((group) => group.id)),
+    );
   };
 
   const moveGroup = (id: string, direction: 'up' | 'down') => {
@@ -1761,1643 +1964,2000 @@ export default function AdminBalancer() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-dark-700 bg-dark-800/50 p-4">
-        <div className="mb-3 flex flex-wrap items-center gap-2">
-          <StatusBadge
-            ok={Boolean(status?.configured)}
-            text={
-              status?.configured
-                ? t('admin.balancer.status.configured', 'Configured')
-                : t('admin.balancer.status.notConfigured', 'Not configured')
-            }
-          />
-          <StatusBadge
-            ok={healthOk}
-            text={`${t('admin.balancer.labels.health', 'Health')}: ${String(healthRecord.status ?? '—')}`}
-          />
-          <StatusBadge
-            ok={readyOk}
-            text={`${t('admin.balancer.labels.ready', 'Ready')}: ${String(readyRecord.status ?? '—')}`}
-          />
-          <StatusBadge
-            ok={Boolean(status?.has_admin_token)}
-            text={`${t('admin.balancer.labels.token', 'Token')}: ${
-              status?.has_admin_token
-                ? t('admin.balancer.labels.ok', 'ok')
-                : t('admin.balancer.labels.missing', 'missing')
-            }`}
-          />
-          {groupsDirty && (
-            <span className="inline-flex items-center rounded-full bg-warning-500/15 px-2.5 py-1 text-xs font-medium text-warning-300">
-              {t('admin.balancer.groups.unsaved', 'Unsaved groups changes')}
-            </span>
-          )}
-        </div>
+      <nav className="grid grid-cols-3 gap-1 rounded-xl border border-dark-700 bg-dark-800/70 p-1.5">
+        <button
+          type="button"
+          onClick={() => setActiveSection('groups')}
+          className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+            activeSection === 'groups'
+              ? 'bg-accent-500/20 text-accent-200'
+              : 'text-dark-400 hover:bg-dark-700 hover:text-dark-200'
+          }`}
+        >
+          <Server className="h-4 w-4" />
+          <span>{t('admin.balancer.sections.groups', 'Groups')}</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveSection('quality')}
+          className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+            activeSection === 'quality'
+              ? 'bg-accent-500/20 text-accent-200'
+              : 'text-dark-400 hover:bg-dark-700 hover:text-dark-200'
+          }`}
+        >
+          <Activity className="h-4 w-4" />
+          <span>{t('admin.balancer.sections.quality', 'Server status')}</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveSection('service')}
+          className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+            activeSection === 'service'
+              ? 'bg-accent-500/20 text-accent-200'
+              : 'text-dark-400 hover:bg-dark-700 hover:text-dark-200'
+          }`}
+        >
+          <Wrench className="h-4 w-4" />
+          <span>{t('admin.balancer.sections.service', 'Additional')}</span>
+        </button>
+      </nav>
 
-        <div className="grid grid-cols-1 gap-2 text-sm text-dark-300 md:grid-cols-2">
-          <div>
-            {t('admin.balancer.labels.baseUrl', 'Base URL')}:{' '}
-            <span className="font-mono text-dark-100">{status?.base_url || '—'}</span>
-          </div>
-          <div>
-            {t('admin.balancer.labels.timeout', 'Timeout')}:{' '}
-            <span className="font-mono text-dark-100">{status?.request_timeout_sec ?? '—'}s</span>
-          </div>
-          <div>
-            {t('admin.balancer.labels.profileMode', 'Profile mode')}:{' '}
-            <span className="font-mono text-dark-100">{profileMode}</span>
-          </div>
-        </div>
+      {actionMessage && (
+        <p className={`rounded-lg border px-3 py-2 text-sm ${alertClassName}`}>{actionMessage}</p>
+      )}
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          <button
-            onClick={() => void refreshGroupsMutation.mutateAsync()}
-            disabled={refreshGroupsMutation.isPending}
-            className="rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600 disabled:opacity-60"
-          >
-            {t('admin.balancer.actions.refreshGroups', 'Refresh groups')}
-          </button>
-          <button
-            onClick={() => void refreshStatsMutation.mutateAsync()}
-            disabled={refreshStatsMutation.isPending}
-            className="rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600 disabled:opacity-60"
-          >
-            {t('admin.balancer.actions.refreshStats', 'Refresh stats')}
-          </button>
-          <button
-            onClick={() =>
-              void Promise.all([
-                refetchStatus(),
-                refetchHealth(),
-                refetchReady(),
-                refetchDebugStats(),
-                refetchNodeStats(),
-                refetchGroups(),
-                refetchQuarantine(),
-              ])
-            }
-            className="rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600"
-          >
-            {t('common.refresh', 'Refresh')}
-          </button>
-        </div>
-      </div>
-
-      <div className="rounded-xl border border-dark-700 bg-dark-800/50 p-4">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-          <h3 className="text-sm font-semibold text-dark-100">
-            {t('admin.balancer.groups.title', 'Groups editor')}
-          </h3>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setCompactGroupsView((prev) => !prev)}
-              className="rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600"
-            >
-              {compactGroupsView
-                ? t('admin.balancer.groups.viewExpanded', 'Expanded view')
-                : t('admin.balancer.groups.viewCompact', 'Compact view')}
-            </button>
-            <button
-              onClick={addGroup}
-              className="rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600"
-              aria-label="Add balancer group"
-            >
-              {t('admin.balancer.groups.add', 'Add group')}
-            </button>
-            <button
-              onClick={() => {
-                if (!groupsData) return;
-                setGroupsDraft(groupsToDraft(groupsData, hostsData?.hosts));
-                setFastestEnabled(Boolean(groupsData.fastest_group));
-                setFastestGroupName(
-                  (groupsData.fastest_group_name || DEFAULT_FASTEST_GROUP_NAME).trim(),
-                );
-                setExcludeGroups(groupsData.fastest_exclude_groups || []);
-                setFallbackGroups(groupsData.fastest_fallback || []);
-                setNodeStatsExcludeGroups(groupsData.node_stats_exclude || []);
-                setExpandGroupsToNodes(groupsData.expand_groups_to_nodes || []);
-                setHiddenGroups(groupsData.hidden_groups || []);
-                setHiddenNodes(groupsData.hidden_nodes || []);
-                setAdvancedSettings(normalizeAdvancedSettings(groupsData));
-                setGroupsDirty(false);
-                setAlert(
-                  t('admin.balancer.actions.changesDiscarded', 'Changes discarded'),
-                  'default',
-                );
-              }}
-              className="hidden rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600 md:inline-flex"
-            >
-              {t('common.cancel', 'Cancel')}
-            </button>
-            <button
-              onClick={() => void saveGroups()}
-              disabled={saveGroupsMutation.isPending}
-              className="hidden rounded-lg border border-accent-500/50 bg-accent-500/20 px-3 py-2 text-sm text-accent-300 transition-colors hover:bg-accent-500/30 disabled:opacity-60 md:inline-flex"
-            >
-              {t('common.save', 'Save')}
-            </button>
-          </div>
-        </div>
-
-        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-dark-700 bg-dark-900/95 p-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur md:hidden">
-          <div className="mx-auto flex w-full max-w-lg gap-2">
-            <button
-              onClick={() => {
-                if (!groupsData) return;
-                setGroupsDraft(groupsToDraft(groupsData, hostsData?.hosts));
-                setFastestEnabled(Boolean(groupsData.fastest_group));
-                setFastestGroupName(
-                  (groupsData.fastest_group_name || DEFAULT_FASTEST_GROUP_NAME).trim(),
-                );
-                setExcludeGroups(groupsData.fastest_exclude_groups || []);
-                setFallbackGroups(groupsData.fastest_fallback || []);
-                setNodeStatsExcludeGroups(groupsData.node_stats_exclude || []);
-                setExpandGroupsToNodes(groupsData.expand_groups_to_nodes || []);
-                setHiddenGroups(groupsData.hidden_groups || []);
-                setHiddenNodes(groupsData.hidden_nodes || []);
-                setAdvancedSettings(normalizeAdvancedSettings(groupsData));
-                setGroupsDirty(false);
-                setAlert(
-                  t('admin.balancer.actions.changesDiscarded', 'Changes discarded'),
-                  'default',
-                );
-              }}
-              className="min-w-0 flex-1 rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600"
-            >
-              {t('common.cancel', 'Cancel')}
-            </button>
-            <button
-              onClick={() => void saveGroups()}
-              disabled={saveGroupsMutation.isPending}
-              className="min-w-0 flex-1 rounded-lg border border-accent-500/50 bg-accent-500/20 px-3 py-2 text-sm text-accent-300 transition-colors hover:bg-accent-500/30 disabled:opacity-60"
-            >
-              {t('common.save', 'Save')}
-            </button>
-          </div>
-        </div>
-
-        <div className="mb-3 rounded-lg border border-dark-700 bg-dark-900/40 p-3 text-xs text-dark-300">
-          <p className="font-semibold text-dark-100">
-            {t('admin.balancer.groups.howTitle', 'How groups work')}
-          </p>
-          <p>
-            {t('admin.balancer.groups.howLine1', 'Each group contains patterns for outbound tags.')}
-          </p>
-          <p>
-            {t(
-              'admin.balancer.groups.howLine2',
-              'Fastest group is an additional auto-group built from all groups except excluded ones.',
+      {activeSection === 'groups' && (
+        <div className="rounded-xl border border-dark-700 bg-dark-800/50 p-4">
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <StatusBadge
+              ok={Boolean(status?.configured)}
+              text={
+                status?.configured
+                  ? t('admin.balancer.status.configured', 'Configured')
+                  : t('admin.balancer.status.notConfigured', 'Not configured')
+              }
+            />
+            <StatusBadge
+              ok={healthOk}
+              text={
+                healthOk
+                  ? t('admin.balancer.labels.working', 'Working')
+                  : t('admin.balancer.labels.issues', 'There are problems')
+              }
+            />
+            <StatusBadge
+              ok={readyOk}
+              text={
+                readyOk
+                  ? t('admin.balancer.labels.readyNow', 'Ready to work')
+                  : t('admin.balancer.labels.notReady', 'Not ready')
+              }
+            />
+            <StatusBadge
+              ok={Boolean(status?.has_admin_token)}
+              text={
+                status?.has_admin_token
+                  ? t('admin.balancer.labels.accessReady', 'Access configured')
+                  : t('admin.balancer.labels.accessMissing', 'Access not configured')
+              }
+            />
+            {groupsDirty && (
+              <span className="inline-flex items-center rounded-full bg-warning-500/15 px-2.5 py-1 text-xs font-medium text-warning-300">
+                {t('admin.balancer.groups.unsaved', 'Unsaved groups changes')}
+              </span>
             )}
-          </p>
-          <p>
-            {t(
-              'admin.balancer.groups.howLine3',
-              'Save applies config to /admin/groups and updates balancer immediately.',
-            )}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-5">
-          <div className="rounded-lg border border-dark-700 bg-dark-900/40 p-3">
-            <p className="text-xs uppercase tracking-wide text-dark-500">
-              {t('admin.balancer.groups.summaryGroups', 'Manual groups')}
-            </p>
-            <p className="mt-1 text-xl font-semibold text-dark-100">{groupsDraft.length}</p>
-            <p className="mt-1 text-xs leading-5 text-dark-400">
-              {t(
-                'admin.balancer.groups.summaryGroupsDesc',
-                'These groups are created manually and define how servers are grouped.',
-              )}
-            </p>
           </div>
-          <div className="rounded-lg border border-dark-700 bg-dark-900/40 p-3">
-            <p className="text-xs uppercase tracking-wide text-dark-500">
-              {t('admin.balancer.groups.summaryFastest', 'Automatic route group')}
-            </p>
-            <p className="mt-1 text-xl font-semibold text-dark-100">{fastestStatusText}</p>
-            <p className="mt-1 text-xs leading-5 text-dark-400">
-              {t(
-                'admin.balancer.groups.summaryFastestDesc',
-                'Creates one extra group that automatically picks the better server.',
-              )}
-            </p>
-          </div>
-          <div className="rounded-lg border border-dark-700 bg-dark-900/40 p-3">
-            <p className="text-xs uppercase tracking-wide text-dark-500">
-              {t('admin.balancer.groups.summaryReserve', 'Reserve groups')}
-            </p>
-            <p className="mt-1 text-xl font-semibold text-dark-100">{fallbackGroups.length}</p>
-            <p className="mt-1 text-xs leading-5 text-dark-400">
-              {t(
-                'admin.balancer.groups.summaryReserveDesc',
-                'Used only when the main automatic choice should fall back to other groups.',
-              )}
-            </p>
-          </div>
-          <div className="rounded-lg border border-dark-700 bg-dark-900/40 p-3">
-            <p className="text-xs uppercase tracking-wide text-dark-500">
-              {t('admin.balancer.groups.summaryFixed', 'Groups left untouched')}
-            </p>
-            <p className="mt-1 text-xl font-semibold text-dark-100">
-              {nodeStatsExcludeGroups.length}
-            </p>
-            <p className="mt-1 text-xs leading-5 text-dark-400">
-              {t(
-                'admin.balancer.groups.summaryFixedDesc',
-                'Servers inside these groups keep your original order and are not auto-rebalanced.',
-              )}
-            </p>
-          </div>
-          <div className="rounded-lg border border-dark-700 bg-dark-900/40 p-3">
-            <p className="text-xs uppercase tracking-wide text-dark-500">
-              {t('admin.balancer.groups.summaryExpanded', 'Separate servers in subscription')}
-            </p>
-            <p className="mt-1 text-xl font-semibold text-dark-100">{expandGroupsToNodes.length}</p>
-            <p className="mt-1 text-xs leading-5 text-dark-400">
-              {t(
-                'admin.balancer.groups.summaryExpandedDesc',
-                'For these groups, the subscription shows separate servers instead of one shared group.',
-              )}
-            </p>
-          </div>
-        </div>
 
-        <div className="mt-3 space-y-3">
-          {groupsError && (
-            <div className="rounded-lg border border-error-500/40 bg-error-500/10 p-3 text-sm text-error-200">
-              {t(
-                'admin.balancer.groups.loadError',
-                'Failed to load groups. Check /admin/groups availability.',
-              )}
-            </div>
-          )}
-
-          {groupsLoading && (
-            <div className="rounded-lg border border-dark-700 bg-dark-900/40 p-3 text-sm text-dark-400">
-              {t('common.loading', 'Loading...')}
-            </div>
-          )}
-
-          {!groupsLoading && groupsDraft.length === 0 && (
-            <div className="rounded-lg border border-dark-700 bg-dark-900/40 p-3 text-sm text-dark-400">
-              {t('admin.balancer.groups.empty', 'No groups configured.')}
-            </div>
-          )}
-
-          {groupsDraft.map((group, index) => {
-            const trimmedName = group.name.trim().toLowerCase();
-            const hasDuplicate = trimmedName ? duplicateNameSet.has(trimmedName) : false;
-            const patternCount = parsePatterns(group.patterns).length;
-
-            return (
-              <div key={group.id} className="rounded-lg border border-dark-700 bg-dark-900/50 p-3">
-                <div className="mb-2 flex items-center justify-between">
-                  <p className="text-xs text-dark-400">
-                    {t('admin.balancer.groups.groupNumber', 'Group #{{index}}', {
-                      index: index + 1,
-                    })}
-                  </p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => moveGroup(group.id, 'up')}
-                      disabled={index === 0}
-                      className="rounded-md border border-dark-600 px-2 py-1 text-xs text-dark-200 disabled:opacity-40"
-                      aria-label="Move group up"
-                    >
-                      {t('admin.balancer.groups.moveUp', 'Up')}
-                    </button>
-                    <button
-                      onClick={() => moveGroup(group.id, 'down')}
-                      disabled={index === groupsDraft.length - 1}
-                      className="rounded-md border border-dark-600 px-2 py-1 text-xs text-dark-200 disabled:opacity-40"
-                      aria-label="Move group down"
-                    >
-                      {t('admin.balancer.groups.moveDown', 'Down')}
-                    </button>
-                    <button
-                      onClick={() => removeGroup(group.id)}
-                      className="rounded-md border border-error-500/40 bg-error-500/10 px-2 py-1 text-xs text-error-300"
-                      aria-label="Delete group"
-                    >
-                      {t('common.delete', 'Delete')}
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-1 block text-xs text-dark-400">
-                    {t('admin.balancer.groups.groupName', 'Group name')}
-                  </label>
-                  <input
-                    value={group.name}
-                    onChange={(event) => updateGroup(group.id, { name: event.target.value })}
-                    placeholder={t('admin.balancer.groups.groupName', 'Group name')}
-                    className={`w-full rounded-lg border bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none placeholder:text-dark-500 ${
-                      hasDuplicate
-                        ? 'border-error-500/70'
-                        : 'border-dark-600 focus:border-accent-500'
-                    }`}
-                  />
-                  {hasDuplicate && (
-                    <p className="mt-1 text-xs text-error-300">
-                      {t('admin.balancer.actions.groupNamesUnique', 'Group names must be unique')}
-                    </p>
-                  )}
-                </div>
-
-                <div className="mt-3">
-                  <label className="mb-1 block text-xs text-dark-400">
-                    {t('admin.balancer.groups.groupDescription', 'Group description')}
-                  </label>
-                  <input
-                    value={group.description || ''}
-                    maxLength={256}
-                    onChange={(event) => updateGroup(group.id, { description: event.target.value })}
-                    placeholder={t(
-                      'admin.balancer.groups.groupDescriptionPlaceholder',
-                      'Custom description for clients',
-                    )}
-                    className="w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none placeholder:text-dark-500 focus:border-accent-500"
-                  />
-                </div>
-
-                <div className="mt-3">
-                  <HostPicker
-                    hosts={hostsData?.hosts || []}
-                    selectedHostIds={group.hostIds}
-                    loading={hostsLoading}
-                    error={hostsError}
-                    onToggle={(hostId) => toggleGroupHost(group.id, hostId)}
-                    title={t('admin.balancer.groups.hostsTitle', 'Hosts from panel')}
-                    searchPlaceholder={t(
-                      'admin.balancer.groups.hostsSearch',
-                      'Search by name or address',
-                    )}
-                    emptyText={t('admin.balancer.groups.hostsEmpty', 'No hosts found')}
-                    loadErrorText={t(
-                      'admin.balancer.groups.hostsLoadError',
-                      'Failed to load hosts from panel',
-                    )}
-                    selectedText={t('admin.balancer.groups.hostsSelected', 'Selected: {{count}}')}
-                    disabledText={t('admin.balancer.groups.hostDisabled', 'Disabled')}
-                    unavailableText={t(
-                      'admin.balancer.groups.hostUnavailable',
-                      'Host is temporarily unavailable in the panel',
-                    )}
-                  />
-                </div>
-
-                <details className="mt-3 rounded-lg border border-dark-700 bg-dark-950/30">
-                  <summary className="cursor-pointer px-3 py-2 text-xs text-dark-300">
-                    {t('admin.balancer.groups.manualPatternsTitle', 'Manual patterns')}{' '}
-                    <span className="text-dark-500">
-                      {t('admin.balancer.groups.patternsCount', '{{count}} items', {
-                        count: patternCount,
-                      })}
-                    </span>
-                  </summary>
-                  <div className="border-t border-dark-700 p-3">
-                    <p className="mb-2 text-xs leading-5 text-dark-500">
-                      {t(
-                        'admin.balancer.groups.manualPatternsHint',
-                        'Use this field only for additional matching patterns. Selected hosts are stored separately by UUID.',
-                      )}
-                    </p>
-                    <textarea
-                      value={group.patterns}
-                      onChange={(event) => updateGroup(group.id, { patterns: event.target.value })}
-                      placeholder={t(
-                        'admin.balancer.groups.patterns',
-                        'Patterns separated by comma or new line',
-                      )}
-                      rows={compactGroupsView ? 2 : 4}
-                      className="w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none placeholder:text-dark-500 focus:border-accent-500"
-                    />
-                  </div>
-                </details>
+          <details className="rounded-lg border border-dark-700 bg-dark-900/30 text-sm text-dark-300">
+            <summary className="cursor-pointer px-3 py-2 text-xs font-medium text-dark-400">
+              {t('admin.balancer.labels.connectionDetails', 'Connection details')}
+            </summary>
+            <div className="grid grid-cols-1 gap-2 border-t border-dark-700 px-3 py-3 md:grid-cols-2">
+              <div>
+                {t('admin.balancer.labels.baseUrl', 'Service address')}:{' '}
+                <span className="font-mono text-dark-100">{status?.base_url || '—'}</span>
               </div>
-            );
-          })}
-        </div>
+              <div>
+                {t('admin.balancer.labels.timeout', 'Waiting time')}:{' '}
+                <span className="font-mono text-dark-100">
+                  {status?.request_timeout_sec ?? '—'}s
+                </span>
+              </div>
+              <div>
+                {t('admin.balancer.labels.profileMode', 'Distribution mode')}:{' '}
+                <span className="font-mono text-dark-100">{profileMode}</span>
+              </div>
+            </div>
+          </details>
 
-        <div className="mt-4 rounded-lg border border-dark-700 bg-dark-900/40 p-3">
-          <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
-            <div>
-              <h4 className="text-sm font-semibold text-dark-100">
-                {t('admin.balancer.groups.fastestSectionTitle', 'Automatic group behavior')}
-              </h4>
-              <p className="mt-1 max-w-3xl text-xs leading-5 text-dark-400">
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button
+              onClick={() =>
+                void Promise.all([
+                  refetchStatus(),
+                  refetchHealth(),
+                  refetchReady(),
+                  refetchDebugStats(),
+                  refetchNodeStats(),
+                  refetchNodeHealthMetrics(),
+                  refetchGroups(),
+                  refetchQuarantine(),
+                ])
+              }
+              className="rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600"
+            >
+              {t('admin.balancer.actions.refreshAll', 'Refresh data')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {activeSection === 'groups' && (
+        <div className="rounded-xl border border-dark-700 bg-dark-800/50 p-4">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <h3 className="text-sm font-semibold text-dark-100">
+              {t('admin.balancer.groups.title', 'Groups editor')}
+            </h3>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={toggleAllGroups}
+                className="rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600"
+              >
+                {allGroupsExpanded
+                  ? t('admin.balancer.groups.collapseAll', 'Collapse all')
+                  : t('admin.balancer.groups.expandAll', 'Expand all')}
+              </button>
+              <button
+                onClick={addGroup}
+                className="rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600"
+                aria-label="Add balancer group"
+              >
+                {t('admin.balancer.groups.add', 'Add group')}
+              </button>
+              <button
+                onClick={() => {
+                  if (!groupsData) return;
+                  setGroupsDraft(groupsToDraft(groupsData, hostsData?.hosts));
+                  setFastestEnabled(Boolean(groupsData.fastest_group));
+                  setFastestGroupName(
+                    (groupsData.fastest_group_name || DEFAULT_FASTEST_GROUP_NAME).trim(),
+                  );
+                  setExcludeGroups(groupsData.fastest_exclude_groups || []);
+                  setFallbackGroups(groupsData.fastest_fallback || []);
+                  setNodeStatsExcludeGroups(groupsData.node_stats_exclude || []);
+                  setExpandGroupsToNodes(groupsData.expand_groups_to_nodes || []);
+                  setHiddenGroups(groupsData.hidden_groups || []);
+                  setHiddenNodes(groupsData.hidden_nodes || []);
+                  setAdvancedSettings(normalizeAdvancedSettings(groupsData));
+                  setGroupsDirty(false);
+                  setAlert(
+                    t('admin.balancer.actions.changesDiscarded', 'Changes discarded'),
+                    'default',
+                  );
+                }}
+                className="hidden rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600 md:inline-flex"
+              >
+                {t('common.cancel', 'Cancel')}
+              </button>
+              <button
+                onClick={() => void saveGroups()}
+                disabled={saveGroupsMutation.isPending}
+                className="hidden rounded-lg border border-accent-500/50 bg-accent-500/20 px-3 py-2 text-sm text-accent-300 transition-colors hover:bg-accent-500/30 disabled:opacity-60 md:inline-flex"
+              >
+                {t('common.save', 'Save')}
+              </button>
+            </div>
+          </div>
+
+          <div className="fixed inset-x-0 bottom-0 z-20 border-t border-dark-700 bg-dark-900/95 p-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur md:hidden">
+            <div className="mx-auto flex w-full max-w-lg gap-2">
+              <button
+                onClick={() => {
+                  if (!groupsData) return;
+                  setGroupsDraft(groupsToDraft(groupsData, hostsData?.hosts));
+                  setFastestEnabled(Boolean(groupsData.fastest_group));
+                  setFastestGroupName(
+                    (groupsData.fastest_group_name || DEFAULT_FASTEST_GROUP_NAME).trim(),
+                  );
+                  setExcludeGroups(groupsData.fastest_exclude_groups || []);
+                  setFallbackGroups(groupsData.fastest_fallback || []);
+                  setNodeStatsExcludeGroups(groupsData.node_stats_exclude || []);
+                  setExpandGroupsToNodes(groupsData.expand_groups_to_nodes || []);
+                  setHiddenGroups(groupsData.hidden_groups || []);
+                  setHiddenNodes(groupsData.hidden_nodes || []);
+                  setAdvancedSettings(normalizeAdvancedSettings(groupsData));
+                  setGroupsDirty(false);
+                  setAlert(
+                    t('admin.balancer.actions.changesDiscarded', 'Changes discarded'),
+                    'default',
+                  );
+                }}
+                className="min-w-0 flex-1 rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600"
+              >
+                {t('common.cancel', 'Cancel')}
+              </button>
+              <button
+                onClick={() => void saveGroups()}
+                disabled={saveGroupsMutation.isPending}
+                className="min-w-0 flex-1 rounded-lg border border-accent-500/50 bg-accent-500/20 px-3 py-2 text-sm text-accent-300 transition-colors hover:bg-accent-500/30 disabled:opacity-60"
+              >
+                {t('common.save', 'Save')}
+              </button>
+            </div>
+          </div>
+
+          <details className="mb-3 rounded-lg border border-dark-700 bg-dark-900/40 text-xs text-dark-300">
+            <summary className="cursor-pointer px-3 py-2 font-semibold text-dark-100">
+              {t('admin.balancer.groups.howTitle', 'How groups work')}
+            </summary>
+            <div className="space-y-1 border-t border-dark-700 px-3 py-2 leading-5">
+              <p>
                 {t(
-                  'admin.balancer.groups.fastestSectionDesc',
-                  'This block controls the extra automatic group that chooses a suitable server for the user. You can turn it off completely, rename it, exclude some groups from it, or define reserve groups.',
+                  'admin.balancer.groups.howLine1',
+                  'Each group contains patterns for outbound tags.',
+                )}
+              </p>
+              <p>
+                {t(
+                  'admin.balancer.groups.howLine2',
+                  'Fastest group is an additional auto-group built from all groups except excluded ones.',
+                )}
+              </p>
+              <p>
+                {t(
+                  'admin.balancer.groups.howLine3',
+                  'Save applies config to /admin/groups and updates balancer immediately.',
                 )}
               </p>
             </div>
+          </details>
 
-            <label className="flex items-start gap-3 rounded-lg border border-dark-700 bg-dark-950/40 p-3 text-sm text-dark-200">
-              <input
-                type="checkbox"
-                checked={fastestEnabled}
-                onChange={(event) => {
-                  setGroupsDirty(true);
-                  setFastestEnabled(event.target.checked);
-                }}
-              />
-              <span>
-                {t('admin.balancer.groups.fastestToggle', 'Enable automatic group')}
-                <span className="mt-1 block text-xs leading-5 text-dark-500">
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-5">
+            <div
+              className={`rounded-lg border border-dark-700 bg-dark-900/40 ${compactGroupsView ? 'p-2.5' : 'p-3'}`}
+            >
+              <p className="text-xs uppercase tracking-wide text-dark-500">
+                {t('admin.balancer.groups.summaryGroups', 'Manual groups')}
+              </p>
+              <p className="mt-1 text-xl font-semibold text-dark-100">{groupsDraft.length}</p>
+              <p
+                className={`${compactGroupsView ? 'hidden' : 'mt-1 text-xs leading-5 text-dark-400'}`}
+              >
+                {t(
+                  'admin.balancer.groups.summaryGroupsDesc',
+                  'These groups are created manually and define how servers are grouped.',
+                )}
+              </p>
+            </div>
+            <div
+              className={`rounded-lg border border-dark-700 bg-dark-900/40 ${compactGroupsView ? 'p-2.5' : 'p-3'}`}
+            >
+              <p className="text-xs uppercase tracking-wide text-dark-500">
+                {t('admin.balancer.groups.summaryFastest', 'Automatic route group')}
+              </p>
+              <p className="mt-1 text-xl font-semibold text-dark-100">{fastestStatusText}</p>
+              <p
+                className={`${compactGroupsView ? 'hidden' : 'mt-1 text-xs leading-5 text-dark-400'}`}
+              >
+                {t(
+                  'admin.balancer.groups.summaryFastestDesc',
+                  'Creates one extra group that automatically picks the better server.',
+                )}
+              </p>
+            </div>
+            <div
+              className={`rounded-lg border border-dark-700 bg-dark-900/40 ${compactGroupsView ? 'p-2.5' : 'p-3'}`}
+            >
+              <p className="text-xs uppercase tracking-wide text-dark-500">
+                {t('admin.balancer.groups.summaryReserve', 'Reserve groups')}
+              </p>
+              <p className="mt-1 text-xl font-semibold text-dark-100">{fallbackGroups.length}</p>
+              <p
+                className={`${compactGroupsView ? 'hidden' : 'mt-1 text-xs leading-5 text-dark-400'}`}
+              >
+                {t(
+                  'admin.balancer.groups.summaryReserveDesc',
+                  'Used only when the main automatic choice should fall back to other groups.',
+                )}
+              </p>
+            </div>
+            <div
+              className={`rounded-lg border border-dark-700 bg-dark-900/40 ${compactGroupsView ? 'p-2.5' : 'p-3'}`}
+            >
+              <p className="text-xs uppercase tracking-wide text-dark-500">
+                {t('admin.balancer.groups.summaryFixed', 'Groups left untouched')}
+              </p>
+              <p className="mt-1 text-xl font-semibold text-dark-100">
+                {nodeStatsExcludeGroups.length}
+              </p>
+              <p
+                className={`${compactGroupsView ? 'hidden' : 'mt-1 text-xs leading-5 text-dark-400'}`}
+              >
+                {t(
+                  'admin.balancer.groups.summaryFixedDesc',
+                  'Servers inside these groups keep your original order and are not auto-rebalanced.',
+                )}
+              </p>
+            </div>
+            <div
+              className={`rounded-lg border border-dark-700 bg-dark-900/40 ${compactGroupsView ? 'p-2.5' : 'p-3'}`}
+            >
+              <p className="text-xs uppercase tracking-wide text-dark-500">
+                {t('admin.balancer.groups.summaryExpanded', 'Separate servers in subscription')}
+              </p>
+              <p className="mt-1 text-xl font-semibold text-dark-100">
+                {expandGroupsToNodes.length}
+              </p>
+              <p
+                className={`${compactGroupsView ? 'hidden' : 'mt-1 text-xs leading-5 text-dark-400'}`}
+              >
+                {t(
+                  'admin.balancer.groups.summaryExpandedDesc',
+                  'For these groups, the subscription shows separate servers instead of one shared group.',
+                )}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-3 space-y-3">
+            {groupsError && (
+              <div className="rounded-lg border border-error-500/40 bg-error-500/10 p-3 text-sm text-error-200">
+                {t(
+                  'admin.balancer.groups.loadError',
+                  'Failed to load groups. Check /admin/groups availability.',
+                )}
+              </div>
+            )}
+
+            {groupsLoading && (
+              <div className="rounded-lg border border-dark-700 bg-dark-900/40 p-3 text-sm text-dark-400">
+                {t('common.loading', 'Loading...')}
+              </div>
+            )}
+
+            {!groupsLoading && groupsDraft.length === 0 && (
+              <div className="rounded-lg border border-dark-700 bg-dark-900/40 p-3 text-sm text-dark-400">
+                {t('admin.balancer.groups.empty', 'No groups configured.')}
+              </div>
+            )}
+
+            {groupsDraft.map((group, index) => {
+              const trimmedName = group.name.trim().toLowerCase();
+              const hasDuplicate = trimmedName ? duplicateNameSet.has(trimmedName) : false;
+              const patternCount = parsePatterns(group.patterns).length;
+              const isExpanded = expandedGroupIds.has(group.id);
+
+              return (
+                <div
+                  key={group.id}
+                  className={`overflow-hidden rounded-lg border bg-dark-900/50 transition-colors ${
+                    isExpanded ? 'border-accent-500/30' : 'border-dark-700 hover:border-dark-600'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 p-2.5">
+                    <button
+                      type="button"
+                      onClick={() => toggleGroupExpanded(group.id)}
+                      aria-expanded={isExpanded}
+                      className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-1 py-1 text-left"
+                    >
+                      <ChevronDown
+                        className={`h-4 w-4 shrink-0 text-dark-400 transition-transform ${
+                          isExpanded ? 'rotate-180' : ''
+                        }`}
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-semibold text-dark-100">
+                          {group.name.trim() ||
+                            t('admin.balancer.groups.groupNumber', 'Group #{{index}}', {
+                              index: index + 1,
+                            })}
+                        </span>
+                        {group.description && (
+                          <span className="block truncate text-xs text-dark-500">
+                            {group.description}
+                          </span>
+                        )}
+                      </span>
+                      <span className="hidden shrink-0 items-center gap-1.5 sm:flex">
+                        <span className="rounded-md bg-accent-500/10 px-2 py-1 text-[11px] text-accent-300">
+                          {t('admin.balancer.groups.serverCount', '{{count}} servers', {
+                            count: group.hostIds.length,
+                          })}
+                        </span>
+                        {patternCount > 0 && (
+                          <span className="rounded-md bg-dark-700 px-2 py-1 text-[11px] text-dark-400">
+                            {t('admin.balancer.groups.ruleCount', '{{count}} rules', {
+                              count: patternCount,
+                            })}
+                          </span>
+                        )}
+                      </span>
+                    </button>
+                    <div className="flex shrink-0 gap-1.5">
+                      <button
+                        onClick={() => moveGroup(group.id, 'up')}
+                        disabled={index === 0}
+                        title={t('admin.balancer.groups.moveUp', 'Up')}
+                        className="rounded-md border border-dark-600 p-1.5 text-dark-300 transition-colors hover:bg-dark-700 disabled:opacity-40"
+                        aria-label={t('admin.balancer.groups.moveUp', 'Up')}
+                      >
+                        <ArrowUp className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => moveGroup(group.id, 'down')}
+                        disabled={index === groupsDraft.length - 1}
+                        title={t('admin.balancer.groups.moveDown', 'Down')}
+                        className="rounded-md border border-dark-600 p-1.5 text-dark-300 transition-colors hover:bg-dark-700 disabled:opacity-40"
+                        aria-label={t('admin.balancer.groups.moveDown', 'Down')}
+                      >
+                        <ArrowDown className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => removeGroup(group.id)}
+                        title={t('common.delete', 'Delete')}
+                        className="rounded-md border border-error-500/40 bg-error-500/10 p-1.5 text-error-300 transition-colors hover:bg-error-500/20"
+                        aria-label={t('common.delete', 'Delete')}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {isExpanded && (
+                    <div className="border-t border-dark-700 p-3">
+                      <div
+                        className={
+                          compactGroupsView
+                            ? 'grid grid-cols-1 gap-2 lg:grid-cols-[minmax(240px,0.7fr)_minmax(320px,1.3fr)]'
+                            : 'space-y-3'
+                        }
+                      >
+                        <div>
+                          <label className="mb-1 block text-xs text-dark-400">
+                            {t('admin.balancer.groups.groupName', 'Group name')}
+                          </label>
+                          <input
+                            value={group.name}
+                            onChange={(event) =>
+                              updateGroup(group.id, { name: event.target.value })
+                            }
+                            placeholder={t('admin.balancer.groups.groupName', 'Group name')}
+                            className={`w-full rounded-lg border bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none placeholder:text-dark-500 ${
+                              hasDuplicate
+                                ? 'border-error-500/70'
+                                : 'border-dark-600 focus:border-accent-500'
+                            }`}
+                          />
+                          {hasDuplicate && (
+                            <p className="mt-1 text-xs text-error-300">
+                              {t(
+                                'admin.balancer.actions.groupNamesUnique',
+                                'Group names must be unique',
+                              )}
+                            </p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="mb-1 block text-xs text-dark-400">
+                            {t('admin.balancer.groups.groupDescription', 'Group description')}
+                          </label>
+                          <input
+                            value={group.description || ''}
+                            maxLength={256}
+                            onChange={(event) =>
+                              updateGroup(group.id, { description: event.target.value })
+                            }
+                            placeholder={t(
+                              'admin.balancer.groups.groupDescriptionPlaceholder',
+                              'Custom description for clients',
+                            )}
+                            className="w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none placeholder:text-dark-500 focus:border-accent-500"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mt-3">
+                        <HostPicker
+                          hosts={hostsData?.hosts || []}
+                          selectedHostIds={group.hostIds}
+                          assignmentsByHost={hostAssignments}
+                          currentGroupId={group.id}
+                          compact={compactGroupsView}
+                          loading={hostsLoading}
+                          error={hostsError}
+                          onToggle={(hostId) => toggleGroupHost(group.id, hostId)}
+                          title={t('admin.balancer.groups.hostsTitle', 'Hosts from panel')}
+                          searchPlaceholder={t(
+                            'admin.balancer.groups.hostsSearch',
+                            'Search by name or address',
+                          )}
+                          emptyText={t('admin.balancer.groups.hostsEmpty', 'No hosts found')}
+                          loadErrorText={t(
+                            'admin.balancer.groups.hostsLoadError',
+                            'Failed to load hosts from panel',
+                          )}
+                          selectedText={t(
+                            'admin.balancer.groups.hostsSelected',
+                            'Selected: {{count}}',
+                          )}
+                          freeText={t('admin.balancer.groups.hostsFree', 'Free: {{count}}')}
+                          assignedText={t(
+                            'admin.balancer.groups.hostsAssigned',
+                            'In other groups: {{count}}',
+                          )}
+                          assignedToText={t(
+                            'admin.balancer.groups.hostAssignedTo',
+                            'Already: {{groups}}',
+                          )}
+                          freeOnlyText={t('admin.balancer.groups.hostsFreeOnly', 'Free only')}
+                          allHostsText={t('admin.balancer.groups.hostsAll', 'All hosts')}
+                          disabledText={t('admin.balancer.groups.hostDisabled', 'Disabled')}
+                          unavailableText={t(
+                            'admin.balancer.groups.hostUnavailable',
+                            'Host is temporarily unavailable in the panel',
+                          )}
+                        />
+                      </div>
+
+                      <details className="mt-3 rounded-lg border border-dark-700 bg-dark-950/30">
+                        <summary className="cursor-pointer px-3 py-2 text-xs text-dark-300">
+                          {t('admin.balancer.groups.manualPatternsTitle', 'Manual patterns')}{' '}
+                          <span className="text-dark-500">
+                            {t('admin.balancer.groups.patternsCount', '{{count}} items', {
+                              count: patternCount,
+                            })}
+                          </span>
+                        </summary>
+                        <div className="border-t border-dark-700 p-3">
+                          <p className="mb-2 text-xs leading-5 text-dark-500">
+                            {t(
+                              'admin.balancer.groups.manualPatternsHint',
+                              'Use this field only for additional matching patterns. Selected hosts are stored separately by UUID.',
+                            )}
+                          </p>
+                          <textarea
+                            value={group.patterns}
+                            onChange={(event) =>
+                              updateGroup(group.id, { patterns: event.target.value })
+                            }
+                            placeholder={t(
+                              'admin.balancer.groups.patterns',
+                              'Patterns separated by comma or new line',
+                            )}
+                            rows={compactGroupsView ? 2 : 4}
+                            className="w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none placeholder:text-dark-500 focus:border-accent-500"
+                          />
+                        </div>
+                      </details>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <details className="mt-4 rounded-lg border border-dark-700 bg-dark-900/40">
+            <summary className="cursor-pointer px-3 py-3 text-sm font-semibold text-dark-100">
+              {t('admin.balancer.groups.automaticSettingsTitle', 'Automatic selection settings')}
+              <span className="ml-2 text-xs font-normal text-dark-500">
+                {fastestEnabled
+                  ? t('admin.balancer.groups.fastestStatusOn', 'Enabled')
+                  : t('admin.balancer.groups.fastestStatusOff', 'Disabled')}
+              </span>
+            </summary>
+            <div className="border-t border-dark-700 p-3">
+              <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+                <div>
+                  <h4 className="text-sm font-semibold text-dark-100">
+                    {t('admin.balancer.groups.fastestSectionTitle', 'Automatic group behavior')}
+                  </h4>
+                  <p className="mt-1 max-w-3xl text-xs leading-5 text-dark-400">
+                    {t(
+                      'admin.balancer.groups.fastestSectionDesc',
+                      'This block controls the extra automatic group that chooses a suitable server for the user. You can turn it off completely, rename it, exclude some groups from it, or define reserve groups.',
+                    )}
+                  </p>
+                </div>
+
+                <label className="flex items-start gap-3 rounded-lg border border-dark-700 bg-dark-950/40 p-3 text-sm text-dark-200">
+                  <input
+                    type="checkbox"
+                    checked={fastestEnabled}
+                    onChange={(event) => {
+                      setGroupsDirty(true);
+                      setFastestEnabled(event.target.checked);
+                    }}
+                  />
+                  <span>
+                    {t('admin.balancer.groups.fastestToggle', 'Enable automatic group')}
+                    <span className="mt-1 block text-xs leading-5 text-dark-500">
+                      {t(
+                        'admin.balancer.groups.fastestToggleDesc',
+                        'If enabled, the balancer adds one extra group that automatically routes users to a more suitable server.',
+                      )}
+                    </span>
+                  </span>
+                </label>
+
+                <label className="text-xs text-dark-400 lg:col-span-2">
+                  {t('admin.balancer.groups.fastestName', 'Visible group name')}
+                  <input
+                    value={fastestGroupName}
+                    onChange={(event) => {
+                      setGroupsDirty(true);
+                      setFastestGroupName(event.target.value);
+                    }}
+                    placeholder={DEFAULT_FASTEST_GROUP_NAME}
+                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none placeholder:text-dark-500 focus:border-accent-500"
+                  />
+                  <span className="mt-1 block text-xs leading-5 text-dark-500">
+                    {t(
+                      'admin.balancer.groups.fastestNameDesc',
+                      'This is just the display name that users see in their client config.',
+                    )}
+                  </span>
+                </label>
+              </div>
+
+              <div className="mt-3 grid grid-cols-1 gap-3 xl:grid-cols-2">
+                <ChecklistCard
+                  title={t(
+                    'admin.balancer.groups.excludeTitle',
+                    'Do not include in automatic choice',
+                  )}
+                  description={t(
+                    'admin.balancer.groups.excludeDesc',
+                    'Selected groups stay available to users as usual, but they will not be used when the automatic group builds its main server pool.',
+                  )}
+                  selected={excludeGroups}
+                  options={availableGroupNames}
+                  expanded={excludeExpanded}
+                  onToggleExpanded={() => setExcludeExpanded((prev) => !prev)}
+                  onClear={() => {
+                    setGroupsDirty(true);
+                    setExcludeGroups([]);
+                  }}
+                  onToggleOption={toggleExclude}
+                  emptyText={t(
+                    'admin.balancer.groups.emptySelection',
+                    'Nothing selected yet. Add groups above to configure this list.',
+                  )}
+                  selectedLabel={t(
+                    'admin.balancer.groups.excludeCounter',
+                    'Selected {{selected}} / {{total}}',
+                  )}
+                  clearLabel={t('admin.balancer.groups.clearSelection', 'Clear selection')}
+                  expandLabel={t('admin.balancer.groups.expandList', 'Show full list')}
+                  collapseLabel={t('admin.balancer.groups.collapseList', 'Collapse list')}
+                  hiddenCountLabel={t(
+                    'admin.balancer.groups.hiddenCount',
+                    '{{count}} more items are hidden until you expand the list.',
+                  )}
+                />
+
+                <ChecklistCard
+                  title={t('admin.balancer.groups.fallbackTitle', 'Reserve groups')}
+                  description={t(
+                    'admin.balancer.groups.fallbackDesc',
+                    'If the automatic group should use an extra reserve pool, select those groups here. They are kept aside for fallback use instead of the main automatic choice.',
+                  )}
+                  selected={fallbackGroups}
+                  options={availableGroupNames}
+                  expanded={fallbackExpanded}
+                  onToggleExpanded={() => setFallbackExpanded((prev) => !prev)}
+                  onClear={() => {
+                    setGroupsDirty(true);
+                    setFallbackGroups([]);
+                  }}
+                  onToggleOption={toggleFallback}
+                  emptyText={t(
+                    'admin.balancer.groups.emptySelection',
+                    'Nothing selected yet. Add groups above to configure this list.',
+                  )}
+                  selectedLabel={t(
+                    'admin.balancer.groups.excludeCounter',
+                    'Selected {{selected}} / {{total}}',
+                  )}
+                  clearLabel={t('admin.balancer.groups.clearSelection', 'Clear selection')}
+                  expandLabel={t('admin.balancer.groups.expandList', 'Show full list')}
+                  collapseLabel={t('admin.balancer.groups.collapseList', 'Collapse list')}
+                  hiddenCountLabel={t(
+                    'admin.balancer.groups.hiddenCount',
+                    '{{count}} more items are hidden until you expand the list.',
+                  )}
+                />
+
+                <ChecklistCard
+                  title={t(
+                    'admin.balancer.groups.nodeStatsExcludeTitle',
+                    'Keep these groups in your original order',
+                  )}
+                  description={t(
+                    'admin.balancer.groups.nodeStatsExcludeDesc',
+                    'Servers inside selected groups are left as you arranged them. The balancer will not automatically reshuffle or filter them by load and ping logic.',
+                  )}
+                  selected={nodeStatsExcludeGroups}
+                  options={availableGroupNames}
+                  expanded={nodeStatsExcludeExpanded}
+                  onToggleExpanded={() => setNodeStatsExcludeExpanded((prev) => !prev)}
+                  onClear={() => {
+                    setGroupsDirty(true);
+                    setNodeStatsExcludeGroups([]);
+                  }}
+                  onToggleOption={toggleNodeStatsExclude}
+                  emptyText={t(
+                    'admin.balancer.groups.emptySelection',
+                    'Nothing selected yet. Add groups above to configure this list.',
+                  )}
+                  selectedLabel={t(
+                    'admin.balancer.groups.excludeCounter',
+                    'Selected {{selected}} / {{total}}',
+                  )}
+                  clearLabel={t('admin.balancer.groups.clearSelection', 'Clear selection')}
+                  expandLabel={t('admin.balancer.groups.expandList', 'Show full list')}
+                  collapseLabel={t('admin.balancer.groups.collapseList', 'Collapse list')}
+                  hiddenCountLabel={t(
+                    'admin.balancer.groups.hiddenCount',
+                    '{{count}} more items are hidden until you expand the list.',
+                  )}
+                />
+
+                <ChecklistCard
+                  title={t('admin.balancer.groups.expandGroupsTitle', 'Show servers separately')}
+                  description={t(
+                    'admin.balancer.groups.expandGroupsDesc',
+                    'For selected groups, the subscription will show separate server entries instead of one shared group. If a group contains two Germany servers, the client will see two separate Germany entries.',
+                  )}
+                  selected={expandGroupsToNodes}
+                  options={availableGroupNames}
+                  expanded={expandGroupsToNodesExpanded}
+                  onToggleExpanded={() => setExpandGroupsToNodesExpanded((prev) => !prev)}
+                  onClear={() => {
+                    setGroupsDirty(true);
+                    setExpandGroupsToNodes([]);
+                  }}
+                  onToggleOption={toggleExpandGroupToNodes}
+                  emptyText={t(
+                    'admin.balancer.groups.emptySelection',
+                    'Nothing selected yet. Add groups above to configure this list.',
+                  )}
+                  selectedLabel={t(
+                    'admin.balancer.groups.excludeCounter',
+                    'Selected {{selected}} / {{total}}',
+                  )}
+                  clearLabel={t('admin.balancer.groups.clearSelection', 'Clear selection')}
+                  expandLabel={t('admin.balancer.groups.expandList', 'Show full list')}
+                  collapseLabel={t('admin.balancer.groups.collapseList', 'Collapse list')}
+                  hiddenCountLabel={t(
+                    'admin.balancer.groups.hiddenCount',
+                    '{{count}} more items are hidden until you expand the list.',
+                  )}
+                />
+
+                <ChecklistCard
+                  title={t(
+                    'admin.balancer.groups.hiddenGroupsTitle',
+                    'Hide groups from subscription',
+                  )}
+                  description={t(
+                    'admin.balancer.groups.hiddenGroupsDesc',
+                    'Selected groups stay in config but are not published into generated subscription groups.',
+                  )}
+                  selected={hiddenGroups}
+                  options={availableGroupNames}
+                  expanded={hiddenGroupsExpanded}
+                  onToggleExpanded={() => setHiddenGroupsExpanded((prev) => !prev)}
+                  onClear={() => {
+                    setGroupsDirty(true);
+                    setHiddenGroups([]);
+                  }}
+                  onToggleOption={toggleHiddenGroup}
+                  emptyText={t(
+                    'admin.balancer.groups.emptySelection',
+                    'Nothing selected yet. Add groups above to configure this list.',
+                  )}
+                  selectedLabel={t(
+                    'admin.balancer.groups.excludeCounter',
+                    'Selected {{selected}} / {{total}}',
+                  )}
+                  clearLabel={t('admin.balancer.groups.clearSelection', 'Clear selection')}
+                  expandLabel={t('admin.balancer.groups.expandList', 'Show full list')}
+                  collapseLabel={t('admin.balancer.groups.collapseList', 'Collapse list')}
+                  hiddenCountLabel={t(
+                    'admin.balancer.groups.hiddenCount',
+                    '{{count}} more items are hidden until you expand the list.',
+                  )}
+                />
+
+                <ChecklistCard
+                  title={t(
+                    'admin.balancer.groups.hiddenNodesTitle',
+                    'Hide nodes from subscription',
+                  )}
+                  description={t(
+                    'admin.balancer.groups.hiddenNodesDesc',
+                    'Selected nodes are removed from generated subscription output without deleting the node from panel.',
+                  )}
+                  selected={hiddenNodes}
+                  options={availableNodeNames}
+                  expanded={hiddenNodesExpanded}
+                  onToggleExpanded={() => setHiddenNodesExpanded((prev) => !prev)}
+                  onClear={() => {
+                    setGroupsDirty(true);
+                    setHiddenNodes([]);
+                  }}
+                  onToggleOption={toggleHiddenNode}
+                  emptyText={t(
+                    'admin.balancer.groups.hiddenNodesEmpty',
+                    'No node stats yet. Refresh stats to populate node choices.',
+                  )}
+                  selectedLabel={t(
+                    'admin.balancer.groups.excludeCounter',
+                    'Selected {{selected}} / {{total}}',
+                  )}
+                  clearLabel={t('admin.balancer.groups.clearSelection', 'Clear selection')}
+                  expandLabel={t('admin.balancer.groups.expandList', 'Show full list')}
+                  collapseLabel={t('admin.balancer.groups.collapseList', 'Collapse list')}
+                  hiddenCountLabel={t(
+                    'admin.balancer.groups.hiddenCount',
+                    '{{count}} more items are hidden until you expand the list.',
+                  )}
+                />
+              </div>
+            </div>
+          </details>
+
+          <details className="mt-4 rounded-lg border border-dark-700 bg-dark-900/40">
+            <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-2 px-3 py-3 text-sm font-semibold text-dark-100">
+              <span>{t('admin.balancer.groups.advancedTitle', 'Additional settings')}</span>
+              <span className="flex flex-wrap gap-1.5 text-xs font-normal">
+                <span className="rounded-full border border-dark-600 bg-dark-950/60 px-2.5 py-1 text-dark-300">
+                  {t('admin.balancer.groups.strategy', 'Strategy')}:{' '}
                   {t(
-                    'admin.balancer.groups.fastestToggleDesc',
-                    'If enabled, the balancer adds one extra group that automatically routes users to a more suitable server.',
+                    `admin.balancer.groups.strategyOptions.${advancedSettings.strategy}`,
+                    advancedSettings.strategy,
                   )}
                 </span>
+                <span className="rounded-full border border-dark-600 bg-dark-950/60 px-2.5 py-1 text-dark-300">
+                  {t('admin.balancer.groups.stickyEnabled', 'Enable sticky routing')}:{' '}
+                  {advancedSettings.stickyEnabled ? t('common.yes', 'Yes') : t('common.no', 'No')}
+                </span>
               </span>
-            </label>
+            </summary>
 
-            <label className="text-xs text-dark-400 lg:col-span-2">
-              {t('admin.balancer.groups.fastestName', 'Visible group name')}
-              <input
-                value={fastestGroupName}
-                onChange={(event) => {
-                  setGroupsDirty(true);
-                  setFastestGroupName(event.target.value);
-                }}
-                placeholder={DEFAULT_FASTEST_GROUP_NAME}
-                className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none placeholder:text-dark-500 focus:border-accent-500"
-              />
-              <span className="mt-1 block text-xs leading-5 text-dark-500">
-                {t(
-                  'admin.balancer.groups.fastestNameDesc',
-                  'This is just the display name that users see in their client config.',
-                )}
-              </span>
-            </label>
-          </div>
-
-          <div className="mt-3 grid grid-cols-1 gap-3 xl:grid-cols-2">
-            <ChecklistCard
-              title={t('admin.balancer.groups.excludeTitle', 'Do not include in automatic choice')}
-              description={t(
-                'admin.balancer.groups.excludeDesc',
-                'Selected groups stay available to users as usual, but they will not be used when the automatic group builds its main server pool.',
-              )}
-              selected={excludeGroups}
-              options={availableGroupNames}
-              expanded={excludeExpanded}
-              onToggleExpanded={() => setExcludeExpanded((prev) => !prev)}
-              onClear={() => {
-                setGroupsDirty(true);
-                setExcludeGroups([]);
-              }}
-              onToggleOption={toggleExclude}
-              emptyText={t(
-                'admin.balancer.groups.emptySelection',
-                'Nothing selected yet. Add groups above to configure this list.',
-              )}
-              selectedLabel={t(
-                'admin.balancer.groups.excludeCounter',
-                'Selected {{selected}} / {{total}}',
-              )}
-              clearLabel={t('admin.balancer.groups.clearSelection', 'Clear selection')}
-              expandLabel={t('admin.balancer.groups.expandList', 'Show full list')}
-              collapseLabel={t('admin.balancer.groups.collapseList', 'Collapse list')}
-              hiddenCountLabel={t(
-                'admin.balancer.groups.hiddenCount',
-                '{{count}} more items are hidden until you expand the list.',
-              )}
-            />
-
-            <ChecklistCard
-              title={t('admin.balancer.groups.fallbackTitle', 'Reserve groups')}
-              description={t(
-                'admin.balancer.groups.fallbackDesc',
-                'If the automatic group should use an extra reserve pool, select those groups here. They are kept aside for fallback use instead of the main automatic choice.',
-              )}
-              selected={fallbackGroups}
-              options={availableGroupNames}
-              expanded={fallbackExpanded}
-              onToggleExpanded={() => setFallbackExpanded((prev) => !prev)}
-              onClear={() => {
-                setGroupsDirty(true);
-                setFallbackGroups([]);
-              }}
-              onToggleOption={toggleFallback}
-              emptyText={t(
-                'admin.balancer.groups.emptySelection',
-                'Nothing selected yet. Add groups above to configure this list.',
-              )}
-              selectedLabel={t(
-                'admin.balancer.groups.excludeCounter',
-                'Selected {{selected}} / {{total}}',
-              )}
-              clearLabel={t('admin.balancer.groups.clearSelection', 'Clear selection')}
-              expandLabel={t('admin.balancer.groups.expandList', 'Show full list')}
-              collapseLabel={t('admin.balancer.groups.collapseList', 'Collapse list')}
-              hiddenCountLabel={t(
-                'admin.balancer.groups.hiddenCount',
-                '{{count}} more items are hidden until you expand the list.',
-              )}
-            />
-
-            <ChecklistCard
-              title={t(
-                'admin.balancer.groups.nodeStatsExcludeTitle',
-                'Keep these groups in your original order',
-              )}
-              description={t(
-                'admin.balancer.groups.nodeStatsExcludeDesc',
-                'Servers inside selected groups are left as you arranged them. The balancer will not automatically reshuffle or filter them by load and ping logic.',
-              )}
-              selected={nodeStatsExcludeGroups}
-              options={availableGroupNames}
-              expanded={nodeStatsExcludeExpanded}
-              onToggleExpanded={() => setNodeStatsExcludeExpanded((prev) => !prev)}
-              onClear={() => {
-                setGroupsDirty(true);
-                setNodeStatsExcludeGroups([]);
-              }}
-              onToggleOption={toggleNodeStatsExclude}
-              emptyText={t(
-                'admin.balancer.groups.emptySelection',
-                'Nothing selected yet. Add groups above to configure this list.',
-              )}
-              selectedLabel={t(
-                'admin.balancer.groups.excludeCounter',
-                'Selected {{selected}} / {{total}}',
-              )}
-              clearLabel={t('admin.balancer.groups.clearSelection', 'Clear selection')}
-              expandLabel={t('admin.balancer.groups.expandList', 'Show full list')}
-              collapseLabel={t('admin.balancer.groups.collapseList', 'Collapse list')}
-              hiddenCountLabel={t(
-                'admin.balancer.groups.hiddenCount',
-                '{{count}} more items are hidden until you expand the list.',
-              )}
-            />
-
-            <ChecklistCard
-              title={t('admin.balancer.groups.expandGroupsTitle', 'Show servers separately')}
-              description={t(
-                'admin.balancer.groups.expandGroupsDesc',
-                'For selected groups, the subscription will show separate server entries instead of one shared group. If a group contains two Germany servers, the client will see two separate Germany entries.',
-              )}
-              selected={expandGroupsToNodes}
-              options={availableGroupNames}
-              expanded={expandGroupsToNodesExpanded}
-              onToggleExpanded={() => setExpandGroupsToNodesExpanded((prev) => !prev)}
-              onClear={() => {
-                setGroupsDirty(true);
-                setExpandGroupsToNodes([]);
-              }}
-              onToggleOption={toggleExpandGroupToNodes}
-              emptyText={t(
-                'admin.balancer.groups.emptySelection',
-                'Nothing selected yet. Add groups above to configure this list.',
-              )}
-              selectedLabel={t(
-                'admin.balancer.groups.excludeCounter',
-                'Selected {{selected}} / {{total}}',
-              )}
-              clearLabel={t('admin.balancer.groups.clearSelection', 'Clear selection')}
-              expandLabel={t('admin.balancer.groups.expandList', 'Show full list')}
-              collapseLabel={t('admin.balancer.groups.collapseList', 'Collapse list')}
-              hiddenCountLabel={t(
-                'admin.balancer.groups.hiddenCount',
-                '{{count}} more items are hidden until you expand the list.',
-              )}
-            />
-
-            <ChecklistCard
-              title={t('admin.balancer.groups.hiddenGroupsTitle', 'Hide groups from subscription')}
-              description={t(
-                'admin.balancer.groups.hiddenGroupsDesc',
-                'Selected groups stay in config but are not published into generated subscription groups.',
-              )}
-              selected={hiddenGroups}
-              options={availableGroupNames}
-              expanded={hiddenGroupsExpanded}
-              onToggleExpanded={() => setHiddenGroupsExpanded((prev) => !prev)}
-              onClear={() => {
-                setGroupsDirty(true);
-                setHiddenGroups([]);
-              }}
-              onToggleOption={toggleHiddenGroup}
-              emptyText={t(
-                'admin.balancer.groups.emptySelection',
-                'Nothing selected yet. Add groups above to configure this list.',
-              )}
-              selectedLabel={t(
-                'admin.balancer.groups.excludeCounter',
-                'Selected {{selected}} / {{total}}',
-              )}
-              clearLabel={t('admin.balancer.groups.clearSelection', 'Clear selection')}
-              expandLabel={t('admin.balancer.groups.expandList', 'Show full list')}
-              collapseLabel={t('admin.balancer.groups.collapseList', 'Collapse list')}
-              hiddenCountLabel={t(
-                'admin.balancer.groups.hiddenCount',
-                '{{count}} more items are hidden until you expand the list.',
-              )}
-            />
-
-            <ChecklistCard
-              title={t('admin.balancer.groups.hiddenNodesTitle', 'Hide nodes from subscription')}
-              description={t(
-                'admin.balancer.groups.hiddenNodesDesc',
-                'Selected nodes are removed from generated subscription output without deleting the node from panel.',
-              )}
-              selected={hiddenNodes}
-              options={availableNodeNames}
-              expanded={hiddenNodesExpanded}
-              onToggleExpanded={() => setHiddenNodesExpanded((prev) => !prev)}
-              onClear={() => {
-                setGroupsDirty(true);
-                setHiddenNodes([]);
-              }}
-              onToggleOption={toggleHiddenNode}
-              emptyText={t(
-                'admin.balancer.groups.hiddenNodesEmpty',
-                'No node stats yet. Refresh stats to populate node choices.',
-              )}
-              selectedLabel={t(
-                'admin.balancer.groups.excludeCounter',
-                'Selected {{selected}} / {{total}}',
-              )}
-              clearLabel={t('admin.balancer.groups.clearSelection', 'Clear selection')}
-              expandLabel={t('admin.balancer.groups.expandList', 'Show full list')}
-              collapseLabel={t('admin.balancer.groups.collapseList', 'Collapse list')}
-              hiddenCountLabel={t(
-                'admin.balancer.groups.hiddenCount',
-                '{{count}} more items are hidden until you expand the list.',
-              )}
-            />
-          </div>
-        </div>
-
-        <div className="mt-4 rounded-lg border border-dark-700 bg-dark-900/40 p-3">
-          <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wide text-dark-300">
-                {t('admin.balancer.groups.advancedTitle', 'Advanced balancer settings')}
-              </h4>
-              <p className="mt-1 text-xs leading-5 text-dark-500">
+            <div className="space-y-3 border-t border-dark-700 p-3">
+              <p className="text-xs leading-5 text-dark-500">
                 {t(
                   'admin.balancer.groups.advancedHint',
-                  'These values are sent to PUT /admin/groups together with groups config.',
+                  'These settings apply together with the server groups.',
                 )}
               </p>
-            </div>
-            <div className="flex flex-wrap gap-1.5 text-xs">
-              <span className="rounded-full border border-dark-600 bg-dark-950/60 px-2.5 py-1 text-dark-300">
-                {t('admin.balancer.groups.strategy', 'Strategy')}:{' '}
-                {t(
-                  `admin.balancer.groups.strategyOptions.${advancedSettings.strategy}`,
-                  advancedSettings.strategy,
-                )}
-              </span>
-              <span className="rounded-full border border-dark-600 bg-dark-950/60 px-2.5 py-1 text-dark-300">
-                {t('admin.balancer.groups.stickyEnabled', 'Enable sticky routing')}:{' '}
-                {advancedSettings.stickyEnabled ? t('common.yes', 'Yes') : t('common.no', 'No')}
-              </span>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <details className="rounded-lg border border-dark-700 bg-dark-900/30 p-3" open>
-              <summary className="cursor-pointer text-sm font-semibold text-dark-100">
-                {t('admin.balancer.groups.sectionRouting', 'Routing behavior')}
-              </summary>
-              <p className="mt-2 text-xs text-dark-500">
-                {t(
-                  'admin.balancer.groups.sectionRoutingHint',
-                  'Core strategy and probe settings used by generated balancers.',
-                )}
-              </p>
-              <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-                <label className="text-xs text-dark-400">
-                  {t('admin.balancer.groups.strategy', 'Strategy')}
-                  <select
-                    value={advancedSettings.strategy}
-                    onChange={(event) =>
-                      updateAdvancedSetting('strategy', normalizeStrategyValue(event.target.value))
-                    }
-                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-                  >
-                    {STRATEGY_OPTIONS.map((strategy) => (
-                      <option key={strategy} value={strategy}>
-                        {t(`admin.balancer.groups.strategyOptions.${strategy}`, strategy)}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="mt-1 text-[11px] text-dark-500">
-                    {t(
-                      'admin.balancer.groups.strategyDesc',
-                      'leastPing uses latency first, leastLoad uses load score, random and roundRobin are plain Xray strategies.',
-                    )}
-                  </p>
-                </label>
-
-                <label className="text-xs text-dark-400">
-                  {t('admin.balancer.groups.probeInterval', 'Probe interval')}
-                  <input
-                    value={advancedSettings.probeInterval}
-                    onChange={(event) => updateAdvancedSetting('probeInterval', event.target.value)}
-                    placeholder={DEFAULT_PROBE_INTERVAL}
-                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-                  />
-                  <p className="mt-1 text-[11px] text-dark-500">
-                    {t(
-                      'admin.balancer.groups.probeIntervalDesc',
-                      'Xray probe interval, for example 30s, 1m, 3m.',
-                    )}
-                  </p>
-                </label>
-
-                <label className="text-xs text-dark-400">
-                  {t('admin.balancer.groups.probeSampling', 'Probe samples')}
-                  <input
-                    type="number"
-                    min={1}
-                    step={1}
-                    value={advancedSettings.probeSampling}
-                    onChange={(event) =>
-                      updateAdvancedSetting(
-                        'probeSampling',
-                        parseNumericInput(event.target.value, advancedSettings.probeSampling),
-                      )
-                    }
-                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-                  />
-                </label>
-
-                <label className="text-xs text-dark-400">
-                  {t('admin.balancer.groups.probeTimeout', 'Probe timeout')}
-                  <input
-                    value={advancedSettings.probeTimeout}
-                    onChange={(event) => updateAdvancedSetting('probeTimeout', event.target.value)}
-                    placeholder="3s"
-                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-                  />
-                </label>
-
-                <label className="text-xs text-dark-400">
-                  {t('admin.balancer.groups.probeHttpMethod', 'Probe method')}
-                  <select
-                    value={advancedSettings.probeHttpMethod}
-                    onChange={(event) =>
-                      updateAdvancedSetting(
-                        'probeHttpMethod',
-                        event.target.value === 'GET' ? 'GET' : 'HEAD',
-                      )
-                    }
-                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-                  >
-                    <option value="HEAD">HEAD</option>
-                    <option value="GET">GET</option>
-                  </select>
-                </label>
-
-                <label className="text-xs text-dark-400 md:col-span-2">
-                  {t('admin.balancer.groups.probeConnectivityUrl', 'Connectivity check URL')}
-                  <input
-                    value={advancedSettings.probeConnectivityUrl}
-                    onChange={(event) =>
-                      updateAdvancedSetting('probeConnectivityUrl', event.target.value)
-                    }
-                    placeholder="https://connectivitycheck.gstatic.com/generate_204"
-                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-                  />
-                </label>
-
-                <label className="text-xs text-dark-400 md:col-span-2">
-                  {t('admin.balancer.groups.fastestProbeUrl', 'Fastest probe URL')}
-                  <input
-                    value={advancedSettings.fastestProbeUrl}
-                    onChange={(event) =>
-                      updateAdvancedSetting('fastestProbeUrl', event.target.value)
-                    }
-                    placeholder={DEFAULT_FASTEST_PROBE_URL}
-                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-                  />
-                  <p className="mt-1 text-[11px] text-dark-500">
-                    {t(
-                      'admin.balancer.groups.fastestProbeUrlDesc',
-                      'HTTP URL used by fastest and latency-aware checks.',
-                    )}
-                  </p>
-                </label>
-
-                <label className="text-xs text-dark-400">
-                  {t('admin.balancer.groups.nodeStatsStaleSec', 'Node stats stale TTL (sec)')}
-                  <input
-                    type="number"
-                    min={1}
-                    step={1}
-                    value={advancedSettings.nodeStatsStaleSec}
-                    onChange={(event) =>
-                      updateAdvancedSetting(
-                        'nodeStatsStaleSec',
-                        parseNumericInput(event.target.value, advancedSettings.nodeStatsStaleSec),
-                      )
-                    }
-                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-                  />
-                  <p className="mt-1 text-[11px] text-dark-500">
-                    {t(
-                      'admin.balancer.groups.nodeStatsStaleSecDesc',
-                      'After this time cached node stats stop affecting sorting and quarantine matching.',
-                    )}
-                  </p>
-                </label>
-              </div>
-            </details>
-
-            <details className="rounded-lg border border-dark-700 bg-dark-900/30 p-3">
-              <summary className="cursor-pointer text-sm font-semibold text-dark-100">
-                {t('admin.balancer.groups.sectionSticky', 'Поведение привязки')}
-              </summary>
-              <p className="mt-2 text-xs text-dark-500">
-                {t(
-                  'admin.balancer.groups.sectionStickyHint',
-                  'Управляет тем, сохраняют ли активные клиенты свой текущий сервер, пока продолжают пользоваться подключением.',
-                )}
-              </p>
-              <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-                <label className="flex items-center gap-2 text-sm text-dark-200">
-                  <input
-                    type="checkbox"
-                    checked={advancedSettings.stickyEnabled}
-                    onChange={(event) =>
-                      updateAdvancedSetting('stickyEnabled', event.target.checked)
-                    }
-                  />
-                  <span>
-                    {t('admin.balancer.groups.stickyEnabled', 'Enable sticky routing')}
-                    <span className="mt-1 block text-xs text-dark-500">
-                      {t(
-                        'admin.balancer.groups.stickyEnabledDesc',
-                        'Keeps the same token on the selected node while the sticky record is valid.',
-                      )}
-                    </span>
-                  </span>
-                </label>
-
-                <label className="text-xs text-dark-400">
-                  {t('admin.balancer.groups.stickyMode', 'Sticky mode')}
-                  <select
-                    value={advancedSettings.stickyMode}
-                    onChange={(event) =>
-                      updateAdvancedSetting('stickyMode', normalizeStickyMode(event.target.value))
-                    }
-                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-                  >
-                    <option value="pin">
-                      {t('admin.balancer.groups.stickyModes.pin', 'Strict pin')}
-                    </option>
-                    <option value="prefer">
-                      {t('admin.balancer.groups.stickyModes.prefer', 'Prefer pinned node')}
-                    </option>
-                  </select>
-                  <p className="mt-1 text-[11px] text-dark-500">
-                    {t(
-                      'admin.balancer.groups.stickyModeDesc',
-                      'pin returns only the selected node; prefer keeps it first but leaves fallback nodes available.',
-                    )}
-                  </p>
-                </label>
-
-                <label className="text-xs text-dark-400">
-                  {t('admin.balancer.groups.stickyTtlSec', 'Sticky TTL (sec)')}
-                  <input
-                    type="number"
-                    min={1}
-                    step={1}
-                    value={advancedSettings.stickyTtlSec}
-                    onChange={(event) =>
-                      updateAdvancedSetting(
-                        'stickyTtlSec',
-                        parseNumericInput(event.target.value, advancedSettings.stickyTtlSec),
-                      )
-                    }
-                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-                  />
-                  <p className="mt-1 text-[11px] text-dark-500">
-                    {t(
-                      'admin.balancer.groups.stickyTtlSecDesc',
-                      'How long one token keeps its assigned node.',
-                    )}
-                  </p>
-                </label>
-
-                <label className="text-xs text-dark-400">
-                  {t('admin.balancer.groups.stickyMaxEntries', 'Sticky max entries')}
-                  <input
-                    type="number"
-                    min={1}
-                    step={1}
-                    value={advancedSettings.stickyMaxEntries}
-                    onChange={(event) =>
-                      updateAdvancedSetting(
-                        'stickyMaxEntries',
-                        parseNumericInput(event.target.value, advancedSettings.stickyMaxEntries),
-                      )
-                    }
-                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-                  />
-                  <p className="mt-1 text-[11px] text-dark-500">
-                    {t(
-                      'admin.balancer.groups.stickyMaxEntriesDesc',
-                      'Maximum number of sticky token assignments kept in memory.',
-                    )}
-                  </p>
-                </label>
-
-                <label className="flex items-center gap-2 text-sm text-dark-200 md:col-span-2">
-                  <input
-                    type="checkbox"
-                    checked={advancedSettings.stickyNewConnectionsOnly}
-                    onChange={(event) =>
-                      updateAdvancedSetting('stickyNewConnectionsOnly', event.target.checked)
-                    }
-                  />
-                  <span>
-                    {t(
-                      'admin.balancer.groups.stickyNewConnectionsOnly',
-                      'Балансировать только новые подключения',
-                    )}
-                    <span className="mt-1 block text-xs text-dark-500">
-                      {t(
-                        'admin.balancer.groups.stickyNewConnectionsOnlyDesc',
-                        'Если включено, активные старые подключения продлевают свою привязку и не перекидываются на другой сервер просто из-за времени.',
-                      )}
-                    </span>
-                  </span>
-                </label>
-              </div>
-            </details>
-
-            <details className="rounded-lg border border-dark-700 bg-dark-900/30 p-3">
-              <summary className="cursor-pointer text-sm font-semibold text-dark-100">
-                {t('admin.balancer.groups.sectionAutoQuarantine', 'Auto-quarantine')}
-              </summary>
-              <p className="mt-2 text-xs text-dark-500">
-                {t(
-                  'admin.balancer.groups.sectionAutoQuarantineHint',
-                  'Automatically moves unstable nodes to quarantine and returns them after successful checks.',
-                )}
-              </p>
-              <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-                <label className="flex items-center gap-2 text-sm text-dark-200 md:col-span-2 xl:col-span-3">
-                  <input
-                    type="checkbox"
-                    checked={advancedSettings.autoQuarantineEnabled}
-                    onChange={(event) =>
-                      updateAdvancedSetting('autoQuarantineEnabled', event.target.checked)
-                    }
-                  />
-                  <span>
-                    {t('admin.balancer.groups.autoQuarantineEnabled', 'Enable auto-quarantine')}
-                    <span className="mt-1 block text-xs text-dark-500">
-                      {t(
-                        'admin.balancer.groups.autoQuarantineEnabledDesc',
-                        'If enabled, nodes with repeated failures are moved to quarantine automatically.',
-                      )}
-                    </span>
-                  </span>
-                </label>
-                <label className="text-xs text-dark-400">
-                  {t('admin.balancer.groups.autoQuarantineFailures', 'Auto-quarantine failures')}
-                  <input
-                    type="number"
-                    min={1}
-                    step={1}
-                    value={advancedSettings.autoQuarantineFailures}
-                    onChange={(event) =>
-                      updateAdvancedSetting(
-                        'autoQuarantineFailures',
-                        parseNumericInput(
-                          event.target.value,
-                          advancedSettings.autoQuarantineFailures,
-                        ),
-                      )
-                    }
-                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-                  />
-                  <p className="mt-1 text-[11px] text-dark-500">
-                    {t(
-                      'admin.balancer.groups.autoQuarantineFailuresDesc',
-                      'How many failed checks in a row are required before a node is quarantined.',
-                    )}
-                  </p>
-                </label>
-                <label className="text-xs text-dark-400">
+              <details className="rounded-lg border border-dark-700 bg-dark-900/30 p-3" open>
+                <summary className="cursor-pointer text-sm font-semibold text-dark-100">
+                  {t('admin.balancer.groups.sectionRouting', 'Routing behavior')}
+                </summary>
+                <p className="mt-2 text-xs text-dark-500">
                   {t(
-                    'admin.balancer.groups.autoQuarantineRelease',
-                    'Auto-quarantine release successes',
+                    'admin.balancer.groups.sectionRoutingHint',
+                    'Core strategy and probe settings used by generated balancers.',
                   )}
-                  <input
-                    type="number"
-                    min={1}
-                    step={1}
-                    value={advancedSettings.autoQuarantineReleaseSuccesses}
-                    onChange={(event) =>
-                      updateAdvancedSetting(
-                        'autoQuarantineReleaseSuccesses',
-                        parseNumericInput(
-                          event.target.value,
-                          advancedSettings.autoQuarantineReleaseSuccesses,
-                        ),
-                      )
-                    }
-                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-                  />
-                  <p className="mt-1 text-[11px] text-dark-500">
-                    {t(
-                      'admin.balancer.groups.autoQuarantineReleaseDesc',
-                      'How many successful checks are needed to release a node from quarantine.',
-                    )}
-                  </p>
-                </label>
-                <label className="text-xs text-dark-400">
-                  {t('admin.balancer.groups.autoQuarantineMaxNodes', 'Auto-quarantine max nodes')}
-                  <input
-                    type="number"
-                    min={1}
-                    step={1}
-                    value={advancedSettings.autoQuarantineMaxNodes}
-                    onChange={(event) =>
-                      updateAdvancedSetting(
-                        'autoQuarantineMaxNodes',
-                        parseNumericInput(
-                          event.target.value,
-                          advancedSettings.autoQuarantineMaxNodes,
-                        ),
-                      )
-                    }
-                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-                  />
-                  <p className="mt-1 text-[11px] text-dark-500">
-                    {t(
-                      'admin.balancer.groups.autoQuarantineMaxNodesDesc',
-                      'Safety cap for how many nodes can be quarantined automatically.',
-                    )}
-                  </p>
-                </label>
-              </div>
-            </details>
-
-            <details className="rounded-lg border border-dark-700 bg-dark-900/30 p-3">
-              <summary className="cursor-pointer text-sm font-semibold text-dark-100">
-                {t('admin.balancer.groups.sectionAutoDrain', 'Auto-drain')}
-              </summary>
-              <p className="mt-2 text-xs text-dark-500">
-                {t(
-                  'admin.balancer.groups.sectionAutoDrainHint',
-                  'Temporarily lowers node priority when load is high or health is unstable.',
-                )}
-              </p>
-              <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-                <label className="flex items-center gap-2 text-sm text-dark-200 md:col-span-2 xl:col-span-3">
-                  <input
-                    type="checkbox"
-                    checked={advancedSettings.autoDrainEnabled}
-                    onChange={(event) =>
-                      updateAdvancedSetting('autoDrainEnabled', event.target.checked)
-                    }
-                  />
-                  <span>
-                    {t('admin.balancer.groups.autoDrainEnabled', 'Enable auto-drain')}
-                    <span className="mt-1 block text-xs text-dark-500">
-                      {t(
-                        'admin.balancer.groups.autoDrainEnabledDesc',
-                        'If enabled, overloaded nodes get temporary score penalty instead of immediate quarantine.',
-                      )}
-                    </span>
-                  </span>
-                </label>
-                <label className="text-xs text-dark-400">
-                  {t('admin.balancer.groups.autoDrainFailures', 'Auto-drain failures')}
-                  <input
-                    type="number"
-                    min={1}
-                    step={1}
-                    value={advancedSettings.autoDrainFailures}
-                    onChange={(event) =>
-                      updateAdvancedSetting(
-                        'autoDrainFailures',
-                        parseNumericInput(event.target.value, advancedSettings.autoDrainFailures),
-                      )
-                    }
-                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-                  />
-                  <p className="mt-1 text-[11px] text-dark-500">
-                    {t(
-                      'admin.balancer.groups.autoDrainFailuresDesc',
-                      'How many degraded checks in a row are needed before drain penalty is applied.',
-                    )}
-                  </p>
-                </label>
-                <label className="text-xs text-dark-400">
-                  {t('admin.balancer.groups.autoDrainRelease', 'Auto-drain release successes')}
-                  <input
-                    type="number"
-                    min={1}
-                    step={1}
-                    value={advancedSettings.autoDrainReleaseSuccesses}
-                    onChange={(event) =>
-                      updateAdvancedSetting(
-                        'autoDrainReleaseSuccesses',
-                        parseNumericInput(
-                          event.target.value,
-                          advancedSettings.autoDrainReleaseSuccesses,
-                        ),
-                      )
-                    }
-                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-                  />
-                  <p className="mt-1 text-[11px] text-dark-500">
-                    {t(
-                      'admin.balancer.groups.autoDrainReleaseDesc',
-                      'How many stable checks are needed to remove drain penalty.',
-                    )}
-                  </p>
-                </label>
-                <label className="text-xs text-dark-400">
-                  {t('admin.balancer.groups.autoDrainLoadThreshold', 'Auto-drain load threshold')}
-                  <input
-                    type="number"
-                    min={0}
-                    step={0.01}
-                    value={advancedSettings.autoDrainLoadThreshold}
-                    onChange={(event) =>
-                      updateAdvancedSetting(
-                        'autoDrainLoadThreshold',
-                        parseNumericInput(
-                          event.target.value,
-                          advancedSettings.autoDrainLoadThreshold,
-                        ),
-                      )
-                    }
-                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-                  />
-                  <p className="mt-1 text-[11px] text-dark-500">
-                    {t(
-                      'admin.balancer.groups.autoDrainLoadThresholdDesc',
-                      'Load value above this threshold is considered degraded for auto-drain logic.',
-                    )}
-                  </p>
-                </label>
-                <label className="text-xs text-dark-400 md:col-span-2 xl:col-span-1">
-                  {t('admin.balancer.groups.autoDrainScorePenalty', 'Auto-drain score penalty')}
-                  <input
-                    type="number"
-                    min={0}
-                    step={0.01}
-                    value={advancedSettings.autoDrainScorePenalty}
-                    onChange={(event) =>
-                      updateAdvancedSetting(
-                        'autoDrainScorePenalty',
-                        parseNumericInput(
-                          event.target.value,
-                          advancedSettings.autoDrainScorePenalty,
-                        ),
-                      )
-                    }
-                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-                  />
-                  <p className="mt-1 text-[11px] text-dark-500">
-                    {t(
-                      'admin.balancer.groups.autoDrainScorePenaltyDesc',
-                      'How much score penalty is added while a node is in auto-drain state.',
-                    )}
-                  </p>
-                </label>
-              </div>
-            </details>
-
-            <details className="rounded-lg border border-error-500/30 bg-dark-900/30 p-3" open>
-              <summary className="cursor-pointer text-sm font-semibold text-dark-100">
-                {t('admin.balancer.groups.sectionProtection', 'DDoS and node protection')}
-              </summary>
-              <p className="mt-2 text-xs text-dark-500">
-                {t(
-                  'admin.balancer.groups.sectionProtectionHint',
-                  'Removes an unhealthy node from new subscriptions, clears sticky assignments and keeps reserve capacity available.',
-                )}
-              </p>
-              <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-                <label className="flex items-center gap-2 text-sm text-dark-200 md:col-span-2 xl:col-span-3">
-                  <input
-                    type="checkbox"
-                    checked={advancedSettings.protectionEnabled}
-                    onChange={(event) =>
-                      updateAdvancedSetting('protectionEnabled', event.target.checked)
-                    }
-                  />
-                  <span>
-                    {t('admin.balancer.groups.protectionEnabled', 'Enable automatic protection')}
-                    <span className="mt-1 block text-xs text-dark-500">
-                      {t(
-                        'admin.balancer.groups.protectionEnabledDesc',
-                        'Repeated disconnects or excessive latency isolate a node for new subscription updates.',
-                      )}
-                    </span>
-                  </span>
-                </label>
-
-                {(
-                  [
-                    ['protectionFailures', 'protectionFailures', 1],
-                    ['protectionReleaseSuccesses', 'protectionReleaseSuccesses', 1],
-                    ['protectionIsolationTtlSec', 'protectionIsolationTtlSec', 1],
-                    ['protectionLatencyThresholdMs', 'protectionLatencyThresholdMs', 1],
-                    ['protectionMinAvailableNodes', 'protectionMinAvailableNodes', 1],
-                    ['emergencyFallbackMaxNodes', 'emergencyFallbackMaxNodes', 1],
-                  ] as const
-                ).map(([labelKey, settingKey, min]) => (
-                  <label key={settingKey} className="text-xs text-dark-400">
-                    {t(`admin.balancer.groups.${labelKey}`, labelKey)}
-                    <input
-                      type="number"
-                      min={min}
-                      step={1}
-                      value={advancedSettings[settingKey]}
+                </p>
+                <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+                  <label className="text-xs text-dark-400">
+                    {t('admin.balancer.groups.strategy', 'Strategy')}
+                    <select
+                      value={advancedSettings.strategy}
                       onChange={(event) =>
                         updateAdvancedSetting(
-                          settingKey,
-                          parseNumericInput(event.target.value, advancedSettings[settingKey]),
+                          'strategy',
+                          normalizeStrategyValue(event.target.value),
+                        )
+                      }
+                      className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                    >
+                      {STRATEGY_OPTIONS.map((strategy) => (
+                        <option key={strategy} value={strategy}>
+                          {t(`admin.balancer.groups.strategyOptions.${strategy}`, strategy)}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="mt-1 text-[11px] text-dark-500">
+                      {t(
+                        'admin.balancer.groups.strategyDesc',
+                        'leastPing uses latency first, leastLoad uses load score, random and roundRobin are plain Xray strategies.',
+                      )}
+                    </p>
+                  </label>
+
+                  <label className="text-xs text-dark-400">
+                    {t('admin.balancer.groups.probeInterval', 'Probe interval')}
+                    <input
+                      value={advancedSettings.probeInterval}
+                      onChange={(event) =>
+                        updateAdvancedSetting('probeInterval', event.target.value)
+                      }
+                      placeholder={DEFAULT_PROBE_INTERVAL}
+                      className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                    />
+                    <p className="mt-1 text-[11px] text-dark-500">
+                      {t(
+                        'admin.balancer.groups.probeIntervalDesc',
+                        'Xray probe interval, for example 30s, 1m, 3m.',
+                      )}
+                    </p>
+                  </label>
+
+                  <label className="text-xs text-dark-400">
+                    {t('admin.balancer.groups.probeSampling', 'Probe samples')}
+                    <input
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={advancedSettings.probeSampling}
+                      onChange={(event) =>
+                        updateAdvancedSetting(
+                          'probeSampling',
+                          parseNumericInput(event.target.value, advancedSettings.probeSampling),
                         )
                       }
                       className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
                     />
                   </label>
-                ))}
 
-                <label className="flex items-center gap-2 text-sm text-dark-200 md:col-span-2 xl:col-span-3">
-                  <input
-                    type="checkbox"
-                    checked={advancedSettings.emergencyFallbackEnabled}
-                    onChange={(event) =>
-                      updateAdvancedSetting('emergencyFallbackEnabled', event.target.checked)
-                    }
-                  />
-                  <span>
-                    {t(
-                      'admin.balancer.groups.emergencyFallbackEnabled',
-                      'Enable cross-group reserve',
-                    )}
-                    <span className="mt-1 block text-xs text-dark-500">
+                  <label className="text-xs text-dark-400">
+                    {t('admin.balancer.groups.probeTimeout', 'Probe timeout')}
+                    <input
+                      value={advancedSettings.probeTimeout}
+                      onChange={(event) =>
+                        updateAdvancedSetting('probeTimeout', event.target.value)
+                      }
+                      placeholder="3s"
+                      className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                    />
+                  </label>
+
+                  <label className="text-xs text-dark-400">
+                    {t('admin.balancer.groups.probeHttpMethod', 'Probe method')}
+                    <select
+                      value={advancedSettings.probeHttpMethod}
+                      onChange={(event) =>
+                        updateAdvancedSetting(
+                          'probeHttpMethod',
+                          event.target.value === 'GET' ? 'GET' : 'HEAD',
+                        )
+                      }
+                      className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                    >
+                      <option value="HEAD">HEAD</option>
+                      <option value="GET">GET</option>
+                    </select>
+                  </label>
+
+                  <label className="text-xs text-dark-400 md:col-span-2">
+                    {t('admin.balancer.groups.probeConnectivityUrl', 'Connectivity check URL')}
+                    <input
+                      value={advancedSettings.probeConnectivityUrl}
+                      onChange={(event) =>
+                        updateAdvancedSetting('probeConnectivityUrl', event.target.value)
+                      }
+                      placeholder="https://connectivitycheck.gstatic.com/generate_204"
+                      className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                    />
+                  </label>
+
+                  <label className="text-xs text-dark-400 md:col-span-2">
+                    {t('admin.balancer.groups.fastestProbeUrl', 'Fastest probe URL')}
+                    <input
+                      value={advancedSettings.fastestProbeUrl}
+                      onChange={(event) =>
+                        updateAdvancedSetting('fastestProbeUrl', event.target.value)
+                      }
+                      placeholder={DEFAULT_FASTEST_PROBE_URL}
+                      className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                    />
+                    <p className="mt-1 text-[11px] text-dark-500">
                       {t(
-                        'admin.balancer.groups.emergencyFallbackEnabledDesc',
-                        'Adds healthy nodes from other groups as a last-resort fallback when the primary pool fails.',
+                        'admin.balancer.groups.fastestProbeUrlDesc',
+                        'HTTP URL used by fastest and latency-aware checks.',
                       )}
-                    </span>
-                  </span>
-                </label>
-              </div>
-            </details>
+                    </p>
+                  </label>
 
-            <details className="rounded-lg border border-dark-700 bg-dark-900/30 p-3">
-              <summary className="cursor-pointer text-sm font-semibold text-dark-100">
-                {t('admin.balancer.groups.sectionScoreModel', 'Score model')}
-              </summary>
-              <p className="mt-2 text-xs text-dark-500">
+                  <label className="text-xs text-dark-400">
+                    {t('admin.balancer.groups.nodeStatsStaleSec', 'Node stats stale TTL (sec)')}
+                    <input
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={advancedSettings.nodeStatsStaleSec}
+                      onChange={(event) =>
+                        updateAdvancedSetting(
+                          'nodeStatsStaleSec',
+                          parseNumericInput(event.target.value, advancedSettings.nodeStatsStaleSec),
+                        )
+                      }
+                      className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                    />
+                    <p className="mt-1 text-[11px] text-dark-500">
+                      {t(
+                        'admin.balancer.groups.nodeStatsStaleSecDesc',
+                        'After this time cached node stats stop affecting sorting and quarantine matching.',
+                      )}
+                    </p>
+                  </label>
+                </div>
+              </details>
+
+              <details className="rounded-lg border border-dark-700 bg-dark-900/30 p-3">
+                <summary className="cursor-pointer text-sm font-semibold text-dark-100">
+                  {t('admin.balancer.groups.sectionSticky', 'Поведение привязки')}
+                </summary>
+                <p className="mt-2 text-xs text-dark-500">
+                  {t(
+                    'admin.balancer.groups.sectionStickyHint',
+                    'Управляет тем, сохраняют ли активные клиенты свой текущий сервер, пока продолжают пользоваться подключением.',
+                  )}
+                </p>
+                <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  <label className="flex items-center gap-2 text-sm text-dark-200">
+                    <input
+                      type="checkbox"
+                      checked={advancedSettings.stickyEnabled}
+                      onChange={(event) =>
+                        updateAdvancedSetting('stickyEnabled', event.target.checked)
+                      }
+                    />
+                    <span>
+                      {t('admin.balancer.groups.stickyEnabled', 'Enable sticky routing')}
+                      <span className="mt-1 block text-xs text-dark-500">
+                        {t(
+                          'admin.balancer.groups.stickyEnabledDesc',
+                          'Keeps the same token on the selected node while the sticky record is valid.',
+                        )}
+                      </span>
+                    </span>
+                  </label>
+
+                  <label className="text-xs text-dark-400">
+                    {t('admin.balancer.groups.stickyMode', 'Sticky mode')}
+                    <select
+                      value={advancedSettings.stickyMode}
+                      onChange={(event) =>
+                        updateAdvancedSetting('stickyMode', normalizeStickyMode(event.target.value))
+                      }
+                      className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                    >
+                      <option value="pin">
+                        {t('admin.balancer.groups.stickyModes.pin', 'Strict pin')}
+                      </option>
+                      <option value="prefer">
+                        {t('admin.balancer.groups.stickyModes.prefer', 'Prefer pinned node')}
+                      </option>
+                    </select>
+                    <p className="mt-1 text-[11px] text-dark-500">
+                      {t(
+                        'admin.balancer.groups.stickyModeDesc',
+                        'pin returns only the selected node; prefer keeps it first but leaves fallback nodes available.',
+                      )}
+                    </p>
+                  </label>
+
+                  <label className="text-xs text-dark-400">
+                    {t('admin.balancer.groups.stickyTtlSec', 'Sticky TTL (sec)')}
+                    <input
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={advancedSettings.stickyTtlSec}
+                      onChange={(event) =>
+                        updateAdvancedSetting(
+                          'stickyTtlSec',
+                          parseNumericInput(event.target.value, advancedSettings.stickyTtlSec),
+                        )
+                      }
+                      className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                    />
+                    <p className="mt-1 text-[11px] text-dark-500">
+                      {t(
+                        'admin.balancer.groups.stickyTtlSecDesc',
+                        'How long one token keeps its assigned node.',
+                      )}
+                    </p>
+                  </label>
+
+                  <label className="text-xs text-dark-400">
+                    {t('admin.balancer.groups.stickyMaxEntries', 'Sticky max entries')}
+                    <input
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={advancedSettings.stickyMaxEntries}
+                      onChange={(event) =>
+                        updateAdvancedSetting(
+                          'stickyMaxEntries',
+                          parseNumericInput(event.target.value, advancedSettings.stickyMaxEntries),
+                        )
+                      }
+                      className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                    />
+                    <p className="mt-1 text-[11px] text-dark-500">
+                      {t(
+                        'admin.balancer.groups.stickyMaxEntriesDesc',
+                        'Maximum number of sticky token assignments kept in memory.',
+                      )}
+                    </p>
+                  </label>
+
+                  <label className="flex items-center gap-2 text-sm text-dark-200 md:col-span-2">
+                    <input
+                      type="checkbox"
+                      checked={advancedSettings.stickyNewConnectionsOnly}
+                      onChange={(event) =>
+                        updateAdvancedSetting('stickyNewConnectionsOnly', event.target.checked)
+                      }
+                    />
+                    <span>
+                      {t(
+                        'admin.balancer.groups.stickyNewConnectionsOnly',
+                        'Балансировать только новые подключения',
+                      )}
+                      <span className="mt-1 block text-xs text-dark-500">
+                        {t(
+                          'admin.balancer.groups.stickyNewConnectionsOnlyDesc',
+                          'Если включено, активные старые подключения продлевают свою привязку и не перекидываются на другой сервер просто из-за времени.',
+                        )}
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </details>
+
+              <details className="rounded-lg border border-dark-700 bg-dark-900/30 p-3">
+                <summary className="cursor-pointer text-sm font-semibold text-dark-100">
+                  {t('admin.balancer.groups.sectionAutoQuarantine', 'Auto-quarantine')}
+                </summary>
+                <p className="mt-2 text-xs text-dark-500">
+                  {t(
+                    'admin.balancer.groups.sectionAutoQuarantineHint',
+                    'Automatically moves unstable nodes to quarantine and returns them after successful checks.',
+                  )}
+                </p>
+                <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  <label className="flex items-center gap-2 text-sm text-dark-200 md:col-span-2 xl:col-span-3">
+                    <input
+                      type="checkbox"
+                      checked={advancedSettings.autoQuarantineEnabled}
+                      onChange={(event) =>
+                        updateAdvancedSetting('autoQuarantineEnabled', event.target.checked)
+                      }
+                    />
+                    <span>
+                      {t('admin.balancer.groups.autoQuarantineEnabled', 'Enable auto-quarantine')}
+                      <span className="mt-1 block text-xs text-dark-500">
+                        {t(
+                          'admin.balancer.groups.autoQuarantineEnabledDesc',
+                          'If enabled, nodes with repeated failures are moved to quarantine automatically.',
+                        )}
+                      </span>
+                    </span>
+                  </label>
+                  <label className="text-xs text-dark-400">
+                    {t('admin.balancer.groups.autoQuarantineFailures', 'Auto-quarantine failures')}
+                    <input
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={advancedSettings.autoQuarantineFailures}
+                      onChange={(event) =>
+                        updateAdvancedSetting(
+                          'autoQuarantineFailures',
+                          parseNumericInput(
+                            event.target.value,
+                            advancedSettings.autoQuarantineFailures,
+                          ),
+                        )
+                      }
+                      className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                    />
+                    <p className="mt-1 text-[11px] text-dark-500">
+                      {t(
+                        'admin.balancer.groups.autoQuarantineFailuresDesc',
+                        'How many failed checks in a row are required before a node is quarantined.',
+                      )}
+                    </p>
+                  </label>
+                  <label className="text-xs text-dark-400">
+                    {t(
+                      'admin.balancer.groups.autoQuarantineRelease',
+                      'Auto-quarantine release successes',
+                    )}
+                    <input
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={advancedSettings.autoQuarantineReleaseSuccesses}
+                      onChange={(event) =>
+                        updateAdvancedSetting(
+                          'autoQuarantineReleaseSuccesses',
+                          parseNumericInput(
+                            event.target.value,
+                            advancedSettings.autoQuarantineReleaseSuccesses,
+                          ),
+                        )
+                      }
+                      className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                    />
+                    <p className="mt-1 text-[11px] text-dark-500">
+                      {t(
+                        'admin.balancer.groups.autoQuarantineReleaseDesc',
+                        'How many successful checks are needed to release a node from quarantine.',
+                      )}
+                    </p>
+                  </label>
+                  <label className="text-xs text-dark-400">
+                    {t('admin.balancer.groups.autoQuarantineMaxNodes', 'Auto-quarantine max nodes')}
+                    <input
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={advancedSettings.autoQuarantineMaxNodes}
+                      onChange={(event) =>
+                        updateAdvancedSetting(
+                          'autoQuarantineMaxNodes',
+                          parseNumericInput(
+                            event.target.value,
+                            advancedSettings.autoQuarantineMaxNodes,
+                          ),
+                        )
+                      }
+                      className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                    />
+                    <p className="mt-1 text-[11px] text-dark-500">
+                      {t(
+                        'admin.balancer.groups.autoQuarantineMaxNodesDesc',
+                        'Safety cap for how many nodes can be quarantined automatically.',
+                      )}
+                    </p>
+                  </label>
+                </div>
+              </details>
+
+              <details className="rounded-lg border border-dark-700 bg-dark-900/30 p-3">
+                <summary className="cursor-pointer text-sm font-semibold text-dark-100">
+                  {t('admin.balancer.groups.sectionAutoDrain', 'Auto-drain')}
+                </summary>
+                <p className="mt-2 text-xs text-dark-500">
+                  {t(
+                    'admin.balancer.groups.sectionAutoDrainHint',
+                    'Temporarily lowers node priority when load is high or health is unstable.',
+                  )}
+                </p>
+                <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  <label className="flex items-center gap-2 text-sm text-dark-200 md:col-span-2 xl:col-span-3">
+                    <input
+                      type="checkbox"
+                      checked={advancedSettings.autoDrainEnabled}
+                      onChange={(event) =>
+                        updateAdvancedSetting('autoDrainEnabled', event.target.checked)
+                      }
+                    />
+                    <span>
+                      {t('admin.balancer.groups.autoDrainEnabled', 'Enable auto-drain')}
+                      <span className="mt-1 block text-xs text-dark-500">
+                        {t(
+                          'admin.balancer.groups.autoDrainEnabledDesc',
+                          'If enabled, overloaded nodes get temporary score penalty instead of immediate quarantine.',
+                        )}
+                      </span>
+                    </span>
+                  </label>
+                  <label className="text-xs text-dark-400">
+                    {t('admin.balancer.groups.autoDrainFailures', 'Auto-drain failures')}
+                    <input
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={advancedSettings.autoDrainFailures}
+                      onChange={(event) =>
+                        updateAdvancedSetting(
+                          'autoDrainFailures',
+                          parseNumericInput(event.target.value, advancedSettings.autoDrainFailures),
+                        )
+                      }
+                      className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                    />
+                    <p className="mt-1 text-[11px] text-dark-500">
+                      {t(
+                        'admin.balancer.groups.autoDrainFailuresDesc',
+                        'How many degraded checks in a row are needed before drain penalty is applied.',
+                      )}
+                    </p>
+                  </label>
+                  <label className="text-xs text-dark-400">
+                    {t('admin.balancer.groups.autoDrainRelease', 'Auto-drain release successes')}
+                    <input
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={advancedSettings.autoDrainReleaseSuccesses}
+                      onChange={(event) =>
+                        updateAdvancedSetting(
+                          'autoDrainReleaseSuccesses',
+                          parseNumericInput(
+                            event.target.value,
+                            advancedSettings.autoDrainReleaseSuccesses,
+                          ),
+                        )
+                      }
+                      className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                    />
+                    <p className="mt-1 text-[11px] text-dark-500">
+                      {t(
+                        'admin.balancer.groups.autoDrainReleaseDesc',
+                        'How many stable checks are needed to remove drain penalty.',
+                      )}
+                    </p>
+                  </label>
+                  <label className="text-xs text-dark-400">
+                    {t('admin.balancer.groups.autoDrainLoadThreshold', 'Auto-drain load threshold')}
+                    <input
+                      type="number"
+                      min={0}
+                      step={0.01}
+                      value={advancedSettings.autoDrainLoadThreshold}
+                      onChange={(event) =>
+                        updateAdvancedSetting(
+                          'autoDrainLoadThreshold',
+                          parseNumericInput(
+                            event.target.value,
+                            advancedSettings.autoDrainLoadThreshold,
+                          ),
+                        )
+                      }
+                      className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                    />
+                    <p className="mt-1 text-[11px] text-dark-500">
+                      {t(
+                        'admin.balancer.groups.autoDrainLoadThresholdDesc',
+                        'Load value above this threshold is considered degraded for auto-drain logic.',
+                      )}
+                    </p>
+                  </label>
+                  <label className="text-xs text-dark-400 md:col-span-2 xl:col-span-1">
+                    {t('admin.balancer.groups.autoDrainScorePenalty', 'Auto-drain score penalty')}
+                    <input
+                      type="number"
+                      min={0}
+                      step={0.01}
+                      value={advancedSettings.autoDrainScorePenalty}
+                      onChange={(event) =>
+                        updateAdvancedSetting(
+                          'autoDrainScorePenalty',
+                          parseNumericInput(
+                            event.target.value,
+                            advancedSettings.autoDrainScorePenalty,
+                          ),
+                        )
+                      }
+                      className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                    />
+                    <p className="mt-1 text-[11px] text-dark-500">
+                      {t(
+                        'admin.balancer.groups.autoDrainScorePenaltyDesc',
+                        'How much score penalty is added while a node is in auto-drain state.',
+                      )}
+                    </p>
+                  </label>
+                </div>
+              </details>
+
+              <details className="rounded-lg border border-error-500/30 bg-dark-900/30 p-3" open>
+                <summary className="cursor-pointer text-sm font-semibold text-dark-100">
+                  {t('admin.balancer.groups.sectionProtection', 'DDoS and node protection')}
+                </summary>
+                <p className="mt-2 text-xs text-dark-500">
+                  {t(
+                    'admin.balancer.groups.sectionProtectionHint',
+                    'Removes an unhealthy node from new subscriptions, clears sticky assignments and keeps reserve capacity available.',
+                  )}
+                </p>
+                <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  <label className="flex items-center gap-2 text-sm text-dark-200 md:col-span-2 xl:col-span-3">
+                    <input
+                      type="checkbox"
+                      checked={advancedSettings.protectionEnabled}
+                      onChange={(event) =>
+                        updateAdvancedSetting('protectionEnabled', event.target.checked)
+                      }
+                    />
+                    <span>
+                      {t('admin.balancer.groups.protectionEnabled', 'Enable automatic protection')}
+                      <span className="mt-1 block text-xs text-dark-500">
+                        {t(
+                          'admin.balancer.groups.protectionEnabledDesc',
+                          'Repeated disconnects or excessive latency isolate a node for new subscription updates.',
+                        )}
+                      </span>
+                    </span>
+                  </label>
+
+                  {(
+                    [
+                      ['protectionFailures', 'protectionFailures', 1],
+                      ['protectionReleaseSuccesses', 'protectionReleaseSuccesses', 1],
+                      ['protectionIsolationTtlSec', 'protectionIsolationTtlSec', 1],
+                      ['protectionLatencyThresholdMs', 'protectionLatencyThresholdMs', 1],
+                      ['protectionMinAvailableNodes', 'protectionMinAvailableNodes', 1],
+                      ['emergencyFallbackMaxNodes', 'emergencyFallbackMaxNodes', 1],
+                    ] as const
+                  ).map(([labelKey, settingKey, min]) => (
+                    <label key={settingKey} className="text-xs text-dark-400">
+                      {t(`admin.balancer.groups.${labelKey}`, labelKey)}
+                      <input
+                        type="number"
+                        min={min}
+                        step={1}
+                        value={advancedSettings[settingKey]}
+                        onChange={(event) =>
+                          updateAdvancedSetting(
+                            settingKey,
+                            parseNumericInput(event.target.value, advancedSettings[settingKey]),
+                          )
+                        }
+                        className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                      />
+                    </label>
+                  ))}
+
+                  <label className="flex items-center gap-2 text-sm text-dark-200 md:col-span-2 xl:col-span-3">
+                    <input
+                      type="checkbox"
+                      checked={advancedSettings.emergencyFallbackEnabled}
+                      onChange={(event) =>
+                        updateAdvancedSetting('emergencyFallbackEnabled', event.target.checked)
+                      }
+                    />
+                    <span>
+                      {t(
+                        'admin.balancer.groups.emergencyFallbackEnabled',
+                        'Enable cross-group reserve',
+                      )}
+                      <span className="mt-1 block text-xs text-dark-500">
+                        {t(
+                          'admin.balancer.groups.emergencyFallbackEnabledDesc',
+                          'Adds healthy nodes from other groups as a last-resort fallback when the primary pool fails.',
+                        )}
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </details>
+
+              <details className="rounded-lg border border-dark-700 bg-dark-900/30 p-3">
+                <summary className="cursor-pointer text-sm font-semibold text-dark-100">
+                  {t('admin.balancer.groups.sectionScoreModel', 'Score model')}
+                </summary>
+                <p className="mt-2 text-xs text-dark-500">
+                  {t(
+                    'admin.balancer.groups.sectionScoreModelHint',
+                    'Defines how load and latency are balanced when selecting preferred nodes.',
+                  )}
+                </p>
+                <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  <label className="text-xs text-dark-400">
+                    {t('admin.balancer.groups.balancerLoadWeight', 'Score load weight')}
+                    <input
+                      type="number"
+                      min={0}
+                      step={0.01}
+                      value={advancedSettings.balancerLoadWeight}
+                      onChange={(event) =>
+                        updateAdvancedSetting(
+                          'balancerLoadWeight',
+                          parseNumericInput(
+                            event.target.value,
+                            advancedSettings.balancerLoadWeight,
+                          ),
+                        )
+                      }
+                      className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                    />
+                    <p className="mt-1 text-[11px] text-dark-500">
+                      {t(
+                        'admin.balancer.groups.balancerLoadWeightDesc',
+                        'Weight of node load in final score. Higher value means stronger load-based balancing.',
+                      )}
+                    </p>
+                  </label>
+                  <label className="text-xs text-dark-400">
+                    {t('admin.balancer.groups.balancerLatencyWeight', 'Score latency weight')}
+                    <input
+                      type="number"
+                      min={0}
+                      step={0.01}
+                      value={advancedSettings.balancerLatencyWeight}
+                      onChange={(event) =>
+                        updateAdvancedSetting(
+                          'balancerLatencyWeight',
+                          parseNumericInput(
+                            event.target.value,
+                            advancedSettings.balancerLatencyWeight,
+                          ),
+                        )
+                      }
+                      className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                    />
+                    <p className="mt-1 text-[11px] text-dark-500">
+                      {t(
+                        'admin.balancer.groups.balancerLatencyWeightDesc',
+                        'Weight of latency in final score. Higher value favors lower-ping nodes.',
+                      )}
+                    </p>
+                  </label>
+                  <label className="text-xs text-dark-400">
+                    {t('admin.balancer.groups.balancerMaxLatencyMs', 'Score max latency (ms)')}
+                    <input
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={advancedSettings.balancerMaxLatencyMs}
+                      onChange={(event) =>
+                        updateAdvancedSetting(
+                          'balancerMaxLatencyMs',
+                          parseNumericInput(
+                            event.target.value,
+                            advancedSettings.balancerMaxLatencyMs,
+                          ),
+                        )
+                      }
+                      className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                    />
+                    <p className="mt-1 text-[11px] text-dark-500">
+                      {t(
+                        'admin.balancer.groups.balancerMaxLatencyMsDesc',
+                        'Latency normalization cap in milliseconds for score calculation.',
+                      )}
+                    </p>
+                  </label>
+                  <label className="text-xs text-dark-400">
+                    {t('admin.balancer.groups.balancerSmoothingAlpha', 'Score smoothing alpha')}
+                    <input
+                      type="number"
+                      min={0}
+                      step={0.01}
+                      value={advancedSettings.balancerSmoothingAlpha}
+                      onChange={(event) =>
+                        updateAdvancedSetting(
+                          'balancerSmoothingAlpha',
+                          parseNumericInput(
+                            event.target.value,
+                            advancedSettings.balancerSmoothingAlpha,
+                          ),
+                        )
+                      }
+                      className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                    />
+                    <p className="mt-1 text-[11px] text-dark-500">
+                      {t(
+                        'admin.balancer.groups.balancerSmoothingAlphaDesc',
+                        'Smoothing factor for score updates. Lower value reduces short-term jitter.',
+                      )}
+                    </p>
+                  </label>
+                  <label className="text-xs text-dark-400">
+                    {t('admin.balancer.groups.balancerHysteresisDelta', 'Score hysteresis delta')}
+                    <input
+                      type="number"
+                      min={0}
+                      step={0.01}
+                      value={advancedSettings.balancerHysteresisDelta}
+                      onChange={(event) =>
+                        updateAdvancedSetting(
+                          'balancerHysteresisDelta',
+                          parseNumericInput(
+                            event.target.value,
+                            advancedSettings.balancerHysteresisDelta,
+                          ),
+                        )
+                      }
+                      className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
+                    />
+                    <p className="mt-1 text-[11px] text-dark-500">
+                      {t(
+                        'admin.balancer.groups.balancerHysteresisDeltaDesc',
+                        'Minimum score improvement required before switching to another node.',
+                      )}
+                    </p>
+                  </label>
+                </div>
+              </details>
+            </div>
+          </details>
+
+          <details className="mt-4 rounded-lg border border-dark-700 bg-dark-900/40">
+            <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-dark-300">
+              {t('admin.balancer.groups.previewTitle', 'Config preview')}
+            </summary>
+            <div className="border-t border-dark-700 p-3">
+              <p className="mb-2 text-xs text-dark-500">
                 {t(
-                  'admin.balancer.groups.sectionScoreModelHint',
-                  'Defines how load and latency are balanced when selecting preferred nodes.',
+                  'admin.balancer.groups.previewHint',
+                  'These service settings will be applied after saving.',
                 )}
               </p>
-              <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-                <label className="text-xs text-dark-400">
-                  {t('admin.balancer.groups.balancerLoadWeight', 'Score load weight')}
-                  <input
-                    type="number"
-                    min={0}
-                    step={0.01}
-                    value={advancedSettings.balancerLoadWeight}
-                    onChange={(event) =>
-                      updateAdvancedSetting(
-                        'balancerLoadWeight',
-                        parseNumericInput(event.target.value, advancedSettings.balancerLoadWeight),
-                      )
-                    }
-                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-                  />
-                  <p className="mt-1 text-[11px] text-dark-500">
-                    {t(
-                      'admin.balancer.groups.balancerLoadWeightDesc',
-                      'Weight of node load in final score. Higher value means stronger load-based balancing.',
-                    )}
-                  </p>
-                </label>
-                <label className="text-xs text-dark-400">
-                  {t('admin.balancer.groups.balancerLatencyWeight', 'Score latency weight')}
-                  <input
-                    type="number"
-                    min={0}
-                    step={0.01}
-                    value={advancedSettings.balancerLatencyWeight}
-                    onChange={(event) =>
-                      updateAdvancedSetting(
-                        'balancerLatencyWeight',
-                        parseNumericInput(
-                          event.target.value,
-                          advancedSettings.balancerLatencyWeight,
-                        ),
-                      )
-                    }
-                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-                  />
-                  <p className="mt-1 text-[11px] text-dark-500">
-                    {t(
-                      'admin.balancer.groups.balancerLatencyWeightDesc',
-                      'Weight of latency in final score. Higher value favors lower-ping nodes.',
-                    )}
-                  </p>
-                </label>
-                <label className="text-xs text-dark-400">
-                  {t('admin.balancer.groups.balancerMaxLatencyMs', 'Score max latency (ms)')}
-                  <input
-                    type="number"
-                    min={1}
-                    step={1}
-                    value={advancedSettings.balancerMaxLatencyMs}
-                    onChange={(event) =>
-                      updateAdvancedSetting(
-                        'balancerMaxLatencyMs',
-                        parseNumericInput(
-                          event.target.value,
-                          advancedSettings.balancerMaxLatencyMs,
-                        ),
-                      )
-                    }
-                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-                  />
-                  <p className="mt-1 text-[11px] text-dark-500">
-                    {t(
-                      'admin.balancer.groups.balancerMaxLatencyMsDesc',
-                      'Latency normalization cap in milliseconds for score calculation.',
-                    )}
-                  </p>
-                </label>
-                <label className="text-xs text-dark-400">
-                  {t('admin.balancer.groups.balancerSmoothingAlpha', 'Score smoothing alpha')}
-                  <input
-                    type="number"
-                    min={0}
-                    step={0.01}
-                    value={advancedSettings.balancerSmoothingAlpha}
-                    onChange={(event) =>
-                      updateAdvancedSetting(
-                        'balancerSmoothingAlpha',
-                        parseNumericInput(
-                          event.target.value,
-                          advancedSettings.balancerSmoothingAlpha,
-                        ),
-                      )
-                    }
-                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-                  />
-                  <p className="mt-1 text-[11px] text-dark-500">
-                    {t(
-                      'admin.balancer.groups.balancerSmoothingAlphaDesc',
-                      'Smoothing factor for score updates. Lower value reduces short-term jitter.',
-                    )}
-                  </p>
-                </label>
-                <label className="text-xs text-dark-400">
-                  {t('admin.balancer.groups.balancerHysteresisDelta', 'Score hysteresis delta')}
-                  <input
-                    type="number"
-                    min={0}
-                    step={0.01}
-                    value={advancedSettings.balancerHysteresisDelta}
-                    onChange={(event) =>
-                      updateAdvancedSetting(
-                        'balancerHysteresisDelta',
-                        parseNumericInput(
-                          event.target.value,
-                          advancedSettings.balancerHysteresisDelta,
-                        ),
-                      )
-                    }
-                    className="mt-1 w-full rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none focus:border-accent-500"
-                  />
-                  <p className="mt-1 text-[11px] text-dark-500">
-                    {t(
-                      'admin.balancer.groups.balancerHysteresisDeltaDesc',
-                      'Minimum score improvement required before switching to another node.',
-                    )}
-                  </p>
-                </label>
-              </div>
-            </details>
+              <pre className="max-h-64 overflow-auto rounded-lg bg-dark-950/80 p-3 text-xs text-dark-300">
+                {JSON.stringify(previewConfig, null, 2)}
+              </pre>
+            </div>
+          </details>
+        </div>
+      )}
+
+      {activeSection === 'service' && (
+        <div className="rounded-xl border border-dark-700 bg-dark-800/50 p-4">
+          <h3 className="mb-2 text-sm font-semibold text-dark-100">
+            {t('admin.balancer.tokenDebug.title', 'Token debug')}
+          </h3>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input
+              value={token}
+              onChange={(event) => setToken(event.target.value)}
+              placeholder={t('admin.balancer.tokenDebug.placeholder', 'Paste subscription token')}
+              className="min-w-0 flex-1 rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none placeholder:text-dark-500 focus:border-accent-500"
+            />
+            <button
+              onClick={() => token.trim() && tokenDebugMutation.mutate(token.trim())}
+              disabled={tokenDebugMutation.isPending || !token.trim()}
+              className="rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600 disabled:opacity-60"
+            >
+              {t('admin.balancer.tokenDebug.run', 'Run debug')}
+            </button>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2 border-t border-dark-700 pt-4">
+            <button
+              onClick={() => void refreshGroupsMutation.mutateAsync()}
+              disabled={refreshGroupsMutation.isPending}
+              className="rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600 disabled:opacity-60"
+            >
+              {t('admin.balancer.actions.refreshGroups', 'Refresh groups')}
+            </button>
+            <button
+              onClick={() => void refreshStatsMutation.mutateAsync()}
+              disabled={refreshStatsMutation.isPending}
+              className="rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600 disabled:opacity-60"
+            >
+              {t('admin.balancer.actions.refreshStats', 'Refresh stats')}
+            </button>
           </div>
         </div>
+      )}
 
-        <div className="mt-4 rounded-lg border border-dark-700 bg-dark-900/40 p-3">
-          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-dark-300">
-            {t('admin.balancer.groups.previewTitle', 'Config preview')}
-          </h4>
-          <p className="mb-2 text-xs text-dark-500">
-            {t('admin.balancer.groups.previewHint', 'This is the payload for PUT /admin/groups.')}
-          </p>
-          <pre className="max-h-64 overflow-auto rounded-lg bg-dark-950/80 p-3 text-xs text-dark-300">
-            {JSON.stringify(previewConfig, null, 2)}
-          </pre>
-        </div>
-      </div>
-
-      <div className="rounded-xl border border-dark-700 bg-dark-800/50 p-4">
-        <h3 className="mb-2 text-sm font-semibold text-dark-100">
-          {t('admin.balancer.tokenDebug.title', 'Token debug')}
-        </h3>
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <input
-            value={token}
-            onChange={(event) => setToken(event.target.value)}
-            placeholder={t('admin.balancer.tokenDebug.placeholder', 'Paste subscription token')}
-            className="min-w-0 flex-1 rounded-lg border border-dark-600 bg-dark-900/70 px-3 py-2 text-sm text-dark-100 outline-none placeholder:text-dark-500 focus:border-accent-500"
+      {activeSection === 'service' && (
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+          <MetricsCard
+            title={t('admin.balancer.cards.health', 'Health')}
+            items={healthMetrics}
+            loading={healthLoading}
+            loadingText={t('common.loading', 'Loading...')}
           />
-          <button
-            onClick={() => token.trim() && tokenDebugMutation.mutate(token.trim())}
-            disabled={tokenDebugMutation.isPending || !token.trim()}
-            className="rounded-lg border border-dark-600 bg-dark-700 px-3 py-2 text-sm text-dark-100 transition-colors hover:bg-dark-600 disabled:opacity-60"
-          >
-            {t('admin.balancer.tokenDebug.run', 'Run debug')}
-          </button>
+          <MetricsCard
+            title={t('admin.balancer.cards.ready', 'Ready')}
+            items={readyMetrics}
+            loading={readyLoading}
+            loadingText={t('common.loading', 'Loading...')}
+          />
+          <MetricsCard
+            title={t('admin.balancer.cards.debugStats', 'Debug stats')}
+            items={runtimeMetrics}
+            loading={debugLoading}
+            loadingText={t('common.loading', 'Loading...')}
+          />
         </div>
-      </div>
+      )}
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <MetricsCard
-          title={t('admin.balancer.cards.health', 'Health')}
-          items={healthMetrics}
-          loading={healthLoading}
-          loadingText={t('common.loading', 'Loading...')}
-        />
-        <MetricsCard
-          title={t('admin.balancer.cards.ready', 'Ready')}
-          items={readyMetrics}
-          loading={readyLoading}
-          loadingText={t('common.loading', 'Loading...')}
-        />
-        <MetricsCard
-          title={t('admin.balancer.cards.debugStats', 'Debug stats')}
-          items={runtimeMetrics}
-          loading={debugLoading}
-          loadingText={t('common.loading', 'Loading...')}
-        />
-      </div>
-
-      <div className="rounded-xl border border-dark-700 bg-dark-800/50 p-4">
-        <h3 className="mb-3 text-sm font-semibold text-dark-100">
-          {t('admin.balancer.cards.nodeStats', 'Node stats')}
-        </h3>
-
-        <div className="mb-3 rounded-lg border border-dark-700 bg-dark-900/40 p-3 text-xs text-dark-300">
-          <p>
-            {t('admin.balancer.quarantine.title', 'Quarantine')}:{' '}
-            <span className="font-semibold text-dark-100">
-              {quarantineLoading
-                ? t('common.loading', 'Loading...')
-                : (quarantineData?.quarantine_count ?? 0)}
-            </span>
-          </p>
-          <p className="mt-1 text-dark-400">
-            {t(
-              'admin.balancer.quarantine.hint',
-              'Quarantined nodes are excluded from generated groups until removed from quarantine.',
-            )}
-          </p>
-          <p className="mt-1 text-dark-400">
-            {t('admin.balancer.protection.active', 'Protection active')}:{' '}
-            <span className="font-medium text-dark-200">{attackModeData?.nodes?.length || 0}</span>
-          </p>
-        </div>
-
-        {nodesLoading ? (
-          <p className="text-sm text-dark-400">{t('common.loading', 'Loading...')}</p>
-        ) : visibleNodeRows.length === 0 ? (
-          <p className="text-sm text-dark-500">
-            {t('admin.balancer.cards.nodeStatsEmpty', 'No node stats yet.')}
-          </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <p className="mb-2 text-xs text-dark-500">
-              {t(
-                'admin.balancer.cards.nodeStatsHint',
-                'Showing real nodes without inbound aliases.',
-              )}
-            </p>
-            <p className="mb-2 text-xs text-dark-500">
-              {t(
-                'admin.balancer.cards.nodeStatsUnitsHint',
-                'RAM load and CPU load are user density metrics (users per GB/core), not used memory/CPU percent.',
-              )}
-            </p>
-            <table className="min-w-full text-left text-sm text-dark-200">
-              <thead>
-                <tr className="border-b border-dark-700 text-xs uppercase text-dark-400">
-                  <th className="px-2 py-2">{t('admin.balancer.table.node', 'Node')}</th>
-                  <th className="px-2 py-2">{t('admin.balancer.table.users', 'Users')}</th>
-                  <th className="px-2 py-2">{t('admin.balancer.table.cpuCores', 'CPU Cores')}</th>
-                  <th className="px-2 py-2">{t('admin.balancer.table.cpuLoad', 'CPU Load')}</th>
-                  <th className="px-2 py-2">{t('admin.balancer.table.ramLoad', 'RAM Load')}</th>
-                  <th className="px-2 py-2">{t('admin.balancer.table.totalRam', 'Total RAM')}</th>
-                  <th className="px-2 py-2">{t('admin.balancer.table.connected', 'Connected')}</th>
-                  <th className="px-2 py-2">{t('admin.balancer.table.disabled', 'Disabled')}</th>
-                  <th className="px-2 py-2">
-                    {t('admin.balancer.table.quarantine', 'Quarantine')}
-                  </th>
-                  <th className="px-2 py-2">
-                    {t('admin.balancer.table.protection', 'Protection')}
-                  </th>
-                  <th className="px-2 py-2">{t('admin.balancer.table.action', 'Action')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {visibleNodeRows.map((row) => (
-                  <tr key={row.nodeName} className="border-b border-dark-800/70">
-                    <td className="px-2 py-2 font-medium text-dark-100">{row.nodeName}</td>
-                    <td className="px-2 py-2">{row.usersOnline}</td>
-                    <td className="px-2 py-2">{row.cpuCount}</td>
-                    <td className="px-2 py-2">{row.cpuLoad}</td>
-                    <td className="px-2 py-2">{row.ramLoad}</td>
-                    <td className="px-2 py-2">{row.totalRamGb}</td>
-                    <td className="px-2 py-2">{row.connected}</td>
-                    <td className="px-2 py-2">{row.disabled}</td>
-                    <td className="px-2 py-2">
-                      {row.quarantined ? (
-                        <span className="rounded bg-warning-500/15 px-2 py-1 text-xs text-warning-300">
-                          {t('common.yes', 'Yes')}
-                        </span>
-                      ) : (
-                        <span className="rounded bg-success-500/15 px-2 py-1 text-xs text-success-300">
-                          {t('common.no', 'No')}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-2 py-2">
-                      {row.protection ? (
-                        <span className="whitespace-nowrap rounded bg-error-500/15 px-2 py-1 text-xs text-error-300">
-                          {row.protection.isolation?.mode === 'manual'
-                            ? t('admin.balancer.protection.manual', 'Manual')
-                            : t('admin.balancer.protection.automatic', 'Automatic')}
-                        </span>
-                      ) : (
-                        <span className="rounded bg-success-500/15 px-2 py-1 text-xs text-success-300">
-                          {t('admin.balancer.protection.normal', 'Normal')}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-2 py-2">
-                      <div className="flex min-w-max gap-1.5">
-                        <button
-                          onClick={() => toggleNodeQuarantine(row.nodeName, row.quarantined)}
-                          disabled={
-                            addQuarantineMutation.isPending || removeQuarantineMutation.isPending
-                          }
-                          className={`rounded-md border px-2 py-1 text-xs transition-colors disabled:opacity-50 ${
-                            row.quarantined
-                              ? 'border-success-500/40 bg-success-500/10 text-success-300 hover:bg-success-500/20'
-                              : 'border-warning-500/40 bg-warning-500/10 text-warning-300 hover:bg-warning-500/20'
-                          }`}
-                        >
-                          {row.quarantined
-                            ? t('admin.balancer.actions.removeQuarantine', 'Remove')
-                            : t('admin.balancer.actions.addQuarantine', 'Quarantine')}
-                        </button>
-                        <button
-                          onClick={() =>
-                            row.protection
-                              ? disableAttackModeMutation.mutate(row.nodeName)
-                              : enableAttackModeMutation.mutate(row.nodeName)
-                          }
-                          disabled={
-                            attackModeLoading ||
-                            enableAttackModeMutation.isPending ||
-                            disableAttackModeMutation.isPending
-                          }
-                          className={`rounded-md border px-2 py-1 text-xs transition-colors disabled:opacity-50 ${
-                            row.protection
-                              ? 'border-success-500/40 bg-success-500/10 text-success-300 hover:bg-success-500/20'
-                              : 'border-error-500/40 bg-error-500/10 text-error-300 hover:bg-error-500/20'
-                          }`}
-                        >
-                          {row.protection
-                            ? t('admin.balancer.actions.releaseProtection', 'Return')
-                            : t('admin.balancer.actions.enableAttackMode', 'Isolate')}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {activeSection === 'quality' && (
+        <section className="rounded-xl border border-dark-700 bg-dark-800/50 p-4">
+          <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-dark-100">
+                {t('admin.balancer.quality.title', 'Connection quality')}
+              </h3>
+              <p className="mt-1 text-xs text-dark-400">
+                {t(
+                  'admin.balancer.quality.hint',
+                  'Actual server delay and stability from the latest checks.',
+                )}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => void refetchNodeHealthMetrics()}
+              disabled={nodeHealthMetricsLoading}
+              className="rounded-lg border border-dark-600 bg-dark-700 px-3 py-1.5 text-xs text-dark-200 transition-colors hover:bg-dark-600 disabled:opacity-60"
+            >
+              {t('common.refresh', 'Refresh')}
+            </button>
           </div>
-        )}
-      </div>
 
-      {hasTokenResult && (
+          {nodeHealthMetricsLoading ? (
+            <p className="py-3 text-sm text-dark-400">{t('common.loading', 'Loading...')}</p>
+          ) : nodeHealthMetricsError ? (
+            <p className="rounded-lg border border-error-500/30 bg-error-500/10 px-3 py-2 text-sm text-error-200">
+              {t('admin.balancer.quality.loadError', 'Failed to load connection quality.')}
+            </p>
+          ) : nodeQualityRows.length === 0 ? (
+            <p className="rounded-lg border border-dark-700 bg-dark-900/40 px-3 py-3 text-sm text-dark-400">
+              {t('admin.balancer.quality.empty', 'There are no completed server checks yet.')}
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 gap-2 lg:grid-cols-2 2xl:grid-cols-3">
+              {visibleNodeQualityRows.map((row) => (
+                <article
+                  key={row.key}
+                  className={`rounded-lg border p-3 ${
+                    row.hasRestrictions
+                      ? 'border-error-500/30 bg-error-500/5'
+                      : row.unstable
+                        ? 'border-warning-500/30 bg-warning-500/5'
+                        : 'border-dark-700 bg-dark-900/40'
+                  }`}
+                >
+                  <div className="flex min-w-0 items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <h4 className="truncate text-sm font-semibold text-dark-100">
+                        {row.nodeName}
+                      </h4>
+                      <p className="mt-0.5 text-[11px] text-dark-500">
+                        {t('admin.balancer.quality.checkedAt', 'Last check')}: {row.checkedAt}
+                      </p>
+                    </div>
+                    <span
+                      className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-medium ${
+                        row.hasRestrictions
+                          ? 'bg-error-500/15 text-error-300'
+                          : row.unstable
+                            ? 'bg-warning-500/15 text-warning-300'
+                            : 'bg-success-500/15 text-success-300'
+                      }`}
+                    >
+                      {row.stability}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    <div className="rounded-md bg-dark-950/45 px-2.5 py-2">
+                      <p className="text-[10px] uppercase text-dark-500">
+                        {t('admin.balancer.quality.latency', 'Latency')}
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-dark-100">
+                        {row.latency === null
+                          ? '—'
+                          : `${row.latency.toLocaleString(i18n.resolvedLanguage)} ${t('admin.balancer.quality.ms', 'ms')}`}
+                      </p>
+                    </div>
+                    <div className="rounded-md bg-dark-950/45 px-2.5 py-2">
+                      <p className="text-[10px] uppercase text-dark-500">
+                        {t('admin.balancer.quality.jitter', 'Fluctuation')}
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-dark-100">
+                        {row.jitter.toLocaleString(i18n.resolvedLanguage)}{' '}
+                        {t('admin.balancer.quality.ms', 'ms')}
+                      </p>
+                    </div>
+                    <div className="rounded-md bg-dark-950/45 px-2.5 py-2">
+                      <p className="text-[10px] uppercase text-dark-500">
+                        {t('admin.balancer.quality.loss', 'Loss')}
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-dark-100">{row.loss}%</p>
+                    </div>
+                    <div className="rounded-md bg-dark-950/45 px-2.5 py-2">
+                      <p className="text-[10px] uppercase text-dark-500">
+                        {t('admin.balancer.quality.breaks', 'Breaks')}
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-dark-100">{row.breaks}</p>
+                    </div>
+                  </div>
+
+                  <p
+                    className={`mt-2 text-xs ${
+                      row.hasRestrictions ? 'text-error-300' : 'text-dark-400'
+                    }`}
+                  >
+                    {row.restriction}
+                  </p>
+                </article>
+              ))}
+            </div>
+          )}
+          {nodeQualityRows.length > 12 && (
+            <button
+              type="button"
+              onClick={() => setQualityExpanded((value) => !value)}
+              className="mt-3 w-full rounded-lg border border-dark-700 bg-dark-900/50 px-3 py-2 text-xs text-dark-300 transition-colors hover:bg-dark-700"
+            >
+              {qualityExpanded
+                ? t('admin.balancer.quality.showLess', 'Show less')
+                : t('admin.balancer.quality.showAll', 'Show all {{count}} servers', {
+                    count: nodeQualityRows.length,
+                  })}
+            </button>
+          )}
+        </section>
+      )}
+
+      {activeSection === 'quality' && (
+        <details className="rounded-xl border border-dark-700 bg-dark-800/50">
+          <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-dark-100">
+            {t('admin.balancer.cards.nodeStats', 'Node stats')}
+            <span className="ml-2 text-xs font-normal text-dark-500">
+              {t('admin.balancer.groups.serverCount', '{{count}} servers', {
+                count: visibleNodeRows.length,
+              })}
+            </span>
+          </summary>
+          <div className="border-t border-dark-700 p-4">
+            <div className="mb-3 rounded-lg border border-dark-700 bg-dark-900/40 p-3 text-xs text-dark-300">
+              <p>
+                {t('admin.balancer.quarantine.title', 'Quarantine')}:{' '}
+                <span className="font-semibold text-dark-100">
+                  {quarantineLoading
+                    ? t('common.loading', 'Loading...')
+                    : (quarantineData?.quarantine_count ?? 0)}
+                </span>
+              </p>
+              <p className="mt-1 text-dark-400">
+                {t(
+                  'admin.balancer.quarantine.hint',
+                  'Quarantined nodes are excluded from generated groups until removed from quarantine.',
+                )}
+              </p>
+              <p className="mt-1 text-dark-400">
+                {t('admin.balancer.protection.active', 'Protection active')}:{' '}
+                <span className="font-medium text-dark-200">
+                  {attackModeData?.nodes?.length || 0}
+                </span>
+              </p>
+            </div>
+
+            {nodesLoading ? (
+              <p className="text-sm text-dark-400">{t('common.loading', 'Loading...')}</p>
+            ) : visibleNodeRows.length === 0 ? (
+              <p className="text-sm text-dark-500">
+                {t('admin.balancer.cards.nodeStatsEmpty', 'No node stats yet.')}
+              </p>
+            ) : (
+              <div className="overflow-x-auto">
+                <p className="mb-2 text-xs text-dark-500">
+                  {t(
+                    'admin.balancer.cards.nodeStatsHint',
+                    'Showing real nodes without inbound aliases.',
+                  )}
+                </p>
+                <p className="mb-2 text-xs text-dark-500">
+                  {t(
+                    'admin.balancer.cards.nodeStatsUnitsHint',
+                    'RAM load and CPU load are user density metrics (users per GB/core), not used memory/CPU percent.',
+                  )}
+                </p>
+                <table className="min-w-full text-left text-sm text-dark-200">
+                  <thead>
+                    <tr className="border-b border-dark-700 text-xs uppercase text-dark-400">
+                      <th className="px-2 py-2">{t('admin.balancer.table.node', 'Node')}</th>
+                      <th className="px-2 py-2">{t('admin.balancer.table.users', 'Users')}</th>
+                      <th className="px-2 py-2">
+                        {t('admin.balancer.table.cpuCores', 'CPU Cores')}
+                      </th>
+                      <th className="px-2 py-2">{t('admin.balancer.table.cpuLoad', 'CPU Load')}</th>
+                      <th className="px-2 py-2">{t('admin.balancer.table.ramLoad', 'RAM Load')}</th>
+                      <th className="px-2 py-2">
+                        {t('admin.balancer.table.totalRam', 'Total RAM')}
+                      </th>
+                      <th className="px-2 py-2">
+                        {t('admin.balancer.table.connected', 'Connected')}
+                      </th>
+                      <th className="px-2 py-2">
+                        {t('admin.balancer.table.disabled', 'Disabled')}
+                      </th>
+                      <th className="px-2 py-2">
+                        {t('admin.balancer.table.quarantine', 'Quarantine')}
+                      </th>
+                      <th className="px-2 py-2">
+                        {t('admin.balancer.table.protection', 'Protection')}
+                      </th>
+                      <th className="px-2 py-2">{t('admin.balancer.table.action', 'Action')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visibleNodeRows.map((row) => (
+                      <tr key={row.nodeName} className="border-b border-dark-800/70">
+                        <td className="px-2 py-2 font-medium text-dark-100">{row.nodeName}</td>
+                        <td className="px-2 py-2">{row.usersOnline}</td>
+                        <td className="px-2 py-2">{row.cpuCount}</td>
+                        <td className="px-2 py-2">{row.cpuLoad}</td>
+                        <td className="px-2 py-2">{row.ramLoad}</td>
+                        <td className="px-2 py-2">{row.totalRamGb}</td>
+                        <td className="px-2 py-2">{row.connected}</td>
+                        <td className="px-2 py-2">{row.disabled}</td>
+                        <td className="px-2 py-2">
+                          {row.quarantined ? (
+                            <span className="rounded bg-warning-500/15 px-2 py-1 text-xs text-warning-300">
+                              {t('common.yes', 'Yes')}
+                            </span>
+                          ) : (
+                            <span className="rounded bg-success-500/15 px-2 py-1 text-xs text-success-300">
+                              {t('common.no', 'No')}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-2 py-2">
+                          {row.protection ? (
+                            <span className="whitespace-nowrap rounded bg-error-500/15 px-2 py-1 text-xs text-error-300">
+                              {row.protection.isolation?.mode === 'manual'
+                                ? t('admin.balancer.protection.manual', 'Manual')
+                                : t('admin.balancer.protection.automatic', 'Automatic')}
+                            </span>
+                          ) : (
+                            <span className="rounded bg-success-500/15 px-2 py-1 text-xs text-success-300">
+                              {t('admin.balancer.protection.normal', 'Normal')}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-2 py-2">
+                          <div className="flex min-w-max gap-1.5">
+                            <button
+                              onClick={() => toggleNodeQuarantine(row.nodeName, row.quarantined)}
+                              disabled={
+                                addQuarantineMutation.isPending ||
+                                removeQuarantineMutation.isPending
+                              }
+                              className={`rounded-md border px-2 py-1 text-xs transition-colors disabled:opacity-50 ${
+                                row.quarantined
+                                  ? 'border-success-500/40 bg-success-500/10 text-success-300 hover:bg-success-500/20'
+                                  : 'border-warning-500/40 bg-warning-500/10 text-warning-300 hover:bg-warning-500/20'
+                              }`}
+                            >
+                              {row.quarantined
+                                ? t('admin.balancer.actions.removeQuarantine', 'Remove')
+                                : t('admin.balancer.actions.addQuarantine', 'Quarantine')}
+                            </button>
+                            <button
+                              onClick={() =>
+                                row.protection
+                                  ? disableAttackModeMutation.mutate(row.nodeName)
+                                  : enableAttackModeMutation.mutate(row.nodeName)
+                              }
+                              disabled={
+                                attackModeLoading ||
+                                enableAttackModeMutation.isPending ||
+                                disableAttackModeMutation.isPending
+                              }
+                              className={`rounded-md border px-2 py-1 text-xs transition-colors disabled:opacity-50 ${
+                                row.protection
+                                  ? 'border-success-500/40 bg-success-500/10 text-success-300 hover:bg-success-500/20'
+                                  : 'border-error-500/40 bg-error-500/10 text-error-300 hover:bg-error-500/20'
+                              }`}
+                            >
+                              {row.protection
+                                ? t('admin.balancer.actions.releaseProtection', 'Return')
+                                : t('admin.balancer.actions.enableAttackMode', 'Isolate')}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </details>
+      )}
+
+      {activeSection === 'service' && hasTokenResult && (
         <MetricsCard
           title={t('admin.balancer.cards.tokenDebug', 'Token debug result')}
           items={Object.entries(toRecord(tokenResult)).map(([key, value]) => ({
@@ -3408,41 +3968,39 @@ export default function AdminBalancer() {
         />
       )}
 
-      <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
-        <JsonDetails
-          title={t('admin.balancer.cards.health', 'Health')}
-          data={healthLoading ? { loading: true } : (health ?? {})}
-          rawLabel={t('admin.balancer.rawJson', 'raw JSON')}
-        />
-        <JsonDetails
-          title={t('admin.balancer.cards.ready', 'Ready')}
-          data={readyLoading ? { loading: true } : (ready ?? {})}
-          rawLabel={t('admin.balancer.rawJson', 'raw JSON')}
-        />
-        <JsonDetails
-          title={t('admin.balancer.cards.debugStats', 'Debug stats')}
-          data={debugLoading ? { loading: true } : (debugStats ?? {})}
-          rawLabel={t('admin.balancer.rawJson', 'raw JSON')}
-        />
-        <JsonDetails
-          title={t('admin.balancer.cards.nodeStats', 'Node stats')}
-          data={nodesLoading ? { loading: true } : (nodeStats ?? {})}
-          rawLabel={t('admin.balancer.rawJson', 'raw JSON')}
-        />
-        <JsonDetails
-          title={t('admin.balancer.quarantine.title', 'Quarantine')}
-          data={quarantineLoading ? { loading: true } : (quarantineData ?? {})}
-          rawLabel={t('admin.balancer.rawJson', 'raw JSON')}
-        />
-        <JsonDetails
-          title={t('admin.balancer.protection.title', 'Node protection')}
-          data={attackModeLoading ? { loading: true } : (attackModeData ?? {})}
-          rawLabel={t('admin.balancer.rawJson', 'raw JSON')}
-        />
-      </div>
-
-      {actionMessage && (
-        <p className={`rounded-lg border px-3 py-2 text-sm ${alertClassName}`}>{actionMessage}</p>
+      {activeSection === 'service' && (
+        <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+          <JsonDetails
+            title={t('admin.balancer.cards.health', 'Health')}
+            data={healthLoading ? { loading: true } : (health ?? {})}
+            rawLabel={t('admin.balancer.rawJson', 'raw JSON')}
+          />
+          <JsonDetails
+            title={t('admin.balancer.cards.ready', 'Ready')}
+            data={readyLoading ? { loading: true } : (ready ?? {})}
+            rawLabel={t('admin.balancer.rawJson', 'raw JSON')}
+          />
+          <JsonDetails
+            title={t('admin.balancer.cards.debugStats', 'Debug stats')}
+            data={debugLoading ? { loading: true } : (debugStats ?? {})}
+            rawLabel={t('admin.balancer.rawJson', 'raw JSON')}
+          />
+          <JsonDetails
+            title={t('admin.balancer.cards.nodeStats', 'Node stats')}
+            data={nodesLoading ? { loading: true } : (nodeStats ?? {})}
+            rawLabel={t('admin.balancer.rawJson', 'raw JSON')}
+          />
+          <JsonDetails
+            title={t('admin.balancer.quarantine.title', 'Quarantine')}
+            data={quarantineLoading ? { loading: true } : (quarantineData ?? {})}
+            rawLabel={t('admin.balancer.rawJson', 'raw JSON')}
+          />
+          <JsonDetails
+            title={t('admin.balancer.protection.title', 'Node protection')}
+            data={attackModeLoading ? { loading: true } : (attackModeData ?? {})}
+            rawLabel={t('admin.balancer.rawJson', 'raw JSON')}
+          />
+        </div>
       )}
 
       {statusLoading && (
