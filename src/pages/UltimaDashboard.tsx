@@ -1189,7 +1189,17 @@ export function UltimaDashboard() {
     .slice(0, 3)
     .join(' · ');
   const referralCode = referralInfo?.referral_code?.trim() ?? '';
-  const referralTelegramLink = referralInfo?.referral_link?.trim() ?? '';
+  const configuredBotUsername = (import.meta.env.VITE_TELEGRAM_BOT_USERNAME || '')
+    .replace(/^@+/, '')
+    .trim();
+  const legacyReferralLink = referralInfo?.referral_link?.trim() ?? '';
+  const referralTelegramLink =
+    referralInfo?.telegram_referral_link?.trim() ||
+    (configuredBotUsername && referralCode
+      ? `https://t.me/${configuredBotUsername}?start=${encodeURIComponent(referralCode)}`
+      : legacyReferralLink.startsWith('https://t.me/')
+        ? legacyReferralLink
+        : '');
   const referralWebLink = referralCode
     ? `${window.location.origin}/login?ref=${encodeURIComponent(referralCode)}`
     : '';

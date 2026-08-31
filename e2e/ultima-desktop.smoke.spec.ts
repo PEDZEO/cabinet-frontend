@@ -700,7 +700,8 @@ async function mockUltimaDesktopApi(
     if (path === '/cabinet/referral') {
       return respond({
         referral_code: USER.referral_code,
-        referral_link: 'https://t.me/example?start=DESKTOP99',
+        referral_link: 'https://web.example/login?ref=DESKTOP99',
+        telegram_referral_link: 'https://t.me/example?start=DESKTOP99',
         total_referrals: 4,
         active_referrals: 3,
         total_earnings_kopeks: 15000,
