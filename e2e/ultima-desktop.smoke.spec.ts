@@ -248,6 +248,11 @@ const SUBSCRIPTION = {
   is_expired: false,
   tariff_id: 1,
   tariff_name: 'Обычный',
+  metered_traffic_enabled: true,
+  metered_access_blocked: false,
+  metered_server_label: 'Спецсерверы',
+  metered_traffic_remaining_gb: 82,
+  standard_traffic_unlimited: true,
   traffic_purchases: [],
 };
 
@@ -255,6 +260,7 @@ const LOW_TRAFFIC_SUBSCRIPTION = {
   ...SUBSCRIPTION,
   traffic_used_gb: 92,
   traffic_used_percent: 92,
+  metered_traffic_remaining_gb: 8,
 };
 
 const TRIAL_SUBSCRIPTION = {
@@ -1248,14 +1254,23 @@ test.describe('Ultima desktop workspace', () => {
       .poll(() => homeLogo.evaluate((image) => getComputedStyle(image).opacity))
       .toBe('1');
     await expect(overview).toContainText('Обычный');
+    await expect(page.getByTestId('ultima-home-unlimited-traffic')).toContainText(
+      'Обычные серверы',
+    );
+    await expect(page.getByTestId('ultima-home-unlimited-traffic')).toContainText('Безлимит');
     await expect(page.getByTestId('ultima-home-traffic')).toContainText('82 ГБ');
     await expect(page.getByTestId('ultima-plan-device-count')).toContainText('1/3');
     await expect(page.getByTestId('ultima-home-days')).not.toContainText('—');
     await expect(page.getByTestId('ultima-home-quick-actions')).toBeVisible();
-    await expect(page.getByText('Позови друга', { exact: true })).toHaveCount(1);
-    await expect(page.getByTestId('ultima-device-home-cta-title')).toHaveCount(1);
-    await expect(page.getByTestId('ultima-device-home-cta-title')).toContainText('Подключить');
+    await expect(page.getByTestId('ultima-home-action-devices')).toBeVisible();
+    await expect(page.getByTestId('ultima-home-action-setup')).toBeVisible();
+    await expect(page.getByTestId('ultima-home-action-identities')).toBeVisible();
+    await expect(page.getByTestId('ultima-home-action-referral')).toBeVisible();
     await expect(page.getByTestId('ultima-primary-cta')).toBeVisible();
+    await page.getByTestId('ultima-home-action-referral').click();
+    await expect(page.getByTestId('ultima-referral-share-sheet')).toBeVisible();
+    await expect(page.getByTestId('ultima-referral-kind-telegram')).toBeVisible();
+    await expect(page.getByTestId('ultima-referral-kind-web')).toBeVisible();
     await expectNoHorizontalOverflow(page);
   });
 
@@ -1268,9 +1283,14 @@ test.describe('Ultima desktop workspace', () => {
     await expect(page.getByTestId('ultima-home-desktop')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Обычный', exact: true })).toHaveCount(1);
     await expect(page.getByTestId('ultima-home-usage')).toContainText('18 / 100 ГБ');
+    await expect(page.getByTestId('ultima-home-desktop-unlimited')).toContainText(
+      'Обычные серверы',
+    );
+    await expect(page.getByTestId('ultima-home-desktop-unlimited')).toContainText('Безлимит');
     await expect(page.getByText('Позови друга', { exact: true })).toHaveCount(1);
     await expect(page.getByTestId('ultima-device-home-cta-title')).toHaveCount(1);
     await expect(page.getByTestId('ultima-device-home-cta-title')).toContainText('Подключить');
+    await expect(page.getByTestId('ultima-home-desktop-identities')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Связаться с поддержкой' })).toHaveCount(1);
     await expect(page.getByText('VPN кабинет', { exact: true })).toHaveCount(0);
     await expect(page.getByText('VPN Cabinet', { exact: true })).toHaveCount(0);
@@ -1331,15 +1351,25 @@ test.describe('Ultima desktop workspace', () => {
       await mockUltimaDesktopApi(page, { subscription: LOW_TRAFFIC_SUBSCRIPTION });
       await page.goto('/');
 
+      const isMobile = viewport.width < 1024;
       const warning = page.getByTestId('ultima-traffic-warning');
-      await expect(warning).toBeVisible();
-      await expect(warning).toContainText('Трафик заканчивается');
-      await expect(warning).toContainText('Осталось 8 ГБ из 100 ГБ');
-      await expect(page.getByText('Позови друга', { exact: true })).toHaveCount(0);
-      await expect(page.getByText('Подключить новое устройство', { exact: true })).toHaveCount(0);
+      if (isMobile) {
+        await expect(warning).toHaveCount(0);
+        await expect(page.getByTestId('ultima-home-traffic')).toContainText('8 ГБ осталось');
+        await expect(page.getByTestId('ultima-home-action-referral')).toBeVisible();
+        await expect(page.getByTestId('ultima-home-action-devices')).toBeVisible();
+      } else {
+        await expect(warning).toBeVisible();
+        await expect(warning).toContainText('Трафик заканчивается');
+        await expect(warning).toContainText('Осталось 8 ГБ на Спецсерверы');
+        await expect(page.getByText('Позови друга', { exact: true })).toHaveCount(1);
+        await expect(page.getByTestId('ultima-device-home-cta-title')).toHaveCount(1);
+      }
       await expectNoHorizontalOverflow(page);
 
-      await page.getByTestId('ultima-traffic-warning-action').click();
+      await page
+        .getByTestId(isMobile ? 'ultima-home-traffic-topup' : 'ultima-traffic-warning-action')
+        .click();
       await expect(page).toHaveURL(/\/subscription\?trafficTopUp=1$/);
       await expect(page.locator('#ultima-traffic-top-up')).toBeVisible();
       await expect(
@@ -2081,6 +2111,9 @@ test.describe('Ultima connection setup', () => {
 
     await page.getByTestId('ultima-connection-platform-android').click();
     await page.getByTestId('ultima-connection-app-0').click();
+    await expect(page.getByTestId('ultima-connection-primary-action')).toContainText(
+      'Установить через Google Play',
+    );
     await page.getByTestId('ultima-connection-source-1').click();
     await expect(page.getByTestId('ultima-connection-primary-action')).toContainText(
       'Установить через Google Play',

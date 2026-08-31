@@ -70,6 +70,14 @@ type InstallOption = {
   kind: 'apk' | 'play' | 'appstore' | 'store' | 'download';
 };
 
+const getPreferredInstallOption = (options: InstallOption[]): InstallOption | undefined =>
+  options.find((option) => option.kind === 'play') ??
+  options.find((option) => option.kind === 'appstore') ??
+  options.find((option) => option.kind === 'store') ??
+  options.find((option) => option.kind === 'download') ??
+  options.find((option) => option.kind === 'apk') ??
+  options[0];
+
 const PLATFORM_ORDER = ['ios', 'android', 'windows', 'macos', 'linux', 'androidTV', 'appleTV'];
 
 const getLocalizedText = (text: LocalizedText | undefined, lang: string): string => {
@@ -291,8 +299,7 @@ const findSetupUrls = (
     if (!installUrl && isInstallButton(button, localized, rawUrl)) installUrl = rawUrl;
   }
 
-  const primaryInstall =
-    installOptions.find((option) => option.kind === 'apk') ?? installOptions[0];
+  const primaryInstall = getPreferredInstallOption(installOptions);
   const resolvedInstall = primaryInstall?.url
     ? primaryInstall.url
     : installUrl
@@ -406,9 +413,7 @@ export function UltimaConnection({
   );
 
   useEffect(() => {
-    const preferred =
-      setupUrls.installOptions.find((option) => option.kind === 'apk') ??
-      setupUrls.installOptions[0];
+    const preferred = getPreferredInstallOption(setupUrls.installOptions);
     setSelectedInstallUrl((current) =>
       current && setupUrls.installOptions.some((option) => option.url === current)
         ? current

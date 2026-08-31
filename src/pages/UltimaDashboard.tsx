@@ -10,16 +10,9 @@ import {
   type CSSProperties,
   type PointerEvent,
 } from 'react';
-import {
-  CalendarDays,
-  ChevronRight,
-  Globe2,
-  Gauge,
-  MonitorSmartphone,
-  ShieldCheck,
-  Smartphone,
-  Wrench,
-} from 'lucide-react';
+import { KeyRound, MonitorSmartphone, ShieldCheck, UsersRound, Wrench } from 'lucide-react';
+import { motion, useReducedMotion } from 'framer-motion';
+import { authApi } from '@/api/auth';
 import { balanceApi } from '@/api/balance';
 import { infoApi } from '@/api/info';
 import { notificationsApi } from '@/api/notifications';
@@ -38,6 +31,14 @@ import { ticketsApi } from '@/api/tickets';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { UltimaTrialGuide } from '@/components/ultima/UltimaTrialGuide';
 import { UltimaTrafficWarningCard } from '@/components/ultima/UltimaTrafficWarningCard';
+import {
+  UltimaHomeActionGrid,
+  type UltimaHomeAction,
+} from '@/components/ultima/home/UltimaHomeActionGrid';
+import { UltimaHomePlanCard } from '@/components/ultima/home/UltimaHomePlanCard';
+import { UltimaHomeTrafficCard } from '@/components/ultima/home/UltimaHomeTrafficCard';
+import { UltimaReferralShareSheet } from '@/components/ultima/home/UltimaReferralShareSheet';
+import { staggerContainer, staggerItem } from '@/components/motion/transitions';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { usePendingTopUpFollowUpState } from '@/hooks/usePendingTopUpFollowUpState';
@@ -59,7 +60,6 @@ import {
   writeUltimaTrialGuideAcknowledged,
 } from '@/features/ultima/trialOnboardingFlow';
 import {
-  getUltimaNextAction,
   ULTIMA_RENEWAL_NOTICE_DAYS,
   type UltimaNextActionKind,
 } from '@/features/ultima/nextAction';
@@ -96,13 +96,14 @@ export function UltimaDashboard() {
   const queryClient = useQueryClient();
   const { t, i18n } = useTranslation();
   const { currencySymbol } = useCurrency();
-  const { logoLetter, hasCustomLogo, logoUrl, hasCachedBranding, isBrandingLoading } =
+  const { appName, logoLetter, hasCustomLogo, logoUrl, hasCachedBranding, isBrandingLoading } =
     useBranding();
   const haptic = useHaptic();
   const isAdmin = useAuthStore((state) => state.isAdmin);
   const user = useAuthStore((state) => state.user);
   const refreshUser = useAuthStore((state) => state.refreshUser);
   const isDesktopViewport = useMediaQuery('(min-width: 1024px)');
+  const reduceMotion = useReducedMotion();
   const { pendingTopUp } = usePendingTopUpFollowUpState();
   const rippleIdRef = useRef(0);
   const digitIdRef = useRef(0);
@@ -121,6 +122,7 @@ export function UltimaDashboard() {
   const [isReminderHidden, setIsReminderHidden] = useState(false);
   const [isTrialGuideVisible, setIsTrialGuideVisible] = useState(false);
   const [promoMessage, setPromoMessage] = useState<string | null>(null);
+  const [isReferralShareOpen, setIsReferralShareOpen] = useState(false);
 
   const {
     data: subscriptionResponse,
@@ -188,6 +190,17 @@ export function UltimaDashboard() {
     retry: false,
     placeholderData: (previousData) => previousData,
   });
+  const {
+    data: linkedIdentitiesData,
+    isError: isLinkedIdentitiesError,
+    isPending: isLinkedIdentitiesPending,
+  } = useQuery({
+    queryKey: ['linked-identities'],
+    queryFn: authApi.getLinkedIdentities,
+    staleTime: 60000,
+    retry: false,
+    placeholderData: (previousData) => previousData,
+  });
   const subscription = subscriptionResponse?.subscription ?? null;
   const hasAnySubscription = subscriptionResponse?.has_subscription === true;
   const { data: dashboardDevicesData, isError: isDashboardDevicesError } = useQuery({
@@ -247,34 +260,6 @@ export function UltimaDashboard() {
       : (daysLeft ?? 99) <= ULTIMA_RENEWAL_NOTICE_DAYS
         ? 'warning'
         : 'active';
-  const statusTone =
-    statusToneKey === 'expired'
-      ? {
-          dot: 'bg-rose-300/95',
-          halo: 'bg-rose-400/[0.45]',
-          pill: 'border-rose-200/25 bg-rose-400/[0.16] text-rose-100/95',
-          pulse: 'from-rose-400/[0.32] via-rose-300/[0.22] to-transparent',
-        }
-      : statusToneKey === 'trial'
-        ? {
-            dot: 'bg-emerald-200/95',
-            halo: 'bg-emerald-300/[0.45]',
-            pill: 'border-emerald-200/[0.28] bg-emerald-300/[0.16] text-emerald-50/95',
-            pulse: 'from-emerald-300/[0.34] via-emerald-200/[0.24] to-transparent',
-          }
-        : statusToneKey === 'warning'
-          ? {
-              dot: 'bg-amber-200/95',
-              halo: 'bg-amber-300/[0.42]',
-              pill: 'border-amber-200/30 bg-amber-300/[0.16] text-amber-50/95',
-              pulse: 'from-amber-300/30 via-amber-200/20 to-transparent',
-            }
-          : {
-              dot: 'bg-emerald-200/95',
-              halo: 'bg-emerald-300/[0.45]',
-              pill: 'border-emerald-200/[0.28] bg-emerald-300/[0.16] text-emerald-50/95',
-              pulse: 'from-emerald-300/[0.34] via-emerald-200/[0.24] to-transparent',
-            };
   const purchaseCtaLabel = useMemo(() => {
     if (isActiveTrial) {
       return t('ultima.buySubscriptionTrial', { defaultValue: 'Купить подписку' });
@@ -549,8 +534,27 @@ export function UltimaDashboard() {
     if (warmedLanguagesRef.current.has(language)) {
       return;
     }
-    warmedLanguagesRef.current.add(language);
-    void warmUltimaStartup(queryClient, { language });
+
+    let cancelled = false;
+    const runWarmup = () => {
+      if (cancelled) return;
+      warmedLanguagesRef.current.add(language);
+      void warmUltimaStartup(queryClient, { language });
+    };
+
+    if ('requestIdleCallback' in window) {
+      const idleId = window.requestIdleCallback(runWarmup, { timeout: 1800 });
+      return () => {
+        cancelled = true;
+        window.cancelIdleCallback(idleId);
+      };
+    }
+
+    const timeoutId = setTimeout(runWarmup, 600);
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+    };
   }, [i18n.language, queryClient]);
 
   useEffect(() => {
@@ -710,6 +714,28 @@ export function UltimaDashboard() {
     });
     navigate('/referral');
   }, [haptic, navigate, queryClient]);
+
+  const openAccountLinking = useCallback(() => {
+    haptic.impact('light');
+    trackAnalyticsEvent('ultima_account_linking_entry_click', {
+      source: 'dashboard',
+    });
+    void import('./AccountLinking');
+    void queryClient.prefetchQuery({
+      queryKey: ['linked-identities'],
+      queryFn: authApi.getLinkedIdentities,
+      staleTime: 60000,
+    });
+    navigate('/account-linking');
+  }, [haptic, navigate, queryClient]);
+
+  const openReferralShare = useCallback(() => {
+    haptic.impact('light');
+    trackAnalyticsEvent('ultima_referral_share_open', {
+      source: 'dashboard',
+    });
+    setIsReferralShareOpen(true);
+  }, [haptic]);
 
   const openConnection = useCallback(
     (resetToFirstStep = false) => {
@@ -887,17 +913,7 @@ export function UltimaDashboard() {
   const isHomeLogoDecisionPending = !hasCachedBranding && isBrandingLoading;
   const shouldReserveHomeLogoSlot = showBrandLogoOnHome || isHomeLogoDecisionPending;
 
-  const suggestedPrimaryActionKind = getUltimaNextAction({
-    hasAnySubscription,
-    isActive,
-    isExpired: Boolean(subscription?.is_expired),
-    daysLeft,
-    isConnectionCompleted,
-    connectedDevicesCount,
-    deviceLimit: dashboardDeviceLimit,
-  });
-  const primaryActionKind: UltimaNextActionKind =
-    suggestedPrimaryActionKind === 'device' ? 'buy' : suggestedPrimaryActionKind;
+  const primaryActionKind: UltimaNextActionKind = hasAnySubscription ? 'renew' : 'buy';
 
   useEffect(() => {
     if (!isSubscriptionReady || dashboardViewTrackedRef.current) {
@@ -922,65 +938,23 @@ export function UltimaDashboard() {
     primaryActionKind,
   ]);
 
-  const primaryCtaLabel = useMemo(() => {
-    const labels: Record<UltimaNextActionKind, string> = {
-      buy: purchaseCtaLabel,
-      renew: purchaseCtaLabel,
-      setup: t('ultima.finishSetup', { defaultValue: 'Завершить установку' }),
-      device: t('devices.connectFirstDevice', { defaultValue: 'Подключить устройство' }),
-      subscription: t('subscription.desktopOpenInfo', { defaultValue: 'Открыть подписку' }),
-    };
-    return labels[primaryActionKind];
-  }, [primaryActionKind, purchaseCtaLabel, t]);
-
-  const primaryCtaMeta = useMemo(() => {
-    if (primaryActionKind === 'setup') {
-      return t('ultima.desktop.stepShort', {
-        step: isConnectionCompleted ? 3 : connectionStep,
-        defaultValue: `Шаг ${isConnectionCompleted ? 3 : connectionStep}/3`,
-      });
-    }
-    if (primaryActionKind === 'subscription') {
-      return statusLabel;
-    }
-    return purchaseFromLabel;
-  }, [connectionStep, isConnectionCompleted, primaryActionKind, purchaseFromLabel, statusLabel, t]);
-
-  const handlePrimaryAction = useCallback(() => {
+  const handlePrimaryPurchase = useCallback(() => {
     trackAnalyticsEvent('ultima_main_cta_click', {
       action: primaryActionKind,
       connection_completed: isConnectionCompleted,
       days_left: daysLeft ?? null,
     });
-
-    if (primaryActionKind === 'setup') {
-      openConnection();
-      return;
-    }
-
-    if (primaryActionKind === 'subscription') {
-      openSubscriptionInfo();
-      return;
-    }
-
     openSubscriptionPurchase();
-  }, [
-    daysLeft,
-    isConnectionCompleted,
-    openConnection,
-    openSubscriptionInfo,
-    openSubscriptionPurchase,
-    primaryActionKind,
-  ]);
+  }, [daysLeft, isConnectionCompleted, openSubscriptionPurchase, primaryActionKind]);
 
   const renderHomeBrandMark = useCallback(() => {
     if (!shouldReserveHomeLogoSlot) {
-      return <ShieldCheck className="h-[72px] w-[72px] text-white/95" strokeWidth={1.7} />;
+      return <ShieldCheck className="h-[62%] w-[62%] text-white/95" strokeWidth={1.7} />;
     }
 
     return (
       <span
-        className="relative z-10 flex h-[100px] w-[100px] items-center justify-center overflow-hidden rounded-full border bg-black/20 p-3 backdrop-blur"
+        className="relative z-10 flex h-[86%] max-h-[100px] w-[86%] max-w-[100px] items-center justify-center overflow-hidden rounded-full border bg-black/20 p-2.5 backdrop-blur"
         style={{
           borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 34%, transparent)',
           boxShadow:
@@ -1091,13 +1065,12 @@ export function UltimaDashboard() {
   );
 
   const adminButtonClassName =
-    'absolute right-4 top-2 z-30 inline-flex h-9 items-center gap-1.5 rounded-full border border-amber-300/30 bg-black/30 px-3 text-xs font-medium text-amber-200 backdrop-blur';
+    'inline-flex h-9 items-center gap-1.5 rounded-full border border-amber-300/30 bg-black/30 px-3 text-xs font-medium text-amber-200 backdrop-blur';
   const shellClassName = cn(
     'ultima-shell ultima-shell-shared-nav-docked',
     isDesktopViewport && 'ultima-flat-frames ultima-shell-dashboard-desktop',
   );
   const bottomNav = <UltimaBottomNav active="home" onSupportClick={openSupport} />;
-  const PrimaryCtaIcon = primaryActionKind === 'setup' ? Wrench : Globe2;
   const shouldConnectDeviceFromHome =
     isDashboardDevicesUnavailable || connectedDevicesCount <= 0 || dashboardFreeDeviceSlots > 0;
   const devicesHomeCtaTitle = isDashboardDevicesUnavailable
@@ -1201,183 +1174,173 @@ export function UltimaDashboard() {
         </span>
       </button>
     ) : null;
+  const linkedIdentities = linkedIdentitiesData?.identities ?? [];
+  const linkedIdentityCount = isLinkedIdentitiesError
+    ? null
+    : Math.max(linkedIdentities.length, user ? 1 : 0);
+  const linkedProvidersLabel = linkedIdentities
+    .map((identity) => {
+      const provider = identity.provider.toLowerCase();
+      if (provider === 'telegram') return 'Telegram';
+      if (provider === 'yandex') return 'Yandex';
+      if (provider === 'vk') return 'VK';
+      if (provider === 'email') return 'Email';
+      return identity.provider;
+    })
+    .slice(0, 3)
+    .join(' · ');
+  const referralCode = referralInfo?.referral_code?.trim() ?? '';
+  const referralTelegramLink = referralInfo?.referral_link?.trim() ?? '';
+  const referralWebLink = referralCode
+    ? `${window.location.origin}/login?ref=${encodeURIComponent(referralCode)}`
+    : '';
+  const referralBonusDays = Math.max(0, referralTerms?.inviter_bonus_days ?? 0);
+  const referralBonusLabel = referralBonusDays
+    ? t('ultima.home.referralDaysBonus', {
+        count: referralBonusDays,
+        defaultValue: '+{{count}} дн.',
+      })
+    : referralCommissionPercent > 0
+      ? `+${Math.round(referralCommissionPercent)}%`
+      : t('ultima.referralInviteBadge', { defaultValue: 'Бонус' });
+  const referralShareText = t('referral.shareMessage', {
+    percent: referralCommissionPercent,
+    botName: appName,
+    defaultValue: `Попробуйте ${appName} по моей ссылке`,
+  });
+  const mobileHomeActions: UltimaHomeAction[] = [
+    ...(hasAnySubscription
+      ? [
+          {
+            id: 'devices' as const,
+            title: t('lite.devicesTotal', { defaultValue: 'Устройства' }),
+            value: isDashboardDevicesUnavailable
+              ? '—'
+              : `${connectedDevicesCount}/${dashboardDeviceLimit}`,
+            hint: isDashboardDevicesUnavailable
+              ? t('devices.homeCtaUnavailable', { defaultValue: 'Открыть управление' })
+              : dashboardFreeDeviceSlots > 0
+                ? t('ultima.home.freeDeviceSlots', {
+                    count: dashboardFreeDeviceSlots,
+                    defaultValue: 'Свободно: {{count}}',
+                  })
+                : t('devices.buySlot', { defaultValue: 'Добавить слот' }),
+            icon: MonitorSmartphone,
+            onClick: () =>
+              openDevices(
+                shouldConnectDeviceFromHome,
+                shouldConnectDeviceFromHome ? 'home_action_connect' : 'home_action_slots',
+              ),
+            loading: isDashboardDevicesPending,
+          },
+          {
+            id: 'setup' as const,
+            title: t('ultima.home.setupAction', { defaultValue: 'Установка' }),
+            value: isConnectionCompleted
+              ? t('common.done', { defaultValue: 'Готово' })
+              : t('ultima.desktop.stepShort', {
+                  step: connectionStep,
+                  defaultValue: `Шаг ${connectionStep}/3`,
+                }),
+            hint: isConnectionCompleted
+              ? t('ultima.home.setupReadyHint', { defaultValue: 'Настроить ещё раз' })
+              : t('ultima.home.connectionPending', { defaultValue: 'Продолжить настройку' }),
+            icon: Wrench,
+            onClick: () => openConnection(),
+            tone: isConnectionCompleted ? ('default' as const) : ('attention' as const),
+          },
+        ]
+      : []),
+    {
+      id: 'identities',
+      title: t('profile.accountLinkingTitle', { defaultValue: 'Способы входа' }),
+      value:
+        linkedIdentityCount === null
+          ? t('common.open', { defaultValue: 'Открыть' })
+          : t('profile.ultima.loginMethodCount', {
+              count: linkedIdentityCount,
+              defaultValue: '{{count}} привязано',
+            }),
+      hint:
+        linkedProvidersLabel ||
+        (linkedIdentityCount !== null && linkedIdentityCount > 1
+          ? t('profile.ultima.accessProtected', { defaultValue: 'Резервный вход настроен' })
+          : t('profile.ultima.accessNeedsBackup', { defaultValue: 'Добавьте резервный вход' })),
+      icon: KeyRound,
+      onClick: openAccountLinking,
+      tone:
+        linkedIdentityCount !== null && linkedIdentityCount <= 1
+          ? ('attention' as const)
+          : ('default' as const),
+      loading: isLinkedIdentitiesPending,
+    },
+    ...(showReferralEntry
+      ? [
+          {
+            id: 'referral' as const,
+            title: t('ultima.referralInviteTitle', { defaultValue: 'Пригласить друга' }),
+            value: referralBonusLabel,
+            hint: t('ultima.home.referralLinkChoice', {
+              defaultValue: 'Telegram или веб-ссылка',
+            }),
+            icon: UsersRound,
+            onClick: referralTelegramLink || referralWebLink ? openReferralShare : openReferral,
+            tone: 'accent' as const,
+          },
+        ]
+      : []),
+  ];
   const subscriptionPlanName =
     subscription?.tariff_name ||
     (isActiveTrial
       ? t('subscription.trialStatus', { defaultValue: 'Пробный период' })
       : t('subscription.infoTitle', { defaultValue: 'Подписка' }));
-  const subscriptionTrafficLimitGb = Math.max(0, subscription?.traffic_limit_gb ?? 0);
-  const subscriptionTrafficUsedGb = Math.max(0, subscription?.traffic_used_gb ?? 0);
-  const subscriptionTrafficPercent = Math.max(
-    0,
-    Math.min(100, subscription?.traffic_used_percent ?? 0),
-  );
   const trafficNumberFormatter = new Intl.NumberFormat(i18n.language, {
     maximumFractionDigits: 1,
   });
-  const subscriptionTrafficUsageLabel =
-    subscriptionTrafficLimitGb > 0
-      ? `${trafficNumberFormatter.format(subscriptionTrafficUsedGb)} / ${trafficNumberFormatter.format(
-          subscriptionTrafficLimitGb,
-        )} ${t('common.units.gb', { defaultValue: 'ГБ' })}`
-      : t('subscription.unlimited', { defaultValue: 'Безлимит' });
-  const subscriptionTrafficRemainingGb = Math.max(
-    0,
-    subscriptionTrafficLimitGb - subscriptionTrafficUsedGb,
-  );
-  const mobileTrafficValue = !hasAnySubscription
-    ? '—'
-    : subscriptionTrafficLimitGb > 0
-      ? `${trafficNumberFormatter.format(subscriptionTrafficRemainingGb)} ${t('common.units.gb', {
-          defaultValue: 'ГБ',
-        })}`
-      : t('subscription.unlimited', { defaultValue: 'Безлимит' });
   const mobileDaysValue =
     daysLeft === null ? '—' : trafficNumberFormatter.format(Math.max(daysLeft, 0));
+  const mobilePurchaseCtaLabel =
+    hasAnySubscription && !isActiveTrial
+      ? t('ultima.subscriptionInfo.renewShort', { defaultValue: 'Продлить' })
+      : t('ultima.chooseTariff', { defaultValue: 'Выбрать тариф' });
   const mobileOverviewCard = (
-    <section
-      data-testid="ultima-home-overview"
-      className="mb-4 rounded-[24px] border p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_18px_38px_rgba(3,14,24,0.22)] backdrop-blur-xl"
-      style={{
-        borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 32%, transparent)',
-        background:
-          'linear-gradient(145deg, color-mix(in srgb, var(--ultima-color-surface) 78%, transparent), color-mix(in srgb, var(--ultima-color-secondary) 68%, transparent))',
-      }}
-    >
-      <div className="flex min-w-0 items-center gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[9px] font-semibold uppercase text-white/[0.42]">
-              {t('ultima.currentTariff', { defaultValue: 'Ваш тариф' })}
-            </span>
-            <span
-              className={`relative inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-[9px] font-semibold uppercase ${statusTone.pill}`}
-            >
-              <span className={`h-1.5 w-1.5 rounded-full ${statusTone.dot}`} />
-              {statusLabel}
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              trackAnalyticsEvent('ultima_home_plan_open', {
-                source: 'overview',
-                days_left: daysLeft ?? null,
-              });
-              if (hasAnySubscription) {
-                openSubscriptionInfo();
-              } else {
-                openSubscriptionPurchase();
-              }
-            }}
-            className="mt-2 block max-w-full text-left"
-          >
-            <span className="block break-words text-[25px] font-semibold leading-[1.02] text-white/[0.97]">
-              {subscriptionPlanName}
-            </span>
-            <span className="mt-1.5 block text-[12px] leading-snug text-white/[0.58]">
-              {expiryLabel}
-            </span>
-          </button>
-        </div>
-        {renderShieldButton('h-[104px] w-[104px] shrink-0')}
-      </div>
-
-      <div className="mt-4 grid grid-cols-3 divide-x divide-white/[0.08] border-y border-white/[0.08] py-3">
-        <div data-testid="ultima-home-traffic" className="min-w-0 pr-2">
-          <div className="flex items-center gap-1.5 text-white/[0.4]">
-            <Gauge className="h-4 w-4 shrink-0" strokeWidth={1.8} />
-            <span className="truncate text-[8px] font-semibold uppercase">
-              {t('ultima.trafficRemaining', { defaultValue: 'Осталось' })}
-            </span>
-          </div>
-          <p className="mt-1.5 truncate text-[12px] font-semibold text-white/[0.92]">
-            {mobileTrafficValue}
-          </p>
-        </div>
-        <div
-          data-testid="ultima-plan-device-count"
-          aria-busy={isDashboardDevicesPending}
-          className="min-w-0 px-2"
-        >
-          <div className="flex items-center gap-1.5 text-white/[0.4]">
-            <MonitorSmartphone className="h-4 w-4 shrink-0" strokeWidth={1.8} />
-            <span className="truncate text-[8px] font-semibold uppercase">
-              {t('lite.devicesTotal', { defaultValue: 'Устройства' })}
-            </span>
-          </div>
-          {isDashboardDevicesPending ? (
-            <span
-              data-testid="ultima-plan-device-count-loading"
-              className="mt-2 block h-3 w-8 animate-pulse rounded-full bg-white/[0.1]"
-            />
-          ) : (
-            <p className="mt-1.5 truncate text-[12px] font-semibold text-white/[0.92]">
-              {isDashboardDevicesUnavailable
-                ? '—'
-                : `${connectedDevicesCount}/${dashboardDeviceLimit}`}
-            </p>
-          )}
-        </div>
-        <div data-testid="ultima-home-days" className="min-w-0 pl-2">
-          <div className="flex items-center gap-1.5 text-white/[0.4]">
-            <CalendarDays className="h-4 w-4 shrink-0" strokeWidth={1.8} />
-            <span className="truncate text-[8px] font-semibold uppercase">
-              {t('ultima.home.daysLabel', { defaultValue: 'Дней осталось' })}
-            </span>
-          </div>
-          <p className="mt-1.5 truncate text-[12px] font-semibold text-white/[0.92]">
-            {mobileDaysValue}
-          </p>
-        </div>
-      </div>
-
-      {subscriptionTrafficLimitGb > 0 ? (
-        <div className="mt-3">
-          <div className="flex items-center justify-between gap-3 text-[10px] text-white/[0.48]">
-            <span>{subscriptionTrafficUsageLabel}</span>
-            <span>{Math.round(subscriptionTrafficPercent)}%</span>
-          </div>
-          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-black/[0.18]">
-            <span
-              className="block h-full rounded-full transition-[width] duration-300"
-              style={{
-                width: `${subscriptionTrafficPercent}%`,
-                background: subscription?.metered_access_blocked
-                  ? 'rgb(251 191 36 / 0.9)'
-                  : 'var(--ultima-color-primary)',
-              }}
-            />
-          </div>
-        </div>
-      ) : null}
-
-      <button
-        type="button"
-        onClick={hasAnySubscription ? openSubscriptionInfo : openSubscriptionPurchase}
-        className="mt-3 flex min-h-[38px] w-full items-center justify-between gap-3 border-t border-white/[0.07] pt-3 text-left text-[12px] font-medium text-white/[0.72]"
-      >
-        <span>
-          {hasAnySubscription
-            ? t('subscription.details', { defaultValue: 'Детали подписки' })
-            : t('ultima.chooseTariff', { defaultValue: 'Выбрать тариф' })}
-        </span>
-        <ChevronRight className="h-4 w-4" strokeWidth={1.8} />
-      </button>
-    </section>
+    <UltimaHomePlanCard
+      eyebrow={t('ultima.currentTariff', { defaultValue: 'Ваш тариф' })}
+      planName={subscriptionPlanName}
+      statusLabel={statusLabel}
+      tone={statusToneKey}
+      expiryLabel={expiryLabel}
+      daysLabel={t('ultima.home.daysLabel', { defaultValue: 'Дней осталось' })}
+      daysValue={mobileDaysValue}
+      devicesLabel={t('lite.devicesTotal', { defaultValue: 'Устройства' })}
+      devicesValue={
+        isDashboardDevicesUnavailable ? '—' : `${connectedDevicesCount}/${dashboardDeviceLimit}`
+      }
+      devicesLoading={isDashboardDevicesPending}
+      brandMark={renderShieldButton('h-[82px] w-[82px] shrink-0')}
+      primaryLabel={mobilePurchaseCtaLabel}
+      primaryMeta={purchaseFromLabel}
+      secondaryLabel={
+        hasAnySubscription ? t('subscription.details', { defaultValue: 'Детали' }) : null
+      }
+      onPrimaryAction={handlePrimaryPurchase}
+      onSecondaryAction={hasAnySubscription ? openSubscriptionInfo : null}
+    />
   );
-  const mobileTrafficWarning = shouldShowTrafficWarning ? (
-    <UltimaTrafficWarningCard
-      usedGb={trafficWarningUsedGb}
+  const mobileTrafficCard = hasAnySubscription ? (
+    <UltimaHomeTrafficCard
+      locale={i18n.language}
       limitGb={trafficWarningLimitGb}
+      usedGb={trafficWarningUsedGb}
       remainingGb={trafficWarningRemainingGb}
-      percent={trafficWarningPercent}
-      isExhausted={isTrafficExhausted}
+      usedPercent={trafficWarningPercent}
       isMetered={subscription?.metered_traffic_enabled}
+      isBlocked={subscription?.metered_access_blocked}
       isTrial={isActiveTrial}
+      standardUnlimited={subscription?.standard_traffic_unlimited}
       serverLabel={subscription?.metered_server_label}
-      onAction={openTrafficPurchase}
-      className="mb-4"
+      onTopUp={openTrafficPurchase}
     />
   ) : null;
   const desktopTrafficWarning = shouldShowTrafficWarning ? (
@@ -1400,18 +1363,53 @@ export function UltimaDashboard() {
   const desktopReferralCta = showReferralEntry ? (
     <UltimaReferralCta
       commissionPercent={referralCommissionPercent}
-      onClick={openReferral}
+      onClick={referralTelegramLink || referralWebLink ? openReferralShare : openReferral}
       variant="desktop"
       title={referralInviteTitle}
       description={referralInviteDescription}
       badgeLabel={referralInviteBadgeLabel}
     />
   ) : null;
+  const desktopAccountCta = (
+    <button
+      type="button"
+      onClick={openAccountLinking}
+      data-testid="ultima-home-desktop-identities"
+      className="group w-full rounded-[20px] border px-4 py-3.5 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_22px_rgba(3,14,24,0.16)] backdrop-blur-md transition hover:bg-white/[0.04]"
+      style={{
+        borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
+        background:
+          'linear-gradient(180deg, color-mix(in srgb, var(--ultima-color-surface) 42%, transparent), color-mix(in srgb, var(--ultima-color-secondary) 62%, transparent))',
+      }}
+    >
+      <span className="flex min-w-0 items-center gap-3">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[6px] border border-white/[0.08] bg-white/[0.04] text-white/[0.82]">
+          <KeyRound className="h-5 w-5" strokeWidth={1.8} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[14px] font-semibold leading-tight text-white/[0.96]">
+            {t('profile.accountLinkingTitle', { defaultValue: 'Способы входа' })}
+          </span>
+          <span className="mt-1 block truncate text-[11px] text-white/[0.52]">
+            {isLinkedIdentitiesPending
+              ? t('common.loading', { defaultValue: 'Загрузка...' })
+              : linkedProvidersLabel ||
+                t('profile.ultima.accessNeedsBackup', {
+                  defaultValue: 'Добавьте резервный вход',
+                })}
+          </span>
+        </span>
+        <span className="shrink-0 rounded-full border border-white/[0.09] px-2.5 py-1 text-[11px] font-semibold text-white/[0.76]">
+          {linkedIdentityCount ?? '—'}
+        </span>
+      </span>
+    </button>
+  );
   const desktopActionCtaStack =
-    desktopPendingPaymentCta || (!shouldShowTrafficWarning && desktopReferralCta) ? (
+    desktopPendingPaymentCta || desktopReferralCta ? (
       <>
         {desktopPendingPaymentCta}
-        {!shouldShowTrafficWarning ? desktopReferralCta : null}
+        {desktopReferralCta}
       </>
     ) : null;
   const desktopShowTrialSetupCard = isActiveTrial && connectionStep === 1 && !isConnectionCompleted;
@@ -1442,7 +1440,7 @@ export function UltimaDashboard() {
         <div className="ultima-shell-inner ultima-shell-mobile-docked">
           <section className="flex min-h-0 flex-1 flex-col pt-[clamp(12px,2.4vh,22px)]">
             <div
-              className="mb-4 min-h-[250px] animate-pulse rounded-[24px] border p-4"
+              className="min-h-[240px] animate-pulse rounded-[20px] border p-4"
               style={{
                 borderColor:
                   'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
@@ -1455,17 +1453,12 @@ export function UltimaDashboard() {
                   <div className="mt-4 h-7 w-40 max-w-full rounded-full bg-white/[0.1]" />
                   <div className="mt-3 h-3 w-28 rounded-full bg-white/[0.06]" />
                 </div>
-                <div className="h-[104px] w-[104px] shrink-0 rounded-full bg-white/[0.06]" />
+                <div className="h-[82px] w-[82px] shrink-0 rounded-full bg-white/[0.06]" />
               </div>
-              <div className="mt-4 h-14 border-y border-white/[0.07]" />
-              <div className="mt-4 h-2 rounded-full bg-white/[0.07]" />
-              <div className="mt-4 h-5 rounded-full bg-white/[0.06]" />
+              <div className="mt-4 h-16 border-y border-white/[0.07]" />
+              <div className="mt-3 h-11 rounded-full bg-white/[0.07]" />
             </div>
-            <div className="h-[176px] animate-pulse rounded-[24px] border border-white/[0.07] bg-white/[0.04]" />
-          </section>
-          <section className="ultima-mobile-dock-footer space-y-3">
-            <div className="h-12 animate-pulse rounded-full bg-white/[0.08]" />
-            <div className="h-12 animate-pulse rounded-full bg-white/[0.06]" />
+            <div className="mt-3 h-[260px] animate-pulse rounded-[20px] border border-white/[0.07] bg-white/[0.04]" />
           </section>
         </div>
       </div>
@@ -1474,117 +1467,119 @@ export function UltimaDashboard() {
 
   if (isDesktopViewport) {
     return (
-      <div className={shellClassName}>
-        <div className="ultima-shell-aura" />
-        <UltimaDesktopDashboard
-          heroButton={renderShieldButton('h-[108px] w-[108px] lg:h-[124px] lg:w-[124px]')}
-          referralCta={desktopActionCtaStack}
-          devicesCta={shouldShowTrafficWarning ? null : renderDevicesHomeCta()}
-          trafficWarning={desktopTrafficWarning}
-          subscription={subscription}
-          connectedDevicesCount={connectedDevicesCount}
-          isDevicesLoading={isDashboardDevicesPending}
-          expiryLabel={expiryLabel}
-          statusLabel={statusLabel}
-          statusTone={statusToneKey}
-          daysLeft={daysLeft}
-          connectionStep={connectionStep}
-          isConnectionCompleted={isConnectionCompleted}
-          primaryActionKind={primaryActionKind}
-          primaryCtaLabel={primaryCtaLabel}
-          primaryCtaMeta={primaryCtaMeta}
-          promoMessage={promoMessage}
-          activeDiscount={activeDiscount}
-          firstPromoOffer={firstPromoOffer}
-          showTrialSetupCard={desktopShowTrialSetupCard}
-          trialGuide={desktopTrialGuide}
-          showConnectionCtaHighlight={showConnectionCtaHighlight}
-          onPrimaryAction={handlePrimaryAction}
-          onBuySubscription={openSubscriptionPurchase}
-          onOpenConnection={() => openConnection()}
-          onOpenSupport={openSupport}
-          onActivateOffer={
-            firstPromoOffer ? () => claimOfferMutation.mutate(firstPromoOffer.id) : null
-          }
-          isActivatingOffer={claimOfferMutation.isPending}
-          bottomNav={bottomNav}
+      <>
+        <div className={shellClassName}>
+          <div className="ultima-shell-aura" />
+          <UltimaDesktopDashboard
+            heroButton={renderShieldButton('h-[108px] w-[108px] lg:h-[124px] lg:w-[124px]')}
+            referralCta={desktopActionCtaStack}
+            devicesCta={renderDevicesHomeCta()}
+            accountCta={desktopAccountCta}
+            trafficWarning={desktopTrafficWarning}
+            subscription={subscription}
+            connectedDevicesCount={connectedDevicesCount}
+            isDevicesLoading={isDashboardDevicesPending}
+            expiryLabel={expiryLabel}
+            statusLabel={statusLabel}
+            statusTone={statusToneKey}
+            daysLeft={daysLeft}
+            connectionStep={connectionStep}
+            isConnectionCompleted={isConnectionCompleted}
+            primaryActionKind={primaryActionKind}
+            primaryCtaLabel={purchaseCtaLabel}
+            primaryCtaMeta={purchaseFromLabel}
+            promoMessage={promoMessage}
+            activeDiscount={activeDiscount}
+            firstPromoOffer={firstPromoOffer}
+            showTrialSetupCard={desktopShowTrialSetupCard}
+            trialGuide={desktopTrialGuide}
+            showConnectionCtaHighlight={showConnectionCtaHighlight}
+            onPrimaryAction={handlePrimaryPurchase}
+            onBuySubscription={openSubscriptionPurchase}
+            onOpenConnection={() => openConnection()}
+            onOpenTraffic={openTrafficPurchase}
+            onOpenSupport={openSupport}
+            onActivateOffer={
+              firstPromoOffer ? () => claimOfferMutation.mutate(firstPromoOffer.id) : null
+            }
+            isActivatingOffer={claimOfferMutation.isPending}
+            bottomNav={bottomNav}
+          />
+        </div>
+        <UltimaReferralShareSheet
+          open={isReferralShareOpen}
+          onOpenChange={setIsReferralShareOpen}
+          telegramLink={referralTelegramLink}
+          webLink={referralWebLink}
+          shareText={referralShareText}
+          bonusLabel={referralBonusLabel}
+          onOpenReferralPage={openReferral}
         />
-      </div>
+      </>
     );
   }
 
   return (
     <div className={shellClassName}>
-      {isAdmin && (
-        <button type="button" onClick={() => navigate('/admin')} className={adminButtonClassName}>
-          <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
-          <span>{t('admin.nav.title', { defaultValue: 'Админ' })}</span>
-        </button>
-      )}
-
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[680px] lg:justify-between">
-        <section
+        <motion.section
           data-testid="ultima-dashboard-scroll-region"
-          className="ultima-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto pb-[clamp(14px,2.8vh,24px)] pr-1 pt-[clamp(12px,2.4vh,22px)] lg:flex-none lg:overflow-visible lg:pb-2 lg:pr-0 lg:pt-8"
+          variants={staggerContainer}
+          initial={reduceMotion ? false : 'initial'}
+          animate="animate"
+          className="ultima-scrollbar flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pb-[clamp(14px,2.8vh,24px)] pr-1 pt-[clamp(8px,1.6vh,14px)] lg:flex-none lg:overflow-visible lg:pb-2 lg:pr-0 lg:pt-8"
         >
-          {mobileOverviewCard}
+          {isAdmin ? (
+            <motion.div variants={staggerItem} className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => navigate('/admin')}
+                className={adminButtonClassName}
+              >
+                <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
+                <span>{t('admin.nav.title', { defaultValue: 'Админ' })}</span>
+              </button>
+            </motion.div>
+          ) : null}
+
+          <motion.div variants={staggerItem}>{mobileOverviewCard}</motion.div>
 
           {promoMessage && !showPromoCard && (
-            <div
+            <motion.div
+              variants={staggerItem}
               aria-live="polite"
-              className="mx-auto mb-4 max-w-full rounded-full border border-emerald-200/[0.22] bg-emerald-300/[0.12] px-3.5 py-2 text-center text-[12px] font-medium leading-snug text-emerald-50/95 shadow-[0_10px_22px_rgba(5,30,24,0.2)] backdrop-blur-md"
+              className="mx-auto max-w-full rounded-full border border-emerald-200/[0.22] bg-emerald-300/[0.12] px-3.5 py-2 text-center text-[12px] font-medium leading-snug text-emerald-50/95 shadow-[0_10px_22px_rgba(5,30,24,0.2)] backdrop-blur-md"
             >
               {promoMessage}
-            </div>
+            </motion.div>
           )}
 
           {pendingTopUp?.paymentUrl ? (
-            <UltimaPendingPaymentCard source="dashboard_mobile" className="mb-4" />
+            <motion.div variants={staggerItem}>
+              <UltimaPendingPaymentCard source="dashboard_mobile" />
+            </motion.div>
           ) : null}
 
-          {mobileTrafficWarning}
+          {mobileTrafficCard ? (
+            <motion.div variants={staggerItem}>{mobileTrafficCard}</motion.div>
+          ) : null}
 
-          {!shouldShowTrafficWarning ? (
-            showReferralEntry || hasAnySubscription ? (
-              <section
-                data-testid="ultima-home-quick-actions"
-                className="mb-4 rounded-[24px] border p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_14px_30px_rgba(3,14,24,0.18)] backdrop-blur-xl"
-                style={{
-                  borderColor:
-                    'color-mix(in srgb, var(--ultima-color-surface-border) 24%, transparent)',
-                  background: 'color-mix(in srgb, var(--ultima-color-surface) 72%, transparent)',
-                }}
-              >
-                <div className="mb-1">
-                  <h2 className="text-[14px] font-semibold text-white/[0.94]">
-                    {t('ultima.home.quickActions', { defaultValue: 'Быстрые действия' })}
-                  </h2>
-                  <p className="mt-1 text-[11px] leading-snug text-white/[0.44]">
-                    {t('ultima.home.quickActionsHint', {
-                      defaultValue: 'Приглашения и подключение устройств',
-                    })}
-                  </p>
-                </div>
-                <div className="mt-2">
-                  {showReferralEntry ? (
-                    <UltimaReferralCta
-                      commissionPercent={referralCommissionPercent}
-                      onClick={openReferral}
-                      variant="inline"
-                      title={referralInviteTitle}
-                      description={referralInviteDescription}
-                      badgeLabel={referralInviteBadgeLabel}
-                    />
-                  ) : null}
-                  {renderDevicesHomeCta('inline')}
-                </div>
-              </section>
-            ) : null
+          {mobileHomeActions.length > 0 ? (
+            <motion.div variants={staggerItem}>
+              <UltimaHomeActionGrid
+                title={t('ultima.home.quickActions', { defaultValue: 'Быстрые действия' })}
+                subtitle={t('ultima.home.quickActionsHint', {
+                  defaultValue: 'Устройства, установка, входы и приглашения',
+                })}
+                actions={mobileHomeActions}
+              />
+            </motion.div>
           ) : null}
 
           {showPromoCard && (
-            <div
-              className="mb-4 rounded-2xl border p-3.5 backdrop-blur-md"
+            <motion.div
+              variants={staggerItem}
+              className="rounded-lg border p-3.5 backdrop-blur-md"
               style={{
                 borderColor:
                   'color-mix(in srgb, var(--ultima-color-surface-border) 30%, transparent)',
@@ -1635,11 +1630,11 @@ export function UltimaDashboard() {
                   {t('promo.useNow', { defaultValue: 'Использовать' })}
                 </button>
               </div>
-            </div>
+            </motion.div>
           )}
 
           {showTrialSetupCard && (
-            <div>
+            <motion.div variants={staggerItem}>
               <UltimaTrialGuide
                 variant="inline"
                 expiryDateLabel={trialExpiryDateLabel}
@@ -1649,52 +1644,9 @@ export function UltimaDashboard() {
                 onPrimaryAction={handleTrialGuideStart}
                 onStatClick={openSubscriptionInfo}
               />
-            </div>
+            </motion.div>
           )}
-        </section>
-
-        <section className="ultima-mobile-dock-footer lg:mt-0">
-          <button
-            type="button"
-            onClick={handlePrimaryAction}
-            data-testid="ultima-primary-cta"
-            className="ultima-btn-pill ultima-btn-primary mb-3 flex w-full items-center gap-3 px-4 py-3 text-left text-[15px] min-[360px]:px-5 min-[360px]:text-[16px]"
-          >
-            <span className="flex min-w-0 flex-1 items-center gap-2.5">
-              <PrimaryCtaIcon />
-              <span className="min-w-0 break-words leading-tight">{primaryCtaLabel}</span>
-            </span>
-            <span className="shrink-0 whitespace-nowrap text-[15px] text-white/90 min-[360px]:text-[16px]">
-              {primaryCtaMeta}
-            </span>
-          </button>
-
-          <div className="relative mb-3">
-            {showConnectionCtaHighlight && (
-              <>
-                <span className="ultima-cta-highlight pointer-events-none absolute inset-[-2px] rounded-[999px]" />
-                <span className="ultima-cta-highlight ultima-cta-highlight-delay pointer-events-none absolute inset-[-5px] rounded-[999px]" />
-              </>
-            )}
-            {primaryActionKind !== 'setup' ? (
-              <button
-                type="button"
-                onClick={() => openConnection()}
-                className="ultima-btn-pill ultima-btn-secondary relative flex w-full items-center gap-3 px-4 py-3 text-left text-[15px] min-[360px]:px-5 min-[360px]:text-[16px]"
-              >
-                <span className="flex min-w-0 flex-1 items-center gap-2.5">
-                  <Wrench className="h-5 w-5" strokeWidth={1.8} />
-                  <span className="min-w-0 break-words leading-tight">
-                    {t('lite.connectAndSetup', { defaultValue: 'Установка и настройка' })}
-                  </span>
-                </span>
-                <span className="shrink-0 text-white/70">
-                  <Smartphone className="h-5 w-5" strokeWidth={1.8} />
-                </span>
-              </button>
-            ) : null}
-          </div>
-        </section>
+        </motion.section>
       </div>
 
       {isTrialGuideVisible && (
@@ -1708,6 +1660,16 @@ export function UltimaDashboard() {
           onDismiss={handleTrialGuideDismiss}
         />
       )}
+
+      <UltimaReferralShareSheet
+        open={isReferralShareOpen}
+        onOpenChange={setIsReferralShareOpen}
+        telegramLink={referralTelegramLink}
+        webLink={referralWebLink}
+        shareText={referralShareText}
+        bonusLabel={referralBonusLabel}
+        onOpenReferralPage={openReferral}
+      />
     </div>
   );
 }

@@ -1,12 +1,16 @@
 import { type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  ArrowRight,
   CalendarDays,
   CheckCircle2,
   Gauge,
+  Globe2,
   Headphones,
+  Infinity as InfinityIcon,
   MonitorSmartphone,
   Router,
+  Server,
   ShieldCheck,
   Wrench,
 } from 'lucide-react';
@@ -27,6 +31,7 @@ type UltimaDesktopDashboardProps = {
   heroButton: ReactNode;
   referralCta?: ReactNode;
   devicesCta?: ReactNode;
+  accountCta?: ReactNode;
   trafficWarning?: ReactNode;
   subscription: Subscription | null;
   connectedDevicesCount: number;
@@ -49,6 +54,7 @@ type UltimaDesktopDashboardProps = {
   onPrimaryAction: () => void;
   onBuySubscription: () => void;
   onOpenConnection: () => void;
+  onOpenTraffic: () => void;
   onOpenSupport: () => void;
   onActivateOffer: (() => void) | null;
   isActivatingOffer: boolean;
@@ -162,6 +168,7 @@ export function UltimaDesktopDashboard({
   heroButton,
   referralCta,
   devicesCta,
+  accountCta,
   trafficWarning,
   subscription,
   connectedDevicesCount,
@@ -184,6 +191,7 @@ export function UltimaDesktopDashboard({
   onPrimaryAction,
   onBuySubscription,
   onOpenConnection,
+  onOpenTraffic,
   onOpenSupport,
   onActivateOffer,
   isActivatingOffer,
@@ -196,8 +204,17 @@ export function UltimaDesktopDashboard({
   const trafficLimitGb = Math.max(0, subscription?.traffic_limit_gb ?? 0);
   const trafficUsedGb = Math.max(0, subscription?.traffic_used_gb ?? 0);
   const trafficUsedPercent = clampPercent(subscription?.traffic_used_percent ?? 0);
-  const trafficRemainingGb = Math.max(0, trafficLimitGb - trafficUsedGb);
+  const trafficRemainingGb = Math.max(
+    0,
+    subscription?.metered_traffic_remaining_gb ?? trafficLimitGb - trafficUsedGb,
+  );
   const isMeteredTraffic = subscription?.metered_traffic_enabled === true;
+  const isMeteredTrafficBlocked = subscription?.metered_access_blocked === true;
+  const showStandardUnlimited =
+    subscription?.standard_traffic_unlimited !== false && isMeteredTraffic;
+  const meteredServerLabel =
+    subscription?.metered_server_label ||
+    t('ultima.subscriptionInfo.specialServers', { defaultValue: 'Спецсерверы' });
   const formatter = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 });
   const unit = t('common.units.gb', { defaultValue: 'ГБ' });
   const planName =
@@ -365,7 +382,11 @@ export function UltimaDesktopDashboard({
                 />
                 <DashboardMetric
                   icon={<Gauge className="h-5 w-5" />}
-                  label={t('ultima.trafficRemaining', { defaultValue: 'Осталось трафика' })}
+                  label={
+                    isMeteredTraffic
+                      ? t('ultima.home.specialServers', { defaultValue: 'Спецсерверы' })
+                      : t('ultima.trafficRemaining', { defaultValue: 'Осталось трафика' })
+                  }
                   value={trafficValue}
                   meta={trafficUsageLabel}
                 />
@@ -411,36 +432,82 @@ export function UltimaDesktopDashboard({
                   </div>
 
                   <div className="mt-5 grid gap-5 lg:grid-cols-2">
-                    <div className="min-w-0">
-                      <div className="flex items-center justify-between gap-3 text-[12px]">
-                        <span className="text-white/[0.58]">
+                    <div className="min-w-0 space-y-4">
+                      {showStandardUnlimited ? (
+                        <div
+                          data-testid="ultima-home-desktop-unlimited"
+                          className="flex items-center gap-3 rounded-[6px] border border-white/[0.07] bg-white/[0.025] px-3 py-2.5"
+                        >
+                          <Globe2 className="h-5 w-5 shrink-0 text-emerald-100/[0.78]" />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[12px] font-medium text-white/[0.88]">
+                              {t('ultima.home.standardServers', {
+                                defaultValue: 'Обычные серверы',
+                              })}
+                            </p>
+                            <p className="mt-0.5 truncate text-[10px] text-white/[0.42]">
+                              {t('ultima.home.standardServersHint', {
+                                defaultValue: 'Работают без ограничений и не расходуют пакет.',
+                              })}
+                            </p>
+                          </div>
+                          <span className="inline-flex shrink-0 items-center gap-1.5 text-[11px] font-semibold text-emerald-100/[0.9]">
+                            <InfinityIcon className="h-4 w-4" />
+                            {t('subscription.unlimited', { defaultValue: 'Безлимит' })}
+                          </span>
+                        </div>
+                      ) : null}
+
+                      <div className="min-w-0">
+                        <div className="flex items-center justify-between gap-3 text-[12px]">
+                          <span className="inline-flex min-w-0 items-center gap-2 text-white/[0.58]">
+                            <Server className="h-4 w-4 shrink-0" />
+                            <span className="truncate">
+                              {isMeteredTraffic
+                                ? meteredServerLabel
+                                : t('subscription.traffic', { defaultValue: 'Трафик' })}
+                            </span>
+                          </span>
+                          <span className="font-medium text-white/[0.88]">{trafficUsageLabel}</span>
+                        </div>
+                        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-black/[0.18]">
+                          <span
+                            className="block h-full rounded-full"
+                            style={{
+                              width: `${trafficLimitGb > 0 ? trafficUsedPercent : 18}%`,
+                              background: tone.progress,
+                            }}
+                          />
+                        </div>
+                        <p className="mt-2 text-[10px] leading-snug text-white/[0.42]">
                           {isMeteredTraffic
-                            ? subscription?.metered_server_label ||
-                              t('ultima.meteredTraffic.defaultLabel', {
-                                defaultValue: 'Спецсерверы',
-                              })
-                            : t('subscription.traffic', { defaultValue: 'Трафик' })}
-                        </span>
-                        <span className="font-medium text-white/[0.88]">{trafficUsageLabel}</span>
-                      </div>
-                      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-black/[0.18]">
-                        <span
-                          className="block h-full rounded-full"
-                          style={{
-                            width: `${trafficLimitGb > 0 ? trafficUsedPercent : 18}%`,
-                            background: tone.progress,
-                          }}
-                        />
-                      </div>
-                      <p className="mt-2 text-[10px] leading-snug text-white/[0.42]">
-                        {isMeteredTraffic
-                          ? t('ultima.meteredTraffic.unlimitedAvailable', {
-                              defaultValue: 'Обычные серверы без лимита',
-                            })
-                          : t('ultima.home.trafficMeta', {
-                              defaultValue: 'Использование за текущий период',
+                            ? isMeteredTrafficBlocked
+                              ? t('ultima.home.specialTrafficBlockedHint', {
+                                  defaultValue:
+                                    'Спецсерверы временно недоступны. Обычные серверы продолжают работать безлимитно.',
+                                })
+                              : t('ultima.home.specialServersHint', {
+                                  server: meteredServerLabel,
+                                  defaultValue:
+                                    'Пакет расходуется только при подключении к серверам с меткой «{{server}}».',
+                                })
+                            : t('ultima.home.trafficMeta', {
+                                defaultValue: 'Использование за текущий период',
+                              })}
+                        </p>
+                        {isMeteredTraffic && trafficLimitGb > 0 ? (
+                          <button
+                            type="button"
+                            onClick={onOpenTraffic}
+                            className="mt-3 inline-flex min-h-9 items-center gap-2 text-[11px] font-semibold text-emerald-100/[0.86] transition hover:text-emerald-50"
+                          >
+                            {t('ultima.home.buySpecialTraffic', {
+                              defaultValue: 'Докупить трафик для спецсерверов',
                             })}
-                      </p>
+                            <ArrowRight className="h-4 w-4" />
+                          </button>
+                        ) : null}
+                      </div>
                     </div>
 
                     <div className="min-w-0">
@@ -484,6 +551,7 @@ export function UltimaDesktopDashboard({
             {trafficWarning}
             {referralCta}
             {devicesCta}
+            {accountCta}
             <section className={cn(ultimaCardClassName, 'p-5')} style={defaultCardStyle}>
               <div className="flex items-start justify-between gap-3">
                 <div>
