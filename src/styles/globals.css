@@ -952,6 +952,16 @@ html:not(.ultima-frames-enabled) .ultima-flat-frames [class*='border'] {
   .ultima-app-main .ultima-shell-muted-aura::after {
     display: none;
   }
+
+  /* Keep theme colors, but avoid repainting viewport-sized blurred layers while scrolling. */
+  .ultima-app-backdrop > .ultima-shell-aura::before,
+  .ultima-app-backdrop > .ultima-shell-aura::after,
+  .ultima-app-backdrop .ultima-ring-wave {
+    display: none !important;
+    animation: none !important;
+    filter: none !important;
+    will-change: auto !important;
+  }
 }
 
 .ultima-shell-aura::before,

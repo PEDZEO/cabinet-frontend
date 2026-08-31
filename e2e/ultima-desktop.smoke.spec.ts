@@ -1271,7 +1271,47 @@ test.describe('Ultima desktop workspace', () => {
     await expect(page.getByTestId('ultima-referral-share-sheet')).toBeVisible();
     await expect(page.getByTestId('ultima-referral-kind-telegram')).toBeVisible();
     await expect(page.getByTestId('ultima-referral-kind-web')).toBeVisible();
+    await page.getByTestId('ultima-referral-kind-web').click();
+    await expect(page.getByTestId('ultima-referral-share-sheet')).toContainText(
+      '/login?ref=DESKTOP99',
+    );
+    await expect(page.getByTestId('ultima-referral-share-selected')).toHaveAttribute(
+      'data-share-url',
+      /\/login\?ref=DESKTOP99$/,
+    );
+    await page.getByTestId('ultima-referral-kind-telegram').click();
+    await expect(page.getByTestId('ultima-referral-share-sheet')).toContainText(
+      'https://t.me/example?start=DESKTOP99',
+    );
+    const openedTelegramShare =
+      (await page.getByTestId('ultima-referral-share-selected').getAttribute('data-share-url')) ??
+      '';
+    const telegramShareUrl = new URL(openedTelegramShare);
+    expect(`${telegramShareUrl.origin}${telegramShareUrl.pathname}`).toBe('https://t.me/share/url');
+    expect(telegramShareUrl.searchParams.get('url')).toBe('https://t.me/example?start=DESKTOP99');
     await expectNoHorizontalOverflow(page);
+  });
+
+  test('returns to the already loaded home without a loader or entrance flash', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+    await page.goto('/');
+
+    await expect(page.getByTestId('ultima-home-overview')).toBeVisible();
+    await page.getByTestId('ultima-primary-cta').click();
+    await expect(page).toHaveURL(/\/subscription$/);
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/$/);
+    const dashboard = page.getByTestId('ultima-dashboard-scroll-region');
+    await expect(dashboard).toBeVisible();
+    await expect(page.getByTestId('route-loader')).toHaveCount(0);
+    await expect
+      .poll(() => dashboard.evaluate((element) => getComputedStyle(element).opacity))
+      .toBe('1');
   });
 
   test('uses one focused desktop home workspace without duplicated actions', async ({ page }) => {
@@ -1859,16 +1899,21 @@ test.describe('Ultima device loading state', () => {
     await mockUltimaDesktopApi(page, { connectedDevices, devicesGate });
     await page.goto('/');
 
-    await expect(page.getByTestId('ultima-device-cta-loading')).toBeVisible();
-    await expect(page.getByTestId('ultima-plan-device-count-loading')).toBeVisible();
-    await expect(page.getByTestId('ultima-device-home-cta-title')).toHaveCount(0);
+    const devicesAction = page.getByTestId('ultima-home-action-devices');
+    await expect(devicesAction).toBeDisabled();
+    await expect(page.getByTestId('ultima-plan-device-count')).toHaveAttribute('aria-busy', 'true');
+    await expect(devicesAction).not.toContainText('0/3');
     await expect(page.getByTestId('ultima-plan-device-count')).not.toContainText('0/3');
 
     releaseDevices();
 
-    await expect(page.getByTestId('ultima-device-cta-loading')).toHaveCount(0);
+    await expect(devicesAction).toBeEnabled();
+    await expect(page.getByTestId('ultima-plan-device-count')).toHaveAttribute(
+      'aria-busy',
+      'false',
+    );
     await expect(page.getByTestId('ultima-plan-device-count')).toContainText('3/3');
-    await expect(page.getByTestId('ultima-device-home-cta-title')).toHaveText('Купить слот');
+    await expect(devicesAction).toContainText('3/3');
   });
 });
 
@@ -1892,6 +1937,21 @@ test.describe('Ultima mobile scrolling', () => {
       await expect(nav).toBeVisible();
       await expectNoHorizontalOverflow(page);
       await expect(page.locator('.ultima-ring-wave')).toHaveCount(3);
+      await expect
+        .poll(() =>
+          page
+            .locator('.ultima-ring-wave')
+            .first()
+            .evaluate((element) => getComputedStyle(element).display),
+        )
+        .toBe('none');
+      await expect
+        .poll(() =>
+          page
+            .locator('.ultima-app-backdrop > .ultima-shell-aura')
+            .evaluate((element) => getComputedStyle(element, '::before').display),
+        )
+        .toBe('none');
 
       const scrollbarStyles = await scrollRegion.evaluate((element) => ({
         firefox: getComputedStyle(element).scrollbarWidth,
@@ -2049,15 +2109,17 @@ test.describe('Ultima trial onboarding persistence', () => {
 
     await page.goto('/');
 
-    await expect(page.getByText('Подключить первое устройство', { exact: true })).toBeVisible();
-    await expect(page.getByText('Установка и настройка', { exact: true })).toBeVisible();
+    await expect(page.getByTestId('ultima-home-action-devices')).toContainText('0/3');
+    await expect(page.getByTestId('ultima-home-action-setup')).toContainText('Готово');
     const primaryCta = page.getByTestId('ultima-primary-cta');
-    await expect(primaryCta).toContainText('Продлить подписку');
+    await expect(primaryCta).toContainText('Продлить');
     await primaryCta.click();
     await expect(page).toHaveURL(/\/subscription$/);
   });
 
-  test('shows the unfinished setup action only once on mobile', async ({ page }) => {
+  test('keeps unfinished setup in quick actions without replacing the purchase CTA', async ({
+    page,
+  }) => {
     await bootstrapUltimaDesktop(page, { connectionCompleted: false });
     await page.addInitScript(() => {
       localStorage.setItem('ultima_connection_flow_v1:99', '2');
@@ -2066,8 +2128,9 @@ test.describe('Ultima trial onboarding persistence', () => {
 
     await page.goto('/');
 
-    await expect(page.getByTestId('ultima-primary-cta')).toContainText('Завершить установку');
-    await expect(page.getByText('Завершить установку', { exact: true })).toHaveCount(1);
+    await expect(page.getByTestId('ultima-home-action-setup')).toContainText('Шаг 2/3');
+    await expect(page.getByTestId('ultima-primary-cta')).toContainText('Продлить');
+    await expect(page.getByText('Завершить установку', { exact: true })).toHaveCount(0);
     await expect(page.getByText('Установка не завершена', { exact: true })).toHaveCount(0);
   });
 });

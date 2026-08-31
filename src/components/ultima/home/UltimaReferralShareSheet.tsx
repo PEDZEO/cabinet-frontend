@@ -36,7 +36,7 @@ export function UltimaReferralShareSheet({
   onOpenReferralPage,
 }: UltimaReferralShareSheetProps) {
   const { t } = useTranslation();
-  const { haptic, share } = usePlatform();
+  const { haptic, openTelegramLink, share } = usePlatform();
   const [selectedKind, setSelectedKind] = useState<ReferralLinkKind>(
     telegramLink ? 'telegram' : 'web',
   );
@@ -52,6 +52,14 @@ export function UltimaReferralShareSheet({
     () => (selectedKind === 'telegram' ? telegramLink : webLink),
     [selectedKind, telegramLink, webLink],
   );
+  const selectedShareUrl = useMemo(() => {
+    if (!selectedLink || selectedKind !== 'telegram') return selectedLink;
+
+    const telegramShareUrl = new URL('https://t.me/share/url');
+    telegramShareUrl.searchParams.set('url', selectedLink);
+    telegramShareUrl.searchParams.set('text', shareText);
+    return telegramShareUrl.toString();
+  }, [selectedKind, selectedLink, shareText]);
 
   const selectKind = (kind: ReferralLinkKind) => {
     haptic.impact('light');
@@ -70,6 +78,12 @@ export function UltimaReferralShareSheet({
   const shareLink = async () => {
     if (!selectedLink) return;
     haptic.impact('light');
+
+    if (selectedKind === 'telegram') {
+      openTelegramLink(selectedShareUrl);
+      return;
+    }
+
     await share(shareText, selectedLink);
   };
 
@@ -162,6 +176,7 @@ export function UltimaReferralShareSheet({
             type="button"
             onClick={() => void shareLink()}
             data-testid="ultima-referral-share-selected"
+            data-share-url={selectedShareUrl}
             className="ultima-btn-pill ultima-btn-primary flex min-h-11 items-center justify-center gap-2 px-3 text-[12px]"
           >
             <Share2 className="h-4 w-4" />

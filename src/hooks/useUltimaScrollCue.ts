@@ -5,16 +5,6 @@ const TRANSIENT_VISUAL_SELECTOR = '[data-ultima-transient-visual]';
 // Ignore the reserved space beneath docked actions/navigation. It is not real hidden content.
 const SCROLL_EPSILON_PX = 56;
 
-type ScrollCueState = {
-  isVisible: boolean;
-  progress: number;
-};
-
-const INITIAL_STATE: ScrollCueState = {
-  isVisible: false,
-  progress: 0,
-};
-
 const isVisibleScrollableRegion = (element: HTMLElement) => {
   const rect = element.getBoundingClientRect();
   const style = window.getComputedStyle(element);
@@ -30,44 +20,72 @@ const isVisibleScrollableRegion = (element: HTMLElement) => {
 
 export function useUltimaScrollCue(enabled: boolean, routeKey: string) {
   const scrollTargetRef = useRef<HTMLElement | null>(null);
-  const [state, setState] = useState<ScrollCueState>(INITIAL_STATE);
+  const cueElementRef = useRef<HTMLButtonElement | null>(null);
+  const progressRef = useRef(0);
+  const scrollFrameRef = useRef<number | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  const paintProgress = useCallback((progress: number) => {
+    progressRef.current = progress;
+    cueElementRef.current?.style.setProperty('--ultima-scroll-progress', `${progress}%`);
+  }, []);
 
   const updateState = useCallback(() => {
     const target = scrollTargetRef.current;
     if (!target) {
-      setState((current) => (current.isVisible ? INITIAL_STATE : current));
+      paintProgress(0);
+      setIsVisible(false);
       return;
     }
 
     const maxScrollTop = Math.max(0, target.scrollHeight - target.clientHeight);
     const progress =
       maxScrollTop > 0 ? Math.min(100, (target.scrollTop / maxScrollTop) * 100) : 100;
-    const isVisible = maxScrollTop > SCROLL_EPSILON_PX && target.scrollTop < maxScrollTop - 8;
+    const nextIsVisible = maxScrollTop > SCROLL_EPSILON_PX && target.scrollTop < maxScrollTop - 8;
 
-    setState((current) => {
-      if (current.isVisible === isVisible && Math.abs(current.progress - progress) < 0.5) {
-        return current;
-      }
-      return { isVisible, progress };
+    paintProgress(progress);
+    setIsVisible((current) => (current === nextIsVisible ? current : nextIsVisible));
+  }, [paintProgress]);
+
+  const scheduleScrollUpdate = useCallback(() => {
+    if (scrollFrameRef.current !== null) return;
+
+    scrollFrameRef.current = window.requestAnimationFrame(() => {
+      scrollFrameRef.current = null;
+      updateState();
     });
+  }, [updateState]);
+
+  const cueRef = useCallback((element: HTMLButtonElement | null) => {
+    cueElementRef.current = element;
+    element?.style.setProperty('--ultima-scroll-progress', `${progressRef.current}%`);
   }, []);
 
   useEffect(() => {
     if (!enabled) {
       scrollTargetRef.current = null;
-      setState(INITIAL_STATE);
+      if (scrollFrameRef.current !== null) {
+        window.cancelAnimationFrame(scrollFrameRef.current);
+        scrollFrameRef.current = null;
+      }
+      paintProgress(0);
+      setIsVisible(false);
       return;
     }
 
     const root = document.querySelector<HTMLElement>('main.ultima-app-main');
-    if (!root) return;
+    if (!root) {
+      paintProgress(0);
+      setIsVisible(false);
+      return;
+    }
 
     let frameId: number | null = null;
     let targetResizeObserver: ResizeObserver | null = null;
 
     const detachTarget = () => {
       const target = scrollTargetRef.current;
-      if (target) target.removeEventListener('scroll', updateState);
+      if (target) target.removeEventListener('scroll', scheduleScrollUpdate);
       targetResizeObserver?.disconnect();
       targetResizeObserver = null;
     };
@@ -82,12 +100,13 @@ export function useUltimaScrollCue(enabled: boolean, routeKey: string) {
       scrollTargetRef.current = target;
 
       if (!target) {
-        setState(INITIAL_STATE);
+        paintProgress(0);
+        setIsVisible(false);
         return;
       }
 
-      target.addEventListener('scroll', updateState, { passive: true });
-      targetResizeObserver = new ResizeObserver(updateState);
+      target.addEventListener('scroll', scheduleScrollUpdate, { passive: true });
+      targetResizeObserver = new ResizeObserver(scheduleScrollUpdate);
       targetResizeObserver.observe(target);
       if (target.firstElementChild instanceof HTMLElement) {
         targetResizeObserver.observe(target.firstElementChild);
@@ -132,13 +151,17 @@ export function useUltimaScrollCue(enabled: boolean, routeKey: string) {
     return () => {
       delayedChecks.forEach(window.clearTimeout);
       if (frameId !== null) window.cancelAnimationFrame(frameId);
+      if (scrollFrameRef.current !== null) {
+        window.cancelAnimationFrame(scrollFrameRef.current);
+        scrollFrameRef.current = null;
+      }
       mutationObserver.disconnect();
       rootResizeObserver.disconnect();
       window.removeEventListener('resize', scheduleEvaluation);
       detachTarget();
       scrollTargetRef.current = null;
     };
-  }, [enabled, routeKey, updateState]);
+  }, [enabled, paintProgress, routeKey, scheduleScrollUpdate, updateState]);
 
   const scrollForward = useCallback(() => {
     const target = scrollTargetRef.current;
@@ -152,7 +175,8 @@ export function useUltimaScrollCue(enabled: boolean, routeKey: string) {
   }, []);
 
   return {
-    ...state,
+    isVisible,
+    cueRef,
     scrollForward,
   };
 }

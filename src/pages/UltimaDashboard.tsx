@@ -11,7 +11,7 @@ import {
   type PointerEvent,
 } from 'react';
 import { KeyRound, MonitorSmartphone, ShieldCheck, UsersRound, Wrench } from 'lucide-react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { authApi } from '@/api/auth';
 import { balanceApi } from '@/api/balance';
 import { infoApi } from '@/api/info';
@@ -103,7 +103,6 @@ export function UltimaDashboard() {
   const user = useAuthStore((state) => state.user);
   const refreshUser = useAuthStore((state) => state.refreshUser);
   const isDesktopViewport = useMediaQuery('(min-width: 1024px)');
-  const reduceMotion = useReducedMotion();
   const { pendingTopUp } = usePendingTopUpFollowUpState();
   const rippleIdRef = useRef(0);
   const digitIdRef = useRef(0);
@@ -1525,7 +1524,7 @@ export function UltimaDashboard() {
         <motion.section
           data-testid="ultima-dashboard-scroll-region"
           variants={staggerContainer}
-          initial={reduceMotion ? false : 'initial'}
+          initial={false}
           animate="animate"
           className="ultima-scrollbar flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pb-[clamp(14px,2.8vh,24px)] pr-1 pt-[clamp(8px,1.6vh,14px)] lg:flex-none lg:overflow-visible lg:pb-2 lg:pr-0 lg:pt-8"
         >

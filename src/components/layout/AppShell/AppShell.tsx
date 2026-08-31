@@ -4,7 +4,6 @@ import {
   useState,
   useCallback,
   useRef,
-  type CSSProperties,
   type SyntheticEvent,
 } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router';
@@ -276,7 +275,7 @@ export function AppShell({ children }: AppShellProps) {
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const {
     isVisible: isUltimaScrollCueVisible,
-    progress: ultimaScrollProgress,
+    cueRef: ultimaScrollCueRef,
     scrollForward: scrollUltimaForward,
   } = useUltimaScrollCue(
     isUltimaMode && isUltimaTopLevelRoute && !isDesktopViewport && !isKeyboardOpen,
@@ -732,14 +731,10 @@ export function AppShell({ children }: AppShellProps) {
 
       {shouldShowUltimaSharedNav && isUltimaScrollCueVisible && !isKeyboardOpen ? (
         <button
+          ref={ultimaScrollCueRef}
           type="button"
           data-testid="ultima-scroll-cue"
           className="ultima-scroll-cue"
-          style={
-            {
-              ['--ultima-scroll-progress' as string]: `${Math.max(0, ultimaScrollProgress)}%`,
-            } as CSSProperties
-          }
           onClick={() => {
             haptic.impact('light');
             scrollUltimaForward();
