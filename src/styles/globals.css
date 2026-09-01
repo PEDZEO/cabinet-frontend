@@ -2452,73 +2452,62 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   );
 }
 
-.auth-brand-scene {
-  position: absolute;
-  top: 48%;
-  left: 50%;
-  z-index: -2;
-  width: min(32vw, 430px);
-  aspect-ratio: 1;
-  transform: translate(-50%, -50%);
-}
-
-.auth-brand-orbit,
-.auth-brand-scan {
-  position: absolute;
-  border-radius: 50%;
-}
-
-.auth-brand-orbit {
-  inset: 0;
-  border: 1px solid color-mix(in srgb, var(--auth-aura) 22%, transparent);
-  box-shadow: inset 0 0 42px color-mix(in srgb, var(--auth-aura) 4%, transparent);
-  animation: auth-orbit-breathe 8s ease-in-out infinite;
-}
-
-.auth-brand-orbit--middle {
-  inset: 16%;
-  border-style: dashed;
-  animation-delay: -2.6s;
-  animation-duration: 10s;
-}
-
-.auth-brand-orbit--inner {
-  inset: 32%;
-  animation-delay: -5.2s;
-  animation-duration: 7s;
-}
-
-.auth-brand-scan {
-  inset: 5%;
-  opacity: 0.4;
-  background: conic-gradient(
-    from 12deg,
-    transparent 0deg,
-    transparent 308deg,
-    color-mix(in srgb, var(--auth-aura) 24%, transparent) 338deg,
-    transparent 360deg
-  );
-  animation: auth-scan-rotate 14s linear infinite;
-}
-
 .auth-brand-content {
   position: relative;
   display: flex;
+  width: 100%;
+  max-width: 460px;
   flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.auth-brand-signature {
+  display: flex;
+  width: 100%;
   align-items: center;
-  text-align: center;
+  gap: 20px;
+  margin-bottom: 58px;
 }
 
 .auth-brand-logo {
-  margin-bottom: 28px;
-  border-color: var(--auth-border-strong) !important;
-  background: color-mix(in srgb, var(--auth-primary) 15%, var(--auth-surface-strong)) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 18px 50px color-mix(in srgb, var(--auth-aura) 12%, rgba(0, 0, 0, 0.34));
+  flex: 0 0 auto;
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  filter: drop-shadow(0 16px 28px color-mix(in srgb, var(--auth-aura) 18%, transparent));
 }
 
-.auth-brand-copy > span,
+.auth-brand-signature-meta {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auth-brand-signature-rule {
+  position: relative;
+  display: block;
+  width: min(170px, 100%);
+  height: 1px;
+  background: linear-gradient(90deg, var(--auth-primary), transparent);
+}
+
+.auth-brand-signature-rule::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--auth-primary);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--auth-primary) 52%, transparent);
+  transform: translateY(-50%);
+}
+
+.auth-brand-signature-meta > span:last-child,
 .auth-view-kicker {
   display: block;
   color: color-mix(in srgb, var(--auth-primary) 78%, var(--auth-text));
@@ -2529,8 +2518,14 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   text-transform: uppercase;
 }
 
+.auth-brand-copy {
+  max-width: 420px;
+  padding-left: 22px;
+  border-left: 2px solid color-mix(in srgb, var(--auth-primary) 38%, transparent);
+}
+
 .auth-brand-copy h2 {
-  margin-top: 10px;
+  margin-top: 0;
   color: var(--auth-text);
   font-family: var(--font-display, inherit);
   font-size: 44px;
@@ -2541,7 +2536,7 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
 
 .auth-brand-copy p {
   max-width: 34ch;
-  margin: 14px auto 0;
+  margin: 14px 0 0;
   color: var(--auth-text-soft);
   font-size: 14px;
   line-height: 1.7;
@@ -2954,24 +2949,6 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
   background-color: color-mix(in srgb, var(--auth-surface-soft) 84%, #ffffff) !important;
 }
 
-@keyframes auth-orbit-breathe {
-  0%,
-  100% {
-    opacity: 0.44;
-    transform: scale(0.985);
-  }
-  50% {
-    opacity: 0.82;
-    transform: scale(1.015);
-  }
-}
-
-@keyframes auth-scan-rotate {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @keyframes auth-skeleton-pulse {
   0%,
   100% {
@@ -3003,6 +2980,7 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
     width: 100%;
     min-height: calc(100dvh - 24px);
     grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
     border: 0;
     border-radius: 0;
     background: transparent;
@@ -3022,18 +3000,40 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
     background: linear-gradient(180deg, transparent 0%, var(--auth-surface) 100%);
   }
 
-  .auth-brand-scene {
-    top: 48%;
-    width: 290px;
+  .auth-brand-content {
+    align-items: center;
+    text-align: center;
+  }
+
+  .auth-brand-signature {
+    width: auto;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 18px;
   }
 
   .auth-brand-logo {
-    margin-bottom: 14px;
-    transform: scale(0.82);
+    transform: scale(0.78);
   }
 
-  .auth-brand-copy > span {
-    display: none;
+  .auth-brand-signature-meta {
+    max-width: 120px;
+    flex: 0 1 120px;
+    gap: 7px;
+    text-align: left;
+  }
+
+  .auth-brand-signature-rule {
+    width: 92px;
+  }
+
+  .auth-brand-signature-meta > span:last-child {
+    font-size: 9px;
+  }
+
+  .auth-brand-copy {
+    padding-left: 0;
+    border-left: 0;
   }
 
   .auth-brand-copy h2 {
@@ -3043,7 +3043,7 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
 
   .auth-brand-copy p {
     max-width: 30ch;
-    margin-top: 8px;
+    margin: 8px auto 0;
     font-size: 12px;
     line-height: 1.55;
   }
@@ -3085,13 +3085,18 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
     padding-bottom: 22px;
   }
 
-  .auth-brand-scene {
-    width: 250px;
+  .auth-brand-logo {
+    transform: scale(0.7);
   }
 
-  .auth-brand-logo {
-    margin-bottom: 8px;
-    transform: scale(0.74);
+  .auth-brand-signature {
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .auth-brand-signature-meta {
+    max-width: 106px;
+    flex-basis: 106px;
   }
 
   .auth-brand-copy h2 {
@@ -3121,8 +3126,6 @@ html.ultima-frames-enabled .ultima-shell [class*='border-[#66ebc9]'] {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .auth-brand-orbit,
-  .auth-brand-scan,
   .auth-method-button--loading .auth-method-icon,
   .auth-method-button--loading .auth-method-copy > span,
   .auth-method-button--loading .auth-method-copy > small {

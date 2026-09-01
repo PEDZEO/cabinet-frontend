@@ -231,23 +231,21 @@ export default function Login() {
         transition={{ duration: reduceMotion ? 0 : 0.42, ease: [0.22, 1, 0.36, 1] }}
       >
         <section className="auth-brand-panel" aria-label={t('auth.portalWelcome', 'Welcome')}>
-          <div className="auth-brand-scene" aria-hidden="true">
-            <span className="auth-brand-orbit auth-brand-orbit--outer" />
-            <span className="auth-brand-orbit auth-brand-orbit--middle" />
-            <span className="auth-brand-orbit auth-brand-orbit--inner" />
-            <span className="auth-brand-scan" />
-          </div>
-
           <div className="auth-brand-content">
-            <UltimaAuthBrandMark
-              appName={appName}
-              logoUrl={logoUrl}
-              showBrandLogo={hasCustomLogo}
-              variant="hero"
-              className="auth-brand-logo"
-            />
+            <div className="auth-brand-signature">
+              <UltimaAuthBrandMark
+                appName={appName}
+                logoUrl={logoUrl}
+                showBrandLogo={hasCustomLogo}
+                variant="hero"
+                className="auth-brand-logo"
+              />
+              <div className="auth-brand-signature-meta">
+                <span className="auth-brand-signature-rule" aria-hidden="true" />
+                <span>{t('auth.portalEyebrow', 'Personal account')}</span>
+              </div>
+            </div>
             <div className="auth-brand-copy">
-              <span>{t('auth.portalEyebrow', 'Personal account')}</span>
               <h2>{t('auth.portalWelcome', 'Welcome')}</h2>
               <p>{t('auth.portalSubtitle', 'Everything you need is available after sign-in.')}</p>
             </div>

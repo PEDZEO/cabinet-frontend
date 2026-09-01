@@ -113,6 +113,8 @@ test('opens email login and registration without exposing the full form on the f
   await expect(page.locator('input[name="email"]')).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Theme test brand' })).toHaveCount(0);
   await expect(page.locator('img[alt="Theme test brand"]')).toBeVisible();
+  await expect(page.locator('.auth-brand-signature')).toBeVisible();
+  await expect(page.locator('.auth-brand-scene')).toHaveCount(0);
 
   const methodIconColor = await page
     .locator('.auth-method-icon')
