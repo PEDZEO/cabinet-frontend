@@ -149,8 +149,22 @@ test('keeps the redesigned login within a narrow mobile viewport', async ({ page
   expect(viewportMetrics.scrollWidth).toBeLessThanOrEqual(viewportMetrics.clientWidth);
 
   await page.getByRole('button', { name: /Войти по Email/i }).click();
-  const emailBox = await page.locator('input[name="email"]').boundingBox();
-  expect(emailBox).not.toBeNull();
-  expect(emailBox!.x).toBeGreaterThanOrEqual(0);
-  expect(emailBox!.x + emailBox!.width).toBeLessThanOrEqual(390);
+  const emailField = page.locator('input[name="email"]');
+  await expect(emailField).toBeVisible();
+  await expect
+    .poll(async () =>
+      emailField.evaluate((input) => {
+        const rect = input.getBoundingClientRect();
+        const viewportWidth = document.documentElement.clientWidth;
+
+        return Math.max(0, Math.round(-rect.left), Math.round(rect.right - viewportWidth));
+      }),
+    )
+    .toBe(0);
+
+  const emailViewportMetrics = await page.evaluate(() => ({
+    clientWidth: document.documentElement.clientWidth,
+    scrollWidth: document.documentElement.scrollWidth,
+  }));
+  expect(emailViewportMetrics.scrollWidth).toBeLessThanOrEqual(emailViewportMetrics.clientWidth);
 });
