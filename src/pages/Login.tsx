@@ -1,34 +1,40 @@
+import { useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { ArrowLeft, Send, UserRoundPlus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Navigate, useNavigate } from 'react-router';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import PageLoader from '@/components/common/PageLoader';
 import {
-  LoginBranding,
+  LoginAccessChooser,
   LoginCheckEmailCard,
   LoginEmailAuthSection,
-  LoginOAuthSection,
   LoginTelegramSection,
   useLoginPage,
 } from '@/features/auth/login';
-import { AuthSupportAction } from '@/features/auth/shared/AuthSupportAction';
 import { UltimaAuthBrandMark } from '@/features/auth/shared/UltimaAuthBrandMark';
-import { useUltimaAuthBranding } from '@/features/auth/shared/useUltimaAuthBranding';
 import { useUltimaMode } from '@/hooks/useUltimaMode';
-import { ShieldCheck } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { Navigate } from 'react-router';
 import { useAuthStore } from '@/store/auth';
+
+type AccessView = 'methods' | 'email' | 'telegram';
+
+const getViewTransition = (reducedMotion: boolean | null) => ({
+  initial: reducedMotion ? { opacity: 0 } : { opacity: 0, x: 18 },
+  animate: { opacity: 1, x: 0 },
+  exit: reducedMotion ? { opacity: 0 } : { opacity: 0, x: -14 },
+  transition: { duration: reducedMotion ? 0.12 : 0.24, ease: [0.22, 1, 0.36, 1] as const },
+});
 
 export default function Login() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const reduceMotion = useReducedMotion();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const { isUltimaMode, isUltimaModeReady } = useUltimaMode();
-  const { showUltimaBrandLogo } = useUltimaAuthBranding(isUltimaMode);
   const {
     safeTop,
     safeBottom,
     branding,
-    logoShape,
-    logoLoaded,
-    appLogo,
     appName,
     logoUrl,
     referralCode,
@@ -58,8 +64,6 @@ export default function Login() {
     setEmail,
     setPassword,
     setConfirmPassword,
-    handleLogoLoad,
-    handleLogoError,
     handleBackToLogin,
     handleRetryTelegramAuth,
     handleOAuthLogin,
@@ -67,7 +71,11 @@ export default function Login() {
     closeForgotPasswordModal,
     handleEmailSubmit,
     handleShowForgotPassword,
+    clearAuthError,
   } = useLoginPage();
+  const [accessView, setAccessView] = useState<AccessView>(() =>
+    referralCode ? 'email' : 'methods',
+  );
 
   if (isAuthenticated) {
     return <Navigate to="/" replace />;
@@ -77,152 +85,138 @@ export default function Login() {
     return <PageLoader variant="ultima" />;
   }
 
-  const authPanelContent = registeredEmail ? (
-    <LoginCheckEmailCard email={registeredEmail} onBackToLogin={handleBackToLogin} />
-  ) : (
-    <>
-      {error && (
-        <div className="mb-4 rounded-lg border border-error-400/25 bg-error-500/10 px-4 py-3 text-sm leading-5 text-error-200">
-          {error}
-        </div>
-      )}
+  const normalizedBotUsername = botUsername.replace(/^@+/, '').trim();
+  const canUseTelegram = isTelegramWebApp || Boolean(normalizedBotUsername);
+  const activeView: AccessView = isTelegramWebApp ? 'telegram' : accessView;
+  const hasCustomLogo = Boolean(branding?.has_custom_logo && logoUrl);
+  const viewTransition = getViewTransition(reduceMotion);
 
-      <LoginEmailAuthSection
-        isEmailAuthLoading={isEmailAuthLoading}
-        isEmailAuthEnabled={isEmailAuthEnabled}
-        showForgotPassword={showForgotPassword}
-        forgotPasswordSent={forgotPasswordSent}
-        forgotPasswordEmail={forgotPasswordEmail}
-        onForgotPasswordEmailChange={setForgotPasswordEmail}
-        forgotPasswordError={forgotPasswordError}
-        forgotPasswordLoading={forgotPasswordLoading}
-        onForgotPasswordSubmit={handleForgotPassword}
-        onCloseForgotPassword={closeForgotPasswordModal}
-        authMode={authMode}
-        onAuthModeChange={setAuthMode}
-        onEmailSubmit={handleEmailSubmit}
-        firstName={firstName}
-        onFirstNameChange={setFirstName}
-        email={email}
-        onEmailChange={setEmail}
-        password={password}
-        onPasswordChange={setPassword}
-        confirmPassword={confirmPassword}
-        onConfirmPasswordChange={setConfirmPassword}
-        isLoading={isLoading}
-        onShowForgotPassword={handleShowForgotPassword}
-      />
-
-      {!showForgotPassword && (
-        <div className="mt-5 border-t border-dark-700/45 pt-1">
-          <LoginOAuthSection
-            isLoading={isOAuthProvidersLoading}
-            providers={oauthProviders}
-            oauthLoading={oauthLoading}
-            onOAuthLogin={handleOAuthLogin}
-          />
-
-          <div className="mt-3">
-            <LoginTelegramSection
-              isLoading={isLoading}
-              isTelegramWebApp={isTelegramWebApp}
-              hasError={Boolean(error)}
-              botUsername={botUsername}
-              referralCode={referralCode || undefined}
-              onRetryTelegramAuth={handleRetryTelegramAuth}
-            />
-          </div>
-        </div>
-      )}
-      {!showForgotPassword && <AuthSupportAction visible containerClassName="mt-4" />}
-    </>
-  );
-
-  const safeAreaStyle = {
-    paddingTop: safeTop > 0 ? `${safeTop + 16}px` : 'calc(1rem + env(safe-area-inset-top, 0px))',
-    paddingBottom:
-      safeBottom > 0 ? `${safeBottom + 16}px` : 'calc(1rem + env(safe-area-inset-bottom, 0px))',
+  const openView = (view: AccessView, mode?: 'login' | 'register') => {
+    clearAuthError();
+    closeForgotPasswordModal();
+    if (mode) setAuthMode(mode);
+    setAccessView(view);
   };
 
-  if (isUltimaMode) {
-    return (
-      <div
-        className="ultima-login relative min-h-[100dvh] overflow-x-hidden"
-        style={{
-          ...safeAreaStyle,
-          background:
-            'linear-gradient(160deg, color-mix(in srgb, var(--ultima-color-bg-top) 28%, transparent) 0%, color-mix(in srgb, var(--ultima-color-bg-bottom) 40%, #000000) 100%)',
-        }}
-      >
-        <div className="ultima-shell-aura" />
-        {[0, 2.8, 5.6].map((delay) => (
-          <div
-            key={delay}
-            className="ultima-ring-wave absolute left-1/2 top-[36%] h-[150vmax] w-[150vmax] -translate-x-1/2 -translate-y-1/2 rounded-full border"
-            style={{ animationDelay: `${delay}s` }}
+  const goBack = () => {
+    clearAuthError();
+    if (showForgotPassword) {
+      closeForgotPasswordModal();
+      return;
+    }
+    setAccessView('methods');
+  };
+
+  const changeAuthMode = (mode: 'login' | 'register') => {
+    clearAuthError();
+    closeForgotPasswordModal();
+    setAuthMode(mode);
+  };
+
+  const safeAreaStyle = {
+    paddingTop: safeTop > 0 ? `${safeTop + 12}px` : 'calc(12px + env(safe-area-inset-top, 0px))',
+    paddingBottom:
+      safeBottom > 0 ? `${safeBottom + 12}px` : 'calc(12px + env(safe-area-inset-bottom, 0px))',
+  };
+
+  const renderActiveView = () => {
+    if (registeredEmail) {
+      return (
+        <motion.div key="check-email" {...viewTransition}>
+          <LoginCheckEmailCard email={registeredEmail} onBackToLogin={handleBackToLogin} />
+        </motion.div>
+      );
+    }
+
+    if (activeView === 'email') {
+      return (
+        <motion.div key={`email-${authMode}-${showForgotPassword}`} {...viewTransition}>
+          <LoginEmailAuthSection
+            isEmailAuthLoading={isEmailAuthLoading}
+            isEmailAuthEnabled={isEmailAuthEnabled}
+            showForgotPassword={showForgotPassword}
+            forgotPasswordSent={forgotPasswordSent}
+            forgotPasswordEmail={forgotPasswordEmail}
+            onForgotPasswordEmailChange={setForgotPasswordEmail}
+            forgotPasswordError={forgotPasswordError}
+            forgotPasswordLoading={forgotPasswordLoading}
+            onForgotPasswordSubmit={handleForgotPassword}
+            onCloseForgotPassword={closeForgotPasswordModal}
+            authMode={authMode}
+            onAuthModeChange={changeAuthMode}
+            onEmailSubmit={handleEmailSubmit}
+            firstName={firstName}
+            onFirstNameChange={setFirstName}
+            email={email}
+            onEmailChange={setEmail}
+            password={password}
+            onPasswordChange={setPassword}
+            confirmPassword={confirmPassword}
+            onConfirmPasswordChange={setConfirmPassword}
+            isLoading={isLoading}
+            onShowForgotPassword={handleShowForgotPassword}
+            showModeTabs={false}
           />
-        ))}
+        </motion.div>
+      );
+    }
 
-        <div
-          className="fixed right-3 z-50"
-          style={{
-            top: safeTop > 0 ? `${safeTop + 12}px` : 'calc(12px + env(safe-area-inset-top, 0px))',
-          }}
-        >
-          <LanguageSwitcher />
-        </div>
-
-        <main className="relative z-10 mx-auto grid w-full max-w-md gap-7 px-4 lg:min-h-[calc(100dvh-64px)] lg:max-w-[1100px] lg:grid-cols-[minmax(0,0.9fr)_minmax(420px,480px)] lg:items-center lg:gap-20 lg:px-8">
-          <header className="flex flex-col items-center pt-8 text-center lg:items-start lg:pt-0 lg:text-left">
-            <UltimaAuthBrandMark
-              appName={appName}
-              logoUrl={logoUrl}
-              showBrandLogo={showUltimaBrandLogo}
-              className="mb-4 lg:mb-6"
-            />
-            <p className="max-w-[34ch] text-[14px] leading-6 text-white/60 lg:text-[16px]">
-              {authMode === 'register'
-                ? t(
-                    'auth.registerPageIntro',
-                    'Create one account for your subscription and devices.',
-                  )
-                : t('auth.loginToAccount', 'Sign in to manage your subscription and devices.')}
-            </p>
-            <div className="mt-5 hidden items-center gap-2 text-sm text-white/45 lg:flex">
-              <ShieldCheck className="h-4 w-4 text-accent-300" />
-              {t('auth.secureLoginHint', 'Secure sign-in with email, Telegram or OAuth.')}
+    if (activeView === 'telegram') {
+      return (
+        <motion.div key="telegram" {...viewTransition}>
+          <header className="auth-view-heading auth-view-heading--telegram">
+            <span className="auth-view-icon" aria-hidden="true">
+              <Send />
+            </span>
+            <div>
+              <span className="auth-view-kicker">Telegram</span>
+              <h1>{t('auth.loginWithTelegram', 'Sign in with Telegram')}</h1>
+              <p>{t('auth.telegramPanelHint', 'Confirm sign-in in Telegram to continue.')}</p>
             </div>
           </header>
+          <LoginTelegramSection
+            isLoading={isLoading}
+            isTelegramWebApp={isTelegramWebApp}
+            hasError={Boolean(error)}
+            botUsername={botUsername}
+            referralCode={referralCode || undefined}
+            onRetryTelegramAuth={handleRetryTelegramAuth}
+          />
+        </motion.div>
+      );
+    }
 
-          <section
-            className="min-w-0 rounded-2xl border p-5 shadow-2xl shadow-black/20 backdrop-blur-md sm:p-6 lg:rounded-lg"
-            style={{
-              borderColor:
-                'color-mix(in srgb, var(--ultima-color-surface-border) 28%, transparent)',
-              background: 'color-mix(in srgb, var(--ultima-color-surface) 72%, #071013)',
-            }}
-          >
-            {authPanelContent}
-          </section>
-
-          <p className="pb-2 text-center text-[11px] text-white/40 lg:hidden">
-            {t('auth.secureLoginHint', 'Secure sign-in with email, Telegram or OAuth.')}
-          </p>
-        </main>
-      </div>
+    return (
+      <motion.div key="methods" {...viewTransition}>
+        <LoginAccessChooser
+          isEmailAuthLoading={isEmailAuthLoading}
+          isEmailAuthEnabled={isEmailAuthEnabled}
+          canUseTelegram={canUseTelegram}
+          isOAuthProvidersLoading={isOAuthProvidersLoading}
+          oauthProviders={oauthProviders}
+          oauthLoading={oauthLoading}
+          onEmailLogin={() => openView('email', 'login')}
+          onEmailRegister={() => openView('email', 'register')}
+          onTelegramLogin={() => openView('telegram')}
+          onOAuthLogin={handleOAuthLogin}
+          onOpenSupport={() => navigate('/support/guest')}
+        />
+      </motion.div>
     );
-  }
+  };
 
   return (
     <div
-      className="relative flex min-h-[100dvh] items-center justify-center overflow-x-hidden px-4 sm:px-6 lg:px-8"
+      className={`auth-portal ${isUltimaMode ? 'auth-portal--ultima ultima-login' : 'auth-portal--standard'}`}
       style={safeAreaStyle}
     >
-      <div className="fixed inset-0 bg-gradient-to-br from-dark-950 via-dark-900 to-dark-950" />
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-accent-500/10 via-transparent to-transparent" />
+      <div className="auth-portal-backdrop" aria-hidden="true">
+        {isUltimaMode && <div className="ultima-shell-aura" />}
+        <div className="auth-portal-grid" />
+      </div>
 
       <div
-        className="fixed right-3 z-50"
+        className="auth-language-switcher"
         style={{
           top: safeTop > 0 ? `${safeTop + 12}px` : 'calc(12px + env(safe-area-inset-top, 0px))',
         }}
@@ -230,24 +224,78 @@ export default function Login() {
         <LanguageSwitcher />
       </div>
 
-      <main className="relative grid w-full max-w-md gap-6 lg:max-w-[980px] lg:grid-cols-[minmax(0,0.8fr)_minmax(420px,480px)] lg:items-center lg:gap-16">
-        <div>
-          <LoginBranding
-            branding={branding}
-            logoShape={logoShape}
-            logoLoaded={logoLoaded}
-            appLogo={appLogo}
-            appName={appName}
-            logoUrl={logoUrl}
-            onLogoLoad={handleLogoLoad}
-            onLogoError={handleLogoError}
-            referralCode={referralCode}
-            isEmailAuthEnabled={isEmailAuthEnabled}
-          />
-        </div>
+      <motion.main
+        className="auth-portal-frame"
+        initial={reduceMotion ? false : { opacity: 0, y: 12, scale: 0.99 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: reduceMotion ? 0 : 0.42, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <section className="auth-brand-panel" aria-label={t('auth.portalWelcome', 'Welcome')}>
+          <div className="auth-brand-scene" aria-hidden="true">
+            <span className="auth-brand-orbit auth-brand-orbit--outer" />
+            <span className="auth-brand-orbit auth-brand-orbit--middle" />
+            <span className="auth-brand-orbit auth-brand-orbit--inner" />
+            <span className="auth-brand-scan" />
+          </div>
 
-        <section className="card rounded-lg p-5 sm:p-6">{authPanelContent}</section>
-      </main>
+          <div className="auth-brand-content">
+            <UltimaAuthBrandMark
+              appName={appName}
+              logoUrl={logoUrl}
+              showBrandLogo={hasCustomLogo}
+              variant="hero"
+              className="auth-brand-logo"
+            />
+            <div className="auth-brand-copy">
+              <span>{t('auth.portalEyebrow', 'Personal account')}</span>
+              <h2>{t('auth.portalWelcome', 'Welcome')}</h2>
+              <p>{t('auth.portalSubtitle', 'Everything you need is available after sign-in.')}</p>
+            </div>
+          </div>
+
+          {referralCode && isEmailAuthEnabled && (
+            <div className="auth-referral-note">
+              <UserRoundPlus aria-hidden="true" />
+              <span>{t('auth.referralInvite')}</span>
+            </div>
+          )}
+
+          <div className="auth-brand-footnote">
+            <span className="auth-brand-status-dot" />
+            <span>
+              {t('auth.secureLoginHint', 'Secure sign-in with email, Telegram or OAuth.')}
+            </span>
+          </div>
+        </section>
+
+        <motion.section className="auth-portal-card" layout={!reduceMotion}>
+          {!registeredEmail && activeView !== 'methods' && !isTelegramWebApp && (
+            <button type="button" className="auth-back-button" onClick={goBack}>
+              <ArrowLeft aria-hidden="true" />
+              <span>{t('auth.allLoginMethods', 'All sign-in methods')}</span>
+            </button>
+          )}
+
+          <AnimatePresence mode="wait" initial={false}>
+            {error && (
+              <motion.div
+                key={error}
+                className="auth-error-message"
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                role="alert"
+              >
+                {error}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence mode="wait" initial={false}>
+            {renderActiveView()}
+          </AnimatePresence>
+        </motion.section>
+      </motion.main>
     </div>
   );
 }

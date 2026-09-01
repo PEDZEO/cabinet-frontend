@@ -406,6 +406,11 @@ export function useLoginPage() {
     setShowForgotPassword(true);
   }, []);
 
+  const clearAuthError = useCallback(() => {
+    setError('');
+    setErrorNeedsSupport(false);
+  }, []);
+
   return {
     safeTop,
     safeBottom,
@@ -452,5 +457,6 @@ export function useLoginPage() {
     closeForgotPasswordModal,
     handleEmailSubmit,
     handleShowForgotPassword,
+    clearAuthError,
   };
 }

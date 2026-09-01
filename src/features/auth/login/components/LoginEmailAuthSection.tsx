@@ -35,10 +35,11 @@ interface LoginEmailAuthSectionProps {
   onConfirmPasswordChange: (value: string) => void;
   isLoading: boolean;
   onShowForgotPassword: () => void;
+  showModeTabs?: boolean;
 }
 
 const fieldClassName =
-  'h-12 w-full rounded-lg border border-dark-700/60 bg-dark-950/35 pl-11 pr-11 text-sm text-dark-50 outline-none transition-colors placeholder:text-dark-500 focus:border-accent-400/70 focus:bg-dark-900/65 focus:ring-2 focus:ring-accent-400/15';
+  'auth-email-field h-12 w-full rounded-lg border border-dark-700/60 bg-dark-950/35 pl-11 pr-11 text-sm text-dark-50 outline-none transition-colors placeholder:text-dark-500 focus:border-accent-400/70 focus:bg-dark-900/65 focus:ring-2 focus:ring-accent-400/15';
 
 export function LoginEmailAuthSection({
   isEmailAuthLoading,
@@ -64,6 +65,7 @@ export function LoginEmailAuthSection({
   onConfirmPasswordChange,
   isLoading,
   onShowForgotPassword,
+  showModeTabs = true,
 }: LoginEmailAuthSectionProps) {
   const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
@@ -174,28 +176,30 @@ export function LoginEmailAuthSection({
 
   return (
     <div>
-      <div
-        className="mb-6 grid grid-cols-2 gap-1 rounded-lg border border-dark-700/45 bg-dark-950/35 p-1"
-        role="tablist"
-        aria-label={t('auth.accountAccess', 'Account access')}
-      >
-        {(['login', 'register'] as const).map((mode) => (
-          <button
-            key={mode}
-            type="button"
-            role="tab"
-            aria-selected={authMode === mode}
-            onClick={() => onAuthModeChange(mode)}
-            className={`min-h-10 rounded-md px-3 text-sm font-semibold transition-colors ${
-              authMode === mode
-                ? 'bg-accent-500 text-white shadow-lg shadow-accent-500/15'
-                : 'text-dark-400 hover:bg-white/[0.04] hover:text-dark-100'
-            }`}
-          >
-            {mode === 'login' ? t('auth.login') : t('auth.register', 'Register')}
-          </button>
-        ))}
-      </div>
+      {showModeTabs && (
+        <div
+          className="mb-6 grid grid-cols-2 gap-1 rounded-lg border border-dark-700/45 bg-dark-950/35 p-1"
+          role="tablist"
+          aria-label={t('auth.accountAccess', 'Account access')}
+        >
+          {(['login', 'register'] as const).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              role="tab"
+              aria-selected={authMode === mode}
+              onClick={() => onAuthModeChange(mode)}
+              className={`min-h-10 rounded-md px-3 text-sm font-semibold transition-colors ${
+                authMode === mode
+                  ? 'bg-accent-500 text-white shadow-lg shadow-accent-500/15'
+                  : 'text-dark-400 hover:bg-white/[0.04] hover:text-dark-100'
+              }`}
+            >
+              {mode === 'login' ? t('auth.login') : t('auth.register', 'Register')}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="mb-5">
         <p className="text-xs font-semibold uppercase text-accent-300">
@@ -211,7 +215,7 @@ export function LoginEmailAuthSection({
         <p className="mt-2 text-sm leading-6 text-dark-400">
           {isRegister
             ? t('auth.registerSubtitle', 'Enter your details and confirm your email with a code.')
-            : t('auth.loginSubtitle', 'Sign in with your email and password.')}
+            : t('auth.emailLoginSubtitle', 'Enter the email and password used for your account.')}
         </p>
       </div>
 
@@ -381,6 +385,17 @@ export function LoginEmailAuthSection({
           </button>
         )}
       </div>
+
+      {!showModeTabs && (
+        <button
+          type="button"
+          className="auth-mode-switch mt-2 w-full text-center text-sm"
+          onClick={() => onAuthModeChange(isRegister ? 'login' : 'register')}
+        >
+          {isRegister ? t('auth.hasAccount', 'Already have an account?') : t('auth.noAccount')}{' '}
+          <strong>{isRegister ? t('auth.login') : t('auth.register')}</strong>
+        </button>
+      )}
     </div>
   );
 }
