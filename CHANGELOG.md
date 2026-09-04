@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.15.0](https://github.com/PEDZEO/cabinet-frontend/compare/v1.14.0...v1.15.0) (2026-09-01)
+
+
+### Features
+
+* **auth:** redesign themed login experience ([5fdf2ce](https://github.com/PEDZEO/cabinet-frontend/commit/5fdf2ce366880f5c945b88839da18eadf16265a3))
+* **ultima:** redesign dashboard and streamline setup ([6043d8d](https://github.com/PEDZEO/cabinet-frontend/commit/6043d8dd725b880bc100fe853ca9b1078dc1e44e))
+
+
+### Bug Fixes
+
+* **referral:** show selected Telegram link ([9df801a](https://github.com/PEDZEO/cabinet-frontend/commit/9df801ad60f2ea1807f9a0cbfce7fc20751f5634))
+* **ultima:** smooth navigation and referral sharing ([73b9fce](https://github.com/PEDZEO/cabinet-frontend/commit/73b9fce120cc070db6dc52f52760795897297cd2))
+
 ## [1.14.0](https://github.com/PEDZEO/cabinet-frontend/compare/v1.13.1...v1.14.0) (2026-08-30)
 
 
