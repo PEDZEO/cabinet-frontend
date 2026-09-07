@@ -30,6 +30,7 @@ import {
 } from '@/features/ultima/surfaces';
 import { usePlatform } from '@/platform';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+import { UltimaPortal } from '@/components/ultima/UltimaPortal';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import type { Ticket } from '@/types';
 import { trackAnalyticsEvent } from '@/utils/analyticsEvents';
@@ -208,24 +209,30 @@ function MessageMedia({ message }: { message: Ticket['last_message'] }) {
           ) : null}
         </div>
         {showFullImage ? (
-          <div
-            className="fixed inset-0 z-[80] flex items-center justify-center bg-black/90 p-4"
-            onClick={() => setShowFullImage(false)}
-          >
-            <button
-              type="button"
-              className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white"
+          <UltimaPortal>
+            <div
+              className="ultima-modal-layer ultima-modal-layer--media"
               onClick={() => setShowFullImage(false)}
-              aria-label="close-image"
+              role="dialog"
+              aria-modal="true"
+              aria-label={message.media_caption || 'attachment'}
             >
-              <CloseIcon className="h-5 w-5" />
-            </button>
-            <img
-              src={mediaUrl}
-              alt={message.media_caption || 'attachment'}
-              className="max-h-full max-w-full object-contain"
-            />
-          </div>
+              <button
+                type="button"
+                className="absolute right-[max(16px,env(safe-area-inset-right,0px))] top-[max(16px,env(safe-area-inset-top,0px))] inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white"
+                onClick={() => setShowFullImage(false)}
+                aria-label="close-image"
+              >
+                <CloseIcon className="h-5 w-5" />
+              </button>
+              <img
+                src={mediaUrl}
+                alt={message.media_caption || 'attachment'}
+                className="max-h-full max-w-full object-contain"
+                onClick={(event) => event.stopPropagation()}
+              />
+            </div>
+          </UltimaPortal>
         ) : null}
       </>
     );

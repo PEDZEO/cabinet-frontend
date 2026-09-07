@@ -141,9 +141,10 @@ export default function SuccessNotificationModal() {
   useEffect(() => {
     if (!isOpen) return;
 
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = previousOverflow;
     };
   }, [isOpen]);
 
@@ -236,7 +237,7 @@ export default function SuccessNotificationModal() {
   };
 
   const modalClassName = isUltimaTheme
-    ? 'relative mx-3 w-full max-w-sm overflow-y-auto overscroll-contain rounded-[28px] border shadow-2xl max-h-[calc(100dvh-1.5rem)]'
+    ? 'ultima-modal-panel relative w-full max-w-sm rounded-[28px] border shadow-2xl'
     : 'relative mx-3 w-full max-w-sm overflow-y-auto overscroll-contain rounded-3xl border border-dark-700/50 bg-dark-900 shadow-2xl max-h-[calc(100dvh-1.5rem)]';
   const detailCardClassName = isUltimaTheme
     ? 'flex min-w-0 items-center justify-between gap-3 rounded-2xl border px-4 py-3 backdrop-blur-md'
@@ -320,7 +321,13 @@ export default function SuccessNotificationModal() {
     : undefined;
 
   const modalContent = (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center">
+    <div
+      className={
+        isUltimaTheme
+          ? 'ultima-modal-layer ultima-modal-layer--backdrop-button ultima-modal-layer--center'
+          : 'fixed inset-0 z-[100] flex items-center justify-center'
+      }
+    >
       {/* Backdrop */}
       <button
         type="button"
@@ -333,7 +340,7 @@ export default function SuccessNotificationModal() {
       <div
         className={modalClassName}
         style={{
-          marginBottom: safeBottom ? `${safeBottom}px` : undefined,
+          marginBottom: !isUltimaTheme && safeBottom ? `${safeBottom}px` : undefined,
           ...modalStyle,
         }}
         onClick={(e) => e.stopPropagation()}

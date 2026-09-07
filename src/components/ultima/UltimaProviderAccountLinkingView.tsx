@@ -26,6 +26,7 @@ import type {
   TelegramRelinkStatus,
 } from '@/types';
 import { UltimaBottomNav } from './UltimaBottomNav';
+import { UltimaPortal } from './UltimaPortal';
 
 const PROVIDER_LABELS: Record<string, string> = {
   telegram: 'Telegram',
@@ -498,71 +499,73 @@ export function UltimaProviderAccountLinkingView({
         </div>
 
         {unlinkProvider && unlinkRequestToken ? (
-          <div
-            className="fixed inset-0 z-[90] flex items-end justify-center bg-black/65 p-3 backdrop-blur-sm sm:items-center"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="unlink-dialog-title"
-          >
-            <div className="w-full max-w-[430px] rounded-2xl border border-white/10 bg-[#0b1c21] p-4 shadow-2xl">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h2 id="unlink-dialog-title" className="text-lg font-semibold text-white">
-                    Отвязать {getProviderLabel(unlinkProvider)}?
-                  </h2>
-                  <p className="mt-1 text-sm leading-relaxed text-white/55">
-                    Введите шестизначный код из Telegram. Остальные способы входа продолжат
-                    работать.
-                  </p>
+          <UltimaPortal>
+            <div className="ultima-modal-layer">
+              <div
+                className="ultima-modal-panel w-full max-w-[430px] rounded-2xl border border-white/10 bg-[#0b1c21] p-4 shadow-2xl"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="unlink-dialog-title"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h2 id="unlink-dialog-title" className="text-lg font-semibold text-white">
+                      Отвязать {getProviderLabel(unlinkProvider)}?
+                    </h2>
+                    <p className="mt-1 text-sm leading-relaxed text-white/55">
+                      Введите шестизначный код из Telegram. Остальные способы входа продолжат
+                      работать.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={onCancelUnlink}
+                    title="Закрыть"
+                    aria-label="Закрыть"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white/45 transition hover:bg-white/[0.06] hover:text-white"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={onCancelUnlink}
-                  title="Закрыть"
-                  aria-label="Закрыть"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white/45 transition hover:bg-white/[0.06] hover:text-white"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
 
-              <input
-                type="text"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                autoFocus
-                value={unlinkOtpCode}
-                onChange={(event) => onUnlinkOtpCodeChange(event.target.value)}
-                placeholder="000000"
-                aria-label="Код подтверждения"
-                className="mt-4 h-14 w-full rounded-xl border border-white/10 bg-black/20 px-4 text-center text-xl font-semibold tracking-[0.35em] text-white outline-none transition placeholder:text-white/20 focus:border-emerald-200/35"
-              />
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  autoFocus
+                  value={unlinkOtpCode}
+                  onChange={(event) => onUnlinkOtpCodeChange(event.target.value)}
+                  placeholder="000000"
+                  aria-label="Код подтверждения"
+                  className="mt-4 h-14 w-full rounded-xl border border-white/10 bg-black/20 px-4 text-center text-xl font-semibold tracking-[0.35em] text-white outline-none transition placeholder:text-white/20 focus:border-emerald-200/35"
+                />
 
-              {unlinkError ? (
-                <div className="mt-3">
-                  <Notice tone="error">{unlinkError}</Notice>
+                {unlinkError ? (
+                  <div className="mt-3">
+                    <Notice tone="error">{unlinkError}</Notice>
+                  </div>
+                ) : null}
+
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <Button
+                    variant="secondary"
+                    className="border-white/10 bg-white/[0.06] text-white hover:bg-white/10"
+                    onClick={onCancelUnlink}
+                  >
+                    Отмена
+                  </Button>
+                  <Button
+                    className="bg-red-300 text-red-950 hover:bg-red-200"
+                    onClick={onConfirmUnlink}
+                    loading={confirmUnlinkPending}
+                    disabled={unlinkOtpCode.trim().length !== 6}
+                  >
+                    Отвязать
+                  </Button>
                 </div>
-              ) : null}
-
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                <Button
-                  variant="secondary"
-                  className="border-white/10 bg-white/[0.06] text-white hover:bg-white/10"
-                  onClick={onCancelUnlink}
-                >
-                  Отмена
-                </Button>
-                <Button
-                  className="bg-red-300 text-red-950 hover:bg-red-200"
-                  onClick={onConfirmUnlink}
-                  loading={confirmUnlinkPending}
-                  disabled={unlinkOtpCode.trim().length !== 6}
-                >
-                  Отвязать
-                </Button>
               </div>
             </div>
-          </div>
+          </UltimaPortal>
         ) : unlinkError ? (
           <div className="fixed bottom-24 left-3 right-3 z-[80] mx-auto max-w-[620px]">
             <Notice tone="error">{unlinkError}</Notice>

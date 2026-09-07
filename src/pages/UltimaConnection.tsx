@@ -25,6 +25,7 @@ import {
   UltimaDesktopSectionLayout,
 } from '@/components/ultima/desktop/UltimaDesktopSectionLayout';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+import { UltimaPortal } from '@/components/ultima/UltimaPortal';
 import {
   ULTIMA_CONNECTION_PENDING_STEP2_KEY,
   ULTIMA_CONNECTION_PENDING_STEP3_KEY,
@@ -1175,24 +1176,26 @@ export function UltimaConnection({
 
   const bottomNav = <UltimaBottomNav active="connection" />;
   const completionOverlay = showFinishSuccess ? (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 p-5 backdrop-blur-sm">
-      <div
-        role="status"
-        className="w-full max-w-[330px] rounded-[20px] border border-emerald-200/[0.2] bg-[#071b1b] px-5 py-6 text-center shadow-2xl lg:rounded-[8px]"
-      >
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-300/[0.14] text-emerald-50">
-          <CheckCircle2 className="h-6 w-6" strokeWidth={1.8} />
+    <UltimaPortal>
+      <div className="ultima-modal-layer ultima-modal-layer--center bg-black/55">
+        <div
+          role="status"
+          className="ultima-modal-panel w-full max-w-[330px] rounded-[20px] border border-emerald-200/[0.2] bg-[#071b1b] px-5 py-6 text-center shadow-2xl lg:rounded-[8px]"
+        >
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-300/[0.14] text-emerald-50">
+            <CheckCircle2 className="h-6 w-6" strokeWidth={1.8} />
+          </div>
+          <div className="mt-3 text-[17px] font-semibold text-white">
+            {t('subscription.connection.completedTitle', { defaultValue: 'Настройка завершена' })}
+          </div>
+          <p className="mt-1 text-[12px] leading-relaxed text-white/[0.52]">
+            {t('subscription.connection.completedDesc', {
+              defaultValue: 'VPN готов к работе. Возвращаемся на главную.',
+            })}
+          </p>
         </div>
-        <div className="mt-3 text-[17px] font-semibold text-white">
-          {t('subscription.connection.completedTitle', { defaultValue: 'Настройка завершена' })}
-        </div>
-        <p className="mt-1 text-[12px] leading-relaxed text-white/[0.52]">
-          {t('subscription.connection.completedDesc', {
-            defaultValue: 'VPN готов к работе. Возвращаемся на главную.',
-          })}
-        </p>
       </div>
-    </div>
+    </UltimaPortal>
   ) : null;
 
   if (isDesktop) {

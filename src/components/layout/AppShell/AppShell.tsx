@@ -382,6 +382,34 @@ export function AppShell({ children }: AppShellProps) {
         }
       : undefined;
 
+  useEffect(() => {
+    if (!isUltimaMode) return;
+
+    const root = document.documentElement;
+    const previousViewportHeight = root.style.getPropertyValue('--ultima-shell-viewport-height');
+    const previousSafeBottom = root.style.getPropertyValue('--ultima-shell-safe-bottom');
+
+    if (ultimaViewportHeight) {
+      root.style.setProperty('--ultima-shell-viewport-height', ultimaViewportHeight);
+    }
+    if (ultimaSafeAreaBottom) {
+      root.style.setProperty('--ultima-shell-safe-bottom', ultimaSafeAreaBottom);
+    }
+
+    return () => {
+      if (previousViewportHeight) {
+        root.style.setProperty('--ultima-shell-viewport-height', previousViewportHeight);
+      } else {
+        root.style.removeProperty('--ultima-shell-viewport-height');
+      }
+      if (previousSafeBottom) {
+        root.style.setProperty('--ultima-shell-safe-bottom', previousSafeBottom);
+      } else {
+        root.style.removeProperty('--ultima-shell-safe-bottom');
+      }
+    };
+  }, [isUltimaMode, ultimaSafeAreaBottom, ultimaViewportHeight]);
+
   const handleDesktopLogoLoad = useCallback((event: SyntheticEvent<HTMLImageElement>) => {
     const { naturalWidth, naturalHeight } = event.currentTarget;
 

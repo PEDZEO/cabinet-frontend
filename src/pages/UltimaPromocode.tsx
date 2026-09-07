@@ -18,6 +18,7 @@ import {
   UltimaDesktopSectionLayout,
 } from '@/components/ultima/desktop/UltimaDesktopSectionLayout';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+import { UltimaPortal } from '@/components/ultima/UltimaPortal';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { getPromocodeErrorKey } from '@/utils/promocodeErrors';
 
@@ -129,12 +130,12 @@ function GiftActivationDialog({
   }
 
   return (
-    <>
+    <UltimaPortal>
       <div className="ultima-mobile-overlay-backdrop" onClick={onClose} />
       <div className="ultima-mobile-overlay">
         <div className="ultima-mobile-overlay-panel">{dialog}</div>
       </div>
-    </>
+    </UltimaPortal>
   );
 }
 

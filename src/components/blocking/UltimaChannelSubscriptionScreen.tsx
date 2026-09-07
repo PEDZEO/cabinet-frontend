@@ -85,7 +85,7 @@ export default function UltimaChannelSubscriptionScreen() {
 
   return (
     <div
-      className="fixed inset-0 z-[100] overflow-hidden"
+      className="ultima-scrollbar fixed inset-0 z-[100] overflow-y-auto overscroll-contain"
       style={{
         background:
           'linear-gradient(160deg, color-mix(in srgb, var(--ultima-color-bg-top) 28%, transparent) 0%, color-mix(in srgb, var(--ultima-color-bg-bottom) 40%, #000000) 100%)',
@@ -106,7 +106,7 @@ export default function UltimaChannelSubscriptionScreen() {
         />
       ))}
 
-      <div className="relative z-10 mx-auto flex h-full w-full max-w-md flex-col justify-center px-4 py-6">
+      <div className="relative z-10 mx-auto flex min-h-full w-full max-w-md flex-col justify-center px-4 py-6">
         <section
           className="rounded-[28px] border p-4 backdrop-blur-md"
           style={{

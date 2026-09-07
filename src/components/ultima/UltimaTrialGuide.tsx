@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { UltimaPortal } from './UltimaPortal';
 
 type UltimaTrialGuideProps = {
   variant: 'overlay' | 'inline';
@@ -82,7 +83,7 @@ export function UltimaTrialGuide({
 
   if (variant === 'overlay') {
     return (
-      <>
+      <UltimaPortal>
         <div className="ultima-mobile-overlay-backdrop" />
         <div className="ultima-mobile-overlay" data-testid="ultima-trial-guide-overlay">
           <div className="ultima-mobile-overlay-panel">
@@ -164,7 +165,7 @@ export function UltimaTrialGuide({
             </div>
           </div>
         </div>
-      </>
+      </UltimaPortal>
     );
   }
 

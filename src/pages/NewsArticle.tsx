@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import DOMPurify from 'dompurify';
 import { newsApi, normalizeNewsMediaUrl } from '../api/news';
 import { UltimaBottomNav } from '../components/ultima/UltimaBottomNav';
+import { UltimaPortal } from '../components/ultima/UltimaPortal';
 import {
   ultimaPaneClassName,
   ultimaPaneSurfaceStyle,
@@ -347,28 +348,30 @@ export default function NewsArticlePage() {
 
   const renderExpandedImage = () =>
     expandedImage ? (
-      <div
-        className="bg-black/88 fixed inset-0 z-[90] flex items-center justify-center p-4 backdrop-blur-sm"
-        onClick={() => setExpandedImage(null)}
-        role="dialog"
-        aria-modal="true"
-        aria-label={expandedImage.alt}
-      >
-        <button
-          type="button"
-          className="text-white/92 absolute right-4 top-4 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/15 bg-white/10"
+      <UltimaPortal>
+        <div
+          className="ultima-modal-layer ultima-modal-layer--media"
           onClick={() => setExpandedImage(null)}
-          aria-label={t('common.close', { defaultValue: 'Close' })}
+          role="dialog"
+          aria-modal="true"
+          aria-label={expandedImage.alt}
         >
-          ×
-        </button>
-        <img
-          src={expandedImage.src}
-          alt={expandedImage.alt}
-          className="max-h-[82svh] w-auto max-w-full rounded-[24px] object-contain shadow-[0_24px_80px_rgba(0,0,0,0.45)]"
-          onClick={(event) => event.stopPropagation()}
-        />
-      </div>
+          <button
+            type="button"
+            className="text-white/92 absolute right-[max(16px,env(safe-area-inset-right,0px))] top-[max(16px,env(safe-area-inset-top,0px))] flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/15 bg-white/10"
+            onClick={() => setExpandedImage(null)}
+            aria-label={t('common.close', { defaultValue: 'Close' })}
+          >
+            ×
+          </button>
+          <img
+            src={expandedImage.src}
+            alt={expandedImage.alt}
+            className="max-h-full w-auto max-w-full rounded-[24px] object-contain shadow-[0_24px_80px_rgba(0,0,0,0.45)]"
+            onClick={(event) => event.stopPropagation()}
+          />
+        </div>
+      </UltimaPortal>
     ) : null;
 
   const renderUltimaLayout = (content: ReactNode) => (

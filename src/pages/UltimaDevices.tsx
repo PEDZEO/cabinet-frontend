@@ -24,6 +24,7 @@ import {
 } from '@/components/ultima/desktop/UltimaDesktopSectionLayout';
 import { useCurrency } from '@/hooks/useCurrency';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+import { UltimaPortal } from '@/components/ultima/UltimaPortal';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useTelegramSDK } from '@/hooks/useTelegramSDK';
 import { copyToClipboard } from '@/utils/clipboard';
@@ -874,176 +875,178 @@ export function UltimaDevices() {
           </section>
 
           {isConnectionPanelOpen && canUseSubscriptionLink ? (
-            <div
-              className="fixed inset-0 z-[80] flex items-end justify-center bg-black/65 p-3 backdrop-blur-sm sm:items-center"
-              onMouseDown={(event) => {
-                if (event.target === event.currentTarget) setIsConnectionPanelOpen(false);
-              }}
-            >
-              <section
-                id="ultima-connect-new-device"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="ultima-connect-new-device-title"
-                className="max-h-[calc(100dvh-24px)] w-full max-w-[460px] overflow-y-auto rounded-2xl border border-emerald-200/[0.18] bg-[#071f1f] p-4 shadow-2xl"
+            <UltimaPortal>
+              <div
+                className="ultima-modal-layer"
+                onMouseDown={(event) => {
+                  if (event.target === event.currentTarget) setIsConnectionPanelOpen(false);
+                }}
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <h2
-                      id="ultima-connect-new-device-title"
-                      className="text-[17px] font-semibold text-white"
+                <section
+                  id="ultima-connect-new-device"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="ultima-connect-new-device-title"
+                  className="ultima-modal-panel w-full max-w-[460px] rounded-2xl border border-emerald-200/[0.18] bg-[#071f1f] p-4 shadow-2xl"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <h2
+                        id="ultima-connect-new-device-title"
+                        className="text-[17px] font-semibold text-white"
+                      >
+                        {t('devices.connectNewDeviceTitle', {
+                          defaultValue: 'Подключить устройство',
+                        })}
+                      </h2>
+                      <p className="mt-1 text-[12px] leading-relaxed text-white/[0.55]">
+                        {t('devices.connectNewDeviceHint', {
+                          defaultValue:
+                            'Откройте ссылку на новом устройстве или отсканируйте QR-код.',
+                        })}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsConnectionPanelOpen(false)}
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white/[0.6] transition-colors hover:bg-white/[0.07]"
+                      aria-label={t('common.close', { defaultValue: 'Закрыть' })}
                     >
-                      {t('devices.connectNewDeviceTitle', {
-                        defaultValue: 'Подключить устройство',
-                      })}
-                    </h2>
-                    <p className="mt-1 text-[12px] leading-relaxed text-white/[0.55]">
-                      {t('devices.connectNewDeviceHint', {
-                        defaultValue:
-                          'Откройте ссылку на новом устройстве или отсканируйте QR-код.',
+                      <X className="h-5 w-5" strokeWidth={2} />
+                    </button>
+                  </div>
+
+                  {isConnectionConfigPending ? (
+                    <div
+                      data-testid="ultima-device-connection-loading"
+                      className="mt-4 animate-pulse"
+                      aria-busy="true"
+                    >
+                      <div className="mx-auto h-[188px] w-[188px] rounded-xl bg-white/[0.08]" />
+                      <div className="mt-3 h-11 rounded-xl bg-white/[0.055]" />
+                      <div className="mt-3 grid grid-cols-2 gap-2">
+                        <div className="h-10 rounded-xl bg-white/[0.055]" />
+                        <div className="h-10 rounded-xl bg-white/[0.055]" />
+                      </div>
+                    </div>
+                  ) : selectedConnectionOption ? (
+                    <>
+                      {connectionOptions.length > 1 ? (
+                        <div className="mt-4">
+                          <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-white/[0.42]">
+                            {t('devices.connectionMethodTitle', {
+                              defaultValue: 'Выберите приложение',
+                            })}
+                          </p>
+                          <div
+                            role="radiogroup"
+                            aria-label={t('devices.connectionMethodTitle', {
+                              defaultValue: 'Выберите приложение',
+                            })}
+                            className={`mt-2 grid gap-1 rounded-xl border border-white/[0.07] bg-black/20 p-1 ${
+                              connectionOptions.length === 2 ? 'grid-cols-2' : 'grid-cols-3'
+                            }`}
+                          >
+                            {connectionOptions.map((option) => {
+                              const isSelected = option.kind === selectedConnectionOption.kind;
+                              return (
+                                <button
+                                  key={option.kind}
+                                  type="button"
+                                  role="radio"
+                                  aria-checked={isSelected}
+                                  data-testid={`ultima-device-link-${option.kind}`}
+                                  onClick={() => setSelectedConnectionKind(option.kind)}
+                                  className={`flex min-h-9 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-[11px] font-semibold transition-colors ${
+                                    isSelected
+                                      ? 'bg-emerald-300 text-emerald-950 shadow-[0_6px_18px_rgba(52,211,153,0.16)]'
+                                      : 'text-white/[0.58] hover:bg-white/[0.055] hover:text-white'
+                                  }`}
+                                >
+                                  {option.protected ? (
+                                    <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2} />
+                                  ) : (
+                                    <Globe2 className="h-3.5 w-3.5" strokeWidth={2} />
+                                  )}
+                                  <span className="truncate">{option.label}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ) : null}
+
+                      <div className="mx-auto mt-4 w-fit rounded-xl bg-white p-3">
+                        <QRCodeSVG
+                          key={selectedConnectionOption.kind}
+                          data-testid="ultima-device-qr"
+                          data-connection-kind={selectedConnectionOption.kind}
+                          value={selectedConnectionUrl}
+                          size={164}
+                          level="M"
+                          includeMargin={false}
+                        />
+                      </div>
+
+                      <div
+                        data-testid="ultima-device-link-meta"
+                        className="mt-3 flex items-center justify-center gap-2 text-center text-[11px] text-emerald-100/[0.72]"
+                      >
+                        {selectedConnectionOption.protected ? (
+                          <ShieldCheck className="h-4 w-4 text-emerald-300" strokeWidth={2} />
+                        ) : (
+                          <Globe2 className="h-4 w-4 text-white/[0.52]" strokeWidth={2} />
+                        )}
+                        <span>{selectedConnectionOption.meta}</span>
+                      </div>
+
+                      {selectedConnectionOption.kind === 'other' ? (
+                        hideSubscriptionLink ? (
+                          <p className="mt-3 text-center text-[11px] leading-relaxed text-white/[0.48]">
+                            {t('devices.subscriptionLinkHiddenText', {
+                              defaultValue: 'Ссылка скрыта настройками. Используйте QR-код.',
+                            })}
+                          </p>
+                        ) : (
+                          <p
+                            data-testid="ultima-device-raw-link"
+                            className="mt-3 truncate rounded-xl bg-white/[0.045] px-3 py-2.5 font-mono text-[10px] text-white/[0.58]"
+                          >
+                            {selectedConnectionUrl}
+                          </p>
+                        )
+                      ) : null}
+
+                      <div className="mt-3 grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => void copySelectedConnectionLink()}
+                          disabled={!canCopySelectedConnection}
+                          className="ultima-btn-pill ultima-btn-primary flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-[12px] font-semibold disabled:cursor-not-allowed disabled:opacity-45"
+                        >
+                          <Link2 className="h-4 w-4" strokeWidth={2} />
+                          {t('devices.copySubscriptionLink', { defaultValue: 'Копировать' })}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={openSelectedConnectionLink}
+                          className="ultima-btn-pill ultima-btn-secondary flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-center text-[12px] font-semibold"
+                        >
+                          <ExternalLink className="h-4 w-4" strokeWidth={2} />
+                          {t('common.open', { defaultValue: 'Открыть' })}
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="mt-4 rounded-xl border border-rose-200/[0.14] bg-rose-300/[0.06] px-3 py-3 text-center text-[12px] text-rose-100">
+                      {t('devices.subscriptionLinkUnavailable', {
+                        defaultValue: 'Ссылка подписки пока недоступна. Попробуйте позже.',
                       })}
                     </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsConnectionPanelOpen(false)}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white/[0.6] transition-colors hover:bg-white/[0.07]"
-                    aria-label={t('common.close', { defaultValue: 'Закрыть' })}
-                  >
-                    <X className="h-5 w-5" strokeWidth={2} />
-                  </button>
-                </div>
-
-                {isConnectionConfigPending ? (
-                  <div
-                    data-testid="ultima-device-connection-loading"
-                    className="mt-4 animate-pulse"
-                    aria-busy="true"
-                  >
-                    <div className="mx-auto h-[188px] w-[188px] rounded-xl bg-white/[0.08]" />
-                    <div className="mt-3 h-11 rounded-xl bg-white/[0.055]" />
-                    <div className="mt-3 grid grid-cols-2 gap-2">
-                      <div className="h-10 rounded-xl bg-white/[0.055]" />
-                      <div className="h-10 rounded-xl bg-white/[0.055]" />
-                    </div>
-                  </div>
-                ) : selectedConnectionOption ? (
-                  <>
-                    {connectionOptions.length > 1 ? (
-                      <div className="mt-4">
-                        <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-white/[0.42]">
-                          {t('devices.connectionMethodTitle', {
-                            defaultValue: 'Выберите приложение',
-                          })}
-                        </p>
-                        <div
-                          role="radiogroup"
-                          aria-label={t('devices.connectionMethodTitle', {
-                            defaultValue: 'Выберите приложение',
-                          })}
-                          className={`mt-2 grid gap-1 rounded-xl border border-white/[0.07] bg-black/20 p-1 ${
-                            connectionOptions.length === 2 ? 'grid-cols-2' : 'grid-cols-3'
-                          }`}
-                        >
-                          {connectionOptions.map((option) => {
-                            const isSelected = option.kind === selectedConnectionOption.kind;
-                            return (
-                              <button
-                                key={option.kind}
-                                type="button"
-                                role="radio"
-                                aria-checked={isSelected}
-                                data-testid={`ultima-device-link-${option.kind}`}
-                                onClick={() => setSelectedConnectionKind(option.kind)}
-                                className={`flex min-h-9 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-[11px] font-semibold transition-colors ${
-                                  isSelected
-                                    ? 'bg-emerald-300 text-emerald-950 shadow-[0_6px_18px_rgba(52,211,153,0.16)]'
-                                    : 'text-white/[0.58] hover:bg-white/[0.055] hover:text-white'
-                                }`}
-                              >
-                                {option.protected ? (
-                                  <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2} />
-                                ) : (
-                                  <Globe2 className="h-3.5 w-3.5" strokeWidth={2} />
-                                )}
-                                <span className="truncate">{option.label}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ) : null}
-
-                    <div className="mx-auto mt-4 w-fit rounded-xl bg-white p-3">
-                      <QRCodeSVG
-                        key={selectedConnectionOption.kind}
-                        data-testid="ultima-device-qr"
-                        data-connection-kind={selectedConnectionOption.kind}
-                        value={selectedConnectionUrl}
-                        size={164}
-                        level="M"
-                        includeMargin={false}
-                      />
-                    </div>
-
-                    <div
-                      data-testid="ultima-device-link-meta"
-                      className="mt-3 flex items-center justify-center gap-2 text-center text-[11px] text-emerald-100/[0.72]"
-                    >
-                      {selectedConnectionOption.protected ? (
-                        <ShieldCheck className="h-4 w-4 text-emerald-300" strokeWidth={2} />
-                      ) : (
-                        <Globe2 className="h-4 w-4 text-white/[0.52]" strokeWidth={2} />
-                      )}
-                      <span>{selectedConnectionOption.meta}</span>
-                    </div>
-
-                    {selectedConnectionOption.kind === 'other' ? (
-                      hideSubscriptionLink ? (
-                        <p className="mt-3 text-center text-[11px] leading-relaxed text-white/[0.48]">
-                          {t('devices.subscriptionLinkHiddenText', {
-                            defaultValue: 'Ссылка скрыта настройками. Используйте QR-код.',
-                          })}
-                        </p>
-                      ) : (
-                        <p
-                          data-testid="ultima-device-raw-link"
-                          className="mt-3 truncate rounded-xl bg-white/[0.045] px-3 py-2.5 font-mono text-[10px] text-white/[0.58]"
-                        >
-                          {selectedConnectionUrl}
-                        </p>
-                      )
-                    ) : null}
-
-                    <div className="mt-3 grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => void copySelectedConnectionLink()}
-                        disabled={!canCopySelectedConnection}
-                        className="ultima-btn-pill ultima-btn-primary flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-[12px] font-semibold disabled:cursor-not-allowed disabled:opacity-45"
-                      >
-                        <Link2 className="h-4 w-4" strokeWidth={2} />
-                        {t('devices.copySubscriptionLink', { defaultValue: 'Копировать' })}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={openSelectedConnectionLink}
-                        className="ultima-btn-pill ultima-btn-secondary flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-center text-[12px] font-semibold"
-                      >
-                        <ExternalLink className="h-4 w-4" strokeWidth={2} />
-                        {t('common.open', { defaultValue: 'Открыть' })}
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <p className="mt-4 rounded-xl border border-rose-200/[0.14] bg-rose-300/[0.06] px-3 py-3 text-center text-[12px] text-rose-100">
-                    {t('devices.subscriptionLinkUnavailable', {
-                      defaultValue: 'Ссылка подписки пока недоступна. Попробуйте позже.',
-                    })}
-                  </p>
-                )}
-              </section>
-            </div>
+                  )}
+                </section>
+              </div>
+            </UltimaPortal>
           ) : null}
 
           {error || success ? (

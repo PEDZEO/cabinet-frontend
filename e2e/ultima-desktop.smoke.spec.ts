@@ -803,6 +803,7 @@ async function mockUltimaDesktopApi(
     if (path === '/cabinet/info/languages') {
       return respond({ languages: [{ code: 'ru', name: 'Русский', flag: 'RU' }], default: 'ru' });
     }
+    if (path === '/cabinet/info/faq') return respond([]);
     if (path === '/cabinet/wheel/config') return respond({ is_enabled: false });
     if (path === '/cabinet/contests/count') return respond({ count: 0 });
     if (path === '/cabinet/polls/count') return respond({ count: 0 });
@@ -918,6 +919,15 @@ test.describe('Ultima gifts and promocodes', () => {
         'Подарок активирован',
       );
       await expect(page.getByTestId('ultima-promocode-gift-dialog')).toContainText('Премиум');
+      if (viewport.name === 'mobile') {
+        await expect
+          .poll(() =>
+            page
+              .getByTestId('ultima-promocode-gift-dialog')
+              .evaluate((element) => element.closest('.ultima-shell') === null),
+          )
+          .toBe(true);
+      }
       await expectNoHorizontalOverflow(page);
       await page.screenshot({
         path: testInfo.outputPath(`ultima-promocode-${viewport.name}.png`),
@@ -1809,6 +1819,65 @@ test.describe('Ultima device management', () => {
     await expectNoHorizontalOverflow(page);
   });
 
+  for (const viewport of [
+    { width: 320, height: 568 },
+    { width: 390, height: 844 },
+    { width: 568, height: 320 },
+  ]) {
+    test(`keeps the connection dialog reachable on ${viewport.width}x${viewport.height}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+      await bootstrapUltimaDesktop(page);
+      await mockUltimaDesktopApi(page);
+      await page.goto('/ultima/devices');
+
+      await page.getByTestId('ultima-device-primary-action').click();
+      const connectionDialog = page.locator('#ultima-connect-new-device[role="dialog"]');
+      await expect(connectionDialog).toBeVisible();
+
+      const metrics = await connectionDialog.evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        const styles = getComputedStyle(element);
+        return {
+          clientHeight: element.clientHeight,
+          scrollHeight: element.scrollHeight,
+          top: rect.top,
+          bottom: rect.bottom,
+          overflowY: styles.overflowY,
+          touchAction: styles.touchAction,
+          insideShell: element.closest('.ultima-shell') !== null,
+        };
+      });
+
+      expect(metrics.insideShell).toBe(false);
+      expect(metrics.top).toBeGreaterThanOrEqual(0);
+      expect(metrics.bottom).toBeLessThanOrEqual(viewport.height);
+      expect(metrics.overflowY).toBe('auto');
+      expect(metrics.touchAction).toBe('pan-y');
+
+      const maxScroll = metrics.scrollHeight - metrics.clientHeight;
+      if (viewport.height === 320) {
+        expect(maxScroll).toBeGreaterThan(0);
+      }
+      if (maxScroll > 0) {
+        await connectionDialog.evaluate((element) => {
+          element.scrollTop = element.scrollHeight;
+        });
+        await expect
+          .poll(() => connectionDialog.evaluate((element) => element.scrollTop))
+          .toBeGreaterThanOrEqual(maxScroll - 1);
+      }
+
+      const openButton = connectionDialog.getByRole('button', { name: 'Открыть', exact: true });
+      const openButtonBox = await openButton.boundingBox();
+      expect(openButtonBox).not.toBeNull();
+      expect(openButtonBox!.y).toBeGreaterThanOrEqual(0);
+      expect(openButtonBox!.y + openButtonBox!.height).toBeLessThanOrEqual(viewport.height);
+      await expectNoHorizontalOverflow(page);
+    });
+  }
+
   test('uses only the regular subscription link when crypto links are disabled', async ({
     page,
   }) => {
@@ -1989,6 +2058,82 @@ test.describe('Ultima mobile scrolling', () => {
     });
   }
 
+  test('scrolls every compact Ultima workspace to its end', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+
+    const routes = [
+      '/',
+      '/subscription',
+      '/connection',
+      '/balance',
+      '/balance/top-up',
+      '/referral',
+      '/support',
+      '/profile',
+      '/account-linking',
+      '/promocode',
+      '/ultima/gift',
+      '/ultima/devices',
+      '/ultima/subscription-info',
+      '/ultima/agreement',
+      '/ultima/info',
+      '/ultima/news',
+    ];
+
+    for (const route of routes) {
+      await page.goto(route);
+      await expect(page.locator('.ultima-shell').first(), route).toBeVisible();
+      await expectNoHorizontalOverflow(page);
+
+      const audit = await page.evaluate(() => {
+        const viewportHeight = document.documentElement.clientHeight;
+        const scrollRegions = Array.from(
+          document.querySelectorAll<HTMLElement>('.ultima-scrollbar'),
+        ).filter((element) => {
+          const styles = getComputedStyle(element);
+          const rect = element.getBoundingClientRect();
+          return (
+            rect.width > 0 &&
+            rect.height > 0 &&
+            (styles.overflowY === 'auto' || styles.overflowY === 'scroll')
+          );
+        });
+
+        const stuckRegions = scrollRegions
+          .map((element) => {
+            const maxScroll = Math.max(0, element.scrollHeight - element.clientHeight);
+            element.scrollTop = element.scrollHeight;
+            return {
+              className: element.className,
+              maxScroll,
+              actualScroll: element.scrollTop,
+            };
+          })
+          .filter(({ maxScroll, actualScroll }) => maxScroll > 1 && actualScroll < maxScroll - 1);
+
+        const nav = document.querySelector<HTMLElement>(
+          '.ultima-shared-nav-shell, .ultima-mobile-dock-footer .ultima-bottom-nav',
+        );
+        const navRect = nav?.getBoundingClientRect() ?? null;
+
+        return {
+          stuckRegions,
+          navBottom: navRect?.bottom ?? null,
+          navTop: navRect?.top ?? null,
+          viewportHeight,
+        };
+      });
+
+      expect(audit.stuckRegions, route).toEqual([]);
+      if (audit.navBottom !== null && audit.navTop !== null) {
+        expect(audit.navTop, route).toBeGreaterThanOrEqual(0);
+        expect(audit.navBottom, route).toBeLessThanOrEqual(audit.viewportHeight + 1);
+      }
+    }
+  });
+
   test('scroll cue advances a long page and disappears at the end', async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 360, height: 640 });
     await bootstrapUltimaDesktop(page);
@@ -2088,11 +2233,32 @@ test.describe('Ultima trial onboarding persistence', () => {
   });
 
   test('keeps the Later dismissal after refresh', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
     await bootstrapUltimaDesktop(page, { connectionCompleted: false });
     await mockUltimaDesktopApi(page, { subscription: TRIAL_SUBSCRIPTION });
 
     await page.goto('/');
-    await expect(page.getByTestId('ultima-trial-guide-overlay')).toBeVisible();
+    const overlay = page.getByTestId('ultima-trial-guide-overlay');
+    const panel = overlay.locator('.ultima-mobile-overlay-panel');
+    await expect(overlay).toBeVisible();
+    await expect
+      .poll(() => overlay.evaluate((element) => element.closest('.ultima-shell') === null))
+      .toBe(true);
+
+    const maxScroll = await panel.evaluate(
+      (element) => element.scrollHeight - element.clientHeight,
+    );
+    expect(maxScroll).toBeGreaterThan(0);
+    await panel.evaluate((element) => {
+      element.scrollTop = element.scrollHeight;
+    });
+    await expect
+      .poll(() => panel.evaluate((element) => element.scrollTop))
+      .toBeGreaterThanOrEqual(maxScroll - 1);
+    const dismissBox = await page.getByTestId('ultima-trial-guide-dismiss').boundingBox();
+    expect(dismissBox).not.toBeNull();
+    expect(dismissBox!.y + dismissBox!.height).toBeLessThanOrEqual(568);
+
     await page.getByTestId('ultima-trial-guide-dismiss').click();
     await expect(page.getByTestId('ultima-trial-guide-overlay')).toHaveCount(0);
 
