@@ -2404,6 +2404,18 @@ test.describe('Ultima mobile scrolling', () => {
     expect(cueBox!.y).toBeGreaterThanOrEqual(navBox!.y - 24);
     expect(cueBox!.y + cueBox!.height).toBeLessThanOrEqual(navBox!.y);
 
+    // Font metrics and translated labels can change the dock height independently of the page.
+    await page.locator('.ultima-shared-nav-shell').evaluate((element) => {
+      (element as HTMLElement).style.paddingTop = '20px';
+    });
+    await expect
+      .poll(async () => {
+        const dock = await page.locator('.ultima-shared-nav-shell').boundingBox();
+        const indicator = await cue.boundingBox();
+        return Math.round(dock!.y - indicator!.y - indicator!.height);
+      })
+      .toBe(4);
+
     await page.screenshot({
       path: testInfo.outputPath('ultima-mobile-scroll-cue.png'),
       animations: 'disabled',

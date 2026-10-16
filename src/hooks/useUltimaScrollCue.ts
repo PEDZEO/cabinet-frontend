@@ -25,12 +25,23 @@ export function useUltimaScrollCue(enabled: boolean, routeKey: string) {
   const scrollFrameRef = useRef<number | null>(null);
   const [isVisible, setIsVisible] = useState(false);
 
+  const positionCue = useCallback(() => {
+    const nav = document.querySelector<HTMLElement>('.ultima-shared-nav-shell');
+    if (!nav || !cueElementRef.current) return;
+    const navTop = nav.getBoundingClientRect().top;
+    cueElementRef.current.style.setProperty(
+      '--ultima-scroll-cue-bottom',
+      `${Math.max(0, window.innerHeight - navTop) + 4}px`,
+    );
+  }, []);
+
   const paintProgress = useCallback((progress: number) => {
     progressRef.current = progress;
     cueElementRef.current?.style.setProperty('--ultima-scroll-progress', `${progress}%`);
   }, []);
 
   const updateState = useCallback(() => {
+    positionCue();
     const target = scrollTargetRef.current;
     if (!target) {
       paintProgress(0);
@@ -45,7 +56,7 @@ export function useUltimaScrollCue(enabled: boolean, routeKey: string) {
 
     paintProgress(progress);
     setIsVisible((current) => (current === nextIsVisible ? current : nextIsVisible));
-  }, [paintProgress]);
+  }, [paintProgress, positionCue]);
 
   const scheduleScrollUpdate = useCallback(() => {
     if (scrollFrameRef.current !== null) return;
@@ -56,10 +67,14 @@ export function useUltimaScrollCue(enabled: boolean, routeKey: string) {
     });
   }, [updateState]);
 
-  const cueRef = useCallback((element: HTMLButtonElement | null) => {
-    cueElementRef.current = element;
-    element?.style.setProperty('--ultima-scroll-progress', `${progressRef.current}%`);
-  }, []);
+  const cueRef = useCallback(
+    (element: HTMLButtonElement | null) => {
+      cueElementRef.current = element;
+      element?.style.setProperty('--ultima-scroll-progress', `${progressRef.current}%`);
+      positionCue();
+    },
+    [positionCue],
+  );
 
   useEffect(() => {
     if (!enabled) {
@@ -141,6 +156,8 @@ export function useUltimaScrollCue(enabled: boolean, routeKey: string) {
 
     const rootResizeObserver = new ResizeObserver(scheduleEvaluation);
     rootResizeObserver.observe(root);
+    const nav = document.querySelector<HTMLElement>('.ultima-shared-nav-shell');
+    if (nav) rootResizeObserver.observe(nav);
     window.addEventListener('resize', scheduleEvaluation, { passive: true });
 
     scheduleEvaluation();

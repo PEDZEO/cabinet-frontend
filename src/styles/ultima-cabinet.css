@@ -40,7 +40,7 @@
 }
 
 .ultima-scroll-cue {
-  bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+  bottom: var(--ultima-scroll-cue-bottom, calc(90px + env(safe-area-inset-bottom, 0px)));
 }
 
 .ultima-shell {
