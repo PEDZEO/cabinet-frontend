@@ -33,7 +33,7 @@ function Stat({ value, label, onClick }: StatProps) {
       <div className="text-[22px] font-semibold leading-none tracking-[-0.03em] text-white">
         {value}
       </div>
-      <div className="mt-1 text-[11px] uppercase tracking-[0.18em] text-white/[0.48]">{label}</div>
+      <div className="mt-1 text-[13px] uppercase tracking-[0.18em] text-white/[0.72]">{label}</div>
     </Component>
   );
 }
@@ -92,7 +92,7 @@ export function UltimaTrialGuide({
               <div className="pointer-events-none absolute -right-16 top-[-72px] h-44 w-44 rounded-full bg-emerald-300/[0.12] blur-3xl" />
 
               <div className="relative">
-                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200/20 bg-emerald-300/10 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.22em] text-emerald-100/[0.92]">
+                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200/20 bg-emerald-300/10 px-3 py-1 text-[13px] font-medium uppercase tracking-[0.22em] text-emerald-100/[0.92]">
                   <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-200" />
                   {t('ultima.trialGuide.badge', { defaultValue: 'Триал активирован' })}
                 </div>
@@ -118,7 +118,7 @@ export function UltimaTrialGuide({
 
                 <div className="mt-4 flex flex-col items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-3.5 py-3 min-[390px]:flex-row min-[390px]:items-center min-[390px]:justify-between">
                   <div>
-                    <p className="text-[12px] font-medium uppercase tracking-[0.18em] text-white/[0.42]">
+                    <p className="text-[13px] font-medium uppercase tracking-[0.18em] text-white/[0.72]">
                       {t('ultima.trialGuide.stepLabel', {
                         defaultValue: 'Шаг 1 из 3',
                       })}
@@ -186,7 +186,7 @@ export function UltimaTrialGuide({
             })}
           </p>
         </div>
-        <span className="rounded-full border border-emerald-200/[0.18] bg-emerald-300/[0.12] px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.16em] text-emerald-100/[0.88]">
+        <span className="rounded-full border border-emerald-200/[0.18] bg-emerald-300/[0.12] px-2.5 py-1 text-[13px] font-medium uppercase tracking-[0.16em] text-emerald-100/[0.88]">
           {t('ultima.trialGuide.stepLabel', { defaultValue: 'Шаг 1 из 3' })}
         </span>
       </div>

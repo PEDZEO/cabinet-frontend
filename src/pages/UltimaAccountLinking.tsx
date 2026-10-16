@@ -766,7 +766,7 @@ export default function UltimaAccountLinking() {
                   disabled={
                     !!directLinkProvider || waitingExternalProvider !== null || !!telegramIdentity
                   }
-                  className="rounded-full border border-emerald-200/20 bg-[rgba(22,207,161,0.92)] px-4 py-2.5 text-[14px] font-medium text-slate-950 hover:bg-[rgba(39,220,176,0.96)] disabled:border-white/10 disabled:bg-white/[0.08] disabled:text-white/[0.45]"
+                  className="rounded-full border border-emerald-200/20 bg-[rgba(22,207,161,0.92)] px-4 py-2.5 text-[14px] font-medium text-slate-950 hover:bg-[rgba(39,220,176,0.96)] disabled:border-white/10 disabled:bg-white/[0.08] disabled:text-white/[0.72]"
                 >
                   {telegramIdentity ? 'Telegram уже привязан' : 'Привязать Telegram'}
                 </Button>
@@ -793,7 +793,7 @@ export default function UltimaAccountLinking() {
               )}
 
               {!isInTelegramWebApp() && !telegramIdentity && (
-                <div className="mt-3 text-xs text-white/[0.56]">
+                <div className="mt-3 text-xs text-white/[0.72]">
                   Telegram-привязка доступна внутри Telegram Mini App. В обычном браузере можно
                   привязать Yandex, VK и другие OAuth-способы, а для Telegram использовать резервный
                   кодовый режим ниже.
@@ -831,7 +831,7 @@ export default function UltimaAccountLinking() {
                       type="button"
                       onClick={() => requestUnlinkMutation.mutate(identity.provider)}
                       disabled={!identity.can_unlink || requestUnlinkMutation.isPending}
-                      className="rounded border border-error-500/40 px-2 py-0.5 text-[10px] text-error-300 transition-colors hover:bg-error-500/10 disabled:cursor-not-allowed disabled:border-white/10 disabled:text-white/40"
+                      className="rounded border border-error-500/40 px-2 py-0.5 text-[13px] text-error-300 transition-colors hover:bg-error-500/10 disabled:cursor-not-allowed disabled:border-white/10 disabled:text-white/40"
                       title={identity.can_unlink ? undefined : getIdentityBlockedDetails(identity)}
                     >
                       {t('profile.linking.unlink.button', 'Отвязать')}
@@ -839,7 +839,7 @@ export default function UltimaAccountLinking() {
                   </div>
                 ))
               ) : (
-                <span className="text-sm text-white/[0.55]">
+                <span className="text-sm text-white/[0.72]">
                   {t('profile.linking.none', 'Нет привязанных способов входа')}
                 </span>
               )}
@@ -916,7 +916,7 @@ export default function UltimaAccountLinking() {
                   }
                 }}
                 placeholder="Введите код привязки"
-                className="w-full rounded-2xl border border-white/[0.12] bg-white/[0.06] px-3 py-2.5 text-white placeholder:text-white/[0.45] focus:border-[#59f0c9]/[0.45] focus:outline-none"
+                className="w-full rounded-2xl border border-white/[0.12] bg-white/[0.06] px-3 py-2.5 text-white placeholder:text-white/[0.72] focus:border-[#59f0c9]/[0.45] focus:outline-none"
               />
 
               <div className="rounded-2xl border border-white/[0.12] bg-white/[0.06] px-3 py-2 text-xs text-white/[0.72]">
@@ -966,7 +966,7 @@ export default function UltimaAccountLinking() {
                   <textarea
                     value={manualMergeComment}
                     onChange={(e) => setManualMergeComment(e.target.value)}
-                    className="mb-3 min-h-[88px] w-full rounded-2xl border border-white/[0.12] bg-white/[0.06] px-3 py-2.5 text-white placeholder:text-white/[0.45] focus:border-[#59f0c9]/[0.45] focus:outline-none"
+                    className="mb-3 min-h-[88px] w-full rounded-2xl border border-white/[0.12] bg-white/[0.06] px-3 py-2.5 text-white placeholder:text-white/[0.72] focus:border-[#59f0c9]/[0.45] focus:outline-none"
                     placeholder="Опишите, какой аккаунт основной и почему нужно объединение"
                     maxLength={1000}
                   />
@@ -1025,7 +1025,7 @@ export default function UltimaAccountLinking() {
                       'profile.linking.unlink.otpPlaceholder',
                       'Введите код подтверждения',
                     )}
-                    className="mt-3 w-full rounded-2xl border border-white/[0.12] bg-white/[0.06] px-3 py-2.5 text-center tracking-[0.4em] text-white placeholder:text-white/[0.45] focus:border-[#59f0c9]/[0.45] focus:outline-none"
+                    className="mt-3 w-full rounded-2xl border border-white/[0.12] bg-white/[0.06] px-3 py-2.5 text-center tracking-[0.4em] text-white placeholder:text-white/[0.72] focus:border-[#59f0c9]/[0.45] focus:outline-none"
                   />
                 </div>
               )}
@@ -1059,7 +1059,7 @@ export default function UltimaAccountLinking() {
                       Комментарий: {latestManualMerge.resolution_comment}
                     </div>
                   )}
-                  <div className="mt-1 text-xs text-white/[0.52]">
+                  <div className="mt-1 text-xs text-white/[0.72]">
                     Обновлено {new Date(latestManualMerge.updated_at).toLocaleString()}
                   </div>
                   <Link

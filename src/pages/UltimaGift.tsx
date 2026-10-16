@@ -899,11 +899,11 @@ export function UltimaGift() {
               <h1 className="text-[30px] font-semibold leading-none text-white">
                 {t('gift.title', { defaultValue: 'Подарить подписку' })}
               </h1>
-              <span className="rounded-full border border-emerald-200/[0.16] bg-emerald-300/[0.08] px-2.5 py-1 text-[10px] font-medium uppercase text-emerald-100/[0.80]">
+              <span className="rounded-full border border-emerald-200/[0.16] bg-emerald-300/[0.08] px-2.5 py-1 text-[13px] font-medium uppercase text-emerald-100/[0.80]">
                 {t('gift.giftLabel', { defaultValue: 'Подарок' })}
               </span>
             </div>
-            <p className="mt-2 text-[13px] leading-[1.45] text-white/[0.58]">
+            <p className="mt-2 text-[13px] leading-[1.45] text-white/[0.72]">
               {t('balance.promocode.createGiftDescription', {
                 defaultValue:
                   'Выберите подписку, получите код и отправьте его получателю любым удобным способом.',
@@ -923,7 +923,7 @@ export function UltimaGift() {
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-[11px] font-medium uppercase text-emerald-100/[0.55]">
+                <p className="text-[13px] font-medium uppercase text-emerald-100/[0.55]">
                   {t('gift.desktopBuilderTitle', { defaultValue: 'Новый подарок' })}
                 </p>
                 <h2 className="mt-1 text-[21px] font-semibold leading-tight text-white">
@@ -960,7 +960,7 @@ export function UltimaGift() {
             ) : (
               <div className="mt-5 space-y-5">
                 <div>
-                  <div className="mb-2.5 flex items-center gap-2 text-[11px] font-medium uppercase text-white/[0.45]">
+                  <div className="mb-2.5 flex items-center gap-2 text-[13px] font-medium uppercase text-white/[0.72]">
                     <Sparkles className="h-4 w-4 text-emerald-200/[0.70]" />
                     {t('gift.tariff', { defaultValue: 'Тариф' })}
                   </div>
@@ -984,7 +984,7 @@ export function UltimaGift() {
                             className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border ${
                               selected
                                 ? 'border-emerald-200/[0.30] bg-emerald-300/[0.15] text-emerald-100'
-                                : 'border-white/[0.10] bg-white/[0.04] text-white/[0.45]'
+                                : 'border-white/[0.10] bg-white/[0.04] text-white/[0.72]'
                             }`}
                           >
                             {selected ? (
@@ -997,12 +997,12 @@ export function UltimaGift() {
                             <span className="block text-[15px] font-medium text-white">
                               {tariff.name}
                             </span>
-                            <span className="mt-1 line-clamp-2 block text-[11px] leading-snug text-white/[0.50]">
+                            <span className="mt-1 line-clamp-2 block text-[13px] leading-snug text-white/[0.72]">
                               {tariff.description ??
                                 `${tariff.device_limit} ${t('lite.devicesTotal', { defaultValue: 'устр.' })} · ${tariff.traffic_limit_gb} ГБ`}
                             </span>
                           </span>
-                          <span className="shrink-0 rounded-full border border-white/[0.10] px-2.5 py-1 text-[10px] text-white/[0.55]">
+                          <span className="shrink-0 rounded-full border border-white/[0.10] px-2.5 py-1 text-[13px] text-white/[0.72]">
                             {tariff.device_limit}{' '}
                             {t('lite.devicesTotal', { defaultValue: 'устр.' })}
                           </span>
@@ -1013,7 +1013,7 @@ export function UltimaGift() {
                 </div>
 
                 <div>
-                  <div className="mb-2.5 flex items-center gap-2 text-[11px] font-medium uppercase text-white/[0.45]">
+                  <div className="mb-2.5 flex items-center gap-2 text-[13px] font-medium uppercase text-white/[0.72]">
                     <Clock3 className="h-4 w-4 text-emerald-200/[0.70]" />
                     {t('subscription.period', { defaultValue: 'Срок подписки' })}
                   </div>
@@ -1034,7 +1034,7 @@ export function UltimaGift() {
                           }`}
                         >
                           {period.discount_percent ? (
-                            <span className="absolute right-2.5 top-2.5 rounded-full bg-emerald-300/[0.15] px-2 py-0.5 text-[9px] font-medium text-emerald-100">
+                            <span className="absolute right-2.5 top-2.5 rounded-full bg-emerald-300/[0.15] px-2 py-0.5 text-[13px] font-medium text-emerald-100">
                               -{period.discount_percent}%
                             </span>
                           ) : null}
@@ -1052,11 +1052,11 @@ export function UltimaGift() {
 
                 {requiresGatewayPayment ? (
                   <div>
-                    <div className="mb-2.5 flex items-center gap-2 text-[11px] font-medium uppercase text-white/[0.45]">
+                    <div className="mb-2.5 flex items-center gap-2 text-[13px] font-medium uppercase text-white/[0.72]">
                       <WalletCards className="h-4 w-4 text-amber-200/[0.80]" />
                       {t('balance.topUp.paymentMethodTitle', { defaultValue: 'Способ оплаты' })}
                     </div>
-                    <div className="mb-2.5 rounded-2xl border border-amber-200/[0.18] bg-amber-300/[0.07] px-3 py-2.5 text-[11px] leading-relaxed text-amber-50/[0.80]">
+                    <div className="mb-2.5 rounded-2xl border border-amber-200/[0.18] bg-amber-300/[0.07] px-3 py-2.5 text-[13px] leading-relaxed text-amber-50/[0.80]">
                       {t('balance.promocode.giftNeedTopupHint', {
                         defaultValue:
                           'Баланс будет использован первым. Через платежную страницу нужно внести только недостающую сумму.',
@@ -1082,7 +1082,7 @@ export function UltimaGift() {
                                 {method.display_name}
                               </span>
                               {method.description ? (
-                                <span className="mt-0.5 block truncate text-[10px] text-white/[0.45]">
+                                <span className="mt-0.5 block truncate text-[13px] text-white/[0.72]">
                                   {method.description}
                                 </span>
                               ) : null}
@@ -1110,10 +1110,10 @@ export function UltimaGift() {
                               type="button"
                               onClick={() => setGiftPaymentOption(option.id)}
                               aria-pressed={selected}
-                              className={`rounded-full border px-3 py-2 text-[11px] ${
+                              className={`rounded-full border px-3 py-2 text-[13px] ${
                                 selected
                                   ? 'border-emerald-200/[0.35] bg-emerald-300/[0.12] text-emerald-50'
-                                  : 'border-white/[0.10] bg-white/[0.035] text-white/[0.55]'
+                                  : 'border-white/[0.10] bg-white/[0.035] text-white/[0.72]'
                               }`}
                             >
                               {option.name}
@@ -1127,7 +1127,7 @@ export function UltimaGift() {
 
                 <div className="grid grid-cols-3 divide-x divide-white/[0.08] rounded-2xl border border-white/[0.09] bg-black/[0.10] px-2 py-3">
                   <div className="min-w-0 px-2">
-                    <span className="block text-[9px] uppercase text-white/[0.35]">
+                    <span className="block text-[13px] uppercase text-white/[0.35]">
                       {t('balance.promocode.balanceAvailable', { defaultValue: 'Баланс' })}
                     </span>
                     <span className="mt-1 block truncate text-[13px] font-medium text-white">
@@ -1135,7 +1135,7 @@ export function UltimaGift() {
                     </span>
                   </div>
                   <div className="min-w-0 px-2">
-                    <span className="block text-[9px] uppercase text-white/[0.35]">
+                    <span className="block text-[13px] uppercase text-white/[0.35]">
                       {t('balance.promocode.giftPrice', { defaultValue: 'Стоимость' })}
                     </span>
                     <span className="mt-1 block truncate text-[13px] font-medium text-white">
@@ -1143,7 +1143,7 @@ export function UltimaGift() {
                     </span>
                   </div>
                   <div className="min-w-0 px-2">
-                    <span className="block text-[9px] uppercase text-white/[0.35]">
+                    <span className="block text-[13px] uppercase text-white/[0.35]">
                       {t('balance.promocode.needToPay', { defaultValue: 'К оплате' })}
                     </span>
                     <span
@@ -1157,7 +1157,7 @@ export function UltimaGift() {
                 </div>
 
                 {pendingPurchaseMessage ? (
-                  <div className="flex gap-2.5 rounded-2xl border border-sky-200/[0.16] bg-sky-300/[0.07] p-3 text-[12px] leading-relaxed text-sky-50/[0.85]">
+                  <div className="flex gap-2.5 rounded-2xl border border-sky-200/[0.16] bg-sky-300/[0.07] p-3 text-[13px] leading-relaxed text-sky-50/[0.85]">
                     <LoaderCircle className="mt-0.5 h-4 w-4 shrink-0 animate-spin" />
                     {pendingPurchaseMessage}
                   </div>
@@ -1165,7 +1165,7 @@ export function UltimaGift() {
 
                 {error ? (
                   <div
-                    className="flex gap-2.5 rounded-2xl border border-rose-200/[0.18] bg-rose-300/[0.08] p-3 text-[12px] leading-relaxed text-rose-100"
+                    className="flex gap-2.5 rounded-2xl border border-rose-200/[0.18] bg-rose-300/[0.08] p-3 text-[13px] leading-relaxed text-rose-100"
                     role="alert"
                   >
                     <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />
@@ -1174,7 +1174,7 @@ export function UltimaGift() {
                 ) : null}
                 {success ? (
                   <div
-                    className="flex gap-2.5 rounded-2xl border border-emerald-200/[0.18] bg-emerald-300/[0.08] p-3 text-[12px] leading-relaxed text-emerald-100"
+                    className="flex gap-2.5 rounded-2xl border border-emerald-200/[0.18] bg-emerald-300/[0.08] p-3 text-[13px] leading-relaxed text-emerald-100"
                     role="status"
                   >
                     <PackageCheck className="mt-0.5 h-4 w-4 shrink-0" />
@@ -1219,7 +1219,7 @@ export function UltimaGift() {
                     className="rounded-[24px] border border-emerald-200/[0.24] bg-emerald-300/[0.09] p-4"
                     data-testid="ultima-gift-generated-code"
                   >
-                    <div className="flex items-center gap-2 text-[12px] font-medium text-emerald-100">
+                    <div className="flex items-center gap-2 text-[13px] font-medium text-emerald-100">
                       <PackageCheck className="h-5 w-5" />
                       {t('balance.promocode.generatedGiftCode', {
                         defaultValue: 'Подарочный код готов',
@@ -1248,7 +1248,7 @@ export function UltimaGift() {
                 <CircleAlert className="mt-0.5 h-5 w-5 shrink-0" />
                 <div className="min-w-0">
                   <h3 className="text-[14px] font-medium">Ожидается продление подарка</h3>
-                  <p className="mt-1 break-all text-[11px] leading-relaxed text-amber-50/[0.65]">
+                  <p className="mt-1 break-all text-[13px] leading-relaxed text-amber-50/[0.65]">
                     GIFT-{pendingGiftExtend.token}
                   </p>
                 </div>
@@ -1267,7 +1267,7 @@ export function UltimaGift() {
                     extendGiftMutation.isPending ||
                     (balanceData?.balance_kopeks ?? 0) < pendingGiftExtend.requiredAmountKopeks
                   }
-                  className="ultima-btn-pill ultima-btn-primary min-h-11 px-3 text-[12px] disabled:opacity-50"
+                  className="ultima-btn-pill ultima-btn-primary min-h-11 px-3 text-[13px] disabled:opacity-50"
                 >
                   Подтвердить
                 </button>
@@ -1275,7 +1275,7 @@ export function UltimaGift() {
                   type="button"
                   onClick={() => setPendingGiftExtend(null)}
                   disabled={extendGiftMutation.isPending}
-                  className="ultima-btn-pill ultima-btn-secondary min-h-11 px-3 text-[12px] disabled:opacity-50"
+                  className="ultima-btn-pill ultima-btn-secondary min-h-11 px-3 text-[13px] disabled:opacity-50"
                 >
                   {t('common.cancel', { defaultValue: 'Отменить' })}
                 </button>
@@ -1299,14 +1299,14 @@ export function UltimaGift() {
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-[16px] font-medium text-white">История подарков</span>
-                  <span className="mt-0.5 block text-[11px] text-white/[0.45]">
+                  <span className="mt-0.5 block text-[13px] text-white/[0.72]">
                     {sentGifts.length} отправлено · {receivedGifts.length} получено
                   </span>
                 </span>
                 {historyExpanded ? (
-                  <ChevronUp className="h-5 w-5 shrink-0 text-white/[0.55]" />
+                  <ChevronUp className="h-5 w-5 shrink-0 text-white/[0.72]" />
                 ) : (
-                  <ChevronDown className="h-5 w-5 shrink-0 text-white/[0.55]" />
+                  <ChevronDown className="h-5 w-5 shrink-0 text-white/[0.72]" />
                 )}
               </button>
 
@@ -1317,8 +1317,8 @@ export function UltimaGift() {
                       type="button"
                       onClick={() => setHistoryTab('sent')}
                       aria-pressed={historyTab === 'sent'}
-                      className={`min-h-10 rounded-xl text-[12px] font-medium ${
-                        historyTab === 'sent' ? 'bg-white/[0.09] text-white' : 'text-white/[0.45]'
+                      className={`min-h-10 rounded-xl text-[13px] font-medium ${
+                        historyTab === 'sent' ? 'bg-white/[0.09] text-white' : 'text-white/[0.72]'
                       }`}
                     >
                       Отправленные · {sentGifts.length}
@@ -1327,10 +1327,10 @@ export function UltimaGift() {
                       type="button"
                       onClick={() => setHistoryTab('received')}
                       aria-pressed={historyTab === 'received'}
-                      className={`min-h-10 rounded-xl text-[12px] font-medium ${
+                      className={`min-h-10 rounded-xl text-[13px] font-medium ${
                         historyTab === 'received'
                           ? 'bg-white/[0.09] text-white'
-                          : 'text-white/[0.45]'
+                          : 'text-white/[0.72]'
                       }`}
                     >
                       Полученные · {receivedGifts.length}
@@ -1340,7 +1340,7 @@ export function UltimaGift() {
                   <div className="mt-3 space-y-2">
                     {historyTab === 'sent' ? (
                       sentGifts.length === 0 ? (
-                        <p className="rounded-2xl border border-dashed border-white/[0.10] p-4 text-center text-[12px] text-white/[0.40]">
+                        <p className="rounded-2xl border border-dashed border-white/[0.10] p-4 text-center text-[13px] text-white/[0.72]">
                           Отправленных подарков пока нет
                         </p>
                       ) : (
@@ -1359,14 +1359,14 @@ export function UltimaGift() {
                                   <button
                                     type="button"
                                     onClick={() => void copyGiftCode(gift.token)}
-                                    className="mt-1 flex max-w-full items-center gap-1.5 text-left text-[10px] text-emerald-100/[0.70]"
+                                    className="mt-1 flex max-w-full items-center gap-1.5 text-left text-[13px] text-emerald-100/[0.70]"
                                   >
                                     <Copy className="h-3 w-3 shrink-0" />
                                     <span className="truncate font-mono">GIFT-{gift.token}</span>
                                   </button>
                                 </div>
                                 <span
-                                  className={`shrink-0 rounded-full px-2 py-1 text-[9px] ${status.cls}`}
+                                  className={`shrink-0 rounded-full px-2 py-1 text-[13px] ${status.cls}`}
                                 >
                                   {status.text}
                                 </span>
@@ -1383,7 +1383,7 @@ export function UltimaGift() {
                                     }));
                                   }}
                                   aria-label={`Период продления GIFT-${gift.token}`}
-                                  className="h-10 min-w-0 flex-1 rounded-xl border border-white/[0.12] bg-white/[0.05] px-2.5 text-[11px] text-white"
+                                  className="h-10 min-w-0 flex-1 rounded-xl border border-white/[0.12] bg-white/[0.05] px-2.5 text-[13px] text-white"
                                 >
                                   {(gift.tariff_id != null
                                     ? tariffPeriodsById.get(gift.tariff_id)
@@ -1407,7 +1407,7 @@ export function UltimaGift() {
                                   disabled={
                                     extendGiftMutation.isPending && extendingToken === gift.token
                                   }
-                                  className="ultima-btn-pill ultima-btn-secondary min-h-10 shrink-0 px-3 text-[11px] disabled:opacity-50"
+                                  className="ultima-btn-pill ultima-btn-secondary min-h-10 shrink-0 px-3 text-[13px] disabled:opacity-50"
                                 >
                                   {extendGiftMutation.isPending && extendingToken === gift.token
                                     ? 'Продлеваем...'
@@ -1419,7 +1419,7 @@ export function UltimaGift() {
                         })
                       )
                     ) : receivedGifts.length === 0 ? (
-                      <p className="rounded-2xl border border-dashed border-white/[0.10] p-4 text-center text-[12px] text-white/[0.40]">
+                      <p className="rounded-2xl border border-dashed border-white/[0.10] p-4 text-center text-[13px] text-white/[0.72]">
                         Полученных подарков пока нет
                       </p>
                     ) : (
@@ -1435,12 +1435,12 @@ export function UltimaGift() {
                                 <p className="truncate text-[13px] font-medium text-white">
                                   {gift.tariff_name ?? 'Тариф'} · {gift.period_days} дн.
                                 </p>
-                                <p className="mt-1 truncate text-[10px] text-white/[0.45]">
+                                <p className="mt-1 truncate text-[13px] text-white/[0.72]">
                                   От: {gift.sender_display ?? 'Не указан'}
                                 </p>
                               </div>
                               <span
-                                className={`shrink-0 rounded-full px-2 py-1 text-[9px] ${status.cls}`}
+                                className={`shrink-0 rounded-full px-2 py-1 text-[13px] ${status.cls}`}
                               >
                                 {status.text}
                               </span>

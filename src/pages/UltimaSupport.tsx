@@ -145,8 +145,8 @@ function AttachmentPreview({
         </div>
       )}
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[12px] font-medium text-white/85">{attachment.file.name}</p>
-        <p className="mt-0.5 text-[11px] text-white/[0.52]">
+        <p className="truncate text-[13px] font-medium text-white/85">{attachment.file.name}</p>
+        <p className="mt-0.5 text-[13px] text-white/[0.72]">
           {attachment.uploading
             ? 'Загрузка...'
             : attachment.error
@@ -189,7 +189,7 @@ function MessageMedia({ message }: { message: Ticket['last_message'] }) {
             </div>
           ) : null}
           {imageError ? (
-            <div className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-[12px] text-white/55">
+            <div className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-[13px] text-white/55">
               Изображение не загрузилось
             </div>
           ) : (
@@ -205,7 +205,7 @@ function MessageMedia({ message }: { message: Ticket['last_message'] }) {
             />
           )}
           {message.media_caption ? (
-            <p className="mt-1 text-[11px] text-white/50">{message.media_caption}</p>
+            <p className="mt-1 text-[13px] text-white/50">{message.media_caption}</p>
           ) : null}
         </div>
         {showFullImage ? (
@@ -243,7 +243,7 @@ function MessageMedia({ message }: { message: Ticket['last_message'] }) {
       href={mediaUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="mt-2 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-[12px] text-white/75"
+      className="mt-2 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-[13px] text-white/75"
     >
       <ImageIcon className="h-4 w-4" />
       {message.media_caption || 'Открыть вложение'}
@@ -698,21 +698,21 @@ export function UltimaSupport() {
           {ticket.title}
         </p>
         <span
-          className={`inline-flex shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${getStatusMeta(ticket.status).classes}`}
+          className={`inline-flex shrink-0 rounded-full px-2 py-0.5 text-[13px] font-medium ${getStatusMeta(ticket.status).classes}`}
           style={getStatusMeta(ticket.status).style}
         >
           {getStatusMeta(ticket.status).label}
         </span>
       </div>
       {ticket.last_message?.message_text ? (
-        <p className="line-clamp-2 break-words text-[12px] leading-snug text-white/[0.62]">
+        <p className="line-clamp-2 break-words text-[13px] leading-snug text-white/[0.62]">
           {ticket.last_message.is_from_admin
             ? `${t('support.supportTeam', { defaultValue: 'Администратор' })}: `
             : `${t('support.you', { defaultValue: 'Вы' })}: `}
           {ticket.last_message.message_text}
         </p>
       ) : null}
-      <p className="mt-1 text-[11px] text-white/[0.48]">{formatDate(ticket.updated_at)}</p>
+      <p className="mt-1 text-[13px] text-white/[0.72]">{formatDate(ticket.updated_at)}</p>
     </button>
   );
 
@@ -723,10 +723,10 @@ export function UltimaSupport() {
       <button
         type="button"
         onClick={() => handleTicketListModeChange(mode)}
-        className={`flex min-w-0 items-center justify-center gap-2 rounded-2xl border px-3 py-2 text-[12px] font-medium transition lg:text-[13px] ${
+        className={`flex min-w-0 items-center justify-center gap-2 rounded-2xl border px-3 py-2 text-[13px] font-medium transition lg:text-[13px] ${
           active
             ? 'border-transparent text-white'
-            : 'border-white/10 bg-white/[0.04] text-white/[0.58] hover:bg-white/[0.07] hover:text-white/[0.78]'
+            : 'border-white/10 bg-white/[0.04] text-white/[0.72] hover:bg-white/[0.07] hover:text-white/[0.78]'
         }`}
         style={
           active
@@ -738,7 +738,7 @@ export function UltimaSupport() {
         }
       >
         <span className="truncate">{label}</span>
-        <span className="shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-white/[0.78]">
+        <span className="shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[13px] text-white/[0.78]">
           {count}
         </span>
       </button>
@@ -749,8 +749,8 @@ export function UltimaSupport() {
     <div className={className}>
       <div className="mb-2 flex items-end justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-white/86 text-[12px] font-semibold">{t('support.selfHelpTitle')}</p>
-          <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-white/[0.52]">
+          <p className="text-white/86 text-[13px] font-semibold">{t('support.selfHelpTitle')}</p>
+          <p className="mt-0.5 line-clamp-2 text-[13px] leading-snug text-white/[0.72]">
             {t('support.selfHelpSubtitle')}
           </p>
         </div>
@@ -763,13 +763,13 @@ export function UltimaSupport() {
             onClick={() => navigate(action.to)}
             className="rounded-xl border border-white/10 bg-white/[0.045] px-3 py-2.5 text-left transition hover:border-white/20 hover:bg-white/[0.075] lg:rounded-lg"
           >
-            <span className="block truncate text-[12px] font-medium text-white/90">
+            <span className="block truncate text-[13px] font-medium text-white/90">
               {action.title}
             </span>
-            <span className="mt-1 line-clamp-2 block min-h-[30px] text-[11px] leading-snug text-white/[0.55]">
+            <span className="mt-1 line-clamp-2 block min-h-[30px] text-[13px] leading-snug text-white/[0.72]">
               {action.description}
             </span>
-            <span className="mt-2 block text-[11px] font-medium text-[color:var(--ultima-color-ring)]">
+            <span className="mt-2 block text-[13px] font-medium text-[color:var(--ultima-color-ring)]">
               {action.action}
             </span>
           </button>
@@ -841,7 +841,7 @@ export function UltimaSupport() {
             key={topic.key}
             type="button"
             onClick={() => applyQuickTopic(topic)}
-            className="rounded-full border border-white/[0.10] bg-white/[0.04] px-3 py-1.5 text-[12px] font-medium text-white/70 transition hover:border-white/20 hover:bg-white/[0.08]"
+            className="rounded-full border border-white/[0.10] bg-white/[0.04] px-3 py-1.5 text-[13px] font-medium text-white/70 transition hover:border-white/20 hover:bg-white/[0.08]"
           >
             {topic.label}
           </button>
@@ -908,7 +908,7 @@ export function UltimaSupport() {
         >
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-white/[0.56]">
+              <p className="text-[13px] font-medium uppercase tracking-[0.16em] text-white/[0.72]">
                 {t('support.desktopChannelLabel', { defaultValue: 'Канал связи' })}
               </p>
               <p className="mt-1 break-words text-[14px] font-medium text-white/[0.88]">
@@ -935,7 +935,7 @@ export function UltimaSupport() {
           <div className="min-w-0">
             <p className="text-[13px] leading-none text-white/70">{t('support.yourTickets')}</p>
             {selectedTicket ? (
-              <p className="mt-1 line-clamp-1 text-[11px] text-white/45 lg:hidden">
+              <p className="mt-1 line-clamp-1 text-[13px] text-white/45 lg:hidden">
                 {selectedTicket.title}
               </p>
             ) : null}
@@ -945,7 +945,7 @@ export function UltimaSupport() {
               <button
                 type="button"
                 onClick={() => setMobileTicketsExpanded((prev) => !prev)}
-                className="ultima-btn-pill ultima-btn-secondary px-3 py-1.5 text-[12px] leading-none lg:hidden"
+                className="ultima-btn-pill ultima-btn-secondary px-3 py-1.5 text-[13px] leading-none lg:hidden"
               >
                 {mobileTicketsExpanded
                   ? t('support.collapseTickets', { defaultValue: 'Свернуть' })
@@ -955,7 +955,7 @@ export function UltimaSupport() {
             <button
               type="button"
               onClick={openCreateTicket}
-              className="ultima-btn-pill ultima-btn-secondary px-3 py-1.5 text-[12px] leading-none lg:hidden"
+              className="ultima-btn-pill ultima-btn-secondary px-3 py-1.5 text-[13px] leading-none lg:hidden"
             >
               {t('support.newTicket')}
             </button>
@@ -991,7 +991,7 @@ export function UltimaSupport() {
             ) : tickets?.items?.length ? (
               <>
                 <div className="space-y-2">
-                  <p className="px-1 text-[10px] uppercase tracking-[0.18em] text-white/[0.45]">
+                  <p className="px-1 text-[13px] uppercase tracking-[0.18em] text-white/[0.72]">
                     {ticketListMode === 'archive'
                       ? t('support.archiveTickets', { defaultValue: 'Архив' })
                       : t('support.recentTickets', { defaultValue: 'Новые и активные' })}
@@ -1003,7 +1003,7 @@ export function UltimaSupport() {
                         <button
                           type="button"
                           onClick={handleLoadMoreTickets}
-                          className="w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-left text-[12px] text-white/80 transition hover:bg-white/[0.08]"
+                          className="w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-left text-[13px] text-white/80 transition hover:bg-white/[0.08]"
                         >
                           {t('support.desktopShowMoreTickets', {
                             count: Math.min(
@@ -1016,7 +1016,7 @@ export function UltimaSupport() {
                       ) : null}
                     </>
                   ) : (
-                    <p className="rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-4 text-[13px] text-white/[0.58]">
+                    <p className="rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-4 text-[13px] text-white/[0.72]">
                       {ticketListMode === 'archive'
                         ? t('support.noArchiveTickets', {
                             defaultValue: 'В архиве пока нет тикетов',
@@ -1045,7 +1045,7 @@ export function UltimaSupport() {
                   </p>
                   <div className="flex items-center gap-2">
                     <span
-                      className={`inline-flex shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${getStatusMeta(ticketDetail.status).classes}`}
+                      className={`inline-flex shrink-0 rounded-full px-2 py-0.5 text-[13px] font-medium ${getStatusMeta(ticketDetail.status).classes}`}
                       style={getStatusMeta(ticketDetail.status).style}
                     >
                       {getStatusMeta(ticketDetail.status).label}
@@ -1055,7 +1055,7 @@ export function UltimaSupport() {
                         type="button"
                         onClick={() => closeMutation.mutate()}
                         disabled={closeMutation.isPending}
-                        className="ultima-btn-pill ultima-btn-secondary px-2.5 py-1 text-[11px] disabled:opacity-60"
+                        className="ultima-btn-pill ultima-btn-secondary px-2.5 py-1 text-[13px] disabled:opacity-60"
                       >
                         {t('support.closeTicket', { defaultValue: 'Закрыть' })}
                       </button>
@@ -1064,7 +1064,7 @@ export function UltimaSupport() {
                 </div>
                 <div className="ultima-scrollbar min-h-[260px] flex-1 space-y-2 overflow-y-auto pr-1 lg:max-h-[52vh] lg:min-h-0 lg:space-y-2.5">
                   {ticketLoading ? (
-                    <p className="text-[12px] text-white/60">{t('common.loading')}</p>
+                    <p className="text-[13px] text-white/60">{t('common.loading')}</p>
                   ) : (
                     ticketDetail.messages.map((msg) => (
                       <div
@@ -1076,12 +1076,12 @@ export function UltimaSupport() {
                         }`}
                       >
                         <div className="mb-1 flex items-center justify-between gap-2">
-                          <span className="text-[11px] font-medium text-white/[0.68]">
+                          <span className="text-[13px] font-medium text-white/[0.68]">
                             {msg.is_from_admin
                               ? t('support.supportTeam', { defaultValue: 'Администратор' })
                               : t('support.you', { defaultValue: 'Вы' })}
                           </span>
-                          <span className="text-[10px] text-white/50">
+                          <span className="text-[13px] text-white/50">
                             {formatDateTime(msg.created_at)}
                           </span>
                         </div>

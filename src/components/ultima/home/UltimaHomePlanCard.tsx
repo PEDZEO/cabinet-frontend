@@ -76,10 +76,10 @@ export function UltimaHomePlanCard({
       <div className="flex min-w-0 items-center gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[11px] font-semibold uppercase text-white/[0.48]">{eyebrow}</span>
+            <span className="text-[13px] font-semibold uppercase text-white/[0.72]">{eyebrow}</span>
             <span
               className={cn(
-                'inline-flex min-h-7 items-center gap-1.5 rounded-full border px-2.5 text-[10px] font-semibold uppercase',
+                'inline-flex min-h-7 items-center gap-1.5 rounded-full border px-2.5 text-[13px] font-semibold uppercase',
                 toneStyle.chip,
               )}
             >
@@ -100,25 +100,27 @@ export function UltimaHomePlanCard({
 
       <div className="mt-4 grid grid-cols-2 divide-x divide-white/[0.08] border-y border-white/[0.08] py-3">
         <div data-testid="ultima-home-days" className="min-w-0 pr-3">
-          <div className="flex items-center gap-2 text-white/[0.45]">
+          <div className="flex items-center gap-2 text-white/[0.72]">
             <CalendarDays className="h-4 w-4 shrink-0" strokeWidth={1.8} />
-            <span className="truncate text-[11px] font-medium">{daysLabel}</span>
+            <span className="break-words text-[13px] font-medium">{daysLabel}</span>
           </div>
-          <p className="mt-1.5 truncate text-[17px] font-semibold text-white/[0.94]">{daysValue}</p>
+          <p className="mt-1.5 break-words text-[17px] font-semibold text-white/[0.94]">
+            {daysValue}
+          </p>
         </div>
         <div
           data-testid="ultima-plan-device-count"
           aria-busy={devicesLoading}
           className="min-w-0 pl-3"
         >
-          <div className="flex items-center gap-2 text-white/[0.45]">
+          <div className="flex items-center gap-2 text-white/[0.72]">
             <MonitorSmartphone className="h-4 w-4 shrink-0" strokeWidth={1.8} />
-            <span className="truncate text-[11px] font-medium">{devicesLabel}</span>
+            <span className="break-words text-[13px] font-medium">{devicesLabel}</span>
           </div>
           {devicesLoading ? (
             <span className="mt-2 block h-4 w-12 animate-pulse rounded-full bg-white/[0.1]" />
           ) : (
-            <p className="mt-1.5 truncate text-[17px] font-semibold text-white/[0.94]">
+            <p className="mt-1.5 break-words text-[17px] font-semibold text-white/[0.94]">
               {devicesValue}
             </p>
           )}
@@ -139,9 +141,9 @@ export function UltimaHomePlanCard({
           data-testid="ultima-primary-cta"
           className="ultima-btn-pill ultima-btn-primary flex min-h-11 min-w-0 items-center justify-between gap-2 px-4 text-left text-[13px]"
         >
-          <span className="truncate">{primaryLabel}</span>
+          <span className="break-words">{primaryLabel}</span>
           {primaryMeta ? (
-            <span className="shrink-0 text-[11px] text-white/[0.76]">{primaryMeta}</span>
+            <span className="shrink-0 text-[13px] text-white/[0.76]">{primaryMeta}</span>
           ) : (
             <ChevronRight className="h-4 w-4" strokeWidth={1.9} />
           )}
@@ -152,7 +154,7 @@ export function UltimaHomePlanCard({
             type="button"
             onClick={onSecondaryAction}
             data-testid="ultima-home-plan-details"
-            className="ultima-btn-pill ultima-btn-secondary flex min-h-11 min-w-0 items-center justify-center gap-1.5 px-3 text-[12px]"
+            className="ultima-btn-pill ultima-btn-secondary flex min-h-11 min-w-0 items-center justify-center gap-1.5 px-3 text-[13px]"
           >
             <span className="truncate">{secondaryLabel}</span>
             <ChevronRight className="h-4 w-4" strokeWidth={1.8} />

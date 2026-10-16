@@ -89,11 +89,11 @@ export function UltimaTrafficWarningCard({
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
               <h2 className="text-[15px] font-semibold leading-tight text-amber-50">{title}</h2>
-              <span className="rounded-full border border-amber-100/[0.16] bg-amber-200/[0.1] px-2 py-0.5 text-[10px] font-semibold text-amber-50/90">
+              <span className="rounded-full border border-amber-100/[0.16] bg-amber-200/[0.1] px-2 py-0.5 text-[13px] font-semibold text-amber-50/90">
                 {normalizedPercent}%
               </span>
             </div>
-            <p className="mt-1 text-[12px] leading-snug text-white/[0.72]">{description}</p>
+            <p className="mt-1 text-[13px] leading-snug text-white/[0.72]">{description}</p>
             <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-black/[0.2]">
               <span
                 className="block h-full rounded-full bg-amber-300 transition-[width] duration-300"

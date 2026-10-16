@@ -73,12 +73,12 @@ function QuickAction({ icon, label, hint, onClick, primary = false, testId }: Qu
       <span className="min-w-0 flex-1">
         <span className="block break-words text-[13px] font-semibold leading-tight">{label}</span>
         {hint ? (
-          <span className="mt-1 block break-words text-[11px] leading-tight text-white/[0.48]">
+          <span className="mt-1 block break-words text-[13px] leading-tight text-white/[0.72]">
             {hint}
           </span>
         ) : null}
       </span>
-      <ArrowRight className="hidden h-4 w-4 shrink-0 text-white/[0.52] min-[480px]:block" />
+      <ArrowRight className="hidden h-4 w-4 shrink-0 text-white/[0.72] min-[480px]:block" />
     </button>
   );
 }
@@ -324,7 +324,7 @@ export function UltimaSubscriptionInfo() {
   const statusPill = (
     <span
       data-testid="ultima-subscription-info-status"
-      className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-medium ${
+      className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-[13px] font-medium ${
         isActive
           ? 'border-emerald-200/[0.2] bg-emerald-300/[0.11] text-emerald-50'
           : 'border-rose-200/[0.2] bg-rose-300/[0.1] text-rose-50'
@@ -347,7 +347,7 @@ export function UltimaSubscriptionInfo() {
             <Gauge className="h-5 w-5" />
           </span>
           <div className="min-w-0">
-            <p className="text-[11px] font-medium uppercase text-white/[0.46]">
+            <p className="text-[13px] font-medium uppercase text-white/[0.72]">
               {t('ultima.subscriptionInfo.trafficTitle')}
             </p>
             <h2 className="mt-0.5 break-words text-[19px] font-semibold leading-tight text-white">
@@ -358,7 +358,7 @@ export function UltimaSubscriptionInfo() {
           </div>
         </div>
         {!isUnlimitedTraffic ? (
-          <span className="shrink-0 rounded-full border border-white/[0.09] bg-white/[0.04] px-2.5 py-1 text-[10px] font-medium text-white/[0.6]">
+          <span className="shrink-0 rounded-full border border-white/[0.09] bg-white/[0.04] px-2.5 py-1 text-[13px] font-medium text-white/[0.6]">
             {numberFormatter.format(Math.max(0, 100 - trafficProgress))}%
           </span>
         ) : null}
@@ -381,8 +381,8 @@ export function UltimaSubscriptionInfo() {
               [t('ultima.subscriptionInfo.limit'), formatTraffic(trafficTotal)],
             ].map(([label, value]) => (
               <div key={label} className="min-w-0 px-2 first:pl-0 last:pr-0">
-                <p className="text-[9px] font-medium uppercase text-white/[0.38]">{label}</p>
-                <p className="mt-1 break-words text-[12px] font-semibold leading-tight text-white">
+                <p className="text-[13px] font-medium uppercase text-white/[0.38]">{label}</p>
+                <p className="mt-1 break-words text-[13px] font-semibold leading-tight text-white">
                   {value}
                 </p>
               </div>
@@ -400,8 +400,8 @@ export function UltimaSubscriptionInfo() {
         />
       ) : (
         <p
-          className={`mt-4 border-t border-white/[0.07] pt-3 text-[12px] leading-relaxed ${
-            subscription.metered_access_blocked ? 'text-amber-100/[0.9]' : 'text-white/[0.55]'
+          className={`mt-4 border-t border-white/[0.07] pt-3 text-[13px] leading-relaxed ${
+            subscription.metered_access_blocked ? 'text-amber-100/[0.9]' : 'text-white/[0.72]'
           }`}
         >
           {trafficNotice}
@@ -447,12 +447,12 @@ export function UltimaSubscriptionInfo() {
                 {t('ultima.subscriptionInfo.subscriptionLink')}
               </h2>
               {subscriptionLinkMeta ? (
-                <span className="rounded-full border border-emerald-200/[0.18] bg-emerald-300/[0.1] px-2 py-0.5 text-[9px] font-semibold uppercase text-emerald-100/[0.88]">
+                <span className="rounded-full border border-emerald-200/[0.18] bg-emerald-300/[0.1] px-2 py-0.5 text-[13px] font-semibold uppercase text-emerald-100/[0.88]">
                   {subscriptionLinkMeta}
                 </span>
               ) : null}
             </div>
-            <p className="mt-1 text-[12px] leading-snug text-white/[0.5]">
+            <p className="mt-1 text-[13px] leading-snug text-white/[0.72]">
               {t('ultima.subscriptionInfo.linkHint')}
             </p>
           </div>
@@ -479,14 +479,14 @@ export function UltimaSubscriptionInfo() {
                   aria-checked={isSelected}
                   data-testid={`ultima-subscription-link-${kind}`}
                   onClick={() => selectCryptoLink(kind)}
-                  className={`flex min-h-[38px] items-center justify-center gap-2 rounded-[10px] border px-3 py-2 text-[12px] font-semibold transition-colors lg:rounded-[5px] ${
+                  className={`flex min-h-[38px] items-center justify-center gap-2 rounded-[10px] border px-3 py-2 text-[13px] font-semibold transition-colors lg:rounded-[5px] ${
                     isSelected
                       ? 'border-emerald-200/[0.24] bg-emerald-300/[0.14] text-emerald-50'
-                      : 'border-transparent text-white/[0.52] hover:bg-white/[0.05] hover:text-white/[0.78]'
+                      : 'border-transparent text-white/[0.72] hover:bg-white/[0.05] hover:text-white/[0.78]'
                   }`}
                 >
                   <span>{label}</span>
-                  <span className="text-[9px] font-medium uppercase opacity-65">{protocol}</span>
+                  <span className="text-[13px] font-medium uppercase opacity-65">{protocol}</span>
                 </button>
               );
             })}
@@ -496,7 +496,7 @@ export function UltimaSubscriptionInfo() {
           className={`${ultimaPaneClassName} ${canChooseCryptoLink ? 'mt-2' : 'mt-3'} flex min-w-0 items-center gap-2 px-3 py-2.5`}
           style={ultimaPaneSurfaceStyle}
         >
-          <p className="min-w-0 flex-1 truncate text-[12px] text-white/[0.72]">
+          <p className="min-w-0 flex-1 truncate text-[13px] text-white/[0.72]">
             {subscriptionLink}
           </p>
           <button
@@ -513,7 +513,7 @@ export function UltimaSubscriptionInfo() {
           <button
             type="button"
             onClick={() => void copySubscriptionLink()}
-            className="ultima-btn-pill ultima-btn-secondary flex min-h-[42px] items-center justify-center gap-2 px-3 py-2 text-[12px]"
+            className="ultima-btn-pill ultima-btn-secondary flex min-h-[42px] items-center justify-center gap-2 px-3 py-2 text-[13px]"
           >
             <Copy className="h-4 w-4" />
             {linkCopied
@@ -523,7 +523,7 @@ export function UltimaSubscriptionInfo() {
           <button
             type="button"
             onClick={() => void shareSubscriptionLink()}
-            className="ultima-btn-pill ultima-btn-secondary flex min-h-[42px] items-center justify-center gap-2 px-3 py-2 text-[12px]"
+            className="ultima-btn-pill ultima-btn-secondary flex min-h-[42px] items-center justify-center gap-2 px-3 py-2 text-[13px]"
           >
             <Share2 className="h-4 w-4" />
             {t('ultima.subscriptionInfo.shareLink')}
@@ -538,11 +538,11 @@ export function UltimaSubscriptionInfo() {
       style={ultimaSurfaceStyle}
       data-testid="ultima-subscription-empty"
     >
-      <ShieldCheck className="mx-auto h-9 w-9 text-white/[0.42]" />
+      <ShieldCheck className="mx-auto h-9 w-9 text-white/[0.72]" />
       <h1 className="mt-3 text-[20px] font-semibold text-white">
         {t('ultima.subscriptionInfo.noSubscription')}
       </h1>
-      <p className="mt-2 text-[13px] leading-relaxed text-white/[0.54]">
+      <p className="mt-2 text-[13px] leading-relaxed text-white/[0.72]">
         {t('ultima.subscriptionInfo.description')}
       </p>
       <button
@@ -667,7 +667,7 @@ export function UltimaSubscriptionInfo() {
                 <section className={`${ultimaPanelClassName} p-5`} style={ultimaSurfaceStyle}>
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-[11px] font-medium uppercase text-white/[0.44]">
+                      <p className="text-[13px] font-medium uppercase text-white/[0.72]">
                         {t('ultima.subscriptionInfo.eyebrow')}
                       </p>
                       <h2 className="mt-1 text-[22px] font-semibold text-white">
@@ -701,10 +701,10 @@ export function UltimaSubscriptionInfo() {
                     ].map(([icon, label, value]) => (
                       <div
                         key={String(label)}
-                        className="grid grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-2.5 py-3 text-[12px]"
+                        className="grid grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-2.5 py-3 text-[13px]"
                       >
-                        <span className="text-white/[0.44]">{icon}</span>
-                        <span className="text-white/[0.5]">{label}</span>
+                        <span className="text-white/[0.72]">{icon}</span>
+                        <span className="text-white/[0.72]">{label}</span>
                         <span className="max-w-[170px] break-words text-right font-semibold text-white">
                           {value}
                         </span>
@@ -739,7 +739,7 @@ export function UltimaSubscriptionInfo() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <p className="text-[10px] font-semibold uppercase text-white/[0.44]">
+                    <p className="text-[13px] font-semibold uppercase text-white/[0.72]">
                       {t('ultima.subscriptionInfo.eyebrow')}
                     </p>
                     <h1 className="mt-1 break-words text-[clamp(27px,7.6vw,34px)] font-semibold leading-none text-white">
@@ -749,7 +749,7 @@ export function UltimaSubscriptionInfo() {
                   {statusPill}
                 </div>
 
-                <div className="mt-3 flex items-center gap-2 border-t border-white/[0.07] pt-3 text-[12px] text-white/[0.62]">
+                <div className="mt-3 flex items-center gap-2 border-t border-white/[0.07] pt-3 text-[13px] text-white/[0.62]">
                   <CalendarDays className="h-4 w-4 shrink-0 text-emerald-100/[0.8]" />
                   <span>{t('ultima.subscriptionInfo.validUntil')}</span>
                   <strong className="ml-auto break-words text-right font-semibold text-white">
@@ -764,8 +764,8 @@ export function UltimaSubscriptionInfo() {
                     [t('ultima.subscriptionInfo.servers'), String(serverCount)],
                   ].map(([label, value]) => (
                     <div key={label} className="min-w-0 px-2.5">
-                      <p className="text-[9px] font-medium uppercase text-white/[0.38]">{label}</p>
-                      <p className="mt-1 break-words text-[12px] font-semibold leading-tight text-white">
+                      <p className="text-[13px] font-medium uppercase text-white/[0.38]">{label}</p>
+                      <p className="mt-1 break-words text-[13px] font-semibold leading-tight text-white">
                         {value}
                       </p>
                     </div>

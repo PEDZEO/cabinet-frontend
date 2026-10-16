@@ -73,7 +73,7 @@ export function UltimaMeteredTrafficPeriodNotice({
     return (
       <div
         data-testid="ultima-metered-topup-policy"
-        className={cn('min-w-0 space-y-1 text-[11px] leading-relaxed text-white/[0.55]', className)}
+        className={cn('min-w-0 space-y-1 text-[13px] leading-relaxed text-white/[0.72]', className)}
       >
         <p>{t('ultima.meteredPeriod.topUpPolicy', { days: 30 })}</p>
         <p>{nextReset}</p>
@@ -84,15 +84,15 @@ export function UltimaMeteredTrafficPeriodNotice({
   return (
     <div
       data-testid="ultima-metered-period-notice"
-      className={cn('min-w-0 space-y-1.5 text-[11px] leading-relaxed text-white/[0.55]', className)}
+      className={cn('min-w-0 space-y-1.5 text-[13px] leading-relaxed text-white/[0.72]', className)}
     >
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-white/[0.78]">
         <CalendarDays className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
         <span className="font-medium">{t('ultima.meteredPeriod.title')}</span>
         {baseLimitLabel ? <span>{baseLimitLabel}</span> : null}
       </div>
+      <p className="text-[14px] font-medium text-white/[0.92]">{nextReset}</p>
       <p>{t('ultima.meteredPeriod.anniversary')}</p>
-      <p className="text-white/[0.78]">{nextReset}</p>
       <p className={subscription.metered_access_blocked ? 'text-amber-100/[0.85]' : undefined}>
         {t(
           subscription.metered_access_blocked

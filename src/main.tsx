@@ -26,6 +26,7 @@ import { initLogoPreload } from './api/branding';
 import { getCachedFullscreenEnabled, isTelegramMobile } from './hooks/useTelegramSDK';
 import i18n from './i18n';
 import './styles/globals.css';
+import './styles/ultima-cabinet.css';
 
 // HMR guard — prevent double init when Vite hot-reloads the module
 const HMR_KEY = '__tg_sdk_initialized';

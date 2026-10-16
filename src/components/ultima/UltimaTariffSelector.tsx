@@ -36,7 +36,7 @@ export function UltimaTariffSelector({
     <section className="mb-3 space-y-2.5">
       {showHeading ? (
         <div>
-          <p className="text-[11px] font-semibold uppercase text-white/[0.46]">
+          <p className="text-[13px] font-semibold uppercase text-white/[0.72]">
             {t('dashboard.expired.tariffs')}
           </p>
         </div>
@@ -93,13 +93,13 @@ export function UltimaTariffSelector({
                         {tariff.name}
                       </div>
                       {current ? (
-                        <span className="shrink-0 rounded-full border border-emerald-200/[0.24] bg-emerald-300/[0.1] px-2 py-0.5 text-[9px] font-semibold text-emerald-50">
+                        <span className="shrink-0 rounded-full border border-emerald-200/[0.24] bg-emerald-300/[0.1] px-2 py-0.5 text-[13px] font-semibold text-emerald-50">
                           {t('subscription.currentTariff')}
                         </span>
                       ) : null}
                     </div>
                     {description ? (
-                      <p className="mt-1 line-clamp-1 max-w-[42ch] whitespace-pre-line text-[11px] leading-[1.35] text-white/[0.56]">
+                      <p className="mt-1 line-clamp-1 max-w-[42ch] whitespace-pre-line text-[13px] leading-[1.35] text-white/[0.72]">
                         {description}
                       </p>
                     ) : null}
@@ -108,7 +108,7 @@ export function UltimaTariffSelector({
                     <div className="text-[18px] font-semibold leading-none text-white">
                       {priceLabel}
                     </div>
-                    <div className="mt-1 text-[9px] text-white/[0.46]">
+                    <div className="mt-1 text-[13px] text-white/[0.72]">
                       {dailyPrice > 0
                         ? t('subscription.tariff.perDay')
                         : firstPeriod
@@ -118,7 +118,7 @@ export function UltimaTariffSelector({
                   </div>
                 </div>
 
-                <div className="mt-3 flex items-center gap-2 border-t border-white/[0.08] pt-2.5 text-[10px] text-white/[0.62]">
+                <div className="mt-3 flex items-center gap-2 border-t border-white/[0.08] pt-2.5 text-[13px] text-white/[0.62]">
                   <span className="inline-flex min-w-0 items-center gap-1.5">
                     <Gauge className="h-3.5 w-3.5 shrink-0" />
                     <span className="truncate">
@@ -135,7 +135,7 @@ export function UltimaTariffSelector({
                       {formatPrice(pricePreview.original)}
                     </span>
                   ) : null}
-                  <span className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.04] text-white/[0.58]">
+                  <span className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.04] text-white/[0.72]">
                     {selected ? (
                       <Check className="h-3.5 w-3.5 text-emerald-100" />
                     ) : (

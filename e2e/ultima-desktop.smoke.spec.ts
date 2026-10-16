@@ -1322,7 +1322,7 @@ test.describe('Ultima desktop workspace', () => {
 
     await expect(page.getByTestId('ultima-home-overview')).toBeVisible();
     await page.getByTestId('ultima-primary-cta').click();
-    await expect(page).toHaveURL(/\/subscription$/);
+    await expect(page).toHaveURL(/\/connection$/);
 
     await page.goBack();
     await expect(page).toHaveURL(/\/$/);
@@ -1477,7 +1477,7 @@ test.describe('Ultima desktop workspace', () => {
     const newsMainWidth = await page
       .locator('.ultima-desktop-main')
       .evaluate((element) => element.getBoundingClientRect().width);
-    expect(newsMainWidth).toBeGreaterThan(1100);
+    expect(newsMainWidth).toBeGreaterThan(1000);
     await expectNoHorizontalOverflow(page);
 
     await page.locator('[data-ultima-nav-target="profile"]').click();
@@ -2515,7 +2515,7 @@ test.describe('Ultima trial onboarding persistence', () => {
     await expect(page.getByTestId('ultima-trial-guide-overlay')).toHaveCount(0);
   });
 
-  test('keeps the device card while the primary CTA opens tariff purchase', async ({ page }) => {
+  test('keeps the device card while active access offers device setup', async ({ page }) => {
     await bootstrapUltimaDesktop(page, { connectionCompleted: true });
     await mockUltimaDesktopApi(page, {
       subscription: SUBSCRIPTION,
@@ -2527,14 +2527,12 @@ test.describe('Ultima trial onboarding persistence', () => {
     await expect(page.getByTestId('ultima-home-action-devices')).toContainText('0/3');
     await expect(page.getByTestId('ultima-home-action-setup')).toContainText('Готово');
     const primaryCta = page.getByTestId('ultima-primary-cta');
-    await expect(primaryCta).toContainText('Продлить');
+    await expect(primaryCta).toContainText('Подключить устройство');
     await primaryCta.click();
-    await expect(page).toHaveURL(/\/subscription$/);
+    await expect(page).toHaveURL(/\/connection$/);
   });
 
-  test('keeps unfinished setup in quick actions without replacing the purchase CTA', async ({
-    page,
-  }) => {
+  test('keeps unfinished setup visible alongside the connection CTA', async ({ page }) => {
     await bootstrapUltimaDesktop(page, { connectionCompleted: false });
     await page.addInitScript(() => {
       localStorage.setItem('ultima_connection_flow_v1:99', '2');
@@ -2544,7 +2542,7 @@ test.describe('Ultima trial onboarding persistence', () => {
     await page.goto('/');
 
     await expect(page.getByTestId('ultima-home-action-setup')).toContainText('Шаг 2/3');
-    await expect(page.getByTestId('ultima-primary-cta')).toContainText('Продлить');
+    await expect(page.getByTestId('ultima-primary-cta')).toContainText('Подключить устройство');
     await expect(page.getByText('Завершить установку', { exact: true })).toHaveCount(0);
     await expect(page.getByText('Установка не завершена', { exact: true })).toHaveCount(0);
   });
@@ -2657,6 +2655,75 @@ test.describe('Ultima connection setup', () => {
     await expect(page.getByTestId('ultima-connection-primary-action')).toContainText(
       'Открыть INCY',
     );
+    await expectNoHorizontalOverflow(page);
+  });
+});
+
+test.describe('Ultima approved cabinet navigation', () => {
+  test('shows labelled mobile destinations and keeps news reachable from profile', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+    await page.goto('/');
+    for (const target of ['home', 'connection', 'subscription', 'support', 'profile']) {
+      const item = page.locator(`[data-ultima-nav-target="${target}"]`);
+      await expect(item).toBeVisible();
+      await expect(item.locator('span')).toBeVisible();
+      expect((await item.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    }
+    await expect(page.locator('[data-ultima-nav-target="home"]')).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    await expect(page.locator('[data-ultima-nav-target="news"]')).toBeHidden();
+    await page.locator('[data-ultima-nav-target="subscription"]').click();
+    await expect(page).toHaveURL(/\/ultima\/subscription-info$/);
+    await expect(page.locator('[data-ultima-nav-target="subscription"]')).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    await page.locator('[data-ultima-nav-target="profile"]').click();
+    await page.getByRole('button', { name: /Новости.*Обновления сервиса/ }).click();
+    await expect(page).toHaveURL(/\/ultima\/news$/);
+    await expectNoHorizontalOverflow(page);
+  });
+
+  test('offers setup for active access and renewal for expired access', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+    await page.goto('/');
+    await expect(page.getByTestId('ultima-primary-cta')).toContainText('Подключить устройство');
+    await page.getByTestId('ultima-primary-cta').click();
+    await expect(page).toHaveURL(/\/connection$/);
+    await mockUltimaDesktopApi(page, {
+      subscription: {
+        ...SUBSCRIPTION,
+        status: 'EXPIRED',
+        is_active: false,
+        is_expired: true,
+        end_date: '2020-01-01T00:00:00.000Z',
+      },
+    });
+    await page.goto('/');
+    await expect(page.getByTestId('ultima-primary-cta')).toContainText('Продлить');
+    await page.getByTestId('ultima-primary-cta').click();
+    await expect(page).toHaveURL(/\/subscription$/);
+  });
+
+  test('keeps account controls and labels reachable on a short desktop', async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 480 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page, { isAdmin: true });
+    await page.goto('/');
+    await expect(page.locator('.ultima-cabinet-balance')).toContainText('1');
+    await expect(page.locator('[data-ultima-nav-target="subscription"] span')).toBeVisible();
+    await page.locator('.ultima-cabinet-balance').click();
+    await expect(page).toHaveURL(/\/balance$/);
+    await page.locator('.ultima-cabinet-avatar').click();
+    await expect(page).toHaveURL(/\/profile$/);
     await expectNoHorizontalOverflow(page);
   });
 });

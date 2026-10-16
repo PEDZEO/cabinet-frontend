@@ -81,7 +81,7 @@ export function UltimaHomeTrafficCard({
           <h2 className="text-[16px] font-semibold text-white/[0.96]">
             {t('ultima.home.trafficTitle', { defaultValue: 'Трафик' })}
           </h2>
-          <p className="mt-1 text-[12px] leading-snug text-white/[0.52]">
+          <p className="mt-1 text-[13px] leading-snug text-white/[0.72]">
             {isMetered
               ? t('ultima.home.trafficSplitHint', {
                   defaultValue: 'Лимит действует только на спецсерверах.',
@@ -111,7 +111,7 @@ export function UltimaHomeTrafficCard({
                 {t('subscription.unlimited', { defaultValue: 'Безлимит' })}
               </span>
             </div>
-            <p className="mt-1 text-[12px] leading-snug text-white/[0.5]">
+            <p className="mt-1 text-[13px] leading-snug text-white/[0.72]">
               {t('ultima.home.standardServersHint', {
                 defaultValue: 'Работают без ограничений и не расходуют пакет.',
               })}
@@ -155,7 +155,7 @@ export function UltimaHomeTrafficCard({
               {hasLimit ? (
                 <span
                   className={cn(
-                    'shrink-0 rounded-full border px-2 py-1 text-[10px] font-semibold',
+                    'shrink-0 rounded-full border px-2 py-1 text-[13px] font-semibold',
                     isBlocked
                       ? 'border-rose-200/[0.2] bg-rose-300/[0.12] text-rose-100'
                       : normalizedPercent >= 80
@@ -170,7 +170,19 @@ export function UltimaHomeTrafficCard({
 
             {hasLimit ? (
               <>
-                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-black/[0.2]">
+                <div
+                  className="mt-3 h-2 overflow-hidden rounded-full bg-black/[0.2]"
+                  role="progressbar"
+                  aria-label={t('ultima.home.trafficTitle', { defaultValue: 'Трафик' })}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={Math.round(normalizedPercent)}
+                  aria-valuetext={t('ultima.home.trafficUsedValue', {
+                    used: formatter.format(normalizedUsed),
+                    limit: formatter.format(normalizedLimit),
+                    defaultValue: 'Использовано {{used}} из {{limit}} ГБ',
+                  })}
+                >
                   <span
                     className={cn(
                       'block h-full w-full origin-left rounded-full transition-transform duration-300',
@@ -179,7 +191,7 @@ export function UltimaHomeTrafficCard({
                     style={{ transform: `scaleX(${normalizedPercent / 100})` }}
                   />
                 </div>
-                <p className="mt-2 text-[11px] leading-snug text-white/[0.5]">
+                <p className="mt-2 text-[13px] leading-snug text-white/[0.72]">
                   {t('ultima.home.trafficUsedValue', {
                     used: formatter.format(normalizedUsed),
                     limit: formatter.format(normalizedLimit),
@@ -194,7 +206,7 @@ export function UltimaHomeTrafficCard({
             ) : isMetered ? (
               <p
                 className={cn(
-                  'mt-2 text-[12px] leading-snug',
+                  'mt-2 text-[13px] leading-snug',
                   isBlocked ? 'text-rose-100/[0.82]' : 'text-white/[0.64]',
                 )}
               >
@@ -218,7 +230,7 @@ export function UltimaHomeTrafficCard({
             type="button"
             onClick={onTopUp}
             data-testid="ultima-home-traffic-topup"
-            className="ultima-btn-pill ultima-btn-secondary mt-3 flex min-h-10 w-full items-center justify-between gap-3 px-4 text-left text-[12px]"
+            className="ultima-btn-pill ultima-btn-secondary mt-3 flex min-h-10 w-full items-center justify-between gap-3 px-4 text-left text-[13px]"
           >
             <span>
               {isTrial

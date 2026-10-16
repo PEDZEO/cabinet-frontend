@@ -56,7 +56,7 @@ function MetricCard({ label, value }: { label: string; value: string }) {
         background: 'var(--ultima-bg-surface-soft)',
       }}
     >
-      <div className="truncate text-[10px] font-medium uppercase tracking-wide text-white/[0.46]">
+      <div className="truncate text-[13px] font-medium uppercase tracking-wide text-white/[0.72]">
         {label}
       </div>
       <div className="mt-1 truncate text-sm font-semibold text-white/95">{value}</div>
@@ -121,7 +121,7 @@ function DashboardScene({ device }: { device: UltimaThemePreviewDevice }) {
       >
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <div className="text-xs font-medium uppercase tracking-wide text-white/[0.48]">
+            <div className="text-xs font-medium uppercase tracking-wide text-white/[0.72]">
               Подписка
             </div>
             <div className={cn('font-semibold text-white/95', isDesktop ? 'text-lg' : 'text-base')}>
@@ -206,7 +206,7 @@ function ConnectionScene({ device }: { device: UltimaThemePreviewDevice }) {
             }}
           >
             <div className="text-xs font-semibold text-white/95">Шаг 2</div>
-            <div className="mt-1 text-[10px] text-white/[0.66]">Конфиг</div>
+            <div className="mt-1 text-[13px] text-white/[0.66]">Конфиг</div>
           </div>
         </div>
       </div>
@@ -366,7 +366,7 @@ export function UltimaThemeLivePreview({
       <div className={cn('relative z-10 flex h-full flex-col', compact ? 'p-3.5' : 'p-5')}>
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <div className="truncate text-[10px] font-medium uppercase tracking-[0.22em] text-white/[0.54]">
+            <div className="truncate text-[13px] font-medium uppercase tracking-[0.22em] text-white/[0.72]">
               {title}
             </div>
             <div
@@ -379,7 +379,7 @@ export function UltimaThemeLivePreview({
             </div>
           </div>
           <div
-            className="shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide"
+            className="shrink-0 rounded-full border px-2.5 py-1 text-[13px] font-semibold uppercase tracking-wide"
             style={{
               borderColor: 'var(--ultima-border-medium)',
               background: 'color-mix(in srgb, var(--ultima-color-surface) 36%, transparent)',

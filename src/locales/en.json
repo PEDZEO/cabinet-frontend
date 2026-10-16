@@ -37,6 +37,9 @@
     "reset": "Reset"
   },
   "nav": {
+    "mainNavigation": "Main navigation",
+    "news": "News",
+    "connection": "Connect",
     "dashboard": "Dashboard",
     "subscription": "Subscription",
     "balance": "Balance",
@@ -4397,6 +4400,8 @@
     },
     "promocodeDescription": "Activate bonuses and discounts",
     "ultima": {
+      "newsSubtitle": "Service updates and helpful guides",
+      "connectDevice": "Connect a device",
       "fallbackName": "User",
       "loginMethodCount_one": "{{count}} sign-in",
       "loginMethodCount_other": "{{count}} sign-ins",

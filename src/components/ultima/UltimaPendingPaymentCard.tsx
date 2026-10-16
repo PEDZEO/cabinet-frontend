@@ -76,7 +76,7 @@ export function UltimaPendingPaymentCard({
             {t('balance.pendingReminderTitle', { defaultValue: 'Оплата не завершена' })}
           </p>
           {!compact ? (
-            <p className="mt-1 text-[11px] leading-[1.4] text-white/[0.58]">
+            <p className="mt-1 text-[13px] leading-[1.4] text-white/[0.72]">
               {t('balance.pendingReminderMessage', {
                 defaultValue: 'Нажмите, чтобы снова открыть страницу оплаты.',
               })}
@@ -93,7 +93,7 @@ export function UltimaPendingPaymentCard({
         </button>
       </div>
 
-      <div className="mt-3 flex min-w-0 flex-wrap items-center gap-1.5 text-[10px] font-medium">
+      <div className="mt-3 flex min-w-0 flex-wrap items-center gap-1.5 text-[13px] font-medium">
         <span className="inline-flex min-h-7 items-center gap-1.5 rounded-full border border-amber-100/[0.16] bg-black/[0.12] px-2.5 text-amber-50/[0.92]">
           <Clock3 className="h-3.5 w-3.5" strokeWidth={1.8} />
           {amountLabel}
@@ -109,7 +109,7 @@ export function UltimaPendingPaymentCard({
         data-testid="ultima-pending-payment-open"
         type="button"
         onClick={openPayment}
-        className="ultima-btn-pill ultima-btn-primary mt-3 flex min-h-11 w-full items-center justify-between gap-3 px-4 text-[12px] font-semibold"
+        className="ultima-btn-pill ultima-btn-primary mt-3 flex min-h-11 w-full items-center justify-between gap-3 px-4 text-[13px] font-semibold"
       >
         <span className="truncate">
           {t('balance.openPaymentPage', { defaultValue: 'Открыть страницу оплаты' })}

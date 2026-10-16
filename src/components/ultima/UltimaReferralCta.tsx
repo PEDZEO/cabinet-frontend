@@ -84,7 +84,7 @@ export function UltimaReferralCta({
           <p
             className={cn(
               'mt-0.5 truncate text-white/[0.62]',
-              variant === 'desktop' ? 'text-[12px] leading-tight' : 'text-[11px] leading-tight',
+              variant === 'desktop' ? 'text-[13px] leading-tight' : 'text-[13px] leading-tight',
             )}
           >
             {description}
@@ -101,7 +101,7 @@ export function UltimaReferralCta({
             <span
               className={cn(
                 'rounded-full border px-2 py-1 text-center font-semibold text-white/[0.94] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]',
-                variant === 'desktop' ? 'min-w-[46px] px-1.5 text-[10px]' : 'text-[10px]',
+                variant === 'desktop' ? 'min-w-[46px] px-1.5 text-[13px]' : 'text-[13px]',
               )}
               style={{
                 borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 22%, transparent)',
@@ -114,7 +114,7 @@ export function UltimaReferralCta({
 
           <span
             className={cn(
-              'flex items-center justify-center text-white/[0.52] transition-colors group-hover:text-white/[0.9]',
+              'flex items-center justify-center text-white/[0.72] transition-colors group-hover:text-white/[0.9]',
               variant === 'desktop' ? 'h-6 w-5' : 'h-8 w-8',
             )}
           >

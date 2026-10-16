@@ -25,7 +25,7 @@ export function UltimaHomeActionGrid({ title, subtitle, actions }: UltimaHomeAct
     <section data-testid="ultima-home-quick-actions">
       <div className="mb-2.5">
         <h2 className="text-[16px] font-semibold text-white/[0.95]">{title}</h2>
-        <p className="mt-1 text-[12px] leading-snug text-white/[0.48]">{subtitle}</p>
+        <p className="mt-1 text-[13px] leading-snug text-white/[0.72]">{subtitle}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-2">
@@ -67,15 +67,17 @@ export function UltimaHomeActionGrid({ title, subtitle, actions }: UltimaHomeAct
               </div>
 
               <div className="mt-auto min-w-0 pt-2.5">
-                <p className="truncate text-[11px] font-medium text-white/[0.52]">{action.title}</p>
+                <p className="break-words text-[13px] font-medium text-white/[0.72]">
+                  {action.title}
+                </p>
                 {action.loading ? (
                   <span className="mt-1.5 block h-4 w-16 animate-pulse rounded-full bg-white/[0.1]" />
                 ) : (
-                  <p className="mt-1 truncate text-[15px] font-semibold text-white/[0.96]">
+                  <p className="mt-1 break-words text-[15px] font-semibold text-white/[0.96]">
                     {action.value}
                   </p>
                 )}
-                <p className="mt-1 truncate text-[11px] text-white/[0.43]">{action.hint}</p>
+                <p className="mt-1 break-words text-[13px] text-white/[0.72]">{action.hint}</p>
               </div>
             </button>
           );

@@ -87,7 +87,7 @@ export default function UltimaNews() {
             <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.08] text-white/[0.88]">
               <NewspaperIcon />
             </div>
-            <p className="text-[11px] uppercase tracking-[0.2em] text-white/[0.44]">
+            <p className="text-[13px] uppercase tracking-[0.2em] text-white/[0.72]">
               {t('news.title')}
             </p>
             <h1 className="mt-3 text-[clamp(34px,9vw,46px)] font-semibold leading-[0.92] tracking-[-0.02em] text-white">

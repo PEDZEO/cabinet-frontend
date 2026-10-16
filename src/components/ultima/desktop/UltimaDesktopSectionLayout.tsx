@@ -52,7 +52,7 @@ export function UltimaDesktopPanel({
           <div>
             <h2 className="text-[18px] font-semibold leading-tight text-white">{title}</h2>
             {subtitle ? (
-              <p className="mt-1.5 max-w-[64ch] text-sm leading-[1.55] text-white/[0.58]">
+              <p className="mt-1.5 max-w-[64ch] text-sm leading-[1.55] text-white/[0.72]">
                 {subtitle}
               </p>
             ) : null}

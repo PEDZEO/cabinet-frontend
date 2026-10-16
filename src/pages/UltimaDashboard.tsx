@@ -912,7 +912,12 @@ export function UltimaDashboard() {
   const isHomeLogoDecisionPending = !hasCachedBranding && isBrandingLoading;
   const shouldReserveHomeLogoSlot = showBrandLogoOnHome || isHomeLogoDecisionPending;
 
-  const primaryActionKind: UltimaNextActionKind = hasAnySubscription ? 'renew' : 'buy';
+  const primaryActionKind: UltimaNextActionKind =
+    isActive && !isActiveTrial && (daysLeft === null || daysLeft > ULTIMA_RENEWAL_NOTICE_DAYS)
+      ? 'setup'
+      : hasAnySubscription
+        ? 'renew'
+        : 'buy';
 
   useEffect(() => {
     if (!isSubscriptionReady || dashboardViewTrackedRef.current) {
@@ -937,14 +942,24 @@ export function UltimaDashboard() {
     primaryActionKind,
   ]);
 
-  const handlePrimaryPurchase = useCallback(() => {
+  const handlePrimaryAction = useCallback(() => {
     trackAnalyticsEvent('ultima_main_cta_click', {
       action: primaryActionKind,
       connection_completed: isConnectionCompleted,
       days_left: daysLeft ?? null,
     });
-    openSubscriptionPurchase();
-  }, [daysLeft, isConnectionCompleted, openSubscriptionPurchase, primaryActionKind]);
+    if (primaryActionKind === 'setup') {
+      openConnection();
+    } else {
+      openSubscriptionPurchase();
+    }
+  }, [
+    daysLeft,
+    isConnectionCompleted,
+    openConnection,
+    openSubscriptionPurchase,
+    primaryActionKind,
+  ]);
 
   const renderHomeBrandMark = useCallback(() => {
     if (!shouldReserveHomeLogoSlot) {
@@ -1161,11 +1176,11 @@ export function UltimaDashboard() {
                 >
                   {devicesHomeCtaTitle}
                 </span>
-                <span className="mt-0.5 block truncate text-[11px] leading-tight text-white/[0.62]">
+                <span className="mt-0.5 block truncate text-[13px] leading-tight text-white/[0.62]">
                   {devicesHomeCtaSubtitle}
                 </span>
               </span>
-              <span className="shrink-0 rounded-full border border-white/10 px-2.5 py-1 text-[11px] font-semibold text-white/[0.86]">
+              <span className="shrink-0 rounded-full border border-white/10 px-2.5 py-1 text-[13px] font-semibold text-white/[0.86]">
                 {devicesHomeCtaAction}
               </span>
             </>
@@ -1328,12 +1343,16 @@ export function UltimaDashboard() {
       }
       devicesLoading={isDashboardDevicesPending}
       brandMark={renderShieldButton('h-[82px] w-[82px] shrink-0')}
-      primaryLabel={mobilePurchaseCtaLabel}
-      primaryMeta={purchaseFromLabel}
+      primaryLabel={
+        primaryActionKind === 'setup'
+          ? t('ultima.connectDevice', { defaultValue: 'Подключить устройство' })
+          : mobilePurchaseCtaLabel
+      }
+      primaryMeta={primaryActionKind === 'setup' ? null : purchaseFromLabel}
       secondaryLabel={
         hasAnySubscription ? t('subscription.details', { defaultValue: 'Детали' }) : null
       }
-      onPrimaryAction={handlePrimaryPurchase}
+      onPrimaryAction={handlePrimaryAction}
       onSecondaryAction={hasAnySubscription ? openSubscriptionInfo : null}
     />
   );
@@ -1400,7 +1419,7 @@ export function UltimaDashboard() {
           <span className="block text-[14px] font-semibold leading-tight text-white/[0.96]">
             {t('profile.accountLinkingTitle', { defaultValue: 'Способы входа' })}
           </span>
-          <span className="mt-1 block truncate text-[11px] text-white/[0.52]">
+          <span className="mt-1 block truncate text-[13px] text-white/[0.72]">
             {isLinkedIdentitiesPending
               ? t('common.loading', { defaultValue: 'Загрузка...' })
               : linkedProvidersLabel ||
@@ -1409,7 +1428,7 @@ export function UltimaDashboard() {
                 })}
           </span>
         </span>
-        <span className="shrink-0 rounded-full border border-white/[0.09] px-2.5 py-1 text-[11px] font-semibold text-white/[0.76]">
+        <span className="shrink-0 rounded-full border border-white/[0.09] px-2.5 py-1 text-[13px] font-semibold text-white/[0.76]">
           {linkedIdentityCount ?? '—'}
         </span>
       </span>
@@ -1496,15 +1515,19 @@ export function UltimaDashboard() {
             connectionStep={connectionStep}
             isConnectionCompleted={isConnectionCompleted}
             primaryActionKind={primaryActionKind}
-            primaryCtaLabel={purchaseCtaLabel}
-            primaryCtaMeta={purchaseFromLabel}
+            primaryCtaLabel={
+              primaryActionKind === 'setup'
+                ? t('ultima.connectDevice', { defaultValue: 'Подключить устройство' })
+                : purchaseCtaLabel
+            }
+            primaryCtaMeta={primaryActionKind === 'setup' ? '' : purchaseFromLabel}
             promoMessage={promoMessage}
             activeDiscount={activeDiscount}
             firstPromoOffer={firstPromoOffer}
             showTrialSetupCard={desktopShowTrialSetupCard}
             trialGuide={desktopTrialGuide}
             showConnectionCtaHighlight={showConnectionCtaHighlight}
-            onPrimaryAction={handlePrimaryPurchase}
+            onPrimaryAction={handlePrimaryAction}
             onBuySubscription={openSubscriptionPurchase}
             onOpenConnection={() => openConnection()}
             onOpenTraffic={openTrafficPurchase}
@@ -1558,7 +1581,7 @@ export function UltimaDashboard() {
             <motion.div
               variants={staggerItem}
               aria-live="polite"
-              className="mx-auto max-w-full rounded-full border border-emerald-200/[0.22] bg-emerald-300/[0.12] px-3.5 py-2 text-center text-[12px] font-medium leading-snug text-emerald-50/95 shadow-[0_10px_22px_rgba(5,30,24,0.2)] backdrop-blur-md"
+              className="mx-auto max-w-full rounded-full border border-emerald-200/[0.22] bg-emerald-300/[0.12] px-3.5 py-2 text-center text-[13px] font-medium leading-snug text-emerald-50/95 shadow-[0_10px_22px_rgba(5,30,24,0.2)] backdrop-blur-md"
             >
               {promoMessage}
             </motion.div>
@@ -1619,7 +1642,7 @@ export function UltimaDashboard() {
                     })}
               </p>
               {promoMessage && (
-                <p className="mt-1.5 text-[12px] text-white/[0.85]">{promoMessage}</p>
+                <p className="mt-1.5 text-[13px] text-white/[0.85]">{promoMessage}</p>
               )}
               <div className="mt-2.5 flex flex-col gap-2 min-[360px]:flex-row">
                 {firstPromoOffer && (

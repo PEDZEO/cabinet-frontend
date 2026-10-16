@@ -1,0 +1,418 @@
+/* Approved cabinet design. Brand colour inputs remain configurable by the service. */
+:root {
+  --ultima-bg-page-desktop: #0b1215;
+  --ultima-bg-page-mobile: #0b1215;
+  --ultima-bg-shell: #0b1215;
+  --ultima-bg-surface: #121e22;
+  --ultima-bg-surface-soft: #152428;
+  --ultima-bg-surface-strong: #192b2d;
+  --ultima-bg-pane: #121e22;
+  --ultima-bg-accent-surface: linear-gradient(120deg, #203b32, #14272a);
+  --ultima-border-soft: #2a3a3e;
+  --ultima-border-medium: #3c6052;
+  --ultima-text-strong: #edf5f3;
+  --ultima-text-muted: #a6b9b7;
+  --ultima-shadow-surface: none;
+  --ultima-shadow-accent: none;
+  --ultima-cabinet-accent: color-mix(
+    in srgb,
+    var(--ultima-color-ring) 75%,
+    var(--ultima-color-primary)
+  );
+  --ultima-shared-nav-height: 72px;
+  --ultima-shared-nav-offset: 14px;
+}
+
+.ultima-app-main .ultima-shell,
+.ultima-app-backdrop {
+  background: var(--ultima-bg-shell) !important;
+}
+
+.ultima-shell > .ultima-shell-aura,
+.ultima-app-backdrop > .ultima-shell-aura,
+.ultima-shell-muted-aura::after {
+  display: none;
+}
+
+.ultima-app-backdrop > .ultima-shell-aura::before,
+.ultima-app-backdrop > .ultima-shell-aura::after {
+  display: none;
+}
+
+.ultima-scroll-cue {
+  bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+}
+
+.ultima-shell {
+  --ultima-shared-nav-height: 72px;
+  --ultima-shared-nav-offset: 12px;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.ultima-shell :is(.ultima-card, .ultima-panel, .ultima-pane, .ultima-desktop-panel),
+.ultima-shell [data-testid='ultima-home-traffic-card'] {
+  border: 1px solid var(--ultima-border-soft);
+  border-radius: 20px;
+  background: var(--ultima-bg-surface);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.ultima-shell [data-testid='ultima-home-traffic-card'] {
+  border-color: var(--ultima-border-soft) !important;
+  background: var(--ultima-bg-surface) !important;
+}
+
+.ultima-shell [data-testid='ultima-home-overview'] {
+  padding: 24px;
+  border-color: var(--ultima-border-medium) !important;
+  border-radius: 20px;
+  background: var(--ultima-bg-accent-surface) !important;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.ultima-btn-pill {
+  min-height: 46px;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.ultima-btn-primary {
+  color: #102b22 !important;
+  background: var(--ultima-cabinet-accent) !important;
+  border-color: var(--ultima-cabinet-accent) !important;
+}
+
+.ultima-btn-primary > span {
+  color: inherit;
+}
+
+.ultima-btn-secondary {
+  border-color: #435655 !important;
+  color: var(--ultima-text-strong) !important;
+  background: #1b2b2f !important;
+}
+
+.ultima-shell :is(button, a, input, select, textarea):focus-visible,
+.ultima-bottom-nav button:focus-visible,
+.ultima-modal-layer :is(button, a, input, textarea):focus-visible {
+  outline: 3px solid var(--ultima-cabinet-accent);
+  outline-offset: 3px;
+}
+
+.ultima-shell :is(input, select, textarea) {
+  min-height: 46px;
+  font-size: 16px;
+}
+
+.ultima-shell :is(button, a) {
+  scroll-margin-block: 92px;
+}
+
+.ultima-bottom-nav {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 3px;
+  padding: 5px;
+  border: 1px solid var(--ultima-border-soft);
+  border-radius: 18px;
+  color: var(--ultima-text-muted);
+  background: #101c20f5 !important;
+  backdrop-filter: blur(16px);
+}
+
+.ultima-bottom-nav .ultima-nav-item {
+  display: flex;
+  min-width: 0;
+  min-height: 60px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 7px 2px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: var(--ultima-text-muted);
+  background: transparent;
+  box-shadow: none;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.ultima-bottom-nav .ultima-nav-item span {
+  display: block;
+  max-width: 100%;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.ultima-bottom-nav .ultima-nav-item.is-active {
+  color: var(--ultima-cabinet-accent);
+  background: #233b34;
+}
+
+.ultima-bottom-nav .ultima-nav-item:hover {
+  background: #233432;
+}
+
+.ultima-bottom-nav .ultima-nav-news {
+  display: none;
+}
+
+.ultima-shell [data-testid='ultima-home-quick-actions'] button {
+  min-height: 128px;
+  border-color: var(--ultima-border-soft);
+  border-radius: 16px;
+  background: var(--ultima-bg-surface);
+  box-shadow: none;
+}
+
+.ultima-shell [data-testid='ultima-home-quick-actions'] h2 {
+  font-size: 20px;
+}
+
+.ultima-modal-layer .ultima-modal-panel {
+  border-radius: 20px;
+}
+
+.ultima-cabinet-account-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.ultima-cabinet-balance {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 46px;
+  padding: 10px 16px;
+  border: 1px solid var(--ultima-border-soft);
+  border-radius: 12px;
+  color: var(--ultima-text-strong);
+  font-size: 13px;
+}
+
+.ultima-cabinet-balance span {
+  color: var(--ultima-text-muted);
+}
+
+.ultima-cabinet-avatar {
+  width: 44px;
+  min-height: 44px;
+  border: 1px solid #435655;
+  border-radius: 50%;
+  color: var(--ultima-text-strong);
+  background: #30403e;
+  font-weight: 600;
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .ultima-shell-inner {
+    max-width: 720px;
+  }
+
+  .ultima-shared-nav-shell .ultima-bottom-nav {
+    width: min(100%, 720px);
+  }
+}
+
+@media (min-width: 1024px) {
+  .ultima-desktop-workspace {
+    --ultima-desktop-bg: #0b1215;
+    --ultima-desktop-rail-bg: #0e191d;
+    --ultima-desktop-surface: #121e22;
+    --ultima-desktop-surface-strong: #192b2d;
+    --ultima-desktop-border: #2a3a3e;
+    --ultima-desktop-border-strong: #3c6052;
+    grid-template-columns: 208px minmax(0, 1fr);
+  }
+
+  .ultima-desktop-rail {
+    min-height: 0;
+    padding: 28px 18px;
+    overflow-y: auto;
+  }
+
+  .ultima-desktop-brand {
+    justify-content: flex-start;
+    padding: 0 0 28px;
+  }
+
+  .ultima-desktop-brand-copy {
+    display: block;
+    min-width: 0;
+  }
+
+  .ultima-desktop-brand-copy strong {
+    font-size: 20px;
+    letter-spacing: 1.5px;
+  }
+
+  .ultima-desktop-brand-mark {
+    border-radius: 11px;
+    color: #102b22;
+    background: var(--ultima-cabinet-accent);
+  }
+
+  .ultima-desktop-navigation-label {
+    display: block;
+    margin-bottom: 16px;
+    color: var(--ultima-text-muted);
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: none;
+  }
+
+  .ultima-desktop-navigation .ultima-bottom-nav {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    padding: 0;
+    border: 0;
+    backdrop-filter: none;
+  }
+
+  .ultima-desktop-navigation .ultima-nav-news {
+    display: flex;
+  }
+
+  .ultima-desktop-navigation [data-ultima-nav-btn='1'] {
+    height: auto;
+    min-height: 48px;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px !important;
+  }
+
+  .ultima-desktop-navigation [data-ultima-nav-btn='1'] > span {
+    display: block;
+    font-size: 14px;
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
+
+  .ultima-desktop-admin-link {
+    min-height: 48px;
+    height: auto;
+    justify-content: flex-start;
+    border-radius: 10px;
+  }
+
+  .ultima-desktop-admin-link > span {
+    display: block;
+  }
+
+  .ultima-desktop-stage {
+    background: var(--ultima-desktop-bg);
+  }
+
+  .ultima-desktop-topbar {
+    height: 80px;
+    padding-inline: 32px;
+    backdrop-filter: none;
+    background: var(--ultima-desktop-bg);
+  }
+
+  .ultima-desktop-stage-body {
+    max-width: 1500px;
+    margin-inline: auto;
+    padding: 32px;
+    gap: 24px;
+  }
+
+  html
+    .ultima-shell
+    .ultima-desktop-workspace
+    :is(.ultima-card, .ultima-panel, .ultima-pane, .ultima-desktop-panel) {
+    border-radius: 20px !important;
+    box-shadow: none !important;
+  }
+
+  .ultima-desktop-workspace
+    :is(
+      [class*='rounded-[24px]'],
+      [class*='rounded-[22px]'],
+      [class*='rounded-[20px]'],
+      [class*='rounded-[18px]'],
+      [class*='rounded-[16px]']
+    ) {
+    border-radius: 18px !important;
+  }
+
+  .ultima-desktop-workspace .ultima-btn-pill {
+    min-height: 46px;
+    border-radius: 12px !important;
+  }
+
+  .ultima-desktop-workspace .ultima-btn-primary {
+    color: #102b22 !important;
+    background: var(--ultima-cabinet-accent) !important;
+  }
+
+  .ultima-desktop-workspace .ultima-btn-primary:hover {
+    background: color-mix(in srgb, var(--ultima-cabinet-accent) 88%, #ffffff) !important;
+  }
+
+  html
+    .ultima-shell
+    .ultima-desktop-workspace
+    :is(
+      .ultima-desktop-dashboard-hero,
+      .ultima-desktop-connection-hero,
+      .ultima-desktop-subscription-config
+    ) {
+    border: 1px solid var(--ultima-border-medium) !important;
+    background: var(--ultima-bg-accent-surface) !important;
+  }
+
+  .ultima-desktop-kpi,
+  .ultima-desktop-metrics > article {
+    border-top-width: 1px !important;
+  }
+
+  .ultima-desktop-context {
+    position: static;
+  }
+}
+
+@media (min-width: 1240px) {
+  .ultima-desktop-workspace {
+    grid-template-columns: 232px minmax(0, 1fr);
+  }
+
+  .ultima-desktop-stage-body.has-context {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 24px;
+  }
+}
+
+@media (max-width: 359px) {
+  .ultima-shell [data-testid='ultima-home-overview'] {
+    padding: 18px;
+  }
+
+  .ultima-shell [data-testid='ultima-home-overview'] > div:last-child {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ultima-shell *,
+  .ultima-bottom-nav * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

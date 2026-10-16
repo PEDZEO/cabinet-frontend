@@ -37,6 +37,9 @@
     "reset": "Сбросить"
   },
   "nav": {
+    "mainNavigation": "Основная навигация",
+    "news": "Новости",
+    "connection": "Подключить",
     "dashboard": "Главная",
     "subscription": "Подписка",
     "balance": "Баланс",
@@ -4954,6 +4957,8 @@
       }
     },
     "ultima": {
+      "newsSubtitle": "Обновления сервиса и полезные инструкции",
+      "connectDevice": "Подключить устройство",
       "fallbackName": "Пользователь",
       "loginMethodCount_one": "{{count}} вход",
       "loginMethodCount_few": "{{count}} входа",

@@ -34,6 +34,9 @@
     "reset": "重置"
   },
   "nav": {
+    "mainNavigation": "主导航",
+    "news": "新闻",
+    "connection": "连接",
     "dashboard": "首页",
     "subscription": "订阅",
     "balance": "余额",
@@ -3425,6 +3428,8 @@
       "unavailable": "通知设置不可用"
     },
     "ultima": {
+      "newsSubtitle": "服务更新和实用指南",
+      "connectDevice": "连接设备",
       "fallbackName": "用户",
       "loginMethodCount_other": "{{count}} 种登录方式",
       "accessProtected": "已连接备用登录方式",

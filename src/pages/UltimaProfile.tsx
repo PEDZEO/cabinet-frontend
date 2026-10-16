@@ -15,6 +15,7 @@ import {
   KeyRound,
   LogOut,
   MonitorSmartphone,
+  Newspaper,
   ShieldCheck,
   TicketPercent,
   Users,
@@ -79,12 +80,12 @@ function ProfileActionRow({ item, onClick }: { item: SectionItem; onClick: () =>
             {item.title}
           </p>
           {item.meta ? (
-            <span className="shrink-0 rounded-full border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-[10px] font-medium text-white/[0.58]">
+            <span className="shrink-0 rounded-full border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-[13px] font-medium text-white/[0.72]">
               {item.meta}
             </span>
           ) : null}
         </div>
-        <p className="mt-0.5 break-words text-[11px] leading-snug text-white/[0.48]">
+        <p className="mt-0.5 break-words text-[13px] leading-snug text-white/[0.72]">
           {item.subtitle}
         </p>
       </div>
@@ -113,7 +114,7 @@ function ProfileSection({
     >
       <div className="mb-1">
         <h2 className="text-[14px] font-semibold text-white/[0.94]">{title}</h2>
-        <p className="mt-1 text-[11px] leading-snug text-white/[0.44]">{hint}</p>
+        <p className="mt-1 text-[13px] leading-snug text-white/[0.72]">{hint}</p>
       </div>
       <div className="mt-2">
         {items.map((item) => (
@@ -276,6 +277,15 @@ export function UltimaProfile() {
   ];
 
   const supportItems: SectionItem[] = [
+    {
+      key: 'news',
+      title: t('nav.news', { defaultValue: 'Новости' }),
+      subtitle: t('ultima.newsSubtitle', {
+        defaultValue: 'Обновления сервиса и полезные инструкции',
+      }),
+      path: '/ultima/news',
+      icon: <Newspaper className="h-5 w-5" />,
+    },
     {
       key: 'support',
       title: t('profile.supportContactTitle', { defaultValue: 'Связаться с поддержкой' }),
@@ -648,14 +658,14 @@ export function UltimaProfile() {
                     <p className="break-words text-[15px] font-semibold text-white/[0.94]">
                       {displayName}
                     </p>
-                    <p className="mt-0.5 truncate text-[12px] text-white/[0.5]">{accountHandle}</p>
+                    <p className="mt-0.5 truncate text-[13px] text-white/[0.72]">{accountHandle}</p>
                   </div>
                 </div>
 
                 <div
-                  className={`mt-4 flex items-center gap-2 border-y border-white/[0.07] py-3 text-[12px] ${
+                  className={`mt-4 flex items-center gap-2 border-y border-white/[0.07] py-3 text-[13px] ${
                     linkedIdentitiesLoading
-                      ? 'text-white/[0.52]'
+                      ? 'text-white/[0.72]'
                       : hasBackupAccess
                         ? 'text-emerald-100/[0.88]'
                         : 'text-amber-100/[0.88]'
@@ -675,8 +685,8 @@ export function UltimaProfile() {
                   </span>
                 </div>
 
-                <div className="mt-3 flex items-center justify-between gap-3 text-[12px]">
-                  <span className="text-white/[0.44]">{t('profile.ultima.accountId')}</span>
+                <div className="mt-3 flex items-center justify-between gap-3 text-[13px]">
+                  <span className="text-white/[0.72]">{t('profile.ultima.accountId')}</span>
                   <span className="break-all text-right font-medium text-white/[0.82]">
                     {userLabel}
                   </span>
@@ -685,7 +695,7 @@ export function UltimaProfile() {
                 <div className="mt-4 grid grid-cols-2 gap-2">
                   <button
                     type="button"
-                    className="ultima-btn-pill ultima-btn-secondary flex min-h-[42px] items-center justify-center gap-2 px-3 py-2 text-[12px]"
+                    className="ultima-btn-pill ultima-btn-secondary flex min-h-[42px] items-center justify-center gap-2 px-3 py-2 text-[13px]"
                     onClick={handleCopyUserId}
                   >
                     <Copy className="h-4 w-4" />
@@ -694,7 +704,7 @@ export function UltimaProfile() {
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="flex min-h-[42px] items-center justify-center gap-2 rounded-[7px] border border-rose-300/[0.16] bg-rose-500/[0.08] px-3 py-2 text-[12px] font-medium text-rose-50 transition-colors hover:bg-rose-500/[0.14]"
+                    className="flex min-h-[42px] items-center justify-center gap-2 rounded-[7px] border border-rose-300/[0.16] bg-rose-500/[0.08] px-3 py-2 text-[13px] font-medium text-rose-50 transition-colors hover:bg-rose-500/[0.14]"
                   >
                     <LogOut className="h-4 w-4" />
                     {t('profile.ultima.logout')}
@@ -729,12 +739,12 @@ export function UltimaProfile() {
                 <p className="break-words text-[16px] font-semibold leading-snug text-white/[0.96]">
                   {displayName}
                 </p>
-                <p className="mt-0.5 truncate text-[12px] text-white/[0.5]">{accountHandle}</p>
+                <p className="mt-0.5 truncate text-[13px] text-white/[0.72]">{accountHandle}</p>
               </div>
               <span
-                className={`shrink-0 rounded-full border px-2.5 py-1 text-[9px] font-semibold uppercase ${
+                className={`shrink-0 rounded-full border px-2.5 py-1 text-[13px] font-semibold uppercase ${
                   linkedIdentitiesLoading
-                    ? 'border-white/[0.1] bg-white/[0.04] text-white/[0.48]'
+                    ? 'border-white/[0.1] bg-white/[0.04] text-white/[0.72]'
                     : hasBackupAccess
                       ? 'border-emerald-200/[0.2] bg-emerald-300/[0.1] text-emerald-100/[0.9]'
                       : 'border-amber-200/[0.2] bg-amber-300/[0.1] text-amber-100/[0.9]'
@@ -767,11 +777,11 @@ export function UltimaProfile() {
                 ],
               ].map(([label, value, icon]) => (
                 <div key={String(label)} className="min-w-0 px-2 first:pl-0 last:pr-0">
-                  <div className="flex items-center gap-1.5 text-white/[0.4]">
+                  <div className="flex items-center gap-1.5 text-white/[0.72]">
                     {icon}
                     <span className="truncate text-[8px] font-medium uppercase">{label}</span>
                   </div>
-                  <p className="mt-1.5 truncate text-[11px] font-semibold text-white/[0.9]">
+                  <p className="mt-1.5 truncate text-[13px] font-semibold text-white/[0.9]">
                     {value}
                   </p>
                 </div>
@@ -794,7 +804,7 @@ export function UltimaProfile() {
           <div className="mt-3 grid grid-cols-2 gap-2 pb-3">
             <button
               type="button"
-              className="ultima-btn-pill ultima-btn-secondary flex min-h-[42px] items-center justify-center gap-2 px-3 py-2 text-[12px]"
+              className="ultima-btn-pill ultima-btn-secondary flex min-h-[42px] items-center justify-center gap-2 px-3 py-2 text-[13px]"
               onClick={handleCopyUserId}
               aria-label="copy-user-id"
             >
@@ -804,7 +814,7 @@ export function UltimaProfile() {
             <button
               type="button"
               onClick={handleLogout}
-              className="flex min-h-[42px] items-center justify-center gap-2 rounded-full border border-rose-300/[0.16] bg-rose-500/[0.08] px-3 py-2 text-[12px] font-medium text-rose-50 transition-colors hover:bg-rose-500/[0.14]"
+              className="flex min-h-[42px] items-center justify-center gap-2 rounded-full border border-rose-300/[0.16] bg-rose-500/[0.08] px-3 py-2 text-[13px] font-medium text-rose-50 transition-colors hover:bg-rose-500/[0.14]"
             >
               <LogOut className="h-4 w-4" />
               {t('profile.ultima.logout')}

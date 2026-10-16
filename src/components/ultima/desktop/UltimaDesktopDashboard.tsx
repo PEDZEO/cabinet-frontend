@@ -110,11 +110,13 @@ function DashboardMetric({ icon, label, value, meta }: DashboardMetricProps) {
           {icon}
         </div>
         <div className="min-w-0">
-          <p className="truncate text-[9px] font-semibold uppercase text-white/[0.4]">{label}</p>
-          <p className="mt-1.5 truncate text-[22px] font-semibold leading-none text-white/[0.96]">
+          <p className="break-words text-[13px] font-semibold uppercase text-white/[0.72]">
+            {label}
+          </p>
+          <p className="mt-1.5 break-words text-[22px] font-semibold leading-none text-white/[0.96]">
             {value}
           </p>
-          <p className="mt-1.5 truncate text-[11px] text-white/[0.5]">{meta}</p>
+          <p className="mt-1.5 break-words text-[13px] text-white/[0.72]">{meta}</p>
         </div>
       </div>
     </article>
@@ -255,7 +257,7 @@ export function UltimaDesktopDashboard({
       <section className={cn(ultimaCardClassName, 'h-full p-5')} style={defaultCardStyle}>
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase text-white/[0.4]">
+            <p className="text-[13px] font-semibold uppercase text-white/[0.72]">
               {t('promo.offers.specialOffer', { defaultValue: 'Спецпредложение' })}
             </p>
             <h2 className="mt-2 text-[20px] font-semibold leading-tight text-white/[0.95]">
@@ -266,7 +268,7 @@ export function UltimaDesktopDashboard({
                   })
                 : t('promo.offers.specialOffer', { defaultValue: 'Спецпредложение' })}
             </h2>
-            <p className="mt-2 text-[13px] leading-snug text-white/[0.56]">
+            <p className="mt-2 text-[13px] leading-snug text-white/[0.72]">
               {activeDiscount?.is_active
                 ? t('promo.useNow', { defaultValue: 'Скидка уже активна.' })
                 : t('promo.offers.activateDiscountHint', {
@@ -306,16 +308,19 @@ export function UltimaDesktopDashboard({
         <div className="ultima-desktop-stage-body has-context">
           <main className="ultima-desktop-main">
             <div data-testid="ultima-home-desktop" className="space-y-4">
-              <section className={cn(ultimaCardClassName, 'relative p-6')} style={accentCardStyle}>
+              <section
+                className={cn(ultimaCardClassName, 'ultima-desktop-dashboard-hero relative p-6')}
+                style={accentCardStyle}
+              >
                 <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_148px] lg:items-center">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2.5">
-                      <span className="text-[10px] font-semibold uppercase text-white/[0.42]">
+                      <span className="text-[13px] font-semibold uppercase text-white/[0.72]">
                         {t('ultima.currentTariff', { defaultValue: 'Ваш тариф' })}
                       </span>
                       <span
                         className={cn(
-                          'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-semibold',
+                          'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[13px] font-semibold',
                           tone.chip,
                         )}
                       >
@@ -340,7 +345,7 @@ export function UltimaDesktopDashboard({
                       </span>
                     </div>
                     {promoMessage ? (
-                      <p className="mt-3 text-[12px] text-white/[0.74]">{promoMessage}</p>
+                      <p className="mt-3 text-[13px] text-white/[0.74]">{promoMessage}</p>
                     ) : null}
                     <div className="mt-6 flex flex-wrap gap-2.5">
                       <button
@@ -423,7 +428,7 @@ export function UltimaDesktopDashboard({
                       <h2 className="text-[19px] font-semibold text-white/[0.95]">
                         {t('ultima.home.usage', { defaultValue: 'Использование' })}
                       </h2>
-                      <p className="mt-1 text-[12px] text-white/[0.46]">
+                      <p className="mt-1 text-[13px] text-white/[0.72]">
                         {t('ultima.home.usageHint', {
                           defaultValue: 'Трафик и готовность подключения',
                         })}
@@ -441,18 +446,18 @@ export function UltimaDesktopDashboard({
                         >
                           <Globe2 className="h-5 w-5 shrink-0 text-emerald-100/[0.78]" />
                           <div className="min-w-0 flex-1">
-                            <p className="text-[12px] font-medium text-white/[0.88]">
+                            <p className="text-[13px] font-medium text-white/[0.88]">
                               {t('ultima.home.standardServers', {
                                 defaultValue: 'Обычные серверы',
                               })}
                             </p>
-                            <p className="mt-0.5 truncate text-[10px] text-white/[0.42]">
+                            <p className="mt-0.5 break-words text-[13px] text-white/[0.72]">
                               {t('ultima.home.standardServersHint', {
                                 defaultValue: 'Работают без ограничений и не расходуют пакет.',
                               })}
                             </p>
                           </div>
-                          <span className="inline-flex shrink-0 items-center gap-1.5 text-[11px] font-semibold text-emerald-100/[0.9]">
+                          <span className="inline-flex shrink-0 items-center gap-1.5 text-[13px] font-semibold text-emerald-100/[0.9]">
                             <InfinityIcon className="h-4 w-4" />
                             {t('subscription.unlimited', { defaultValue: 'Безлимит' })}
                           </span>
@@ -460,8 +465,8 @@ export function UltimaDesktopDashboard({
                       ) : null}
 
                       <div className="min-w-0">
-                        <div className="flex items-center justify-between gap-3 text-[12px]">
-                          <span className="inline-flex min-w-0 items-center gap-2 text-white/[0.58]">
+                        <div className="flex items-center justify-between gap-3 text-[13px]">
+                          <span className="inline-flex min-w-0 items-center gap-2 text-white/[0.72]">
                             <Server className="h-4 w-4 shrink-0" />
                             <span className="truncate">
                               {isMeteredTraffic
@@ -486,7 +491,7 @@ export function UltimaDesktopDashboard({
                             className="mt-3"
                           />
                         ) : (
-                          <p className="mt-2 text-[10px] leading-snug text-white/[0.42]">
+                          <p className="mt-2 text-[13px] leading-snug text-white/[0.72]">
                             {isMeteredTraffic
                               ? isMeteredTrafficBlocked
                                 ? t('ultima.home.specialTrafficBlockedHint', {
@@ -507,7 +512,7 @@ export function UltimaDesktopDashboard({
                           <button
                             type="button"
                             onClick={onOpenTraffic}
-                            className="mt-3 inline-flex min-h-9 items-center gap-2 text-[11px] font-semibold text-emerald-100/[0.86] transition hover:text-emerald-50"
+                            className="mt-3 inline-flex min-h-9 items-center gap-2 text-[13px] font-semibold text-emerald-100/[0.86] transition hover:text-emerald-50"
                           >
                             {t('ultima.home.buySpecialTraffic', {
                               defaultValue: 'Докупить трафик для спецсерверов',
@@ -519,8 +524,8 @@ export function UltimaDesktopDashboard({
                     </div>
 
                     <div className="min-w-0">
-                      <div className="flex items-center justify-between gap-3 text-[12px]">
-                        <span className="text-white/[0.58]">
+                      <div className="flex items-center justify-between gap-3 text-[13px]">
+                        <span className="text-white/[0.72]">
                           {t('ultima.desktop.connectionState', { defaultValue: 'Подключение' })}
                         </span>
                         <span className="font-medium text-white/[0.88]">
@@ -538,7 +543,7 @@ export function UltimaDesktopDashboard({
                           style={{ width: `${connectionProgress}%` }}
                         />
                       </div>
-                      <p className="mt-2 text-[10px] leading-snug text-white/[0.42]">
+                      <p className="mt-2 text-[13px] leading-snug text-white/[0.72]">
                         {isConnectionCompleted
                           ? t('ultima.home.connectionReady', {
                               defaultValue: 'Подписка добавлена и готова к работе',
@@ -566,7 +571,7 @@ export function UltimaDesktopDashboard({
                   <h2 className="text-[18px] font-semibold text-white/[0.94]">
                     {t('support.title', { defaultValue: 'Поддержка' })}
                   </h2>
-                  <p className="mt-1.5 text-[12px] leading-snug text-white/[0.48]">
+                  <p className="mt-1.5 text-[13px] leading-snug text-white/[0.72]">
                     {t('ultima.desktop.supportHint', {
                       defaultValue: 'Поможем с подключением и доступом.',
                     })}

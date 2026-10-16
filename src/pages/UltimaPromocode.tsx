@@ -54,7 +54,7 @@ function GiftActivationDialog({
           <Gift className="h-5 w-5" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-medium uppercase text-emerald-100/[0.55]">
+          <p className="text-[13px] font-medium uppercase text-emerald-100/[0.55]">
             {t('promocode.desktopApplied', { defaultValue: 'Код применён' })}
           </p>
           <h2 id="gift-activation-title" className="mt-1 text-[22px] font-semibold leading-tight">
@@ -64,7 +64,7 @@ function GiftActivationDialog({
         <button
           type="button"
           onClick={onClose}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/[0.10] bg-white/[0.04] text-white/[0.65]"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/[0.10] bg-white/[0.04] text-white/[0.65]"
           aria-label={t('common.close', { defaultValue: 'Закрыть' })}
         >
           <X className="h-4 w-4" />
@@ -80,7 +80,7 @@ function GiftActivationDialog({
 
       <div className="mt-4 divide-y divide-white/[0.08] rounded-2xl border border-white/[0.09] bg-white/[0.035] px-3">
         <div className="flex items-center justify-between gap-3 py-3 text-[13px]">
-          <span className="text-white/[0.45]">
+          <span className="text-white/[0.72]">
             {t('balance.promocode.giftSender', { defaultValue: 'Отправитель' })}
           </span>
           <span className="min-w-0 truncate text-right font-medium text-white/[0.90]">
@@ -88,7 +88,7 @@ function GiftActivationDialog({
           </span>
         </div>
         <div className="flex items-center justify-between gap-3 py-3 text-[13px]">
-          <span className="text-white/[0.45]">
+          <span className="text-white/[0.72]">
             {t('balance.promocode.giftTariff', { defaultValue: 'Тариф' })}
           </span>
           <span className="min-w-0 truncate text-right font-medium text-white/[0.90]">
@@ -96,7 +96,7 @@ function GiftActivationDialog({
           </span>
         </div>
         <div className="flex items-center justify-between gap-3 py-3 text-[13px]">
-          <span className="text-white/[0.45]">
+          <span className="text-white/[0.72]">
             {t('balance.promocode.giftPeriod', { defaultValue: 'Срок подарка' })}
           </span>
           <span className="font-medium text-white/[0.90]">
@@ -220,13 +220,13 @@ export function UltimaPromocode() {
           <TicketCheck className="h-5 w-5" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-medium uppercase text-emerald-100/[0.50]">
+          <p className="text-[13px] font-medium uppercase text-emerald-100/[0.50]">
             {t('balance.promocode.title', { defaultValue: 'Промокод' })}
           </p>
           <h2 className="mt-1 text-[20px] font-semibold leading-tight text-white">
             {t('balance.promocode.inputLabel', { defaultValue: 'Активировать код' })}
           </h2>
-          <p className="mt-1 text-[12px] leading-relaxed text-white/[0.48]">
+          <p className="mt-1 text-[13px] leading-relaxed text-white/[0.72]">
             {t('balance.promocode.ultimaDescription', {
               defaultValue: 'Введите промокод на скидку, бонус или подарочную подписку.',
             })}
@@ -280,7 +280,7 @@ export function UltimaPromocode() {
                 setSuccess(null);
               }}
               disabled={activateMutation.isPending}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white/[0.40]"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white/[0.72]"
               aria-label={t('common.clear', { defaultValue: 'Очистить' })}
             >
               <X className="h-4 w-4" />
@@ -308,7 +308,7 @@ export function UltimaPromocode() {
 
       {activationState !== 'idle' ? (
         <div
-          className={`mt-3 flex gap-2.5 rounded-2xl border p-3 text-[12px] leading-relaxed ${
+          className={`mt-3 flex gap-2.5 rounded-2xl border p-3 text-[13px] leading-relaxed ${
             activationState === 'error'
               ? 'border-rose-200/[0.2] bg-rose-300/[0.08] text-rose-100'
               : activationState === 'success'
@@ -341,8 +341,8 @@ export function UltimaPromocode() {
             <BadgePercent className="h-4 w-4" />
           </span>
           <span className="min-w-0">
-            <span className="block text-[12px] font-medium text-white/[0.85]">Промокод</span>
-            <span className="mt-0.5 block text-[9px] leading-tight text-white/[0.38]">
+            <span className="block text-[13px] font-medium text-white/[0.85]">Промокод</span>
+            <span className="mt-0.5 block text-[13px] leading-tight text-white/[0.38]">
               Скидка или бонус
             </span>
           </span>
@@ -352,15 +352,15 @@ export function UltimaPromocode() {
             <Gift className="h-4 w-4" />
           </span>
           <span className="min-w-0">
-            <span className="block text-[12px] font-medium text-white/[0.85]">Подарочный код</span>
-            <span className="mt-0.5 block text-[9px] leading-tight text-white/[0.38]">
+            <span className="block text-[13px] font-medium text-white/[0.85]">Подарочный код</span>
+            <span className="mt-0.5 block text-[13px] leading-tight text-white/[0.38]">
               Готовая подписка
             </span>
           </span>
         </div>
       </div>
 
-      <p className="mt-4 text-center text-[10px] leading-relaxed text-white/[0.35]">
+      <p className="mt-4 text-center text-[13px] leading-relaxed text-white/[0.35]">
         {t('balance.promocode.ultimaHint', {
           defaultValue: 'Результат сразу появится в подписке, балансе или истории операций.',
         })}
@@ -461,7 +461,7 @@ export function UltimaPromocode() {
                     </span>
                     <div>
                       <p className="text-[13px] font-medium text-white/[0.90]">{item.title}</p>
-                      <p className="mt-1 text-[11px] leading-relaxed text-white/[0.45]">
+                      <p className="mt-1 text-[13px] leading-relaxed text-white/[0.72]">
                         {item.description}
                       </p>
                     </div>
@@ -494,7 +494,7 @@ export function UltimaPromocode() {
             <h1 className="text-[30px] font-semibold leading-none text-white">
               {t('balance.promocode.title', { defaultValue: 'Промокод' })}
             </h1>
-            <p className="mt-2 text-[13px] leading-[1.45] text-white/[0.58]">
+            <p className="mt-2 text-[13px] leading-[1.45] text-white/[0.72]">
               {t('balance.promocode.ultimaDescription', {
                 defaultValue: 'Скидки, бонусы и подарки активируются здесь.',
               })}

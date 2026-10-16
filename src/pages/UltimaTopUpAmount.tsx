@@ -380,11 +380,11 @@ export function UltimaTopUpAmount() {
           <PaymentMethodIcon method={method.id} className="h-9 w-9" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] uppercase tracking-[0.12em] text-white/[0.40]">
+          <p className="text-[13px] uppercase tracking-[0.12em] text-white/[0.72]">
             {t('balance.paymentSelectedMethod', { defaultValue: 'Способ оплаты' })}
           </p>
           <p className="mt-0.5 truncate text-[15px] font-semibold text-white">{methodName}</p>
-          <p className="mt-0.5 line-clamp-1 text-xs text-white/[0.45]">{methodDescription}</p>
+          <p className="mt-0.5 line-clamp-1 text-xs text-white/[0.72]">{methodDescription}</p>
         </div>
         <button
           type="button"
@@ -398,7 +398,7 @@ export function UltimaTopUpAmount() {
 
       {method.options && method.options.length > 0 ? (
         <fieldset className="mt-4">
-          <legend className="mb-2 text-xs font-medium text-white/[0.55]">
+          <legend className="mb-2 text-xs font-medium text-white/[0.72]">
             {t('balance.topUp.paymentOptionTitle', { defaultValue: 'Вариант оплаты' })}
           </legend>
           <div className="grid gap-2 sm:grid-cols-2">
@@ -417,7 +417,7 @@ export function UltimaTopUpAmount() {
                   <span className="min-w-0">
                     <span className="block truncate font-medium">{option.name}</span>
                     {option.description ? (
-                      <span className="mt-0.5 line-clamp-1 block text-[11px] text-white/[0.42]">
+                      <span className="mt-0.5 line-clamp-1 block text-[13px] text-white/[0.72]">
                         {option.description}
                       </span>
                     ) : null}
@@ -436,10 +436,10 @@ export function UltimaTopUpAmount() {
 
       <div className="mt-5">
         <div className="flex items-end justify-between gap-3">
-          <label htmlFor="ultima-payment-amount" className="text-xs font-medium text-white/[0.55]">
+          <label htmlFor="ultima-payment-amount" className="text-xs font-medium text-white/[0.72]">
             {t('balance.enterAmount')}
           </label>
-          <span className="text-[11px] text-white/[0.38]">{rangeLabel}</span>
+          <span className="text-[13px] text-white/[0.38]">{rangeLabel}</span>
         </div>
         <div className="mt-2 flex min-h-[72px] items-center rounded-2xl border border-white/[0.1] bg-black/[0.15] px-4 focus-within:border-[color:color-mix(in_srgb,var(--ultima-color-primary)_58%,transparent)] focus-within:ring-2 focus-within:ring-[color:color-mix(in_srgb,var(--ultima-color-primary)_12%,transparent)]">
           <input
@@ -464,7 +464,7 @@ export function UltimaTopUpAmount() {
             placeholder="0"
             autoComplete="off"
           />
-          <span className="ml-3 text-xl font-medium text-white/[0.45]">{currencySymbol}</span>
+          <span className="ml-3 text-xl font-medium text-white/[0.72]">{currencySymbol}</span>
         </div>
       </div>
 
@@ -481,7 +481,7 @@ export function UltimaTopUpAmount() {
                 data-testid={`ultima-payment-quick-${value}`}
                 type="button"
                 onClick={() => handleQuickAmount(value)}
-                className={`min-h-10 rounded-xl border px-1.5 text-xs font-medium transition ${selected ? 'border-[color:color-mix(in_srgb,var(--ultima-color-primary)_48%,transparent)] bg-[color:color-mix(in_srgb,var(--ultima-color-primary)_12%,transparent)] text-white' : 'border-white/[0.08] bg-white/[0.03] text-white/[0.58] hover:border-white/[0.16] hover:text-white/[0.80]'}`}
+                className={`min-h-10 rounded-xl border px-1.5 text-xs font-medium transition ${selected ? 'border-[color:color-mix(in_srgb,var(--ultima-color-primary)_48%,transparent)] bg-[color:color-mix(in_srgb,var(--ultima-color-primary)_12%,transparent)] text-white' : 'border-white/[0.08] bg-white/[0.03] text-white/[0.72] hover:border-white/[0.16] hover:text-white/[0.80]'}`}
               >
                 {formatAmount(value, 0)}
               </button>
@@ -496,13 +496,13 @@ export function UltimaTopUpAmount() {
         style={ultimaPaneSurfaceStyle}
       >
         <div className="min-w-0 px-3 py-3">
-          <p className="text-[10px] uppercase tracking-[0.08em] text-white/[0.35]">
+          <p className="text-[13px] uppercase tracking-[0.08em] text-white/[0.35]">
             {t('balance.amount', { defaultValue: 'Сумма' })}
           </p>
           <p className="mt-1 truncate text-sm font-semibold text-white">{amountLabel}</p>
         </div>
         <div className="min-w-0 px-3 py-3">
-          <p className="text-[10px] uppercase tracking-[0.08em] text-white/[0.35]">
+          <p className="text-[13px] uppercase tracking-[0.08em] text-white/[0.35]">
             {t('balance.currentBalance')}
           </p>
           <p className="mt-1 truncate text-sm font-semibold text-white/[0.75]">
@@ -510,7 +510,7 @@ export function UltimaTopUpAmount() {
           </p>
         </div>
         <div className="min-w-0 px-3 py-3">
-          <p className="text-[10px] uppercase tracking-[0.08em] text-white/[0.35]">
+          <p className="text-[13px] uppercase tracking-[0.08em] text-white/[0.35]">
             {t('balance.afterTopUp', { defaultValue: 'Будет' })}
           </p>
           <p className="mt-1 truncate text-sm font-semibold text-[color:color-mix(in_srgb,var(--ultima-color-primary)_74%,white)]">
@@ -540,7 +540,7 @@ export function UltimaTopUpAmount() {
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-white">{t('balance.paymentReady')}</p>
-              <p className="mt-0.5 text-xs leading-relaxed text-white/[0.48]">
+              <p className="mt-0.5 text-xs leading-relaxed text-white/[0.72]">
                 {t('balance.paymentReadyHint', {
                   defaultValue: 'Платёжная ссылка создана и готова к открытию.',
                 })}
@@ -642,7 +642,7 @@ export function UltimaTopUpAmount() {
                     {t('balance.toPay', { defaultValue: 'К оплате' })}
                   </p>
                   <p className="mt-1 text-2xl font-semibold text-white">{amountLabel}</p>
-                  <div className="mt-3 flex items-center gap-2 text-xs text-white/[0.48]">
+                  <div className="mt-3 flex items-center gap-2 text-xs text-white/[0.72]">
                     <ShieldCheck className="h-4 w-4 text-[color:var(--ultima-color-primary)]" />
                     {methodName}
                   </div>
@@ -674,21 +674,21 @@ export function UltimaTopUpAmount() {
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
         <header className="mb-3">
-          <div className="mb-2 flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.12em] text-[color:color-mix(in_srgb,var(--ultima-color-primary)_70%,white)]">
+          <div className="mb-2 flex items-center gap-2 text-[13px] font-medium uppercase tracking-[0.12em] text-[color:color-mix(in_srgb,var(--ultima-color-primary)_70%,white)]">
             <WalletCards className="h-4 w-4" />
             {t('balance.topUpBalance')}
           </div>
           <h1 className="text-[34px] font-semibold leading-[0.96] text-white">
             {t('balance.paymentAmountTitle', { defaultValue: 'Сумма пополнения' })}
           </h1>
-          <p className="mt-1.5 text-[13px] text-white/[0.52]">
+          <p className="mt-1.5 text-[13px] text-white/[0.72]">
             {methodName} · {rangeLabel}
           </p>
         </header>
 
         <main className="ultima-scrollbar min-h-0 flex-1 overflow-y-auto pb-3">
           {paymentComposer}
-          <div className="mt-3 flex items-start gap-2.5 px-1 text-[11px] leading-relaxed text-white/[0.42]">
+          <div className="mt-3 flex items-start gap-2.5 px-1 text-[13px] leading-relaxed text-white/[0.72]">
             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[color:color-mix(in_srgb,var(--ultima-color-primary)_70%,white)]" />
             <span>
               {t('balance.paymentBalanceDestinationHint', {

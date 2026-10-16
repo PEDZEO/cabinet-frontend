@@ -139,7 +139,7 @@ export function UltimaAgreement() {
           <h1 className="mt-2 text-[clamp(27px,7.4vw,34px)] font-semibold leading-[0.95] tracking-[-0.015em] text-white">
             {title}
           </h1>
-          <p className="mt-1 text-[12px] text-white/[0.55]">{subtitle}</p>
+          <p className="mt-1 text-[13px] text-white/[0.72]">{subtitle}</p>
         </section>
 
         <section className="min-h-0 flex-1 overflow-hidden rounded-3xl lg:min-h-0 lg:pb-2">

@@ -104,12 +104,12 @@ export function UltimaReferralShareSheet({
               {t('ultima.home.inviteSheetTitle', { defaultValue: 'Пригласить друга' })}
             </SheetTitle>
             {bonusLabel ? (
-              <span className="rounded-full border border-emerald-200/[0.18] bg-emerald-300/[0.1] px-2 py-1 text-[10px] font-semibold text-emerald-100">
+              <span className="rounded-full border border-emerald-200/[0.18] bg-emerald-300/[0.1] px-2 py-1 text-[13px] font-semibold text-emerald-100">
                 {bonusLabel}
               </span>
             ) : null}
           </div>
-          <SheetDescription className="text-[12px] leading-snug text-white/[0.52]">
+          <SheetDescription className="text-[13px] leading-snug text-white/[0.72]">
             {t('ultima.home.inviteSheetHint', {
               defaultValue: 'Выберите, куда должен перейти приглашённый пользователь.',
             })}
@@ -123,10 +123,10 @@ export function UltimaReferralShareSheet({
               onClick={() => selectKind('telegram')}
               data-testid="ultima-referral-kind-telegram"
               className={cn(
-                'flex min-h-10 items-center justify-center gap-2 rounded-md px-3 text-[12px] font-semibold transition',
+                'flex min-h-10 items-center justify-center gap-2 rounded-md px-3 text-[13px] font-semibold transition',
                 selectedKind === 'telegram'
                   ? 'bg-white/[0.1] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
-                  : 'text-white/[0.48]',
+                  : 'text-white/[0.72]',
               )}
             >
               <Send className="h-4 w-4" strokeWidth={1.8} />
@@ -138,10 +138,10 @@ export function UltimaReferralShareSheet({
             onClick={() => selectKind('web')}
             data-testid="ultima-referral-kind-web"
             className={cn(
-              'flex min-h-10 items-center justify-center gap-2 rounded-md px-3 text-[12px] font-semibold transition',
+              'flex min-h-10 items-center justify-center gap-2 rounded-md px-3 text-[13px] font-semibold transition',
               selectedKind === 'web'
                 ? 'bg-white/[0.1] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
-                : 'text-white/[0.48]',
+                : 'text-white/[0.72]',
             )}
           >
             <Globe2 className="h-4 w-4" strokeWidth={1.8} />
@@ -154,7 +154,7 @@ export function UltimaReferralShareSheet({
             <div className="mx-auto flex w-fit max-w-full rounded-lg bg-white p-3 shadow-[0_12px_30px_rgba(0,0,0,0.24)]">
               <QRCodeSVG value={selectedLink} size={168} level="M" includeMargin={false} />
             </div>
-            <div className="mt-3 truncate rounded-lg border border-white/[0.08] bg-black/[0.15] px-3 py-2.5 text-[11px] text-white/[0.58]">
+            <div className="mt-3 truncate rounded-lg border border-white/[0.08] bg-black/[0.15] px-3 py-2.5 text-[13px] text-white/[0.72]">
               {selectedLink}
             </div>
           </div>
@@ -165,7 +165,7 @@ export function UltimaReferralShareSheet({
             type="button"
             onClick={() => void copyLink()}
             data-testid="ultima-referral-copy-selected"
-            className="ultima-btn-pill ultima-btn-secondary flex min-h-11 items-center justify-center gap-2 px-3 text-[12px]"
+            className="ultima-btn-pill ultima-btn-secondary flex min-h-11 items-center justify-center gap-2 px-3 text-[13px]"
           >
             {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             {copied
@@ -177,7 +177,7 @@ export function UltimaReferralShareSheet({
             onClick={() => void shareLink()}
             data-testid="ultima-referral-share-selected"
             data-share-url={selectedShareUrl}
-            className="ultima-btn-pill ultima-btn-primary flex min-h-11 items-center justify-center gap-2 px-3 text-[12px]"
+            className="ultima-btn-pill ultima-btn-primary flex min-h-11 items-center justify-center gap-2 px-3 text-[13px]"
           >
             <Share2 className="h-4 w-4" />
             {t('referral.shareButton', { defaultValue: 'Поделиться' })}
@@ -190,7 +190,7 @@ export function UltimaReferralShareSheet({
             onOpenChange(false);
             onOpenReferralPage();
           }}
-          className="mt-3 min-h-10 w-full text-center text-[12px] font-medium text-white/[0.58] transition hover:text-white/[0.9]"
+          className="mt-3 min-h-10 w-full text-center text-[13px] font-medium text-white/[0.72] transition hover:text-white/[0.9]"
         >
           {t('ultima.home.openReferralProgram', { defaultValue: 'Открыть реферальную программу' })}
         </button>

@@ -68,7 +68,7 @@ export function UltimaDesktopAgreement({
               </h1>
               <p className="mt-3 text-sm leading-[1.6] text-white/70">{subtitle}</p>
               <div className="mt-6 rounded-[18px] border border-white/10 bg-black/[0.15] px-4 py-3">
-                <div className="text-[11px] uppercase tracking-[0.22em] text-white/[0.42]">
+                <div className="text-[13px] uppercase tracking-[0.22em] text-white/[0.72]">
                   {t('common.lastUpdated', { defaultValue: 'Последнее обновление' })}
                 </div>
                 <div className="mt-2 text-sm font-medium text-white/[0.88]">
@@ -89,7 +89,7 @@ export function UltimaDesktopAgreement({
               <div>
                 <div className="text-2xl font-semibold tracking-[-0.03em] text-white">{title}</div>
               </div>
-              <div className="text-sm text-white/[0.52]">
+              <div className="text-sm text-white/[0.72]">
                 {updatedAtLabel ??
                   t('common.currentVersion', { defaultValue: 'Актуальная версия' })}
               </div>

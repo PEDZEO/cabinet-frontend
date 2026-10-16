@@ -158,14 +158,14 @@ export function UltimaBalanceHistory() {
   const amountToneClass: Record<TransactionTone, string> = {
     positive: 'text-[color:color-mix(in_srgb,var(--ultima-color-primary)_72%,white)]',
     negative: 'text-rose-200',
-    neutral: 'text-white/[0.58]',
+    neutral: 'text-white/[0.72]',
   };
 
   const iconToneClass: Record<TransactionTone, string> = {
     positive:
       'bg-[color:color-mix(in_srgb,var(--ultima-color-primary)_13%,transparent)] text-[color:color-mix(in_srgb,var(--ultima-color-primary)_72%,white)]',
     negative: 'bg-rose-400/[0.09] text-rose-200',
-    neutral: 'bg-white/[0.05] text-white/[0.50]',
+    neutral: 'bg-white/[0.05] text-white/[0.72]',
   };
 
   const historyList = (
@@ -179,7 +179,7 @@ export function UltimaBalanceHistory() {
           <h2 className="text-[17px] font-semibold text-white">
             {t('profile.transactionsTitle', { defaultValue: 'История операций' })}
           </h2>
-          <p className="mt-0.5 text-xs text-white/[0.42]">
+          <p className="mt-0.5 text-xs text-white/[0.72]">
             {transactions
               ? t('balance.operationsTotal', {
                   count: transactions.total,
@@ -277,7 +277,7 @@ export function UltimaBalanceHistory() {
                       {getTypeLabel(transaction.type)}
                     </h3>
                     <span
-                      className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] ${transaction.is_completed ? 'bg-[color:color-mix(in_srgb,var(--ultima-color-primary)_10%,transparent)] text-[color:color-mix(in_srgb,var(--ultima-color-primary)_68%,white)]' : 'bg-amber-400/[0.09] text-amber-100'}`}
+                      className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[13px] ${transaction.is_completed ? 'bg-[color:color-mix(in_srgb,var(--ultima-color-primary)_10%,transparent)] text-[color:color-mix(in_srgb,var(--ultima-color-primary)_68%,white)]' : 'bg-amber-400/[0.09] text-amber-100'}`}
                     >
                       {transaction.is_completed ? (
                         <CheckCircle2 className="h-3 w-3" />
@@ -290,9 +290,9 @@ export function UltimaBalanceHistory() {
                     </span>
                   </div>
                   {description ? (
-                    <p className="mt-0.5 line-clamp-1 text-xs text-white/[0.45]">{description}</p>
+                    <p className="mt-0.5 line-clamp-1 text-xs text-white/[0.72]">{description}</p>
                   ) : null}
-                  <p className="mt-1 flex min-w-0 items-center gap-1.5 text-[11px] text-white/[0.35]">
+                  <p className="mt-1 flex min-w-0 items-center gap-1.5 text-[13px] text-white/[0.35]">
                     <span className="truncate">{dateLabel}</span>
                     {method ? (
                       <>
@@ -309,7 +309,7 @@ export function UltimaBalanceHistory() {
                     {amountSign}
                     {formatAmount(amountValue)} {currencySymbol}
                   </p>
-                  <p className="mt-1 text-[10px] text-white/[0.28]">#{transaction.id}</p>
+                  <p className="mt-1 text-[13px] text-white/[0.28]">#{transaction.id}</p>
                 </div>
               </article>
             );
@@ -332,7 +332,7 @@ export function UltimaBalanceHistory() {
             <ArrowLeft className="h-3.5 w-3.5" />
             {t('common.back')}
           </button>
-          <span className="min-w-[58px] text-center text-xs font-medium text-white/[0.55]">
+          <span className="min-w-[58px] text-center text-xs font-medium text-white/[0.72]">
             {transactions.page} / {transactions.pages}
           </span>
           <button
@@ -357,7 +357,7 @@ export function UltimaBalanceHistory() {
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-white/[0.38]">
+          <p className="text-[13px] font-medium uppercase tracking-[0.12em] text-white/[0.38]">
             {t('balance.currentBalance')}
           </p>
           <p className="mt-2 truncate text-[32px] font-semibold leading-none text-white">
@@ -379,7 +379,7 @@ export function UltimaBalanceHistory() {
       </div>
       <div className="mt-4 grid grid-cols-2 gap-2">
         <div className="rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2.5">
-          <p className="text-[10px] uppercase tracking-[0.08em] text-white/[0.32]">
+          <p className="text-[13px] uppercase tracking-[0.08em] text-white/[0.32]">
             {t('balance.incomeOnPage', { defaultValue: 'Зачисления' })}
           </p>
           <p className="mt-1 text-sm font-semibold text-[color:color-mix(in_srgb,var(--ultima-color-primary)_72%,white)]">
@@ -387,7 +387,7 @@ export function UltimaBalanceHistory() {
           </p>
         </div>
         <div className="rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2.5">
-          <p className="text-[10px] uppercase tracking-[0.08em] text-white/[0.32]">
+          <p className="text-[13px] uppercase tracking-[0.08em] text-white/[0.32]">
             {t('balance.expensesOnPage', { defaultValue: 'Списания' })}
           </p>
           <p className="mt-1 text-sm font-semibold text-rose-200">
@@ -452,7 +452,7 @@ export function UltimaBalanceHistory() {
             >
               <div className="space-y-2">
                 <div className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.035] px-3 py-2.5 text-sm">
-                  <span className="text-white/[0.48]">
+                  <span className="text-white/[0.72]">
                     {t('balance.incomeOnPage', { defaultValue: 'Зачисления' })}
                   </span>
                   <strong className="text-[color:color-mix(in_srgb,var(--ultima-color-primary)_72%,white)]">
@@ -460,7 +460,7 @@ export function UltimaBalanceHistory() {
                   </strong>
                 </div>
                 <div className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.035] px-3 py-2.5 text-sm">
-                  <span className="text-white/[0.48]">
+                  <span className="text-white/[0.72]">
                     {t('balance.expensesOnPage', { defaultValue: 'Списания' })}
                   </span>
                   <strong className="text-rose-200">
@@ -497,7 +497,7 @@ export function UltimaBalanceHistory() {
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
         <header className="mb-3 flex items-end justify-between gap-3">
           <div className="min-w-0">
-            <div className="mb-2 flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.12em] text-[color:color-mix(in_srgb,var(--ultima-color-primary)_70%,white)]">
+            <div className="mb-2 flex items-center gap-2 text-[13px] font-medium uppercase tracking-[0.12em] text-[color:color-mix(in_srgb,var(--ultima-color-primary)_70%,white)]">
               <WalletCards className="h-4 w-4" />
               {t('balance.title')}
             </div>

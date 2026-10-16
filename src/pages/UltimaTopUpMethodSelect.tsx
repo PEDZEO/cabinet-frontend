@@ -55,10 +55,10 @@ function PaymentMethodCard({
         <span className="block truncate text-[15px] font-semibold leading-tight text-white/95">
           {name}
         </span>
-        <span className="mt-1 line-clamp-1 block text-[12px] leading-snug text-white/[0.52]">
+        <span className="mt-1 line-clamp-1 block text-[13px] leading-snug text-white/[0.72]">
           {description}
         </span>
-        <span className="mt-2 flex min-w-0 items-center gap-1.5 text-[11px] text-white/[0.62]">
+        <span className="mt-2 flex min-w-0 items-center gap-1.5 text-[13px] text-white/[0.62]">
           {method.is_available ? (
             <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-200" />
           ) : (
@@ -68,7 +68,7 @@ function PaymentMethodCard({
         </span>
       </span>
 
-      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.05] text-white/[0.46] transition group-enabled:group-hover:bg-emerald-300/[0.12] group-enabled:group-hover:text-emerald-100">
+      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.05] text-white/[0.72] transition group-enabled:group-hover:bg-emerald-300/[0.12] group-enabled:group-hover:text-emerald-100">
         {method.is_available ? (
           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
         ) : (
@@ -312,12 +312,12 @@ export function UltimaTopUpMethodSelect() {
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
         <header className="mb-4">
-          <div className="mb-2 flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.12em] text-emerald-100/70">
+          <div className="mb-2 flex items-center gap-2 text-[13px] font-medium uppercase tracking-[0.12em] text-emerald-100/70">
             <WalletCards className="h-4 w-4" />
             {t('balance.topUpBalance')}
           </div>
           <h1 className="text-[36px] font-semibold leading-[0.98] text-white">{title}</h1>
-          <p className="mt-2 max-w-[34rem] text-[14px] leading-snug text-white/[0.58]">
+          <p className="mt-2 max-w-[34rem] text-[14px] leading-snug text-white/[0.72]">
             {subtitle}
           </p>
         </header>
@@ -329,7 +329,7 @@ export function UltimaTopUpMethodSelect() {
               className="mb-4 flex items-center justify-between gap-3 rounded-2xl bg-emerald-300/[0.09] px-4 py-3 ring-1 ring-inset ring-emerald-200/[0.12]"
             >
               <div className="min-w-0">
-                <p className="text-[11px] uppercase tracking-[0.1em] text-emerald-100/55">
+                <p className="text-[13px] uppercase tracking-[0.1em] text-emerald-100/55">
                   {t('balance.paymentRequestedAmount', { defaultValue: 'К пополнению' })}
                 </p>
                 <p className="mt-0.5 truncate text-xl font-semibold text-white">
@@ -351,7 +351,7 @@ export function UltimaTopUpMethodSelect() {
                 {t('balance.paymentAvailableMethods', { defaultValue: 'Доступные способы' })}
               </h2>
               {!isLoading ? (
-                <span className="text-[11px] text-white/55">
+                <span className="text-[13px] text-white/55">
                   {t('balance.paymentAvailableCount', {
                     count: availableCount,
                     defaultValue: `Доступно: ${availableCount}`,
@@ -365,7 +365,7 @@ export function UltimaTopUpMethodSelect() {
           <footer className="mt-4 border-t border-white/[0.08] pt-3">
             <div className="flex items-start gap-2.5 px-1">
               <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-100/75" />
-              <p className="text-[11px] leading-relaxed text-white/45">
+              <p className="text-[13px] leading-relaxed text-white/45">
                 {t('balance.paymentBalanceDestinationHint', {
                   defaultValue: 'Средства появятся на балансе после подтверждения платежа.',
                 })}
@@ -382,7 +382,7 @@ export function UltimaTopUpMethodSelect() {
                   <span className="block font-medium">
                     {t('profile.transactionsTitle', { defaultValue: 'История операций' })}
                   </span>
-                  <span className="text-white/38 mt-0.5 block text-[11px]">
+                  <span className="text-white/38 mt-0.5 block text-[13px]">
                     {t('balance.paymentHistoryHint', {
                       defaultValue: 'Все пополнения и списания',
                     })}

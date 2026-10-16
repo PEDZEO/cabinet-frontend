@@ -567,7 +567,7 @@ export function UltimaDevices() {
                   <p className="truncate text-[15px] font-semibold text-white">
                     {t('devices.capacityTitle', { defaultValue: 'Ваши устройства' })}
                   </p>
-                  <p className="mt-0.5 text-[11px] text-white/[0.52]">
+                  <p className="mt-0.5 text-[13px] text-white/[0.72]">
                     {legacyExtraDevices > 0
                       ? t('devices.extraSlotsIncluded', {
                           base: baseDeviceLimit,
@@ -583,7 +583,7 @@ export function UltimaDevices() {
               </div>
               <span
                 data-testid="ultima-device-free-slots"
-                className="shrink-0 rounded-full border border-emerald-200/[0.16] bg-emerald-300/[0.08] px-2.5 py-1 text-[11px] font-medium text-emerald-50"
+                className="shrink-0 rounded-full border border-emerald-200/[0.16] bg-emerald-300/[0.08] px-2.5 py-1 text-[13px] font-medium text-emerald-50"
               >
                 {availableDeviceSlots > 0
                   ? t('devices.freeSlotsShort', {
@@ -599,7 +599,7 @@ export function UltimaDevices() {
                 <div className="text-[18px] font-semibold tabular-nums text-white">
                   {connectedCount}
                 </div>
-                <div className="mt-0.5 truncate text-[10px] uppercase text-white/[0.44]">
+                <div className="mt-0.5 truncate text-[13px] uppercase text-white/[0.72]">
                   {t('devices.connectedShort', { defaultValue: 'Подключено' })}
                 </div>
               </div>
@@ -607,7 +607,7 @@ export function UltimaDevices() {
                 <div className="text-[18px] font-semibold tabular-nums text-white">
                   {availableDeviceSlots}
                 </div>
-                <div className="mt-0.5 truncate text-[10px] uppercase text-white/[0.44]">
+                <div className="mt-0.5 truncate text-[13px] uppercase text-white/[0.72]">
                   {t('devices.freeShort', { defaultValue: 'Свободно' })}
                 </div>
               </div>
@@ -615,7 +615,7 @@ export function UltimaDevices() {
                 <div className="text-[18px] font-semibold tabular-nums text-white">
                   {currentLimit}
                 </div>
-                <div className="mt-0.5 truncate text-[10px] uppercase text-white/[0.44]">
+                <div className="mt-0.5 truncate text-[13px] uppercase text-white/[0.72]">
                   {t('devices.limitShort', { defaultValue: 'Лимит' })}
                 </div>
               </div>
@@ -656,7 +656,7 @@ export function UltimaDevices() {
                     <p className="text-[13px] font-medium text-white">
                       {t('devices.limitControlTitle', { defaultValue: 'Лимит подписки' })}
                     </p>
-                    <p className="mt-0.5 text-[11px] text-white/[0.48]">
+                    <p className="mt-0.5 text-[13px] text-white/[0.72]">
                       {t('devices.limitControlHint', {
                         min: minTargetLimit,
                         max: maxTargetLimit,
@@ -687,7 +687,7 @@ export function UltimaDevices() {
                     data-testid="ultima-device-limit-summary"
                     className="mt-3 border-t border-white/[0.07] pt-3"
                   >
-                    <div className="flex items-start justify-between gap-3 text-[12px]">
+                    <div className="flex items-start justify-between gap-3 text-[13px]">
                       <div>
                         <p className="font-medium text-white/[0.9]">
                           {t('devices.newLimit', {
@@ -695,7 +695,7 @@ export function UltimaDevices() {
                             defaultValue: 'Новый лимит: {{count}}',
                           })}
                         </p>
-                        <p className="mt-1 text-white/[0.5]">
+                        <p className="mt-1 text-white/[0.72]">
                           {targetDelta > 0
                             ? t('devices.slotsAdded', {
                                 count: targetDelta,
@@ -719,7 +719,7 @@ export function UltimaDevices() {
                                 ? `${formatAmount(devicePrice.total_price_kopeks / 100)} ${currencySymbol}`
                                 : '—'}
                           </p>
-                          <p className="mt-1 text-[10px] text-white/[0.42]">
+                          <p className="mt-1 text-[13px] text-white/[0.72]">
                             {t('devices.untilRenewal', { defaultValue: 'до продления' })}
                           </p>
                         </div>
@@ -727,7 +727,7 @@ export function UltimaDevices() {
                     </div>
 
                     {targetDelta > 0 && !devicePrice?.available && !isDevicePriceLoading ? (
-                      <p className="mt-2 text-[11px] text-amber-100/[0.8]">
+                      <p className="mt-2 text-[13px] text-amber-100/[0.8]">
                         {devicePrice?.reason ||
                           t('lite.devicesNotAvailable', {
                             defaultValue: 'Покупка устройств недоступна',
@@ -758,7 +758,7 @@ export function UltimaDevices() {
                 ) : null}
               </div>
             ) : (
-              <p className="mt-3 border-t border-white/[0.08] pt-3 text-[11px] text-white/[0.5]">
+              <p className="mt-3 border-t border-white/[0.08] pt-3 text-[13px] text-white/[0.72]">
                 {t('devices.trialLimitHint', {
                   defaultValue: 'На пробном периоде лимит устройств задаётся тарифом.',
                 })}
@@ -772,7 +772,7 @@ export function UltimaDevices() {
                 <p className="text-[14px] font-medium text-white/90">
                   {t('lite.connectedDevices', { defaultValue: 'Подключенные устройства' })}
                 </p>
-                <p className="mt-0.5 text-[11px] text-white/[0.44]">
+                <p className="mt-0.5 text-[13px] text-white/[0.72]">
                   {t('devices.connectedCount', {
                     count: connectedCount,
                     defaultValue: 'Всего: {{count}}',
@@ -802,7 +802,7 @@ export function UltimaDevices() {
                           deleteAllMutation.mutate();
                         }}
                         disabled={isBusy}
-                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[12px] text-rose-100 transition-colors hover:bg-rose-300/[0.08] disabled:opacity-40"
+                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[13px] text-rose-100 transition-colors hover:bg-rose-300/[0.08] disabled:opacity-40"
                       >
                         <Trash2 className="h-4 w-4" strokeWidth={1.8} />
                         {t('lite.deleteAll', { defaultValue: 'Удалить все' })}
@@ -830,7 +830,7 @@ export function UltimaDevices() {
                           {device.device_model || device.platform}
                         </p>
                         <p
-                          className="mt-0.5 truncate text-[11px] text-white/[0.46]"
+                          className="mt-0.5 truncate text-[13px] text-white/[0.72]"
                           title={device.hwid}
                         >
                           {device.platform} · {formatDeviceFingerprint(device.hwid)}
@@ -839,7 +839,7 @@ export function UltimaDevices() {
                       <button
                         type="button"
                         onClick={() => deleteMutation.mutate(device.hwid)}
-                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white/[0.52] transition-colors hover:bg-rose-300/[0.08] hover:text-rose-100 disabled:opacity-40"
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white/[0.72] transition-colors hover:bg-rose-300/[0.08] hover:text-rose-100 disabled:opacity-40"
                         disabled={isBusy}
                         aria-label={t('lite.deleteDevice', {
                           defaultValue: 'Удалить устройство',
@@ -856,7 +856,7 @@ export function UltimaDevices() {
                     type="button"
                     data-testid="ultima-devices-list-toggle"
                     onClick={() => setShowAllDevices((value) => !value)}
-                    className="w-full border-t border-white/[0.07] px-4 py-2.5 text-[12px] font-medium text-emerald-100/[0.78]"
+                    className="w-full border-t border-white/[0.07] px-4 py-2.5 text-[13px] font-medium text-emerald-100/[0.78]"
                   >
                     {showAllDevices
                       ? t('devices.showLess', { defaultValue: 'Свернуть список' })
@@ -868,7 +868,7 @@ export function UltimaDevices() {
                 ) : null}
               </div>
             ) : (
-              <p className="border-t border-white/[0.07] px-4 py-5 text-center text-sm text-white/[0.56]">
+              <p className="border-t border-white/[0.07] px-4 py-5 text-center text-sm text-white/[0.72]">
                 {t('lite.noDevices', { defaultValue: 'Устройств пока нет' })}
               </p>
             )}
@@ -899,7 +899,7 @@ export function UltimaDevices() {
                           defaultValue: 'Подключить устройство',
                         })}
                       </h2>
-                      <p className="mt-1 text-[12px] leading-relaxed text-white/[0.55]">
+                      <p className="mt-1 text-[13px] leading-relaxed text-white/[0.72]">
                         {t('devices.connectNewDeviceHint', {
                           defaultValue:
                             'Откройте ссылку на новом устройстве или отсканируйте QR-код.',
@@ -933,7 +933,7 @@ export function UltimaDevices() {
                     <>
                       {connectionOptions.length > 1 ? (
                         <div className="mt-4">
-                          <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-white/[0.42]">
+                          <p className="text-[13px] font-medium uppercase tracking-[0.12em] text-white/[0.72]">
                             {t('devices.connectionMethodTitle', {
                               defaultValue: 'Выберите приложение',
                             })}
@@ -957,10 +957,10 @@ export function UltimaDevices() {
                                   aria-checked={isSelected}
                                   data-testid={`ultima-device-link-${option.kind}`}
                                   onClick={() => setSelectedConnectionKind(option.kind)}
-                                  className={`flex min-h-9 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-[11px] font-semibold transition-colors ${
+                                  className={`flex min-h-9 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-[13px] font-semibold transition-colors ${
                                     isSelected
                                       ? 'bg-emerald-300 text-emerald-950 shadow-[0_6px_18px_rgba(52,211,153,0.16)]'
-                                      : 'text-white/[0.58] hover:bg-white/[0.055] hover:text-white'
+                                      : 'text-white/[0.72] hover:bg-white/[0.055] hover:text-white'
                                   }`}
                                 >
                                   {option.protected ? (
@@ -990,19 +990,19 @@ export function UltimaDevices() {
 
                       <div
                         data-testid="ultima-device-link-meta"
-                        className="mt-3 flex items-center justify-center gap-2 text-center text-[11px] text-emerald-100/[0.72]"
+                        className="mt-3 flex items-center justify-center gap-2 text-center text-[13px] text-emerald-100/[0.72]"
                       >
                         {selectedConnectionOption.protected ? (
                           <ShieldCheck className="h-4 w-4 text-emerald-300" strokeWidth={2} />
                         ) : (
-                          <Globe2 className="h-4 w-4 text-white/[0.52]" strokeWidth={2} />
+                          <Globe2 className="h-4 w-4 text-white/[0.72]" strokeWidth={2} />
                         )}
                         <span>{selectedConnectionOption.meta}</span>
                       </div>
 
                       {selectedConnectionOption.kind === 'other' ? (
                         hideSubscriptionLink ? (
-                          <p className="mt-3 text-center text-[11px] leading-relaxed text-white/[0.48]">
+                          <p className="mt-3 text-center text-[13px] leading-relaxed text-white/[0.72]">
                             {t('devices.subscriptionLinkHiddenText', {
                               defaultValue: 'Ссылка скрыта настройками. Используйте QR-код.',
                             })}
@@ -1010,7 +1010,7 @@ export function UltimaDevices() {
                         ) : (
                           <p
                             data-testid="ultima-device-raw-link"
-                            className="mt-3 truncate rounded-xl bg-white/[0.045] px-3 py-2.5 font-mono text-[10px] text-white/[0.58]"
+                            className="mt-3 truncate rounded-xl bg-white/[0.045] px-3 py-2.5 font-mono text-[13px] text-white/[0.72]"
                           >
                             {selectedConnectionUrl}
                           </p>
@@ -1022,7 +1022,7 @@ export function UltimaDevices() {
                           type="button"
                           onClick={() => void copySelectedConnectionLink()}
                           disabled={!canCopySelectedConnection}
-                          className="ultima-btn-pill ultima-btn-primary flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-[12px] font-semibold disabled:cursor-not-allowed disabled:opacity-45"
+                          className="ultima-btn-pill ultima-btn-primary flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-[13px] font-semibold disabled:cursor-not-allowed disabled:opacity-45"
                         >
                           <Link2 className="h-4 w-4" strokeWidth={2} />
                           {t('devices.copySubscriptionLink', { defaultValue: 'Копировать' })}
@@ -1030,7 +1030,7 @@ export function UltimaDevices() {
                         <button
                           type="button"
                           onClick={openSelectedConnectionLink}
-                          className="ultima-btn-pill ultima-btn-secondary flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-center text-[12px] font-semibold"
+                          className="ultima-btn-pill ultima-btn-secondary flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-center text-[13px] font-semibold"
                         >
                           <ExternalLink className="h-4 w-4" strokeWidth={2} />
                           {t('common.open', { defaultValue: 'Открыть' })}
@@ -1038,7 +1038,7 @@ export function UltimaDevices() {
                       </div>
                     </>
                   ) : (
-                    <p className="mt-4 rounded-xl border border-rose-200/[0.14] bg-rose-300/[0.06] px-3 py-3 text-center text-[12px] text-rose-100">
+                    <p className="mt-4 rounded-xl border border-rose-200/[0.14] bg-rose-300/[0.06] px-3 py-3 text-center text-[13px] text-rose-100">
                       {t('devices.subscriptionLinkUnavailable', {
                         defaultValue: 'Ссылка подписки пока недоступна. Попробуйте позже.',
                       })}
@@ -1052,7 +1052,7 @@ export function UltimaDevices() {
           {error || success ? (
             <div
               role={error ? 'alert' : 'status'}
-              className={`fixed bottom-[calc(88px+env(safe-area-inset-bottom))] left-1/2 z-[90] flex w-[calc(100%-24px)] max-w-md -translate-x-1/2 items-center gap-3 rounded-xl border px-3 py-2.5 text-[12px] shadow-2xl backdrop-blur-xl lg:bottom-6 ${
+              className={`fixed bottom-[calc(88px+env(safe-area-inset-bottom))] left-1/2 z-[90] flex w-[calc(100%-24px)] max-w-md -translate-x-1/2 items-center gap-3 rounded-xl border px-3 py-2.5 text-[13px] shadow-2xl backdrop-blur-xl lg:bottom-6 ${
                 error
                   ? 'border-rose-300/25 bg-rose-950/90 text-rose-50'
                   : 'border-emerald-200/20 bg-emerald-950/90 text-emerald-50'
@@ -1138,7 +1138,7 @@ export function UltimaDevices() {
             >
               <div className="divide-y divide-white/[0.08] rounded-xl bg-white/[0.035] px-4">
                 <div className="flex items-center justify-between gap-3 py-3">
-                  <span className="text-xs text-white/[0.5]">
+                  <span className="text-xs text-white/[0.72]">
                     {t('devices.currentLimit', { defaultValue: 'Текущий лимит' })}
                   </span>
                   <span className="text-sm font-semibold tabular-nums text-white">
@@ -1146,7 +1146,7 @@ export function UltimaDevices() {
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-3 py-3">
-                  <span className="text-xs text-white/[0.5]">
+                  <span className="text-xs text-white/[0.72]">
                     {t('devices.availableRange', { defaultValue: 'Доступный диапазон' })}
                   </span>
                   <span className="text-sm font-semibold tabular-nums text-white">
@@ -1154,7 +1154,7 @@ export function UltimaDevices() {
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-3 py-3">
-                  <span className="text-xs text-white/[0.5]">
+                  <span className="text-xs text-white/[0.72]">
                     {t('devices.oneSlotPrice', { defaultValue: 'Добавить 1 слот' })}
                   </span>
                   <span className="text-sm font-semibold tabular-nums text-white">
@@ -1182,7 +1182,7 @@ export function UltimaDevices() {
           <h1 className="text-[clamp(30px,8vw,38px)] font-semibold leading-none text-white">
             Устройства
           </h1>
-          <p className="mt-1 text-[13px] leading-snug text-white/[0.56]">
+          <p className="mt-1 text-[13px] leading-snug text-white/[0.72]">
             {t('lite.devicesDescription', {
               defaultValue: 'Подключение, удаление и лимит в одном месте.',
             })}

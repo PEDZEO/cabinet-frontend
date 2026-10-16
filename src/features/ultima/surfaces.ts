@@ -1,13 +1,10 @@
 import { type CSSProperties } from 'react';
 
-export const ultimaCardClassName =
-  'ultima-card rounded-[24px] border p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_20px_54px_rgba(0,0,0,0.34)] backdrop-blur-xl lg:rounded-[8px]';
+export const ultimaCardClassName = 'ultima-card rounded-[20px] border p-5';
 
-export const ultimaPanelClassName =
-  'ultima-panel rounded-[24px] border shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_20px_54px_rgba(0,0,0,0.34)] backdrop-blur-xl lg:rounded-[8px]';
+export const ultimaPanelClassName = 'ultima-panel rounded-[20px] border';
 
-export const ultimaPaneClassName =
-  'ultima-pane rounded-[18px] border shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_14px_34px_rgba(0,0,0,0.24)] backdrop-blur-xl lg:rounded-[8px]';
+export const ultimaPaneClassName = 'ultima-pane rounded-[18px] border';
 
 export const ultimaSurfaceStyle: CSSProperties = {
   borderColor: 'var(--ultima-border-soft)',
@@ -23,5 +20,5 @@ export const ultimaAccentSurfaceStyle: CSSProperties = {
 export const ultimaPaneSurfaceStyle: CSSProperties = {
   borderColor: 'var(--ultima-border-soft)',
   background: 'var(--ultima-bg-pane)',
-  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 14px 34px rgba(0,0,0,0.24)',
+  boxShadow: 'none',
 };

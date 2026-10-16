@@ -210,7 +210,7 @@ function HtmlContent({
         dangerouslySetInnerHTML={{ __html: html }}
       />
       {dateLabel ? (
-        <p className="border-t border-white/10 pt-3 text-[12px] text-white/[0.48]">{dateLabel}</p>
+        <p className="border-t border-white/10 pt-3 text-[13px] text-white/[0.72]">{dateLabel}</p>
       ) : null}
     </div>
   );
@@ -516,7 +516,7 @@ export function UltimaInfo() {
           <div className="p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-[11px] font-medium uppercase text-white/[0.46]">
+                <p className="text-[13px] font-medium uppercase text-white/[0.72]">
                   {t('info.statusCurrent', { defaultValue: 'Текущий статус' })}
                 </p>
                 <p className="mt-1 text-[22px] font-semibold leading-none text-white">
@@ -525,7 +525,7 @@ export function UltimaInfo() {
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-[11px] font-medium uppercase text-white/[0.46]">
+                <p className="text-[13px] font-medium uppercase text-white/[0.72]">
                   {t('info.loyaltySpent', { defaultValue: 'Потрачено' })}
                 </p>
                 <p className="mt-1 text-[18px] font-semibold text-white/90">
@@ -540,7 +540,7 @@ export function UltimaInfo() {
               />
             </div>
             {loyaltyData.next_tier_name ? (
-              <p className="mt-2 text-[12px] text-white/[0.58]">
+              <p className="mt-2 text-[13px] text-white/[0.72]">
                 {t('info.nextTier', {
                   defaultValue: 'Следующий уровень: {{name}}',
                   name: loyaltyData.next_tier_name,
@@ -561,18 +561,18 @@ export function UltimaInfo() {
                       <h3 className="break-words text-[17px] font-semibold leading-tight text-white">
                         {tier.name}
                       </h3>
-                      <p className="mt-1 text-[12px] text-white/[0.54]">
+                      <p className="mt-1 text-[13px] text-white/[0.72]">
                         {formatCurrency(tier.threshold_rubles)}
                       </p>
                     </div>
                     <span
                       className={cn(
-                        'shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-medium',
+                        'shrink-0 rounded-full border px-2.5 py-1 text-[13px] font-medium',
                         tier.is_current
                           ? 'border-emerald-200/[0.24] bg-emerald-300/[0.12] text-emerald-50'
                           : tier.is_achieved
                             ? 'border-white/[0.12] bg-white/[0.06] text-white/70'
-                            : 'border-white/10 bg-white/[0.04] text-white/[0.42]',
+                            : 'border-white/10 bg-white/[0.04] text-white/[0.72]',
                       )}
                     >
                       {tier.is_current
@@ -587,14 +587,14 @@ export function UltimaInfo() {
                       {discounts.map((discount) => (
                         <span
                           key={`${tier.id}-${discount}`}
-                          className="rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 text-[11px] text-white/[0.66]"
+                          className="rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 text-[13px] text-white/[0.66]"
                         >
                           {discount}
                         </span>
                       ))}
                     </div>
                   ) : (
-                    <p className="mt-3 text-[12px] text-white/[0.48]">
+                    <p className="mt-3 text-[13px] text-white/[0.72]">
                       {t('ultimaInfo.noDiscounts', { defaultValue: 'Скидки для уровня не заданы' })}
                     </p>
                   )}

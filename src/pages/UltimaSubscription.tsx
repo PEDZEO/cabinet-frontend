@@ -1300,7 +1300,7 @@ export function UltimaSubscription() {
               <h1 className="text-[30px] font-semibold leading-none text-white">
                 {t('ultima.subscriptionBuilder.choosePlan')}
               </h1>
-              <p className="mt-1.5 text-[12px] leading-[1.45] text-white/[0.62]">
+              <p className="mt-1.5 text-[13px] leading-[1.45] text-white/[0.62]">
                 {t('ultima.subscriptionBuilder.choosePlanHint')}
               </p>
             </header>

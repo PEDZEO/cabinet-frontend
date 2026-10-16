@@ -1,6 +1,9 @@
 import { type ReactNode } from 'react';
 import { ChevronRight, Settings } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router';
+import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
+import { balanceApi } from '@/api/balance';
 import { useBranding } from '@/hooks/useBranding';
 import { useBrandLogoImage } from '@/hooks/useBrandLogoImage';
 import { cn } from '@/lib/utils';
@@ -81,8 +84,25 @@ function getWorkspaceTitle(pathname: string): string {
 
 export function UltimaDesktopTopbar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const user = useAuthStore((state) => state.user);
+  const { data: balance } = useQuery({
+    queryKey: ['balance'],
+    queryFn: balanceApi.getBalance,
+    staleTime: 15000,
+  });
   const { appName } = useBranding();
   const pageTitle = getWorkspaceTitle(location.pathname);
+  const balanceKopeks = balance?.balance_kopeks ?? user?.balance_kopeks;
+  const balanceLabel =
+    typeof balanceKopeks === 'number'
+      ? new Intl.NumberFormat(i18n.resolvedLanguage || i18n.language || 'ru', {
+          style: 'currency',
+          currency: 'RUB',
+          maximumFractionDigits: balanceKopeks % 100 === 0 ? 0 : 2,
+        }).format(balanceKopeks / 100)
+      : '—';
 
   return (
     <header className="ultima-desktop-topbar">
@@ -90,6 +110,24 @@ export function UltimaDesktopTopbar() {
         <span>{appName}</span>
         <ChevronRight className="h-4 w-4" strokeWidth={1.8} aria-hidden />
         <strong>{pageTitle}</strong>
+      </div>
+      <div className="ultima-cabinet-account-actions">
+        <button
+          type="button"
+          onClick={() => navigate('/balance')}
+          className="ultima-cabinet-balance"
+        >
+          <span>{t('nav.balance', { defaultValue: 'Баланс' })}</span>
+          <strong>{balanceLabel}</strong>
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate('/profile')}
+          className="ultima-cabinet-avatar"
+          aria-label={t('nav.profile', { defaultValue: 'Профиль' })}
+        >
+          {(user?.first_name || user?.username || user?.email || '?').slice(0, 1).toUpperCase()}
+        </button>
       </div>
     </header>
   );

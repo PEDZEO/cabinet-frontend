@@ -11,43 +11,33 @@ export function normalizeUltimaThemeConfig(config: UltimaThemeConfig): UltimaThe
 }
 
 export function getUltimaThemeDerivedCssVarStyle(): CSSProperties {
+  // Keep configured brand colours as inputs while using the approved quiet surfaces.
   return {
     ['--ultima-bg-page-desktop' as string]:
-      'radial-gradient(circle at 78% 12%, color-mix(in srgb, var(--ultima-color-aura) 16%, transparent), transparent 44%), radial-gradient(circle at 16% 86%, color-mix(in srgb, var(--ultima-color-ring) 9%, transparent), transparent 50%), linear-gradient(145deg, color-mix(in srgb, #020617 80%, var(--ultima-color-bg-top) 20%) 0%, color-mix(in srgb, #06101b 68%, var(--ultima-color-bg-bottom) 32%) 46%, color-mix(in srgb, #020617 84%, var(--ultima-color-secondary) 16%) 100%)',
+      'color-mix(in srgb, #0b1215 96%, var(--ultima-color-bg-top))',
     ['--ultima-bg-page-mobile' as string]:
-      'radial-gradient(70% 42% at 50% 18%, color-mix(in srgb, var(--ultima-color-ring) 10%, transparent), transparent 66%), radial-gradient(92% 68% at 76% 62%, color-mix(in srgb, var(--ultima-color-aura) 26%, transparent), transparent 62%), linear-gradient(180deg, color-mix(in srgb, #020617 78%, var(--ultima-color-bg-top) 22%) 0%, color-mix(in srgb, var(--ultima-color-bg-top) 82%, #000000) 38%, color-mix(in srgb, #020617 72%, var(--ultima-color-bg-bottom) 28%) 100%)',
-    ['--ultima-bg-page-overlay-desktop' as string]:
-      'radial-gradient(circle at 34% 82%, color-mix(in srgb, var(--ultima-color-aura) 9%, transparent), transparent 54%), radial-gradient(circle at 86% 18%, color-mix(in srgb, var(--ultima-color-ring) 8%, transparent), transparent 50%)',
-    ['--ultima-bg-page-overlay-mobile' as string]:
-      'radial-gradient(82% 48% at 28% 80%, color-mix(in srgb, var(--ultima-color-aura) 18%, transparent), transparent 58%), radial-gradient(66% 38% at 84% 22%, color-mix(in srgb, var(--ultima-color-ring) 13%, transparent), transparent 56%)',
-    ['--ultima-bg-page-scrim-desktop' as string]:
-      'linear-gradient(160deg, rgba(2,6,23,0.72) 0%, rgba(2,8,18,0.50) 44%, rgba(2,6,23,0.86) 100%)',
-    ['--ultima-bg-page-scrim-mobile' as string]:
-      'linear-gradient(180deg, color-mix(in srgb, #020617 22%, transparent) 0%, color-mix(in srgb, var(--ultima-color-bg-top) 12%, transparent) 42%, color-mix(in srgb, #020617 46%, transparent) 100%)',
+      'color-mix(in srgb, #0b1215 96%, var(--ultima-color-bg-top))',
+    ['--ultima-bg-page-overlay-desktop' as string]: 'none',
+    ['--ultima-bg-page-overlay-mobile' as string]: 'none',
+    ['--ultima-bg-page-scrim-desktop' as string]: 'none',
+    ['--ultima-bg-page-scrim-mobile' as string]: 'none',
     ['--ultima-bg-shell' as string]:
-      'linear-gradient(160deg, color-mix(in srgb, #030712 70%, var(--ultima-color-bg-top) 30%) 0%, color-mix(in srgb, #050b14 66%, var(--ultima-color-bg-bottom) 34%) 100%)',
+      'color-mix(in srgb, #0b1215 96%, var(--ultima-color-bg-bottom))',
     ['--ultima-bg-surface' as string]:
-      'linear-gradient(180deg, color-mix(in srgb, #0b1320 54%, var(--ultima-color-surface) 46%) 0%, color-mix(in srgb, #070d16 58%, var(--ultima-color-secondary) 42%) 100%)',
+      'color-mix(in srgb, #121e22 92%, var(--ultima-color-surface))',
     ['--ultima-bg-surface-soft' as string]:
-      'linear-gradient(180deg, color-mix(in srgb, var(--ultima-color-surface) 42%, transparent) 0%, color-mix(in srgb, var(--ultima-color-secondary) 36%, transparent) 100%)',
+      'color-mix(in srgb, #152428 92%, var(--ultima-color-surface))',
     ['--ultima-bg-surface-strong' as string]:
-      'linear-gradient(180deg, color-mix(in srgb, #0b1320 44%, var(--ultima-color-surface) 56%) 0%, color-mix(in srgb, #070d16 50%, var(--ultima-color-secondary) 50%) 100%)',
+      'color-mix(in srgb, #192b2d 92%, var(--ultima-color-secondary))',
     ['--ultima-bg-accent-surface' as string]:
-      'radial-gradient(circle at 82% 18%, color-mix(in srgb, var(--ultima-color-ring) 15%, transparent), transparent 36%), linear-gradient(135deg, color-mix(in srgb, var(--ultima-color-aura) 32%, #0f2430) 0%, color-mix(in srgb, var(--ultima-color-secondary) 38%, #08111d) 100%)',
-    ['--ultima-bg-pane' as string]:
-      'linear-gradient(180deg, color-mix(in srgb, #0b1320 58%, var(--ultima-color-secondary) 42%) 0%, color-mix(in srgb, #070d16 62%, var(--ultima-color-surface) 38%) 100%)',
-    ['--ultima-border-soft' as string]:
-      'color-mix(in srgb, var(--ultima-color-surface-border) 18%, transparent)',
-    ['--ultima-border-medium' as string]:
-      'color-mix(in srgb, var(--ultima-color-surface-border) 26%, transparent)',
-    ['--ultima-text-strong' as string]:
-      'color-mix(in srgb, var(--ultima-color-secondary-text) 92%, #ffffff)',
-    ['--ultima-text-muted' as string]:
-      'color-mix(in srgb, var(--ultima-color-secondary-text) 56%, transparent)',
-    ['--ultima-shadow-surface' as string]:
-      'inset 0 1px 0 rgba(255,255,255,0.08), 0 20px 54px rgba(0,0,0,0.34)',
-    ['--ultima-shadow-accent' as string]:
-      'inset 0 1px 0 rgba(255,255,255,0.10), 0 30px 70px color-mix(in srgb, var(--ultima-color-aura) 10%, rgba(0,0,0,0.42))',
+      'linear-gradient(120deg, color-mix(in srgb, #203b32 94%, var(--ultima-color-aura)), #14272a)',
+    ['--ultima-bg-pane' as string]: 'color-mix(in srgb, #121e22 92%, var(--ultima-color-surface))',
+    ['--ultima-border-soft' as string]: '#2a3a3e',
+    ['--ultima-border-medium' as string]: '#3c6052',
+    ['--ultima-text-strong' as string]: '#edf5f3',
+    ['--ultima-text-muted' as string]: '#a6b9b7',
+    ['--ultima-shadow-surface' as string]: 'none',
+    ['--ultima-shadow-accent' as string]: 'none',
   };
 }
 

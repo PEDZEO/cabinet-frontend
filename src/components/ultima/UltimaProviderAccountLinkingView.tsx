@@ -225,7 +225,7 @@ export function UltimaProviderAccountLinkingView({
                 Способы входа
               </h1>
               {userId ? (
-                <span className="rounded-lg border border-white/10 bg-white/[0.05] px-2 py-1 text-[11px] text-white/45">
+                <span className="rounded-lg border border-white/10 bg-white/[0.05] px-2 py-1 text-[13px] text-white/45">
                   #{userId}
                 </span>
               ) : null}
@@ -322,7 +322,7 @@ export function UltimaProviderAccountLinkingView({
                           <h3 className="text-sm font-semibold text-white">
                             {getProviderLabel(identity.provider)}
                           </h3>
-                          <span className="rounded-md bg-emerald-300/10 px-1.5 py-0.5 text-[10px] font-medium text-emerald-200">
+                          <span className="rounded-md bg-emerald-300/10 px-1.5 py-0.5 text-[13px] font-medium text-emerald-200">
                             Подключён
                           </span>
                         </div>
@@ -330,7 +330,7 @@ export function UltimaProviderAccountLinkingView({
                           {identity.provider_user_id_masked}
                         </p>
                         {!identity.can_unlink ? (
-                          <p className="mt-1 text-[11px] leading-relaxed text-white/40">
+                          <p className="mt-1 text-[13px] leading-relaxed text-white/40">
                             {getIdentityBlockedDetails(identity)}
                           </p>
                         ) : null}

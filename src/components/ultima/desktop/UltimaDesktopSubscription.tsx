@@ -118,7 +118,7 @@ export function UltimaDesktopSubscription({
               >
                 <div className="flex items-start justify-between gap-6">
                   <div className="min-w-0 max-w-[60ch]">
-                    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase text-white/[0.46]">
+                    <div className="flex items-center gap-2 text-[13px] font-semibold uppercase text-white/[0.72]">
                       <Layers3 className="h-4 w-4 text-emerald-200/[0.8]" />
                       {t('ultima.subscriptionBuilder.pageTitle')}
                     </div>
@@ -127,7 +127,7 @@ export function UltimaDesktopSubscription({
                         {title}
                       </h1>
                       {isCurrentTariff ? (
-                        <span className="shrink-0 rounded-full border border-emerald-200/[0.25] bg-emerald-300/[0.1] px-2.5 py-1 text-[10px] font-semibold text-emerald-50">
+                        <span className="shrink-0 rounded-full border border-emerald-200/[0.25] bg-emerald-300/[0.1] px-2.5 py-1 text-[13px] font-semibold text-emerald-50">
                           {t('subscription.currentTariff')}
                         </span>
                       ) : null}
@@ -141,7 +141,7 @@ export function UltimaDesktopSubscription({
 
                   <div className="grid min-w-[310px] grid-cols-2 divide-x divide-white/[0.1] rounded-[8px] border border-white/[0.1] bg-black/[0.14] px-4 py-3">
                     <div className="pr-4">
-                      <div className="text-[10px] uppercase text-white/[0.38]">
+                      <div className="text-[13px] uppercase text-white/[0.38]">
                         {t('ultima.subscriptionBuilder.traffic')}
                       </div>
                       <div
@@ -152,7 +152,7 @@ export function UltimaDesktopSubscription({
                       </div>
                     </div>
                     <div className="pl-4">
-                      <div className="text-[10px] uppercase text-white/[0.38]">
+                      <div className="text-[13px] uppercase text-white/[0.38]">
                         {t('ultima.subscriptionBuilder.baseDevices')}
                       </div>
                       <div className="mt-1 text-[16px] font-semibold text-white">
@@ -165,12 +165,12 @@ export function UltimaDesktopSubscription({
                 {isTariffSwitchFlow ? (
                   <div className="mt-5 flex items-center justify-between gap-5 border-t border-white/[0.1] pt-5">
                     <div className="flex min-w-0 items-center gap-3 text-[15px]">
-                      <span className="truncate text-white/[0.58]">{switchFromLabel || '—'}</span>
+                      <span className="truncate text-white/[0.72]">{switchFromLabel || '—'}</span>
                       <ArrowRight className="h-4 w-4 shrink-0 text-emerald-200/[0.72]" />
                       <span className="truncate font-semibold text-white">{title}</span>
                     </div>
                     {switchHint ? (
-                      <p className="max-w-[48ch] text-right text-[11px] leading-[1.45] text-white/[0.48]">
+                      <p className="max-w-[48ch] text-right text-[13px] leading-[1.45] text-white/[0.72]">
                         {switchHint}
                       </p>
                     ) : null}
@@ -179,13 +179,13 @@ export function UltimaDesktopSubscription({
                   <div className="mt-5 flex items-center justify-between gap-5 border-t border-white/[0.1] pt-5">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 text-[14px] font-semibold text-white">
-                        <Smartphone className="h-4 w-4 text-white/[0.5]" />
+                        <Smartphone className="h-4 w-4 text-white/[0.72]" />
                         {t('ultima.subscriptionBuilder.deviceLimit')}
                       </div>
-                      <p className="mt-1 text-[11px] text-white/[0.44]">
+                      <p className="mt-1 text-[13px] text-white/[0.72]">
                         {t('ultima.subscriptionBuilder.deviceHint', { max: maxDeviceLimit })}
                       </p>
-                      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px]">
+                      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[13px]">
                         {extraDeviceChargeLabel ? (
                           <span className="text-amber-100/[0.8]">{extraDeviceChargeLabel}</span>
                         ) : null}
@@ -207,13 +207,13 @@ export function UltimaDesktopSubscription({
                 )}
 
                 {legacyDeviceNotice ? (
-                  <div className="mt-4 flex items-center justify-between gap-4 rounded-[8px] border border-amber-200/[0.16] bg-amber-300/[0.06] px-3 py-2 text-[11px] leading-[1.4] text-amber-50/[0.78]">
+                  <div className="mt-4 flex items-center justify-between gap-4 rounded-[8px] border border-amber-200/[0.16] bg-amber-300/[0.06] px-3 py-2 text-[13px] leading-[1.4] text-amber-50/[0.78]">
                     <span>{legacyDeviceNotice}</span>
                     {onReduceDevices ? (
                       <button
                         type="button"
                         onClick={onReduceDevices}
-                        className="shrink-0 text-[11px] font-semibold text-amber-50 underline decoration-amber-200/[0.35] underline-offset-4"
+                        className="shrink-0 text-[13px] font-semibold text-amber-50 underline decoration-amber-200/[0.35] underline-offset-4"
                       >
                         {t('subscription.manageDevices', {
                           defaultValue: 'Управление устройствами',
@@ -233,12 +233,12 @@ export function UltimaDesktopSubscription({
                         <h2 className="text-[14px] font-semibold text-white">
                           {t('ultima.subscriptionBuilder.periodTitle')}
                         </h2>
-                        <p className="mt-0.5 text-[10px] text-white/[0.42]">
+                        <p className="mt-0.5 text-[13px] text-white/[0.72]">
                           {t('ultima.subscriptionBuilder.periodHint')}
                         </p>
                       </div>
                     </div>
-                    <span className="rounded-full border border-white/[0.1] bg-white/[0.05] px-2.5 py-1 text-[10px] text-white/[0.64]">
+                    <span className="rounded-full border border-white/[0.1] bg-white/[0.05] px-2.5 py-1 text-[13px] text-white/[0.64]">
                       {selectedPeriodLabel}
                     </span>
                   </div>
@@ -256,32 +256,32 @@ export function UltimaDesktopSubscription({
 
           <aside className="ultima-desktop-context">
             <section className={cn(ultimaCardClassName, 'p-5')} style={defaultCardStyle}>
-              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase text-white/[0.46]">
+              <div className="flex items-center gap-2 text-[13px] font-semibold uppercase text-white/[0.72]">
                 <WalletCards className="h-4 w-4 text-emerald-200/[0.8]" />
                 {t('ultima.subscriptionBuilder.orderTitle')}
               </div>
               <div className="mt-3 text-[30px] font-semibold leading-none text-white">
                 {totalPriceLabel}
               </div>
-              <div className="mt-1 text-[11px] text-white/[0.46]">{selectedPeriodLabel}</div>
+              <div className="mt-1 text-[13px] text-white/[0.72]">{selectedPeriodLabel}</div>
 
               <div className="mt-5 divide-y divide-white/[0.08] border-y border-white/[0.08]">
-                <div className="flex items-center justify-between gap-3 py-3 text-[12px]">
-                  <span className="text-white/[0.52]">
+                <div className="flex items-center justify-between gap-3 py-3 text-[13px]">
+                  <span className="text-white/[0.72]">
                     {t('ultima.subscriptionBuilder.subscriptionCost')}
                   </span>
                   <span className="font-semibold text-white">{totalPriceLabel}</span>
                 </div>
-                <div className="flex items-center justify-between gap-3 py-3 text-[12px]">
-                  <span className="text-white/[0.52]">
+                <div className="flex items-center justify-between gap-3 py-3 text-[13px]">
+                  <span className="text-white/[0.72]">
                     {t('ultima.subscriptionBuilder.fromBalance')}
                   </span>
                   <span className="font-semibold text-white">
                     {hasBalanceApplied ? `−${balanceAppliedLabel}` : '—'}
                   </span>
                 </div>
-                <div className="flex items-center justify-between gap-3 py-3 text-[12px]">
-                  <span className="text-white/[0.52]">
+                <div className="flex items-center justify-between gap-3 py-3 text-[13px]">
+                  <span className="text-white/[0.72]">
                     {t('ultima.subscriptionBuilder.toTopUp')}
                   </span>
                   <span className="font-semibold text-emerald-100">
@@ -291,13 +291,13 @@ export function UltimaDesktopSubscription({
               </div>
 
               {(awaitingPaymentCompletion || isFinalizingPending) && (
-                <div className="mt-4 rounded-[8px] border border-emerald-200/[0.2] bg-emerald-300/[0.07] px-3 py-2 text-[11px] leading-[1.45] text-emerald-50/[0.82]">
+                <div className="mt-4 rounded-[8px] border border-emerald-200/[0.2] bg-emerald-300/[0.07] px-3 py-2 text-[13px] leading-[1.45] text-emerald-50/[0.82]">
                   {t('subscription.paymentPending')}
                 </div>
               )}
 
               {error ? (
-                <div className="mt-4 rounded-[8px] border border-rose-200/[0.2] bg-rose-400/[0.08] px-3 py-2 text-[11px] leading-[1.45] text-rose-100">
+                <div className="mt-4 rounded-[8px] border border-rose-200/[0.2] bg-rose-400/[0.08] px-3 py-2 text-[13px] leading-[1.45] text-rose-100">
                   {error}
                 </div>
               ) : null}
