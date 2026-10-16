@@ -3,18 +3,20 @@ import { type TFunction } from 'i18next';
 import { Check, ChevronDown, Clock3, CloudDownload, Gauge, WalletCards } from 'lucide-react';
 
 import { TrafficPurchaseTimer } from '@/components/subscription/TrafficPurchaseTimer';
+import { UltimaMeteredTrafficPeriodNotice } from './UltimaMeteredTrafficPeriodNotice';
 import {
   ultimaAccentSurfaceStyle,
   ultimaPanelClassName,
   ultimaSurfaceStyle,
 } from '@/features/ultima/surfaces';
 import { cn } from '@/lib/utils';
-import type { TrafficPackage, TrafficPurchase } from '@/types';
+import type { Subscription, TrafficPackage, TrafficPurchase } from '@/types';
 import { trackAnalyticsEvent } from '@/utils/analyticsEvents';
 
 type UltimaTrafficTopUpSectionProps = {
   t: TFunction;
   formatPrice: (kopeks: number) => string;
+  subscription?: Subscription | null;
   trafficLimitGb: number;
   trafficUsedGb: number;
   trafficPurchases?: TrafficPurchase[];
@@ -34,9 +36,10 @@ const TRAFFIC_VALIDITY_DAYS = 30;
 export function UltimaTrafficTopUpSection({
   t,
   formatPrice,
-  trafficLimitGb,
-  trafficUsedGb,
-  trafficPurchases,
+  subscription,
+  trafficLimitGb: fallbackTrafficLimitGb,
+  trafficUsedGb: fallbackTrafficUsedGb,
+  trafficPurchases: fallbackTrafficPurchases,
   trafficPackages,
   selectedTrafficPackage,
   setSelectedTrafficPackage,
@@ -47,6 +50,13 @@ export function UltimaTrafficTopUpSection({
   onPurchaseTraffic,
   onTopUpBalance,
 }: UltimaTrafficTopUpSectionProps) {
+  const trafficLimitGb = subscription?.traffic_limit_gb ?? fallbackTrafficLimitGb;
+  const trafficUsedGb = subscription?.traffic_used_gb ?? fallbackTrafficUsedGb;
+  const trafficPurchases = subscription ? subscription.traffic_purchases : fallbackTrafficPurchases;
+  const hasMonthlyMeteredTraffic =
+    subscription?.metered_traffic_enabled &&
+    subscription.traffic_reset_mode === 'MONTH' &&
+    trafficLimitGb > 0;
   const [isExpanded, setIsExpanded] = useState(
     () => initiallyExpanded || selectedTrafficPackage !== null,
   );
@@ -63,8 +73,15 @@ export function UltimaTrafficTopUpSection({
     ? Math.max(0, selectedPackage.price_kopeks - purchaseBalanceKopeks)
     : 0;
   const purchasedTrafficTotal =
-    trafficPurchases?.reduce((sum, item) => sum + item.traffic_gb, 0) ?? 0;
-  const trafficRemainingGb = Math.max(0, trafficLimitGb - trafficUsedGb);
+    subscription?.purchased_traffic_gb ??
+    trafficPurchases?.reduce((sum, item) => sum + item.traffic_gb, 0) ??
+    0;
+  const trafficRemainingGb = Math.max(
+    0,
+    subscription?.metered_traffic_enabled
+      ? (subscription.metered_traffic_remaining_gb ?? trafficLimitGb - trafficUsedGb)
+      : trafficLimitGb - trafficUsedGb,
+  );
   const trafficRemainingPercent = Math.min(
     100,
     Math.max(0, trafficLimitGb > 0 ? (trafficRemainingGb / trafficLimitGb) * 100 : 0),
@@ -240,9 +257,17 @@ export function UltimaTrafficTopUpSection({
                     <h3 className="text-[13px] font-semibold text-white">
                       {t('ultima.trafficTopUp.selectTitle')}
                     </h3>
-                    <p className="mt-1 text-[11px] leading-relaxed text-white/[0.48]">
-                      {t('ultima.trafficTopUp.selectHint', { days: TRAFFIC_VALIDITY_DAYS })}
-                    </p>
+                    {hasMonthlyMeteredTraffic ? (
+                      <UltimaMeteredTrafficPeriodNotice
+                        subscription={subscription}
+                        variant="topUp"
+                        className="mt-1"
+                      />
+                    ) : (
+                      <p className="mt-1 text-[11px] leading-relaxed text-white/[0.48]">
+                        {t('ultima.trafficTopUp.selectHint', { days: TRAFFIC_VALIDITY_DAYS })}
+                      </p>
+                    )}
                   </div>
                 </div>
 

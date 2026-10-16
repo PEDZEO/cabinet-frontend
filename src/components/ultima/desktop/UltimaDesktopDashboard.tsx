@@ -23,6 +23,7 @@ import {
 import type { UltimaNextActionKind } from '@/features/ultima/nextAction';
 import { cn } from '@/lib/utils';
 import type { Subscription } from '@/types';
+import { UltimaMeteredTrafficPeriodNotice } from '../UltimaMeteredTrafficPeriodNotice';
 import { UltimaDesktopRail, UltimaDesktopTopbar } from './UltimaDesktopWorkspace';
 
 export type UltimaDashboardStatusTone = 'active' | 'trial' | 'warning' | 'expired';
@@ -479,22 +480,29 @@ export function UltimaDesktopDashboard({
                             }}
                           />
                         </div>
-                        <p className="mt-2 text-[10px] leading-snug text-white/[0.42]">
-                          {isMeteredTraffic
-                            ? isMeteredTrafficBlocked
-                              ? t('ultima.home.specialTrafficBlockedHint', {
-                                  defaultValue:
-                                    'Спецсерверы временно недоступны. Обычные серверы продолжают работать безлимитно.',
-                                })
-                              : t('ultima.home.specialServersHint', {
-                                  server: meteredServerLabel,
-                                  defaultValue:
-                                    'Пакет расходуется только при подключении к серверам с меткой «{{server}}».',
-                                })
-                            : t('ultima.home.trafficMeta', {
-                                defaultValue: 'Использование за текущий период',
-                              })}
-                        </p>
+                        {isMeteredTraffic && subscription?.traffic_reset_mode === 'MONTH' ? (
+                          <UltimaMeteredTrafficPeriodNotice
+                            subscription={subscription}
+                            className="mt-3"
+                          />
+                        ) : (
+                          <p className="mt-2 text-[10px] leading-snug text-white/[0.42]">
+                            {isMeteredTraffic
+                              ? isMeteredTrafficBlocked
+                                ? t('ultima.home.specialTrafficBlockedHint', {
+                                    defaultValue:
+                                      'Спецсерверы временно недоступны. Обычные серверы продолжают работать безлимитно.',
+                                  })
+                                : t('ultima.home.specialServersHint', {
+                                    server: meteredServerLabel,
+                                    defaultValue:
+                                      'Пакет расходуется только при подключении к серверам с меткой «{{server}}».',
+                                  })
+                              : t('ultima.home.trafficMeta', {
+                                  defaultValue: 'Использование за текущий период',
+                                })}
+                          </p>
+                        )}
                         {isMeteredTraffic && trafficLimitGb > 0 ? (
                           <button
                             type="button"

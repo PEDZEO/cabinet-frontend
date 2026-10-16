@@ -186,6 +186,11 @@ export interface Subscription {
   metered_access_blocked?: boolean;
   metered_server_label?: string | null;
   metered_traffic_remaining_gb?: number | null;
+  metered_traffic_period_started_at?: string | null;
+  metered_traffic_reset_at?: string | null;
+  metered_traffic_reset_timezone?: string | null;
+  metered_traffic_base_limit_gb?: number | null;
+  purchased_traffic_gb?: number;
   standard_traffic_unlimited?: boolean;
 }
 

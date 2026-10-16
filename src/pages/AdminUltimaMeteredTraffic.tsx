@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import {
   Activity,
   AlertTriangle,
@@ -106,6 +107,7 @@ function formatDateTime(value: string | null): string {
 }
 
 export default function AdminUltimaMeteredTraffic() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [form, setForm] = useState<MeteredTrafficConfiguration | null>(null);
@@ -445,6 +447,14 @@ export default function AdminUltimaMeteredTraffic() {
           aria-label="Включить раздельный учет трафика"
         />
       </section>
+
+      <aside
+        data-testid="ultima-admin-metered-period-policy"
+        className="border-l-2 border-accent-500/40 pl-3 text-xs leading-5 text-dark-400"
+      >
+        <h2 className="font-semibold text-dark-200">{t('ultima.meteredPeriod.adminTitle')}</h2>
+        <p>{t('ultima.meteredPeriod.adminPolicy')}</p>
+      </aside>
 
       <section className="overflow-hidden rounded-lg border border-dark-700/50 bg-dark-800/30">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-dark-700/45 px-4 py-3">

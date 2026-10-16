@@ -1349,6 +1349,7 @@ export function UltimaDashboard() {
       isTrial={isActiveTrial}
       standardUnlimited={subscription?.standard_traffic_unlimited}
       serverLabel={subscription?.metered_server_label}
+      subscription={subscription}
       onTopUp={openTrafficPurchase}
     />
   ) : null;

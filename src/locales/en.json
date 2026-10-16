@@ -5132,6 +5132,19 @@
       "deviceCount_one": "{{count}} device",
       "deviceCount_other": "{{count}} devices"
     },
+    "meteredPeriod": {
+      "title": "Monthly renewal",
+      "anniversary": "Every month on your connection date.",
+      "baseQuota": "{{value}} GB / month",
+      "nextReset": "Next:",
+      "moscowTime": "Moscow time",
+      "dateUnavailable": "The next renewal date is not available yet.",
+      "accessPolicy": "Only special servers are disabled when traffic runs out. Access is restored at renewal if your subscription is active. Regular servers are unaffected.",
+      "blockedPolicy": "Special servers are temporarily unavailable. Access is restored at renewal if your subscription is active. Regular servers are unaffected.",
+      "topUpPolicy": "A package increases your limit for {{days}} days from purchase. Monthly renewal resets usage without shortening the add-on's validity. Traffic purchases and subscription extensions do not change the renewal date.",
+      "adminTitle": "Monthly traffic renewal",
+      "adminPolicy": "The base quota renews each month on the connection date in Europe/Moscow time. Dates 29–31 use the last day of shorter months without shifting the original anniversary. Access to selected squads is restored automatically if the subscription is active. Other servers are unaffected. Top-ups last 30 days; traffic purchases and ordinary subscription extensions do not change the monthly renewal date."
+    },
     "trafficTopUp": {
       "eyebrow": "Extra traffic",
       "title": "Add traffic",
@@ -5142,7 +5155,7 @@
       "priceFrom": "from {{price}}",
       "activePackages": "Active packages",
       "selectTitle": "Choose a package",
-      "selectHint": "Each package is valid for {{days}} days from purchase.",
+      "selectHint": "A package increases your limit for {{days}} days from purchase.",
       "validFor": "{{days}} days",
       "package": "Package",
       "validity": "Validity",

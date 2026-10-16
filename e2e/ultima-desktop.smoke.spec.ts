@@ -1,6 +1,7 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
 import { DEFAULT_ANIMATION_CONFIG } from '../src/components/ui/backgrounds/types';
 import { DEFAULT_ENABLED_THEMES, DEFAULT_THEME_COLORS } from '../src/types/theme';
+import type { Subscription } from '../src/types';
 
 test.use({ locale: 'ru-RU' });
 
@@ -252,6 +253,12 @@ const SUBSCRIPTION = {
   metered_access_blocked: false,
   metered_server_label: 'Спецсерверы',
   metered_traffic_remaining_gb: 82,
+  traffic_reset_mode: 'MONTH',
+  metered_traffic_period_started_at: '2026-10-16T22:30:00.000Z',
+  metered_traffic_reset_at: '2026-11-16T22:30:00.000Z',
+  metered_traffic_reset_timezone: 'Europe/Moscow',
+  metered_traffic_base_limit_gb: 100,
+  purchased_traffic_gb: 0,
   standard_traffic_unlimited: true,
   traffic_purchases: [],
 };
@@ -273,6 +280,8 @@ const TRIAL_SUBSCRIPTION = {
   traffic_limit_gb: 2,
   traffic_used_gb: 0,
   traffic_used_percent: 0,
+  metered_traffic_remaining_gb: 2,
+  metered_traffic_base_limit_gb: 2,
   device_limit: 1,
   tariff_id: 2,
   tariff_name: 'Стандарт + LTE',
@@ -513,7 +522,7 @@ async function mockUltimaDesktopApi(
     cryptoLinksEnabled = true,
   }: {
     isAdmin?: boolean;
-    subscription?: typeof SUBSCRIPTION;
+    subscription?: Subscription;
     connectedDevices?: Array<typeof CONNECTED_DEVICE>;
     devicesGate?: Promise<void>;
     subscriptionGate?: Promise<void>;
@@ -1502,6 +1511,245 @@ test.describe('Ultima desktop workspace', () => {
     await expect(page).toHaveURL(/\/connection$/);
     await expect(page.locator('.ultima-desktop-workspace')).toBeVisible();
     await expectNoHorizontalOverflow(page);
+  });
+});
+
+test.describe('Ultima monthly metered traffic', () => {
+  test.use({ timezoneId: 'America/Los_Angeles' });
+
+  for (const viewport of [
+    { width: 360, height: 640 },
+    { width: 1366, height: 768 },
+  ]) {
+    test(`shows the monthly connection anniversary in Moscow time at ${viewport.width}px`, async ({
+      page,
+    }, testInfo) => {
+      await page.setViewportSize(viewport);
+      await bootstrapUltimaDesktop(page);
+      await mockUltimaDesktopApi(page, {
+        subscription: {
+          ...SUBSCRIPTION,
+          traffic_limit_gb: 150,
+          traffic_used_percent: 12,
+          metered_traffic_remaining_gb: 132,
+          purchased_traffic_gb: 50,
+        },
+      });
+      await page.goto('/');
+
+      const notice = page.getByTestId('ultima-metered-period-notice');
+      await expect(notice).toHaveCount(1);
+      await expect(notice).toContainText('Каждый месяц в дату подключения');
+      await expect(notice).toContainText('100 ГБ / месяц');
+      await expect(notice).not.toContainText('150 ГБ / месяц');
+      await expect(notice).toContainText('только спецсерверы');
+      await expect(notice).toContainText('если подписка активна');
+      await expect(notice).toContainText('Обычные серверы не затрагиваются');
+      await expect(notice.locator('time')).toHaveText(/17 ноября 2026.*01:30.*МСК/);
+      await expect(notice.locator('time')).toHaveAttribute(
+        'datetime',
+        SUBSCRIPTION.metered_traffic_reset_at,
+      );
+      await expect(notice.locator('time')).toHaveAttribute('data-timezone', 'Europe/Moscow');
+      await notice.scrollIntoViewIfNeeded();
+      await expectNoHorizontalOverflow(page);
+      await page.screenshot({
+        path: testInfo.outputPath(`ultima-monthly-traffic-${viewport.width}.png`),
+        animations: 'disabled',
+      });
+    });
+
+    test(`explains exhausted special servers and independent top-ups at ${viewport.width}px`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+      await bootstrapUltimaDesktop(page);
+      await mockUltimaDesktopApi(page, {
+        subscription: {
+          ...SUBSCRIPTION,
+          traffic_used_gb: 100,
+          traffic_used_percent: 100,
+          metered_traffic_remaining_gb: 0,
+          metered_access_blocked: true,
+        },
+      });
+      await page.goto('/');
+
+      const notice = page.getByTestId('ultima-metered-period-notice');
+      await expect(notice).toContainText('Спецсерверы временно недоступны');
+      await expect(notice).toContainText(
+        'Доступ восстановится при обновлении, если подписка активна',
+      );
+      await expect(notice).toContainText('Обычные серверы не затрагиваются');
+      await page
+        .getByTestId(
+          viewport.width < 1024 ? 'ultima-home-traffic-topup' : 'ultima-traffic-warning-action',
+        )
+        .click();
+
+      await expect(page).toHaveURL(/\/subscription\?trafficTopUp=1$/);
+      const policy = page.getByTestId('ultima-metered-topup-policy');
+      await expect(policy).toContainText('Пакет увеличивает лимит на 30 дней');
+      await expect(policy).toContainText('30 дней с момента покупки');
+      await expect(policy).toContainText('Ежемесячное обновление сбрасывает расход');
+      await expect(policy).toContainText('не сокращает срок пакета');
+      await expect(policy).toContainText(
+        'Докупка и продление подписки не сдвигают дату обновления',
+      );
+      await expect(policy.locator('time')).toHaveText(/17 ноября 2026.*01:30.*МСК/);
+      await page.getByTestId('ultima-traffic-package-50').click();
+      await expect(policy.locator('time')).toHaveAttribute(
+        'datetime',
+        SUBSCRIPTION.metered_traffic_reset_at,
+      );
+      await expect(page.getByTestId('ultima-traffic-order')).toContainText('30 дней');
+      await expectNoHorizontalOverflow(page);
+
+      await page.goto('/ultima/subscription-info');
+      await expect(notice).toHaveCount(1);
+      await expect(notice).toContainText('100 ГБ / месяц');
+      await expect(notice).toContainText('Спецсерверы временно недоступны');
+      await expect(notice.locator('time')).toHaveText(/17 ноября 2026.*01:30.*МСК/);
+      await page.getByTestId('ultima-traffic-top-up-toggle').click();
+      await expect(policy).toContainText('30 дней с момента покупки');
+      await expect(page.getByTestId('ultima-traffic-top-up')).toContainText('0 ГБ');
+      await expectNoHorizontalOverflow(page);
+    });
+
+    test(`keeps unlimited metered traffic unlimited without monthly quota or top-ups at ${viewport.width}px`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+      await bootstrapUltimaDesktop(page);
+      await mockUltimaDesktopApi(page, {
+        subscription: {
+          ...SUBSCRIPTION,
+          traffic_limit_gb: 0,
+          traffic_used_percent: 0,
+          metered_traffic_base_limit_gb: 0,
+          metered_traffic_remaining_gb: null,
+        },
+      });
+      await page.goto('/');
+
+      await expect(
+        page.getByTestId(viewport.width < 1024 ? 'ultima-home-traffic' : 'ultima-home-usage'),
+      ).toContainText('Безлимит');
+      await expect(page.getByTestId('ultima-metered-period-notice')).toHaveCount(0);
+      await expect(page.getByTestId('ultima-home-traffic-topup')).toHaveCount(0);
+      await expect(
+        page.getByRole('button', { name: 'Докупить трафик для спецсерверов' }),
+      ).toHaveCount(0);
+
+      await page.goto('/ultima/subscription-info');
+      const overview = page.getByTestId('ultima-subscription-traffic-overview');
+      await expect(overview).toContainText('Безлимит');
+      await expect(overview).toContainText('Трафик не ограничен');
+      await expect(overview).not.toContainText('0 ГБ');
+      await expect(page.getByTestId('ultima-metered-period-notice')).toHaveCount(0);
+      await expect(page.getByTestId('ultima-traffic-top-up')).toHaveCount(0);
+
+      await page.goto('/subscription?trafficTopUp=1');
+      await expect(
+        page.getByTestId(
+          viewport.width < 1024
+            ? 'ultima-subscription-configurator'
+            : 'ultima-desktop-subscription-configurator',
+        ),
+      ).toBeVisible();
+      await expect(page.getByTestId('ultima-traffic-top-up')).toHaveCount(0);
+      await expect(page.getByTestId('ultima-metered-topup-policy')).toHaveCount(0);
+      await expectNoHorizontalOverflow(page);
+    });
+  }
+
+  test('uses the API timezone and separates purchased traffic from the monthly base', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 360, height: 640 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page, {
+      subscription: {
+        ...SUBSCRIPTION,
+        traffic_limit_gb: 150,
+        traffic_used_gb: 18,
+        traffic_used_percent: 12,
+        metered_traffic_remaining_gb: 132,
+        metered_traffic_reset_timezone: 'Asia/Tokyo',
+        purchased_traffic_gb: 50,
+      },
+    });
+    await page.goto('/ultima/subscription-info');
+
+    const notice = page.getByTestId('ultima-metered-period-notice');
+    await expect(notice.locator('time')).toHaveText(/17 ноября 2026.*07:30.*Asia\/Tokyo/);
+    await expect(notice).toContainText('100 ГБ / месяц');
+    await expect(page.getByTestId('ultima-subscription-traffic-overview')).toContainText('132 ГБ');
+    for (const path of ['/ultima/subscription-info', '/subscription?trafficTopUp=1']) {
+      if (path !== '/ultima/subscription-info') await page.goto(path);
+      const topUp = page.getByTestId('ultima-traffic-top-up');
+      await expect(topUp).toContainText('132 ГБ');
+      await expect(topUp).toContainText('из 150 ГБ');
+      await expect(topUp).toContainText('Активно +50 ГБ');
+      if (path === '/ultima/subscription-info') {
+        await page.getByTestId('ultima-traffic-top-up-toggle').click();
+      }
+      await expect(page.getByTestId('ultima-metered-topup-policy').locator('time')).toHaveText(
+        /17 ноября 2026.*07:30.*Asia\/Tokyo/,
+      );
+      await expectNoHorizontalOverflow(page);
+    }
+  });
+
+  test('does not invent dates or base quotas when optional metadata is absent', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page, {
+      subscription: {
+        ...SUBSCRIPTION,
+        metered_traffic_reset_at: null,
+        metered_traffic_base_limit_gb: null,
+        metered_traffic_reset_timezone: null,
+      },
+    });
+    await page.goto('/ultima/subscription-info');
+
+    const notice = page.getByTestId('ultima-metered-period-notice');
+    await expect(notice).toContainText('Дата следующего обновления пока недоступна');
+    await expect(notice.locator('time')).toHaveCount(0);
+    await expect(notice).not.toContainText('ГБ / месяц');
+    await expect(notice).not.toContainText('Invalid Date');
+  });
+
+  test('defaults a missing timezone to Moscow without using the browser timezone', async ({
+    page,
+  }) => {
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page, {
+      subscription: { ...SUBSCRIPTION, metered_traffic_reset_timezone: null },
+    });
+    await page.goto('/');
+    await expect(page.getByTestId('ultima-metered-period-notice').locator('time')).toHaveText(
+      /17 ноября 2026.*01:30.*МСК/,
+    );
+  });
+
+  test('does not show monthly special-server policy for non-metered subscriptions', async ({
+    page,
+  }) => {
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page, {
+      subscription: { ...SUBSCRIPTION, metered_traffic_enabled: false },
+    });
+    for (const path of ['/', '/ultima/subscription-info', '/subscription?trafficTopUp=1']) {
+      await page.goto(path);
+      await expect(page.locator('.ultima-shell').first()).toBeVisible();
+      await expect(page.getByTestId('ultima-metered-period-notice')).toHaveCount(0);
+      await expect(page.getByTestId('ultima-metered-topup-policy')).toHaveCount(0);
+    }
+    await expect(page.getByTestId('ultima-traffic-order')).toContainText('30 дней');
   });
 });
 

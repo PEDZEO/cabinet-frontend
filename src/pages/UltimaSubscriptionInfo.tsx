@@ -25,6 +25,7 @@ import {
   UltimaDesktopSectionLayout,
 } from '@/components/ultima/desktop/UltimaDesktopSectionLayout';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+import { UltimaMeteredTrafficPeriodNotice } from '@/components/ultima/UltimaMeteredTrafficPeriodNotice';
 import { UltimaTrafficTopUpSection } from '@/components/ultima/UltimaTrafficTopUpSection';
 import {
   ultimaPaneClassName,
@@ -135,9 +136,11 @@ export function UltimaSubscriptionInfo() {
         ) ?? null)
       : null;
   const canOpenTariffs = purchaseOptions?.sales_mode === 'tariffs';
-  const isUnlimitedTraffic = currentTariff
-    ? isUltimaTariffUnlimited(currentTariff)
-    : (subscription?.traffic_limit_gb ?? 0) <= 0;
+  const isUnlimitedTraffic = subscription?.metered_traffic_enabled
+    ? subscription.traffic_limit_gb <= 0
+    : currentTariff
+      ? isUltimaTariffUnlimited(currentTariff)
+      : (subscription?.traffic_limit_gb ?? 0) <= 0;
   const canTopUpTraffic =
     hasSubscription &&
     !isUnlimitedTraffic &&
@@ -171,7 +174,10 @@ export function UltimaSubscriptionInfo() {
 
   const trafficTotal = Math.max(0, subscription?.traffic_limit_gb ?? 0);
   const trafficUsed = Math.max(0, subscription?.traffic_used_gb ?? 0);
-  const trafficLeft = Math.max(0, trafficTotal - trafficUsed);
+  const trafficLeft = Math.max(
+    0,
+    subscription?.metered_traffic_remaining_gb ?? trafficTotal - trafficUsed,
+  );
   const trafficProgress = isUnlimitedTraffic
     ? 0
     : Math.min(100, Math.max(0, trafficTotal > 0 ? (trafficUsed / trafficTotal) * 100 : 0));
@@ -305,14 +311,14 @@ export function UltimaSubscriptionInfo() {
     }
   };
 
-  const trafficNotice = subscription?.metered_traffic_enabled
-    ? subscription.metered_access_blocked
-      ? t('ultima.subscriptionInfo.meteredBlocked')
-      : t('ultima.subscriptionInfo.meteredActive', {
-          label: subscription.metered_server_label || t('ultima.subscriptionInfo.specialServers'),
-        })
-    : isUnlimitedTraffic
-      ? t('ultima.subscriptionInfo.unlimitedHint')
+  const trafficNotice = isUnlimitedTraffic
+    ? t('ultima.subscriptionInfo.unlimitedHint')
+    : subscription?.metered_traffic_enabled
+      ? subscription.metered_access_blocked
+        ? t('ultima.subscriptionInfo.meteredBlocked')
+        : t('ultima.subscriptionInfo.meteredActive', {
+            label: subscription.metered_server_label || t('ultima.subscriptionInfo.specialServers'),
+          })
       : t('ultima.subscriptionInfo.limitedHint');
 
   const statusPill = (
@@ -385,19 +391,29 @@ export function UltimaSubscriptionInfo() {
         </>
       ) : null}
 
-      <p
-        className={`mt-4 border-t border-white/[0.07] pt-3 text-[12px] leading-relaxed ${
-          subscription.metered_access_blocked ? 'text-amber-100/[0.9]' : 'text-white/[0.55]'
-        }`}
-      >
-        {trafficNotice}
-      </p>
+      {!isUnlimitedTraffic &&
+      subscription.metered_traffic_enabled &&
+      subscription.traffic_reset_mode === 'MONTH' ? (
+        <UltimaMeteredTrafficPeriodNotice
+          subscription={subscription}
+          className="mt-4 border-t border-white/[0.07] pt-3"
+        />
+      ) : (
+        <p
+          className={`mt-4 border-t border-white/[0.07] pt-3 text-[12px] leading-relaxed ${
+            subscription.metered_access_blocked ? 'text-amber-100/[0.9]' : 'text-white/[0.55]'
+          }`}
+        >
+          {trafficNotice}
+        </p>
+      )}
     </section>
   ) : null;
 
   const topUpSection = canTopUpTraffic ? (
     <UltimaTrafficTopUpSection
       t={t}
+      subscription={subscription}
       formatPrice={formatPrice}
       trafficLimitGb={subscription.traffic_limit_gb}
       trafficUsedGb={subscription.traffic_used_gb}

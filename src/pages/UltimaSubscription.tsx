@@ -281,6 +281,7 @@ export function UltimaSubscription() {
     !!selectedTariff &&
     selectedTariffIsCurrent &&
     !isUltimaTariffUnlimited(selectedTariff) &&
+    (!subscription?.metered_traffic_enabled || subscription.traffic_limit_gb > 0) &&
     selectedTariff.traffic_topup_enabled !== false &&
     subscription?.is_active === true;
   const shouldOpenTrafficTopUp = searchParams.get('trafficTopUp') === '1';
@@ -921,6 +922,7 @@ export function UltimaSubscription() {
     canTopUpSelectedTariffTraffic && subscription ? (
       <UltimaTrafficTopUpSection
         t={t}
+        subscription={subscription}
         formatPrice={formatPrice}
         trafficLimitGb={subscription.traffic_limit_gb}
         trafficUsedGb={subscription.traffic_used_gb}

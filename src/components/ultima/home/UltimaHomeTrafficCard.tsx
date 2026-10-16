@@ -2,6 +2,8 @@ import { ArrowRight, Gauge, Globe2, Infinity as InfinityIcon, Server } from 'luc
 import { useTranslation } from 'react-i18next';
 
 import { cn } from '@/lib/utils';
+import type { Subscription } from '@/types';
+import { UltimaMeteredTrafficPeriodNotice } from '../UltimaMeteredTrafficPeriodNotice';
 
 type UltimaHomeTrafficCardProps = {
   locale: string;
@@ -14,6 +16,7 @@ type UltimaHomeTrafficCardProps = {
   isTrial?: boolean;
   standardUnlimited?: boolean;
   serverLabel?: string | null;
+  subscription?: Subscription | null;
   onTopUp: () => void;
   className?: string;
 };
@@ -29,6 +32,7 @@ export function UltimaHomeTrafficCard({
   isTrial = false,
   standardUnlimited = true,
   serverLabel,
+  subscription,
   onTopUp,
   className,
 }: UltimaHomeTrafficCardProps) {
@@ -185,7 +189,9 @@ export function UltimaHomeTrafficCard({
               </>
             ) : null}
 
-            {isMetered ? (
+            {isMetered && subscription?.traffic_reset_mode === 'MONTH' ? (
+              <UltimaMeteredTrafficPeriodNotice subscription={subscription} className="mt-3" />
+            ) : isMetered ? (
               <p
                 className={cn(
                   'mt-2 text-[12px] leading-snug',
