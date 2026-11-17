@@ -11,31 +11,28 @@ export function normalizeUltimaThemeConfig(config: UltimaThemeConfig): UltimaThe
 }
 
 export function getUltimaThemeDerivedCssVarStyle(): CSSProperties {
-  // Keep configured brand colours as inputs while using the approved quiet surfaces.
+  // Layout does not prescribe a palette: all colours follow the bot theme settings.
   return {
-    ['--ultima-bg-page-desktop' as string]:
-      'color-mix(in srgb, #0b1215 96%, var(--ultima-color-bg-top))',
-    ['--ultima-bg-page-mobile' as string]:
-      'color-mix(in srgb, #0b1215 96%, var(--ultima-color-bg-top))',
+    ['--ultima-bg-page-desktop' as string]: 'var(--ultima-color-bg-top)',
+    ['--ultima-bg-page-mobile' as string]: 'var(--ultima-color-bg-top)',
     ['--ultima-bg-page-overlay-desktop' as string]: 'none',
     ['--ultima-bg-page-overlay-mobile' as string]: 'none',
     ['--ultima-bg-page-scrim-desktop' as string]: 'none',
     ['--ultima-bg-page-scrim-mobile' as string]: 'none',
-    ['--ultima-bg-shell' as string]:
-      'color-mix(in srgb, #0b1215 96%, var(--ultima-color-bg-bottom))',
-    ['--ultima-bg-surface' as string]:
-      'color-mix(in srgb, #121e22 92%, var(--ultima-color-surface))',
+    ['--ultima-bg-shell' as string]: 'var(--ultima-color-bg-top)',
+    ['--ultima-bg-surface' as string]: 'var(--ultima-color-surface)',
     ['--ultima-bg-surface-soft' as string]:
-      'color-mix(in srgb, #152428 92%, var(--ultima-color-surface))',
-    ['--ultima-bg-surface-strong' as string]:
-      'color-mix(in srgb, #192b2d 92%, var(--ultima-color-secondary))',
-    ['--ultima-bg-accent-surface' as string]:
-      'linear-gradient(120deg, color-mix(in srgb, #203b32 94%, var(--ultima-color-aura)), #14272a)',
-    ['--ultima-bg-pane' as string]: 'color-mix(in srgb, #121e22 92%, var(--ultima-color-surface))',
-    ['--ultima-border-soft' as string]: '#2a3a3e',
-    ['--ultima-border-medium' as string]: '#3c6052',
-    ['--ultima-text-strong' as string]: '#edf5f3',
-    ['--ultima-text-muted' as string]: '#a6b9b7',
+      'color-mix(in srgb, var(--ultima-color-surface) 60%, var(--ultima-color-bg-top))',
+    ['--ultima-bg-surface-strong' as string]: 'var(--ultima-color-secondary)',
+    ['--ultima-bg-accent-surface' as string]: 'var(--ultima-color-surface)',
+    ['--ultima-bg-pane' as string]: 'var(--ultima-color-surface)',
+    ['--ultima-border-soft' as string]:
+      'color-mix(in srgb, var(--ultima-color-surface-border) 24%, var(--ultima-color-bg-top))',
+    ['--ultima-border-medium' as string]:
+      'color-mix(in srgb, var(--ultima-color-surface-border) 40%, var(--ultima-color-bg-top))',
+    ['--ultima-text-strong' as string]: 'var(--ultima-color-secondary-text)',
+    ['--ultima-text-muted' as string]:
+      'color-mix(in srgb, var(--ultima-color-secondary-text) 70%, var(--ultima-color-bg-top))',
     ['--ultima-shadow-surface' as string]: 'none',
     ['--ultima-shadow-accent' as string]: 'none',
   };

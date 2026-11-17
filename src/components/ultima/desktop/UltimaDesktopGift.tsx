@@ -1,6 +1,5 @@
 import { type ReactNode, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
-import { cn } from '@/lib/utils';
 import {
   UltimaDesktopPanel,
   UltimaDesktopSectionLayout,
@@ -119,18 +118,6 @@ type UltimaDesktopGiftProps = {
   onCopyGeneratedCode: () => void;
 };
 
-const GiftIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6 text-white/90" aria-hidden>
-    <path
-      d="M4.75 9.25h14.5v9a1.5 1.5 0 0 1-1.5 1.5h-11a1.5 1.5 0 0 1-1.5-1.5v-9Zm7.25 0v10.5m-5-10.5V7.8c0-.856.694-1.55 1.55-1.55H10m2 3V6.25h1.45c.856 0 1.55.694 1.55 1.55v1.45M12 6.25c-1.05 0-2.75-.625-2.75-2.15C9.25 2.9 10.1 2.25 11.1 2.25c1.45 0 2.15 1.55 2.15 4m-1.25 0c1.05 0 2.75-.625 2.75-2.15 0-1.2-.85-1.85-1.85-1.85-1.45 0-2.15 1.55-2.15 4"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
 function MessageBlock({
   tone,
   children,
@@ -138,17 +125,8 @@ function MessageBlock({
   tone: 'info' | 'success' | 'error' | 'warning';
   children: ReactNode;
 }) {
-  const toneClassName =
-    tone === 'success'
-      ? 'border-emerald-200/[0.24] bg-emerald-300/10 text-emerald-50/90'
-      : tone === 'error'
-        ? 'border-rose-200/[0.24] bg-rose-400/10 text-rose-100'
-        : tone === 'warning'
-          ? 'border-amber-200/[0.24] bg-amber-400/10 text-amber-100'
-          : 'border-sky-200/[0.24] bg-sky-400/10 text-sky-100';
-
   return (
-    <div className={cn('rounded-[22px] border px-4 py-3 text-sm leading-[1.6]', toneClassName)}>
+    <div className={`ultima-offers-notice is-${tone}`} role={tone === 'error' ? 'alert' : 'status'}>
       {children}
     </div>
   );
@@ -164,20 +142,19 @@ function HistoryColumn({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4">
-      <div className="mb-4">
-        <div className="text-[16px] font-medium text-white">{title}</div>
-        <div className="mt-1 text-sm leading-[1.55] text-white/[0.72]">{subtitle}</div>
-      </div>
-      <div className="max-h-[420px] space-y-3 overflow-y-auto pr-1">{children}</div>
-    </div>
+    <section className="ultima-offers-history-column">
+      <header>
+        <h3>{title}</h3>
+        <p className="ultima-offers-muted">{subtitle}</p>
+      </header>
+      <div>{children}</div>
+    </section>
   );
 }
 
 export function UltimaDesktopGift({
   title,
   subtitle,
-  metrics,
   purchaseIntro,
   purchaseAnchorRef,
   isLoading,
@@ -200,7 +177,6 @@ export function UltimaDesktopGift({
   receivedItems,
   pendingExtend,
   bottomNav,
-  onScrollToPurchase,
   onSelectTariff,
   onSelectPeriod,
   onSelectPaymentMethod,
@@ -209,80 +185,48 @@ export function UltimaDesktopGift({
   onCopyGeneratedCode,
 }: UltimaDesktopGiftProps) {
   const { t } = useTranslation();
-
   const aside = (
     <>
-      <UltimaDesktopPanel
-        title={t('gift.desktopSummaryTitle', { defaultValue: 'Сводка подарка' })}
-        subtitle={t('gift.desktopSummarySubtitle', {
-          defaultValue: 'Здесь собран итог по выбранному тарифу и способу оплаты.',
-        })}
-      >
-        <div className="space-y-3">
+      <UltimaDesktopPanel title={t('gift.desktopSummaryTitle', { defaultValue: 'Сводка подарка' })}>
+        <dl className="ultima-offers-details">
           {summaryRows.map((row) => (
-            <div
-              key={`${row.label}-${row.value}`}
-              className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3"
-            >
-              <div className="flex items-center justify-between gap-3 text-sm">
-                <span className="text-white/[0.62]">{row.label}</span>
-                <span className="text-right font-medium text-white/[0.92]">{row.value}</span>
-              </div>
+            <div key={`${row.label}-${row.value}`}>
+              <dt>{row.label}</dt>
+              <dd>{row.value}</dd>
             </div>
           ))}
-        </div>
-
+        </dl>
         {pendingPurchaseMessage ? (
-          <div className="mt-4">
-            <MessageBlock tone="info">{pendingPurchaseMessage}</MessageBlock>
-          </div>
+          <MessageBlock tone="info">{pendingPurchaseMessage}</MessageBlock>
         ) : null}
-        {error ? (
-          <div className="mt-4">
-            <MessageBlock tone="error">{error}</MessageBlock>
-          </div>
-        ) : null}
-        {success ? (
-          <div className="mt-4">
-            <MessageBlock tone="success">{success}</MessageBlock>
-          </div>
-        ) : null}
-
+        {error ? <MessageBlock tone="error">{error}</MessageBlock> : null}
+        {success ? <MessageBlock tone="success">{success}</MessageBlock> : null}
         <button
           type="button"
           onClick={onCreate}
           disabled={isPrimaryActionDisabled}
-          className="ultima-btn-pill ultima-btn-primary mt-5 flex min-h-[50px] w-full items-center justify-between px-5 text-[15px] disabled:cursor-not-allowed disabled:opacity-75"
+          className="ultima-btn-pill ultima-btn-primary ultima-offers-submit"
         >
-          <span>{primaryActionLabel}</span>
-          <span className="text-white/[0.85]">→</span>
+          {primaryActionLabel}
         </button>
       </UltimaDesktopPanel>
-
       {generatedGiftCode ? (
         <UltimaDesktopPanel
-          title={t('balance.promocode.generatedGiftCode', {
-            defaultValue: 'Подарочный код',
-          })}
+          title={t('balance.promocode.generatedGiftCode', { defaultValue: 'Подарочный код' })}
           subtitle={t('gift.desktopCodeSubtitle', {
             defaultValue: 'Код можно сразу отправить получателю или сохранить.',
           })}
         >
-          <div className="rounded-[24px] border border-emerald-200/[0.14] bg-emerald-950/[0.22] px-4 py-4">
-            <div className="break-all font-mono text-[16px] font-medium tracking-[0.02em] text-emerald-100">
-              {generatedGiftCode}
-            </div>
-            <button
-              type="button"
-              onClick={onCopyGeneratedCode}
-              className="ultima-btn-pill ultima-btn-secondary mt-4 w-full px-4 py-3 text-sm"
-            >
-              {t('common.copy', { defaultValue: 'Копировать' })}
-            </button>
-          </div>
+          <p className="ultima-offers-generated-code">{generatedGiftCode}</p>
+          <button
+            type="button"
+            onClick={onCopyGeneratedCode}
+            className="ultima-btn-pill ultima-btn-secondary ultima-offers-submit"
+          >
+            {t('common.copy', { defaultValue: 'Копировать' })}
+          </button>
         </UltimaDesktopPanel>
       ) : null}
-
       {pendingExtend ? (
         <UltimaDesktopPanel
           title={t('gift.desktopPendingExtendTitle', {
@@ -290,12 +234,12 @@ export function UltimaDesktopGift({
           })}
         >
           <MessageBlock tone="warning">{pendingExtend.description}</MessageBlock>
-          <div className="mt-4 flex gap-3">
+          <div className="ultima-offers-button-row">
             <button
               type="button"
               onClick={pendingExtend.onConfirm}
               disabled={!pendingExtend.canConfirm || pendingExtend.isPending}
-              className="ultima-btn-pill ultima-btn-primary flex-1 px-4 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-75"
+              className="ultima-btn-pill ultima-btn-primary"
             >
               {pendingExtend.isPending
                 ? t('gift.desktopConfirming', { defaultValue: 'Подтверждаем...' })
@@ -305,35 +249,21 @@ export function UltimaDesktopGift({
               type="button"
               onClick={pendingExtend.onCancel}
               disabled={pendingExtend.isPending}
-              className="ultima-btn-pill ultima-btn-secondary px-4 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-75"
+              className="ultima-btn-pill ultima-btn-secondary"
             >
               {t('common.cancel', { defaultValue: 'Отмена' })}
             </button>
           </div>
-          <div className="mt-3 text-xs text-white/[0.72]">{pendingExtend.tokenLabel}</div>
+          <p className="ultima-offers-hint">{pendingExtend.tokenLabel}</p>
         </UltimaDesktopPanel>
       ) : null}
     </>
   );
-
   return (
     <UltimaDesktopSectionLayout
-      icon={<GiftIcon />}
+      icon={null}
       title={title}
       subtitle={subtitle}
-      eyebrow={t('nav.gift', { defaultValue: 'Подарок' })}
-      metrics={metrics}
-      heroActions={
-        !disabledMessage && !isLoading ? (
-          <button
-            type="button"
-            onClick={onScrollToPurchase}
-            className="ultima-btn-pill ultima-btn-secondary px-5 py-3 text-sm"
-          >
-            {t('gift.desktopHeroAction', { defaultValue: 'Перейти к созданию' })}
-          </button>
-        ) : null
-      }
       aside={aside}
       bottomNav={bottomNav}
     >
@@ -342,7 +272,6 @@ export function UltimaDesktopGift({
         subtitle={purchaseIntro}
       >
         <div ref={purchaseAnchorRef} />
-
         {isLoading ? (
           <MessageBlock tone="info">
             {t('common.loading', { defaultValue: 'Загрузка...' })}
@@ -350,197 +279,140 @@ export function UltimaDesktopGift({
         ) : disabledMessage ? (
           <MessageBlock tone="warning">{disabledMessage}</MessageBlock>
         ) : (
-          <div className="space-y-6">
-            <MessageBlock tone="info">{purchaseHint}</MessageBlock>
-
-            <div>
-              <div className="mb-3 text-[13px] uppercase tracking-[0.22em] text-white/[0.72]">
-                {t('gift.tariff', { defaultValue: 'Тариф' })}
-              </div>
-              <div className="grid gap-3 md:grid-cols-2">
+          <>
+            <p className="ultima-offers-hint">{purchaseHint}</p>
+            <section className="ultima-offers-fieldset">
+              <h3>{t('gift.tariff', { defaultValue: 'Тариф' })}</h3>
+              <div className="ultima-offers-choice-list">
                 {tariffs.map((tariff) => (
                   <button
                     key={tariff.id}
                     type="button"
                     onClick={() => onSelectTariff(tariff.id)}
-                    className={cn(
-                      'rounded-[24px] border p-4 text-left transition-colors',
-                      tariff.isSelected
-                        ? 'border-emerald-200/[0.36] bg-emerald-300/[0.08]'
-                        : 'border-white/10 bg-white/[0.04] hover:bg-white/[0.08]',
-                    )}
+                    aria-pressed={tariff.isSelected}
+                    className={`ultima-offers-choice ${tariff.isSelected ? 'is-selected' : ''}`}
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="text-[18px] font-medium text-white">{tariff.name}</div>
-                        <div className="mt-2 text-sm leading-[1.6] text-white/[0.62]">
-                          {tariff.description}
-                        </div>
-                      </div>
-                      <div className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs text-white/[0.72]">
-                        {tariff.deviceLimit}
-                      </div>
-                    </div>
+                    <span className="ultima-offers-choice-copy">
+                      <strong>{tariff.name}</strong>
+                      <span>{tariff.description}</span>
+                    </span>
+                    <span className="ultima-offers-choice-mark" aria-hidden="true">
+                      {tariff.isSelected ? '✓' : ''}
+                    </span>
                   </button>
                 ))}
               </div>
-            </div>
-
-            <div>
-              <div className="mb-3 text-[13px] uppercase tracking-[0.22em] text-white/[0.72]">
-                {t('subscription.period', { defaultValue: 'Период' })}
-              </div>
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            </section>
+            <section className="ultima-offers-fieldset">
+              <h3>{t('subscription.period', { defaultValue: 'Период' })}</h3>
+              <div className="ultima-offers-choice-list">
                 {periods.map((period) => (
                   <button
                     key={period.days}
                     type="button"
                     onClick={() => onSelectPeriod(period.days)}
-                    className={cn(
-                      'rounded-[24px] border p-4 text-left transition-colors',
-                      period.isSelected
-                        ? 'border-emerald-200/[0.36] bg-emerald-300/[0.08]'
-                        : 'border-white/10 bg-white/[0.04] hover:bg-white/[0.08]',
-                    )}
+                    aria-pressed={period.isSelected}
+                    className={`ultima-offers-choice ultima-offers-period ${period.isSelected ? 'is-selected' : ''}`}
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="text-[17px] font-medium text-white">{period.label}</div>
+                    <span>
+                      {period.label}
                       {period.badge ? (
-                        <span className="rounded-full border border-emerald-200/[0.26] bg-emerald-300/[0.14] px-2.5 py-1 text-[13px] font-medium text-emerald-50">
-                          {period.badge}
-                        </span>
+                        <small className="ultima-offers-discount">{period.badge}</small>
                       ) : null}
-                    </div>
-                    <div className="mt-4 text-[28px] font-semibold leading-none tracking-[-0.03em] text-white">
-                      {period.priceLabel}
-                    </div>
+                    </span>
+                    <strong>{period.priceLabel}</strong>
+                    <span className="ultima-offers-choice-mark" aria-hidden="true">
+                      {period.isSelected ? '✓' : ''}
+                    </span>
                   </button>
                 ))}
               </div>
-            </div>
-
+            </section>
             {requiresGatewayPayment ? (
-              <div className="space-y-4">
-                {gatewayHint ? <MessageBlock tone="warning">{gatewayHint}</MessageBlock> : null}
-
-                <div>
-                  <div className="mb-3 text-[13px] uppercase tracking-[0.22em] text-white/[0.72]">
-                    {t('balance.topUp.paymentMethodTitle', { defaultValue: 'Способ оплаты' })}
-                  </div>
-                  <div className="grid gap-3 md:grid-cols-2">
-                    {paymentMethods.map((method) => (
+              <section className="ultima-offers-fieldset">
+                <h3>{t('balance.topUp.paymentMethodTitle', { defaultValue: 'Способ оплаты' })}</h3>
+                {gatewayHint ? <p className="ultima-offers-hint">{gatewayHint}</p> : null}
+                <div className="ultima-offers-choice-list">
+                  {paymentMethods.map((method) => (
+                    <button
+                      key={method.id}
+                      type="button"
+                      onClick={() => onSelectPaymentMethod(method.id)}
+                      aria-pressed={method.isSelected}
+                      className={`ultima-offers-choice ${method.isSelected ? 'is-selected' : ''}`}
+                    >
+                      <span className="ultima-offers-choice-copy">
+                        <strong>{method.name}</strong>
+                        {method.description ? <span>{method.description}</span> : null}
+                      </span>
+                      <span className="ultima-offers-choice-mark" aria-hidden="true">
+                        {method.isSelected ? '✓' : ''}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                {paymentSubOptions.length ? (
+                  <div className="ultima-offers-button-row">
+                    {paymentSubOptions.map((option) => (
                       <button
-                        key={method.id}
+                        key={option.id}
                         type="button"
-                        onClick={() => onSelectPaymentMethod(method.id)}
-                        className={cn(
-                          'rounded-[24px] border p-4 text-left transition-colors',
-                          method.isSelected
-                            ? 'border-emerald-200/[0.36] bg-emerald-300/[0.08]'
-                            : 'border-white/10 bg-white/[0.04] hover:bg-white/[0.08]',
-                        )}
+                        onClick={() => onSelectPaymentSubOption(option.id)}
+                        aria-pressed={option.isSelected}
+                        className={`ultima-offers-option ${option.isSelected ? 'is-selected' : ''}`}
                       >
-                        <div className="text-[16px] font-medium text-white">{method.name}</div>
-                        {method.description ? (
-                          <div className="mt-2 text-sm leading-[1.55] text-white/60">
-                            {method.description}
-                          </div>
-                        ) : null}
+                        {option.name}
                       </button>
                     ))}
                   </div>
-                </div>
-
-                {paymentSubOptions.length > 0 ? (
-                  <div>
-                    <div className="mb-3 text-[13px] uppercase tracking-[0.22em] text-white/[0.72]">
-                      {t('balance.topUp.paymentOptionTitle', { defaultValue: 'Вариант оплаты' })}
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {paymentSubOptions.map((option) => (
-                        <button
-                          key={option.id}
-                          type="button"
-                          onClick={() => onSelectPaymentSubOption(option.id)}
-                          className={cn(
-                            'rounded-full border px-4 py-2 text-sm transition-colors',
-                            option.isSelected
-                              ? 'border-emerald-200/[0.36] bg-emerald-300/[0.08] text-emerald-50'
-                              : 'border-white/10 bg-white/[0.04] text-white/[0.72] hover:bg-white/[0.08]',
-                          )}
-                        >
-                          {option.name}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
                 ) : null}
-              </div>
+              </section>
             ) : null}
-          </div>
+          </>
         )}
       </UltimaDesktopPanel>
-
       <UltimaDesktopPanel
         title={t('gift.desktopHistoryTitle', { defaultValue: 'История подарков' })}
         subtitle={t('gift.desktopHistorySubtitle', {
           defaultValue: 'Отправленные коды можно копировать и продлевать прямо из этой страницы.',
         })}
       >
-        <div className="grid gap-4 xl:grid-cols-2">
+        <div className="ultima-offers-history">
           <HistoryColumn
             title={t('gift.desktopSentHistoryTitle', { defaultValue: 'Отправленные' })}
             subtitle={t('gift.desktopSentHistorySubtitle', {
               defaultValue: 'Коды, которые вы уже создали и можете продлить.',
             })}
           >
-            {sentItems.length === 0 ? (
-              <div className="rounded-[20px] border border-dashed border-white/[0.12] px-4 py-5 text-sm text-white/[0.72]">
+            {!sentItems.length ? (
+              <p className="ultima-offers-empty">
                 {t('gift.desktopEmptySent', { defaultValue: 'Отправленных подарков пока нет.' })}
-              </div>
+              </p>
             ) : (
               sentItems.map((gift) => (
-                <article
-                  key={gift.token}
-                  className="rounded-[22px] border border-white/10 bg-white/[0.05] p-4"
-                >
-                  <div className="flex items-start justify-between gap-3">
+                <article key={gift.token} className="ultima-offers-history-row">
+                  <header>
                     <div>
-                      <div className="text-[16px] font-medium text-white">{gift.title}</div>
-                      <div className="mt-1 text-sm leading-[1.55] text-white/[0.72]">
-                        {gift.subtitle}
-                      </div>
+                      <h4>{gift.title}</h4>
+                      <p className="ultima-offers-muted">{gift.subtitle}</p>
                     </div>
-                    <span
-                      className={cn(
-                        'rounded-full px-2.5 py-1 text-[13px] font-medium',
-                        gift.statusClassName,
-                      )}
-                    >
+                    <span className={`ultima-offers-status ${gift.statusClassName}`}>
                       {gift.statusLabel}
                     </span>
-                  </div>
-
-                  <div className="mt-4 rounded-[18px] border border-white/[0.08] bg-black/10 px-4 py-3">
-                    <div className="text-xs uppercase tracking-[0.18em] text-white/[0.36]">
-                      Code
-                    </div>
-                    <button
-                      type="button"
-                      onClick={gift.onCopyCode}
-                      className="mt-2 text-left font-mono text-[14px] text-emerald-100 transition hover:text-emerald-50"
-                    >
-                      GIFT-{gift.token}
-                    </button>
-                  </div>
-
-                  <div className="mt-3 text-sm leading-[1.6] text-white/[0.72]">{gift.detail}</div>
-
-                  <div className="mt-4 flex items-center gap-3">
+                  </header>
+                  <button
+                    type="button"
+                    onClick={gift.onCopyCode}
+                    className="ultima-offers-copy-code"
+                  >
+                    GIFT-{gift.token}
+                  </button>
+                  <p className="ultima-offers-muted">{gift.detail}</p>
+                  <div className="ultima-offers-button-row">
                     <select
                       value={gift.selectedPeriodDays}
                       onChange={(event) => gift.onPeriodChange(Number(event.target.value))}
-                      className="h-11 min-w-0 flex-1 rounded-[16px] border border-white/[0.12] bg-white/[0.06] px-3 text-sm text-white"
+                      aria-label={t('subscription.period', { defaultValue: 'Период' })}
                     >
                       {gift.periodOptions.map((option) => (
                         <option key={`${gift.token}-${option.days}`} value={option.days}>
@@ -552,55 +424,40 @@ export function UltimaDesktopGift({
                       type="button"
                       onClick={gift.onRenew}
                       disabled={gift.isRenewing}
-                      className="ultima-btn-pill ultima-btn-primary px-4 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-75"
+                      className="ultima-btn-pill ultima-btn-secondary"
                     >
                       {gift.isRenewing
                         ? t('gift.desktopRenewing', { defaultValue: 'Продлеваем...' })
-                        : t('gift.desktopRenewAction', {
-                            defaultValue: 'Продлить',
-                          })}
+                        : t('gift.desktopRenewAction', { defaultValue: 'Продлить' })}
                     </button>
                   </div>
                 </article>
               ))
             )}
           </HistoryColumn>
-
           <HistoryColumn
             title={t('gift.desktopReceivedHistoryTitle', { defaultValue: 'Полученные' })}
             subtitle={t('gift.desktopReceivedHistorySubtitle', {
               defaultValue: 'Все подарки, которые уже пришли на ваш аккаунт.',
             })}
           >
-            {receivedItems.length === 0 ? (
-              <div className="rounded-[20px] border border-dashed border-white/[0.12] px-4 py-5 text-sm text-white/[0.72]">
-                {t('gift.desktopEmptyReceived', {
-                  defaultValue: 'Полученных подарков пока нет.',
-                })}
-              </div>
+            {!receivedItems.length ? (
+              <p className="ultima-offers-empty">
+                {t('gift.desktopEmptyReceived', { defaultValue: 'Полученных подарков пока нет.' })}
+              </p>
             ) : (
               receivedItems.map((gift) => (
-                <article
-                  key={gift.token}
-                  className="rounded-[22px] border border-white/10 bg-white/[0.05] p-4"
-                >
-                  <div className="flex items-start justify-between gap-3">
+                <article key={gift.token} className="ultima-offers-history-row">
+                  <header>
                     <div>
-                      <div className="text-[16px] font-medium text-white">{gift.title}</div>
-                      <div className="mt-1 text-sm leading-[1.55] text-white/[0.72]">
-                        {gift.subtitle}
-                      </div>
+                      <h4>{gift.title}</h4>
+                      <p className="ultima-offers-muted">{gift.subtitle}</p>
                     </div>
-                    <span
-                      className={cn(
-                        'rounded-full px-2.5 py-1 text-[13px] font-medium',
-                        gift.statusClassName,
-                      )}
-                    >
+                    <span className={`ultima-offers-status ${gift.statusClassName}`}>
                       {gift.statusLabel}
                     </span>
-                  </div>
-                  <div className="mt-4 text-sm leading-[1.6] text-white/[0.72]">{gift.detail}</div>
+                  </header>
+                  <p className="ultima-offers-muted">{gift.detail}</p>
                 </article>
               ))
             )}

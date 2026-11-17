@@ -1,0 +1,98 @@
+@keyframes ultima-content-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(9px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ultima-meter-arrive {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.ultima-web-home,
+.ultima-web-order .ultima-desktop-main,
+.ultima-desktop-page,
+.ultima-mobile-plan,
+.ultima-shell-mobile-docked > .ultima-scrollbar,
+.ultima-shell-mobile-docked > section:not(.ultima-mobile-dock-footer),
+.ultima-news-reading,
+.auth-portal--ultima .auth-portal-card {
+  animation: ultima-content-arrive calc(var(--ultima-animation-content-enter-ms, 240) * 1ms)
+    cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.ultima-mobile-action-row {
+  animation: ultima-content-arrive calc(var(--ultima-animation-item-enter-ms, 180) * 1ms) ease-out
+    both;
+}
+
+.ultima-mobile-action-row:nth-child(2) {
+  animation-delay: 25ms;
+}
+.ultima-mobile-action-row:nth-child(3) {
+  animation-delay: 50ms;
+}
+.ultima-mobile-action-row:nth-child(4) {
+  animation-delay: 75ms;
+}
+.ultima-web-traffic-meter span {
+  transform-origin: left;
+  animation: ultima-meter-arrive calc(var(--ultima-animation-content-enter-ms, 280) * 1ms) ease-out
+    both;
+}
+
+.ultima-shell :is(button, a, input, textarea, select),
+.ultima-bottom-nav :is(button, a),
+.auth-portal--ultima :is(button, a, input) {
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    opacity 160ms ease;
+}
+
+.ultima-shell .ultima-btn-primary:hover,
+.auth-portal--ultima .btn-primary:hover {
+  filter: brightness(1.06);
+}
+.ultima-shell .ultima-btn-primary:active {
+  filter: brightness(0.95);
+}
+.ultima-web-nav-link {
+  position: relative;
+}
+.ultima-shell :is(button, a):disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  .ultima-mobile-action-row:hover,
+  .ultima-shell [data-testid^='ultima-profile-action-']:hover {
+    background: color-mix(
+      in srgb,
+      var(--ultima-color-primary) 5%,
+      var(--ultima-color-bg-top)
+    ) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ultima-shell *,
+  .ultima-bottom-nav *,
+  .auth-portal--ultima * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

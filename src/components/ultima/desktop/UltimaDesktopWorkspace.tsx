@@ -1,6 +1,5 @@
 import { type ReactNode } from 'react';
-import { ChevronRight, Settings } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { balanceApi } from '@/api/balance';
@@ -16,54 +15,91 @@ type UltimaDesktopWorkspaceProps = {
   className?: string;
 };
 
-export function UltimaDesktopRail({ bottomNav }: { bottomNav: ReactNode }) {
-  const navigate = useNavigate();
+export function UltimaDesktopRail(_props: { bottomNav: ReactNode }) {
+  const { pathname } = useLocation();
+  const { t } = useTranslation();
   const isAdmin = useAuthStore((state) => state.isAdmin);
   const { appName, logoLetter, hasCustomLogo, logoUrl } = useBranding();
   const { isLoaded, hasError, handleLoad, handleError } = useBrandLogoImage(logoUrl);
   const showLogo = Boolean(hasCustomLogo && logoUrl && !hasError);
-
+  const items = [
+    ['home', '/', t('ultima.web.overview', { defaultValue: 'Обзор' })],
+    [
+      'subscription',
+      '/ultima/subscription-info',
+      t('ultima.web.subscriptionPayment', { defaultValue: 'Подписка и оплата' }),
+    ],
+    ['connection', '/connection', t('ultima.web.connection', { defaultValue: 'Подключение' })],
+    ['devices', '/ultima/devices', t('ultima.web.devices', { defaultValue: 'Устройства' })],
+    ['balance', '/balance', t('ultima.web.payments', { defaultValue: 'Баланс и платежи' })],
+    ['support', '/support', t('nav.support')],
+    ['profile', '/profile', t('ultima.web.account', { defaultValue: 'Аккаунт' })],
+    ['news', '/ultima/news', t('nav.news')],
+  ];
   return (
     <aside className="ultima-desktop-rail" aria-label={appName}>
-      <div className="ultima-desktop-brand">
-        <span className="ultima-desktop-brand-mark" aria-hidden>
-          {showLogo ? (
-            <img
-              src={logoUrl ?? undefined}
-              alt=""
-              className={cn(
-                'h-full w-full object-contain transition-opacity',
-                isLoaded ? 'opacity-100' : 'opacity-0',
-              )}
-              onLoad={handleLoad}
-              onError={handleError}
-            />
-          ) : (
-            <span className="ultima-desktop-brand-letter">{logoLetter}</span>
-          )}
-        </span>
+      <Link to="/" className="ultima-desktop-brand">
+        {showLogo ? (
+          <img
+            src={logoUrl ?? undefined}
+            alt=""
+            className={cn('ultima-web-brand-image', !isLoaded && 'opacity-0')}
+            onLoad={handleLoad}
+            onError={handleError}
+          />
+        ) : (
+          <span className="ultima-web-brand-letter" aria-hidden="true">
+            {logoLetter}
+          </span>
+        )}
         <span className="ultima-desktop-brand-copy">
-          <strong title={appName}>{appName}</strong>
+          <strong>{appName}</strong>
+          <small>{t('ultima.web.cabinet', { defaultValue: 'Личный кабинет' })}</small>
         </span>
-      </div>
-
-      <div className="ultima-desktop-navigation">
-        <span className="ultima-desktop-navigation-label">Навигация</span>
-        {bottomNav}
+      </Link>
+      <nav
+        className="ultima-desktop-navigation ultima-web-navigation"
+        aria-label={t('nav.mainNavigation')}
+      >
+        {items.map(([id, path, label]) => {
+          const selected =
+            id === 'subscription'
+              ? pathname.startsWith('/subscription') || pathname === path
+              : id === 'home'
+                ? pathname === '/'
+                : pathname === path || pathname.startsWith(path + '/');
+          return (
+            <Link
+              key={id}
+              to={path}
+              data-ultima-nav-btn="1"
+              data-ultima-nav-target={id}
+              aria-current={selected ? 'page' : undefined}
+              className={cn(
+                'ultima-web-nav-link',
+                selected && 'is-active',
+                id === 'news' && 'is-secondary',
+              )}
+            >
+              <span>{label}</span>
+            </Link>
+          );
+        })}
         {isAdmin ? (
-          <button
-            type="button"
+          <Link
+            to="/admin"
             className="ultima-desktop-admin-link"
-            onClick={() => navigate('/admin')}
-            aria-label="Админка"
-            title="Админка"
             data-testid="ultima-desktop-admin-link"
           >
-            <Settings size={18} strokeWidth={1.8} aria-hidden />
-            <span>Админка</span>
-          </button>
+            {t('admin.nav.title', { defaultValue: 'Администрирование' })}
+          </Link>
         ) : null}
-      </div>
+      </nav>
+      <p className="ultima-web-rail-note">
+        {t('ultima.web.railNote', {
+          defaultValue: 'Всё для вашего подключения — в одном кабинете.',
+        })}
+      </p>
     </aside>
   );
 }
@@ -92,7 +128,6 @@ export function UltimaDesktopTopbar() {
     queryFn: balanceApi.getBalance,
     staleTime: 15000,
   });
-  const { appName } = useBranding();
   const pageTitle = getWorkspaceTitle(location.pathname);
   const balanceKopeks = balance?.balance_kopeks ?? user?.balance_kopeks;
   const balanceLabel =
@@ -107,9 +142,7 @@ export function UltimaDesktopTopbar() {
   return (
     <header className="ultima-desktop-topbar">
       <div className="ultima-desktop-breadcrumb">
-        <span>{appName}</span>
-        <ChevronRight className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-        <strong>{pageTitle}</strong>
+        <span>{pageTitle}</span>
       </div>
       <div className="ultima-cabinet-account-actions">
         <button

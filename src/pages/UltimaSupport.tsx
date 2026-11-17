@@ -732,7 +732,7 @@ export function UltimaSupport() {
           active
             ? {
                 background:
-                  'linear-gradient(135deg, color-mix(in srgb, var(--ultima-color-primary) 52%, transparent), color-mix(in srgb, var(--ultima-color-secondary) 82%, transparent))',
+                  'color-mix(in srgb, var(--ultima-color-primary) 12%, var(--ultima-color-surface))',
               }
             : undefined
         }
@@ -755,7 +755,7 @@ export function UltimaSupport() {
           </p>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+      <div className="ultima-support-help-list">
         {selfHelpActions.map((action) => (
           <button
             key={action.key}
@@ -930,6 +930,7 @@ export function UltimaSupport() {
         className={`${ultimaPanelClassName} flex min-h-0 flex-1 flex-col gap-3 p-4 lg:p-5`}
         style={ULTIMA_SUPPORT_SECTION_STYLE}
         data-testid="ultima-ticket-workspace"
+        data-empty={!ticketsLoading && !tickets?.items?.length}
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0">
@@ -977,7 +978,19 @@ export function UltimaSupport() {
           </div>
         ) : null}
 
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[380px_minmax(0,1fr)] lg:gap-4">
+        {!ticketsLoading && !tickets?.items?.length ? (
+          <div className="ultima-support-empty">
+            <h2>{t('support.noTickets')}</h2>
+            <p>
+              {t('support.webEmptyHint', {
+                defaultValue: 'Создайте обращение — переписка с поддержкой появится здесь.',
+              })}
+            </p>
+            {renderSelfHelpActions('ultima-support-empty-help')}
+          </div>
+        ) : null}
+
+        <div className="ultima-support-columns grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[380px_minmax(0,1fr)] lg:gap-4">
           <div
             className={`${ultimaPaneClassName} ultima-scrollbar ${
               selectedTicketId && !mobileTicketsExpanded ? 'hidden lg:block' : ''

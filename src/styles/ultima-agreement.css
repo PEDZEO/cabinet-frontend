@@ -1,0 +1,270 @@
+.ultima-agreement {
+  --ultima-agreement-line: color-mix(
+    in srgb,
+    var(--ultima-color-surface-border) 28%,
+    var(--ultima-color-bg-top)
+  );
+  --ultima-agreement-muted: color-mix(
+    in srgb,
+    var(--ultima-color-secondary-text) 70%,
+    var(--ultima-color-surface)
+  );
+  color: var(--ultima-color-secondary-text);
+}
+
+.ultima-agreement-heading {
+  flex-shrink: 0;
+  padding: 8px 0 24px;
+}
+
+.ultima-agreement-title,
+.ultima-agreement .ultima-web-sectionheading > h1 {
+  max-width: 32ch;
+  margin: 0;
+  color: var(--ultima-color-secondary-text);
+  font-size: clamp(25px, 3vw, 32px);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+  overflow-wrap: break-word;
+}
+
+.ultima-agreement-subtitle,
+.ultima-agreement .ultima-web-sectionsubtitle {
+  margin: 10px 0 0;
+  color: var(--ultima-agreement-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.ultima-agreement-mobile-reading {
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 16px;
+}
+
+.ultima-agreement-document {
+  min-width: 0;
+  padding: clamp(20px, 3vw, 36px);
+  border: 1px solid var(--ultima-agreement-line);
+  border-radius: 12px;
+  background: var(--ultima-color-surface);
+  color: var(--ultima-color-secondary-text);
+  animation: ultima-agreement-enter 230ms ease-out both;
+}
+
+.ultima-shell.ultima-agreement .ultima-agreement-body {
+  max-width: 78ch;
+  margin-inline: auto;
+  color: var(--ultima-color-secondary-text) !important;
+  font-size: 16px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+
+.ultima-shell.ultima-agreement
+  .ultima-agreement-body
+  :is(p, div, span, li, strong, b, em, i, u, s, del, ins) {
+  color: inherit !important;
+}
+
+.ultima-agreement-body p {
+  margin: 0 0 18px;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.ultima-agreement-body > :last-child {
+  margin-bottom: 0;
+}
+
+.ultima-shell.ultima-agreement .ultima-agreement-body :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--ultima-color-secondary-text) !important;
+  font-weight: 600;
+  line-height: 1.4 !important;
+  letter-spacing: -0.015em;
+  overflow-wrap: break-word;
+}
+
+.ultima-shell.ultima-agreement .ultima-agreement-body h1 {
+  margin: 0 0 22px;
+  font-size: 24px !important;
+}
+
+.ultima-shell.ultima-agreement .ultima-agreement-body h2 {
+  margin: 32px 0 14px;
+  padding-top: 28px;
+  border-top: 1px solid var(--ultima-agreement-line);
+  font-size: clamp(20px, 2vw, 24px) !important;
+}
+
+.ultima-shell.ultima-agreement .ultima-agreement-body h2:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.ultima-shell.ultima-agreement .ultima-agreement-body h3 {
+  margin: 24px 0 12px;
+  font-size: 20px !important;
+}
+
+.ultima-shell.ultima-agreement .ultima-agreement-body :is(h4, h5, h6) {
+  margin: 20px 0 10px;
+  font-size: 17px !important;
+}
+
+.ultima-agreement-body :is(strong, b) {
+  font-weight: 600;
+}
+
+.ultima-shell.ultima-agreement .ultima-agreement-body a {
+  color: var(--ultima-color-primary) !important;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: opacity 230ms ease;
+}
+
+.ultima-shell.ultima-agreement .ultima-agreement-body a :is(span, strong, b, em, i) {
+  color: inherit !important;
+}
+
+.ultima-agreement-body a:focus-visible {
+  outline: 2px solid var(--ultima-color-primary);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+.ultima-agreement-body :is(ul, ol) {
+  margin: 16px 0 22px;
+  padding-left: 24px;
+}
+
+.ultima-agreement-body ul {
+  list-style: disc;
+}
+
+.ultima-agreement-body ol {
+  list-style: decimal;
+}
+
+.ultima-agreement-body li {
+  padding-left: 3px;
+  margin-bottom: 8px;
+}
+
+.ultima-agreement-body li::marker {
+  color: var(--ultima-agreement-muted);
+}
+
+.ultima-agreement-body blockquote {
+  margin: 24px 0;
+  padding: 4px 0 4px 18px;
+  border-left: 2px solid var(--ultima-color-primary);
+  color: var(--ultima-agreement-muted);
+}
+
+.ultima-agreement-body blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+.ultima-agreement-body :is(code, pre) {
+  border-radius: 5px;
+  background: color-mix(
+    in srgb,
+    var(--ultima-color-secondary-text) 6%,
+    var(--ultima-color-surface)
+  );
+  color: var(--ultima-color-secondary-text);
+  font-size: 0.9em;
+}
+
+.ultima-agreement-body code {
+  padding: 2px 5px;
+}
+
+.ultima-agreement-body pre {
+  margin: 20px 0;
+  padding: 16px;
+  overflow-x: auto;
+  line-height: 1.6;
+}
+
+.ultima-agreement-body pre code {
+  padding: 0;
+  background: transparent;
+}
+
+.ultima-agreement-empty {
+  margin: 0;
+  color: var(--ultima-agreement-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.ultima-agreement-loading {
+  display: flex;
+  min-height: 180px;
+  align-items: center;
+  justify-content: center;
+}
+
+.ultima-agreement-spinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--ultima-agreement-line);
+  border-top-color: var(--ultima-color-primary);
+  border-radius: 50%;
+  animation: ultima-agreement-spin 850ms linear infinite;
+}
+
+@media (hover: hover) {
+  .ultima-agreement-body a:hover {
+    opacity: 0.8;
+  }
+}
+
+@media (min-width: 1024px) {
+  .ultima-agreement-page {
+    max-width: 980px;
+    margin-inline: auto;
+  }
+}
+
+@media (max-width: 359px) {
+  .ultima-agreement-document {
+    padding: 18px;
+  }
+
+  .ultima-shell.ultima-agreement .ultima-agreement-body {
+    font-size: 15px;
+  }
+}
+
+@keyframes ultima-agreement-enter {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ultima-agreement-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ultima-agreement-document,
+  .ultima-agreement-spinner,
+  .ultima-agreement-body a {
+    animation: none;
+    transition: none;
+  }
+}

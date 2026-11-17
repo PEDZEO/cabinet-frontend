@@ -4,9 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { ultimaAgreementApi } from '@/api/ultimaAgreement';
-import { UltimaDesktopAgreement } from '@/components/ultima/desktop/UltimaDesktopAgreement';
+import { UltimaDesktopSectionLayout } from '@/components/ultima/desktop/UltimaDesktopSectionLayout';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import '@/styles/ultima-agreement.css';
 
 const sanitizeHtml = (html: string): string =>
   DOMPurify.sanitize(html, {
@@ -94,72 +95,50 @@ export function UltimaAgreement() {
   const bottomNav = (
     <UltimaBottomNav active="profile" onProfileClick={() => navigate('/profile')} />
   );
+  const documentBody = (
+    <section className="ultima-agreement-document" aria-busy={isLoading}>
+      {isLoading ? (
+        <div className="ultima-agreement-loading" role="status" aria-label={t('common.loading')}>
+          <span className="ultima-agreement-spinner" aria-hidden="true" />
+        </div>
+      ) : htmlContent ? (
+        <article
+          className="ultima-agreement-body"
+          dangerouslySetInnerHTML={{ __html: htmlContent }}
+        />
+      ) : (
+        <p className="ultima-agreement-empty">{emptyLabel}</p>
+      )}
+    </section>
+  );
 
   if (isDesktopViewport) {
     return (
-      <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-reading-desktop">
+      <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-reading-desktop ultima-agreement">
         <div className="ultima-shell-aura" />
-        <UltimaDesktopAgreement
+        <UltimaDesktopSectionLayout
+          icon={null}
           title={title}
           subtitle={subtitle}
-          updatedAtLabel={updatedAtLabel}
-          htmlContent={htmlContent}
-          isLoading={isLoading}
-          emptyLabel={emptyLabel}
           bottomNav={bottomNav}
-        />
+          contentClassName="ultima-agreement-page"
+        >
+          {documentBody}
+        </UltimaDesktopSectionLayout>
       </div>
     );
   }
 
   return (
-    <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
+    <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-agreement">
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
-        <section className="mb-3 rounded-[24px] border border-emerald-200/10 bg-[linear-gradient(180deg,rgba(69,186,142,0.16),rgba(18,79,64,0.26))] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] backdrop-blur-md">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/[0.06] text-white/80">
-            <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6">
-              <path
-                d="M8 3.5h7l4 4v12A1.5 1.5 0 0 1 17.5 21h-9A1.5 1.5 0 0 1 7 19.5v-14A1.5 1.5 0 0 1 8.5 4"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path d="M15 3.5V8h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-              <path
-                d="m9.8 14.1 1.8 1.8 3.2-3.2"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-          <h1 className="mt-2 text-[clamp(27px,7.4vw,34px)] font-semibold leading-[0.95] tracking-[-0.015em] text-white">
-            {title}
-          </h1>
-          <p className="mt-1 text-[13px] text-white/[0.72]">{subtitle}</p>
-        </section>
+        <header className="ultima-agreement-heading">
+          <h1 className="ultima-agreement-title">{title}</h1>
+          <p className="ultima-agreement-subtitle">{subtitle}</p>
+        </header>
 
-        <section className="min-h-0 flex-1 overflow-hidden rounded-3xl lg:min-h-0 lg:pb-2">
-          {isLoading ? (
-            <div className="flex h-full items-center justify-center">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-300/[0.35] border-t-transparent" />
-            </div>
-          ) : (
-            <div className="ultima-scrollbar h-full min-h-0 overflow-y-auto px-1 pb-1 text-[14px] leading-[1.6] text-white/[0.87] lg:px-0 lg:pr-2">
-              {htmlContent ? (
-                <div
-                  className="prose prose-invert max-w-none [&_a]:text-[#5de8c3] [&_a]:underline [&_h1]:mb-3 [&_h1]:text-[34px] [&_h1]:font-semibold [&_h1]:leading-[1] [&_h2]:mb-2 [&_h2]:mt-6 [&_h2]:text-[34px] [&_h2]:font-semibold [&_h2]:leading-[1] [&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-[34px] [&_h3]:font-semibold [&_h3]:leading-[1] [&_li]:mb-1 [&_p]:mb-3 [&_strong]:font-semibold"
-                  dangerouslySetInnerHTML={{ __html: htmlContent }}
-                />
-              ) : (
-                <p className="text-white/60">{emptyLabel}</p>
-              )}
-            </div>
-          )}
-        </section>
+        <div className="ultima-scrollbar ultima-agreement-mobile-reading">{documentBody}</div>
 
         <div className="ultima-mobile-dock-footer">
           <div className="ultima-nav-dock">{bottomNav}</div>

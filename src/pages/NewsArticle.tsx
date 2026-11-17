@@ -6,7 +6,9 @@ import { motion } from 'framer-motion';
 import DOMPurify from 'dompurify';
 import { newsApi, normalizeNewsMediaUrl } from '../api/news';
 import { UltimaBottomNav } from '../components/ultima/UltimaBottomNav';
+import { UltimaDesktopWorkspace } from '../components/ultima/desktop/UltimaDesktopWorkspace';
 import { UltimaPortal } from '../components/ultima/UltimaPortal';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 import {
   ultimaPaneClassName,
   ultimaPaneSurfaceStyle,
@@ -266,6 +268,7 @@ export default function NewsArticlePage() {
   const location = useLocation();
   const { capabilities, backButton } = usePlatform();
   const isUltimaRoute = location.pathname.startsWith('/ultima/news');
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
   const backPath = isUltimaRoute ? '/ultima/news' : '/';
   const contentRef = useRef<HTMLDivElement | null>(null);
   const [featuredImageFailed, setFeaturedImageFailed] = useState(false);
@@ -375,18 +378,24 @@ export default function NewsArticlePage() {
     ) : null;
 
   const renderUltimaLayout = (content: ReactNode) => (
-    <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-muted-aura">
+    <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-muted-aura ultima-news-article">
       <div className="ultima-shell-aura" />
-      <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
-        <div className="min-h-0 flex-1 overflow-y-auto pr-1 pt-[clamp(8px,2vh,16px)] lg:overflow-visible lg:pr-0">
-          {content}
-        </div>
-        <div className="ultima-mobile-dock-footer lg:hidden">
-          <div className="ultima-nav-dock">
-            <UltimaBottomNav active="news" />
+      {isDesktop ? (
+        <UltimaDesktopWorkspace bottomNav={<UltimaBottomNav active="news" />}>
+          <div className="ultima-news-reading">{content}</div>
+        </UltimaDesktopWorkspace>
+      ) : (
+        <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
+          <div className="min-h-0 flex-1 overflow-y-auto pr-1 pt-[clamp(8px,2vh,16px)] lg:overflow-visible lg:pr-0">
+            {content}
+          </div>
+          <div className="ultima-mobile-dock-footer lg:hidden">
+            <div className="ultima-nav-dock">
+              <UltimaBottomNav active="news" />
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 
@@ -470,11 +479,12 @@ export default function NewsArticlePage() {
   }
 
   if (isUltimaRoute) {
-    const color = safeColor(article.category_color);
-
     return renderUltimaLayout(
       <div className="space-y-3">
-        <section className={`${ultimaPanelClassName} p-4 sm:p-5`} style={ultimaSurfaceStyle}>
+        <section
+          className={`${ultimaPanelClassName} ultima-news-reading-header p-4 sm:p-5`}
+          style={ultimaSurfaceStyle}
+        >
           <button
             onClick={() => navigate(backPath)}
             className="text-white/78 mb-4 flex min-h-[40px] items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 text-sm transition-colors hover:bg-white/[0.08] hover:text-white"
@@ -484,36 +494,9 @@ export default function NewsArticlePage() {
             <span>{t('news.title', { defaultValue: 'Новости' })}</span>
           </button>
 
-          <div className="mb-4 flex flex-wrap items-center gap-2.5">
-            <span
-              className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-widest"
-              style={{
-                color,
-                background: `${color}15`,
-                border: `1px solid ${color}30`,
-              }}
-            >
-              <span
-                className="h-1.5 w-1.5 rounded-full"
-                style={{
-                  background: color,
-                  boxShadow: `0 0 8px ${color}`,
-                }}
-              />
-              {article.category}
-            </span>
-            {article.tag && (
-              <span
-                className="inline-block rounded-full px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider"
-                style={{
-                  color,
-                  border: `1px solid ${color}33`,
-                  background: `${color}11`,
-                }}
-              >
-                {article.tag}
-              </span>
-            )}
+          <div className="ultima-news-meta mb-4">
+            <span className="ultima-news-category">{article.category}</span>
+            {article.tag && <span>{article.tag}</span>}
           </div>
 
           <h1 className="text-[clamp(30px,8.6vw,42px)] font-semibold leading-[0.96] tracking-[-0.02em] text-white">
@@ -535,7 +518,7 @@ export default function NewsArticlePage() {
         </section>
 
         <section
-          className={`${ultimaPanelClassName} overflow-hidden p-4 sm:p-5`}
+          className={`${ultimaPanelClassName} ultima-news-reading-body overflow-hidden p-4 sm:p-5`}
           style={ultimaSurfaceStyle}
         >
           {featuredImageUrl && !featuredImageFailed ? (
@@ -559,7 +542,7 @@ export default function NewsArticlePage() {
 
           <div
             ref={contentRef}
-            className="text-white/86 prose prose-invert [&_blockquote]:text-white/72 [&_figcaption]:text-white/54 [&_td]:border-white/8 max-w-none text-[15px] leading-[1.78] [&_a]:break-all [&_a]:text-[#74f0d0] [&_a]:underline [&_blockquote]:rounded-[20px] [&_blockquote]:border [&_blockquote]:border-white/10 [&_blockquote]:bg-white/[0.04] [&_blockquote]:px-4 [&_blockquote]:py-3 [&_figcaption]:mt-2 [&_figcaption]:text-sm [&_figure]:my-5 [&_h1]:mb-3 [&_h1]:text-[30px] [&_h1]:font-semibold [&_h1]:leading-[1] [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:text-[24px] [&_h2]:font-semibold [&_h2]:leading-[1.1] [&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:text-[20px] [&_h3]:font-semibold [&_h3]:leading-[1.15] [&_img]:my-5 [&_img]:max-h-[min(52svh,480px)] [&_img]:w-full [&_img]:cursor-zoom-in [&_img]:rounded-[24px] [&_img]:object-contain [&_li]:mb-2 [&_ol]:mb-5 [&_ol]:pl-5 [&_p]:mb-4 [&_pre]:overflow-x-auto [&_pre]:rounded-[20px] [&_pre]:border [&_pre]:border-white/10 [&_pre]:bg-black/20 [&_pre]:p-4 [&_table]:block [&_table]:w-full [&_table]:overflow-x-auto [&_td]:border-b [&_td]:px-3 [&_td]:py-2 [&_th]:border-b [&_th]:border-white/10 [&_th]:px-3 [&_th]:py-2 [&_ul]:mb-5 [&_ul]:pl-5 [&_video]:my-5 [&_video]:max-h-[min(52svh,480px)] [&_video]:w-full [&_video]:rounded-[24px] [&_video]:bg-black/20"
+            className="ultima-news-reading-content prose prose-invert max-w-none [&_a]:break-all [&_a]:underline [&_figcaption]:mt-2 [&_figcaption]:text-sm [&_figure]:my-5 [&_h1]:mb-3 [&_h1]:text-[30px] [&_h1]:font-semibold [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:text-[24px] [&_h2]:font-semibold [&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:text-[20px] [&_h3]:font-semibold [&_img]:my-5 [&_img]:max-h-[min(52svh,480px)] [&_img]:w-full [&_img]:cursor-zoom-in [&_img]:rounded-lg [&_img]:object-contain [&_li]:mb-2 [&_ol]:mb-5 [&_ol]:pl-5 [&_p]:mb-4 [&_pre]:overflow-x-auto [&_pre]:p-4 [&_table]:block [&_table]:w-full [&_table]:overflow-x-auto [&_td]:border-b [&_td]:px-3 [&_td]:py-2 [&_th]:border-b [&_th]:px-3 [&_th]:py-2 [&_ul]:mb-5 [&_ul]:pl-5 [&_video]:my-5 [&_video]:max-h-[min(52svh,480px)] [&_video]:w-full [&_video]:rounded-lg"
             dangerouslySetInnerHTML={{ __html: sanitizedContent }}
           />
         </section>

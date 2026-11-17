@@ -156,7 +156,7 @@ const FilterTabs = memo(function FilterTabs({
                   borderColor:
                     'color-mix(in srgb, var(--ultima-color-surface-border) 28%, transparent)',
                   background: 'color-mix(in srgb, var(--ultima-color-secondary) 72%, transparent)',
-                  color: 'rgba(255,255,255,0.82)',
+                  color: 'var(--ultima-color-secondary-text)',
                 }
             : undefined
         }
@@ -195,7 +195,7 @@ const FilterTabs = memo(function FilterTabs({
                         'color-mix(in srgb, var(--ultima-color-surface-border) 28%, transparent)',
                       background:
                         'color-mix(in srgb, var(--ultima-color-secondary) 72%, transparent)',
-                      color: 'rgba(255,255,255,0.82)',
+                      color: 'var(--ultima-color-secondary-text)',
                     }
                 : undefined
             }
@@ -656,7 +656,7 @@ export default function NewsSection({
   className,
   variant = 'default',
 }: NewsSectionProps = {}) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const haptic = useHapticFeedback();
@@ -725,6 +725,69 @@ export default function NewsSection({
     ? ultimaSurfaceStyle
     : undefined;
   const sectionStyle: CSSProperties | undefined = isUltimaVariant ? ultimaSurfaceStyle : undefined;
+
+  if (isUltimaVariant) {
+    const orderedItems = featured ? [featured, ...regular] : regular;
+    return (
+      <section className={cn('ultima-news-feed', className)}>
+        {showHeader ? <h2>{t('news.title')}</h2> : null}
+        {categories.length > 0 ? (
+          <div className="ultima-news-filters">
+            <FilterTabs
+              categories={categories}
+              active={filter}
+              onChange={handleFilterChange}
+              variant="ultima"
+            />
+          </div>
+        ) : null}
+        {orderedItems.length === 0 ? (
+          showEmptyState ? (
+            <p className="ultima-news-empty">{t('news.noNews')}</p>
+          ) : null
+        ) : (
+          <div className="ultima-news-list">
+            {orderedItems.map((item) => (
+              <article
+                key={item.id}
+                className={cn('ultima-news-entry', item.is_featured && 'is-featured')}
+              >
+                <div className="ultima-news-meta">
+                  <span className="ultima-news-category">{item.category}</span>
+                  {item.tag ? <span>{item.tag}</span> : null}
+                  {item.published_at ? (
+                    <time dateTime={item.published_at}>
+                      {new Date(item.published_at).toLocaleDateString(i18n.language)}
+                    </time>
+                  ) : null}
+                  <span>
+                    {item.read_time_minutes} {t('news.readTime')}
+                  </span>
+                </div>
+                <h2>
+                  <button type="button" onClick={() => handleCardClick(item.slug)}>
+                    {item.title}
+                    <ArrowIcon />
+                  </button>
+                </h2>
+                {item.excerpt ? <p>{item.excerpt}</p> : null}
+              </article>
+            ))}
+          </div>
+        )}
+        {!isLoading && remainingCount > 0 ? (
+          <button
+            type="button"
+            className="ultima-btn-pill ultima-btn-secondary ultima-news-more"
+            onClick={handleLoadMore}
+            disabled={isFetching}
+          >
+            {isFetching ? t('common.loading', { defaultValue: 'Загрузка...' }) : t('news.loadMore')}
+          </button>
+        ) : null}
+      </section>
+    );
+  }
 
   if (items.length === 0) {
     if (!showEmptyState) {

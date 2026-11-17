@@ -54,6 +54,7 @@ import type {
   RemnawavePlatformData,
 } from '@/types';
 import { trackAnalyticsEvent } from '@/utils/analyticsEvents';
+import '@/styles/ultima-connection.css';
 
 type Step = 1 | 2 | 3;
 
@@ -700,14 +701,14 @@ export function UltimaConnection({
   };
 
   const renderPicker = () => (
-    <div data-testid="ultima-connection-picker" className="space-y-4">
+    <div data-testid="ultima-connection-picker" className="ultima-connection-picker space-y-4">
       {availablePlatformKeys.length > 1 ? (
-        <div>
-          <div className="mb-2 flex items-center gap-2 text-[13px] font-medium text-white/[0.68]">
+        <fieldset className="ultima-connection-picker-group">
+          <legend className="ultima-connection-field-label mb-2 flex items-center gap-2 text-[13px] font-medium text-white/[0.68]">
             <Monitor className="h-4 w-4" strokeWidth={1.8} />
             {t('subscription.connection.selectPlatform', { defaultValue: 'Выберите устройство' })}
-          </div>
-          <div className="grid grid-cols-2 gap-2 min-[460px]:grid-cols-3 lg:grid-cols-4">
+          </legend>
+          <div className="ultima-connection-platforms grid grid-cols-2 gap-2 min-[460px]:grid-cols-3 lg:grid-cols-4">
             {availablePlatformKeys.map((platformKey) => {
               const isActive = platformKey === activePlatformKey;
               const isDetected = platformKey === detectedPlatform;
@@ -719,13 +720,13 @@ export function UltimaConnection({
                   aria-pressed={isActive}
                   onClick={() => handlePlatformChange(platformKey)}
                   className={cn(
-                    'flex min-h-[52px] min-w-0 items-center gap-2.5 rounded-[15px] border px-3 py-2.5 text-left transition-colors lg:rounded-[7px]',
+                    'ultima-connection-choice ultima-connection-platform flex min-h-[52px] min-w-0 items-center gap-2.5 rounded-[15px] border px-3 py-2.5 text-left transition-colors lg:rounded-[7px]',
                     isActive
                       ? 'border-emerald-200/[0.32] bg-emerald-300/[0.12] text-white'
                       : 'border-white/[0.08] bg-white/[0.025] text-white/[0.64] hover:bg-white/[0.05]',
                   )}
                 >
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[11px] bg-white/[0.05] lg:rounded-[5px]">
+                  <span className="ultima-connection-choice-icon" aria-hidden="true">
                     {platformKey === 'android' || platformKey === 'ios' ? (
                       <Smartphone className="h-4 w-4" strokeWidth={1.8} />
                     ) : (
@@ -733,11 +734,11 @@ export function UltimaConnection({
                     )}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[13px] font-semibold">
+                    <span className="ultima-connection-choice-name block truncate text-[13px] font-semibold">
                       {getPlatformDisplayName(appConfig, platformKey, language)}
                     </span>
                     {isDetected ? (
-                      <span className="mt-0.5 block truncate text-[13px] text-emerald-100/[0.68]">
+                      <span className="ultima-connection-choice-note mt-0.5 block truncate text-[13px] text-emerald-100/[0.68]">
                         {t('subscription.connection.yourDevice', {
                           defaultValue: 'Ваше устройство',
                         })}
@@ -749,16 +750,16 @@ export function UltimaConnection({
               );
             })}
           </div>
-        </div>
+        </fieldset>
       ) : null}
 
       {currentPlatformApps.length > 1 ? (
-        <div>
-          <div className="mb-2 flex items-center gap-2 text-[13px] font-medium text-white/[0.68]">
+        <fieldset className="ultima-connection-picker-group">
+          <legend className="ultima-connection-field-label mb-2 flex items-center gap-2 text-[13px] font-medium text-white/[0.68]">
             <Settings2 className="h-4 w-4" strokeWidth={1.8} />
             {t('subscription.connection.selectApp', { defaultValue: 'Выберите приложение' })}
-          </div>
-          <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
+          </legend>
+          <div className="ultima-connection-apps grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
             {currentPlatformApps.map((app, index) => {
               const appKey = getAppKey(app, index);
               const isActive = appKey === selectedAppKey;
@@ -770,19 +771,21 @@ export function UltimaConnection({
                   aria-pressed={isActive}
                   onClick={() => handleAppChange(appKey)}
                   className={cn(
-                    'flex min-h-[50px] min-w-0 items-center gap-3 rounded-[15px] border px-3 py-2.5 text-left transition-colors lg:rounded-[7px]',
+                    'ultima-connection-choice ultima-connection-app flex min-h-[50px] min-w-0 items-center gap-3 rounded-[15px] border px-3 py-2.5 text-left transition-colors lg:rounded-[7px]',
                     isActive
                       ? 'border-emerald-200/[0.32] bg-emerald-300/[0.12] text-white'
                       : 'border-white/[0.08] bg-white/[0.025] text-white/[0.64] hover:bg-white/[0.05]',
                   )}
                 >
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[11px] bg-white/[0.05] lg:rounded-[5px]">
+                  <span className="ultima-connection-choice-icon" aria-hidden="true">
                     <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[13px] font-semibold">{app.name}</span>
+                    <span className="ultima-connection-choice-name block truncate text-[13px] font-semibold">
+                      {app.name}
+                    </span>
                     {app.featured || app.isFeatured ? (
-                      <span className="mt-0.5 block text-[13px] text-amber-100/[0.72]">
+                      <span className="ultima-connection-choice-note mt-0.5 block text-[13px] text-amber-100/[0.72]">
                         {t('subscription.connection.featured', { defaultValue: 'Рекомендуем' })}
                       </span>
                     ) : null}
@@ -792,16 +795,16 @@ export function UltimaConnection({
               );
             })}
           </div>
-        </div>
+        </fieldset>
       ) : null}
 
       {step === 1 && setupUrls.installOptions.length > 1 ? (
-        <div>
-          <div className="mb-2 flex items-center gap-2 text-[13px] font-medium text-white/[0.68]">
+        <fieldset className="ultima-connection-picker-group">
+          <legend className="ultima-connection-field-label mb-2 flex items-center gap-2 text-[13px] font-medium text-white/[0.68]">
             <Download className="h-4 w-4" strokeWidth={1.8} />
             {t('subscription.connection.downloadSource', { defaultValue: 'Способ установки' })}
-          </div>
-          <div className="grid grid-cols-2 gap-2">
+          </legend>
+          <div className="ultima-connection-sources grid grid-cols-2 gap-2">
             {setupUrls.installOptions.map((option, index) => {
               const isActive = option.url === selectedInstallUrl;
               return (
@@ -815,7 +818,7 @@ export function UltimaConnection({
                     setSelectedInstallUrl(option.url);
                   }}
                   className={cn(
-                    'flex min-h-[44px] min-w-0 items-center justify-between gap-2 rounded-[14px] border px-3 py-2 text-left text-[13px] font-semibold transition-colors lg:rounded-[7px]',
+                    'ultima-connection-choice ultima-connection-source flex min-h-[44px] min-w-0 items-center justify-between gap-2 rounded-[14px] border px-3 py-2 text-left text-[13px] font-semibold transition-colors lg:rounded-[7px]',
                     isActive
                       ? 'border-emerald-200/[0.3] bg-emerald-300/[0.11] text-white'
                       : 'border-white/[0.08] bg-white/[0.025] text-white/[0.6] hover:bg-white/[0.05]',
@@ -827,13 +830,16 @@ export function UltimaConnection({
               );
             })}
           </div>
-        </div>
+        </fieldset>
       ) : null}
     </div>
   );
 
   const selectionSummary = (
-    <div className="grid grid-cols-2 gap-2" data-testid="ultima-connection-selection-summary">
+    <div
+      className="ultima-connection-selection grid grid-cols-2 gap-2"
+      data-testid="ultima-connection-selection-summary"
+    >
       <div className="min-w-0 rounded-[14px] border border-white/[0.07] bg-white/[0.025] px-3 py-2.5 lg:rounded-[7px]">
         <div className="text-[13px] text-white/[0.72]">
           {t('subscription.connection.deviceLabel', { defaultValue: 'Устройство' })}
@@ -854,7 +860,7 @@ export function UltimaConnection({
   const renderMobileProgress = () => (
     <ol
       data-testid="ultima-connection-progress"
-      className="grid grid-cols-3 gap-1.5 rounded-[18px] border border-white/[0.08] bg-white/[0.025] p-1.5 lg:hidden"
+      className="ultima-connection-progress grid grid-cols-3 gap-1.5 rounded-[18px] border border-white/[0.08] bg-white/[0.025] p-1.5 lg:hidden"
     >
       {stepItems.map((item) => {
         const isActive = item.step === step;
@@ -868,7 +874,7 @@ export function UltimaConnection({
               disabled={item.step > step}
               aria-current={isActive ? 'step' : undefined}
               className={cn(
-                'flex min-h-[48px] w-full min-w-0 items-center justify-center gap-1.5 rounded-[13px] px-1.5 py-2 transition-colors',
+                'ultima-connection-progress-step flex min-h-[48px] w-full min-w-0 items-center justify-center gap-1.5 rounded-[13px] px-1.5 py-2 transition-colors',
                 isActive && 'bg-emerald-300/[0.13] text-white',
                 isDone && 'text-emerald-100/[0.84]',
                 !isActive && !isDone && 'text-white/[0.38]',
@@ -876,7 +882,7 @@ export function UltimaConnection({
             >
               <span
                 className={cn(
-                  'flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[13px] font-semibold',
+                  'ultima-connection-step-number flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[13px] font-semibold',
                   isActive || isDone
                     ? 'border-emerald-200/[0.38] bg-emerald-300/[0.12]'
                     : 'border-white/[0.12] bg-white/[0.03]',
@@ -896,7 +902,7 @@ export function UltimaConnection({
     returnNoticeStep === step ? (
       <div
         role="status"
-        className="flex items-start gap-3 rounded-[16px] border border-emerald-200/[0.18] bg-emerald-300/[0.08] px-3.5 py-3 text-emerald-50 lg:rounded-[7px]"
+        className="ultima-connection-return-notice flex items-start gap-3 rounded-[16px] border border-emerald-200/[0.18] bg-emerald-300/[0.08] px-3.5 py-3 text-emerald-50 lg:rounded-[7px]"
       >
         <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" strokeWidth={1.8} />
         <div className="min-w-0">
@@ -947,20 +953,27 @@ export function UltimaConnection({
           });
 
   const connectionContent = (
-    <div className="space-y-3 lg:space-y-4" data-testid="ultima-connection-guide">
+    <div
+      className="ultima-connection-guide space-y-3 lg:space-y-4"
+      data-testid="ultima-connection-guide"
+    >
       {renderMobileProgress()}
       {returnNotice}
 
       <section
-        className={cn(ultimaPanelClassName, 'overflow-hidden p-4 sm:p-5 lg:p-6')}
+        key={step}
+        className={cn(
+          ultimaPanelClassName,
+          'ultima-connection-step-panel overflow-hidden p-4 sm:p-5 lg:p-6',
+        )}
         style={ultimaSurfaceStyle}
       >
-        <header className="flex items-start gap-3.5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] border border-emerald-200/[0.2] bg-emerald-300/[0.1] text-emerald-50 lg:rounded-[7px]">
+        <header className="ultima-connection-step-heading flex items-start gap-3.5">
+          <div className="ultima-connection-step-icon" aria-hidden="true">
             <CurrentStepIcon className="h-5 w-5" strokeWidth={1.8} />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-[13px] font-medium text-emerald-100/[0.62]">
+            <div className="ultima-connection-step-eyebrow text-[13px] font-medium text-emerald-100/[0.62]">
               {t('subscription.connection.stepCounter', {
                 current: step,
                 total: 3,
@@ -977,7 +990,7 @@ export function UltimaConnection({
         </header>
 
         {step === 1 && showInfo ? (
-          <div className="mt-4 flex items-start gap-3 rounded-[16px] border border-cyan-200/[0.12] bg-cyan-300/[0.055] px-3.5 py-3 lg:rounded-[7px]">
+          <div className="ultima-connection-reminder mt-4 flex items-start gap-3 rounded-[16px] border border-cyan-200/[0.12] bg-cyan-300/[0.055] px-3.5 py-3 lg:rounded-[7px]">
             <Info className="mt-0.5 h-4 w-4 shrink-0 text-cyan-100/[0.74]" strokeWidth={1.8} />
             <div className="min-w-0 flex-1">
               <p className="text-[13px] leading-relaxed text-white/[0.65]">
@@ -1006,8 +1019,13 @@ export function UltimaConnection({
           </div>
         ) : null}
 
-        <div className="mt-5">
-          {step === 1 ? renderPicker() : null}
+        <div className="ultima-connection-step-body mt-5">
+          {step === 1 ? (
+            <>
+              {renderPicker()}
+              {currentPlatformApps.length <= 1 ? selectionSummary : null}
+            </>
+          ) : null}
 
           {step === 2 ? (
             <div className="space-y-3">
@@ -1018,7 +1036,7 @@ export function UltimaConnection({
                 <button
                   type="button"
                   onClick={() => setIsPickerExpanded((value) => !value)}
-                  className="text-[13px] font-medium text-emerald-100/[0.72] hover:text-emerald-50"
+                  className="ultima-connection-change-selection text-[13px] font-medium text-emerald-100/[0.72] hover:text-emerald-50"
                 >
                   {isPickerExpanded
                     ? t('common.collapse', { defaultValue: 'Свернуть' })
@@ -1028,7 +1046,10 @@ export function UltimaConnection({
               {selectionSummary}
               {isPickerExpanded ? renderPicker() : null}
               <div
-                className={cn(ultimaPaneClassName, 'flex items-start gap-3 px-3.5 py-3')}
+                className={cn(
+                  ultimaPaneClassName,
+                  'ultima-connection-instruction flex items-start gap-3 px-3.5 py-3',
+                )}
                 style={ultimaPaneSurfaceStyle}
               >
                 <Link2
@@ -1057,11 +1078,11 @@ export function UltimaConnection({
               <div
                 className={cn(
                   ultimaPaneClassName,
-                  'flex items-start gap-3 border-emerald-200/[0.16] px-3.5 py-3.5',
+                  'ultima-connection-instruction ultima-connection-ready flex items-start gap-3 border-emerald-200/[0.16] px-3.5 py-3.5',
                 )}
                 style={ultimaPaneSurfaceStyle}
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] bg-emerald-300/[0.12] text-emerald-50 lg:rounded-[6px]">
+                <div className="ultima-connection-ready-icon" aria-hidden="true">
                   <ShieldCheck className="h-5 w-5" strokeWidth={1.8} />
                 </div>
                 <div className="min-w-0">
@@ -1084,7 +1105,7 @@ export function UltimaConnection({
           ) : null}
         </div>
 
-        <div className="mt-5 border-t border-white/[0.07] pt-4">
+        <div className="ultima-connection-actions mt-5 border-t border-white/[0.07] pt-4">
           <button
             type="button"
             data-testid="ultima-connection-primary-action"
@@ -1156,7 +1177,7 @@ export function UltimaConnection({
       <button
         type="button"
         onClick={() => navigate('/support')}
-        className="flex min-h-[48px] w-full items-center gap-3 rounded-[17px] border border-white/[0.07] bg-white/[0.025] px-3.5 py-2.5 text-left text-white/[0.66] transition-colors hover:bg-white/[0.05] hover:text-white lg:hidden"
+        className="ultima-connection-help flex min-h-[48px] w-full items-center gap-3 rounded-[17px] border border-white/[0.07] bg-white/[0.025] px-3.5 py-2.5 text-left text-white/[0.66] transition-colors hover:bg-white/[0.05] hover:text-white lg:hidden"
       >
         <CircleHelp className="h-5 w-5 shrink-0" strokeWidth={1.8} />
         <span className="min-w-0 flex-1">
@@ -1177,7 +1198,7 @@ export function UltimaConnection({
   const bottomNav = <UltimaBottomNav active="connection" />;
   const completionOverlay = showFinishSuccess ? (
     <UltimaPortal>
-      <div className="ultima-modal-layer ultima-modal-layer--center bg-black/55">
+      <div className="ultima-modal-layer ultima-modal-layer--center ultima-connection-completion bg-black/55">
         <div
           role="status"
           className="ultima-modal-panel w-full max-w-[330px] rounded-[20px] border border-emerald-200/[0.2] bg-[#071b1b] px-5 py-6 text-center shadow-2xl lg:rounded-[8px]"
@@ -1200,7 +1221,7 @@ export function UltimaConnection({
 
   if (isDesktop) {
     return (
-      <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-connection-desktop">
+      <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-connection-page ultima-shell-connection-desktop">
         <div className="ultima-shell-aura" />
         <UltimaDesktopSectionLayout
           icon={<Settings2 className="h-5 w-5" strokeWidth={1.8} />}
@@ -1209,29 +1230,9 @@ export function UltimaConnection({
           subtitle={t('subscription.connection.setupPageSubtitle', {
             defaultValue: 'Установите приложение и добавьте подписку за три коротких шага.',
           })}
-          metrics={[
-            {
-              label: t('subscription.connection.currentStepLabel', { defaultValue: 'Текущий шаг' }),
-              value: `${step} / 3`,
-              hint: currentStep.short,
-            },
-            {
-              label: t('subscription.connection.deviceLabel', { defaultValue: 'Устройство' }),
-              value: selectedPlatformLabel,
-              hint: t('subscription.connection.autoDetectedHint', {
-                defaultValue: 'Можно изменить в первом шаге.',
-              }),
-            },
-            {
-              label: t('subscription.connection.appLabel', { defaultValue: 'Приложение' }),
-              value: selectedAppName,
-              hint: t('subscription.connection.recommendedAppHint', {
-                defaultValue: 'Используется для импорта подписки.',
-              }),
-            },
-          ]}
           aside={
             <UltimaDesktopPanel
+              className="ultima-connection-route"
               title={t('subscription.connection.routeTitle', {
                 defaultValue: 'Порядок подключения',
               })}
@@ -1239,9 +1240,8 @@ export function UltimaConnection({
                 defaultValue: 'Можно вернуться к уже пройденному шагу.',
               })}
             >
-              <div className="space-y-2">
+              <div className="ultima-connection-route-steps space-y-2">
                 {stepItems.map((item) => {
-                  const ItemIcon = item.icon;
                   const isActive = item.step === step;
                   const isDone = item.step < step;
                   return (
@@ -1253,7 +1253,7 @@ export function UltimaConnection({
                       disabled={item.step > step}
                       aria-current={isActive ? 'step' : undefined}
                       className={cn(
-                        'flex w-full items-center gap-3 rounded-[7px] border px-3 py-3 text-left transition-colors',
+                        'ultima-connection-route-step flex w-full items-center gap-3 rounded-[7px] border px-3 py-3 text-left transition-colors',
                         isActive
                           ? 'border-emerald-200/[0.26] bg-emerald-300/[0.1] text-white'
                           : isDone
@@ -1261,25 +1261,19 @@ export function UltimaConnection({
                             : 'border-white/[0.06] bg-white/[0.015] text-white/[0.38]',
                       )}
                     >
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[6px] bg-white/[0.05]">
-                        {isDone ? (
-                          <Check className="h-4 w-4" strokeWidth={2} />
-                        ) : (
-                          <ItemIcon className="h-4 w-4" strokeWidth={1.8} />
-                        )}
+                      <span className="ultima-connection-step-number flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
+                        {isDone ? <Check className="h-4 w-4" strokeWidth={2} /> : item.step}
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block text-[13px] font-semibold">{item.short}</span>
-                        <span className="mt-0.5 block text-[13px] text-white/[0.72]">
-                          {t('subscription.connection.stepCounter', {
-                            current: item.step,
-                            total: 3,
-                            defaultValue: 'Шаг {{current}} из {{total}}',
-                          })}
+                        <span className="ultima-connection-route-title block text-[13px] font-semibold">
+                          {item.title}
+                        </span>
+                        <span className="ultima-connection-route-description mt-0.5 block text-[13px] text-white/[0.72]">
+                          {item.description}
                         </span>
                       </span>
                       {isActive ? (
-                        <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-300" />
+                        <span className="ultima-connection-route-active h-2 w-2 shrink-0 rounded-full bg-emerald-300" />
                       ) : null}
                     </button>
                   );
@@ -1305,10 +1299,10 @@ export function UltimaConnection({
   }
 
   return (
-    <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
+    <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-connection-page">
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner ultima-shell-mobile-docked">
-        <header className="mb-2.5">
+        <header className="ultima-connection-mobile-heading mb-2.5">
           <h1 className="text-[clamp(30px,8vw,38px)] font-semibold leading-none text-white">
             {t('subscription.connection.setupPageTitle', { defaultValue: 'Настройка VPN' })}
           </h1>
@@ -1319,7 +1313,7 @@ export function UltimaConnection({
           </p>
         </header>
 
-        <div className="ultima-scrollbar min-h-0 flex-1 overflow-y-auto pr-1">
+        <div className="ultima-connection-mobile-scroll ultima-scrollbar min-h-0 flex-1 overflow-y-auto pr-1">
           {connectionContent}
         </div>
 

@@ -3,12 +3,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowRight,
   CalendarDays,
-  Clock3,
   Copy,
-  Gauge,
   Headphones,
-  Link2,
-  Server,
   Share2,
   ShieldCheck,
   Smartphone,
@@ -27,12 +23,6 @@ import {
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { UltimaMeteredTrafficPeriodNotice } from '@/components/ultima/UltimaMeteredTrafficPeriodNotice';
 import { UltimaTrafficTopUpSection } from '@/components/ultima/UltimaTrafficTopUpSection';
-import {
-  ultimaPaneClassName,
-  ultimaPaneSurfaceStyle,
-  ultimaPanelClassName,
-  ultimaSurfaceStyle,
-} from '@/features/ultima/surfaces';
 import { isUltimaTariffUnlimited } from '@/features/ultima/subscription';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useHaptic, usePlatform } from '@/platform';
@@ -55,30 +45,17 @@ function QuickAction({ icon, label, hint, onClick, primary = false, testId }: Qu
       type="button"
       data-testid={testId}
       onClick={onClick}
-      className={`flex min-h-[58px] w-full items-center gap-3 rounded-[18px] border px-3.5 py-3 text-left transition-colors lg:rounded-[8px] ${
-        primary
-          ? 'border-emerald-200/[0.28] bg-emerald-300/[0.12] text-white hover:bg-emerald-300/[0.17]'
-          : 'border-white/[0.09] bg-white/[0.035] text-white hover:bg-white/[0.065]'
-      }`}
+      className="ultima-sub-info-action"
+      data-primary={primary || undefined}
     >
-      <span
-        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[13px] border lg:rounded-[6px] ${
-          primary
-            ? 'border-emerald-200/[0.24] bg-emerald-300/[0.13] text-emerald-50'
-            : 'border-white/[0.09] bg-white/[0.04] text-white/[0.76]'
-        }`}
-      >
+      <span className="ultima-sub-info-action-icon" aria-hidden="true">
         {icon}
       </span>
-      <span className="min-w-0 flex-1">
-        <span className="block break-words text-[13px] font-semibold leading-tight">{label}</span>
-        {hint ? (
-          <span className="mt-1 block break-words text-[13px] leading-tight text-white/[0.72]">
-            {hint}
-          </span>
-        ) : null}
+      <span className="ultima-sub-info-action-copy">
+        <span className="ultima-sub-info-action-label">{label}</span>
+        {hint ? <span className="ultima-sub-info-action-hint">{hint}</span> : null}
       </span>
-      <ArrowRight className="hidden h-4 w-4 shrink-0 text-white/[0.72] min-[480px]:block" />
+      <ArrowRight className="ultima-sub-info-action-arrow" aria-hidden="true" />
     </button>
   );
 }
@@ -324,13 +301,10 @@ export function UltimaSubscriptionInfo() {
   const statusPill = (
     <span
       data-testid="ultima-subscription-info-status"
-      className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-[13px] font-medium ${
-        isActive
-          ? 'border-emerald-200/[0.2] bg-emerald-300/[0.11] text-emerald-50'
-          : 'border-rose-200/[0.2] bg-rose-300/[0.1] text-rose-50'
-      }`}
+      className="ultima-sub-info-status"
+      data-active={isActive}
     >
-      <span className={`h-1.5 w-1.5 rounded-full ${isActive ? 'bg-emerald-200' : 'bg-rose-200'}`} />
+      <span className="ultima-sub-info-status-dot" aria-hidden="true" />
       {statusLabel}
     </span>
   );
@@ -338,27 +312,19 @@ export function UltimaSubscriptionInfo() {
   const trafficSection = hasSubscription ? (
     <section
       data-testid="ultima-subscription-traffic-overview"
-      className={`${ultimaPanelClassName} p-4 lg:p-5`}
-      style={ultimaSurfaceStyle}
+      className="ultima-sub-info-section ultima-sub-info-traffic"
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] border border-white/[0.09] bg-white/[0.045] text-emerald-100 lg:rounded-[7px]">
-            <Gauge className="h-5 w-5" />
-          </span>
-          <div className="min-w-0">
-            <p className="text-[13px] font-medium uppercase text-white/[0.72]">
-              {t('ultima.subscriptionInfo.trafficTitle')}
-            </p>
-            <h2 className="mt-0.5 break-words text-[19px] font-semibold leading-tight text-white">
-              {isUnlimitedTraffic
-                ? t('ultima.subscriptionInfo.unlimited')
-                : formatTraffic(trafficLeft)}
-            </h2>
-          </div>
+      <div className="ultima-sub-info-section-heading">
+        <div>
+          <p className="ultima-sub-info-eyebrow">{t('ultima.subscriptionInfo.trafficTitle')}</p>
+          <h2 className="ultima-sub-info-traffic-value">
+            {isUnlimitedTraffic
+              ? t('ultima.subscriptionInfo.unlimited')
+              : formatTraffic(trafficLeft)}
+          </h2>
         </div>
         {!isUnlimitedTraffic ? (
-          <span className="shrink-0 rounded-full border border-white/[0.09] bg-white/[0.04] px-2.5 py-1 text-[13px] font-medium text-white/[0.6]">
+          <span className="ultima-sub-info-traffic-percent">
             {numberFormatter.format(Math.max(0, 100 - trafficProgress))}%
           </span>
         ) : null}
@@ -366,28 +332,21 @@ export function UltimaSubscriptionInfo() {
 
       {!isUnlimitedTraffic ? (
         <>
-          <div className="mt-4 h-2 overflow-hidden rounded-full bg-black/[0.24]">
-            <div
-              className={`h-full rounded-full transition-[width] duration-500 ${
-                trafficProgress >= 90 ? 'bg-amber-300' : 'bg-emerald-300'
-              }`}
-              style={{ width: `${trafficProgress}%` }}
-            />
+          <div className="ultima-sub-info-meter">
+            <div className="ultima-sub-info-meter-fill" style={{ width: `${trafficProgress}%` }} />
           </div>
-          <div className="mt-3 grid grid-cols-3 divide-x divide-white/[0.08]">
+          <dl className="ultima-sub-info-facts ultima-sub-info-traffic-facts">
             {[
               [t('ultima.subscriptionInfo.used'), formatTraffic(trafficUsed)],
               [t('ultima.subscriptionInfo.remaining'), formatTraffic(trafficLeft)],
               [t('ultima.subscriptionInfo.limit'), formatTraffic(trafficTotal)],
             ].map(([label, value]) => (
-              <div key={label} className="min-w-0 px-2 first:pl-0 last:pr-0">
-                <p className="text-[13px] font-medium uppercase text-white/[0.38]">{label}</p>
-                <p className="mt-1 break-words text-[13px] font-semibold leading-tight text-white">
-                  {value}
-                </p>
+              <div key={label}>
+                <dt>{label}</dt>
+                <dd>{value}</dd>
               </div>
             ))}
-          </div>
+          </dl>
         </>
       ) : null}
 
@@ -396,13 +355,12 @@ export function UltimaSubscriptionInfo() {
       subscription.traffic_reset_mode === 'MONTH' ? (
         <UltimaMeteredTrafficPeriodNotice
           subscription={subscription}
-          className="mt-4 border-t border-white/[0.07] pt-3"
+          className="ultima-sub-info-policy"
         />
       ) : (
         <p
-          className={`mt-4 border-t border-white/[0.07] pt-3 text-[13px] leading-relaxed ${
-            subscription.metered_access_blocked ? 'text-amber-100/[0.9]' : 'text-white/[0.72]'
-          }`}
+          className="ultima-sub-info-policy"
+          data-blocked={subscription.metered_access_blocked || undefined}
         >
           {trafficNotice}
         </p>
@@ -434,27 +392,17 @@ export function UltimaSubscriptionInfo() {
       <section
         data-testid="ultima-subscription-link"
         data-link-kind={subscriptionLinkKind}
-        className={`${ultimaPanelClassName} p-4 lg:p-5`}
-        style={ultimaSurfaceStyle}
+        className="ultima-sub-info-section ultima-sub-info-link"
       >
-        <div className="flex items-start gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] border border-white/[0.09] bg-white/[0.045] text-white/[0.78] lg:rounded-[7px]">
-            <Link2 className="h-5 w-5" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-[15px] font-semibold leading-tight text-white">
-                {t('ultima.subscriptionInfo.subscriptionLink')}
-              </h2>
+        <div className="ultima-sub-info-section-heading">
+          <div>
+            <div className="ultima-sub-info-link-heading">
+              <h2>{t('ultima.subscriptionInfo.subscriptionLink')}</h2>
               {subscriptionLinkMeta ? (
-                <span className="rounded-full border border-emerald-200/[0.18] bg-emerald-300/[0.1] px-2 py-0.5 text-[13px] font-semibold uppercase text-emerald-100/[0.88]">
-                  {subscriptionLinkMeta}
-                </span>
+                <span className="ultima-sub-info-protocol">{subscriptionLinkMeta}</span>
               ) : null}
             </div>
-            <p className="mt-1 text-[13px] leading-snug text-white/[0.72]">
-              {t('ultima.subscriptionInfo.linkHint')}
-            </p>
+            <p className="ultima-sub-info-description">{t('ultima.subscriptionInfo.linkHint')}</p>
           </div>
         </div>
         {canChooseCryptoLink ? (
@@ -462,7 +410,7 @@ export function UltimaSubscriptionInfo() {
             data-testid="ultima-subscription-link-selector"
             role="radiogroup"
             aria-label={t('ultima.subscriptionInfo.linkApp')}
-            className="mt-3 grid grid-cols-2 gap-1 rounded-[14px] border border-white/[0.08] bg-black/[0.14] p-1 lg:rounded-[7px]"
+            className="ultima-sub-info-link-selector"
           >
             {(
               [
@@ -479,41 +427,32 @@ export function UltimaSubscriptionInfo() {
                   aria-checked={isSelected}
                   data-testid={`ultima-subscription-link-${kind}`}
                   onClick={() => selectCryptoLink(kind)}
-                  className={`flex min-h-[38px] items-center justify-center gap-2 rounded-[10px] border px-3 py-2 text-[13px] font-semibold transition-colors lg:rounded-[5px] ${
-                    isSelected
-                      ? 'border-emerald-200/[0.24] bg-emerald-300/[0.14] text-emerald-50'
-                      : 'border-transparent text-white/[0.72] hover:bg-white/[0.05] hover:text-white/[0.78]'
-                  }`}
+                  className="ultima-sub-info-link-option"
                 >
                   <span>{label}</span>
-                  <span className="text-[13px] font-medium uppercase opacity-65">{protocol}</span>
+                  <span className="ultima-sub-info-option-protocol">{protocol}</span>
                 </button>
               );
             })}
           </div>
         ) : null}
-        <div
-          className={`${ultimaPaneClassName} ${canChooseCryptoLink ? 'mt-2' : 'mt-3'} flex min-w-0 items-center gap-2 px-3 py-2.5`}
-          style={ultimaPaneSurfaceStyle}
-        >
-          <p className="min-w-0 flex-1 truncate text-[13px] text-white/[0.72]">
-            {subscriptionLink}
-          </p>
+        <div className="ultima-sub-info-link-value">
+          <p>{subscriptionLink}</p>
           <button
             type="button"
             aria-label={t('ultima.subscriptionInfo.copyLink')}
             title={t('ultima.subscriptionInfo.copyLink')}
             onClick={() => void copySubscriptionLink()}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] border border-white/[0.08] bg-white/[0.04] text-white/[0.76] lg:rounded-[5px]"
+            className="ultima-sub-info-copy-icon"
           >
             <Copy className="h-4 w-4" />
           </button>
         </div>
-        <div className="mt-2 grid grid-cols-2 gap-2">
+        <div className="ultima-sub-info-link-actions">
           <button
             type="button"
             onClick={() => void copySubscriptionLink()}
-            className="ultima-btn-pill ultima-btn-secondary flex min-h-[42px] items-center justify-center gap-2 px-3 py-2 text-[13px]"
+            className="ultima-btn-pill ultima-btn-primary ultima-sub-info-link-copy"
           >
             <Copy className="h-4 w-4" />
             {linkCopied
@@ -523,7 +462,7 @@ export function UltimaSubscriptionInfo() {
           <button
             type="button"
             onClick={() => void shareSubscriptionLink()}
-            className="ultima-btn-pill ultima-btn-secondary flex min-h-[42px] items-center justify-center gap-2 px-3 py-2 text-[13px]"
+            className="ultima-btn-pill ultima-btn-secondary ultima-sub-info-link-share"
           >
             <Share2 className="h-4 w-4" />
             {t('ultima.subscriptionInfo.shareLink')}
@@ -534,17 +473,11 @@ export function UltimaSubscriptionInfo() {
 
   const emptyState = (
     <section
-      className={`${ultimaPanelClassName} p-5 text-center`}
-      style={ultimaSurfaceStyle}
+      className="ultima-sub-info-section ultima-sub-info-empty"
       data-testid="ultima-subscription-empty"
     >
-      <ShieldCheck className="mx-auto h-9 w-9 text-white/[0.72]" />
-      <h1 className="mt-3 text-[20px] font-semibold text-white">
-        {t('ultima.subscriptionInfo.noSubscription')}
-      </h1>
-      <p className="mt-2 text-[13px] leading-relaxed text-white/[0.72]">
-        {t('ultima.subscriptionInfo.description')}
-      </p>
+      <h1>{t('ultima.subscriptionInfo.noSubscription')}</h1>
+      <p className="ultima-sub-info-description">{t('ultima.subscriptionInfo.description')}</p>
       <button
         type="button"
         onClick={openTariffs}
@@ -563,7 +496,7 @@ export function UltimaSubscriptionInfo() {
 
   if (isDesktop) {
     return (
-      <div className="ultima-shell ultima-shell-wide ultima-shell-profile-desktop">
+      <div className="ultima-shell ultima-shell-wide ultima-shell-profile-desktop ultima-sub-info">
         <div className="ultima-shell-aura" />
         <UltimaDesktopSectionLayout
           icon={<ShieldCheck className="h-5 w-5" />}
@@ -626,7 +559,7 @@ export function UltimaSubscriptionInfo() {
               title={t('ultima.subscriptionInfo.quickActions')}
               subtitle={t('ultima.subscriptionInfo.quickActionsHint')}
             >
-              <div className="space-y-2">
+              <div className="ultima-sub-info-action-list">
                 {canOpenTariffs ? (
                   <QuickAction
                     icon={<CalendarDays className="h-4 w-4" />}
@@ -657,60 +590,36 @@ export function UltimaSubscriptionInfo() {
           ) : (
             <div
               data-testid="ultima-subscription-info-page"
-              className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]"
+              className="ultima-sub-info-desktop-content"
             >
-              <div className="min-w-0 space-y-4">
+              <div className="ultima-sub-info-column">
                 {trafficSection}
                 {topUpSection}
               </div>
-              <div className="min-w-0 space-y-4">
-                <section className={`${ultimaPanelClassName} p-5`} style={ultimaSurfaceStyle}>
-                  <div className="flex items-start justify-between gap-3">
+              <div className="ultima-sub-info-column">
+                <section className="ultima-sub-info-section ultima-sub-info-details">
+                  <div className="ultima-sub-info-section-heading">
                     <div>
-                      <p className="text-[13px] font-medium uppercase text-white/[0.72]">
+                      <p className="ultima-sub-info-eyebrow">
                         {t('ultima.subscriptionInfo.eyebrow')}
                       </p>
-                      <h2 className="mt-1 text-[22px] font-semibold text-white">
-                        {subscriptionTitle}
-                      </h2>
+                      <h2>{subscriptionTitle}</h2>
                     </div>
                     {statusPill}
                   </div>
-                  <div className="mt-5 divide-y divide-white/[0.07] border-y border-white/[0.07]">
+                  <dl className="ultima-sub-info-facts">
                     {[
-                      [
-                        <CalendarDays key="calendar" className="h-4 w-4" />,
-                        t('ultima.subscriptionInfo.validUntil'),
-                        endDateLabel,
-                      ],
-                      [
-                        <Clock3 key="clock" className="h-4 w-4" />,
-                        t('ultima.subscriptionInfo.timeLeft'),
-                        timeLeftLabel,
-                      ],
-                      [
-                        <Smartphone key="devices" className="h-4 w-4" />,
-                        t('ultima.subscriptionInfo.devices'),
-                        String(deviceCount),
-                      ],
-                      [
-                        <Server key="servers" className="h-4 w-4" />,
-                        t('ultima.subscriptionInfo.servers'),
-                        String(serverCount),
-                      ],
-                    ].map(([icon, label, value]) => (
-                      <div
-                        key={String(label)}
-                        className="grid grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-2.5 py-3 text-[13px]"
-                      >
-                        <span className="text-white/[0.72]">{icon}</span>
-                        <span className="text-white/[0.72]">{label}</span>
-                        <span className="max-w-[170px] break-words text-right font-semibold text-white">
-                          {value}
-                        </span>
+                      [t('ultima.subscriptionInfo.validUntil'), endDateLabel],
+                      [t('ultima.subscriptionInfo.timeLeft'), timeLeftLabel],
+                      [t('ultima.subscriptionInfo.devices'), String(deviceCount)],
+                      [t('ultima.subscriptionInfo.servers'), String(serverCount)],
+                    ].map(([label, value]) => (
+                      <div key={label}>
+                        <dt>{label}</dt>
+                        <dd>{value}</dd>
                       </div>
                     ))}
-                  </div>
+                  </dl>
                 </section>
                 {linkSection}
               </div>
@@ -722,7 +631,7 @@ export function UltimaSubscriptionInfo() {
   }
 
   return (
-    <div className="ultima-shell ultima-shell-wide">
+    <div className="ultima-shell ultima-shell-wide ultima-sub-info">
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
         <section className="flex min-h-0 flex-1 flex-col pt-[clamp(8px,2vh,16px)]">
@@ -731,48 +640,37 @@ export function UltimaSubscriptionInfo() {
           ) : (
             <div
               data-testid="ultima-subscription-info-page"
-              className="ultima-scrollbar min-h-0 flex-1 space-y-2.5 overflow-y-auto pb-3 pr-1"
+              className="ultima-scrollbar ultima-sub-info-mobile-content min-h-0 flex-1 overflow-y-auto pb-3 pr-1"
             >
-              <section
-                className={`${ultimaPanelClassName} overflow-hidden p-4`}
-                style={ultimaSurfaceStyle}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[13px] font-semibold uppercase text-white/[0.72]">
+              <section className="ultima-sub-info-section ultima-sub-info-overview">
+                <div className="ultima-sub-info-section-heading">
+                  <div>
+                    <p className="ultima-sub-info-eyebrow">
                       {t('ultima.subscriptionInfo.eyebrow')}
                     </p>
-                    <h1 className="mt-1 break-words text-[clamp(27px,7.6vw,34px)] font-semibold leading-none text-white">
-                      {subscriptionTitle}
-                    </h1>
+                    <h1>{subscriptionTitle}</h1>
                   </div>
                   {statusPill}
                 </div>
 
-                <div className="mt-3 flex items-center gap-2 border-t border-white/[0.07] pt-3 text-[13px] text-white/[0.62]">
-                  <CalendarDays className="h-4 w-4 shrink-0 text-emerald-100/[0.8]" />
-                  <span>{t('ultima.subscriptionInfo.validUntil')}</span>
-                  <strong className="ml-auto break-words text-right font-semibold text-white">
-                    {endDateLabel}
-                  </strong>
-                </div>
-
-                <div className="mt-3 grid grid-cols-3 divide-x divide-white/[0.08] rounded-[18px] border border-white/[0.08] bg-black/[0.12] py-3 lg:rounded-[8px]">
+                <dl className="ultima-sub-info-facts ultima-sub-info-overview-facts">
+                  <div>
+                    <dt>{t('ultima.subscriptionInfo.validUntil')}</dt>
+                    <dd>{endDateLabel}</dd>
+                  </div>
                   {[
                     [t('ultima.subscriptionInfo.timeLeft'), timeLeftLabel],
                     [t('ultima.subscriptionInfo.devices'), String(deviceCount)],
                     [t('ultima.subscriptionInfo.servers'), String(serverCount)],
                   ].map(([label, value]) => (
-                    <div key={label} className="min-w-0 px-2.5">
-                      <p className="text-[13px] font-medium uppercase text-white/[0.38]">{label}</p>
-                      <p className="mt-1 break-words text-[13px] font-semibold leading-tight text-white">
-                        {value}
-                      </p>
+                    <div key={label}>
+                      <dt>{label}</dt>
+                      <dd>{value}</dd>
                     </div>
                   ))}
-                </div>
+                </dl>
 
-                <div className="mt-3 grid grid-cols-2 gap-2">
+                <div className="ultima-sub-info-action-list ultima-sub-info-overview-actions">
                   {canOpenTariffs ? (
                     <QuickAction
                       icon={<CalendarDays className="h-4 w-4" />}

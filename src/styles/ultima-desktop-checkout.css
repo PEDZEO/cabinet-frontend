@@ -1,0 +1,389 @@
+@media (min-width: 1024px) {
+  .ultima-web-order {
+    --order-line: var(--ultima-web-line);
+    --order-surface: color-mix(in srgb, var(--ultima-web-surface) 68%, var(--ultima-web-canvas));
+    --order-selection: color-mix(in srgb, var(--ultima-web-accent) 8%, var(--order-surface));
+    --order-inset: clamp(20px, 2.15vw, 32px);
+  }
+
+  .ultima-web-order .ultima-web-order-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(250px, 22vw, 320px);
+    grid-template-areas: 'heading heading' 'configuration summary' 'extras summary';
+    gap: 20px clamp(20px, 2.4vw, 36px);
+    align-items: start;
+  }
+
+  .ultima-web-order .ultima-web-order-heading {
+    grid-area: heading;
+    margin: 0;
+    padding-bottom: 4px;
+  }
+
+  .ultima-web-order .ultima-web-order-heading h1 {
+    margin: 0;
+    font-size: clamp(30px, 2.6vw, 38px);
+    font-weight: 650;
+    line-height: 1.2;
+    letter-spacing: -0.035em;
+  }
+
+  .ultima-web-order-config,
+  .ultima-web-order .ultima-web-order-summary {
+    min-width: 0;
+    border: 1px solid var(--order-line);
+    border-radius: 12px;
+    background: var(--order-surface);
+  }
+
+  .ultima-web-order-config {
+    grid-area: configuration;
+  }
+
+  .ultima-web-order-config > :is(.ultima-web-order-section, .ultima-web-order-plans) {
+    padding: 22px var(--order-inset);
+  }
+
+  .ultima-web-order-config > * + * {
+    border-top: 1px solid var(--order-line);
+  }
+
+  .ultima-web-order-plan-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px 20px;
+  }
+
+  .ultima-web-order-plan-heading h2 {
+    font-size: 25px;
+    font-weight: 650;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+    overflow-wrap: anywhere;
+  }
+
+  .ultima-web-order-plan-heading p {
+    margin-top: 6px;
+    color: var(--ultima-web-muted);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .ultima-web-order-current {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--ultima-web-muted);
+    font-size: 13px;
+  }
+
+  .ultima-web-order-current::before {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--ultima-web-accent);
+    content: '';
+  }
+
+  .ultima-web-order .ultima-web-order-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    margin-top: 19px;
+    padding-block: 14px;
+    border-block: 1px solid var(--order-line);
+  }
+
+  .ultima-web-order .ultima-web-order-facts > div {
+    display: block;
+    padding-right: 16px;
+  }
+  .ultima-web-order .ultima-web-order-facts > div + div {
+    border-left: 1px solid var(--order-line);
+    padding-left: 20px;
+  }
+  .ultima-web-order .ultima-web-order-facts dt {
+    color: var(--ultima-web-muted);
+    font-size: 13px;
+  }
+  .ultima-web-order .ultima-web-order-facts dd {
+    margin: 2px 0 0;
+    text-align: left;
+    font-size: 18px;
+    font-weight: 620;
+    overflow-wrap: anywhere;
+  }
+
+  .ultima-web-order-device-config,
+  .ultima-web-order-switch {
+    margin-top: 18px;
+  }
+
+  .ultima-web-order-device-row,
+  .ultima-web-order-device-extra {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 18px;
+  }
+
+  .ultima-web-order-device-row h3,
+  .ultima-web-order-section > h2,
+  .ultima-web-order-summary > h2 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 630;
+    line-height: 1.35;
+  }
+
+  .ultima-web-order
+    :is(.ultima-web-order-device-row, .ultima-web-order-device-extra, .ultima-web-order-switch)
+    p,
+  .ultima-web-order .ultima-web-order-device-hint {
+    margin-top: 3px;
+    color: var(--ultima-web-muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .ultima-web-order .ultima-web-order-stepper {
+    height: 42px;
+    grid-template-columns: 38px 44px 38px;
+    border: 1px solid var(--order-line) !important;
+    border-radius: 7px;
+    background: var(--ultima-web-canvas) !important;
+  }
+
+  .ultima-web-order .ultima-web-order-stepper button:enabled:hover {
+    background: var(--order-selection) !important;
+  }
+  .ultima-web-order .ultima-web-order-stepper button:focus-visible {
+    outline: 2px solid var(--ultima-web-accent);
+    outline-offset: -3px;
+  }
+
+  .ultima-web-order-device-extra {
+    align-items: baseline;
+    margin-top: 13px;
+    font-size: 14px;
+  }
+  .ultima-web-order-device-extra > strong {
+    flex-shrink: 0;
+    max-width: 45%;
+    text-align: right;
+  }
+
+  .ultima-web-order-device-notice {
+    margin-top: 15px;
+    padding: 9px 0 5px 14px;
+    border-left: 2px solid var(--order-line);
+    color: var(--ultima-web-muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .ultima-web-order-device-notice .ultima-web-order-text-action {
+    min-height: 32px;
+    padding-top: 2px;
+    color: var(--ultima-web-accent);
+    font-size: 13px;
+    font-weight: 550;
+    text-underline-offset: 3px;
+  }
+  .ultima-web-order-text-action:hover {
+    text-decoration: underline;
+  }
+
+  .ultima-web-order .ultima-checkout-period-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-top: 14px;
+    border: 1px solid var(--order-line);
+    border-radius: 8px;
+  }
+
+  .ultima-web-order .ultima-checkout-period {
+    display: grid;
+    grid-template-columns: 16px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 62px;
+    padding: 11px 14px;
+    border: 0;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+
+  .ultima-web-order .ultima-checkout-period:first-child {
+    border-radius: 7px 7px 0 0 !important;
+  }
+  .ultima-web-order .ultima-checkout-period:last-child {
+    border-radius: 0 0 7px 7px !important;
+  }
+  .ultima-web-order .ultima-checkout-period:only-child {
+    border-radius: 7px !important;
+  }
+  .ultima-web-order .ultima-checkout-period + .ultima-checkout-period {
+    border-top: 1px solid var(--order-line);
+  }
+  .ultima-web-order .ultima-checkout-period:is(:hover, [aria-checked='true']) {
+    background: var(--order-selection) !important;
+  }
+  .ultima-web-order .ultima-checkout-period:focus-visible {
+    outline: 2px solid var(--ultima-web-accent);
+    outline-offset: -2px;
+  }
+
+  .ultima-web-order .ultima-checkout-period::before {
+    width: 16px;
+    height: 16px;
+    border: 1px solid var(--ultima-web-muted);
+    border-radius: 50%;
+    content: '';
+  }
+
+  .ultima-web-order .ultima-checkout-period[aria-checked='true']::before {
+    border: 5px solid var(--ultima-web-accent);
+    background: var(--ultima-web-canvas);
+  }
+
+  .ultima-web-order .ultima-checkout-period > div {
+    align-items: center;
+    justify-content: flex-start;
+    margin: 0;
+  }
+  .ultima-web-order .ultima-checkout-period-mark {
+    display: none;
+  }
+  .ultima-web-order .ultima-checkout-period-badge {
+    border: 0;
+    background: none;
+    padding: 0;
+    color: var(--ultima-web-accent) !important;
+    font-size: 12px;
+  }
+
+  .ultima-web-order .ultima-checkout-period-price {
+    flex-wrap: wrap-reverse;
+    justify-content: flex-end !important;
+    text-align: right;
+  }
+  .ultima-web-order .ultima-checkout-period-price > div:first-child > div:first-child {
+    font-size: 16px;
+  }
+  .ultima-web-order
+    .ultima-checkout-period-list:has(> :only-child)
+    .ultima-checkout-period-price
+    > div:first-child
+    > div:nth-child(2) {
+    display: none;
+  }
+
+  .ultima-web-order .ultima-web-order-summary {
+    grid-area: summary;
+    padding: 22px clamp(17px, 1.8vw, 27px);
+  }
+
+  .ultima-web-order .ultima-web-order-summary-plan {
+    margin: 6px 0 17px;
+    color: var(--ultima-web-muted);
+    font-size: 14px;
+    overflow-wrap: anywhere;
+  }
+  .ultima-web-order .ultima-web-order-totals {
+    padding-top: 5px;
+    border-top: 1px solid var(--order-line);
+  }
+  .ultima-web-order .ultima-web-order-totals > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px 14px;
+    padding: 7px 0;
+    font-size: 14px;
+  }
+  .ultima-web-order .ultima-web-order-totals dt {
+    color: var(--ultima-web-muted);
+  }
+  .ultima-web-order .ultima-web-order-totals dd {
+    margin: 0;
+    text-align: right;
+    font-weight: 570;
+    overflow-wrap: anywhere;
+  }
+  .ultima-web-order .ultima-web-order-total dd {
+    font-size: 23px;
+    font-weight: 650;
+    letter-spacing: -0.03em;
+  }
+  .ultima-web-order .ultima-web-order-payable {
+    margin-top: 6px;
+    border-top: 1px solid var(--order-line);
+  }
+  .ultima-web-order .ultima-web-order-payable dd {
+    padding-top: 3px;
+  }
+  .ultima-web-order .ultima-web-order-payable[data-top-up='true'] dd {
+    color: var(--ultima-web-accent);
+    font-weight: 650;
+  }
+  .ultima-web-order .ultima-web-order-submit {
+    width: 100%;
+    min-height: 46px;
+    margin-top: 15px;
+  }
+
+  .ultima-web-order
+    :is(.ultima-web-order-notice, .ultima-web-order-error, .ultima-web-order-recovery) {
+    margin-top: 12px;
+    font-size: 13px;
+  }
+  .ultima-web-order-notice {
+    color: var(--ultima-web-muted);
+  }
+  .ultima-web-order-error {
+    border-left: 2px solid var(--ultima-web-accent);
+    padding-left: 10px;
+  }
+
+  .ultima-web-order-extras {
+    grid-area: extras;
+    min-width: 0;
+  }
+  html .ultima-shell .ultima-web-order .ultima-web-order-extras > .ultima-panel {
+    padding: 0;
+    border: 1px solid var(--order-line) !important;
+    border-radius: 12px !important;
+    background: var(--order-surface) !important;
+  }
+
+  .ultima-web-order .ultima-web-order-plans > section {
+    margin-bottom: 0;
+  }
+  .ultima-web-order .ultima-web-order-plans > section > div:last-child {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  html .ultima-shell .ultima-web-order .ultima-web-order-plans button.ultima-pane {
+    padding: 14px;
+  }
+  html
+    .ultima-shell
+    .ultima-web-order
+    .ultima-web-order-plans
+    button.ultima-pane[aria-pressed='true'] {
+    background: var(--order-selection) !important;
+    box-shadow: inset 2px 0 var(--ultima-web-accent) !important;
+  }
+}
+
+@media (min-width: 1024px) and (min-height: 780px) {
+  .ultima-web-order .ultima-web-order-summary {
+    position: sticky;
+    top: 22px;
+  }
+}

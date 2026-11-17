@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -7,6 +7,7 @@ import { authApi } from '@/api/auth';
 import { Button } from '@/components/primitives/Button';
 import { UltimaProviderAccountLinkingView } from '@/components/ultima/UltimaProviderAccountLinkingView';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
+import { UltimaDesktopSectionLayout } from '@/components/ultima/desktop/UltimaDesktopSectionLayout';
 import { getLocalizedIdentityLinkMessage } from '@/features/account-linking/linkingMessages';
 import {
   getLocalizedAuthErrorDetailMessage,
@@ -39,6 +40,31 @@ const LinkIcon = () => (
 );
 
 type LinkFlowStep = 'idle' | 'preview' | 'warning' | 'manual' | 'done';
+
+function AccountPageFrame({
+  isDesktop,
+  title,
+  children,
+}: {
+  isDesktop: boolean;
+  title: string;
+  children: ReactNode;
+}) {
+  if (!isDesktop) return <div className="ultima-account-page">{children}</div>;
+
+  return (
+    <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-account-page">
+      <UltimaDesktopSectionLayout
+        icon={null}
+        title={title}
+        subtitle="Управляйте входом в свой профиль. Подписка и баланс остаются общими для всех подключённых способов."
+        bottomNav={<UltimaBottomNav active="profile" />}
+      >
+        <div className="ultima-account-embedded">{children}</div>
+      </UltimaDesktopSectionLayout>
+    </div>
+  );
+}
 
 export default function UltimaAccountLinking() {
   const { t } = useTranslation();
@@ -621,502 +647,508 @@ export default function UltimaAccountLinking() {
 
   if (isProviderAuthMode) {
     return (
-      <UltimaProviderAccountLinkingView
-        isDesktop={isDesktop}
-        userId={user?.id}
-        identitiesLoading={linkedIdentitiesData === undefined}
-        providersLoading={oauthProvidersData === undefined}
-        linkedIdentities={linkedIdentities}
-        telegramRelink={telegramRelink}
-        telegramIdentity={telegramIdentity}
-        latestManualMerge={latestManualMerge ?? null}
-        availableOAuthProviders={availableOAuthProviders}
-        isTelegramMiniApp={isInTelegramWebApp()}
-        directLinkProvider={directLinkProvider}
-        waitingExternalProvider={waitingExternalProvider}
-        telegramDirectLinkLoading={telegramDirectLinkLoading}
-        providerLinkError={providerLinkError}
-        providerLinkSuccess={providerLinkSuccess}
-        linkSuccess={linkSuccess}
-        unlinkProvider={unlinkProvider}
-        unlinkRequestToken={unlinkRequestToken}
-        unlinkOtpCode={unlinkOtpCode}
-        unlinkError={unlinkError}
-        requestUnlinkPending={requestUnlinkMutation.isPending}
-        confirmUnlinkPending={confirmUnlinkMutation.isPending}
-        onLinkTelegramDirect={() => void handleLinkTelegramDirect()}
-        onLinkOAuth={(provider) => void handleLinkOAuth(provider)}
-        onRequestUnlink={handleRequestUnlink}
-        onUnlinkOtpCodeChange={handleUnlinkOtpCodeChange}
-        onConfirmUnlink={handleConfirmUnlink}
-        onCancelUnlink={handleCancelUnlink}
-        getIdentityBlockedDetails={getIdentityBlockedDetails}
-        formatDurationShort={formatDurationShort}
-        formatDateTime={formatDateTime}
-      />
+      <AccountPageFrame isDesktop={isDesktop} title="Способы входа">
+        <UltimaProviderAccountLinkingView
+          isDesktop={isDesktop}
+          userId={user?.id}
+          identitiesLoading={linkedIdentitiesData === undefined}
+          providersLoading={oauthProvidersData === undefined}
+          linkedIdentities={linkedIdentities}
+          telegramRelink={telegramRelink}
+          telegramIdentity={telegramIdentity}
+          latestManualMerge={latestManualMerge ?? null}
+          availableOAuthProviders={availableOAuthProviders}
+          isTelegramMiniApp={isInTelegramWebApp()}
+          directLinkProvider={directLinkProvider}
+          waitingExternalProvider={waitingExternalProvider}
+          telegramDirectLinkLoading={telegramDirectLinkLoading}
+          providerLinkError={providerLinkError}
+          providerLinkSuccess={providerLinkSuccess}
+          linkSuccess={linkSuccess}
+          unlinkProvider={unlinkProvider}
+          unlinkRequestToken={unlinkRequestToken}
+          unlinkOtpCode={unlinkOtpCode}
+          unlinkError={unlinkError}
+          requestUnlinkPending={requestUnlinkMutation.isPending}
+          confirmUnlinkPending={confirmUnlinkMutation.isPending}
+          onLinkTelegramDirect={() => void handleLinkTelegramDirect()}
+          onLinkOAuth={(provider) => void handleLinkOAuth(provider)}
+          onRequestUnlink={handleRequestUnlink}
+          onUnlinkOtpCodeChange={handleUnlinkOtpCodeChange}
+          onConfirmUnlink={handleConfirmUnlink}
+          onCancelUnlink={handleCancelUnlink}
+          getIdentityBlockedDetails={getIdentityBlockedDetails}
+          formatDurationShort={formatDurationShort}
+          formatDateTime={formatDateTime}
+        />
+      </AccountPageFrame>
     );
   }
 
   return (
-    <div
-      className={`ultima-shell ultima-shell-wide ultima-flat-frames${isDesktop ? 'ultima-shell-profile-desktop' : ''}`}
-    >
-      <div className="ultima-shell-aura" />
-      <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
-        <header className="mb-3">
-          <h1 className="text-[clamp(32px,8.5vw,38px)] font-semibold leading-[0.95] tracking-[-0.01em] text-white">
-            Привязка аккаунтов
-          </h1>
-          <p className="mt-1.5 text-[13px] text-white/[0.62]">
-            {isProviderAuthMode
-              ? 'Быстрая привязка через доступные способы входа. Кодовый режим ниже остается как резервный.'
-              : 'Единая страница для безопасной привязки и смены Telegram, Yandex и VK.'}
-          </p>
-        </header>
+    <AccountPageFrame isDesktop={isDesktop} title="Привязка аккаунтов">
+      <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-account-legacy-shell">
+        <div className="ultima-shell-aura" />
+        <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
+          <header className="mb-3">
+            <h1 className="text-[clamp(32px,8.5vw,38px)] font-semibold leading-[0.95] tracking-[-0.01em] text-white">
+              Привязка аккаунтов
+            </h1>
+            <p className="mt-1.5 text-[13px] text-white/[0.62]">
+              {isProviderAuthMode
+                ? 'Быстрая привязка через доступные способы входа. Кодовый режим ниже остается как резервный.'
+                : 'Единая страница для безопасной привязки и смены Telegram, Yandex и VK.'}
+            </p>
+          </header>
 
-        <div className="ultima-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto pr-1 lg:overflow-visible lg:pr-0">
-          <section className="mb-1 rounded-[28px] border border-emerald-200/[0.12] bg-[linear-gradient(180deg,rgba(69,186,142,0.16),rgba(18,79,64,0.28))] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md">
-            <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/[0.12] bg-white/[0.08] text-white/[0.85]">
-                <LinkIcon />
-              </div>
-              <div className="flex-1">
-                <h1 className="text-2xl font-semibold text-white">Привязка аккаунтов</h1>
-                <p className="mt-1 text-sm text-white/[0.62]">
-                  {isProviderAuthMode
-                    ? 'Сначала используйте быстрые кнопки входа ниже. Если автоматически объединить аккаунты не получится, используйте кодовый режим.'
-                    : 'Единая страница для безопасной привязки и смены Telegram, Yandex и VK.'}
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                  {isProviderAuthMode ? (
-                    <>
-                      <span className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-2 py-1 text-white/70">
-                        1. Нажмите нужный способ входа
-                      </span>
-                      <span className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-2 py-1 text-white/70">
-                        2. Авторизуйтесь в нем
-                      </span>
-                      <span className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-2 py-1 text-white/70">
-                        3. Если нужно, используйте резервный кодовый режим
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-2 py-1 text-white/70">
-                        1. Введите код с другого аккаунта
-                      </span>
-                      <span className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-2 py-1 text-white/70">
-                        2. Проверьте, что найден нужный аккаунт
-                      </span>
-                      <span className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-2 py-1 text-white/70">
-                        3. Подтвердите привязку или отправьте в поддержку
-                      </span>
-                    </>
+          <div className="ultima-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto pr-1 lg:overflow-visible lg:pr-0">
+            <section className="ultima-account-intro mb-1 rounded-[28px] border border-emerald-200/[0.12] bg-[linear-gradient(180deg,rgba(69,186,142,0.16),rgba(18,79,64,0.28))] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md">
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/[0.12] bg-white/[0.08] text-white/[0.85]">
+                  <LinkIcon />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-2xl font-semibold text-white">Как привязать аккаунт</h2>
+                  <p className="mt-1 text-sm text-white/[0.62]">
+                    {isProviderAuthMode
+                      ? 'Сначала используйте быстрые кнопки входа ниже. Если автоматически объединить аккаунты не получится, используйте кодовый режим.'
+                      : 'Единая страница для безопасной привязки и смены Telegram, Yandex и VK.'}
+                  </p>
+                  <div className="ultima-account-steps mt-3 flex flex-wrap gap-2 text-xs">
+                    {isProviderAuthMode ? (
+                      <>
+                        <span className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-2 py-1 text-white/70">
+                          1. Нажмите нужный способ входа
+                        </span>
+                        <span className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-2 py-1 text-white/70">
+                          2. Авторизуйтесь в нем
+                        </span>
+                        <span className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-2 py-1 text-white/70">
+                          3. Если нужно, используйте резервный кодовый режим
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-2 py-1 text-white/70">
+                          1. Введите код с другого аккаунта
+                        </span>
+                        <span className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-2 py-1 text-white/70">
+                          2. Проверьте, что найден нужный аккаунт
+                        </span>
+                        <span className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-2 py-1 text-white/70">
+                          3. Подтвердите привязку или отправьте в поддержку
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <div className="mt-3 flex flex-wrap items-center gap-3">
+                    <Button variant="secondary" onClick={() => setShowTips((prev) => !prev)}>
+                      {showTips ? 'Скрыть подсказки' : 'Показать подсказки'}
+                    </Button>
+                    <Link
+                      to="/profile"
+                      className="inline-flex text-xs text-[#56e8c2] hover:text-[#7af3d7]"
+                    >
+                      Вернуться в профиль
+                    </Link>
+                  </div>
+                  {showTips && (
+                    <div className="mt-3 rounded-2xl border border-white/[0.12] bg-white/[0.06] p-3 text-xs text-white/[0.72]">
+                      <p>
+                        Код нужно брать на втором аккаунте: нажмите там "Сгенерировать код", затем
+                        введите его здесь.
+                      </p>
+                      <p className="mt-1">
+                        Если Telegram уже привязан, сначала отвяжите его через код из Telegram.
+                        После этого можно сразу привязать новый.
+                      </p>
+                      <p className="mt-1">
+                        Если система не может объединить автоматически, нажмите "Отправить в
+                        поддержку" и коротко опишите ситуацию.
+                      </p>
+                      <p className="mt-1">
+                        Если есть ограничение по времени, мы покажем точную дату и время, когда
+                        можно повторить действие.
+                      </p>
+                    </div>
                   )}
                 </div>
-                <div className="mt-3 flex flex-wrap items-center gap-3">
-                  <Button variant="secondary" onClick={() => setShowTips((prev) => !prev)}>
-                    {showTips ? 'Скрыть подсказки' : 'Показать подсказки'}
-                  </Button>
-                  <Link
-                    to="/profile"
-                    className="inline-flex text-xs text-[#56e8c2] hover:text-[#7af3d7]"
-                  >
-                    Вернуться в профиль
-                  </Link>
-                </div>
-                {showTips && (
-                  <div className="mt-3 rounded-2xl border border-white/[0.12] bg-white/[0.06] p-3 text-xs text-white/[0.72]">
-                    <p>
-                      Код нужно брать на втором аккаунте: нажмите там "Сгенерировать код", затем
-                      введите его здесь.
-                    </p>
-                    <p className="mt-1">
-                      Если Telegram уже привязан, сначала отвяжите его через код из Telegram. После
-                      этого можно сразу привязать новый.
-                    </p>
-                    <p className="mt-1">
-                      Если система не может объединить автоматически, нажмите "Отправить в
-                      поддержку" и коротко опишите ситуацию.
-                    </p>
-                    <p className="mt-1">
-                      Если есть ограничение по времени, мы покажем точную дату и время, когда можно
-                      повторить действие.
-                    </p>
-                  </div>
-                )}
               </div>
-            </div>
-          </section>
-
-          {isProviderAuthMode && (
-            <section className="rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.2)] p-3 backdrop-blur-md">
-              <h2 className="mb-2 text-lg font-semibold text-white/95">
-                Быстрая привязка через вход
-              </h2>
-              <p className="mb-3 text-sm text-white/[0.62]">
-                Используйте доступные способы входа. Если аккаунт уже существует, старые привязки и
-                данные объединятся по тем же правилам безопасности, что и в кодовом режиме.
-              </p>
-
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  onClick={() => void handleLinkTelegramDirect()}
-                  loading={telegramDirectLinkLoading}
-                  disabled={
-                    !!directLinkProvider || waitingExternalProvider !== null || !!telegramIdentity
-                  }
-                  className="rounded-full border border-emerald-200/20 bg-[rgba(22,207,161,0.92)] px-4 py-2.5 text-[14px] font-medium text-slate-950 hover:bg-[rgba(39,220,176,0.96)] disabled:border-white/10 disabled:bg-white/[0.08] disabled:text-white/[0.72]"
-                >
-                  {telegramIdentity ? 'Telegram уже привязан' : 'Привязать Telegram'}
-                </Button>
-
-                {availableOAuthProviders.map((provider) => (
-                  <Button
-                    key={provider.name}
-                    onClick={() => void handleLinkOAuth(provider.name)}
-                    loading={directLinkProvider === provider.name}
-                    disabled={telegramDirectLinkLoading || waitingExternalProvider !== null}
-                    variant="secondary"
-                    className="border-white/[0.12] bg-white/[0.06] text-white hover:bg-white/10"
-                  >
-                    {provider.display_name}
-                  </Button>
-                ))}
-              </div>
-
-              {waitingExternalProvider && (
-                <div className="mt-3 rounded-2xl border border-white/[0.12] bg-white/[0.06] p-3 text-sm text-white/[0.72]">
-                  Завершите вход через {waitingExternalProvider} во внешнем браузере. Как только
-                  привязка завершится, кабинет покажет результат автоматически.
-                </div>
-              )}
-
-              {!isInTelegramWebApp() && !telegramIdentity && (
-                <div className="mt-3 text-xs text-white/[0.72]">
-                  Telegram-привязка доступна внутри Telegram Mini App. В обычном браузере можно
-                  привязать Yandex, VK и другие OAuth-способы, а для Telegram использовать резервный
-                  кодовый режим ниже.
-                </div>
-              )}
-
-              {providerLinkError && (
-                <div className="mt-3 rounded-2xl border border-error-500/30 bg-error-500/10 p-3 text-sm text-error-400">
-                  {providerLinkError}
-                </div>
-              )}
-
-              {providerLinkSuccess && (
-                <div className="mt-3 rounded-2xl border border-success-500/30 bg-success-500/10 p-3 text-sm text-success-400">
-                  {providerLinkSuccess}
-                </div>
-              )}
             </section>
-          )}
 
-          <section className="rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.2)] p-3 backdrop-blur-md">
-            <h2 className="mb-4 text-lg font-semibold text-white/95">Связанные способы входа</h2>
+            {isProviderAuthMode && (
+              <section className="rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.2)] p-3 backdrop-blur-md">
+                <h2 className="mb-2 text-lg font-semibold text-white/95">
+                  Быстрая привязка через вход
+                </h2>
+                <p className="mb-3 text-sm text-white/[0.62]">
+                  Используйте доступные способы входа. Если аккаунт уже существует, старые привязки
+                  и данные объединятся по тем же правилам безопасности, что и в кодовом режиме.
+                </p>
 
-            <div className="mb-4 flex flex-wrap gap-2">
-              {linkedIdentities.length > 0 ? (
-                linkedIdentities.map((identity) => (
-                  <div
-                    key={`${identity.provider}-${identity.provider_user_id_masked}`}
-                    className="flex items-center gap-2 rounded-xl border border-white/[0.12] bg-white/[0.06] px-3 py-1 text-xs text-white/[0.82]"
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    onClick={() => void handleLinkTelegramDirect()}
+                    loading={telegramDirectLinkLoading}
+                    disabled={
+                      !!directLinkProvider || waitingExternalProvider !== null || !!telegramIdentity
+                    }
+                    className="ultima-account-primary rounded-full border border-emerald-200/20 bg-[rgba(22,207,161,0.92)] px-4 py-2.5 text-[14px] font-medium text-slate-950 hover:bg-[rgba(39,220,176,0.96)] disabled:border-white/10 disabled:bg-white/[0.08] disabled:text-white/[0.72]"
                   >
-                    <span>
-                      {identity.provider}: {identity.provider_user_id_masked}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => requestUnlinkMutation.mutate(identity.provider)}
-                      disabled={!identity.can_unlink || requestUnlinkMutation.isPending}
-                      className="rounded border border-error-500/40 px-2 py-0.5 text-[13px] text-error-300 transition-colors hover:bg-error-500/10 disabled:cursor-not-allowed disabled:border-white/10 disabled:text-white/40"
-                      title={identity.can_unlink ? undefined : getIdentityBlockedDetails(identity)}
-                    >
-                      {t('profile.linking.unlink.button', 'Отвязать')}
-                    </button>
-                  </div>
-                ))
-              ) : (
-                <span className="text-sm text-white/[0.72]">
-                  {t('profile.linking.none', 'Нет привязанных способов входа')}
-                </span>
-              )}
-            </div>
+                    {telegramIdentity ? 'Telegram уже привязан' : 'Привязать Telegram'}
+                  </Button>
 
-            {telegramRelink && (
-              <div className="mb-4 rounded-2xl border border-white/[0.12] bg-white/[0.06] p-3">
-                <p className="text-sm font-medium text-white/[0.92]">Статус смены Telegram</p>
-                {linkedIdentities.length <= 1 && (
-                  <p className="mt-1 text-xs text-warning-300">
-                    Важно: если привязан только Telegram, сменить его не получится. Сначала
-                    привяжите хотя бы один дополнительный способ входа (Yandex или VK).
-                  </p>
+                  {availableOAuthProviders.map((provider) => (
+                    <Button
+                      key={provider.name}
+                      onClick={() => void handleLinkOAuth(provider.name)}
+                      loading={directLinkProvider === provider.name}
+                      disabled={telegramDirectLinkLoading || waitingExternalProvider !== null}
+                      variant="secondary"
+                      className="border-white/[0.12] bg-white/[0.06] text-white hover:bg-white/10"
+                    >
+                      {provider.display_name}
+                    </Button>
+                  ))}
+                </div>
+
+                {waitingExternalProvider && (
+                  <div className="mt-3 rounded-2xl border border-white/[0.12] bg-white/[0.06] p-3 text-sm text-white/[0.72]">
+                    Завершите вход через {waitingExternalProvider} во внешнем браузере. Как только
+                    привязка завершится, кабинет покажет результат автоматически.
+                  </div>
                 )}
-                {telegramRelink.requires_unlink_first ? (
-                  <p className="mt-1 text-xs text-warning-300">
-                    Сейчас привязан Telegram. Для смены сначала отвяжите текущий Telegram, затем
-                    привяжите новый.
-                  </p>
-                ) : telegramRelink.retry_after_seconds ? (
-                  <p className="mt-1 text-xs text-warning-300">
-                    Доступно через: {formatDurationShort(telegramRelink.retry_after_seconds)}
-                    {telegramRelink.cooldown_until
-                      ? ` (в: ${formatDateTime(telegramRelink.cooldown_until)})`
-                      : ''}
-                  </p>
-                ) : (
-                  <p className="mt-1 text-xs text-success-400">
-                    Смена Telegram доступна. Можно привязать другой Telegram-код.
-                  </p>
+
+                {!isInTelegramWebApp() && !telegramIdentity && (
+                  <div className="mt-3 text-xs text-white/[0.72]">
+                    Telegram-привязка доступна внутри Telegram Mini App. В обычном браузере можно
+                    привязать Yandex, VK и другие OAuth-способы, а для Telegram использовать
+                    резервный кодовый режим ниже.
+                  </div>
                 )}
-                {telegramIdentity && (
-                  <p className="mt-2 text-xs text-white/[0.62]">
-                    Текущий Telegram: {telegramIdentity.provider_user_id_masked}
-                  </p>
+
+                {providerLinkError && (
+                  <div className="mt-3 rounded-2xl border border-error-500/30 bg-error-500/10 p-3 text-sm text-error-400">
+                    {providerLinkError}
+                  </div>
                 )}
-              </div>
+
+                {providerLinkSuccess && (
+                  <div className="mt-3 rounded-2xl border border-success-500/30 bg-success-500/10 p-3 text-sm text-success-400">
+                    {providerLinkSuccess}
+                  </div>
+                )}
+              </section>
             )}
 
-            <div className="space-y-3 border-t border-white/10 pt-4">
-              {isProviderAuthMode && (
-                <div className="rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-2 text-xs text-white/[0.62]">
-                  Резервный режим по коду: используйте его, если автоматическая привязка через
-                  кнопки входа недоступна или support попросил код для ручной проверки.
-                </div>
-              )}
-              <div className="flex flex-wrap items-center gap-3">
-                <Button
-                  onClick={() => createLinkCodeMutation.mutate()}
-                  loading={createLinkCodeMutation.isPending}
-                  className="rounded-full border border-emerald-200/25 bg-[rgba(22,207,161,0.92)] px-4 py-2.5 text-[14px] font-medium text-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.32)] transition hover:bg-[rgba(39,220,176,0.96)]"
-                >
-                  Сгенерировать код привязки
-                </Button>
-                {activeLinkCode && (
-                  <span className="rounded-xl border border-[#59f0c9]/[0.35] bg-[#1bd29f]/[0.12] px-3 py-2 font-mono text-sm text-[#8ff8de]">
-                    {activeLinkCode}
+            <section className="rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.2)] p-3 backdrop-blur-md">
+              <h2 className="mb-4 text-lg font-semibold text-white/95">Связанные способы входа</h2>
+
+              <div className="mb-4 flex flex-wrap gap-2">
+                {linkedIdentities.length > 0 ? (
+                  linkedIdentities.map((identity) => (
+                    <div
+                      key={`${identity.provider}-${identity.provider_user_id_masked}`}
+                      className="flex items-center gap-2 rounded-xl border border-white/[0.12] bg-white/[0.06] px-3 py-1 text-xs text-white/[0.82]"
+                    >
+                      <span>
+                        {identity.provider}: {identity.provider_user_id_masked}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => requestUnlinkMutation.mutate(identity.provider)}
+                        disabled={!identity.can_unlink || requestUnlinkMutation.isPending}
+                        className="rounded border border-error-500/40 px-2 py-0.5 text-[13px] text-error-300 transition-colors hover:bg-error-500/10 disabled:cursor-not-allowed disabled:border-white/10 disabled:text-white/40"
+                        title={
+                          identity.can_unlink ? undefined : getIdentityBlockedDetails(identity)
+                        }
+                      >
+                        {t('profile.linking.unlink.button', 'Отвязать')}
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <span className="text-sm text-white/[0.72]">
+                    {t('profile.linking.none', 'Нет привязанных способов входа')}
                   </span>
                 )}
               </div>
 
-              <input
-                type="text"
-                value={linkCode}
-                onChange={(e) => {
-                  const nextCode = e.target.value.toUpperCase().trim();
-                  setLinkCode(nextCode);
-                  setLinkError(null);
-                  setUnlinkError(null);
-                  setLinkSuccess(null);
-                  if (nextCode !== previewedCode) {
-                    setLinkPreview(null);
-                    setLinkFlowStep('idle');
-                  }
-                }}
-                placeholder="Введите код привязки"
-                className="w-full rounded-2xl border border-white/[0.12] bg-white/[0.06] px-3 py-2.5 text-white placeholder:text-white/[0.72] focus:border-[#59f0c9]/[0.45] focus:outline-none"
-              />
-
-              <div className="rounded-2xl border border-white/[0.12] bg-white/[0.06] px-3 py-2 text-xs text-white/[0.72]">
-                {linkFlowStep === 'idle' &&
-                  'Шаг 1 из 3: вставьте код со второго аккаунта и нажмите "Проверить".'}
-                {linkFlowStep === 'preview' &&
-                  'Шаг 2 из 3: код верный. Убедитесь, что это нужный аккаунт, и нажмите "Привязать".'}
-                {linkFlowStep === 'warning' &&
-                  'Шаг 3 из 3: будет заменён Telegram. Подтвердите только если хотите отвязать старый Telegram и привязать новый.'}
-                {linkFlowStep === 'manual' &&
-                  'Шаг 3 из 3: автоматически объединить не получилось. Отправьте запрос в поддержку на этой странице.'}
-                {linkFlowStep === 'done' &&
-                  'Готово. Привязка завершена. При необходимости можно создать новый код.'}
-              </div>
-
-              {linkPreview && (
-                <div className="rounded-2xl border border-white/[0.12] bg-white/[0.06] p-3">
-                  <p className="mb-2 text-sm text-white/[0.74]">
-                    Будет привязан к аккаунту #{' '}
-                    <span className="font-semibold text-white">{linkPreview.source_user_id}</span>
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {Object.entries(linkPreview.source_identity_hints).map(([provider, value]) => (
-                      <span
-                        key={`${provider}-${value}`}
-                        className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-2 py-1 text-xs text-white/[0.82]"
-                      >
-                        {provider}: {value}
-                      </span>
-                    ))}
-                  </div>
-                  {shouldShowTelegramReplaceWarning && (
-                    <div className="mt-3 rounded-linear border border-warning-500/30 bg-warning-500/10 p-2 text-xs text-warning-300">
-                      Внимание: вы пытаетесь сменить Telegram-аккаунт. После привязки нового
-                      Telegram старый Telegram-вход будет потерян.
-                    </div>
+              {telegramRelink && (
+                <div className="mb-4 rounded-2xl border border-white/[0.12] bg-white/[0.06] p-3">
+                  <p className="text-sm font-medium text-white/[0.92]">Статус смены Telegram</p>
+                  {linkedIdentities.length <= 1 && (
+                    <p className="mt-1 text-xs text-warning-300">
+                      Важно: если привязан только Telegram, сменить его не получится. Сначала
+                      привяжите хотя бы один дополнительный способ входа (Yandex или VK).
+                    </p>
+                  )}
+                  {telegramRelink.requires_unlink_first ? (
+                    <p className="mt-1 text-xs text-warning-300">
+                      Сейчас привязан Telegram. Для смены сначала отвяжите текущий Telegram, затем
+                      привяжите новый.
+                    </p>
+                  ) : telegramRelink.retry_after_seconds ? (
+                    <p className="mt-1 text-xs text-warning-300">
+                      Доступно через: {formatDurationShort(telegramRelink.retry_after_seconds)}
+                      {telegramRelink.cooldown_until
+                        ? ` (в: ${formatDateTime(telegramRelink.cooldown_until)})`
+                        : ''}
+                    </p>
+                  ) : (
+                    <p className="mt-1 text-xs text-success-400">
+                      Смена Telegram доступна. Можно привязать другой Telegram-код.
+                    </p>
+                  )}
+                  {telegramIdentity && (
+                    <p className="mt-2 text-xs text-white/[0.62]">
+                      Текущий Telegram: {telegramIdentity.provider_user_id_masked}
+                    </p>
                   )}
                 </div>
               )}
 
-              {linkFlowStep === 'manual' && (
-                <div className="rounded-linear border border-warning-500/30 bg-warning-500/10 p-3">
-                  <p className="mb-2 text-sm text-warning-300">
-                    Автоматическое объединение невозможно. Отправьте запрос в поддержку для ручного
-                    merge.
-                  </p>
-                  <textarea
-                    value={manualMergeComment}
-                    onChange={(e) => setManualMergeComment(e.target.value)}
-                    className="mb-3 min-h-[88px] w-full rounded-2xl border border-white/[0.12] bg-white/[0.06] px-3 py-2.5 text-white placeholder:text-white/[0.72] focus:border-[#59f0c9]/[0.45] focus:outline-none"
-                    placeholder="Опишите, какой аккаунт основной и почему нужно объединение"
-                    maxLength={1000}
-                  />
-                </div>
-              )}
-
-              {linkError && (
-                <div className="rounded-linear border border-error-500/30 bg-error-500/10 p-3 text-sm text-error-400">
-                  {linkError}
-                </div>
-              )}
-
-              {unlinkProvider && unlinkRequestToken && (
-                <div className="rounded-linear border border-warning-500/30 bg-warning-500/10 p-3">
-                  <p className="mb-2 text-sm text-warning-300">
-                    {t('profile.linking.unlink.confirmText', {
-                      provider: unlinkProvider,
-                      defaultValue:
-                        'Вы уверены, что хотите отвязать {{provider}}? Для подтверждения нужен код из Telegram.',
-                    })}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      onClick={() =>
-                        confirmUnlinkMutation.mutate({
-                          provider: unlinkProvider,
-                          token: unlinkRequestToken,
-                          otpCode: unlinkOtpCode.trim(),
-                        })
-                      }
-                      loading={confirmUnlinkMutation.isPending}
-                      disabled={unlinkOtpCode.trim().length !== 6}
-                    >
-                      {t('profile.linking.unlink.confirm', 'Подтвердить')}
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      onClick={() => {
-                        setUnlinkProvider(null);
-                        setUnlinkRequestToken(null);
-                        setUnlinkOtpCode('');
-                        setUnlinkError(null);
-                      }}
-                    >
-                      {t('common.cancel')}
-                    </Button>
+              <div className="space-y-3 border-t border-white/10 pt-4">
+                {isProviderAuthMode && (
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-2 text-xs text-white/[0.62]">
+                    Резервный режим по коду: используйте его, если автоматическая привязка через
+                    кнопки входа недоступна или support попросил код для ручной проверки.
                   </div>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={unlinkOtpCode}
-                    onChange={(e) =>
-                      setUnlinkOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))
-                    }
-                    placeholder={t(
-                      'profile.linking.unlink.otpPlaceholder',
-                      'Введите код подтверждения',
-                    )}
-                    className="mt-3 w-full rounded-2xl border border-white/[0.12] bg-white/[0.06] px-3 py-2.5 text-center tracking-[0.4em] text-white placeholder:text-white/[0.72] focus:border-[#59f0c9]/[0.45] focus:outline-none"
-                  />
-                </div>
-              )}
-
-              {unlinkError && (
-                <div className="rounded-linear border border-error-500/30 bg-error-500/10 p-3 text-sm text-error-400">
-                  {unlinkError}
-                </div>
-              )}
-
-              {linkSuccess && (
-                <div className="rounded-linear border border-success-500/30 bg-success-500/10 p-3 text-sm text-success-400">
-                  {linkSuccess}
-                </div>
-              )}
-
-              {latestManualMerge && (
-                <div className="rounded-2xl border border-white/[0.12] bg-white/[0.06] p-3">
-                  <div className="mb-1 text-sm font-medium text-white/[0.92]">
-                    Последний спорный merge-запрос #{latestManualMerge.ticket_id}
-                  </div>
-                  <div className="text-sm text-white/75">
-                    {latestManualMerge.decision === 'approve'
-                      ? 'Запрос одобрен'
-                      : latestManualMerge.decision === 'reject'
-                        ? 'Запрос отклонен'
-                        : 'Запрос на рассмотрении'}
-                  </div>
-                  {latestManualMerge.resolution_comment && (
-                    <div className="mt-2 text-xs text-white/[0.62]">
-                      Комментарий: {latestManualMerge.resolution_comment}
-                    </div>
-                  )}
-                  <div className="mt-1 text-xs text-white/[0.72]">
-                    Обновлено {new Date(latestManualMerge.updated_at).toLocaleString()}
-                  </div>
-                  <Link
-                    to="/support"
-                    className="mt-2 inline-flex items-center gap-1 text-xs text-[#56e8c2] transition-colors hover:text-[#7af3d7]"
+                )}
+                <div className="flex flex-wrap items-center gap-3">
+                  <Button
+                    onClick={() => createLinkCodeMutation.mutate()}
+                    loading={createLinkCodeMutation.isPending}
+                    className="ultima-account-primary rounded-full border border-emerald-200/25 bg-[rgba(22,207,161,0.92)] px-4 py-2.5 text-[14px] font-medium text-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.32)] transition hover:bg-[rgba(39,220,176,0.96)]"
                   >
-                    Открыть поддержку
-                  </Link>
+                    Сгенерировать код привязки
+                  </Button>
+                  {activeLinkCode && (
+                    <span className="rounded-xl border border-[#59f0c9]/[0.35] bg-[#1bd29f]/[0.12] px-3 py-2 font-mono text-sm text-[#8ff8de]">
+                      {activeLinkCode}
+                    </span>
+                  )}
                 </div>
-              )}
-            </div>
-          </section>
-        </div>
 
-        <div className="mb-2 rounded-2xl border border-white/[0.12] bg-[rgba(7,18,33,0.9)] p-2 backdrop-blur-xl">
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="secondary"
-              className="border-emerald-200/20 bg-emerald-950/[0.45] text-emerald-100 hover:bg-emerald-900/[0.45]"
-              onClick={() => previewLinkCodeMutation.mutate(normalizedLinkCode)}
-              loading={previewLinkCodeMutation.isPending}
-              disabled={!hasLinkCode}
-            >
-              Проверить
-            </Button>
-            <Button
-              className="bg-emerald-400 text-slate-950 hover:bg-emerald-300"
-              onClick={() => confirmLinkCodeMutation.mutate(normalizedLinkCode)}
-              loading={confirmLinkCodeMutation.isPending}
-              disabled={!canConfirmLink}
-            >
-              Привязать
-            </Button>
-            {linkFlowStep === 'manual' && (
+                <input
+                  type="text"
+                  value={linkCode}
+                  onChange={(e) => {
+                    const nextCode = e.target.value.toUpperCase().trim();
+                    setLinkCode(nextCode);
+                    setLinkError(null);
+                    setUnlinkError(null);
+                    setLinkSuccess(null);
+                    if (nextCode !== previewedCode) {
+                      setLinkPreview(null);
+                      setLinkFlowStep('idle');
+                    }
+                  }}
+                  placeholder="Введите код привязки"
+                  className="w-full rounded-2xl border border-white/[0.12] bg-white/[0.06] px-3 py-2.5 text-white placeholder:text-white/[0.72] focus:border-[#59f0c9]/[0.45] focus:outline-none"
+                />
+
+                <div className="rounded-2xl border border-white/[0.12] bg-white/[0.06] px-3 py-2 text-xs text-white/[0.72]">
+                  {linkFlowStep === 'idle' &&
+                    'Шаг 1 из 3: вставьте код со второго аккаунта и нажмите "Проверить".'}
+                  {linkFlowStep === 'preview' &&
+                    'Шаг 2 из 3: код верный. Убедитесь, что это нужный аккаунт, и нажмите "Привязать".'}
+                  {linkFlowStep === 'warning' &&
+                    'Шаг 3 из 3: будет заменён Telegram. Подтвердите только если хотите отвязать старый Telegram и привязать новый.'}
+                  {linkFlowStep === 'manual' &&
+                    'Шаг 3 из 3: автоматически объединить не получилось. Отправьте запрос в поддержку на этой странице.'}
+                  {linkFlowStep === 'done' &&
+                    'Готово. Привязка завершена. При необходимости можно создать новый код.'}
+                </div>
+
+                {linkPreview && (
+                  <div className="rounded-2xl border border-white/[0.12] bg-white/[0.06] p-3">
+                    <p className="mb-2 text-sm text-white/[0.74]">
+                      Будет привязан к аккаунту #{' '}
+                      <span className="font-semibold text-white">{linkPreview.source_user_id}</span>
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(linkPreview.source_identity_hints).map(
+                        ([provider, value]) => (
+                          <span
+                            key={`${provider}-${value}`}
+                            className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-2 py-1 text-xs text-white/[0.82]"
+                          >
+                            {provider}: {value}
+                          </span>
+                        ),
+                      )}
+                    </div>
+                    {shouldShowTelegramReplaceWarning && (
+                      <div className="mt-3 rounded-linear border border-warning-500/30 bg-warning-500/10 p-2 text-xs text-warning-300">
+                        Внимание: вы пытаетесь сменить Telegram-аккаунт. После привязки нового
+                        Telegram старый Telegram-вход будет потерян.
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {linkFlowStep === 'manual' && (
+                  <div className="rounded-linear border border-warning-500/30 bg-warning-500/10 p-3">
+                    <p className="mb-2 text-sm text-warning-300">
+                      Автоматическое объединение невозможно. Отправьте запрос в поддержку для
+                      ручного merge.
+                    </p>
+                    <textarea
+                      value={manualMergeComment}
+                      onChange={(e) => setManualMergeComment(e.target.value)}
+                      className="mb-3 min-h-[88px] w-full rounded-2xl border border-white/[0.12] bg-white/[0.06] px-3 py-2.5 text-white placeholder:text-white/[0.72] focus:border-[#59f0c9]/[0.45] focus:outline-none"
+                      placeholder="Опишите, какой аккаунт основной и почему нужно объединение"
+                      maxLength={1000}
+                    />
+                  </div>
+                )}
+
+                {linkError && (
+                  <div className="rounded-linear border border-error-500/30 bg-error-500/10 p-3 text-sm text-error-400">
+                    {linkError}
+                  </div>
+                )}
+
+                {unlinkProvider && unlinkRequestToken && (
+                  <div className="rounded-linear border border-warning-500/30 bg-warning-500/10 p-3">
+                    <p className="mb-2 text-sm text-warning-300">
+                      {t('profile.linking.unlink.confirmText', {
+                        provider: unlinkProvider,
+                        defaultValue:
+                          'Вы уверены, что хотите отвязать {{provider}}? Для подтверждения нужен код из Telegram.',
+                      })}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        onClick={() =>
+                          confirmUnlinkMutation.mutate({
+                            provider: unlinkProvider,
+                            token: unlinkRequestToken,
+                            otpCode: unlinkOtpCode.trim(),
+                          })
+                        }
+                        loading={confirmUnlinkMutation.isPending}
+                        disabled={unlinkOtpCode.trim().length !== 6}
+                      >
+                        {t('profile.linking.unlink.confirm', 'Подтвердить')}
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          setUnlinkProvider(null);
+                          setUnlinkRequestToken(null);
+                          setUnlinkOtpCode('');
+                          setUnlinkError(null);
+                        }}
+                      >
+                        {t('common.cancel')}
+                      </Button>
+                    </div>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={unlinkOtpCode}
+                      onChange={(e) =>
+                        setUnlinkOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))
+                      }
+                      placeholder={t(
+                        'profile.linking.unlink.otpPlaceholder',
+                        'Введите код подтверждения',
+                      )}
+                      className="mt-3 w-full rounded-2xl border border-white/[0.12] bg-white/[0.06] px-3 py-2.5 text-center tracking-[0.4em] text-white placeholder:text-white/[0.72] focus:border-[#59f0c9]/[0.45] focus:outline-none"
+                    />
+                  </div>
+                )}
+
+                {unlinkError && (
+                  <div className="rounded-linear border border-error-500/30 bg-error-500/10 p-3 text-sm text-error-400">
+                    {unlinkError}
+                  </div>
+                )}
+
+                {linkSuccess && (
+                  <div className="rounded-linear border border-success-500/30 bg-success-500/10 p-3 text-sm text-success-400">
+                    {linkSuccess}
+                  </div>
+                )}
+
+                {latestManualMerge && (
+                  <div className="rounded-2xl border border-white/[0.12] bg-white/[0.06] p-3">
+                    <div className="mb-1 text-sm font-medium text-white/[0.92]">
+                      Последний спорный merge-запрос #{latestManualMerge.ticket_id}
+                    </div>
+                    <div className="text-sm text-white/75">
+                      {latestManualMerge.decision === 'approve'
+                        ? 'Запрос одобрен'
+                        : latestManualMerge.decision === 'reject'
+                          ? 'Запрос отклонен'
+                          : 'Запрос на рассмотрении'}
+                    </div>
+                    {latestManualMerge.resolution_comment && (
+                      <div className="mt-2 text-xs text-white/[0.62]">
+                        Комментарий: {latestManualMerge.resolution_comment}
+                      </div>
+                    )}
+                    <div className="mt-1 text-xs text-white/[0.72]">
+                      Обновлено {new Date(latestManualMerge.updated_at).toLocaleString()}
+                    </div>
+                    <Link
+                      to="/support"
+                      className="mt-2 inline-flex items-center gap-1 text-xs text-[#56e8c2] transition-colors hover:text-[#7af3d7]"
+                    >
+                      Открыть поддержку
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </section>
+          </div>
+
+          <div className="ultima-account-code-actions">
+            <div className="flex flex-wrap gap-2">
               <Button
-                className="bg-emerald-400 text-slate-950 hover:bg-emerald-300"
-                onClick={() =>
-                  manualMergeMutation.mutate({
-                    code: normalizedLinkCode,
-                    comment: manualMergeComment.trim() || undefined,
-                  })
-                }
-                loading={manualMergeMutation.isPending}
+                variant="secondary"
+                className="border-emerald-200/20 bg-emerald-950/[0.45] text-emerald-100 hover:bg-emerald-900/[0.45]"
+                onClick={() => previewLinkCodeMutation.mutate(normalizedLinkCode)}
+                loading={previewLinkCodeMutation.isPending}
                 disabled={!hasLinkCode}
               >
-                Отправить в поддержку
+                Проверить
               </Button>
-            )}
+              <Button
+                className="bg-emerald-400 text-slate-950 hover:bg-emerald-300"
+                onClick={() => confirmLinkCodeMutation.mutate(normalizedLinkCode)}
+                loading={confirmLinkCodeMutation.isPending}
+                disabled={!canConfirmLink}
+              >
+                Привязать
+              </Button>
+              {linkFlowStep === 'manual' && (
+                <Button
+                  className="bg-emerald-400 text-slate-950 hover:bg-emerald-300"
+                  onClick={() =>
+                    manualMergeMutation.mutate({
+                      code: normalizedLinkCode,
+                      comment: manualMergeComment.trim() || undefined,
+                    })
+                  }
+                  loading={manualMergeMutation.isPending}
+                  disabled={!hasLinkCode}
+                >
+                  Отправить в поддержку
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
 
-        <div className="ultima-mobile-dock-footer">
-          <div className="ultima-nav-dock">
-            <UltimaBottomNav active="profile" />
+          <div className="ultima-mobile-dock-footer">
+            <div className="ultima-nav-dock">
+              <UltimaBottomNav active="profile" />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </AccountPageFrame>
   );
 }

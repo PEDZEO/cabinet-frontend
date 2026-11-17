@@ -1,0 +1,619 @@
+/* The connection wizard inherits every colour from the bot configuration. */
+.ultima-connection-page {
+  --connection-text: var(--ultima-color-secondary-text);
+  --connection-muted: color-mix(
+    in srgb,
+    var(--ultima-color-secondary-text) 66%,
+    var(--ultima-color-surface)
+  );
+  --connection-line: color-mix(
+    in srgb,
+    var(--ultima-color-surface-border) 30%,
+    var(--ultima-color-surface)
+  );
+  --connection-soft: color-mix(
+    in srgb,
+    var(--ultima-color-secondary) 55%,
+    var(--ultima-color-surface)
+  );
+  --connection-accent-soft: color-mix(
+    in srgb,
+    var(--ultima-color-primary) 9%,
+    var(--ultima-color-surface)
+  );
+  color: var(--connection-text);
+}
+
+html .ultima-shell.ultima-connection-page .ultima-connection-guide .ultima-connection-step-panel,
+html .ultima-shell.ultima-connection-page .ultima-desktop-context .ultima-connection-route {
+  padding: clamp(20px, 2.3vw, 32px);
+  border: 1px solid var(--connection-line) !important;
+  border-radius: 20px !important;
+  background: var(--ultima-color-surface) !important;
+  box-shadow: 0 8px 30px color-mix(in srgb, var(--connection-text) 4%, transparent) !important;
+}
+
+.ultima-connection-page .ultima-connection-step-panel {
+  animation: ultima-connection-step-enter 200ms ease-out both;
+}
+
+.ultima-connection-page .ultima-connection-step-heading {
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--connection-line);
+}
+
+.ultima-connection-page .ultima-connection-step-icon,
+.ultima-connection-page .ultima-connection-ready-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: var(--ultima-color-primary);
+  background: transparent;
+}
+
+.ultima-connection-page .ultima-connection-step-icon {
+  margin-top: 27px;
+}
+
+.ultima-connection-page .ultima-connection-step-eyebrow {
+  color: var(--ultima-color-primary) !important;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+}
+
+.ultima-connection-page .ultima-connection-step-heading h2 {
+  margin-top: 6px;
+  color: var(--connection-text) !important;
+  font-size: clamp(22px, 2.1vw, 28px);
+  line-height: 1.2;
+  letter-spacing: -0.6px;
+}
+
+.ultima-connection-page .ultima-connection-step-heading p {
+  margin-top: 10px;
+  color: var(--connection-muted) !important;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.ultima-connection-page .ultima-connection-step-body {
+  margin-top: 26px;
+}
+
+.ultima-connection-page .ultima-connection-picker {
+  display: grid;
+  gap: 24px;
+}
+
+.ultima-connection-page .ultima-connection-picker > * {
+  margin: 0;
+}
+
+.ultima-connection-page .ultima-connection-picker-group {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+}
+
+.ultima-connection-page .ultima-connection-field-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 12px;
+  color: var(--connection-text) !important;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ultima-connection-page .ultima-connection-field-label > svg {
+  color: var(--connection-muted);
+}
+
+.ultima-connection-page .ultima-connection-platforms {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+html .ultima-shell.ultima-connection-page .ultima-connection-picker .ultima-connection-choice {
+  min-width: 0;
+  min-height: 56px;
+  padding: 12px 14px;
+  border: 1px solid var(--connection-line) !important;
+  border-radius: 12px !important;
+  color: var(--connection-text) !important;
+  background: var(--ultima-color-surface) !important;
+  transition:
+    border-color 200ms ease,
+    background-color 200ms ease,
+    transform 200ms ease;
+}
+
+html
+  .ultima-shell.ultima-connection-page
+  .ultima-connection-picker
+  .ultima-connection-choice:hover {
+  border-color: color-mix(
+    in srgb,
+    var(--ultima-color-primary) 50%,
+    var(--connection-line)
+  ) !important;
+  background: var(--connection-soft) !important;
+  transform: translateY(-1px);
+}
+
+html
+  .ultima-shell.ultima-connection-page
+  .ultima-connection-picker
+  .ultima-connection-choice[aria-pressed='true'] {
+  border-color: color-mix(
+    in srgb,
+    var(--ultima-color-primary) 65%,
+    var(--connection-line)
+  ) !important;
+  background: var(--connection-accent-soft) !important;
+}
+
+.ultima-connection-page .ultima-connection-choice-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  color: var(--connection-muted);
+}
+
+.ultima-connection-page .ultima-connection-choice-name {
+  color: var(--connection-text) !important;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.ultima-connection-page .ultima-connection-choice-note {
+  color: var(--connection-muted) !important;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.ultima-connection-page .ultima-connection-choice[aria-pressed='true'] > svg,
+.ultima-connection-page
+  .ultima-connection-choice[aria-pressed='true']
+  .ultima-connection-choice-icon {
+  color: var(--ultima-color-primary);
+}
+
+html .ultima-shell.ultima-connection-page .ultima-connection-guide .ultima-connection-selection {
+  gap: 20px;
+  padding: 16px 18px;
+  border: 1px solid var(--connection-line) !important;
+  border-radius: 12px !important;
+  background: var(--connection-soft) !important;
+}
+
+.ultima-connection-page .ultima-connection-picker + .ultima-connection-selection {
+  margin-top: 24px;
+}
+
+html .ultima-shell.ultima-connection-page .ultima-connection-selection > div {
+  min-width: 0;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+html .ultima-shell.ultima-connection-page .ultima-connection-selection > div + div {
+  padding-left: 20px;
+  border-left: 1px solid var(--connection-line) !important;
+}
+
+.ultima-connection-page .ultima-connection-selection > div > div:first-child {
+  color: var(--connection-muted) !important;
+  font-size: 12px;
+}
+
+.ultima-connection-page .ultima-connection-selection > div > div:last-child {
+  margin-top: 5px;
+  color: var(--connection-text) !important;
+  font-size: 15px;
+}
+
+html .ultima-shell.ultima-connection-page .ultima-connection-guide .ultima-connection-instruction {
+  gap: 12px;
+  padding: 18px;
+  border: 0 !important;
+  border-left: 2px solid var(--ultima-color-primary) !important;
+  border-radius: 0 10px 10px 0 !important;
+  background: var(--connection-accent-soft) !important;
+}
+
+.ultima-connection-page .ultima-connection-instruction > svg,
+.ultima-connection-page .ultima-connection-ready-icon {
+  color: var(--ultima-color-primary) !important;
+}
+
+.ultima-connection-page .ultima-connection-instruction p {
+  color: var(--connection-muted) !important;
+  line-height: 1.65;
+}
+
+.ultima-connection-page .ultima-connection-change-selection {
+  min-height: 36px;
+  padding: 6px 2px;
+  color: var(--ultima-color-primary) !important;
+  text-underline-offset: 4px;
+}
+
+.ultima-connection-page .ultima-connection-change-selection:hover {
+  text-decoration: underline;
+}
+
+html .ultima-shell.ultima-connection-page .ultima-connection-guide .ultima-connection-actions {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-color: var(--connection-line) !important;
+}
+
+html .ultima-shell.ultima-connection-page .ultima-connection-actions > .ultima-btn-primary {
+  min-height: 50px;
+  border: 1px solid var(--ultima-color-primary) !important;
+  border-radius: 12px !important;
+  color: var(--ultima-color-primary-text) !important;
+  background: var(--ultima-color-primary) !important;
+  font-size: 14px;
+}
+
+html .ultima-shell.ultima-connection-page .ultima-connection-actions > .ultima-btn-primary * {
+  color: inherit !important;
+}
+
+.ultima-connection-page .ultima-connection-actions > button + button {
+  min-height: 44px;
+  margin-top: 10px;
+  border-radius: 10px !important;
+  color: var(--connection-muted) !important;
+}
+
+.ultima-connection-page .ultima-connection-actions > button + button:hover {
+  color: var(--connection-text) !important;
+  background: var(--connection-soft) !important;
+}
+
+.ultima-connection-page .ultima-connection-actions > p {
+  color: var(--connection-muted) !important;
+}
+
+html .ultima-shell.ultima-connection-page .ultima-connection-guide .ultima-connection-reminder,
+html
+  .ultima-shell.ultima-connection-page
+  .ultima-connection-guide
+  .ultima-connection-return-notice {
+  border: 1px solid var(--connection-line) !important;
+  border-radius: 12px !important;
+  color: var(--connection-text) !important;
+  background: var(--connection-soft) !important;
+}
+
+.ultima-connection-page .ultima-connection-reminder :is(p, button, svg),
+.ultima-connection-page .ultima-connection-return-notice :is(div, svg) {
+  color: var(--connection-muted) !important;
+}
+
+.ultima-connection-page .ultima-connection-reminder > button {
+  min-width: 36px;
+  min-height: 36px;
+  margin-top: -4px;
+  margin-right: -6px;
+}
+
+.ultima-connection-page .ultima-connection-return-notice > svg {
+  color: var(--ultima-color-primary) !important;
+}
+
+.ultima-connection-page :is(button, a):focus-visible {
+  outline: 2px solid var(--ultima-color-primary);
+  outline-offset: 3px;
+}
+
+.ultima-connection-completion {
+  background: color-mix(in srgb, var(--ultima-color-bg-bottom) 65%, transparent) !important;
+}
+
+.ultima-connection-completion .ultima-modal-panel {
+  border-color: var(--ultima-color-surface-border) !important;
+  border-radius: 20px !important;
+  background: var(--ultima-color-surface) !important;
+}
+
+.ultima-connection-completion .ultima-modal-panel > div:first-child {
+  color: var(--ultima-color-primary) !important;
+  background: color-mix(
+    in srgb,
+    var(--ultima-color-primary) 10%,
+    var(--ultima-color-surface)
+  ) !important;
+}
+
+.ultima-connection-completion .ultima-modal-panel :is(p, div + div) {
+  color: var(--ultima-color-secondary-text) !important;
+}
+
+@media (min-width: 1024px) {
+  .ultima-connection-page .ultima-desktop-stage-body.has-context {
+    align-items: start;
+  }
+
+  .ultima-connection-page .ultima-desktop-context {
+    padding: 0;
+    border-left: 0;
+  }
+
+  .ultima-connection-page .ultima-connection-route > div:first-child {
+    margin-bottom: 24px;
+  }
+
+  .ultima-connection-page .ultima-connection-route h2 {
+    color: var(--connection-text) !important;
+    font-size: 16px;
+    letter-spacing: -0.2px;
+  }
+
+  .ultima-connection-page .ultima-connection-route > div:first-child p {
+    color: var(--connection-muted) !important;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .ultima-connection-page .ultima-connection-route-steps {
+    position: relative;
+    display: grid;
+    gap: 22px;
+  }
+
+  .ultima-connection-page .ultima-connection-route-steps::before {
+    position: absolute;
+    top: 16px;
+    bottom: 28px;
+    left: 15px;
+    width: 1px;
+    background: var(--connection-line);
+    content: '';
+    pointer-events: none;
+  }
+
+  html .ultima-shell.ultima-connection-page .ultima-connection-route .ultima-connection-route-step {
+    position: relative;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    border: 0 !important;
+    border-radius: 0 !important;
+    color: var(--connection-text) !important;
+    background: transparent !important;
+  }
+
+  .ultima-connection-page .ultima-connection-route-step .ultima-connection-step-number {
+    position: relative;
+    width: 31px;
+    height: 31px;
+    border: 1px solid var(--connection-line);
+    color: var(--connection-muted);
+    background: var(--ultima-color-surface);
+    font-size: 12px;
+    font-weight: 650;
+  }
+
+  .ultima-connection-page
+    .ultima-connection-route-step[aria-current='step']
+    .ultima-connection-step-number {
+    border-color: var(--ultima-color-primary);
+    color: var(--ultima-color-primary-text);
+    background: var(--ultima-color-primary);
+  }
+
+  .ultima-connection-page
+    .ultima-connection-route-step:not(:disabled):not([aria-current])
+    .ultima-connection-step-number {
+    border-color: var(--ultima-color-primary);
+    color: var(--ultima-color-primary);
+    background: var(--connection-accent-soft);
+  }
+
+  .ultima-connection-page .ultima-connection-route-title {
+    padding-top: 6px;
+    color: var(--connection-text) !important;
+    line-height: 1.45;
+  }
+
+  .ultima-connection-page .ultima-connection-route-description {
+    margin-top: 6px;
+    color: var(--connection-muted) !important;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .ultima-connection-page .ultima-connection-route-step:disabled .ultima-connection-route-title {
+    color: var(--connection-muted) !important;
+  }
+
+  .ultima-connection-page .ultima-connection-route-active {
+    display: none;
+  }
+
+  .ultima-connection-page .ultima-connection-route > button:last-child {
+    margin-top: 28px;
+  }
+}
+
+@media (max-width: 1023px) {
+  .ultima-connection-page .ultima-connection-mobile-heading {
+    margin-bottom: 24px;
+  }
+
+  .ultima-connection-page .ultima-connection-mobile-heading h1 {
+    font-size: clamp(28px, 7vw, 34px);
+    letter-spacing: -0.8px;
+    line-height: 1.2;
+  }
+
+  .ultima-connection-page .ultima-connection-mobile-heading p {
+    margin-top: 10px;
+    line-height: 1.65;
+  }
+
+  .ultima-connection-page .ultima-connection-mobile-scroll {
+    padding-right: 0;
+  }
+
+  html .ultima-shell.ultima-connection-page .ultima-connection-guide .ultima-connection-progress {
+    gap: 4px;
+    margin-bottom: 18px;
+    padding: 5px;
+    border: 1px solid var(--connection-line) !important;
+    border-radius: 14px !important;
+    background: var(--ultima-color-surface) !important;
+  }
+
+  .ultima-connection-page .ultima-connection-progress-step {
+    flex-direction: column;
+    min-height: 64px;
+    gap: 6px;
+    padding: 8px 2px;
+    border-radius: 10px;
+    color: var(--connection-muted) !important;
+    background: transparent !important;
+  }
+
+  .ultima-connection-page .ultima-connection-progress-step[aria-current='step'] {
+    color: var(--connection-text) !important;
+    background: var(--connection-accent-soft) !important;
+  }
+
+  html
+    .ultima-shell.ultima-connection-page
+    .ultima-connection-progress
+    .ultima-connection-step-number {
+    width: 23px;
+    height: 23px;
+    border: 1px solid var(--connection-line) !important;
+    color: inherit;
+    background: var(--ultima-color-surface) !important;
+    font-size: 11px;
+  }
+
+  html
+    .ultima-shell.ultima-connection-page
+    .ultima-connection-progress
+    [aria-current='step']
+    .ultima-connection-step-number {
+    border-color: var(--ultima-color-primary) !important;
+    color: var(--ultima-color-primary-text);
+    background: var(--ultima-color-primary) !important;
+  }
+
+  .ultima-connection-page .ultima-connection-progress-step > span:last-child {
+    max-width: 100%;
+    font-size: 11px;
+  }
+
+  .ultima-connection-page .ultima-connection-platforms {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ultima-connection-page .ultima-connection-apps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ultima-connection-page .ultima-connection-step-heading {
+    gap: 10px;
+    padding-bottom: 20px;
+  }
+
+  .ultima-connection-page .ultima-connection-step-icon {
+    margin-top: 26px;
+  }
+
+  .ultima-connection-page .ultima-connection-step-heading p {
+    font-size: 13px;
+  }
+
+  html .ultima-shell.ultima-connection-page .ultima-connection-guide .ultima-connection-help {
+    gap: 12px;
+    margin-top: 18px;
+    padding: 16px;
+    border: 1px solid var(--connection-line) !important;
+    border-radius: 14px !important;
+    color: var(--connection-text) !important;
+    background: var(--ultima-color-surface) !important;
+  }
+
+  .ultima-connection-page .ultima-connection-help > svg:first-child {
+    color: var(--ultima-color-primary);
+  }
+
+  .ultima-connection-page .ultima-connection-help span > span:last-child {
+    color: var(--connection-muted) !important;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+}
+
+@media (max-width: 359px) {
+  html .ultima-shell.ultima-connection-page .ultima-connection-guide .ultima-connection-step-panel {
+    padding: 18px 14px;
+  }
+
+  .ultima-connection-page .ultima-connection-step-icon {
+    display: none;
+  }
+
+  html .ultima-shell.ultima-connection-page .ultima-connection-picker .ultima-connection-choice {
+    gap: 8px;
+    padding: 11px 10px;
+  }
+
+  .ultima-connection-page .ultima-connection-choice-name {
+    font-size: 13px;
+  }
+
+  .ultima-connection-page .ultima-connection-sources {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  html .ultima-shell.ultima-connection-page .ultima-connection-guide .ultima-connection-selection {
+    gap: 12px;
+    padding: 14px;
+  }
+
+  html .ultima-shell.ultima-connection-page .ultima-connection-selection > div + div {
+    padding-left: 12px;
+  }
+}
+
+@keyframes ultima-connection-step-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ultima-connection-page .ultima-connection-step-panel,
+  .ultima-connection-page .ultima-connection-choice {
+    animation: none;
+    transition: none;
+    transform: none !important;
+  }
+}

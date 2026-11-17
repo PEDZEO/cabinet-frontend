@@ -1,9 +1,4 @@
-import { type CSSProperties, type ReactNode } from 'react';
-import {
-  ultimaAccentSurfaceStyle,
-  ultimaCardClassName,
-  ultimaSurfaceStyle,
-} from '@/features/ultima/surfaces';
+import { type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { UltimaDesktopWorkspace } from './UltimaDesktopWorkspace';
 
@@ -33,9 +28,6 @@ type UltimaDesktopPanelProps = {
   className?: string;
 };
 
-const defaultCardStyle: CSSProperties = ultimaSurfaceStyle;
-const accentCardStyle: CSSProperties = ultimaAccentSurfaceStyle;
-
 export function UltimaDesktopPanel({
   title,
   subtitle,
@@ -43,21 +35,12 @@ export function UltimaDesktopPanel({
   className,
 }: UltimaDesktopPanelProps) {
   return (
-    <section
-      className={cn(ultimaCardClassName, 'ultima-desktop-panel', className)}
-      style={defaultCardStyle}
-    >
-      {title ? (
-        <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h2 className="text-[18px] font-semibold leading-tight text-white">{title}</h2>
-            {subtitle ? (
-              <p className="mt-1.5 max-w-[64ch] text-sm leading-[1.55] text-white/[0.72]">
-                {subtitle}
-              </p>
-            ) : null}
-          </div>
-        </div>
+    <section className={cn('ultima-card ultima-desktop-panel ultima-web-sectionpanel', className)}>
+      {title || subtitle ? (
+        <header className="ultima-web-sectionpanel-header">
+          {title ? <h2>{title}</h2> : null}
+          {subtitle ? <p>{subtitle}</p> : null}
+        </header>
       ) : null}
       {children}
     </section>
@@ -65,7 +48,6 @@ export function UltimaDesktopPanel({
 }
 
 export function UltimaDesktopSectionLayout({
-  icon,
   title,
   subtitle,
   eyebrow,
@@ -83,34 +65,40 @@ export function UltimaDesktopSectionLayout({
 
   return (
     <UltimaDesktopWorkspace bottomNav={bottomNav} aside={aside}>
-      <div className={cn('ultima-desktop-page space-y-5', contentClassName)}>
-        <header className="ultima-desktop-page-header" style={accentCardStyle}>
-          <div className="ultima-desktop-page-heading">
-            <div className="ultima-desktop-page-icon">{icon}</div>
-            <div className="min-w-0">
-              {displayEyebrow ? (
-                <div className="ultima-desktop-eyebrow">{displayEyebrow}</div>
-              ) : null}
-              <h1>{title}</h1>
-              <p>{subtitle}</p>
-            </div>
+      <div className={cn('ultima-desktop-page ultima-web-sectionpage', contentClassName)}>
+        <header className="ultima-desktop-page-header ultima-web-sectionheader">
+          <div className="ultima-web-sectionheading">
+            {displayEyebrow ? <p className="ultima-web-sectioneyebrow">{displayEyebrow}</p> : null}
+            <h1>{title}</h1>
+            {subtitle ? <p className="ultima-web-sectionsubtitle">{subtitle}</p> : null}
           </div>
-          {heroActions ? <div className="ultima-desktop-page-actions">{heroActions}</div> : null}
+          {heroActions ? (
+            <div className="ultima-desktop-page-actions ultima-web-sectionactions">
+              {heroActions}
+            </div>
+          ) : null}
         </header>
 
         {metrics && metrics.length > 0 ? (
-          <section className="ultima-desktop-metrics" aria-label="Сводка">
-            {metrics.map((metric) => (
-              <article key={`${metric.label}-${metric.value}`}>
-                <div>{metric.label}</div>
-                <strong>{metric.value}</strong>
-                {metric.hint ? <p>{metric.hint}</p> : null}
-              </article>
-            ))}
+          <section className="ultima-desktop-metrics ultima-web-sectionsummary" aria-label="Сводка">
+            <dl>
+              {metrics.map((metric) => (
+                <div
+                  className="ultima-web-sectionsummary-item"
+                  key={`${metric.label}-${metric.value}`}
+                >
+                  <dt>{metric.label}</dt>
+                  <dd>{metric.value}</dd>
+                  {metric.hint ? (
+                    <dd className="ultima-web-sectionsummary-hint">{metric.hint}</dd>
+                  ) : null}
+                </div>
+              ))}
+            </dl>
           </section>
         ) : null}
 
-        {children}
+        <div className="ultima-web-sectioncontent">{children}</div>
       </div>
     </UltimaDesktopWorkspace>
   );

@@ -171,7 +171,7 @@ export function UltimaBalanceHistory() {
   const historyList = (
     <section
       data-testid="ultima-transaction-history"
-      className={ultimaCardClassName}
+      className={`${ultimaCardClassName} ultima-history-section`}
       style={ultimaSurfaceStyle}
     >
       <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] pb-4">
@@ -264,6 +264,7 @@ export function UltimaBalanceHistory() {
               <article
                 key={transaction.id}
                 data-testid="ultima-transaction-row"
+                data-tone={tone}
                 className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3 py-3.5"
               >
                 <span
@@ -277,7 +278,8 @@ export function UltimaBalanceHistory() {
                       {getTypeLabel(transaction.type)}
                     </h3>
                     <span
-                      className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[13px] ${transaction.is_completed ? 'bg-[color:color-mix(in_srgb,var(--ultima-color-primary)_10%,transparent)] text-[color:color-mix(in_srgb,var(--ultima-color-primary)_68%,white)]' : 'bg-amber-400/[0.09] text-amber-100'}`}
+                      className="ultima-transaction-status inline-flex shrink-0 items-center gap-1 px-2 py-0.5 text-[13px]"
+                      data-completed={transaction.is_completed}
                     >
                       {transaction.is_completed ? (
                         <CheckCircle2 className="h-3 w-3" />
@@ -377,7 +379,7 @@ export function UltimaBalanceHistory() {
           {hiddenBalance ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
         </button>
       </div>
-      <div className="mt-4 grid grid-cols-2 gap-2">
+      <div className="ultima-balance-turnover mt-4 grid grid-cols-2 gap-2">
         <div className="rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2.5">
           <p className="text-[13px] uppercase tracking-[0.08em] text-white/[0.32]">
             {t('balance.incomeOnPage', { defaultValue: 'Зачисления' })}

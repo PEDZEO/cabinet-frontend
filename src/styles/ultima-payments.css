@@ -1,0 +1,579 @@
+/* Payment controls use the bot palette; provider marks keep their brand artwork. */
+.ultima-payments-page {
+  --payment-text: var(--ultima-color-secondary-text);
+  --payment-muted: color-mix(
+    in srgb,
+    var(--ultima-color-secondary-text) 65%,
+    var(--ultima-color-surface)
+  );
+  --payment-line: color-mix(
+    in srgb,
+    var(--ultima-color-surface-border) 30%,
+    var(--ultima-color-surface)
+  );
+  --payment-soft: color-mix(
+    in srgb,
+    var(--ultima-color-secondary) 55%,
+    var(--ultima-color-surface)
+  );
+  --payment-accent-soft: color-mix(
+    in srgb,
+    var(--ultima-color-primary) 8%,
+    var(--ultima-color-surface)
+  );
+  color: var(--payment-text);
+}
+
+html .ultima-shell.ultima-payments-page .ultima-payment-methods-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--payment-line) !important;
+  border-radius: 16px !important;
+  background: var(--ultima-color-surface) !important;
+}
+
+.ultima-payments-page .ultima-payment-method-row {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 20px;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-height: 108px;
+  padding: 20px 22px;
+  border: 0;
+  color: var(--payment-text);
+  background: transparent;
+  text-align: left;
+  transition: background-color 200ms ease;
+}
+
+html .ultima-shell.ultima-payments-page .ultima-payment-methods-list > * + * {
+  border-top: 1px solid var(--payment-line) !important;
+}
+
+.ultima-payments-page .ultima-payment-method-row:enabled:hover {
+  background: var(--payment-accent-soft) !important;
+}
+
+.ultima-payments-page .ultima-payment-method-row:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.ultima-payments-page .ultima-payment-provider-logo {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: transparent;
+}
+
+.ultima-payments-page .ultima-payment-provider-logo svg {
+  width: 36px;
+  height: 36px;
+}
+
+.ultima-payments-page .ultima-payment-method-name {
+  display: block;
+  color: var(--payment-text);
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.ultima-payments-page .ultima-payment-method-description {
+  display: block;
+  margin-top: 4px;
+  color: var(--payment-muted);
+  font-size: 13px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.ultima-payments-page .ultima-payment-method-range {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  margin-top: 8px;
+  color: var(--payment-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.ultima-payments-page .ultima-payment-method-range > svg {
+  color: var(--ultima-color-primary) !important;
+}
+
+.ultima-payments-page .ultima-payment-method-arrow {
+  display: flex;
+  align-items: center;
+  color: var(--payment-muted);
+  background: transparent;
+}
+
+.ultima-payments-page .ultima-payment-method-row:enabled:hover .ultima-payment-method-arrow {
+  color: var(--ultima-color-primary);
+}
+
+.ultima-payments-page .ultima-payment-method-skeleton > div,
+.ultima-payments-page .ultima-payment-method-skeleton > div > div {
+  background: var(--payment-soft) !important;
+}
+
+.ultima-payments-page .ultima-payment-method-skeleton > svg {
+  color: var(--payment-muted) !important;
+}
+
+html .ultima-shell.ultima-payments-page.ultima-shell-wide .ultima-payment-composer,
+html .ultima-shell.ultima-payments-page .ultima-desktop-context .ultima-payment-context,
+html .ultima-shell.ultima-payments-page .ultima-payment-empty {
+  padding: clamp(20px, 2.2vw, 30px);
+  border: 1px solid var(--payment-line) !important;
+  border-radius: 18px !important;
+  background: var(--ultima-color-surface) !important;
+  box-shadow: none !important;
+}
+
+html .ultima-shell.ultima-payments-page .ultima-payment-composer .ultima-payment-selected-method {
+  gap: 14px;
+  padding-bottom: 22px;
+  border-color: var(--payment-line) !important;
+}
+
+.ultima-payments-page .ultima-payment-selected-method > div > p:first-child {
+  color: var(--payment-muted) !important;
+  font-size: 11px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.ultima-payments-page .ultima-payment-selected-method > div > p:nth-child(2) {
+  margin-top: 4px;
+  color: var(--payment-text) !important;
+  font-size: 16px;
+}
+
+.ultima-payments-page .ultima-payment-selected-method > div > p:last-child {
+  -webkit-line-clamp: unset;
+  overflow: visible;
+  color: var(--payment-muted) !important;
+  line-height: 1.5;
+}
+
+.ultima-payments-page .ultima-payment-change-method {
+  color: var(--ultima-color-primary) !important;
+}
+
+.ultima-payments-page .ultima-payment-change-method:hover {
+  background: var(--payment-accent-soft) !important;
+}
+
+.ultima-payments-page .ultima-payment-options {
+  margin-top: 24px;
+}
+
+.ultima-payments-page .ultima-payment-options legend,
+.ultima-payments-page .ultima-payment-amount-field label {
+  margin-bottom: 10px;
+  color: var(--payment-text) !important;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+html .ultima-shell.ultima-payments-page .ultima-payment-composer .ultima-payment-options-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--payment-line) !important;
+  border-radius: 12px !important;
+}
+
+.ultima-payments-page .ultima-payment-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-height: 60px;
+  padding: 14px 16px;
+  color: var(--payment-text);
+  background: var(--ultima-color-surface);
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.45;
+  transition: background-color 200ms ease;
+}
+
+html
+  .ultima-shell.ultima-payments-page
+  .ultima-payment-options-list
+  .ultima-payment-option
+  + .ultima-payment-option {
+  border-top: 1px solid var(--payment-line) !important;
+}
+
+.ultima-payments-page .ultima-payment-option[aria-checked='true'],
+.ultima-payments-page .ultima-payment-option:hover {
+  background: var(--payment-accent-soft);
+}
+
+.ultima-payments-page .ultima-payment-option > span:first-child > span:first-child {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.ultima-payments-page .ultima-payment-option > span:first-child > span + span {
+  color: var(--payment-muted) !important;
+  -webkit-line-clamp: unset;
+  line-height: 1.5;
+}
+
+.ultima-payments-page .ultima-payment-option-indicator {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--payment-line);
+  border-radius: 50%;
+  color: transparent;
+  background: var(--ultima-color-surface);
+}
+
+.ultima-payments-page .ultima-payment-option[aria-checked='true'] .ultima-payment-option-indicator {
+  border-color: var(--ultima-color-primary);
+  color: var(--ultima-color-primary-text);
+  background: var(--ultima-color-primary);
+}
+
+.ultima-payments-page .ultima-payment-amount-field {
+  margin-top: 26px;
+}
+
+.ultima-payments-page .ultima-payment-amount-field > div:first-child > span {
+  color: var(--payment-muted) !important;
+  font-size: 12px;
+}
+
+html .ultima-shell.ultima-payments-page .ultima-payment-composer .ultima-payment-input-wrap {
+  min-height: 82px;
+  padding: 14px 18px;
+  border: 1px solid var(--payment-line) !important;
+  border-radius: 12px !important;
+  color: var(--payment-text);
+  background: var(--payment-soft) !important;
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+html
+  .ultima-shell.ultima-payments-page
+  .ultima-payment-composer
+  .ultima-payment-input-wrap:focus-within {
+  border-color: var(--ultima-color-primary) !important;
+  box-shadow: 0 0 0 3px var(--payment-accent-soft) !important;
+}
+
+html .ultima-shell.ultima-payments-page .ultima-payment-input-wrap input {
+  width: 100%;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 0;
+  outline: 0;
+  color: var(--payment-text) !important;
+  background: transparent !important;
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.8px;
+  box-shadow: none !important;
+}
+
+.ultima-payments-page .ultima-payment-input-wrap input::placeholder {
+  color: var(--payment-muted) !important;
+  opacity: 0.5;
+}
+
+.ultima-payments-page .ultima-payment-input-wrap > span {
+  color: var(--payment-muted) !important;
+}
+
+html .ultima-shell.ultima-payments-page .ultima-payment-composer .ultima-payment-quick-amount {
+  min-height: 42px;
+  border: 1px solid var(--payment-line) !important;
+  border-radius: 9px !important;
+  color: var(--payment-muted) !important;
+  background: var(--ultima-color-surface) !important;
+  font-size: 13px;
+}
+
+html
+  .ultima-shell.ultima-payments-page
+  .ultima-payment-composer
+  .ultima-payment-quick-amount:is(:hover, [aria-pressed='true']) {
+  border-color: var(--ultima-color-primary) !important;
+  color: var(--payment-text) !important;
+  background: var(--payment-accent-soft) !important;
+}
+
+html .ultima-shell.ultima-payments-page .ultima-payment-composer .ultima-payment-summary {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 22px 0 0;
+  border: 0 !important;
+  border-top: 1px solid var(--payment-line) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.ultima-payments-page .ultima-payment-summary > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0;
+}
+
+.ultima-payments-page .ultima-payment-summary > div > p:first-child {
+  color: var(--payment-muted) !important;
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.ultima-payments-page .ultima-payment-summary > div > p:last-child {
+  margin-top: 0;
+  color: var(--payment-text) !important;
+  font-size: 14px;
+}
+
+.ultima-payments-page .ultima-payment-summary > div > p.ultima-payment-summary-after {
+  color: var(--ultima-color-primary) !important;
+}
+
+html .ultima-shell.ultima-payments-page .ultima-payment-composer .ultima-payment-error,
+html .ultima-shell.ultima-payments-page .ultima-payment-composer .ultima-payment-ready {
+  border: 1px solid var(--ultima-color-primary) !important;
+  border-radius: 12px !important;
+  color: var(--payment-text) !important;
+  background: var(--payment-accent-soft) !important;
+}
+
+.ultima-payments-page .ultima-payment-error > svg,
+.ultima-payments-page .ultima-payment-context-icon {
+  color: var(--ultima-color-primary) !important;
+}
+
+.ultima-payments-page .ultima-payment-context-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  min-height: 24px;
+  padding: 0;
+  background: transparent;
+}
+
+html .ultima-shell.ultima-payments-page .ultima-btn-primary,
+html .ultima-shell.ultima-payments-page .ultima-btn-primary:hover {
+  min-height: 48px;
+  border-color: var(--ultima-color-primary) !important;
+  border-radius: 12px !important;
+  color: var(--ultima-color-primary-text) !important;
+  background: var(--ultima-color-primary) !important;
+}
+
+html .ultima-shell.ultima-payments-page .ultima-btn-primary * {
+  color: inherit !important;
+}
+
+html .ultima-shell.ultima-payments-page .ultima-btn-secondary {
+  min-height: 44px;
+  border-color: var(--payment-line) !important;
+  border-radius: 10px !important;
+  color: var(--payment-text) !important;
+  background: var(--payment-soft) !important;
+}
+
+.ultima-payments-page :is(button, a):focus-visible {
+  outline: 2px solid var(--ultima-color-primary);
+  outline-offset: -3px;
+}
+
+.ultima-payments-page .ultima-payment-composer > button:last-child {
+  margin-top: 24px;
+}
+
+.ultima-payments-page .ultima-payment-empty > span,
+.ultima-payments-page .ultima-payment-empty > svg {
+  color: var(--ultima-color-primary) !important;
+  background: transparent !important;
+}
+
+.ultima-payments-page .ultima-payment-empty p,
+.ultima-payments-page .ultima-payment-ready p + p {
+  color: var(--payment-muted) !important;
+}
+
+@media (min-width: 1024px) {
+  .ultima-payments-page .ultima-desktop-context {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .ultima-payments-page .ultima-payment-context > div:first-child {
+    margin-bottom: 22px;
+  }
+
+  .ultima-payments-page .ultima-payment-context h2 {
+    font-size: 16px;
+  }
+
+  .ultima-payments-page .ultima-payment-context p {
+    color: var(--payment-muted) !important;
+    line-height: 1.65;
+  }
+
+  .ultima-payments-page .ultima-payment-context .ultima-payment-context-total {
+    padding: 20px 0;
+    background: transparent;
+  }
+
+  .ultima-payments-page .ultima-payment-context-total > p:first-child {
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .ultima-payments-page .ultima-payment-context-total > p:nth-child(2) {
+    color: var(--payment-text) !important;
+    font-size: 30px;
+    letter-spacing: -0.6px;
+  }
+}
+
+@media (max-width: 1023px) {
+  .ultima-payments-page .ultima-payment-mobile-heading {
+    margin-bottom: 24px;
+  }
+
+  .ultima-payments-page .ultima-payment-mobile-heading > div:first-child {
+    color: var(--ultima-color-primary) !important;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+  }
+
+  .ultima-payments-page .ultima-payment-mobile-heading h1 {
+    font-size: clamp(28px, 7vw, 34px);
+    line-height: 1.2;
+    letter-spacing: -0.8px;
+  }
+
+  .ultima-payments-page .ultima-payment-mobile-heading > p {
+    margin-top: 10px;
+    color: var(--payment-muted) !important;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .ultima-payments-page .ultima-payment-method-row {
+    grid-template-columns: 36px minmax(0, 1fr) 16px;
+    gap: 12px;
+    min-height: 100px;
+    padding: 18px 16px;
+  }
+
+  html .ultima-shell.ultima-payments-page .ultima-payment-requested-amount {
+    padding: 18px;
+    border: 1px solid var(--payment-line) !important;
+    border-radius: 14px !important;
+    background: var(--payment-accent-soft) !important;
+    box-shadow: none !important;
+  }
+
+  .ultima-payments-page .ultima-payment-requested-amount p:first-child {
+    color: var(--payment-muted) !important;
+    font-size: 12px;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .ultima-payments-page .ultima-payment-mobile-note,
+  .ultima-payments-page .ultima-payment-mobile-footer p {
+    color: var(--payment-muted) !important;
+  }
+
+  .ultima-payments-page .ultima-payment-mobile-note > svg,
+  .ultima-payments-page .ultima-payment-mobile-footer > div > svg {
+    color: var(--ultima-color-primary) !important;
+  }
+
+  html .ultima-shell.ultima-payments-page .ultima-payment-mobile-footer {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-color: var(--payment-line) !important;
+  }
+
+  .ultima-payments-page .ultima-payment-selected-method {
+    flex-wrap: wrap;
+  }
+
+  .ultima-payments-page .ultima-payment-change-method {
+    margin-left: auto;
+  }
+
+  .ultima-payments-page .ultima-payment-amount-field > div:first-child {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .ultima-payments-page .ultima-payment-amount-field label {
+    margin-bottom: 0;
+  }
+}
+
+@media (max-width: 359px) {
+  html .ultima-shell.ultima-payments-page .ultima-payment-composer {
+    padding: 20px 16px;
+  }
+
+  .ultima-payments-page .ultima-payment-selected-method {
+    gap: 10px;
+  }
+
+  .ultima-payments-page .ultima-payment-change-method {
+    padding-inline: 0;
+  }
+
+  .ultima-payments-page .ultima-payment-method-row {
+    gap: 10px;
+    padding-inline: 12px;
+  }
+
+  .ultima-payments-page .ultima-payment-method-range > span {
+    white-space: normal;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ultima-payments-page .ultima-payment-method-row,
+  .ultima-payments-page .ultima-payment-option,
+  .ultima-payments-page .ultima-payment-input-wrap {
+    transition: none;
+  }
+
+  .ultima-payments-page .ultima-payment-method-row svg {
+    transform: none !important;
+  }
+}

@@ -538,4 +538,31 @@ test.describe('Ultima account linking callback', () => {
     await expect(page.getByRole('button', { name: 'Выйти' })).toBeVisible();
     await expectNoHorizontalOverflow(page);
   });
+
+  for (const width of [390, 1440]) {
+    test(`keeps code-linking actions available at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await bootstrapUltimaAuth(page);
+      await mockUltimaLinkingApi(page);
+      await page.addInitScript(() =>
+        localStorage.setItem('cabinet_ultima_account_linking_mode', 'code'),
+      );
+      await page.route('**/cabinet/branding/ultima-account-linking-mode', (route) =>
+        route.fulfill({ json: { mode: 'code' } }),
+      );
+      await page.route('**/cabinet/auth/link-code/preview', (route) =>
+        route.fulfill({ status: 400, json: { detail: { code: 'link_code_invalid' } } }),
+      );
+      await page.goto('/account-linking');
+      const check = page.getByRole('button', { name: 'Проверить', exact: true });
+      await expect(check).toBeVisible();
+      await expect(check).toBeDisabled();
+      await expect(page.getByRole('button', { name: 'Привязать', exact: true })).toBeVisible();
+      await page.getByPlaceholder('Введите код привязки').fill('DEMO1234');
+      await expect(check).toBeEnabled();
+      await check.click();
+      await expect(page.getByText('Код недействителен или истек', { exact: true })).toBeVisible();
+      await expectNoHorizontalOverflow(page);
+    });
+  }
 });

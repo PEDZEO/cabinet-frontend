@@ -525,7 +525,7 @@ export function UltimaDevices() {
   const bottomNav = <UltimaBottomNav active="profile" />;
 
   const devicesContent = (
-    <div className="space-y-3">
+    <div className="ultima-devices-content space-y-3">
       {isPrimaryLoading ? (
         <section
           data-testid="ultima-devices-loading"
@@ -537,7 +537,7 @@ export function UltimaDevices() {
           <div className="mt-3 h-11 rounded-xl bg-white/[0.06]" />
         </section>
       ) : !hasSubscription ? (
-        <section className="rounded-3xl border border-emerald-200/[0.12] bg-[rgba(12,45,42,0.18)] p-4 backdrop-blur-md">
+        <section className="ultima-device-section p-4">
           <p className="text-sm text-white/80">
             {t('subscription.connection.needSubscription', {
               defaultValue: 'Для управления устройствами нужна активная подписка.',
@@ -556,13 +556,10 @@ export function UltimaDevices() {
           <section
             id="ultima-device-slots"
             data-testid="ultima-device-capacity"
-            className="rounded-2xl border border-emerald-200/[0.14] bg-[rgba(8,38,36,0.32)] p-4 backdrop-blur-md"
+            className="ultima-device-section ultima-device-capacity p-4"
           >
             <div className="flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-300/[0.1] text-emerald-100">
-                  <DeviceIcon />
-                </div>
                 <div className="min-w-0">
                   <p className="truncate text-[15px] font-semibold text-white">
                     {t('devices.capacityTitle', { defaultValue: 'Ваши устройства' })}
@@ -594,7 +591,7 @@ export function UltimaDevices() {
               </span>
             </div>
 
-            <div className="mt-4 grid grid-cols-3 divide-x divide-white/[0.09] rounded-xl bg-black/[0.14] px-1 py-3 text-center">
+            <div className="ultima-device-facts mt-4 grid grid-cols-3 px-1 py-3 text-center">
               <div className="min-w-0 px-1.5">
                 <div className="text-[18px] font-semibold tabular-nums text-white">
                   {connectedCount}
@@ -621,7 +618,7 @@ export function UltimaDevices() {
               </div>
             </div>
 
-            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/[0.08]">
+            <div className="ultima-device-meter mt-3 h-1.5 overflow-hidden rounded-full">
               <div
                 className="h-full rounded-full bg-emerald-300 transition-[width] duration-300"
                 style={{ width: `${capacityPercent}%` }}
@@ -766,7 +763,7 @@ export function UltimaDevices() {
             )}
           </section>
 
-          <section className="overflow-visible rounded-2xl border border-emerald-200/[0.12] bg-[rgba(8,38,36,0.24)] backdrop-blur-md">
+          <section className="ultima-device-section overflow-visible">
             <div className="flex items-center justify-between gap-3 px-4 py-3">
               <div className="min-w-0">
                 <p className="text-[14px] font-medium text-white/90">
@@ -794,7 +791,7 @@ export function UltimaDevices() {
                     <MoreHorizontal className="h-5 w-5" strokeWidth={2} />
                   </button>
                   {isDevicesMenuOpen ? (
-                    <div className="absolute right-0 top-10 z-20 w-44 rounded-xl border border-white/[0.12] bg-[#081b1b] p-1.5 shadow-2xl">
+                    <div className="ultima-device-menu absolute right-0 top-10 z-20 w-44 rounded-lg border p-1.5">
                       <button
                         type="button"
                         onClick={() => {
@@ -822,7 +819,7 @@ export function UltimaDevices() {
                       data-testid="ultima-device-row"
                       className="flex min-h-[64px] items-center gap-3 px-4 py-2.5"
                     >
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/[0.05] text-white/[0.68]">
+                      <div className="ultima-device-list-icon flex h-9 w-6 shrink-0 items-center justify-center">
                         <Smartphone className="h-4 w-4" strokeWidth={1.8} />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -1088,35 +1085,6 @@ export function UltimaDevices() {
           subtitle={t('lite.devicesDescription', {
             defaultValue: 'Удаляйте старые подключения и меняйте лимит устройств вашей подписки.',
           })}
-          metrics={[
-            {
-              label: t('lite.connectedDevices', { defaultValue: 'Подключено' }),
-              value: `${connectedCount} / ${currentLimit || 0}`,
-              hint: t('devices.desktopConnectedHint', {
-                defaultValue: 'Занято слотов в текущей подписке.',
-              }),
-            },
-            {
-              label: t('devices.freeShort', { defaultValue: 'Свободно' }),
-              value: String(availableDeviceSlots),
-              hint: t('devices.desktopFreeHint', {
-                defaultValue: 'Можно подключить без изменения лимита.',
-              }),
-            },
-            {
-              label: t('devices.tariffBase', { defaultValue: 'База тарифа' }),
-              value: String(baseDeviceLimit),
-              hint:
-                legacyExtraDevices > 0
-                  ? t('devices.desktopExtraHint', {
-                      count: legacyExtraDevices,
-                      defaultValue: 'Дополнительных слотов: {{count}}.',
-                    })
-                  : t('devices.desktopBaseHint', {
-                      defaultValue: 'Дополнительных слотов нет.',
-                    }),
-            },
-          ]}
           heroActions={
             hasSubscription ? (
               <button
@@ -1178,7 +1146,7 @@ export function UltimaDevices() {
     <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
-        <header className="mb-2.5">
+        <header className="ultima-web-mobile-heading mb-2.5">
           <h1 className="text-[clamp(30px,8vw,38px)] font-semibold leading-none text-white">
             Устройства
           </h1>

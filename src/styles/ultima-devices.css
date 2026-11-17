@@ -1,0 +1,78 @@
+.ultima-shell .ultima-devices-content {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.ultima-shell .ultima-device-section {
+  border: 1px solid var(--ultima-web-line);
+  border-radius: 12px;
+  color: var(--ultima-color-secondary-text);
+  background: var(--ultima-color-surface);
+  box-shadow: none;
+}
+.ultima-shell .ultima-device-capacity {
+  padding: 26px;
+}
+.ultima-shell .ultima-device-facts {
+  padding-block: 18px;
+  border-block: 1px solid var(--ultima-web-line);
+  border-radius: 0;
+  background: transparent;
+}
+.ultima-device-facts > div + div {
+  border-left: 1px solid var(--ultima-web-line);
+}
+.ultima-shell .ultima-device-facts .uppercase {
+  text-transform: none;
+  font-size: 13px;
+}
+.ultima-shell .ultima-device-facts .tabular-nums {
+  font-size: 25px;
+}
+.ultima-shell [data-testid='ultima-device-free-slots'] {
+  border: 0;
+  border-radius: 5px;
+  color: var(--ultima-color-primary);
+  background: color-mix(in srgb, var(--ultima-color-primary) 10%, var(--ultima-color-surface));
+}
+.ultima-shell .ultima-device-meter {
+  background: var(--ultima-web-line);
+}
+.ultima-shell .ultima-device-meter > div {
+  background: var(--ultima-color-primary);
+}
+.ultima-shell .ultima-device-menu {
+  border-color: var(--ultima-web-line);
+  background: var(--ultima-color-surface);
+}
+.ultima-shell .ultima-device-list-icon {
+  color: var(--ultima-web-muted);
+}
+.ultima-shell .ultima-devices-content [class*='border-white/'] {
+  border-color: var(--ultima-web-line);
+}
+.ultima-shell .ultima-devices-content [data-testid='ultima-device-row'] {
+  min-height: 78px;
+  padding-block: 15px;
+}
+.ultima-shell .ultima-devices-content [data-testid='ultima-device-row']:hover {
+  background: color-mix(in srgb, var(--ultima-color-primary) 4%, var(--ultima-color-surface));
+}
+.ultima-shell .ultima-devices-content [data-testid='ultima-device-row'] p:first-child {
+  font-size: 15px;
+}
+.ultima-shell .ultima-devices-content [data-testid='ultima-devices-list-toggle'] {
+  min-height: 44px;
+  color: var(--ultima-color-primary);
+}
+@media (max-width: 1023px) {
+  .ultima-shell .ultima-device-capacity {
+    padding: 20px 18px;
+  }
+  .ultima-shell .ultima-devices-content {
+    gap: 18px;
+  }
+  .ultima-shell .ultima-device-facts .tabular-nums {
+    font-size: 22px;
+  }
+}

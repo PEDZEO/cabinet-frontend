@@ -1,0 +1,282 @@
+/* Purchase details stay readable in either palette supplied by the bot. */
+@media (max-width: 1023px) {
+  .ultima-mobile-checkout {
+    --checkout-text: var(--ultima-color-secondary-text);
+    --checkout-muted: color-mix(
+      in srgb,
+      var(--ultima-color-secondary-text) 70%,
+      var(--ultima-color-surface)
+    );
+    --checkout-line: color-mix(
+      in srgb,
+      var(--ultima-color-surface-border) 28%,
+      var(--ultima-color-surface)
+    );
+    --checkout-selected: color-mix(
+      in srgb,
+      var(--ultima-color-primary) 9%,
+      var(--ultima-color-surface)
+    );
+    color: var(--checkout-text);
+  }
+
+  .ultima-mobile-checkout .ultima-checkout-heading {
+    margin-bottom: 20px;
+  }
+
+  .ultima-mobile-checkout .ultima-checkout-heading h1 {
+    overflow: visible;
+    white-space: normal;
+    line-height: 1.2;
+  }
+
+  html .ultima-shell .ultima-mobile-checkout .ultima-checkout-parameters,
+  html .ultima-shell .ultima-mobile-checkout .ultima-checkout-periods {
+    margin-bottom: 14px;
+    padding: 18px 16px;
+    border: 1px solid var(--checkout-line) !important;
+    border-radius: 14px !important;
+    color: var(--checkout-text);
+    background: var(--ultima-color-surface) !important;
+  }
+
+  .ultima-mobile-checkout .ultima-checkout-parameters [class*='text-emerald-'],
+  .ultima-mobile-checkout .ultima-checkout-period-heading svg {
+    color: var(--ultima-color-primary) !important;
+  }
+
+  html .ultima-shell .ultima-mobile-checkout .ultima-checkout-plan-details {
+    gap: 14px;
+    margin-top: 18px;
+    padding-block: 15px;
+    border-color: var(--checkout-line) !important;
+  }
+
+  .ultima-mobile-checkout .ultima-checkout-plan-details > div > div:first-child {
+    color: var(--checkout-muted) !important;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    text-transform: none;
+  }
+
+  .ultima-mobile-checkout .ultima-checkout-plan-details > div > div:last-child {
+    margin-top: 7px;
+    color: var(--checkout-text) !important;
+    font-size: 15px;
+  }
+
+  .ultima-mobile-checkout .ultima-checkout-device-limit {
+    gap: 14px;
+    margin-top: 18px;
+  }
+
+  .ultima-mobile-checkout .ultima-checkout-device-limit p {
+    color: var(--checkout-muted) !important;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  html .ultima-shell .ultima-mobile-checkout [data-testid='ultima-mobile-device-stepper'] {
+    height: 42px;
+    grid-template-columns: 34px 36px 34px;
+    border: 1px solid var(--checkout-line) !important;
+    border-radius: 10px !important;
+    color: var(--checkout-text);
+    background: var(--ultima-color-secondary) !important;
+  }
+
+  html .ultima-shell .ultima-mobile-checkout [data-testid='ultima-mobile-device-stepper'] button {
+    border-color: var(--checkout-line) !important;
+    color: var(--checkout-text) !important;
+  }
+
+  html .ultima-shell .ultima-mobile-checkout .ultima-checkout-extra-devices {
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-color: var(--checkout-line) !important;
+  }
+
+  .ultima-mobile-checkout .ultima-checkout-extra-devices > div > p:first-child {
+    overflow: visible;
+    white-space: normal;
+    color: var(--checkout-text) !important;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  .ultima-mobile-checkout .ultima-checkout-extra-devices > div > p + p {
+    overflow: visible;
+    white-space: normal;
+    margin-top: 5px;
+    color: var(--checkout-muted) !important;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .ultima-mobile-checkout .ultima-checkout-extra-devices > span {
+    color: var(--checkout-text) !important;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .ultima-mobile-checkout .ultima-checkout-period-heading {
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+
+  .ultima-mobile-checkout .ultima-checkout-period-heading h2 {
+    color: var(--checkout-text) !important;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .ultima-mobile-checkout .ultima-checkout-period-heading p {
+    margin-top: 5px;
+    color: var(--checkout-muted) !important;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  html .ultima-shell .ultima-mobile-checkout .ultima-checkout-period-heading > span {
+    max-width: 40%;
+    padding: 0;
+    border: 0 !important;
+    border-radius: 0 !important;
+    color: var(--checkout-muted) !important;
+    background: transparent !important;
+    font-size: 12px;
+    line-height: 1.5;
+    text-align: right;
+  }
+
+  .ultima-mobile-checkout .ultima-checkout-period-list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  html .ultima-shell .ultima-mobile-checkout .ultima-checkout-period-list .ultima-checkout-period {
+    display: grid;
+    min-width: 0;
+    min-height: 80px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 46px 16px 14px;
+    border: 1px solid var(--checkout-line) !important;
+    border-radius: 10px !important;
+    color: var(--checkout-text) !important;
+    background: var(--ultima-color-surface) !important;
+  }
+
+  html
+    .ultima-shell
+    .ultima-mobile-checkout
+    .ultima-checkout-period-list
+    .ultima-checkout-period[aria-checked='true'] {
+    border-color: var(--ultima-color-primary) !important;
+    background: var(--checkout-selected) !important;
+  }
+
+  .ultima-mobile-checkout .ultima-checkout-period > div:first-child {
+    min-width: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 7px;
+  }
+
+  .ultima-mobile-checkout .ultima-checkout-period-label {
+    color: var(--checkout-text) !important;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .ultima-mobile-checkout .ultima-checkout-period-price {
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 0;
+    text-align: right;
+  }
+
+  .ultima-mobile-checkout .ultima-checkout-period-price > div > div:first-child {
+    color: var(--checkout-text) !important;
+    font-size: 18px;
+    line-height: 1.25;
+  }
+
+  .ultima-mobile-checkout .ultima-checkout-period-price > div > div + div,
+  .ultima-mobile-checkout .ultima-checkout-period-original {
+    margin-top: 5px;
+    color: var(--checkout-muted) !important;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .ultima-mobile-checkout .ultima-checkout-period-mark {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    color: var(--ultima-color-primary-text) !important;
+    background: var(--ultima-color-primary) !important;
+  }
+
+  html .ultima-shell .ultima-mobile-checkout .ultima-checkout-period-badge {
+    max-width: 100%;
+    padding: 3px 6px;
+    border: 0 !important;
+    border-radius: 5px;
+    color: var(--checkout-text) !important;
+    background: var(--checkout-selected) !important;
+    font-size: 11px;
+    white-space: normal;
+  }
+
+  html .ultima-shell .ultima-mobile-checkout .ultima-checkout-price-summary {
+    padding: 13px 12px;
+    border: 1px solid var(--checkout-line) !important;
+    border-radius: 10px !important;
+    color: var(--checkout-text);
+    background: var(--ultima-color-surface) !important;
+  }
+
+  .ultima-mobile-checkout .ultima-checkout-price-summary > div {
+    gap: 8px;
+  }
+
+  html .ultima-shell .ultima-mobile-checkout .ultima-checkout-price-summary > div > div {
+    padding: 0;
+    border: 0 !important;
+  }
+
+  .ultima-mobile-checkout .ultima-checkout-price-summary > div > div > div:first-child {
+    color: var(--checkout-muted) !important;
+    font-size: 11px;
+    line-height: 1.4;
+    text-transform: none;
+  }
+
+  .ultima-mobile-checkout .ultima-checkout-price-summary > div > div > div:last-child {
+    margin-top: 6px;
+    color: var(--checkout-text) !important;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .ultima-mobile-checkout .ultima-checkout-action-meta {
+    font-size: 10px;
+    line-height: 1.3;
+    text-transform: none;
+  }
+
+  .ultima-mobile-checkout :is(button, input):focus-visible {
+    outline: 2px solid var(--ultima-color-primary);
+    outline-offset: 3px;
+  }
+}

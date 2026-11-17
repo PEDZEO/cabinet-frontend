@@ -1,0 +1,437 @@
+/* Account and identity pages share the configured bot palette, on every viewport. */
+.ultima-account-page,
+[data-testid='ultima-profile-page'] {
+  color: var(--ultima-color-secondary-text);
+}
+
+.ultima-account-page :is(h1, h2, h3, p, span, a),
+[data-testid='ultima-profile-page'] :is(h1, h2, h3, p, span, a) {
+  overflow-wrap: anywhere;
+}
+
+.ultima-account-page .ultima-shell-inner > header h1 {
+  font-size: clamp(28px, 5vw, 36px);
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: -0.7px;
+}
+
+.ultima-account-page .ultima-scrollbar {
+  color: var(--ultima-color-secondary-text);
+}
+
+.ultima-account-page .ultima-scrollbar > section,
+.ultima-account-page .ultima-scrollbar > .grid > section,
+.ultima-account-page .ultima-account-intro {
+  margin-bottom: 20px;
+  padding: 24px;
+  border: 1px solid var(--ultima-web-line) !important;
+  border-radius: 12px !important;
+  color: var(--ultima-color-secondary-text);
+  background: var(--ultima-color-surface) !important;
+  box-shadow: none !important;
+  backdrop-filter: none;
+  animation: ultima-account-section-arrive 230ms ease-out both;
+}
+
+.ultima-account-page .ultima-scrollbar :is(h2, h3) {
+  color: var(--ultima-color-secondary-text) !important;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.ultima-account-page .ultima-scrollbar h2 {
+  font-size: 20px;
+}
+
+.ultima-account-page .ultima-scrollbar h3 {
+  font-size: 16px;
+}
+
+.ultima-account-page .ultima-account-intro > div > div:first-child {
+  display: none;
+}
+
+.ultima-account-page .ultima-account-intro > div > div:last-child {
+  min-width: 0;
+}
+
+.ultima-account-page .ultima-account-steps {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.ultima-account-page .ultima-account-steps > span {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: var(--ultima-web-muted) !important;
+  background: transparent !important;
+}
+
+.ultima-account-page :is(div, span)[class*='h-10'][class*='w-10'],
+.ultima-account-page :is(div, span)[class*='h-11'][class*='w-11'] {
+  width: 26px;
+  height: 26px;
+  flex-basis: 26px;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 0;
+  color: var(--ultima-color-primary) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.ultima-account-page [class*='bg-[rgba'],
+.ultima-account-page [class*='bg-[linear-gradient'],
+.ultima-account-page [class*='bg-[#'] {
+  background: var(--ultima-color-surface) !important;
+}
+
+.ultima-account-page [class*='bg-white/'],
+[data-testid='ultima-profile-page'] [class*='bg-white/'] {
+  background: color-mix(
+    in srgb,
+    var(--ultima-color-secondary-text) 5%,
+    var(--ultima-color-surface)
+  ) !important;
+}
+
+.ultima-account-page [class*='bg-black/'],
+[data-testid='ultima-profile-page'] [class*='bg-black/'] {
+  background: var(--ultima-color-bg-top) !important;
+}
+
+.ultima-account-page [class*='bg-emerald-'],
+.ultima-account-page [class*='bg-amber-'],
+[data-testid='ultima-profile-page'] [class*='bg-emerald-'],
+[data-testid='ultima-profile-page'] [class*='bg-amber-'] {
+  background: color-mix(
+    in srgb,
+    var(--ultima-color-primary) 10%,
+    var(--ultima-color-surface)
+  ) !important;
+}
+
+.ultima-account-page [class*='text-[#'],
+.ultima-account-page [class*='text-emerald-'],
+.ultima-account-page [class*='text-success-'] {
+  color: var(--ultima-color-primary) !important;
+}
+
+.ultima-account-page [class*='text-error-'],
+.ultima-account-page [class*='text-rose-'],
+.ultima-account-page [class*='text-amber-'] {
+  color: var(--ultima-color-secondary-text) !important;
+}
+
+.ultima-account-page [class*='border-white/'],
+.ultima-account-page [class*='border-emerald-'],
+.ultima-account-page [class*='border-[#'] {
+  border-color: var(--ultima-web-line) !important;
+}
+
+.ultima-account-page .btn-primary,
+.ultima-account-page .ultima-account-primary {
+  min-height: 44px;
+  padding: 11px 18px;
+  border: 1px solid var(--ultima-color-primary) !important;
+  border-radius: 7px !important;
+  color: var(--ultima-color-primary-text) !important;
+  background: var(--ultima-color-primary) !important;
+  box-shadow: none !important;
+  font-size: 14px;
+  font-weight: 550;
+  line-height: 1.4;
+  white-space: normal;
+}
+
+.ultima-account-page .btn-primary *,
+.ultima-account-page .ultima-account-primary * {
+  color: var(--ultima-color-primary-text) !important;
+}
+
+body:has(.ultima-account-page) .ultima-modal-panel .btn-primary {
+  color: var(--ultima-color-primary-text) !important;
+  background: var(--ultima-color-primary) !important;
+  border-color: var(--ultima-color-primary) !important;
+}
+
+body:has(.ultima-account-page) .ultima-modal-panel .btn-primary * {
+  color: var(--ultima-color-primary-text) !important;
+}
+
+.ultima-account-page .btn-secondary {
+  min-height: 44px;
+  border-color: var(--ultima-web-line) !important;
+  border-radius: 7px !important;
+  color: var(--ultima-color-secondary-text) !important;
+  background: var(--ultima-color-secondary) !important;
+  box-shadow: none !important;
+}
+
+.ultima-account-page :is(input, textarea) {
+  min-height: 48px;
+  border-color: var(--ultima-web-line) !important;
+  border-radius: 7px !important;
+  color: var(--ultima-color-secondary-text) !important;
+  background: var(--ultima-color-bg-top) !important;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.ultima-account-page :is(input, textarea)::placeholder {
+  color: var(--ultima-web-muted) !important;
+}
+
+.ultima-account-page :is(button, a, input, textarea) {
+  transition:
+    color 230ms ease,
+    background-color 230ms ease,
+    border-color 230ms ease,
+    opacity 230ms ease;
+}
+
+.ultima-account-page :is(button, a, input, textarea):focus-visible {
+  outline: 2px solid var(--ultima-color-primary) !important;
+  outline-offset: 3px;
+}
+
+.ultima-account-page button:hover:not(:disabled) {
+  border-color: var(--ultima-color-primary) !important;
+}
+
+.ultima-account-page .ultima-scrollbar > .grid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+}
+
+[data-testid='ultima-profile-page'] .ultima-profile-sections {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 22px;
+}
+
+[data-testid='ultima-profile-page'] .ultima-profile-surface {
+  min-width: 0;
+  padding: 26px;
+  border: 1px solid var(--ultima-web-line) !important;
+  border-radius: 12px !important;
+  color: var(--ultima-color-secondary-text);
+  background: var(--ultima-color-surface) !important;
+  box-shadow: none !important;
+  animation: ultima-account-section-arrive 230ms ease-out both;
+}
+
+[data-testid='ultima-profile-page'] .ultima-profile-section-heading {
+  margin-bottom: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ultima-web-line);
+}
+
+[data-testid='ultima-profile-page'] .ultima-profile-section-heading h2 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.3px;
+}
+
+[data-testid='ultima-profile-page'] .ultima-profile-section-heading p {
+  margin-top: 7px;
+  color: var(--ultima-web-muted) !important;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+[data-testid='ultima-profile-page'] .ultima-profile-action-row {
+  min-height: 78px;
+  gap: 15px;
+  padding: 16px 0;
+  border-color: var(--ultima-web-line);
+  background: transparent !important;
+  transition:
+    color 230ms ease,
+    background-color 230ms ease;
+}
+
+[data-testid='ultima-profile-account'] > div:first-child > span {
+  border-color: var(--ultima-web-line) !important;
+  color: var(--ultima-color-secondary-text) !important;
+  background: var(--ultima-color-secondary) !important;
+}
+
+[data-testid='ultima-profile-page'] .ultima-profile-action-icon {
+  width: 22px;
+  height: 24px;
+  flex-basis: 22px;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 0 !important;
+  color: var(--ultima-color-primary) !important;
+  background: transparent !important;
+}
+
+[data-testid='ultima-profile-page'] .ultima-profile-action-row p:first-child {
+  font-size: 15px;
+}
+
+[data-testid='ultima-profile-page'] .ultima-profile-action-arrow {
+  width: 20px;
+  height: 24px;
+  flex-basis: 20px;
+  color: var(--ultima-color-primary);
+}
+
+[data-testid='ultima-profile-page'] .ultima-profile-account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+[data-testid='ultima-profile-page'] .ultima-profile-account-actions > button {
+  min-width: 0;
+  min-height: 44px;
+  flex: 1 1 150px;
+}
+
+[data-testid='ultima-profile-page'] .ultima-profile-exit {
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--ultima-web-line);
+  border-radius: 7px;
+  color: var(--ultima-color-secondary-text);
+  background: var(--ultima-color-secondary);
+}
+
+[data-testid='ultima-profile-page'] .ultima-profile-summary {
+  display: block;
+  padding: 8px 0;
+  border-color: var(--ultima-web-line);
+}
+
+[data-testid='ultima-profile-page'] .ultima-profile-summary > div {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 10px 0;
+  border: 0;
+}
+
+[data-testid='ultima-profile-page'] .ultima-profile-summary > div > div {
+  min-width: 0;
+  color: var(--ultima-web-muted) !important;
+}
+
+[data-testid='ultima-profile-page'] .ultima-profile-summary svg {
+  display: none;
+}
+
+[data-testid='ultima-profile-page'] .ultima-profile-summary span {
+  font-size: 13px;
+  font-weight: 450;
+  line-height: 1.45;
+  text-transform: none;
+}
+
+[data-testid='ultima-profile-page'] .ultima-profile-summary p {
+  min-width: 0;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+  text-align: right;
+}
+
+@media (min-width: 1024px) {
+  .ultima-account-page .ultima-account-embedded > .ultima-shell {
+    min-height: 0;
+    padding: 0;
+    background: transparent !important;
+  }
+
+  .ultima-account-page .ultima-account-embedded .ultima-shell-inner {
+    width: 100%;
+    max-width: none;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .ultima-account-page .ultima-account-embedded .ultima-shell-inner > header,
+  .ultima-account-page .ultima-account-embedded .ultima-mobile-dock-footer {
+    display: none;
+  }
+
+  .ultima-account-page .ultima-account-embedded .ultima-scrollbar {
+    min-height: 0;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .ultima-account-page .ultima-scrollbar > section,
+  .ultima-account-page .ultima-scrollbar > .grid > section {
+    padding: 28px;
+  }
+}
+
+.ultima-account-page .ultima-account-code-actions {
+  margin-top: 18px;
+  padding: 18px 0;
+  border-top: 1px solid var(--ultima-web-line);
+}
+
+@media (min-width: 1280px) {
+  .ultima-account-page .ultima-scrollbar > .grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 639px) {
+  .ultima-account-page .ultima-scrollbar > section,
+  .ultima-account-page .ultima-scrollbar > .grid > section,
+  [data-testid='ultima-profile-page'] .ultima-profile-surface {
+    padding: 20px;
+  }
+
+  [data-testid='ultima-profile-account'] > div:first-child {
+    flex-wrap: wrap;
+  }
+
+  .ultima-account-page .ultima-shell-inner > header p {
+    font-size: 14px;
+    line-height: 1.55;
+  }
+}
+
+@keyframes ultima-account-section-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ultima-account-page .ultima-scrollbar > section,
+  .ultima-account-page .ultima-scrollbar > .grid > section,
+  [data-testid='ultima-profile-page'] .ultima-profile-surface {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .ultima-account-page :is(button, a, input, textarea),
+  [data-testid='ultima-profile-page'] .ultima-profile-action-row {
+    transition: none !important;
+  }
+}

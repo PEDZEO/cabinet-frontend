@@ -61,16 +61,6 @@ export default function UltimaNews() {
             defaultValue:
               'Отдельная лента новостей проекта: обновления, анонсы и важные изменения в одном месте.',
           })}
-          metrics={[
-            {
-              label: t('ultima.newsPageMetricLabel', { defaultValue: 'Формат' }),
-              value: t('ultima.newsPageMetricValue', { defaultValue: 'Лента проекта' }),
-              hint: t('ultima.newsPageMetricHint', {
-                defaultValue:
-                  'Новые публикации открываются отдельной статьей без перегруза главной.',
-              }),
-            },
-          ]}
           bottomNav={bottomNav}
         >
           <NewsSection showHeader={false} showEmptyState variant="ultima" />
@@ -83,13 +73,7 @@ export default function UltimaNews() {
     <div className="ultima-shell ultima-shell-shared-nav-docked ultima-shell-wide ultima-flat-frames ultima-shell-muted-aura">
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
         <div className="ultima-scrollbar min-h-0 flex-1 overflow-y-auto px-0 pb-[max(12px,env(safe-area-inset-bottom,0px))] pr-1 pt-[clamp(8px,2vh,16px)] lg:overflow-visible lg:pr-0">
-          <header className="mb-4 px-1">
-            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.08] text-white/[0.88]">
-              <NewspaperIcon />
-            </div>
-            <p className="text-[13px] uppercase tracking-[0.2em] text-white/[0.72]">
-              {t('news.title')}
-            </p>
+          <header className="ultima-web-mobile-heading mb-4 px-1">
             <h1 className="mt-3 text-[clamp(34px,9vw,46px)] font-semibold leading-[0.92] tracking-[-0.02em] text-white">
               {t('ultima.newsPageTitle', { defaultValue: 'Новости' })}
             </h1>
@@ -105,7 +89,7 @@ export default function UltimaNews() {
             showHeader={false}
             showEmptyState
             variant="ultima"
-            className="overflow-visible shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_22px_48px_rgba(3,14,24,0.24)]"
+            className="overflow-visible"
           />
         </div>
       </div>

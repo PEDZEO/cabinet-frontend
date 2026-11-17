@@ -819,18 +819,6 @@ export function UltimaSubscription() {
     ? selectedTariff.traffic_limit_label ||
       t('subscription.unlimited', { defaultValue: 'Безлимит' })
     : `${deviceTrafficBreakdown.totalTrafficGb} ${trafficUnit}`;
-  const deviceTrafficLabel =
-    deviceTrafficBreakdown.trafficPerExtraDeviceGb > 0
-      ? deviceTrafficBreakdown.bonusTrafficGb > 0
-        ? t('ultima.deviceTrafficBonusSummary', {
-            count: deviceTrafficBreakdown.extraDevices,
-            bonus: deviceTrafficBreakdown.bonusTrafficGb,
-            total: deviceTrafficBreakdown.totalTrafficGb,
-          })
-        : t('ultima.deviceTrafficPerDevice', {
-            traffic: deviceTrafficBreakdown.trafficPerExtraDeviceGb,
-          })
-      : null;
   const deviceTrafficBadgeLabel =
     deviceTrafficBreakdown.trafficPerExtraDeviceGb > 0
       ? deviceTrafficBreakdown.bonusTrafficGb > 0
@@ -861,12 +849,18 @@ export function UltimaSubscription() {
           },
         )
       : null;
-  const extraDeviceChargeLabel =
-    selectedExtraDevices > 0 && extraDeviceChargeKopeks > 0
-      ? t('ultima.extraDeviceChargeLabel', 'Доп. устройства: {{count}} · +{{price}}', {
+  const extraDeviceSummary =
+    selectedExtraDevices > 0
+      ? t('ultima.extraDevicesCompact', {
           count: selectedExtraDevices,
-          price: formatPrice(extraDeviceChargeKopeks),
+          base: currentTariffBaseDeviceLimit,
         })
+      : null;
+  const extraDevicePriceLabel =
+    selectedExtraDevices > 0
+      ? extraDeviceChargeKopeks > 0
+        ? `+${formatPrice(extraDeviceChargeKopeks)}`
+        : t('ultima.noExtraDeviceCharge')
       : null;
 
   const bestDealPeriodDays = (() => {
@@ -906,6 +900,13 @@ export function UltimaSubscription() {
     payableAmountKopeks > 0 ? (topUpPreview?.requestedAmountKopeks ?? payableAmountKopeks) : 0;
   const requiresMinTopUpBump =
     payableAmountKopeks > 0 && !!topUpPreview && topUpPreview.bumpsToMinimum;
+  const minimumTopUpHint =
+    !error && requiresMinTopUpBump && defaultPaymentMethod
+      ? t('ultima.minimumTopUpHint', {
+          missing: formatPrice(payableAmountKopeks),
+          minimum: formatPrice(actionAmountKopeks),
+        })
+      : null;
 
   const canTopUpSelectedTariffTraffic =
     selectedTariffHasTopUp && (trafficPackages?.length ?? 0) > 0;
@@ -1230,8 +1231,9 @@ export function UltimaSubscription() {
           maxDeviceLimit={maxDeviceLimit}
           periods={periodOptions}
           selectedPeriodLabel={checkoutPeriodValue}
-          extraDeviceChargeLabel={extraDeviceChargeLabel}
-          deviceTrafficLabel={deviceTrafficLabel}
+          extraDeviceSummary={extraDeviceSummary}
+          extraDevicePriceLabel={extraDevicePriceLabel}
+          deviceTrafficLabel={deviceTrafficBadgeLabel}
           legacyDeviceNotice={legacyDeviceNotice}
           onReduceDevices={legacyDeviceNotice ? () => navigate('/ultima/devices') : null}
           totalPriceLabel={formatPrice(selectedPriceKopeks)}
@@ -1239,10 +1241,8 @@ export function UltimaSubscription() {
           payablePriceLabel={formatPrice(payableAmountKopeks)}
           hasBalanceApplied={balanceAppliedKopeks > 0}
           requiresTopUp={payableAmountKopeks > 0}
-          isFree={selectedPriceKopeks === 0}
           actionLabel={primaryActionLabel}
-          actionPriceLabel={primaryActionPriceLabel}
-          actionMetaLabel={primaryActionMetaLabel}
+          minimumTopUpHint={minimumTopUpHint}
           error={error}
           paymentRecoveryCard={
             pendingTopUp?.paymentUrl ? (
@@ -1331,21 +1331,8 @@ export function UltimaSubscription() {
         selectedDeviceLimit={selectedDeviceLimit}
         minDeviceLimit={minDeviceLimit}
         maxDeviceLimit={maxDeviceLimit}
-        extraDeviceSummary={
-          selectedExtraDevices > 0
-            ? t('ultima.extraDevicesCompact', {
-                count: selectedExtraDevices,
-                base: currentTariffBaseDeviceLimit,
-              })
-            : null
-        }
-        extraDevicePriceLabel={
-          selectedExtraDevices > 0
-            ? extraDeviceChargeKopeks > 0
-              ? `+${formatPrice(extraDeviceChargeKopeks)}`
-              : t('ultima.noExtraDeviceCharge')
-            : null
-        }
+        extraDeviceSummary={extraDeviceSummary}
+        extraDevicePriceLabel={extraDevicePriceLabel}
         deviceTrafficLabel={deviceTrafficBadgeLabel}
         periods={periodOptions}
         selectedPeriodLabel={checkoutPeriodValue}
@@ -1359,14 +1346,7 @@ export function UltimaSubscription() {
         actionPriceLabel={primaryActionPriceLabel}
         actionMetaLabel={primaryActionMetaLabel}
         error={error}
-        minimumTopUpHint={
-          !error && requiresMinTopUpBump && defaultPaymentMethod
-            ? t('ultima.minimumTopUpHint', {
-                missing: formatPrice(payableAmountKopeks),
-                minimum: formatPrice(actionAmountKopeks),
-              })
-            : null
-        }
+        minimumTopUpHint={minimumTopUpHint}
         paymentRecoveryCard={
           pendingTopUp?.paymentUrl ? (
             <UltimaPendingPaymentCard source="subscription_mobile" compact />

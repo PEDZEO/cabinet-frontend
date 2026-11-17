@@ -1,0 +1,87 @@
+.ultima-shell .ultima-history-section,
+.ultima-shell
+  .ultima-desktop-workspace
+  .ultima-history-section[data-testid='ultima-transaction-history'] {
+  padding: 26px;
+  border: 1px solid var(--ultima-web-line) !important;
+  border-radius: 12px !important;
+  background: var(--ultima-color-surface) !important;
+}
+.ultima-shell [data-testid='ultima-transaction-history'] [class*='border-white/'] {
+  border-color: var(--ultima-web-line);
+}
+.ultima-shell [data-testid='ultima-transaction-row'] {
+  min-height: 86px;
+}
+.ultima-shell [data-testid='ultima-transaction-row'] > span:first-child {
+  color: var(--ultima-web-muted);
+  background: transparent;
+}
+.ultima-shell
+  [data-testid='ultima-transaction-row'][data-tone='positive']
+  > div:last-child
+  p:first-child {
+  color: var(--ultima-color-primary);
+}
+.ultima-shell
+  [data-testid='ultima-transaction-row'][data-tone='negative']
+  > div:last-child
+  p:first-child {
+  color: var(--ultima-color-secondary-text);
+}
+.ultima-shell .ultima-transaction-status {
+  border-radius: 5px;
+  color: var(--ultima-web-muted);
+  background: transparent;
+  font-size: 12px;
+}
+.ultima-shell .ultima-transaction-status[data-completed='true'] {
+  color: var(--ultima-color-primary);
+}
+.ultima-shell .ultima-balance-turnover {
+  gap: 0;
+  border-block: 1px solid var(--ultima-web-line);
+}
+.ultima-shell .ultima-balance-turnover > div {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.ultima-shell .ultima-balance-turnover > div + div {
+  border-left: 1px solid var(--ultima-web-line);
+}
+.ultima-shell .ultima-balance-turnover .uppercase {
+  text-transform: none;
+  letter-spacing: 0;
+}
+.ultima-shell .ultima-balance-turnover p:nth-child(2) {
+  color: var(--ultima-color-secondary-text);
+}
+.ultima-shell .ultima-balance-turnover > div:first-child p:nth-child(2) {
+  color: var(--ultima-color-primary);
+}
+.ultima-shell[data-testid='ultima-balance-history-page'] [class*='text-rose-'] {
+  color: var(--ultima-color-secondary-text);
+}
+@media (max-width: 1023px) {
+  .ultima-shell .ultima-history-section {
+    padding: 20px 16px;
+  }
+  .ultima-shell [data-testid='ultima-transaction-row'] {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+  .ultima-shell [data-testid='ultima-transaction-row'] > span:first-child {
+    display: none;
+  }
+  .ultima-shell [data-testid='ultima-transaction-row'] h3 {
+    font-size: 13px;
+  }
+  .ultima-shell [data-testid='ultima-transaction-row'] > div > div:first-child {
+    flex-wrap: wrap;
+    gap: 3px;
+  }
+  .ultima-shell [data-testid='ultima-transaction-row'] > div:last-child p:first-child {
+    font-size: 14px;
+  }
+}

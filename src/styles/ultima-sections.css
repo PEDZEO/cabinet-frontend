@@ -1,0 +1,253 @@
+/* Shared work surfaces. Palette inputs always come from the bot configuration. */
+@media (min-width: 1024px) {
+  .ultima-desktop-workspace .ultima-web-sectionpage {
+    --ultima-section-line: var(--ultima-web-line);
+    --ultima-section-surface: var(--ultima-color-surface);
+    --ultima-section-muted: var(--ultima-web-muted);
+    min-width: 0;
+    color: var(--ultima-color-secondary-text);
+  }
+
+  .ultima-desktop-workspace .ultima-web-sectionheader.ultima-desktop-page-header {
+    display: flex;
+    min-height: 0;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 22px 28px;
+    margin: 0 0 22px;
+    padding: 0 0 28px;
+    border: 0 !important;
+    border-bottom: 1px solid var(--ultima-section-line) !important;
+    border-radius: 0 !important;
+    color: var(--ultima-color-secondary-text);
+    background: transparent !important;
+    box-shadow: none !important;
+    animation: ultima-section-enter 230ms ease-out both;
+  }
+
+  .ultima-desktop-workspace .ultima-web-sectionheading {
+    min-width: 0;
+    max-width: 78ch;
+    flex: 1 1 420px;
+  }
+
+  .ultima-desktop-workspace .ultima-web-sectionheading h1 {
+    margin: 0;
+    font-size: clamp(30px, 2.6vw, 38px);
+    font-weight: 650;
+    line-height: 1.2;
+    letter-spacing: -0.9px;
+    overflow-wrap: anywhere;
+  }
+
+  .ultima-desktop-workspace .ultima-web-sectionheading .ultima-web-sectioneyebrow {
+    margin: 0 0 10px;
+    color: var(--ultima-color-primary);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  .ultima-desktop-workspace .ultima-web-sectionheading .ultima-web-sectionsubtitle {
+    max-width: 70ch;
+    margin: 12px 0 0;
+    color: var(--ultima-section-muted);
+    font-size: 15px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+
+  .ultima-desktop-workspace .ultima-web-sectionactions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 2px;
+  }
+
+  .ultima-desktop-workspace .ultima-web-sectionsummary.ultima-desktop-metrics {
+    display: block;
+    min-width: 0;
+    margin: 0 0 26px;
+    padding: 22px 26px;
+    border: 1px solid var(--ultima-section-line) !important;
+    border-radius: 12px !important;
+    background: color-mix(
+      in srgb,
+      var(--ultima-color-surface) 76%,
+      var(--ultima-color-bg-top)
+    ) !important;
+    animation: ultima-section-enter 230ms 35ms ease-out both;
+  }
+
+  .ultima-desktop-workspace .ultima-web-sectionsummary > dl {
+    display: flex;
+    min-width: 0;
+    flex-wrap: wrap;
+    gap: 20px 0;
+    margin: 0;
+  }
+
+  .ultima-desktop-workspace .ultima-web-sectionsummary-item {
+    min-width: 150px;
+    flex: 1 1 150px;
+    padding: 0 26px;
+    border-inline-start: 1px solid var(--ultima-section-line);
+  }
+
+  .ultima-desktop-workspace .ultima-web-sectionsummary-item:first-child {
+    padding-inline-start: 0;
+    border-inline-start: 0;
+  }
+
+  .ultima-desktop-workspace .ultima-web-sectionsummary-item:last-child {
+    padding-inline-end: 0;
+  }
+
+  .ultima-desktop-workspace .ultima-web-sectionsummary-item dt {
+    margin: 0 0 5px;
+    color: var(--ultima-section-muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .ultima-desktop-workspace .ultima-web-sectionsummary-item dd {
+    margin: 0;
+    color: var(--ultima-color-secondary-text);
+    font-size: 23px;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.4px;
+    overflow-wrap: anywhere;
+  }
+
+  .ultima-desktop-workspace .ultima-web-sectionsummary-item > .ultima-web-sectionsummary-hint {
+    margin: 6px 0 0;
+    color: var(--ultima-section-muted);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .ultima-desktop-workspace .ultima-web-sectioncontent {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .ultima-shell .ultima-desktop-workspace .ultima-web-sectionpanel.ultima-desktop-panel {
+    min-width: 0;
+    padding: 28px 30px;
+    border: 1px solid var(--ultima-web-line) !important;
+    border-radius: 14px !important;
+    color: var(--ultima-color-secondary-text);
+    background: var(--ultima-color-surface) !important;
+    box-shadow: none !important;
+    backdrop-filter: none;
+    animation: ultima-section-enter 230ms 55ms ease-out both;
+    transition:
+      border-color 230ms ease,
+      background-color 230ms ease,
+      box-shadow 230ms ease;
+  }
+
+  .ultima-shell
+    .ultima-desktop-workspace
+    .ultima-web-sectionpanel.ultima-desktop-panel:focus-within {
+    border-color: color-mix(
+      in srgb,
+      var(--ultima-color-primary) 58%,
+      var(--ultima-web-line)
+    ) !important;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--ultima-color-primary) 15%, transparent) !important;
+  }
+
+  .ultima-desktop-workspace .ultima-web-sectionpanel-header {
+    min-width: 0;
+    margin-bottom: 24px;
+    padding-bottom: 19px;
+    border-bottom: 1px solid var(--ultima-web-line);
+  }
+
+  .ultima-desktop-workspace .ultima-web-sectionpanel-header h2 {
+    margin: 0;
+    color: var(--ultima-color-secondary-text);
+    font-size: 21px;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -0.3px;
+    overflow-wrap: anywhere;
+  }
+
+  .ultima-desktop-workspace .ultima-web-sectionpanel-header p {
+    max-width: 72ch;
+    margin: 7px 0 0;
+    color: var(--ultima-web-muted);
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+
+  .ultima-desktop-workspace
+    :is(.ultima-web-sectionpanel, .ultima-web-sectionactions)
+    :is(button, a, input, textarea, select) {
+    transition:
+      color 230ms ease,
+      background-color 230ms ease,
+      border-color 230ms ease,
+      box-shadow 230ms ease;
+  }
+
+  .ultima-desktop-workspace
+    :is(.ultima-web-sectionpanel, .ultima-web-sectionactions)
+    :is(button, a, input, textarea, select):focus-visible {
+    outline: 2px solid var(--ultima-color-primary);
+    outline-offset: 3px;
+  }
+
+  .ultima-desktop-workspace .ultima-web-sectionpanel button:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--ultima-color-primary) 48%, var(--ultima-web-line));
+  }
+}
+
+@keyframes ultima-section-enter {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1239px) {
+  .ultima-shell .ultima-desktop-workspace .ultima-web-sectionpanel.ultima-desktop-panel {
+    padding: 24px;
+  }
+
+  .ultima-desktop-workspace .ultima-web-sectionsummary.ultima-desktop-metrics {
+    padding: 20px;
+  }
+
+  .ultima-desktop-workspace .ultima-web-sectionsummary-item {
+    min-width: 130px;
+    padding-inline: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ultima-desktop-workspace
+    :is(.ultima-web-sectionheader, .ultima-web-sectionsummary, .ultima-web-sectionpanel) {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .ultima-desktop-workspace :is(.ultima-web-sectionpanel, .ultima-web-sectionactions),
+  .ultima-desktop-workspace
+    :is(.ultima-web-sectionpanel, .ultima-web-sectionactions)
+    :is(button, a, input, textarea, select) {
+    transition: none !important;
+  }
+}

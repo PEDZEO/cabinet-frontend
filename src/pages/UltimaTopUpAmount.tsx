@@ -37,6 +37,7 @@ import type { PaymentMethod } from '@/types';
 import { copyToClipboard } from '@/utils/clipboard';
 import { checkRateLimit, getRateLimitResetTime, RATE_LIMIT_KEYS } from '@/utils/rateLimit';
 import { writePendingTopUpFollowUp } from '@/utils/topUpFollowUp';
+import '@/styles/ultima-payments.css';
 
 type CreatedPayment =
   | { kind: 'external'; url: string }
@@ -309,7 +310,7 @@ export function UltimaTopUpAmount() {
     (!method && !methodsError && methods.length === 0)
   ) {
     return (
-      <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
+      <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-payments-page">
         <div className="ultima-shell-aura" />
         <div className="ultima-shell-inner flex items-center justify-center">
           <LoaderCircle className="h-7 w-7 animate-spin text-[color:var(--ultima-color-primary)]" />
@@ -320,11 +321,11 @@ export function UltimaTopUpAmount() {
 
   if (!method || methodsError) {
     return (
-      <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
+      <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-payments-page">
         <div className="ultima-shell-aura" />
         <div className="ultima-shell-inner flex items-center justify-center px-4">
           <section
-            className={`${ultimaCardClassName} w-full max-w-md text-center`}
+            className={`${ultimaCardClassName} ultima-payment-empty w-full max-w-md text-center`}
             style={ultimaSurfaceStyle}
           >
             <CircleAlert className="mx-auto h-8 w-8 text-amber-200" />
@@ -369,14 +370,14 @@ export function UltimaTopUpAmount() {
   const paymentComposer = (
     <section
       data-testid="ultima-payment-amount-card"
-      className={ultimaCardClassName}
+      className={`${ultimaCardClassName} ultima-payment-composer`}
       style={ultimaSurfaceStyle}
     >
       <div
         data-testid="ultima-payment-selected-method"
-        className="flex items-center gap-3 border-b border-white/[0.08] pb-4"
+        className="ultima-payment-selected-method flex items-center gap-3 border-b border-white/[0.08] pb-4"
       >
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/[0.07] ring-1 ring-inset ring-white/[0.08]">
+        <span className="ultima-payment-provider-logo" aria-hidden="true">
           <PaymentMethodIcon method={method.id} className="h-9 w-9" />
         </span>
         <div className="min-w-0 flex-1">
@@ -389,7 +390,7 @@ export function UltimaTopUpAmount() {
         <button
           type="button"
           onClick={backToMethods}
-          className="flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl px-2.5 text-xs font-medium text-white/[0.65] transition hover:bg-white/[0.06] hover:text-white"
+          className="ultima-payment-change-method flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl px-2.5 text-xs font-medium text-white/[0.65] transition hover:bg-white/[0.06] hover:text-white"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           {t('common.change', { defaultValue: 'Изменить' })}
@@ -397,11 +398,15 @@ export function UltimaTopUpAmount() {
       </div>
 
       {method.options && method.options.length > 0 ? (
-        <fieldset className="mt-4">
+        <fieldset className="ultima-payment-options mt-4">
           <legend className="mb-2 text-xs font-medium text-white/[0.72]">
             {t('balance.topUp.paymentOptionTitle', { defaultValue: 'Вариант оплаты' })}
           </legend>
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div
+            className="ultima-payment-options-list"
+            role="radiogroup"
+            aria-label={t('balance.topUp.paymentOptionTitle', { defaultValue: 'Вариант оплаты' })}
+          >
             {method.options.map((option) => {
               const selected = selectedOption === option.id;
               return (
@@ -412,7 +417,7 @@ export function UltimaTopUpAmount() {
                   role="radio"
                   aria-checked={selected}
                   onClick={() => setSelectedOption(option.id)}
-                  className={`flex min-h-12 items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5 text-left text-sm transition ${selected ? 'border-[color:color-mix(in_srgb,var(--ultima-color-primary)_52%,transparent)] bg-[color:color-mix(in_srgb,var(--ultima-color-primary)_13%,transparent)] text-white' : 'border-white/[0.08] bg-white/[0.035] text-white/[0.68] hover:border-white/[0.16]'}`}
+                  className="ultima-payment-option"
                 >
                   <span className="min-w-0">
                     <span className="block truncate font-medium">{option.name}</span>
@@ -422,9 +427,7 @@ export function UltimaTopUpAmount() {
                       </span>
                     ) : null}
                   </span>
-                  <span
-                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${selected ? 'border-[color:var(--ultima-color-primary)] bg-[color:var(--ultima-color-primary)] text-[color:var(--ultima-color-primary-text)]' : 'border-white/[0.20] text-transparent'}`}
-                  >
+                  <span className="ultima-payment-option-indicator" aria-hidden="true">
                     <Check className="h-3 w-3" strokeWidth={2.5} />
                   </span>
                 </button>
@@ -434,14 +437,14 @@ export function UltimaTopUpAmount() {
         </fieldset>
       ) : null}
 
-      <div className="mt-5">
+      <div className="ultima-payment-amount-field mt-5">
         <div className="flex items-end justify-between gap-3">
           <label htmlFor="ultima-payment-amount" className="text-xs font-medium text-white/[0.72]">
             {t('balance.enterAmount')}
           </label>
           <span className="text-[13px] text-white/[0.38]">{rangeLabel}</span>
         </div>
-        <div className="mt-2 flex min-h-[72px] items-center rounded-2xl border border-white/[0.1] bg-black/[0.15] px-4 focus-within:border-[color:color-mix(in_srgb,var(--ultima-color-primary)_58%,transparent)] focus-within:ring-2 focus-within:ring-[color:color-mix(in_srgb,var(--ultima-color-primary)_12%,transparent)]">
+        <div className="ultima-payment-input-wrap mt-2 flex min-h-[72px] items-center px-4">
           <input
             id="ultima-payment-amount"
             data-testid="ultima-payment-amount-input"
@@ -470,7 +473,7 @@ export function UltimaTopUpAmount() {
 
       {quickRubles.length > 0 ? (
         <div
-          className="mt-2.5 grid grid-cols-4 gap-2"
+          className="ultima-payment-quick-amounts mt-2.5 grid grid-cols-4 gap-2"
           aria-label={t('balance.quickAmounts', { defaultValue: 'Быстрые суммы' })}
         >
           {quickRubles.map((value) => {
@@ -480,8 +483,9 @@ export function UltimaTopUpAmount() {
                 key={value}
                 data-testid={`ultima-payment-quick-${value}`}
                 type="button"
+                aria-pressed={selected}
                 onClick={() => handleQuickAmount(value)}
-                className={`min-h-10 rounded-xl border px-1.5 text-xs font-medium transition ${selected ? 'border-[color:color-mix(in_srgb,var(--ultima-color-primary)_48%,transparent)] bg-[color:color-mix(in_srgb,var(--ultima-color-primary)_12%,transparent)] text-white' : 'border-white/[0.08] bg-white/[0.03] text-white/[0.72] hover:border-white/[0.16] hover:text-white/[0.80]'}`}
+                className="ultima-payment-quick-amount min-h-10 px-1.5 text-xs font-medium transition"
               >
                 {formatAmount(value, 0)}
               </button>
@@ -492,7 +496,7 @@ export function UltimaTopUpAmount() {
 
       <div
         data-testid="ultima-payment-summary"
-        className={`${ultimaPaneClassName} mt-4 grid grid-cols-3 divide-x divide-white/[0.08] p-0`}
+        className={`${ultimaPaneClassName} ultima-payment-summary mt-4 p-0`}
         style={ultimaPaneSurfaceStyle}
       >
         <div className="min-w-0 px-3 py-3">
@@ -513,7 +517,7 @@ export function UltimaTopUpAmount() {
           <p className="text-[13px] uppercase tracking-[0.08em] text-white/[0.35]">
             {t('balance.afterTopUp', { defaultValue: 'Будет' })}
           </p>
-          <p className="mt-1 truncate text-sm font-semibold text-[color:color-mix(in_srgb,var(--ultima-color-primary)_74%,white)]">
+          <p className="ultima-payment-summary-after mt-1 truncate text-sm font-semibold">
             {formatAmount(balanceAfterRub)} {currencySymbol}
           </p>
         </div>
@@ -522,7 +526,7 @@ export function UltimaTopUpAmount() {
       {error ? (
         <div
           role="alert"
-          className="mt-3 flex items-start gap-2.5 rounded-xl border border-rose-300/[0.20] bg-rose-500/[0.09] px-3 py-2.5 text-sm text-rose-100"
+          className="ultima-payment-error mt-3 flex items-start gap-2.5 px-3 py-2.5 text-sm"
         >
           <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />
           <span>{error}</span>
@@ -530,12 +534,9 @@ export function UltimaTopUpAmount() {
       ) : null}
 
       {paymentUrl ? (
-        <div
-          data-testid="ultima-payment-ready"
-          className="mt-3 rounded-2xl border border-[color:color-mix(in_srgb,var(--ultima-color-primary)_34%,transparent)] bg-[color:color-mix(in_srgb,var(--ultima-color-primary)_9%,transparent)] p-3.5"
-        >
+        <div data-testid="ultima-payment-ready" className="ultima-payment-ready mt-3 p-3.5">
           <div className="flex items-start gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[color:color-mix(in_srgb,var(--ultima-color-primary)_15%,transparent)] text-[color:color-mix(in_srgb,var(--ultima-color-primary)_72%,white)]">
+            <span className="ultima-payment-context-icon" aria-hidden="true">
               <ReceiptText className="h-5 w-5" />
             </span>
             <div className="min-w-0 flex-1">
@@ -597,7 +598,7 @@ export function UltimaTopUpAmount() {
     return (
       <div
         data-testid="ultima-payment-amount-page"
-        className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-profile-desktop"
+        className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-payments-page ultima-shell-profile-desktop"
       >
         <div className="ultima-shell-aura" />
         <UltimaDesktopSectionLayout
@@ -631,13 +632,14 @@ export function UltimaTopUpAmount() {
           }
           aside={
             <UltimaDesktopPanel
+              className="ultima-payment-context"
               title={t('balance.paymentSummary', { defaultValue: 'Итого' })}
               subtitle={t('balance.paymentSummaryHint', {
                 defaultValue: 'Платёж будет создан для указанной суммы.',
               })}
             >
               <div className="space-y-3">
-                <div className="rounded-xl border border-white/[0.08] bg-white/[0.035] p-4">
+                <div className="ultima-payment-context-total p-4">
                   <p className="text-xs uppercase tracking-[0.12em] text-white/[0.38]">
                     {t('balance.toPay', { defaultValue: 'К оплате' })}
                   </p>
@@ -669,12 +671,12 @@ export function UltimaTopUpAmount() {
   return (
     <div
       data-testid="ultima-payment-amount-page"
-      className="ultima-shell ultima-shell-wide ultima-flat-frames"
+      className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-payments-page"
     >
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
-        <header className="mb-3">
-          <div className="mb-2 flex items-center gap-2 text-[13px] font-medium uppercase tracking-[0.12em] text-[color:color-mix(in_srgb,var(--ultima-color-primary)_70%,white)]">
+        <header className="ultima-payment-mobile-heading mb-3">
+          <div className="ultima-payment-mobile-eyebrow mb-2 flex items-center gap-2 text-[13px] font-medium uppercase tracking-[0.12em]">
             <WalletCards className="h-4 w-4" />
             {t('balance.topUpBalance')}
           </div>
@@ -688,8 +690,8 @@ export function UltimaTopUpAmount() {
 
         <main className="ultima-scrollbar min-h-0 flex-1 overflow-y-auto pb-3">
           {paymentComposer}
-          <div className="mt-3 flex items-start gap-2.5 px-1 text-[13px] leading-relaxed text-white/[0.72]">
-            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[color:color-mix(in_srgb,var(--ultima-color-primary)_70%,white)]" />
+          <div className="ultima-payment-mobile-note mt-3 flex items-start gap-2.5 px-1 text-[13px] leading-relaxed text-white/[0.72]">
+            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
             <span>
               {t('balance.paymentBalanceDestinationHint', {
                 defaultValue: 'Средства появятся на балансе после подтверждения платежа.',

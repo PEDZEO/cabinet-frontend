@@ -240,6 +240,7 @@ export default function Login() {
                 variant="hero"
                 className="auth-brand-logo"
               />
+              <span className="auth-desktop-brand-name">{appName}</span>
               <div className="auth-brand-signature-meta">
                 <span className="auth-brand-signature-rule" aria-hidden="true" />
                 <span>{t('auth.portalEyebrow', 'Personal account')}</span>

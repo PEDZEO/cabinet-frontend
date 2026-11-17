@@ -1,0 +1,319 @@
+/* Account access: one readable form, colours inherited from the bot settings. */
+.auth-desktop-brand-name {
+  display: none;
+}
+
+.auth-portal--ultima {
+  --auth-primary: var(--ultima-color-primary);
+  --auth-primary-text: var(--ultima-color-primary-text);
+  --auth-page-background: var(--ultima-color-bg-top);
+  --auth-surface: var(--ultima-color-surface);
+  --auth-surface-strong: var(--ultima-color-secondary);
+  --auth-surface-soft: color-mix(
+    in srgb,
+    var(--ultima-color-surface) 92%,
+    var(--ultima-color-primary)
+  );
+  --auth-border: color-mix(in srgb, var(--ultima-color-surface-border) 28%, transparent);
+  --auth-border-strong: color-mix(in srgb, var(--ultima-color-surface-border) 60%, transparent);
+  --auth-text: var(--ultima-color-secondary-text);
+  --auth-text-soft: color-mix(in srgb, var(--ultima-color-secondary-text) 82%, transparent);
+  --auth-text-muted: color-mix(in srgb, var(--ultima-color-secondary-text) 70%, transparent);
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  min-height: 100dvh;
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  background: var(--auth-page-background) !important;
+}
+
+.auth-portal--ultima .auth-portal-backdrop,
+.auth-portal--ultima .auth-brand-panel::after,
+.auth-portal--ultima .auth-brand-copy,
+.auth-portal--ultima .auth-brand-signature-meta,
+.auth-portal--ultima .auth-brand-footnote {
+  display: none;
+}
+
+.auth-portal--ultima .auth-portal-frame {
+  display: block;
+  width: min(440px, 100%);
+  min-height: 0;
+  max-height: none;
+  margin-inline: auto;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.auth-portal--ultima .auth-brand-panel {
+  display: block;
+  min-height: 0;
+  overflow: visible;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.auth-portal--ultima .auth-brand-content {
+  max-width: none;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.auth-portal--ultima .auth-brand-signature {
+  width: 100%;
+  justify-content: flex-start;
+  gap: 12px;
+  margin-bottom: 42px;
+}
+
+.auth-portal--ultima .auth-brand-logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 0;
+  filter: none;
+  transform: none;
+}
+
+.auth-portal--ultima .auth-brand-logo > span,
+.auth-portal--ultima .auth-brand-logo svg {
+  width: 32px;
+  height: 32px;
+  color: var(--auth-primary);
+}
+
+.auth-portal--ultima .auth-desktop-brand-name {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--auth-text);
+  font-size: 20px;
+  font-weight: 650;
+  line-height: 1.3;
+}
+
+.auth-portal--ultima .auth-referral-note {
+  position: static;
+  width: auto;
+  justify-content: flex-start;
+  margin: -18px 0 28px;
+  padding: 10px 0;
+  border: 0;
+  border-radius: 0;
+  color: var(--auth-text-soft);
+  text-align: left;
+  background: transparent;
+}
+
+.auth-portal--ultima .auth-portal-card {
+  padding: 0;
+}
+
+.auth-portal--ultima .auth-view-kicker,
+.auth-portal--ultima .auth-view-icon {
+  display: none;
+}
+
+.auth-portal--ultima .auth-view-heading {
+  margin-bottom: 30px;
+}
+
+.auth-portal--ultima .auth-view-heading h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.6px;
+}
+
+.auth-portal--ultima .auth-view-heading p {
+  margin-top: 12px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.auth-portal--ultima .auth-method-list {
+  gap: 12px;
+}
+
+.auth-portal--ultima .auth-method-button {
+  min-height: 76px;
+  grid-template-columns: 24px minmax(0, 1fr) 18px;
+  gap: 15px;
+  padding: 14px 18px;
+  border: 1px solid var(--auth-border);
+  border-radius: 6px;
+  background: var(--auth-surface);
+  transform: none;
+}
+
+.auth-portal--ultima .auth-method-button:hover {
+  border-color: var(--auth-border-strong);
+  background: color-mix(in srgb, var(--auth-surface) 92%, var(--auth-primary));
+  transform: none;
+}
+
+.auth-portal--ultima .auth-method-icon {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.auth-portal--ultima .auth-method-copy strong,
+.auth-portal--ultima .auth-method-copy small {
+  overflow: visible;
+  white-space: normal;
+}
+
+.auth-portal--ultima .auth-method-copy strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.auth-portal--ultima .auth-method-copy small {
+  margin-top: 5px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.auth-portal--ultima .auth-oauth-divider {
+  margin-block: 26px;
+}
+
+.auth-portal--ultima .auth-oauth-button {
+  min-height: 46px;
+  border-radius: 5px;
+  background: transparent !important;
+}
+
+.auth-portal--ultima .auth-oauth-button span:last-child {
+  color: var(--auth-text-soft) !important;
+  font-size: 13px;
+}
+
+.auth-portal--ultima .auth-register-action {
+  margin-top: 28px;
+  border-color: var(--auth-border);
+}
+
+.auth-portal--ultima .auth-register-action,
+.auth-portal--ultima .auth-support-action,
+.auth-portal--ultima .auth-mode-switch {
+  font-size: 14px;
+}
+
+.auth-portal--ultima .auth-back-button {
+  min-height: 44px;
+  margin: -12px 0 20px;
+  font-weight: 500;
+}
+
+.auth-portal--ultima .auth-email-field {
+  min-height: 48px;
+  border: 1px solid var(--auth-border);
+  border-radius: 5px;
+  color: var(--auth-text);
+  font-size: 16px;
+  background: var(--auth-surface) !important;
+}
+
+.auth-portal--ultima .auth-email-field:focus {
+  border-color: var(--auth-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--auth-primary) 16%, transparent);
+}
+
+.auth-portal--ultima .auth-portal-card .btn-primary {
+  min-height: 48px;
+  border-radius: 5px;
+  color: var(--auth-primary-text) !important;
+  font-size: 15px;
+  background: var(--auth-primary) !important;
+  box-shadow: none;
+}
+
+.auth-portal--ultima .auth-portal-card .btn-primary:hover {
+  background: color-mix(in srgb, var(--auth-primary) 88%, var(--auth-text)) !important;
+}
+
+.auth-portal--ultima :is(button, a, input):focus-visible {
+  outline: 2px solid var(--auth-primary);
+  outline-offset: 3px;
+}
+
+@media (min-width: 1024px) {
+  .auth-portal--ultima {
+    padding: 70px 32px 56px !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  .auth-portal--ultima .auth-brand-signature {
+    gap: 10px;
+    margin-block: 12px 30px;
+    padding-right: 52px;
+  }
+
+  .auth-portal--ultima .auth-brand-logo {
+    width: 36px;
+    height: 36px;
+  }
+
+  .auth-portal--ultima .auth-brand-logo > span,
+  .auth-portal--ultima .auth-brand-logo svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .auth-portal--ultima .auth-desktop-brand-name {
+    font-size: 18px;
+  }
+
+  .auth-portal--ultima .auth-language-switcher {
+    position: absolute;
+    right: max(16px, env(safe-area-inset-right, 0px));
+  }
+
+  .auth-portal--ultima .auth-language-switcher button {
+    min-height: 40px;
+  }
+
+  .auth-portal--ultima .auth-portal-card {
+    padding: 0 0 24px;
+    background: transparent;
+  }
+
+  .auth-portal--ultima .auth-view-heading {
+    margin-bottom: 24px;
+  }
+
+  .auth-portal--ultima .auth-view-heading h1 {
+    font-size: clamp(25px, 6vw, 30px);
+    line-height: 1.25;
+  }
+
+  .auth-portal--ultima .auth-method-button {
+    min-height: 72px;
+    grid-template-columns: 24px minmax(0, 1fr) 16px;
+    gap: 12px;
+    padding: 12px 14px;
+  }
+
+  .auth-portal--ultima .auth-referral-note {
+    max-width: none;
+    margin: -12px 0 20px;
+    overflow: visible;
+    white-space: normal;
+    font-size: 13px;
+  }
+
+  .auth-portal--ultima :is(input, button, a) {
+    scroll-margin-block: 28px;
+  }
+}

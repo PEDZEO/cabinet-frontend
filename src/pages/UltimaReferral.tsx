@@ -1,4 +1,4 @@
-import { type CSSProperties, type ReactNode, useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -10,7 +10,6 @@ import {
   Clock3,
   Coins,
   Copy,
-  Gift,
   HandCoins,
   Share2,
   UserCheck,
@@ -26,11 +25,6 @@ import {
   UltimaDesktopPanel,
   UltimaDesktopSectionLayout,
 } from '@/components/ultima/desktop/UltimaDesktopSectionLayout';
-import {
-  ultimaAccentSurfaceStyle,
-  ultimaCardClassName,
-  ultimaSurfaceStyle,
-} from '@/features/ultima/surfaces';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { cn } from '@/lib/utils';
@@ -39,19 +33,18 @@ import { copyToClipboard } from '@/utils/clipboard';
 import { getReferralBonusParts } from '@/utils/referralBonus';
 
 const PREVIEW_LIMIT = 5;
-const defaultCardStyle: CSSProperties = ultimaSurfaceStyle;
-const accentCardStyle: CSSProperties = ultimaAccentSurfaceStyle;
+const ultimaCardClassName = 'ultima-offers-section';
 
 const statusClassMap: Record<string, string> = {
-  completed: 'border-emerald-200/25 bg-emerald-300/[0.1] text-emerald-100',
-  approved: 'border-sky-200/25 bg-sky-300/[0.1] text-sky-100',
-  pending: 'border-amber-200/25 bg-amber-300/[0.1] text-amber-100',
-  rejected: 'border-rose-200/25 bg-rose-300/[0.1] text-rose-100',
-  cancelled: 'border-rose-200/25 bg-rose-300/[0.1] text-rose-100',
+  completed: 'ultima-offers-line ultima-offers-fill ultima-offers-accent',
+  approved: 'ultima-offers-line ultima-offers-fill ultima-offers-accent',
+  pending: 'ultima-offers-line ultima-offers-fill ultima-offers-accent',
+  rejected: 'ultima-offers-line ultima-offers-fill ultima-offers-accent',
+  cancelled: 'ultima-offers-line ultima-offers-fill ultima-offers-accent',
 };
 
 const getStatusClass = (status: string) =>
-  statusClassMap[status] ?? 'border-white/[0.12] bg-white/[0.05] text-white/[0.72]';
+  statusClassMap[status] ?? 'ultima-offers-line ultima-offers-fill ultima-offers-muted';
 
 type MetricProps = {
   icon: ReactNode;
@@ -60,40 +53,21 @@ type MetricProps = {
   tone?: 'default' | 'success' | 'info';
 };
 
-function Metric({ icon, label, value, tone = 'default' }: MetricProps) {
+function Metric({ label, value }: MetricProps) {
   return (
-    <div className="min-w-0 px-2 first:pl-0 last:pr-0">
-      <div className="flex items-center gap-1.5 text-white/[0.72]">
-        {icon}
-        <span className="truncate text-[8px] font-semibold uppercase">{label}</span>
-      </div>
-      <p
-        className={cn(
-          'mt-1.5 truncate text-[13px] font-semibold',
-          tone === 'success'
-            ? 'text-emerald-100'
-            : tone === 'info'
-              ? 'text-sky-100'
-              : 'text-white/[0.94]',
-        )}
-      >
-        {value}
-      </p>
+    <div className="ultima-offers-metric">
+      <span>{label}</span>
+      <strong>{value}</strong>
     </div>
   );
 }
 
-function SectionHeading({ icon, title, hint }: { icon: ReactNode; title: string; hint?: string }) {
+function SectionHeading({ title, hint }: { icon: ReactNode; title: string; hint?: string }) {
   return (
-    <div className="flex items-start gap-3">
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[7px] border border-white/[0.08] bg-white/[0.04] text-emerald-100/[0.82]">
-        {icon}
-      </span>
-      <div className="min-w-0">
-        <h2 className="text-[15px] font-semibold leading-tight text-white/[0.94]">{title}</h2>
-        {hint ? <p className="mt-1 text-[13px] leading-snug text-white/[0.72]">{hint}</p> : null}
-      </div>
-    </div>
+    <header className="ultima-offers-section-heading">
+      <h2>{title}</h2>
+      {hint ? <p>{hint}</p> : null}
+    </header>
   );
 }
 
@@ -116,7 +90,7 @@ function ExpandButton({
     <button
       type="button"
       onClick={onClick}
-      className="mt-2 flex min-h-[40px] w-full items-center justify-center gap-2 border-t border-white/[0.07] pt-2 text-[13px] font-medium text-white/[0.66] transition-colors hover:text-white"
+      className="ultima-offers-line ultima-offers-muted mt-2 flex min-h-[40px] w-full items-center justify-center gap-2 border-t pt-2 text-[13px] font-medium transition-colors"
     >
       {expanded ? showLessLabel : showMoreLabel}
       <ChevronDown className={cn('h-4 w-4 transition-transform', expanded && 'rotate-180')} />
@@ -327,28 +301,16 @@ export function UltimaReferral() {
   const inviteCard = (
     <section
       data-testid="ultima-referral-hero"
-      className={cn(ultimaCardClassName, 'relative overflow-hidden p-4 lg:p-6')}
-      style={accentCardStyle}
+      className={cn(ultimaCardClassName, 'ultima-offers-invite')}
     >
       <div className="flex items-start gap-3 lg:gap-4">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[8px] border border-emerald-100/[0.12] bg-emerald-300/[0.08] text-emerald-100 lg:h-12 lg:w-12">
-          <Gift className="h-5 w-5 lg:h-6 lg:w-6" strokeWidth={1.8} />
-        </span>
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[13px] font-semibold uppercase text-white/[0.72]">
-              {t('referral.linkReady', { defaultValue: 'Ссылка готова' })}
-            </span>
-            <span className="rounded-full border border-emerald-200/[0.18] bg-emerald-300/[0.1] px-2.5 py-1 text-[13px] font-semibold text-emerald-50">
-              {info?.commission_percent || 0}%
-            </span>
-          </div>
-          <h2 className="mt-2 max-w-[24ch] text-[22px] font-semibold leading-[1.05] text-white/[0.98] lg:text-[30px]">
+          <h2 className="ultima-offers-text mt-2 max-w-[24ch] text-[22px] font-semibold leading-snug lg:text-[26px]">
             {t('referral.inviteTitle', {
               defaultValue: 'Приглашайте друзей и получайте бонусы',
             })}
           </h2>
-          <p className="mt-2 max-w-[62ch] text-[13px] leading-relaxed text-white/[0.72] lg:text-[13px]">
+          <p className="ultima-offers-muted mt-2 max-w-[62ch] text-[13px] leading-relaxed lg:text-[13px]">
             {t('referral.inviteSubtitle', {
               percent: info?.commission_percent || 0,
               defaultValue: 'Друг получает бонус, а вы — вознаграждение после его оплаты.',
@@ -358,22 +320,19 @@ export function UltimaReferral() {
       </div>
 
       {referralBenefitItems.length > 0 ? (
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="ultima-offers-benefits">
           {referralBenefitItems.map((item) => (
-            <span
-              key={item}
-              className="rounded-full border border-white/[0.09] bg-white/[0.04] px-3 py-1.5 text-[13px] font-medium text-white/[0.82]"
-            >
+            <span key={item} className="ultima-offers-muted">
               {item}
             </span>
           ))}
         </div>
       ) : null}
 
-      <div className="mt-4 flex min-w-0 items-center gap-2 rounded-[8px] border border-white/[0.08] bg-black/[0.12] p-2">
+      <div className="ultima-offers-line ultima-offers-fill mt-4 flex min-w-0 items-center gap-2 rounded-[8px] border p-2">
         <p
           data-testid="ultima-referral-link"
-          className="min-w-0 flex-1 truncate px-1 text-[13px] text-white/[0.68] lg:text-[13px]"
+          className="ultima-offers-muted min-w-0 flex-1 truncate px-1 text-[13px] lg:text-[13px]"
         >
           {referralLink || '—'}
         </p>
@@ -382,7 +341,7 @@ export function UltimaReferral() {
           data-testid="ultima-referral-copy"
           onClick={copyLink}
           disabled={!referralLink}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[7px] border border-white/[0.09] bg-white/[0.05] text-white/[0.78] transition-colors hover:bg-white/[0.09] disabled:opacity-40"
+          className="ultima-offers-line ultima-offers-fill ultima-offers-muted flex h-9 w-9 shrink-0 items-center justify-center rounded-[7px] border transition-colors disabled:opacity-40"
           aria-label={copied ? t('referral.copied') : t('referral.copyLink')}
         >
           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
@@ -407,8 +366,7 @@ export function UltimaReferral() {
   const mobileStats = (
     <section
       data-testid="ultima-referral-stats"
-      className={cn(ultimaCardClassName, 'grid grid-cols-3 divide-x divide-white/[0.07] p-4')}
-      style={defaultCardStyle}
+      className={cn(ultimaCardClassName, 'ultima-offers-metrics')}
     >
       {metrics.map((metric) => (
         <Metric key={metric.label} {...metric} />
@@ -417,11 +375,7 @@ export function UltimaReferral() {
   );
 
   const termsCard = terms ? (
-    <section
-      data-testid="ultima-referral-terms"
-      className={cn(ultimaCardClassName, 'p-4 lg:p-5')}
-      style={defaultCardStyle}
-    >
+    <section data-testid="ultima-referral-terms" className={ultimaCardClassName}>
       <div className="flex items-start justify-between gap-3">
         <SectionHeading
           icon={<BadgePercent className="h-4 w-4" />}
@@ -430,38 +384,30 @@ export function UltimaReferral() {
             defaultValue: 'Бонусы начисляются после выполнения условий программы.',
           })}
         />
-        <span className="shrink-0 rounded-full border border-emerald-200/[0.18] bg-emerald-300/[0.1] px-2.5 py-1 text-[13px] font-semibold text-emerald-50">
+        <span className="ultima-offers-line ultima-offers-fill ultima-offers-accent shrink-0 rounded-full border px-2.5 py-1 text-[13px] font-semibold">
           {terms.commission_percent}%
         </span>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 border-y border-white/[0.07] py-1">
+      <div className="ultima-offers-terms">
         {[
           [t('referral.terms.minTopup'), formatWithCurrency(terms.minimum_topup_rubles ?? 0)],
           [t('referral.terms.newUserBonus'), firstTopupBonus?.primary ?? '—'],
           [t('referral.terms.commission'), `${terms.commission_percent}%`],
           [t('referral.terms.inviterBonus'), inviterBonus?.primary ?? '—'],
         ].map(([label, value], index) => (
-          <div
-            key={String(label)}
-            className={cn(
-              'min-w-0 px-3 py-3 first:pl-0 even:border-l even:border-white/[0.07]',
-              index >= 2 && 'border-t border-white/[0.07]',
-            )}
-          >
-            <p className="text-[13px] font-medium uppercase leading-snug text-white/[0.72]">
+          <div key={String(label)} className={cn('ultima-offers-term-row')}>
+            <p className="ultima-offers-muted text-[13px] font-medium uppercase leading-snug">
               {label}
             </p>
-            <p className="mt-1.5 break-words text-[13px] font-semibold leading-snug text-white/[0.9]">
+            <p className="ultima-offers-text mt-1.5 break-words text-[13px] font-semibold leading-snug">
               {value}
             </p>
             {index === 1 && firstTopupBonus?.secondary ? (
-              <p className="mt-0.5 text-[13px] text-emerald-100/[0.72]">
-                {firstTopupBonus.secondary}
-              </p>
+              <p className="ultima-offers-accent mt-0.5 text-[13px]">{firstTopupBonus.secondary}</p>
             ) : null}
             {index === 3 && inviterBonus?.secondary ? (
-              <p className="mt-0.5 text-[13px] text-emerald-100/[0.72]">{inviterBonus.secondary}</p>
+              <p className="ultima-offers-accent mt-0.5 text-[13px]">{inviterBonus.secondary}</p>
             ) : null}
           </div>
         ))}
@@ -470,11 +416,7 @@ export function UltimaReferral() {
   ) : null;
 
   const referralsCard = (
-    <section
-      data-testid="ultima-referral-list"
-      className={cn(ultimaCardClassName, 'min-w-0 p-4 lg:p-5')}
-      style={defaultCardStyle}
-    >
+    <section data-testid="ultima-referral-list" className={ultimaCardClassName}>
       <SectionHeading
         icon={<UsersRound className="h-4 w-4" />}
         title={t('referral.yourReferrals')}
@@ -488,20 +430,20 @@ export function UltimaReferral() {
           {visibleReferrals.map((ref) => (
             <div
               key={ref.id}
-              className="flex min-h-[54px] items-center justify-between gap-3 border-t border-white/[0.07] py-3 first:border-t-0 first:pt-0"
+              className="ultima-offers-line flex min-h-[54px] items-center justify-between gap-3 border-t py-3 first:border-t-0 first:pt-0"
             >
               <div className="flex min-w-0 items-center gap-3">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04] text-[13px] font-semibold text-white/[0.7]">
+                <span className="ultima-offers-line ultima-offers-fill ultima-offers-muted flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-[13px] font-semibold">
                   {(ref.first_name || ref.username || String(ref.id))
                     .trim()
                     .charAt(0)
                     .toUpperCase()}
                 </span>
                 <div className="min-w-0">
-                  <p className="truncate text-[13px] font-medium text-white/[0.9]">
+                  <p className="ultima-offers-text truncate text-[13px] font-medium">
                     {ref.first_name || ref.username || t('referral.anonymousUser', { id: ref.id })}
                   </p>
-                  <p className="mt-0.5 text-[13px] text-white/[0.72]">
+                  <p className="ultima-offers-muted mt-0.5 text-[13px]">
                     {formatDate(ref.created_at)}
                   </p>
                 </div>
@@ -510,8 +452,8 @@ export function UltimaReferral() {
                 className={cn(
                   'shrink-0 rounded-full border px-2.5 py-1 text-[13px] font-semibold',
                   ref.has_paid
-                    ? 'border-emerald-200/[0.18] bg-emerald-300/[0.1] text-emerald-100'
-                    : 'border-white/[0.1] bg-white/[0.04] text-white/[0.72]',
+                    ? 'ultima-offers-line ultima-offers-fill ultima-offers-accent'
+                    : 'ultima-offers-line ultima-offers-fill ultima-offers-muted',
                 )}
               >
                 {ref.has_paid ? t('referral.status.paid') : t('referral.status.pending')}
@@ -527,15 +469,15 @@ export function UltimaReferral() {
           />
         </div>
       ) : (
-        <div className="mt-4 border-t border-white/[0.07] pt-4">
-          <p className="text-[13px] leading-relaxed text-white/[0.72]">
+        <div className="ultima-offers-line mt-4 border-t pt-4">
+          <p className="ultima-offers-muted text-[13px] leading-relaxed">
             {t('referral.noReferrals')}
           </p>
           <button
             type="button"
             onClick={shareLink}
             disabled={!referralLink}
-            className="mt-3 inline-flex items-center gap-2 text-[13px] font-medium text-emerald-100 disabled:opacity-40"
+            className="ultima-offers-accent mt-3 inline-flex items-center gap-2 text-[13px] font-medium disabled:opacity-40"
           >
             {t('referral.shareButton')}
             <ArrowUpRight className="h-4 w-4" />
@@ -546,11 +488,7 @@ export function UltimaReferral() {
   );
 
   const earningsCard = (
-    <section
-      data-testid="ultima-referral-earnings"
-      className={cn(ultimaCardClassName, 'min-w-0 p-4 lg:p-5')}
-      style={defaultCardStyle}
-    >
+    <section data-testid="ultima-referral-earnings" className={ultimaCardClassName}>
       <SectionHeading
         icon={<HandCoins className="h-4 w-4" />}
         title={t('referral.earningsHistory')}
@@ -564,20 +502,20 @@ export function UltimaReferral() {
           {visibleEarnings.map((earning) => (
             <div
               key={earning.id}
-              className="flex min-h-[54px] items-center justify-between gap-3 border-t border-white/[0.07] py-3 first:border-t-0 first:pt-0"
+              className="ultima-offers-line flex min-h-[54px] items-center justify-between gap-3 border-t py-3 first:border-t-0 first:pt-0"
             >
               <div className="min-w-0">
-                <p className="truncate text-[13px] font-medium text-white/[0.9]">
+                <p className="ultima-offers-text truncate text-[13px] font-medium">
                   {earning.referral_first_name ||
                     earning.referral_username ||
                     t('referral.anonymousReferral')}
                 </p>
-                <p className="mt-0.5 truncate text-[13px] text-white/[0.72]">
+                <p className="ultima-offers-muted mt-0.5 truncate text-[13px]">
                   {t(`referral.reasons.${earning.reason}`, { defaultValue: earning.reason })} ·{' '}
                   {formatDate(earning.created_at)}
                 </p>
               </div>
-              <p className="shrink-0 text-[13px] font-semibold text-emerald-100">
+              <p className="ultima-offers-accent shrink-0 text-[13px] font-semibold">
                 {formatPositive(earning.amount_rubles)}
               </p>
             </div>
@@ -591,7 +529,7 @@ export function UltimaReferral() {
           />
         </div>
       ) : (
-        <p className="mt-4 border-t border-white/[0.07] pt-4 text-[13px] text-white/[0.72]">
+        <p className="ultima-offers-line ultima-offers-muted mt-4 border-t pt-4 text-[13px]">
           {t('referral.emptyEarnings', { defaultValue: 'Начислений пока нет.' })}
         </p>
       )}
@@ -601,7 +539,7 @@ export function UltimaReferral() {
   const partnerBody = (
     <div data-testid="ultima-referral-partner" className="min-w-0">
       <div className="flex items-center justify-between gap-3">
-        <span className="text-[13px] font-semibold uppercase text-white/[0.72]">
+        <span className="ultima-offers-muted text-[13px] font-semibold uppercase">
           {t('referral.partnerStatusLabel', { defaultValue: 'Статус партнёра' })}
         </span>
         <span
@@ -618,10 +556,10 @@ export function UltimaReferral() {
 
       {showApplySection ? (
         <>
-          <h2 className="mt-4 text-[17px] font-semibold text-white/[0.94]">
+          <h2 className="ultima-offers-text mt-4 text-[17px] font-semibold">
             {t('referral.partner.becomePartner')}
           </h2>
-          <p className="mt-1.5 text-[13px] leading-relaxed text-white/[0.72]">
+          <p className="ultima-offers-muted mt-1.5 text-[13px] leading-relaxed">
             {t('referral.partner.becomePartnerDesc')}
           </p>
           <button
@@ -637,10 +575,10 @@ export function UltimaReferral() {
 
       {showPendingSection ? (
         <>
-          <h2 className="mt-4 text-[17px] font-semibold text-amber-100">
+          <h2 className="ultima-offers-accent mt-4 text-[17px] font-semibold">
             {t('referral.partner.underReview')}
           </h2>
-          <p className="mt-1.5 text-[13px] leading-relaxed text-white/[0.72]">
+          <p className="ultima-offers-muted mt-1.5 text-[13px] leading-relaxed">
             {t('referral.partner.underReviewDesc')}
           </p>
         </>
@@ -648,13 +586,13 @@ export function UltimaReferral() {
 
       {showRejectedSection ? (
         <>
-          <h2 className="mt-4 text-[17px] font-semibold text-rose-100">
+          <h2 className="ultima-offers-accent mt-4 text-[17px] font-semibold">
             {t('referral.partner.rejected')}
           </h2>
           <button
             type="button"
             onClick={() => navigate('/referral/partner/apply')}
-            className="mt-4 flex min-h-[42px] w-full items-center justify-center rounded-[7px] border border-rose-200/[0.16] bg-rose-300/[0.08] px-4 text-[13px] font-medium text-rose-50"
+            className="ultima-offers-line ultima-offers-fill ultima-offers-accent mt-4 flex min-h-[42px] w-full items-center justify-center rounded-[7px] border px-4 text-[13px] font-medium"
           >
             {t('referral.partner.reapplyButton')}
           </button>
@@ -663,20 +601,20 @@ export function UltimaReferral() {
 
       {isPartner && withdrawalBalance ? (
         <>
-          <div className="mt-4 grid grid-cols-2 divide-x divide-white/[0.07] border-y border-white/[0.07] py-3">
+          <div className="ultima-offers-line ultima-offers-line mt-4 grid grid-cols-2 divide-x border-y py-3">
             <div className="min-w-0 pr-3">
-              <p className="text-[13px] uppercase text-white/[0.72]">
+              <p className="ultima-offers-muted text-[13px] uppercase">
                 {t('referral.withdrawal.available')}
               </p>
-              <p className="mt-1.5 truncate text-[15px] font-semibold text-emerald-100">
+              <p className="ultima-offers-accent mt-1.5 truncate text-[15px] font-semibold">
                 {formatWithCurrency(withdrawalBalance.available_total / 100)}
               </p>
             </div>
             <div className="min-w-0 pl-3">
-              <p className="text-[13px] uppercase text-white/[0.72]">
+              <p className="ultima-offers-muted text-[13px] uppercase">
                 {t('referral.withdrawal.pending')}
               </p>
-              <p className="mt-1.5 truncate text-[15px] font-semibold text-amber-100">
+              <p className="ultima-offers-accent mt-1.5 truncate text-[15px] font-semibold">
                 {formatWithCurrency(withdrawalBalance.pending / 100)}
               </p>
             </div>
@@ -696,14 +634,12 @@ export function UltimaReferral() {
   );
 
   const mobilePartnerCard = showPartnerSection ? (
-    <section className={cn(ultimaCardClassName, 'p-4')} style={defaultCardStyle}>
-      {partnerBody}
-    </section>
+    <section className={ultimaCardClassName}>{partnerBody}</section>
   ) : null;
 
   const withdrawalHistoryCard =
     showPartnerSection && isPartner && withdrawalItems.length > 0 ? (
-      <section className={cn(ultimaCardClassName, 'p-4 lg:p-5')} style={defaultCardStyle}>
+      <section className={ultimaCardClassName}>
         <SectionHeading
           icon={<Clock3 className="h-4 w-4" />}
           title={t('referral.withdrawal.history')}
@@ -715,14 +651,14 @@ export function UltimaReferral() {
           {visibleWithdrawals.map((item) => (
             <div
               key={item.id}
-              className="border-t border-white/[0.07] py-3 first:border-t-0 first:pt-0"
+              className="ultima-offers-line border-t py-3 first:border-t-0 first:pt-0"
             >
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-[13px] font-semibold text-white/[0.9]">
+                  <p className="ultima-offers-text text-[13px] font-semibold">
                     {formatWithCurrency(item.amount_rubles)}
                   </p>
-                  <p className="mt-0.5 text-[13px] text-white/[0.72]">
+                  <p className="ultima-offers-muted mt-0.5 text-[13px]">
                     {formatDate(item.created_at)}
                   </p>
                 </div>
@@ -740,7 +676,7 @@ export function UltimaReferral() {
                   type="button"
                   onClick={() => cancelWithdrawalMutation.mutate(item.id)}
                   disabled={cancelWithdrawalMutation.isPending}
-                  className="mt-2 text-[13px] font-medium text-rose-100/[0.82] disabled:opacity-40"
+                  className="ultima-offers-accent mt-2 text-[13px] font-medium disabled:opacity-40"
                 >
                   {t('common.cancel')}
                 </button>
@@ -760,16 +696,10 @@ export function UltimaReferral() {
 
   const loadingContent = (
     <div data-testid="ultima-referral-loading" className="space-y-3">
-      <div className={cn(ultimaCardClassName, 'h-[252px] animate-pulse')} style={accentCardStyle} />
+      <div className={cn(ultimaCardClassName, 'h-[252px] animate-pulse')} />
       <div className="grid grid-cols-2 gap-3">
-        <div
-          className={cn(ultimaCardClassName, 'h-[180px] animate-pulse')}
-          style={defaultCardStyle}
-        />
-        <div
-          className={cn(ultimaCardClassName, 'h-[180px] animate-pulse')}
-          style={defaultCardStyle}
-        />
+        <div className={cn(ultimaCardClassName, 'h-[180px] animate-pulse')} />
+        <div className={cn(ultimaCardClassName, 'h-[180px] animate-pulse')} />
       </div>
     </div>
   );
@@ -780,13 +710,9 @@ export function UltimaReferral() {
         ultimaCardClassName,
         'flex min-h-[260px] flex-col items-center justify-center p-6 text-center',
       )}
-      style={defaultCardStyle}
     >
-      <span className="flex h-12 w-12 items-center justify-center rounded-[8px] border border-white/[0.08] bg-white/[0.04] text-white/[0.6]">
-        <UsersRound className="h-5 w-5" />
-      </span>
-      <h2 className="mt-4 text-[18px] font-semibold text-white/[0.9]">{t('referral.title')}</h2>
-      <p className="mt-2 max-w-[42ch] text-[13px] leading-relaxed text-white/[0.72]">
+      <h2 className="ultima-offers-text mt-4 text-[18px] font-semibold">{t('referral.title')}</h2>
+      <p className="ultima-offers-muted mt-2 max-w-[42ch] text-[13px] leading-relaxed">
         {t('referral.disabled')}
       </p>
     </section>
@@ -801,7 +727,7 @@ export function UltimaReferral() {
       {inviteCard}
       {!isDesktop ? mobileStats : null}
       {termsCard}
-      <div className="grid min-w-0 gap-3 lg:grid-cols-2 lg:gap-4">
+      <div className="ultima-offers-records">
         {referralsCard}
         {earningsCard}
       </div>
@@ -816,7 +742,7 @@ export function UltimaReferral() {
     return (
       <div
         data-testid="ultima-referral-page"
-        className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-profile-desktop ultima-shell-muted-aura"
+        className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-profile-desktop ultima-shell-muted-aura ultima-offers-page ultima-referral-page"
       >
         <div className="ultima-shell-aura" />
         <UltimaDesktopSectionLayout
@@ -868,23 +794,17 @@ export function UltimaReferral() {
   return (
     <div
       data-testid="ultima-referral-page"
-      className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-muted-aura"
+      className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-muted-aura ultima-offers-page ultima-referral-page"
     >
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
         <section className="ultima-scrollbar flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1 pt-[clamp(8px,2vh,16px)]">
-          <header className="flex items-end justify-between gap-3 px-1">
+          <header className="ultima-offers-mobile-heading">
             <div className="min-w-0">
-              <p className="text-[13px] font-semibold uppercase text-white/[0.72]">
-                {t('nav.referral', { defaultValue: 'Рефералы' })}
-              </p>
-              <h1 className="mt-1 text-[25px] font-semibold leading-none text-white/[0.97]">
+              <h1 className="ultima-offers-text mt-1 text-[25px] font-semibold leading-none">
                 {t('referral.title')}
               </h1>
             </div>
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[7px] border border-white/[0.08] bg-white/[0.04] text-emerald-100/[0.8]">
-              <Share2 className="h-4 w-4" />
-            </span>
           </header>
 
           <div data-testid="ultima-referral-content" className="space-y-3 pb-3">

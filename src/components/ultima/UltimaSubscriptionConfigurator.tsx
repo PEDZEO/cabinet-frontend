@@ -10,6 +10,7 @@ import {
   ultimaSurfaceStyle,
 } from '@/features/ultima/surfaces';
 import { cn } from '@/lib/utils';
+import '@/styles/ultima-mobile-checkout.css';
 
 export type UltimaSubscriptionPeriodOption = {
   days: number;
@@ -76,7 +77,7 @@ export function UltimaSubscriptionPeriodGrid({
       role="radiogroup"
       aria-label={t('subscription.selectPeriod')}
       data-testid={`${testIdPrefix}-period-selector`}
-      className="grid grid-cols-2 gap-2 xl:grid-cols-3"
+      className="ultima-checkout-period-list grid grid-cols-2 gap-2 xl:grid-cols-3"
     >
       {periods.map((period) => (
         <button
@@ -87,27 +88,27 @@ export function UltimaSubscriptionPeriodGrid({
           data-testid={`${testIdPrefix}-period-${period.days}`}
           onClick={() => onSelectPeriod(period.days)}
           className={cn(
-            'relative min-h-[72px] rounded-[12px] border px-3 py-2.5 text-left transition-colors lg:rounded-[8px]',
+            'ultima-checkout-period relative min-h-[72px] rounded-[12px] border px-3 py-2.5 text-left transition-colors lg:rounded-[8px]',
             period.isSelected
               ? 'border-emerald-200/[0.34] bg-emerald-300/[0.1]'
               : 'border-white/[0.1] bg-white/[0.035] hover:bg-white/[0.07]',
           )}
         >
           <div className="flex items-start justify-between gap-2">
-            <span className="min-w-0 break-words text-[14px] font-semibold leading-tight text-white">
+            <span className="ultima-checkout-period-label min-w-0 break-words text-[14px] font-semibold leading-tight text-white">
               {period.label}
             </span>
             {period.isSelected ? (
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-300 text-emerald-950">
+              <span className="ultima-checkout-period-mark flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-300 text-emerald-950">
                 <Check className="h-3.5 w-3.5" strokeWidth={2.6} />
               </span>
             ) : period.isBestDeal ? (
-              <span className="shrink-0 rounded-full border border-emerald-200/[0.24] bg-emerald-300/[0.1] px-1.5 py-0.5 text-[13px] font-semibold text-emerald-50">
+              <span className="ultima-checkout-period-badge shrink-0 rounded-full border border-emerald-200/[0.24] bg-emerald-300/[0.1] px-1.5 py-0.5 text-[13px] font-semibold text-emerald-50">
                 {t('ultima.subscriptionBuilder.bestDeal')}
               </span>
             ) : null}
           </div>
-          <div className="mt-2 flex items-end justify-between gap-2">
+          <div className="ultima-checkout-period-price mt-2 flex items-end justify-between gap-2">
             <div>
               <div className="text-[18px] font-semibold leading-none text-white">
                 {period.priceLabel}
@@ -117,7 +118,7 @@ export function UltimaSubscriptionPeriodGrid({
               </div>
             </div>
             {period.originalPriceLabel ? (
-              <span className="text-[13px] text-white/[0.38] line-through">
+              <span className="ultima-checkout-period-original text-[13px] text-white/[0.38] line-through">
                 {period.originalPriceLabel}
               </span>
             ) : null}
@@ -171,12 +172,12 @@ export function UltimaSubscriptionConfigurator({
   const canIncreaseDevices = selectedDeviceLimit < maxDeviceLimit;
 
   return (
-    <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
+    <div className="ultima-shell-inner ultima-shell-mobile-docked ultima-mobile-checkout lg:max-w-[960px]">
       <main
         className="ultima-scrollbar min-h-0 flex-1 overflow-y-auto pr-1 pt-2"
         data-testid="ultima-subscription-configurator"
       >
-        <header className="mb-3">
+        <header className="ultima-checkout-heading mb-3">
           <div className="mb-1 flex items-center justify-between gap-3">
             <p className="text-[13px] font-semibold uppercase text-white/[0.72]">
               {t('ultima.subscriptionBuilder.pageTitle')}
@@ -211,7 +212,7 @@ export function UltimaSubscriptionConfigurator({
         </header>
 
         <section
-          className={cn(ultimaCardClassName, 'mb-2.5 p-3')}
+          className={cn(ultimaCardClassName, 'ultima-checkout-parameters mb-2.5 p-3')}
           style={ultimaSurfaceStyle}
           data-testid="ultima-subscription-parameters"
         >
@@ -220,7 +221,7 @@ export function UltimaSubscriptionConfigurator({
             {t('ultima.subscriptionBuilder.parameters')}
           </div>
 
-          <div className="mt-3 grid grid-cols-2 divide-x divide-white/[0.1] border-y border-white/[0.08] py-2.5">
+          <div className="ultima-checkout-plan-details mt-3 grid grid-cols-2 divide-x divide-white/[0.1] border-y border-white/[0.08] py-2.5">
             <div className="pr-3">
               <div className="text-[13px] uppercase text-white/[0.72]">
                 {t('ultima.subscriptionBuilder.traffic')}
@@ -260,7 +261,7 @@ export function UltimaSubscriptionConfigurator({
             </div>
           ) : (
             <>
-              <div className="mt-3 flex items-center justify-between gap-3">
+              <div className="ultima-checkout-device-limit mt-3 flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 text-[13px] font-semibold text-white">
                     <Smartphone className="h-4 w-4 text-white/[0.72]" />
@@ -283,7 +284,7 @@ export function UltimaSubscriptionConfigurator({
               {extraDeviceSummary ? (
                 <div
                   data-testid="ultima-mobile-extra-device-summary"
-                  className="mt-2.5 flex items-center justify-between gap-3 border-t border-white/[0.08] pt-2.5"
+                  className="ultima-checkout-extra-devices mt-2.5 flex items-center justify-between gap-3 border-t border-white/[0.08] pt-2.5"
                 >
                   <div className="min-w-0">
                     <p className="truncate text-[13px] font-medium text-amber-50/[0.88]">
@@ -307,8 +308,11 @@ export function UltimaSubscriptionConfigurator({
         </section>
 
         {!isTariffSwitchFlow ? (
-          <section className={cn(ultimaCardClassName, 'mb-2.5 p-3')} style={ultimaSurfaceStyle}>
-            <div className="mb-2.5 flex items-center justify-between gap-3">
+          <section
+            className={cn(ultimaCardClassName, 'ultima-checkout-periods mb-2.5 p-3')}
+            style={ultimaSurfaceStyle}
+          >
+            <div className="ultima-checkout-period-heading mb-2.5 flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <Clock3 className="h-4 w-4 text-emerald-200/[0.84]" />
                 <div>
@@ -335,7 +339,7 @@ export function UltimaSubscriptionConfigurator({
         {trafficTopUp ? <div className="mb-2.5">{trafficTopUp}</div> : null}
       </main>
 
-      <footer className="ultima-mobile-dock-footer pt-2.5">
+      <footer className="ultima-mobile-dock-footer ultima-checkout-footer pt-2.5">
         {paymentRecoveryCard ? <div className="mb-2">{paymentRecoveryCard}</div> : null}
         {minimumTopUpHint ? (
           <div className="mb-2 text-center text-[13px] leading-[1.4] text-white/[0.72]">
@@ -349,7 +353,7 @@ export function UltimaSubscriptionConfigurator({
         ) : null}
 
         <div
-          className={cn(ultimaPaneClassName, 'mb-2 px-3 py-2')}
+          className={cn(ultimaPaneClassName, 'ultima-checkout-price-summary mb-2 px-3 py-2')}
           style={ultimaPaneSurfaceStyle}
           data-testid="ultima-subscription-price-summary"
         >
@@ -398,7 +402,7 @@ export function UltimaSubscriptionConfigurator({
               {isFree ? t('subscription.free') : actionPriceLabel}
             </span>
             {!isFree ? (
-              <span className="mt-1 block text-[8px] uppercase leading-none text-white/[0.64]">
+              <span className="ultima-checkout-action-meta mt-1 block text-[8px] uppercase leading-none text-white/[0.64]">
                 {actionMetaLabel}
               </span>
             ) : null}

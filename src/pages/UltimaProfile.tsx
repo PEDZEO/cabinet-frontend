@@ -55,7 +55,7 @@ type SectionItem = {
 const ULTIMA_TOP_UP_PATH = '/balance/top-up?returnTo=/subscription';
 const ULTIMA_SECTION_SURFACE_STYLE = ultimaSurfaceStyle;
 const ULTIMA_SECTION_CLASS_NAME =
-  'rounded-[24px] border shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_16px_36px_rgba(3,14,24,0.18)] lg:rounded-[8px]';
+  'ultima-profile-surface rounded-[24px] border shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_16px_36px_rgba(3,14,24,0.18)] lg:rounded-[8px]';
 
 function ProfileActionRow({ item, onClick }: { item: SectionItem; onClick: () => void }) {
   return (
@@ -63,10 +63,10 @@ function ProfileActionRow({ item, onClick }: { item: SectionItem; onClick: () =>
       type="button"
       onClick={onClick}
       data-testid={`ultima-profile-action-${item.key}`}
-      className="group flex min-h-[64px] w-full items-center gap-3 border-b border-white/[0.07] px-1 py-3 text-left transition-colors last:border-b-0 hover:bg-white/[0.025]"
+      className="ultima-profile-action-row group flex min-h-[64px] w-full items-center gap-3 border-b border-white/[0.07] px-1 py-3 text-left transition-colors last:border-b-0 hover:bg-white/[0.025]"
     >
       <div
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] border text-emerald-50/[0.88] lg:rounded-[6px]"
+        className="ultima-profile-action-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] border text-emerald-50/[0.88] lg:rounded-[6px]"
         style={{
           borderColor: 'color-mix(in srgb, var(--ultima-color-ring) 15%, transparent)',
           background: 'color-mix(in srgb, var(--ultima-color-primary) 10%, transparent)',
@@ -89,7 +89,7 @@ function ProfileActionRow({ item, onClick }: { item: SectionItem; onClick: () =>
           {item.subtitle}
         </p>
       </div>
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center text-white/[0.38] transition-colors group-hover:text-white/[0.72]">
+      <span className="ultima-profile-action-arrow flex h-8 w-8 shrink-0 items-center justify-center text-white/[0.38] transition-colors group-hover:text-white/[0.72]">
         <ChevronRight className="h-4 w-4" />
       </span>
     </button>
@@ -112,7 +112,7 @@ function ProfileSection({
       className={`${ULTIMA_SECTION_CLASS_NAME} min-w-0 p-4 lg:p-5`}
       style={ULTIMA_SECTION_SURFACE_STYLE}
     >
-      <div className="mb-1">
+      <div className="ultima-profile-section-heading mb-1">
         <h2 className="text-[14px] font-semibold text-white/[0.94]">{title}</h2>
         <p className="mt-1 text-[13px] leading-snug text-white/[0.72]">{hint}</p>
       </div>
@@ -568,10 +568,7 @@ export function UltimaProfile() {
 
   const bottomNav = <UltimaBottomNav active="profile" onSupportClick={openSupportFast} />;
   const sectionsContent = (
-    <div
-      data-testid="ultima-profile-sections"
-      className="grid min-w-0 gap-3 lg:grid-cols-2 lg:gap-4"
-    >
+    <div data-testid="ultima-profile-sections" className="ultima-profile-sections">
       <ProfileSection
         title={t('profile.ultima.accountSection')}
         hint={t('profile.ultima.accountSectionHint')}
@@ -658,7 +655,9 @@ export function UltimaProfile() {
                     <p className="break-words text-[15px] font-semibold text-white/[0.94]">
                       {displayName}
                     </p>
-                    <p className="mt-0.5 truncate text-[13px] text-white/[0.72]">{accountHandle}</p>
+                    <p className="mt-0.5 break-words text-[13px] text-white/[0.72]">
+                      {accountHandle}
+                    </p>
                   </div>
                 </div>
 
@@ -692,7 +691,7 @@ export function UltimaProfile() {
                   </span>
                 </div>
 
-                <div className="mt-4 grid grid-cols-2 gap-2">
+                <div className="ultima-profile-account-actions mt-4 grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     className="ultima-btn-pill ultima-btn-secondary flex min-h-[42px] items-center justify-center gap-2 px-3 py-2 text-[13px]"
@@ -704,7 +703,7 @@ export function UltimaProfile() {
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="flex min-h-[42px] items-center justify-center gap-2 rounded-[7px] border border-rose-300/[0.16] bg-rose-500/[0.08] px-3 py-2 text-[13px] font-medium text-rose-50 transition-colors hover:bg-rose-500/[0.14]"
+                    className="ultima-profile-exit flex min-h-[42px] items-center justify-center gap-2 rounded-[7px] border border-rose-300/[0.16] bg-rose-500/[0.08] px-3 py-2 text-[13px] font-medium text-rose-50 transition-colors hover:bg-rose-500/[0.14]"
                   >
                     <LogOut className="h-4 w-4" />
                     {t('profile.ultima.logout')}
@@ -739,7 +738,7 @@ export function UltimaProfile() {
                 <p className="break-words text-[16px] font-semibold leading-snug text-white/[0.96]">
                   {displayName}
                 </p>
-                <p className="mt-0.5 truncate text-[13px] text-white/[0.72]">{accountHandle}</p>
+                <p className="mt-0.5 break-words text-[13px] text-white/[0.72]">{accountHandle}</p>
               </div>
               <span
                 className={`shrink-0 rounded-full border px-2.5 py-1 text-[13px] font-semibold uppercase ${
@@ -758,7 +757,7 @@ export function UltimaProfile() {
               </span>
             </div>
 
-            <div className="mt-4 grid grid-cols-3 divide-x divide-white/[0.07] border-y border-white/[0.07] py-3">
+            <div className="ultima-profile-summary mt-4 grid grid-cols-3 divide-x divide-white/[0.07] border-y border-white/[0.07] py-3">
               {[
                 [
                   t('profile.ultima.balance'),
@@ -779,9 +778,9 @@ export function UltimaProfile() {
                 <div key={String(label)} className="min-w-0 px-2 first:pl-0 last:pr-0">
                   <div className="flex items-center gap-1.5 text-white/[0.72]">
                     {icon}
-                    <span className="truncate text-[8px] font-medium uppercase">{label}</span>
+                    <span className="break-words text-[12px] font-medium uppercase">{label}</span>
                   </div>
-                  <p className="mt-1.5 truncate text-[13px] font-semibold text-white/[0.9]">
+                  <p className="mt-1.5 break-words text-[13px] font-semibold text-white/[0.9]">
                     {value}
                   </p>
                 </div>
@@ -801,7 +800,7 @@ export function UltimaProfile() {
 
           <div className="shrink-0">{sectionsContent}</div>
 
-          <div className="mt-3 grid grid-cols-2 gap-2 pb-3">
+          <div className="ultima-profile-account-actions mt-3 grid grid-cols-2 gap-2 pb-3">
             <button
               type="button"
               className="ultima-btn-pill ultima-btn-secondary flex min-h-[42px] items-center justify-center gap-2 px-3 py-2 text-[13px]"
@@ -814,7 +813,7 @@ export function UltimaProfile() {
             <button
               type="button"
               onClick={handleLogout}
-              className="flex min-h-[42px] items-center justify-center gap-2 rounded-full border border-rose-300/[0.16] bg-rose-500/[0.08] px-3 py-2 text-[13px] font-medium text-rose-50 transition-colors hover:bg-rose-500/[0.14]"
+              className="ultima-profile-exit flex min-h-[42px] items-center justify-center gap-2 rounded-full border border-rose-300/[0.16] bg-rose-500/[0.08] px-3 py-2 text-[13px] font-medium text-rose-50 transition-colors hover:bg-rose-500/[0.14]"
             >
               <LogOut className="h-4 w-4" />
               {t('profile.ultima.logout')}

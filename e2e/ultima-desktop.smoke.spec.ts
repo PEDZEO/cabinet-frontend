@@ -1268,11 +1268,7 @@ test.describe('Ultima desktop workspace', () => {
 
     const overview = page.getByTestId('ultima-home-overview');
     await expect(overview).toBeVisible();
-    const homeLogo = page.getByTestId('ultima-home-brand-logo');
-    await expect(homeLogo).toBeVisible();
-    await expect
-      .poll(() => homeLogo.evaluate((image) => getComputedStyle(image).opacity))
-      .toBe('1');
+    await expect(page.getByTestId('ultima-home-brand-logo')).toHaveCount(0);
     await expect(overview).toContainText('Обычный');
     await expect(page.getByTestId('ultima-home-unlimited-traffic')).toContainText(
       'Обычные серверы',
@@ -1342,16 +1338,15 @@ test.describe('Ultima desktop workspace', () => {
 
     await expect(page.getByTestId('ultima-home-desktop')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Обычный', exact: true })).toHaveCount(1);
-    await expect(page.getByTestId('ultima-home-usage')).toContainText('18 / 100 ГБ');
+    await expect(page.getByTestId('ultima-home-usage')).toContainText('Использовано 18 из 100 ГБ');
     await expect(page.getByTestId('ultima-home-desktop-unlimited')).toContainText(
       'Обычные серверы',
     );
     await expect(page.getByTestId('ultima-home-desktop-unlimited')).toContainText('Безлимит');
-    await expect(page.getByText('Позови друга', { exact: true })).toHaveCount(1);
-    await expect(page.getByTestId('ultima-device-home-cta-title')).toHaveCount(1);
-    await expect(page.getByTestId('ultima-device-home-cta-title')).toContainText('Подключить');
-    await expect(page.getByTestId('ultima-home-desktop-identities')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Связаться с поддержкой' })).toHaveCount(1);
+    await expect(page.locator('.ultima-web-home .ultima-card')).toHaveCount(0);
+    await expect(page.locator('[data-ultima-nav-target="devices"]')).toBeVisible();
+    await expect(page.locator('[data-ultima-nav-target="profile"]')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Поддержка', exact: true })).toHaveCount(1);
     await expect(page.getByText('VPN кабинет', { exact: true })).toHaveCount(0);
     await expect(page.getByText('VPN Cabinet', { exact: true })).toHaveCount(0);
     await expectNoHorizontalOverflow(page);
@@ -1422,8 +1417,7 @@ test.describe('Ultima desktop workspace', () => {
         await expect(warning).toBeVisible();
         await expect(warning).toContainText('Трафик заканчивается');
         await expect(warning).toContainText('Осталось 8 ГБ на Спецсерверы');
-        await expect(page.getByText('Позови друга', { exact: true })).toHaveCount(1);
-        await expect(page.getByTestId('ultima-device-home-cta-title')).toHaveCount(1);
+        await expect(page.locator('[data-ultima-nav-target="devices"]')).toBeVisible();
       }
       await expectNoHorizontalOverflow(page);
 
@@ -1474,10 +1468,13 @@ test.describe('Ultima desktop workspace', () => {
     await expect(page.locator('.ultima-desktop-workspace')).toHaveClass(
       /ultima-desktop-workspace-no-context/,
     );
-    const newsMainWidth = await page
-      .locator('.ultima-desktop-main')
-      .evaluate((element) => element.getBoundingClientRect().width);
-    expect(newsMainWidth).toBeGreaterThan(1000);
+    await expect
+      .poll(() =>
+        page
+          .locator('.ultima-desktop-main')
+          .evaluate((element) => element.getBoundingClientRect().width),
+      )
+      .toBeGreaterThan(900);
     await expectNoHorizontalOverflow(page);
 
     await page.locator('[data-ultima-nav-target="profile"]').click();
@@ -2432,37 +2429,25 @@ test.describe('Ultima mobile scrolling', () => {
     await expect(cue).toHaveCount(0);
   });
 
-  test('bounds transient effects during rapid shield taps', async ({ page }) => {
+  test('keeps mobile actions as readable rows without decorative tap effects', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await bootstrapUltimaDesktop(page);
     await mockUltimaDesktopApi(page);
     await page.goto('/');
-
-    const shield = page.getByTestId('ultima-shield-tap-target');
-    await expect(shield).toBeVisible();
-    await shield.evaluate((element) => {
-      const rect = element.getBoundingClientRect();
-      for (let index = 0; index < 80; index += 1) {
-        element.dispatchEvent(
-          new PointerEvent('pointerdown', {
-            bubbles: true,
-            clientX: rect.left + rect.width / 2,
-            clientY: rect.top + rect.height / 2,
-            pointerId: index + 1,
-            pointerType: 'touch',
-          }),
-        );
-      }
-    });
-
-    const effectCounts = await shield.evaluate((element) => ({
-      digits: element.querySelectorAll('.ultima-float-number').length,
-      ripples: element.querySelectorAll('.ultima-tap-ring').length,
-    }));
-    expect(effectCounts.ripples).toBeGreaterThan(0);
-    expect(effectCounts.ripples).toBeLessThanOrEqual(10);
-    expect(effectCounts.digits).toBeGreaterThan(0);
-    expect(effectCounts.digits).toBeLessThanOrEqual(16);
+    await expect(page.getByTestId('ultima-home-overview')).toBeVisible();
+    await expect(page.getByTestId('ultima-shield-tap-target')).toHaveCount(0);
+    const rows = page.locator('.ultima-mobile-action-row');
+    await expect(rows).toHaveCount(4);
+    const boxes = await rows.evaluateAll((elements) =>
+      elements
+        .map((el) => el.getBoundingClientRect())
+        .map((r) => ({ left: r.left, width: r.width, top: r.top, bottom: r.bottom })),
+    );
+    for (let index = 1; index < boxes.length; index++) {
+      expect(boxes[index].left).toBe(boxes[0].left);
+      expect(boxes[index].top).toBeGreaterThanOrEqual(boxes[index - 1].bottom);
+    }
+    await expectNoHorizontalOverflow(page);
   });
 });
 
@@ -2637,7 +2622,7 @@ test.describe('Ultima connection setup', () => {
     await expect(page.getByText('Порядок подключения', { exact: true })).toBeVisible();
     await expect(page.getByTestId('ultima-connection-desktop-step-1')).toBeVisible();
     await expect(page.getByTestId('ultima-connection-primary-action')).toHaveCount(1);
-    await expect(page.locator('.ultima-desktop-brand-mark img')).toBeVisible();
+    await expect(page.locator('.ultima-web-brand-image')).toBeVisible();
     await expect
       .poll(() =>
         page.evaluate(() =>
@@ -2738,4 +2723,71 @@ test.describe('Ultima approved cabinet navigation', () => {
     await expect(page).toHaveURL(/\/profile$/);
     await expectNoHorizontalOverflow(page);
   });
+});
+
+test.describe('Ultima bot-configured palette', () => {
+  for (const width of [390, 1440])
+    for (const variant of ['light', 'dark']) {
+      test(`uses bot ${variant} colours at ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await bootstrapUltimaDesktop(page);
+        await mockUltimaDesktopApi(page);
+        const palette =
+          variant === 'light'
+            ? {
+                backgroundTopColor: '#f5f7f6',
+                backgroundBottomColor: '#f5f7f6',
+                surfaceColor: '#ffffff',
+                secondaryColor: '#edf2ef',
+                secondaryTextColor: '#172c24',
+                primaryColor: '#206747',
+                primaryTextColor: '#ffffff',
+                navBackgroundColor: '#edf2ef',
+                navTextColor: '#172c24',
+                navActiveColor: '#206747',
+                surfaceBorderColor: '#6d8075',
+              }
+            : {
+                backgroundTopColor: '#121823',
+                backgroundBottomColor: '#121823',
+                surfaceColor: '#192334',
+                secondaryColor: '#1e2a3c',
+                secondaryTextColor: '#edf1f7',
+                primaryColor: '#93b7ff',
+                primaryTextColor: '#13233e',
+                navBackgroundColor: '#101722',
+                navTextColor: '#dce5f4',
+                navActiveColor: '#2c4573',
+                surfaceBorderColor: '#73869e',
+              };
+        await page.route('**/cabinet/branding/ultima-theme-config', (route) =>
+          route.fulfill({ json: { ...THEME_CONFIG, ...palette } }),
+        );
+        await page.addInitScript(
+          (config) => localStorage.setItem('cabinet_ultima_theme_config', JSON.stringify(config)),
+          { ...THEME_CONFIG, ...palette },
+        );
+        await page.goto('/');
+        await expect(page.getByRole('heading', { name: 'Обычный', exact: true })).toBeVisible();
+        await expect
+          .poll(() =>
+            page
+              .locator('.ultima-shell')
+              .first()
+              .evaluate((el) => getComputedStyle(el).backgroundColor),
+          )
+          .toBe(variant === 'light' ? 'rgb(245, 247, 246)' : 'rgb(18, 24, 35)');
+        const primary =
+          width < 1024
+            ? page.getByTestId('ultima-primary-cta')
+            : page.locator('.ultima-web-actions .ultima-btn-primary');
+        await expect
+          .poll(() => primary.evaluate((el) => getComputedStyle(el).backgroundColor))
+          .toBe(variant === 'light' ? 'rgb(32, 103, 71)' : 'rgb(147, 183, 255)');
+        await expect
+          .poll(() => primary.evaluate((el) => getComputedStyle(el).color))
+          .toBe(variant === 'light' ? 'rgb(255, 255, 255)' : 'rgb(19, 35, 62)');
+        await expectNoHorizontalOverflow(page);
+      });
+    }
 });

@@ -27,8 +27,20 @@ import { getCachedFullscreenEnabled, isTelegramMobile } from './hooks/useTelegra
 import i18n from './i18n';
 import './styles/globals.css';
 import './styles/ultima-cabinet.css';
+import './styles/ultima-desktop-login.css';
+import './styles/ultima-web.css';
+import './styles/ultima-mobile-home.css';
+import './styles/ultima-sections.css';
+import './styles/ultima-reading.css';
+import './styles/ultima-devices.css';
+import './styles/ultima-history.css';
+import './styles/ultima-support.css';
+import './styles/ultima-account-pages.css';
+import './styles/ultima-account-offers.css';
+import './styles/ultima-subscription-info.css';
+import './styles/ultima-motion.css';
 
-// HMR guard — prevent double init when Vite hot-reloads the module
+// HMR guard вЂ” prevent double init when Vite hot-reloads the module
 const HMR_KEY = '__tg_sdk_initialized';
 const alreadyInitialized = (window as unknown as Record<string, unknown>)[HMR_KEY] === true;
 
@@ -39,10 +51,10 @@ if (!alreadyInitialized) {
     init();
     restoreInitData();
 
-    // Сбрасываем старые токены если init data изменился (новая сессия Telegram)
+    // РЎР±СЂР°СЃС‹РІР°РµРј СЃС‚Р°СЂС‹Рµ С‚РѕРєРµРЅС‹ РµСЃР»Рё init data РёР·РјРµРЅРёР»СЃСЏ (РЅРѕРІР°СЏ СЃРµСЃСЃРёСЏ Telegram)
     clearStaleSessionIfNeeded(retrieveRawInitData() || null);
 
-    // Mount components — each in its own try/catch so one failure doesn't block others
+    // Mount components вЂ” each in its own try/catch so one failure doesn't block others
     // Note: mountMiniApp() internally mounts themeParams in SDK v3,
     // so we don't call mountThemeParams() separately to avoid ConcurrentCallError
     try {
@@ -72,7 +84,7 @@ if (!alreadyInitialized) {
     } catch {
       /* already mounted */
     }
-    // Viewport — async, fullscreen зависит от смонтированного viewport
+    // Viewport вЂ” async, fullscreen Р·Р°РІРёСЃРёС‚ РѕС‚ СЃРјРѕРЅС‚РёСЂРѕРІР°РЅРЅРѕРіРѕ viewport
     mountViewport()
       .then(() => {
         bindViewportCssVars();
@@ -89,7 +101,7 @@ if (!alreadyInitialized) {
 
     miniAppReady();
   } catch {
-    // Not in Telegram — ok
+    // Not in Telegram вЂ” ok
   }
 }
 

@@ -1505,6 +1505,7 @@ export function UltimaDashboard() {
             devicesCta={renderDevicesHomeCta()}
             accountCta={desktopAccountCta}
             trafficWarning={desktopTrafficWarning}
+            pendingPayment={desktopPendingPaymentCta}
             subscription={subscription}
             connectedDevicesCount={connectedDevicesCount}
             isDevicesLoading={isDashboardDevicesPending}

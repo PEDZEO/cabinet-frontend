@@ -631,20 +631,6 @@ export function UltimaInfo() {
           eyebrow={t('nav.profile', { defaultValue: 'Профиль' })}
           title={title}
           subtitle={subtitle}
-          metrics={[
-            {
-              label: t('ultimaInfo.sectionsMetric', { defaultValue: 'Разделы' }),
-              value: String(tabs.length),
-              hint: t('ultimaInfo.sectionsHint', {
-                defaultValue: 'FAQ, правила, соглашение, политика, оферта и лояльность.',
-              }),
-            },
-            {
-              label: t('ultimaInfo.currentMetric', { defaultValue: 'Открыто' }),
-              value: activeTabConfig.label,
-              hint: activeTabConfig.description,
-            },
-          ]}
           aside={
             <>
               <UltimaDesktopPanel
@@ -687,22 +673,12 @@ export function UltimaInfo() {
     <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
-        <section
-          className={`${ultimaPanelClassName} mb-3 p-4`}
-          style={{
-            borderColor: 'color-mix(in srgb, var(--ultima-color-surface-border) 28%, transparent)',
-            background:
-              'linear-gradient(180deg, color-mix(in srgb, var(--ultima-color-aura) 18%, transparent), color-mix(in srgb, var(--ultima-color-secondary) 68%, transparent))',
-          }}
-        >
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.07] text-white/[0.82]">
-            <InfoIcon className="h-6 w-6" />
-          </div>
+        <header className="ultima-web-mobile-heading mb-3">
           <h1 className="mt-3 text-[clamp(29px,7.6vw,36px)] font-semibold leading-[1] text-white">
             {title}
           </h1>
           <p className="mt-2 text-[13px] leading-[1.45] text-white/[0.62]">{subtitle}</p>
-        </section>
+        </header>
 
         <section
           className={`${ultimaPanelClassName} flex min-h-0 flex-1 flex-col p-3.5`}

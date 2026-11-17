@@ -1,0 +1,730 @@
+/* Layout is independent of the palette. Every base colour comes from the bot configuration. */
+:root {
+  --ultima-web-canvas: var(--ultima-color-bg-top);
+  --ultima-web-surface: var(--ultima-color-surface);
+  --ultima-web-text: var(--ultima-color-secondary-text);
+  --ultima-web-muted: color-mix(
+    in srgb,
+    var(--ultima-color-secondary-text) 70%,
+    var(--ultima-color-bg-top)
+  );
+  --ultima-web-line: color-mix(
+    in srgb,
+    var(--ultima-color-surface-border) 24%,
+    var(--ultima-color-bg-top)
+  );
+  --ultima-web-accent: var(--ultima-color-primary);
+  --ultima-web-active: color-mix(
+    in srgb,
+    var(--ultima-color-primary) 12%,
+    var(--ultima-color-nav-bg)
+  );
+}
+
+.ultima-app-main .ultima-shell,
+.ultima-app-backdrop {
+  background: var(--ultima-color-bg-top) !important;
+}
+.ultima-shell .ultima-btn-primary,
+.ultima-shell .ultima-btn-primary:hover {
+  color: var(--ultima-color-primary-text) !important;
+  background: var(--ultima-color-primary) !important;
+  border-color: var(--ultima-color-primary) !important;
+}
+.ultima-shell .ultima-btn-primary > span {
+  color: inherit !important;
+}
+.ultima-shell .ultima-btn-secondary {
+  color: var(--ultima-color-secondary-text) !important;
+  background: var(--ultima-color-secondary) !important;
+  border-color: var(--ultima-web-line) !important;
+}
+.ultima-bottom-nav {
+  color: var(--ultima-color-nav-text);
+  background: var(--ultima-color-nav-bg) !important;
+  border-color: var(--ultima-web-line);
+}
+.ultima-bottom-nav .ultima-nav-item {
+  color: var(--ultima-color-nav-text);
+}
+.ultima-bottom-nav .ultima-nav-item.is-active {
+  color: var(--ultima-color-primary-text);
+  background: var(--ultima-color-nav-active);
+}
+
+.ultima-shell [class*='text-white'],
+.ultima-modal-panel [class*='text-white'] {
+  color: var(--ultima-color-secondary-text) !important;
+}
+.ultima-shell
+  :is(
+    [class*='text-white/[0.3'],
+    [class*='text-white/[0.4'],
+    [class*='text-white/[0.5'],
+    [class*='text-white/[0.6'],
+    [class*='text-white/[0.7']
+  ) {
+  color: var(--ultima-web-muted) !important;
+}
+.ultima-shell .ultima-btn-primary *,
+.ultima-modal-panel .ultima-btn-primary * {
+  color: var(--ultima-color-primary-text) !important;
+}
+.ultima-modal-panel {
+  color: var(--ultima-color-secondary-text);
+  background: var(--ultima-color-surface) !important;
+  border-color: var(--ultima-web-line) !important;
+}
+
+.ultima-shell [data-testid^='ultima-profile-action-'] > div:first-child {
+  width: 26px;
+  height: 34px;
+  flex-basis: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent !important;
+}
+
+.ultima-shell [data-testid='ultima-transaction-row'] > span:first-child {
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--ultima-color-primary) 8%, var(--ultima-color-bg-top));
+}
+
+.ultima-shell .ultima-btn-pill:focus-visible {
+  outline-color: var(--ultima-color-primary);
+}
+
+.ultima-shell [class*='text-emerald-'] {
+  color: var(--ultima-color-primary) !important;
+}
+.ultima-shell .ultima-btn-primary [class*='text-emerald-'] {
+  color: var(--ultima-color-primary-text) !important;
+}
+
+/* Small decorative icon plates do not compete with the actual controls. */
+.ultima-shell
+  :is(.ultima-card, .ultima-panel, .ultima-pane)
+  :is(span, div)[class*='items-center'][class*='justify-center']
+  :is(svg) {
+  flex-shrink: 0;
+}
+.ultima-shell
+  :is(.ultima-card, .ultima-panel, .ultima-pane)
+  :is(span, div)[class*='items-center'][class*='justify-center']:is(
+    [class*='h-10'][class*='w-10'],
+    [class*='h-11'][class*='w-11'],
+    [class*='h-9'][class*='w-9']
+  ):has(> svg:only-child) {
+  width: 26px;
+  height: 30px;
+  border: 0;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none;
+}
+
+@media (max-width: 1023px) {
+  .ultima-app-main .ultima-shell::before {
+    display: none;
+  }
+  .ultima-shell {
+    color: var(--ultima-color-secondary-text);
+  }
+  .ultima-shell :is(.ultima-card, .ultima-panel, .ultima-pane) {
+    border: 0;
+    border-bottom: 1px solid var(--ultima-web-line);
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+  }
+  .ultima-shell [data-testid='ultima-home-traffic-card'] {
+    margin-top: 6px;
+    border: 0;
+    border-bottom: 1px solid var(--ultima-web-line);
+    border-radius: 0;
+    background: transparent !important;
+    box-shadow: none;
+  }
+  .ultima-shell [data-testid='ultima-home-traffic-card'] > header {
+    padding-inline: 0;
+  }
+  .ultima-shell [data-testid='ultima-home-traffic-card'] > header > span {
+    display: none;
+  }
+  .ultima-shell
+    [data-testid='ultima-home-traffic-card']
+    [data-testid='ultima-home-unlimited-traffic'],
+  .ultima-shell [data-testid='ultima-home-traffic'] {
+    padding-inline: 0;
+  }
+  .ultima-shell
+    [data-testid='ultima-home-traffic-card']
+    :is([data-testid='ultima-home-unlimited-traffic'], [data-testid='ultima-home-traffic'])
+    > div
+    > span {
+    display: none;
+  }
+  .ultima-shell
+    [data-testid='ultima-home-traffic-card']
+    :is([class*='text-white/[0.5'], [class*='text-white/[0.7']) {
+    color: var(--ultima-web-muted);
+  }
+  .ultima-shell [data-testid='ultima-home-traffic-card'] [class*='text-white'] {
+    color: var(--ultima-color-secondary-text);
+  }
+  .ultima-shell .ultima-btn-pill {
+    border-radius: 6px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .ultima-app-main .ultima-shell,
+  .ultima-app-backdrop {
+    background: var(--ultima-web-canvas) !important;
+  }
+
+  .ultima-desktop-workspace {
+    --ultima-desktop-bg: var(--ultima-web-canvas);
+    --ultima-desktop-rail-bg: var(--ultima-color-nav-bg);
+    --ultima-desktop-surface: var(--ultima-web-canvas);
+    --ultima-desktop-surface-strong: var(--ultima-web-surface);
+    --ultima-desktop-border: var(--ultima-web-line);
+    --ultima-desktop-border-strong: var(--ultima-web-line);
+    --ultima-text-strong: var(--ultima-web-text);
+    --ultima-text-muted: var(--ultima-web-muted);
+    grid-template-columns: 228px minmax(0, 1fr);
+    color: var(--ultima-web-text);
+    background: var(--ultima-web-canvas);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .ultima-desktop-rail {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 32px 20px 24px;
+    border-right: 1px solid var(--ultima-web-line);
+    background: var(--ultima-color-nav-bg);
+    overflow-y: auto;
+  }
+
+  .ultima-desktop-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 50px;
+    padding: 0;
+    border: 0;
+    text-decoration: none;
+  }
+
+  .ultima-web-brand-image {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+  }
+  .ultima-web-brand-letter {
+    color: var(--ultima-color-nav-text);
+    font-size: 25px;
+    font-weight: 700;
+  }
+  .ultima-desktop-brand-copy strong {
+    color: var(--ultima-color-nav-text);
+    font-size: 16px;
+    letter-spacing: -0.2px;
+    white-space: normal;
+  }
+  .ultima-desktop-brand-copy small {
+    display: block;
+    margin-top: 2px;
+    color: color-mix(in srgb, var(--ultima-color-nav-text) 65%, var(--ultima-color-nav-bg));
+    font-size: 12px;
+  }
+  .ultima-web-navigation {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-top: 42px;
+  }
+  .ultima-web-navigation [data-ultima-nav-btn='1'] {
+    display: flex;
+    min-height: 43px;
+    padding: 9px 12px;
+    border: 0;
+    border-radius: 5px !important;
+    color: var(--ultima-color-nav-text);
+    font-size: 14px;
+    font-weight: 450;
+    text-decoration: none;
+  }
+  .ultima-web-nav-link:hover {
+    background: color-mix(in srgb, var(--ultima-color-nav-text) 6%, var(--ultima-color-nav-bg));
+  }
+  .ultima-web-nav-link.is-active {
+    color: var(--ultima-color-nav-text);
+    background: var(--ultima-web-active);
+    font-weight: 650;
+    box-shadow: inset 2px 0 var(--ultima-color-nav-active);
+  }
+  .ultima-web-nav-link.is-secondary {
+    margin-top: 22px;
+  }
+  .ultima-desktop-admin-link {
+    border: 0;
+    border-radius: 0;
+    color: var(--ultima-color-nav-text);
+    background: none;
+    text-decoration: none;
+    font-weight: 450;
+  }
+  .ultima-web-rail-note {
+    margin-top: auto;
+    padding: 36px 12px 0;
+    color: color-mix(in srgb, var(--ultima-color-nav-text) 65%, var(--ultima-color-nav-bg));
+    font-size: 12px;
+  }
+
+  .ultima-desktop-stage {
+    background: var(--ultima-web-canvas);
+  }
+  .ultima-desktop-topbar {
+    position: relative;
+    height: 78px;
+    padding-inline: 44px;
+    background: var(--ultima-web-canvas);
+    border-bottom: 1px solid var(--ultima-web-line);
+    backdrop-filter: none;
+  }
+  .ultima-desktop-breadcrumb {
+    font-size: 13px;
+    color: var(--ultima-web-muted);
+  }
+  .ultima-cabinet-balance {
+    min-height: 40px;
+    gap: 9px;
+    padding: 6px 0;
+    border: 0;
+    border-radius: 0;
+    color: var(--ultima-web-text);
+    font-size: 13px;
+  }
+  .ultima-cabinet-balance span {
+    color: var(--ultima-web-muted);
+  }
+  .ultima-cabinet-avatar {
+    width: 34px;
+    min-height: 34px;
+    border: 0;
+    color: var(--ultima-color-secondary-text);
+    background: var(--ultima-color-secondary);
+    font-size: 13px;
+  }
+  .ultima-desktop-stage-body {
+    display: block;
+    width: 100%;
+    max-width: 1280px;
+    padding: 42px 44px 70px;
+    margin-inline: auto;
+  }
+  .ultima-desktop-stage-body.has-context {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 290px;
+    gap: 40px;
+  }
+  .ultima-desktop-context {
+    position: static;
+    min-width: 0;
+    padding-left: 24px;
+    border-left: 1px solid var(--ultima-web-line);
+  }
+  .ultima-desktop-context > * + * {
+    margin-top: 24px !important;
+  }
+
+  html
+    .ultima-shell
+    .ultima-desktop-workspace
+    :is(.ultima-card, .ultima-panel, .ultima-pane, .ultima-desktop-panel) {
+    padding: 24px 0;
+    border: 0 !important;
+    border-bottom: 1px solid var(--ultima-web-line) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none;
+  }
+
+  .ultima-desktop-workspace [class*='rounded-'] {
+    box-shadow: none !important;
+  }
+  .ultima-desktop-workspace [class*='text-white'] {
+    color: var(--ultima-web-text) !important;
+  }
+  .ultima-desktop-workspace
+    :is(
+      [class*='text-white/[0.3'],
+      [class*='text-white/[0.4'],
+      [class*='text-white/[0.5'],
+      [class*='text-white/[0.6'],
+      [class*='text-white/[0.7']
+    ) {
+    color: var(--ultima-web-muted) !important;
+  }
+  .ultima-desktop-workspace [class*='text-emerald-'] {
+    color: var(--ultima-web-accent) !important;
+  }
+  .ultima-desktop-workspace [class*='bg-white/'] {
+    background: transparent !important;
+  }
+  .ultima-desktop-workspace [class*='bg-black/'] {
+    background: var(--ultima-web-surface) !important;
+  }
+  .ultima-desktop-workspace [class*='border-white/'] {
+    border-color: var(--ultima-web-line) !important;
+  }
+  .ultima-desktop-workspace :is(button, a):focus-visible {
+    outline-color: var(--ultima-web-accent);
+  }
+  .ultima-desktop-workspace :is(input, select, textarea) {
+    border-color: var(--ultima-web-line);
+    color: var(--ultima-web-text);
+    background: var(--ultima-web-surface);
+    border-radius: 5px;
+  }
+  .ultima-desktop-workspace input::placeholder,
+  .ultima-desktop-workspace textarea::placeholder {
+    color: var(--ultima-web-muted);
+    opacity: 0.8;
+  }
+  .ultima-desktop-workspace .ultima-btn-pill {
+    min-height: 43px;
+    height: auto;
+    padding: 10px 18px;
+    border-radius: 5px !important;
+    font-size: 14px;
+    font-weight: 550;
+    text-align: center;
+  }
+  .ultima-desktop-workspace .ultima-btn-primary,
+  .ultima-desktop-workspace .ultima-btn-primary:hover {
+    color: var(--ultima-color-primary-text) !important;
+    border: 1px solid var(--ultima-color-primary) !important;
+    background: var(--ultima-color-primary) !important;
+  }
+  .ultima-desktop-workspace .ultima-btn-primary * {
+    color: inherit !important;
+  }
+  .ultima-desktop-workspace .ultima-btn-secondary {
+    color: var(--ultima-web-text) !important;
+    border: 1px solid var(--ultima-web-line) !important;
+    background: transparent !important;
+  }
+  .ultima-web-text-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    color: var(--ultima-web-accent);
+    font-size: 14px;
+    font-weight: 500;
+    text-underline-offset: 4px;
+  }
+  .ultima-web-text-link:hover {
+    text-decoration: underline;
+  }
+
+  .ultima-web-page-heading {
+    padding-bottom: 26px;
+  }
+  .ultima-web-page-heading h1 {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: -0.8px;
+    line-height: 1.25;
+  }
+  .ultima-web-page-heading p {
+    margin: 8px 0 0;
+    color: var(--ultima-web-muted);
+    font-size: 14px;
+  }
+  .ultima-web-home {
+    max-width: 1080px;
+  }
+  .ultima-web-subscription {
+    padding: 26px 28px;
+    border: 1px solid var(--ultima-web-line);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--ultima-color-surface) 55%, var(--ultima-web-canvas));
+  }
+  .ultima-web-subscription-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+  .ultima-web-subscription-heading h2 {
+    margin: 6px 0 4px;
+    font-size: 29px;
+    font-weight: 600;
+    letter-spacing: -0.6px;
+  }
+  .ultima-web-subscription-heading p {
+    color: var(--ultima-web-muted);
+    font-size: 14px;
+  }
+  .ultima-web-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 550;
+    color: var(--ultima-web-accent);
+  }
+  .ultima-web-status::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .ultima-web-status.is-expired,
+  .ultima-web-status.is-warning {
+    color: var(--ultima-web-text);
+  }
+  .ultima-web-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .ultima-web-action-meta {
+    margin-left: 12px;
+    font-size: 12px;
+  }
+  .ultima-web-facts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--ultima-web-line);
+  }
+  .ultima-web-facts > div {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    padding: 0 22px;
+    border-right: 1px solid var(--ultima-web-line);
+  }
+  .ultima-web-facts dt {
+    color: var(--ultima-web-muted);
+    font-size: 12px;
+  }
+  .ultima-web-facts dd {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    margin: 0;
+    font-size: 17px;
+    font-weight: 500;
+  }
+  .ultima-web-traffic {
+    margin-top: 22px;
+    padding: 24px 28px;
+    border: 1px solid var(--ultima-web-line);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--ultima-color-surface) 22%, var(--ultima-web-canvas));
+  }
+  .ultima-web-section-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 8px;
+  }
+  .ultima-web-section-heading h2,
+  .ultima-web-help-row h2,
+  .ultima-web-inline-offer h2 {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: -0.25px;
+  }
+  .ultima-web-traffic-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    padding: 16px 0;
+  }
+  .ultima-web-traffic-row h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 550;
+  }
+  .ultima-web-traffic-row p {
+    margin: 4px 0 0;
+    color: var(--ultima-web-muted);
+    font-size: 13px;
+  }
+  .ultima-web-traffic-row strong {
+    min-width: 130px;
+    font-size: 19px;
+    font-weight: 550;
+    text-align: right;
+  }
+  .ultima-web-traffic-row strong small {
+    margin-left: 7px;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--ultima-web-muted);
+  }
+  .ultima-web-facts > div:first-child {
+    padding-left: 0;
+  }
+  .ultima-web-facts > div:last-child {
+    border-right: 0;
+    padding-right: 0;
+  }
+  .ultima-web-traffic [data-testid='ultima-home-desktop-unlimited'] {
+    border-bottom: 1px solid var(--ultima-web-line);
+  }
+  .ultima-web-traffic-meter {
+    height: 4px;
+    margin: 0 0 20px;
+    background: var(--ultima-web-line);
+  }
+  .ultima-web-traffic-meter span {
+    display: block;
+    height: 100%;
+    background: var(--ultima-web-accent);
+  }
+  .ultima-web-traffic-policy {
+    max-width: 88ch;
+    font-size: 13px;
+    color: var(--ultima-web-muted);
+  }
+  .ultima-web-help-row,
+  .ultima-web-inline-offer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    padding: 24px 4px;
+    border-bottom: 1px solid var(--ultima-web-line);
+  }
+  .ultima-web-help-row p,
+  .ultima-web-inline-offer p {
+    margin: 5px 0 0;
+    font-size: 13px;
+    color: var(--ultima-web-muted);
+  }
+  .ultima-web-notice {
+    padding: 14px 0;
+    font-size: 14px;
+    color: var(--ultima-web-text);
+  }
+  .ultima-web-onboarding {
+    margin-top: 24px;
+  }
+  .ultima-web-loading {
+    padding: 50px 0;
+    color: var(--ultima-web-muted);
+  }
+
+  .ultima-desktop-page-header {
+    min-height: 0;
+    padding: 0 0 28px;
+    border: 0;
+    border-radius: 0;
+    background: transparent !important;
+    box-shadow: none;
+  }
+  .ultima-desktop-page-icon,
+  .ultima-desktop-eyebrow {
+    display: none;
+  }
+  .ultima-desktop-page-header h1 {
+    font-size: 30px;
+    line-height: 1.25;
+    font-weight: 600;
+    letter-spacing: -0.7px;
+  }
+  .ultima-desktop-page-header p {
+    font-size: 14px;
+    max-width: 70ch;
+  }
+  .ultima-desktop-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    padding: 0 0 24px;
+    border-bottom: 1px solid var(--ultima-web-line);
+  }
+  .ultima-desktop-metrics > article {
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+  .ultima-desktop-metrics > article > strong {
+    margin: 2px 0;
+    font-size: 18px;
+    font-weight: 550;
+  }
+  .ultima-desktop-metrics > article > div {
+    font-size: 12px;
+    text-transform: none;
+  }
+  .ultima-desktop-metrics > article > p {
+    font-size: 12px;
+  }
+  .ultima-desktop-workspace .ultima-desktop-page-icon {
+    display: none;
+  }
+
+  .ultima-web-traffic-alert > section {
+    padding: 14px 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  .ultima-web-traffic-alert > section > div > div > span {
+    display: none;
+  }
+}
+
+@media (min-width: 1600px) {
+  .ultima-desktop-stage-body {
+    padding-inline: 64px;
+  }
+  .ultima-desktop-topbar {
+    padding-inline: 64px;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1239px) {
+  .ultima-desktop-workspace {
+    grid-template-columns: 198px minmax(0, 1fr);
+  }
+  .ultima-desktop-stage-body,
+  .ultima-desktop-topbar {
+    padding-inline: 30px;
+  }
+  .ultima-desktop-stage-body.has-context {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ultima-desktop-context {
+    position: static;
+    margin-top: 24px;
+    padding: 24px 0 0;
+    border-left: 0;
+    border-top: 1px solid var(--ultima-web-line);
+  }
+}
