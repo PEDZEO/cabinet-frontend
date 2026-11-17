@@ -32,7 +32,7 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
 
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
