@@ -80,6 +80,14 @@
   transform: none;
 }
 
+.auth-portal--ultima .auth-brand-logo[data-logo-shape='wide'] {
+  width: min(120px, 37%);
+}
+
+.auth-portal--ultima .auth-brand-logo[data-logo-shape='tall'] {
+  width: 28px;
+}
+
 .auth-portal--ultima .auth-brand-logo > span,
 .auth-portal--ultima .auth-brand-logo svg {
   width: 32px;

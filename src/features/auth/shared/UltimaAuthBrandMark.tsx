@@ -107,6 +107,7 @@ export function UltimaAuthBrandMark({
 
   return (
     <div
+      data-logo-shape={shouldRenderImage ? logoShape : 'square'}
       className={cn(
         'relative flex items-center justify-center overflow-hidden rounded-[28px] border',
         dimensionClassName,
