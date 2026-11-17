@@ -14,19 +14,17 @@ export type UltimaHomeAction = {
 
 type UltimaHomeActionGridProps = {
   title: string;
-  subtitle: string;
   actions: UltimaHomeAction[];
 };
 
-export function UltimaHomeActionGrid({ title, subtitle, actions }: UltimaHomeActionGridProps) {
+export function UltimaHomeActionGrid({ title, actions }: UltimaHomeActionGridProps) {
   return (
     <section className="ultima-mobile-actions" data-testid="ultima-home-quick-actions">
       <header className="ultima-mobile-actions-heading">
         <h2>{title}</h2>
-        {subtitle ? <p>{subtitle}</p> : null}
       </header>
       <div className="ultima-mobile-action-list">
-        {actions.map((action) => (
+        {actions.map(({ icon: Icon, ...action }) => (
           <button
             key={action.id}
             type="button"
@@ -37,6 +35,12 @@ export function UltimaHomeActionGrid({ title, subtitle, actions }: UltimaHomeAct
             data-tone={action.tone || 'default'}
             className="ultima-mobile-action-row"
           >
+            <Icon
+              className="ultima-mobile-action-icon"
+              size={20}
+              strokeWidth={1.7}
+              aria-hidden="true"
+            />
             <span className="ultima-mobile-action-copy">
               <span className="ultima-mobile-action-heading">
                 <strong className="ultima-mobile-action-title">{action.title}</strong>

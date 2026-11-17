@@ -1,95 +1,336 @@
-.ultima-shell [data-testid='ultima-ticket-workspace'],
-.ultima-shell [data-testid='ultima-ticket-create'],
-.ultima-shell .ultima-desktop-workspace .ultima-panel[data-testid='ultima-ticket-workspace'],
-.ultima-shell .ultima-desktop-workspace .ultima-panel[data-testid='ultima-ticket-create'] {
-  padding: 26px;
-  border: 1px solid var(--ultima-web-line) !important;
-  border-radius: 12px !important;
-  background: var(--ultima-color-surface) !important;
+.ultima-support-page {
+  --support-text: var(--ultima-color-secondary-text);
+  --support-muted: var(--ultima-web-muted);
+  --support-line: var(--ultima-web-line);
+  --support-surface: var(--ultima-color-surface);
+  --support-accent: var(--ultima-color-primary);
+  --support-tint: color-mix(in srgb, var(--support-accent) 12%, var(--support-surface));
 }
-.ultima-shell
-  :is([data-testid='ultima-ticket-workspace'], [data-testid='ultima-ticket-create'])
-  [class*='border-white/'] {
-  border-color: var(--ultima-web-line);
+
+.ultima-support-page
+  :is([data-testid='ultima-ticket-workspace'], [data-testid='ultima-ticket-create']),
+.ultima-support-page
+  .ultima-desktop-workspace
+  .ultima-panel:is([data-testid='ultima-ticket-workspace'], [data-testid='ultima-ticket-create']) {
+  padding: clamp(14px, 4vw, 26px);
+  border: 1px solid var(--support-line) !important;
+  border-radius: 16px !important;
+  background: var(--support-surface) !important;
 }
-.ultima-shell .ultima-support-help-list {
-  display: flex;
-  flex-direction: column;
-}
-.ultima-shell .ultima-support-help-list button {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 4px 18px;
-  padding: 14px 0;
-  border: 0;
-  border-bottom: 1px solid var(--ultima-web-line);
-  border-radius: 0;
-  background: transparent;
-}
-.ultima-shell .ultima-support-help-list button > span:nth-child(2) {
-  grid-column: 1;
-  min-height: 0;
-  margin: 0;
-}
-.ultima-shell .ultima-support-help-list button > span:nth-child(3) {
-  grid-column: 2;
-  grid-row: 1 / 3;
-  align-self: center;
-  max-width: 140px;
-  margin: 0;
-  color: var(--ultima-color-primary);
-}
-.ultima-shell .ultima-support-columns > .ultima-pane {
-  padding: 16px;
-  border: 1px solid var(--ultima-web-line) !important;
-  border-radius: 8px !important;
-  background: transparent !important;
-}
-.ultima-shell .ultima-support-columns input {
-  background: var(--ultima-color-bg-top);
-}
-.ultima-shell [data-testid='ultima-ticket-workspace'][data-empty='true'] {
+
+.ultima-support-page [data-testid='ultima-ticket-workspace'][data-empty='true'] {
   flex: 0 0 auto;
 }
-.ultima-shell [data-testid='ultima-ticket-workspace'][data-empty='true'] .ultima-support-columns {
+
+.ultima-support-page
+  [data-testid='ultima-ticket-workspace'][data-empty='true']
+  .ultima-support-columns {
   display: none;
 }
+
+.ultima-support-workspace-label {
+  color: var(--support-muted);
+  font-size: 13px;
+  font-weight: 560;
+}
+
 .ultima-support-empty {
-  padding-top: 18px;
+  border-top: 1px solid var(--support-line);
+  padding-top: 14px;
 }
-.ultima-support-empty > h2 {
-  margin: 0 0 8px;
-  font-size: 23px;
-  font-weight: 600;
-  color: var(--ultima-color-secondary-text);
+
+.ultima-support-empty h2,
+.ultima-support-help h2 {
+  margin: 0;
+  color: var(--support-text);
+  font-size: 18px;
+  font-weight: 650;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
 }
-.ultima-support-empty > p {
-  margin-bottom: 28px;
-  color: var(--ultima-web-muted);
+
+.ultima-support-empty > p,
+.ultima-support-help header p {
+  margin-top: 6px;
+  color: var(--support-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.ultima-support-help {
+  margin-block: 22px 12px;
+}
+
+.ultima-support-help-list {
+  overflow: hidden;
+  margin-top: 12px;
+  border: 1px solid var(--support-line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--support-surface) 88%, transparent);
+}
+
+.ultima-support-help-row {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 17px;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  color: var(--support-text);
+  transition: background-color 160ms;
+}
+
+.ultima-support-help-row + .ultima-support-help-row {
+  border-top: 1px solid var(--support-line);
+}
+
+.ultima-support-help-row:is(:hover, :active) {
+  background: var(--support-tint);
+}
+
+.ultima-support-help-row > svg {
+  color: var(--support-muted);
+  transition: transform 160ms;
+}
+
+.ultima-support-help-row:hover > svg {
+  transform: translateX(2px);
+}
+
+.ultima-support-help-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 10px;
+  color: var(--support-accent);
+  background: var(--support-tint);
+}
+
+.ultima-support-help-copy {
+  display: grid;
+  gap: 3px;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.ultima-support-help-copy > strong {
+  font-weight: 650;
+}
+
+.ultima-support-help-copy > span,
+.ultima-support-message-meta time {
+  color: var(--support-muted);
+}
+
+.ultima-support-page .ultima-support-columns > .ultima-pane {
+  min-width: 0;
+  padding: clamp(10px, 3vw, 16px);
+  border: 1px solid var(--support-line) !important;
+  border-radius: 13px !important;
+  background: transparent !important;
+}
+
+.ultima-support-page .ultima-support-ticket-row + .ultima-support-ticket-row {
+  box-shadow: inset 0 1px var(--support-line);
+}
+
+.ultima-support-chat-heading,
+.ultima-support-composer {
+  border-color: var(--support-line);
+  border-style: solid;
+}
+
+.ultima-support-chat-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 10px;
+  border-bottom-width: 1px;
+}
+
+.ultima-support-chat-heading h2 {
+  min-width: 0;
+  color: var(--support-text);
+  font-size: 16px;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.ultima-support-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 2px;
+}
+
+.ultima-support-message {
+  width: fit-content;
+  min-width: min(56%, 11rem);
+  max-width: 93%;
+  padding: 9px 11px;
+  border: 1px solid var(--support-line);
+  border-radius: 12px 12px 12px 4px;
+  color: var(--support-text);
+  background: var(--support-surface);
   font-size: 14px;
-  line-height: 1.6;
 }
-.ultima-support-empty-help {
-  border-top: 1px solid var(--ultima-web-line);
-  padding-top: 22px;
+
+.ultima-support-message[data-author='user'] {
+  margin-inline-start: auto;
+  border-radius: 12px 12px 4px 12px;
+  background: var(--support-tint);
 }
+
+.ultima-support-message-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 10px;
+  margin-bottom: 4px;
+  font-size: 11px;
+}
+
+.ultima-support-message-meta strong {
+  font-weight: 650;
+}
+
+.ultima-support-message-text {
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.ultima-support-composer {
+  padding-top: 10px;
+  border-top-width: 1px;
+}
+
+.ultima-support-composer-row {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  gap: 6px;
+}
+
+.ultima-support-composer-row > button {
+  display: grid;
+  min-height: 44px;
+  place-items: center;
+  padding: 0;
+}
+
+.ultima-support-field {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 12px;
+  border: 1px solid var(--support-line);
+  border-radius: 10px;
+  outline: none;
+  color: var(--support-text);
+  background: var(--ultima-color-bg-top);
+  font-size: 16px;
+  transition:
+    border-color 160ms,
+    box-shadow 160ms;
+}
+
+.ultima-support-field:focus {
+  border-color: var(--support-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--support-accent) 16%, transparent);
+}
+
+.ultima-support-field::placeholder {
+  color: var(--support-muted);
+}
+
+.ultima-support-textarea {
+  min-height: 112px;
+  resize: vertical;
+}
+
+.ultima-support-form-label {
+  display: grid;
+  gap: 6px;
+  color: var(--support-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ultima-support-form-label .ultima-support-field {
+  font-weight: 400;
+}
+
+.ultima-support-topic {
+  min-height: 36px;
+  padding: 5px 12px;
+  border: 1px solid var(--support-line);
+  border-radius: 999px;
+  color: var(--support-text);
+  background: var(--support-tint);
+  font-size: 13px;
+}
+
+.ultima-support-create-help {
+  border-top: 1px solid var(--support-line);
+  color: var(--support-text);
+}
+
+.ultima-support-create-help summary {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  list-style: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ultima-support-create-help summary::-webkit-details-marker {
+  display: none;
+}
+
+.ultima-support-create-help[open] summary svg {
+  transform: rotate(90deg);
+}
+
+.ultima-support-create-help .ultima-support-help,
+.ultima-support-create-help .ultima-support-help-list {
+  margin-top: 0;
+}
+
+.ultima-support-page :is(button, a, summary):focus-visible {
+  outline: 2px solid var(--support-accent);
+  outline-offset: -2px;
+}
+
 @media (min-width: 1024px) {
-  .ultima-shell .ultima-support-columns {
+  .ultima-support-page .ultima-support-columns {
     grid-template-columns: 300px minmax(0, 1fr);
   }
 }
+
 @media (max-width: 1023px) {
-  .ultima-shell [data-testid='ultima-ticket-workspace'],
-  .ultima-shell [data-testid='ultima-ticket-create'] {
-    padding: 18px 14px;
+  .ultima-support-page
+    :is([data-testid='ultima-ticket-workspace'], [data-testid='ultima-ticket-create']) {
+    background: color-mix(in srgb, var(--support-surface) 86%, transparent) !important;
   }
-  .ultima-shell .ultima-support-columns > .ultima-pane {
-    padding: 12px;
+
+  .ultima-support-page [data-testid='ultima-ticket-workspace']:has(.ultima-support-chat.flex) {
+    background: color-mix(in srgb, var(--support-surface) 30%, transparent) !important;
   }
-  .ultima-shell .ultima-support-help-list button {
-    gap: 4px 12px;
+
+  .ultima-support-page .ultima-support-columns > .ultima-support-chat {
+    background: color-mix(in srgb, var(--support-surface) 64%, transparent) !important;
   }
-  .ultima-shell .ultima-support-help-list button > span:nth-child(3) {
-    max-width: 100px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ultima-support-page
+    :is(.ultima-support-help-row, .ultima-support-help-row > svg, .ultima-support-field) {
+    transition: none;
   }
 }

@@ -455,7 +455,7 @@ html
 
 @media (max-width: 1023px) {
   .ultima-connection-page .ultima-connection-mobile-heading {
-    margin-bottom: 24px;
+    margin-bottom: 14px;
   }
 
   .ultima-connection-page .ultima-connection-mobile-heading h1 {
@@ -474,17 +474,44 @@ html
   }
 
   html .ultima-shell.ultima-connection-page .ultima-connection-guide .ultima-connection-progress {
-    gap: 4px;
-    margin-bottom: 18px;
-    padding: 5px;
-    border: 1px solid var(--connection-line) !important;
-    border-radius: 14px !important;
-    background: var(--ultima-color-surface) !important;
+    position: relative;
+    isolation: isolate;
+    margin-bottom: 10px;
+  }
+
+  .ultima-connection-progress {
+    --step-progress: 0%;
+  }
+
+  .ultima-connection-progress[data-step='2'] {
+    --step-progress: 50%;
+  }
+
+  .ultima-connection-progress[data-step='3'] {
+    --step-progress: 100%;
+  }
+
+  .ultima-connection-progress::before,
+  .ultima-connection-progress::after {
+    position: absolute;
+    z-index: -1;
+    inset-inline-start: calc(100% / 6);
+    top: 21px;
+    width: calc(200% / 3);
+    height: 1px;
+    background: var(--connection-line);
+    content: '';
+  }
+
+  .ultima-connection-progress::after {
+    width: calc(var(--step-progress) * 2 / 3);
+    background: var(--ultima-color-primary);
+    transition: width 300ms cubic-bezier(0.2, 0.75, 0.2, 1);
   }
 
   .ultima-connection-page .ultima-connection-progress-step {
     flex-direction: column;
-    min-height: 64px;
+    min-height: 58px;
     gap: 6px;
     padding: 8px 2px;
     border-radius: 10px;
@@ -494,19 +521,22 @@ html
 
   .ultima-connection-page .ultima-connection-progress-step[aria-current='step'] {
     color: var(--connection-text) !important;
-    background: var(--connection-accent-soft) !important;
   }
 
   html
     .ultima-shell.ultima-connection-page
     .ultima-connection-progress
     .ultima-connection-step-number {
-    width: 23px;
-    height: 23px;
+    width: 29px;
+    height: 29px;
     border: 1px solid var(--connection-line) !important;
     color: inherit;
     background: var(--ultima-color-surface) !important;
     font-size: 11px;
+    transition:
+      border-color 180ms,
+      background-color 180ms,
+      box-shadow 180ms;
   }
 
   html
@@ -517,6 +547,16 @@ html
     border-color: var(--ultima-color-primary) !important;
     color: var(--ultima-color-primary-text);
     background: var(--ultima-color-primary) !important;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--ultima-color-primary) 16%, transparent);
+  }
+
+  html
+    .ultima-shell.ultima-connection-page
+    .ultima-connection-progress
+    button:not(:disabled):not([aria-current])
+    .ultima-connection-step-number {
+    border-color: var(--ultima-color-primary) !important;
+    color: var(--ultima-color-primary);
   }
 
   .ultima-connection-page .ultima-connection-progress-step > span:last-child {
@@ -538,7 +578,38 @@ html
   }
 
   .ultima-connection-page .ultima-connection-step-icon {
-    margin-top: 26px;
+    width: 34px;
+    height: 34px;
+    margin-top: 0;
+    border-radius: 10px;
+    background: var(--connection-accent-soft);
+  }
+
+  .ultima-connection-page .ultima-connection-step-eyebrow {
+    display: none;
+  }
+
+  .ultima-connection-page .ultima-connection-step-heading h2 {
+    margin-top: 0;
+    letter-spacing: -0.025em;
+  }
+
+  .ultima-connection-page .ultima-connection-selection > div > div:last-child {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .ultima-connection-page .ultima-connection-actions > button {
+    transition:
+      background-color 160ms,
+      box-shadow 160ms,
+      transform 160ms,
+      filter 160ms;
+  }
+
+  .ultima-connection-page .ultima-connection-actions > button:not(:disabled):active {
+    transform: translateY(1px) scale(0.985);
+    filter: brightness(0.95);
   }
 
   .ultima-connection-page .ultima-connection-step-heading p {
@@ -610,6 +681,12 @@ html
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .ultima-connection-progress::after,
+  .ultima-connection-progress .ultima-connection-step-number,
+  .ultima-connection-page .ultima-connection-actions > button {
+    transition: none;
+  }
+
   .ultima-connection-page .ultima-connection-step-panel,
   .ultima-connection-page .ultima-connection-choice {
     animation: none;

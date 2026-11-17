@@ -1280,24 +1280,23 @@ export function UltimaSubscription() {
 
   if (shouldShowMobileTariffChooser) {
     return (
-      <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
+      <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-shared-nav-docked ultima-mobile-tariff-chooser">
         <div className="ultima-shell-aura" />
         <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
           <section className="ultima-scrollbar min-h-0 flex-1 overflow-y-auto pr-1">
             <header className="mb-3">
-              <div className="mb-1 flex h-8 items-center">
-                {currentTariffId !== null ? (
-                  <button
-                    type="button"
-                    onClick={() => setIsMobileTariffChooserOpen(false)}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/[0.12] bg-white/[0.05] text-white/[0.76]"
-                    aria-label={t('common.back')}
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                  </button>
-                ) : null}
-              </div>
-              <h1 className="text-[30px] font-semibold leading-none text-white">
+              {currentTariffId !== null ? (
+                <button
+                  type="button"
+                  onClick={() => setIsMobileTariffChooserOpen(false)}
+                  className="mb-2 inline-flex min-h-11 items-center gap-2 rounded-lg px-2 text-[13px] font-semibold text-white/[0.76]"
+                  aria-label={t('common.back')}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  {t('common.back')}
+                </button>
+              ) : null}
+              <h1 className="ultima-mini-screen-title">
                 {t('ultima.subscriptionBuilder.choosePlan')}
               </h1>
               <p className="mt-1.5 text-[13px] leading-[1.45] text-white/[0.62]">
@@ -1306,17 +1305,13 @@ export function UltimaSubscription() {
             </header>
             {mobileTariffSelector}
           </section>
-
-          <div className="ultima-mobile-dock-footer pt-3">
-            <div className="ultima-nav-dock">{bottomNav}</div>
-          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="ultima-shell ultima-shell-wide ultima-flat-frames">
+    <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-shared-nav-docked">
       <div className="ultima-shell-aura" />
       <UltimaSubscriptionConfigurator
         title={selectedTariff.name}
@@ -1353,7 +1348,6 @@ export function UltimaSubscription() {
           ) : null
         }
         trafficTopUp={trafficTopUpSection}
-        bottomNav={bottomNav}
         isPayDisabled={
           purchaseMutation.isPending ||
           switchTariffMutation.isPending ||

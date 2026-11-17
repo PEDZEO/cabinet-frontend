@@ -1275,6 +1275,11 @@ test.describe('Ultima desktop workspace', () => {
     );
     await expect(page.getByTestId('ultima-home-unlimited-traffic')).toContainText('Безлимит');
     await expect(page.getByTestId('ultima-home-traffic')).toContainText('82 ГБ');
+    await expect(page.getByTestId('ultima-home-traffic').getByRole('progressbar')).toHaveAttribute(
+      'aria-valuenow',
+      '82',
+    );
+    await expect(page.locator('.ultima-mobile-traffic-track > span')).toBeVisible();
     await expect(page.getByTestId('ultima-plan-device-count')).toContainText('1/3');
     await expect(page.getByTestId('ultima-home-days')).not.toContainText('—');
     await expect(page.getByTestId('ultima-home-quick-actions')).toBeVisible();
@@ -1319,6 +1324,7 @@ test.describe('Ultima desktop workspace', () => {
     await expect(page.getByTestId('ultima-home-overview')).toBeVisible();
     await page.getByTestId('ultima-primary-cta').click();
     await expect(page).toHaveURL(/\/connection$/);
+    await expect(page.locator('.ultima-bottom-nav:visible')).toHaveCount(1);
 
     await page.goBack();
     await expect(page).toHaveURL(/\/$/);
@@ -1573,6 +1579,13 @@ test.describe('Ultima monthly metered traffic', () => {
       await page.goto('/');
 
       const notice = page.getByTestId('ultima-metered-period-notice');
+      if (viewport.width < 1024) {
+        await expect(notice).not.toHaveAttribute('open', '');
+        await notice.locator('summary').click();
+        await expect(notice).toHaveAttribute('open', '');
+        await notice.locator('summary').click();
+        await expect(notice).not.toHaveAttribute('open', '');
+      }
       await expect(notice).toContainText('Спецсерверы временно недоступны');
       await expect(notice).toContainText(
         'Доступ восстановится при обновлении, если подписка активна',
@@ -1609,7 +1622,7 @@ test.describe('Ultima monthly metered traffic', () => {
       await expect(notice.locator('time')).toHaveText(/17 ноября 2026.*01:30.*МСК/);
       await page.getByTestId('ultima-traffic-top-up-toggle').click();
       await expect(policy).toContainText('30 дней с момента покупки');
-      await expect(page.getByTestId('ultima-traffic-top-up')).toContainText('0 ГБ');
+      await expect(page.getByTestId('ultima-subscription-traffic-overview')).toContainText('0 ГБ');
       await expectNoHorizontalOverflow(page);
     });
 
@@ -1681,15 +1694,19 @@ test.describe('Ultima monthly metered traffic', () => {
     const notice = page.getByTestId('ultima-metered-period-notice');
     await expect(notice.locator('time')).toHaveText(/17 ноября 2026.*07:30.*Asia\/Tokyo/);
     await expect(notice).toContainText('100 ГБ / месяц');
-    await expect(page.getByTestId('ultima-subscription-traffic-overview')).toContainText('132 ГБ');
+    const trafficOverview = page.getByTestId('ultima-subscription-traffic-overview');
+    await expect(trafficOverview).toContainText('132 ГБ');
+    await expect(trafficOverview).toContainText('150 ГБ');
+    await expect(trafficOverview).toContainText('Активно +50 ГБ');
     for (const path of ['/ultima/subscription-info', '/subscription?trafficTopUp=1']) {
       if (path !== '/ultima/subscription-info') await page.goto(path);
       const topUp = page.getByTestId('ultima-traffic-top-up');
-      await expect(topUp).toContainText('132 ГБ');
-      await expect(topUp).toContainText('из 150 ГБ');
-      await expect(topUp).toContainText('Активно +50 ГБ');
       if (path === '/ultima/subscription-info') {
         await page.getByTestId('ultima-traffic-top-up-toggle').click();
+      } else {
+        await expect(topUp).toContainText('132 ГБ');
+        await expect(topUp).toContainText('из 150 ГБ');
+        await expect(topUp).toContainText('Активно +50 ГБ');
       }
       await expect(page.getByTestId('ultima-metered-topup-policy').locator('time')).toHaveText(
         /17 ноября 2026.*07:30.*Asia\/Tokyo/,
@@ -1876,7 +1893,8 @@ test.describe('Ultima subscription information', () => {
     const topUp = page.getByTestId('ultima-traffic-top-up');
     const toggle = page.getByTestId('ultima-traffic-top-up-toggle');
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
-    await expect(topUp).toContainText('82 ГБ');
+    await expect(page.getByTestId('ultima-subscription-traffic-overview')).toContainText('82 ГБ');
+    await expect(topUp).not.toContainText('82 ГБ');
     await expect(topUp).toContainText('от 100 ₽');
 
     await toggle.click();
@@ -1920,6 +1938,20 @@ test.describe('Ultima subscription information', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await bootstrapUltimaDesktop(page);
     await mockUltimaDesktopApi(page);
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'clipboard', {
+        value: {
+          writeText: async (text: string) => {
+            document.body.dataset.copiedSubscription = text;
+          },
+        },
+      });
+      Object.defineProperty(navigator, 'share', {
+        value: async ({ text }: ShareData) => {
+          document.body.dataset.sharedSubscription = text;
+        },
+      });
+    });
     await page.goto('/ultima/subscription-info');
 
     const infoPage = page.getByTestId('ultima-subscription-info-page');
@@ -1932,6 +1964,10 @@ test.describe('Ultima subscription information', () => {
     await expect(trafficOverview).toContainText('82 ГБ');
     await expect(trafficOverview).toContainText('18 ГБ');
     await expect(trafficOverview).toContainText('100 ГБ');
+    await expect(trafficOverview.getByTestId('ultima-metered-period-notice')).not.toHaveAttribute(
+      'open',
+      '',
+    );
     await expect(page.locator('#ultima-traffic-top-up')).toBeVisible();
     await expect(
       page.locator('#ultima-traffic-top-up button[aria-expanded]').first(),
@@ -1939,7 +1975,12 @@ test.describe('Ultima subscription information', () => {
     const subscriptionLink = page.getByTestId('ultima-subscription-link');
     await expect(subscriptionLink).toContainText('Ссылка для подключения');
     await expect(subscriptionLink).toHaveAttribute('data-link-kind', 'happ');
-    await expect(subscriptionLink).toContainText('happ://crypt5/backend-happ-payload');
+    await expect(subscriptionLink).not.toContainText('happ://crypt5/backend-happ-payload');
+    await subscriptionLink.getByRole('button', { name: 'Скопировать' }).click();
+    await expect(page.locator('body')).toHaveAttribute(
+      'data-copied-subscription',
+      'happ://crypt5/backend-happ-payload',
+    );
     await expect(subscriptionLink).not.toContainText(SUBSCRIPTION.subscription_url);
     const linkSelector = page.getByTestId('ultima-subscription-link-selector');
     await expect(linkSelector).toBeVisible();
@@ -1949,9 +1990,14 @@ test.describe('Ultima subscription information', () => {
     );
     await page.getByTestId('ultima-subscription-link-incy').click();
     await expect(subscriptionLink).toHaveAttribute('data-link-kind', 'incy');
-    await expect(subscriptionLink).toContainText('incy://crypt1/backend-incy-payload');
+    await expect(subscriptionLink).not.toContainText('incy://crypt1/backend-incy-payload');
     await expect(subscriptionLink).not.toContainText('happ://crypt5/backend-happ-payload');
     await expect(subscriptionLink).not.toContainText(SUBSCRIPTION.subscription_url);
+    await subscriptionLink.getByRole('button', { name: 'Поделиться' }).click();
+    await expect(page.locator('body')).toHaveAttribute(
+      'data-shared-subscription',
+      'incy://crypt1/backend-incy-payload',
+    );
     await expect(page.getByTestId('ultima-subscription-info-primary-action')).toContainText(
       'Продлить подписку',
     );
@@ -1982,9 +2028,7 @@ test.describe('Ultima subscription information', () => {
     await expectNoHorizontalOverflow(page);
   });
 
-  test('shows the regular subscription URL only when protected links are disabled', async ({
-    page,
-  }) => {
+  test('offers copy and share for a regular URL without displaying it', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await bootstrapUltimaDesktop(page);
     await mockUltimaDesktopApi(page, {
@@ -1999,7 +2043,9 @@ test.describe('Ultima subscription information', () => {
 
     const subscriptionLink = page.getByTestId('ultima-subscription-link');
     await expect(subscriptionLink).toHaveAttribute('data-link-kind', 'regular');
-    await expect(subscriptionLink).toContainText(SUBSCRIPTION.subscription_url);
+    await expect(subscriptionLink).not.toContainText(SUBSCRIPTION.subscription_url);
+    await expect(subscriptionLink.getByRole('button', { name: 'Скопировать' })).toBeVisible();
+    await expect(subscriptionLink.getByRole('button', { name: 'Поделиться' })).toBeVisible();
     await expect(subscriptionLink).not.toContainText('happ://crypt5/');
     await expect(subscriptionLink).not.toContainText('incy://crypt1/');
     await expect(page.getByTestId('ultima-subscription-link-selector')).toHaveCount(0);
@@ -2264,9 +2310,9 @@ test.describe('Ultima mobile scrolling', () => {
         .poll(() =>
           page
             .locator('.ultima-app-backdrop > .ultima-shell-aura')
-            .evaluate((element) => getComputedStyle(element, '::before').display),
+            .evaluate((element) => getComputedStyle(element, '::before').animationName),
         )
-        .toBe('none');
+        .toBe('ultima-orbit-rotate');
 
       const scrollbarStyles = await scrollRegion.evaluate((element) => ({
         firefox: getComputedStyle(element).scrollbarWidth,
@@ -2601,7 +2647,7 @@ test.describe('Ultima connection setup', () => {
     );
 
     await page.getByTestId('ultima-connection-secondary-action').click();
-    await expect(page.getByText('Все готово к подключению', { exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Включите VPN', exact: true })).toBeVisible();
     await expect(page.getByTestId('ultima-connection-finish-action')).toContainText(
       'VPN работает — завершить',
     );
@@ -2657,6 +2703,45 @@ test.describe('Ultima connection setup', () => {
 });
 
 test.describe('Ultima approved cabinet navigation', () => {
+  test('previews a dragged tab and navigates only on release', async ({ page, context }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await bootstrapUltimaDesktop(page);
+    await mockUltimaDesktopApi(page);
+    await page.goto('/');
+
+    const nav = page.locator('.ultima-shared-nav-shell');
+    const home = nav.locator('[data-ultima-nav-target="home"]');
+    const connection = nav.locator('[data-ultima-nav-target="connection"]');
+    const subscription = nav.locator('[data-ultima-nav-target="subscription"]');
+    await expect(home).toHaveAttribute('aria-current', 'page');
+
+    const center = async (button: typeof home) => {
+      const box = await button.boundingBox();
+      if (!box) throw new Error('The mobile navigation button is outside the viewport');
+      return { x: Math.round(box.x + box.width / 2), y: Math.round(box.y + box.height / 2) };
+    };
+    const session = await context.newCDPSession(page);
+    await session.send('Emulation.setTouchEmulationEnabled', { enabled: true });
+    await session.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [await center(home)],
+    });
+    await session.send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: [await center(connection)],
+    });
+    await expect(connection).toHaveClass(/is-pointed/);
+    await session.send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: [await center(subscription)],
+    });
+    await expect(subscription).toHaveClass(/is-pointed/);
+    await expect(home).toHaveAttribute('aria-current', 'page');
+    await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await expect(page).toHaveURL(/\/ultima\/subscription-info$/);
+    await expect(subscription).toHaveAttribute('aria-current', 'page');
+  });
+
   test('shows labelled mobile destinations and keeps news reachable from profile', async ({
     page,
   }) => {
@@ -2675,8 +2760,14 @@ test.describe('Ultima approved cabinet navigation', () => {
       'page',
     );
     await expect(page.locator('[data-ultima-nav-target="news"]')).toBeHidden();
+    const sharedNav = page.locator('.ultima-shared-nav-shell');
+    const homeNav = await sharedNav.boundingBox();
+    await sharedNav.evaluate((element) => element.setAttribute('data-nav-persisted', 'true'));
     await page.locator('[data-ultima-nav-target="subscription"]').click();
     await expect(page).toHaveURL(/\/ultima\/subscription-info$/);
+    await expect(sharedNav).toHaveAttribute('data-nav-persisted', 'true');
+    await expect(page.locator('.ultima-bottom-nav:visible')).toHaveCount(1);
+    await expect.poll(() => sharedNav.boundingBox()).toEqual(homeNav);
     await expect(page.locator('[data-ultima-nav-target="subscription"]')).toHaveAttribute(
       'aria-current',
       'page',
@@ -2769,14 +2860,25 @@ test.describe('Ultima bot-configured palette', () => {
         );
         await page.goto('/');
         await expect(page.getByRole('heading', { name: 'Обычный', exact: true })).toBeVisible();
-        await expect
-          .poll(() =>
-            page
-              .locator('.ultima-shell')
-              .first()
-              .evaluate((el) => getComputedStyle(el).backgroundColor),
-          )
-          .toBe(variant === 'light' ? 'rgb(245, 247, 246)' : 'rgb(18, 24, 35)');
+        const canvasColor = variant === 'light' ? 'rgb(245, 247, 246)' : 'rgb(18, 24, 35)';
+        if (width < 1024) {
+          await expect
+            .poll(() =>
+              page
+                .locator('.ultima-app-backdrop')
+                .evaluate((el) => getComputedStyle(el).backgroundImage),
+            )
+            .toContain(canvasColor);
+          await expect(page.locator('.ultima-shell').first()).toHaveCSS(
+            'background-color',
+            'rgba(0, 0, 0, 0)',
+          );
+        } else {
+          await expect(page.locator('.ultima-shell').first()).toHaveCSS(
+            'background-color',
+            canvasColor,
+          );
+        }
         const primary =
           width < 1024
             ? page.getByTestId('ultima-primary-cta')

@@ -18,6 +18,7 @@ import {
   getUltimaThemePresetById,
 } from '@/features/ultima/presets';
 import { applyUltimaThemeConfig, normalizeUltimaThemeConfig } from '@/features/ultima/theme';
+import { contrastRatio } from '@/lib/colorContrast';
 import { cn } from '@/lib/utils';
 import { useNotify } from '@/platform';
 
@@ -138,32 +139,6 @@ function normalizeConfig(config?: Partial<UltimaThemeConfig> | null): UltimaThem
 
 function stableConfig(config: UltimaThemeConfig) {
   return JSON.stringify(config);
-}
-
-function hexToRgb(hex: string) {
-  const match = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (!match) return null;
-  return {
-    r: parseInt(match[1], 16) / 255,
-    g: parseInt(match[2], 16) / 255,
-    b: parseInt(match[3], 16) / 255,
-  };
-}
-
-function linearize(value: number) {
-  return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-}
-
-function luminance(hex: string) {
-  const rgb = hexToRgb(hex);
-  if (!rgb) return 0;
-  return 0.2126 * linearize(rgb.r) + 0.7152 * linearize(rgb.g) + 0.0722 * linearize(rgb.b);
-}
-
-function contrastRatio(foreground: string, background: string) {
-  const lighter = Math.max(luminance(foreground), luminance(background));
-  const darker = Math.min(luminance(foreground), luminance(background));
-  return (lighter + 0.05) / (darker + 0.05);
 }
 
 function contrastState(ratio: number) {

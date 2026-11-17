@@ -1,6 +1,7 @@
 import { type CSSProperties, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { brandingApi, getCachedUltimaThemeConfig, type UltimaThemeConfig } from '@/api/branding';
+import { readableForeground } from '@/lib/colorContrast';
 import { getDefaultUltimaThemeWithPresets } from './presets';
 
 export function normalizeUltimaThemeConfig(config: UltimaThemeConfig): UltimaThemeConfig {
@@ -14,7 +15,8 @@ export function getUltimaThemeDerivedCssVarStyle(): CSSProperties {
   // Layout does not prescribe a palette: all colours follow the bot theme settings.
   return {
     ['--ultima-bg-page-desktop' as string]: 'var(--ultima-color-bg-top)',
-    ['--ultima-bg-page-mobile' as string]: 'var(--ultima-color-bg-top)',
+    ['--ultima-bg-page-mobile' as string]:
+      'linear-gradient(180deg, var(--ultima-color-bg-top), var(--ultima-color-bg-bottom))',
     ['--ultima-bg-page-overlay-desktop' as string]: 'none',
     ['--ultima-bg-page-overlay-mobile' as string]: 'none',
     ['--ultima-bg-page-scrim-desktop' as string]: 'none',
@@ -44,6 +46,10 @@ export function getUltimaThemeCssVarStyle(config: UltimaThemeConfig): CSSPropert
   return {
     ['--ultima-color-primary' as string]: resolved.primaryColor,
     ['--ultima-color-primary-text' as string]: resolved.primaryTextColor,
+    ['--ultima-mini-primary-text' as string]: readableForeground(
+      resolved.primaryTextColor,
+      resolved.primaryColor,
+    ),
     ['--ultima-color-secondary' as string]: resolved.secondaryColor,
     ['--ultima-color-secondary-text' as string]: resolved.secondaryTextColor,
     ['--ultima-color-nav-bg' as string]: resolved.navBackgroundColor,
@@ -86,6 +92,7 @@ export function useUltimaThemeConfig() {
     queryKey: ['ultima-theme-config'],
     queryFn: brandingApi.getUltimaThemeConfig,
     initialData: cachedThemeConfig,
+    initialDataUpdatedAt: 0,
     placeholderData: (previousData) => previousData,
     staleTime: 60_000,
   });

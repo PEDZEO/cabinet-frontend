@@ -9,7 +9,7 @@ import {
   ShieldCheck,
   Smartphone,
 } from 'lucide-react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 
 import { balanceApi } from '@/api/balance';
@@ -23,8 +23,10 @@ import {
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { UltimaMeteredTrafficPeriodNotice } from '@/components/ultima/UltimaMeteredTrafficPeriodNotice';
 import { UltimaTrafficTopUpSection } from '@/components/ultima/UltimaTrafficTopUpSection';
+import { getUltimaTopLevelTab } from '@/features/ultima/navigation';
 import { isUltimaTariffUnlimited } from '@/features/ultima/subscription';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { cn } from '@/lib/utils';
 import { useHaptic, usePlatform } from '@/platform';
 import { copyToClipboard } from '@/utils/clipboard';
 
@@ -63,6 +65,7 @@ function QuickAction({ icon, label, hint, onClick, primary = false, testId }: Qu
 export function UltimaSubscriptionInfo() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const hasSharedNav = getUltimaTopLevelTab(useLocation().pathname) === 'subscription';
   const queryClient = useQueryClient();
   const haptic = useHaptic();
   const { openTelegramLink } = usePlatform();
@@ -151,13 +154,16 @@ export function UltimaSubscriptionInfo() {
 
   const trafficTotal = Math.max(0, subscription?.traffic_limit_gb ?? 0);
   const trafficUsed = Math.max(0, subscription?.traffic_used_gb ?? 0);
+  const purchasedTraffic =
+    subscription?.purchased_traffic_gb ??
+    subscription?.traffic_purchases?.reduce((total, item) => total + item.traffic_gb, 0) ??
+    0;
   const trafficLeft = Math.max(
     0,
     subscription?.metered_traffic_remaining_gb ?? trafficTotal - trafficUsed,
   );
-  const trafficProgress = isUnlimitedTraffic
-    ? 0
-    : Math.min(100, Math.max(0, trafficTotal > 0 ? (trafficUsed / trafficTotal) * 100 : 0));
+  const trafficLeftPercent =
+    trafficTotal > 0 ? Math.min(100, (trafficLeft / trafficTotal) * 100) : 0;
   const language = i18n.resolvedLanguage || i18n.language || 'ru';
   const numberFormatter = new Intl.NumberFormat(language, { maximumFractionDigits: 1 });
   const formatTraffic = (value: number) =>
@@ -281,10 +287,11 @@ export function UltimaSubscriptionInfo() {
       await navigator.share({
         title: t('ultima.subscriptionInfo.subscriptionLink'),
         text: subscriptionLink,
-        url: subscriptionLink,
       });
-    } catch {
-      fallbackTelegramShare();
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === 'AbortError')) {
+        fallbackTelegramShare();
+      }
     }
   };
 
@@ -301,10 +308,12 @@ export function UltimaSubscriptionInfo() {
   const statusPill = (
     <span
       data-testid="ultima-subscription-info-status"
-      className="ultima-sub-info-status"
+      className={cn(
+        'ultima-sub-info-status',
+        subscription?.is_expired && 'ultima-mini-expired-status',
+      )}
       data-active={isActive}
     >
-      <span className="ultima-sub-info-status-dot" aria-hidden="true" />
       {statusLabel}
     </span>
   );
@@ -325,20 +334,33 @@ export function UltimaSubscriptionInfo() {
         </div>
         {!isUnlimitedTraffic ? (
           <span className="ultima-sub-info-traffic-percent">
-            {numberFormatter.format(Math.max(0, 100 - trafficProgress))}%
+            {numberFormatter.format(trafficLeftPercent)}%
           </span>
         ) : null}
       </div>
 
       {!isUnlimitedTraffic ? (
         <>
-          <div className="ultima-sub-info-meter">
-            <div className="ultima-sub-info-meter-fill" style={{ width: `${trafficProgress}%` }} />
+          <div
+            className="ultima-sub-info-meter"
+            role="progressbar"
+            aria-label={t('ultima.subscriptionInfo.remaining')}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(trafficLeftPercent)}
+            aria-valuetext={formatTraffic(trafficLeft)}
+          >
+            <div
+              className="ultima-sub-info-meter-fill"
+              style={{ width: `${trafficLeftPercent}%` }}
+            />
           </div>
           <dl className="ultima-sub-info-facts ultima-sub-info-traffic-facts">
             {[
               [t('ultima.subscriptionInfo.used'), formatTraffic(trafficUsed)],
-              [t('ultima.subscriptionInfo.remaining'), formatTraffic(trafficLeft)],
+              ...(isDesktop
+                ? [[t('ultima.subscriptionInfo.remaining'), formatTraffic(trafficLeft)]]
+                : []),
               [t('ultima.subscriptionInfo.limit'), formatTraffic(trafficTotal)],
             ].map(([label, value]) => (
               <div key={label}>
@@ -347,6 +369,13 @@ export function UltimaSubscriptionInfo() {
               </div>
             ))}
           </dl>
+          {!isDesktop && purchasedTraffic > 0 && (
+            <p className="ultima-sub-info-traffic-bonus">
+              {t('ultima.trafficTopUp.activeBonus', {
+                traffic: numberFormatter.format(purchasedTraffic),
+              })}
+            </p>
+          )}
         </>
       ) : null}
 
@@ -355,6 +384,7 @@ export function UltimaSubscriptionInfo() {
       subscription.traffic_reset_mode === 'MONTH' ? (
         <UltimaMeteredTrafficPeriodNotice
           subscription={subscription}
+          variant={isDesktop ? 'period' : 'compact'}
           className="ultima-sub-info-policy"
         />
       ) : (
@@ -382,6 +412,7 @@ export function UltimaSubscriptionInfo() {
       purchaseBalanceKopeks={Math.max(0, balanceData?.balance_kopeks ?? 0)}
       isPending={purchaseTrafficMutation.isPending}
       error={trafficPurchaseErrorMessage}
+      showTrafficSummary={isDesktop}
       onPurchaseTraffic={(gb) => purchaseTrafficMutation.mutate(gb)}
       onTopUpBalance={(gb) => void openTopUpForTraffic(gb)}
     />
@@ -436,18 +467,6 @@ export function UltimaSubscriptionInfo() {
             })}
           </div>
         ) : null}
-        <div className="ultima-sub-info-link-value">
-          <p>{subscriptionLink}</p>
-          <button
-            type="button"
-            aria-label={t('ultima.subscriptionInfo.copyLink')}
-            title={t('ultima.subscriptionInfo.copyLink')}
-            onClick={() => void copySubscriptionLink()}
-            className="ultima-sub-info-copy-icon"
-          >
-            <Copy className="h-4 w-4" />
-          </button>
-        </div>
         <div className="ultima-sub-info-link-actions">
           <button
             type="button"
@@ -492,7 +511,7 @@ export function UltimaSubscriptionInfo() {
     return <div className="min-h-[100dvh] min-h-[100svh] w-full bg-transparent" />;
   }
 
-  const bottomNav = <UltimaBottomNav active="home" onSupportClick={openSupport} />;
+  const bottomNav = <UltimaBottomNav active="subscription" onSupportClick={openSupport} />;
 
   if (isDesktop) {
     return (
@@ -631,7 +650,12 @@ export function UltimaSubscriptionInfo() {
   }
 
   return (
-    <div className="ultima-shell ultima-shell-wide ultima-sub-info">
+    <div
+      className={cn(
+        'ultima-shell ultima-shell-wide ultima-sub-info',
+        hasSharedNav && 'ultima-shell-shared-nav-docked',
+      )}
+    >
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
         <section className="flex min-h-0 flex-1 flex-col pt-[clamp(8px,2vh,16px)]">
@@ -648,44 +672,40 @@ export function UltimaSubscriptionInfo() {
                     <p className="ultima-sub-info-eyebrow">
                       {t('ultima.subscriptionInfo.eyebrow')}
                     </p>
-                    <h1>{subscriptionTitle}</h1>
+                    <h1 className="ultima-mini-screen-title">{subscriptionTitle}</h1>
                   </div>
                   {statusPill}
                 </div>
 
-                <dl className="ultima-sub-info-facts ultima-sub-info-overview-facts">
+                <dl className="ultima-sub-info-mobile-term">
                   <div>
                     <dt>{t('ultima.subscriptionInfo.validUntil')}</dt>
                     <dd>{endDateLabel}</dd>
                   </div>
-                  {[
-                    [t('ultima.subscriptionInfo.timeLeft'), timeLeftLabel],
-                    [t('ultima.subscriptionInfo.devices'), String(deviceCount)],
-                    [t('ultima.subscriptionInfo.servers'), String(serverCount)],
-                  ].map(([label, value]) => (
-                    <div key={label}>
-                      <dt>{label}</dt>
-                      <dd>{value}</dd>
-                    </div>
-                  ))}
+                  <div>
+                    <dt>{t('ultima.subscriptionInfo.timeLeft')}</dt>
+                    <dd>{timeLeftLabel}</dd>
+                  </div>
                 </dl>
 
-                <div className="ultima-sub-info-action-list ultima-sub-info-overview-actions">
-                  {canOpenTariffs ? (
-                    <QuickAction
-                      icon={<CalendarDays className="h-4 w-4" />}
-                      label={t('ultima.subscriptionInfo.renewShort')}
-                      onClick={openTariffs}
-                      primary
-                      testId="ultima-subscription-info-renew"
-                    />
-                  ) : null}
-                  <QuickAction
-                    icon={<Smartphone className="h-4 w-4" />}
-                    label={t('ultima.subscriptionInfo.manageDevices')}
+                <div className="ultima-sub-info-mobile-limits">
+                  <button
+                    type="button"
+                    className="ultima-sub-info-device-shortcut"
                     onClick={openDevices}
-                    testId="ultima-subscription-info-devices"
-                  />
+                    data-testid="ultima-subscription-info-devices"
+                    aria-label={t('ultima.subscriptionInfo.manageDevices')}
+                  >
+                    <span>{t('ultima.subscriptionInfo.devices')}</span>
+                    <strong>{deviceCount}</strong>
+                    <ArrowRight size={15} aria-hidden="true" />
+                  </button>
+                  <dl>
+                    <div>
+                      <dt>{t('ultima.subscriptionInfo.servers')}</dt>
+                      <dd>{serverCount}</dd>
+                    </div>
+                  </dl>
                 </div>
               </section>
 
@@ -696,7 +716,7 @@ export function UltimaSubscriptionInfo() {
           )}
         </section>
 
-        <section className="mt-auto shrink-0 pb-0">
+        <section className="ultima-mobile-dock-footer">
           {hasSubscription && canOpenTariffs ? (
             <button
               type="button"
@@ -711,7 +731,7 @@ export function UltimaSubscriptionInfo() {
               <ArrowRight className="h-4 w-4 shrink-0" />
             </button>
           ) : null}
-          <div className="ultima-nav-dock">{bottomNav}</div>
+          {!hasSharedNav && <div className="ultima-nav-dock">{bottomNav}</div>}
         </section>
       </div>
     </div>

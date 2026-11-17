@@ -8,13 +8,18 @@ import {
   type MutableRefObject,
 } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useSearchParams } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
+  ChevronRight,
+  CircleHelp,
+  CreditCard,
   Headphones,
   Image as ImageIcon,
   MessageCircleMore,
   Send as SendIcon,
+  ShieldCheck,
+  Smartphone,
   X as CloseIcon,
 } from 'lucide-react';
 import { infoApi } from '@/api/info';
@@ -96,28 +101,28 @@ const SELF_HELP_ACTIONS = [
     key: 'setup',
     titleKey: 'support.selfHelpSetupTitle',
     descriptionKey: 'support.selfHelpSetupDescription',
-    actionKey: 'support.selfHelpSetupAction',
+    icon: ShieldCheck,
     to: '/connection',
   },
   {
     key: 'payment',
     titleKey: 'support.selfHelpPaymentTitle',
     descriptionKey: 'support.selfHelpPaymentDescription',
-    actionKey: 'support.selfHelpPaymentAction',
+    icon: CreditCard,
     to: '/subscription',
   },
   {
     key: 'devices',
     titleKey: 'support.selfHelpDevicesTitle',
     descriptionKey: 'support.selfHelpDevicesDescription',
-    actionKey: 'support.selfHelpDevicesAction',
+    icon: Smartphone,
     to: '/ultima/devices',
   },
   {
     key: 'info',
     titleKey: 'support.selfHelpInfoTitle',
     descriptionKey: 'support.selfHelpInfoDescription',
-    actionKey: 'support.selfHelpInfoAction',
+    icon: CircleHelp,
     to: '/ultima/info',
   },
 ] as const;
@@ -317,29 +322,22 @@ export function UltimaSupport() {
     return { recent, old };
   }, [tickets?.items]);
 
+  const ticketParam = Number(searchParams.get('ticket'));
+  const requestedTicketId = Number.isInteger(ticketParam) && ticketParam > 0 ? ticketParam : null;
   useEffect(() => {
-    const ticketParam = searchParams.get('ticket');
-    const ticketId = Number(ticketParam);
-
-    if (!ticketParam || !Number.isInteger(ticketId) || ticketId <= 0) {
-      if (selectedTicketId !== null) {
-        setSelectedTicketId(null);
-        setMobileTicketsExpanded(true);
-      }
-      return;
-    }
-
-    const ticketFromUrl = tickets?.items?.find((ticket) => ticket.id === ticketId);
-    if (ticketFromUrl) {
-      const isArchiveTicket = ticketBuckets.old.some((ticket) => ticket.id === ticketId);
-      setTicketListMode(isArchiveTicket ? 'archive' : 'active');
-    }
-    if (selectedTicketId !== ticketId) {
-      setSelectedTicketId(ticketId);
-    }
+    setSelectedTicketId(requestedTicketId);
+    if (!requestedTicketId) return;
     setMobileTicketsExpanded(false);
     setShowCreate(false);
-  }, [searchParams, selectedTicketId, ticketBuckets.old, tickets?.items]);
+  }, [requestedTicketId]);
+
+  useEffect(() => {
+    const ticketFromUrl = tickets?.items?.find((ticket) => ticket.id === requestedTicketId);
+    if (ticketFromUrl) {
+      const isArchiveTicket = ticketBuckets.old.some((ticket) => ticket.id === requestedTicketId);
+      setTicketListMode(isArchiveTicket ? 'archive' : 'active');
+    }
+  }, [requestedTicketId, ticketBuckets.old, tickets?.items]);
 
   const replaceTicketSearchParam = useCallback(
     (ticketId: number | null) => {
@@ -506,7 +504,7 @@ export function UltimaSupport() {
         key: action.key,
         title: t(action.titleKey),
         description: t(action.descriptionKey),
-        action: t(action.actionKey),
+        icon: action.icon,
         to: action.to,
       })),
     [t],
@@ -687,7 +685,7 @@ export function UltimaSupport() {
         clearReplyAttachment();
         setMobileTicketsExpanded(false);
       }}
-      className={`w-full rounded-2xl px-3 py-2 text-left transition lg:px-3.5 lg:py-2.5 ${
+      className={`ultima-support-ticket-row w-full rounded-2xl px-3 py-2 text-left transition lg:px-3.5 lg:py-2.5 ${
         selectedTicketId === ticket.id
           ? 'bg-[color:color-mix(in_srgb,var(--ultima-color-primary)_16%,transparent)] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
           : 'bg-[color:color-mix(in_srgb,var(--ultima-color-secondary)_58%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--ultima-color-secondary)_72%,transparent)]'
@@ -745,40 +743,33 @@ export function UltimaSupport() {
     );
   };
 
-  const renderSelfHelpActions = (className = '') => (
-    <div className={className}>
-      <div className="mb-2 flex items-end justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-white/86 text-[13px] font-semibold">{t('support.selfHelpTitle')}</p>
-          <p className="mt-0.5 line-clamp-2 text-[13px] leading-snug text-white/[0.72]">
-            {t('support.selfHelpSubtitle')}
-          </p>
-        </div>
-      </div>
+  const renderSelfHelpActions = (showHeading = true) => (
+    <section className="ultima-support-help">
+      {showHeading && (
+        <header>
+          <h2>{t('support.selfHelpTitle')}</h2>
+          <p>{t('support.selfHelpSubtitle')}</p>
+        </header>
+      )}
       <div className="ultima-support-help-list">
-        {selfHelpActions.map((action) => (
-          <button
-            key={action.key}
-            type="button"
-            onClick={() => navigate(action.to)}
-            className="rounded-xl border border-white/10 bg-white/[0.045] px-3 py-2.5 text-left transition hover:border-white/20 hover:bg-white/[0.075] lg:rounded-lg"
-          >
-            <span className="block truncate text-[13px] font-medium text-white/90">
-              {action.title}
+        {selfHelpActions.map(({ key, to, title, description, icon: Icon }) => (
+          <Link key={key} to={to} className="ultima-support-help-row">
+            <span className="ultima-support-help-icon" aria-hidden="true">
+              <Icon size={18} strokeWidth={1.8} />
             </span>
-            <span className="mt-1 line-clamp-2 block min-h-[30px] text-[13px] leading-snug text-white/[0.72]">
-              {action.description}
+            <span className="ultima-support-help-copy">
+              <strong>{title}</strong>
+              <span>{description}</span>
             </span>
-            <span className="mt-2 block text-[13px] font-medium text-[color:var(--ultima-color-ring)]">
-              {action.action}
-            </span>
-          </button>
+            <ChevronRight size={17} strokeWidth={1.8} aria-hidden="true" />
+          </Link>
         ))}
       </div>
-    </div>
+    </section>
   );
 
   const bottomNav = <UltimaBottomNav active="support" onProfileClick={openProfileFast} />;
+  const isTicketListEmpty = !ticketsLoading && !tickets?.items?.length;
 
   const supportContent = configLoading ? (
     <section
@@ -834,33 +825,38 @@ export function UltimaSupport() {
           <CloseIcon className="h-4 w-4" />
         </button>
       </div>
-      {renderSelfHelpActions('border-y border-white/[0.08] py-3')}
       <div className="flex flex-wrap gap-2">
         {quickSupportTopics.map((topic) => (
           <button
             key={topic.key}
             type="button"
             onClick={() => applyQuickTopic(topic)}
-            className="rounded-full border border-white/[0.10] bg-white/[0.04] px-3 py-1.5 text-[13px] font-medium text-white/70 transition hover:border-white/20 hover:bg-white/[0.08]"
+            className="ultima-support-topic"
           >
             {topic.label}
           </button>
         ))}
       </div>
-      <input
-        value={newTitle}
-        onChange={(event) => setNewTitle(event.target.value)}
-        placeholder={t('support.subjectPlaceholder')}
-        className="w-full rounded-xl border border-white/[0.08] bg-black/20 px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-[color:color-mix(in_srgb,var(--ultima-color-primary)_48%,transparent)] lg:rounded-lg"
-        maxLength={255}
-      />
-      <textarea
-        value={newMessage}
-        onChange={(event) => setNewMessage(event.target.value)}
-        placeholder={t('support.messagePlaceholder')}
-        className="min-h-[150px] w-full resize-none rounded-xl border border-white/[0.08] bg-black/20 px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-[color:color-mix(in_srgb,var(--ultima-color-primary)_48%,transparent)] lg:rounded-lg"
-        maxLength={4000}
-      />
+      <label className="ultima-support-form-label">
+        {t('support.subject', { defaultValue: 'Тема' })}
+        <input
+          value={newTitle}
+          onChange={(event) => setNewTitle(event.target.value)}
+          placeholder={t('support.subjectPlaceholder')}
+          className="ultima-support-field"
+          maxLength={255}
+        />
+      </label>
+      <label className="ultima-support-form-label">
+        {t('support.message', { defaultValue: 'Сообщение' })}
+        <textarea
+          value={newMessage}
+          onChange={(event) => setNewMessage(event.target.value)}
+          placeholder={t('support.messagePlaceholder')}
+          className="ultima-support-field ultima-support-textarea"
+          maxLength={4000}
+        />
+      </label>
       <input
         ref={createFileInputRef}
         type="file"
@@ -898,6 +894,13 @@ export function UltimaSupport() {
           {t('support.send')}
         </button>
       </div>
+      <details className="ultima-support-create-help">
+        <summary>
+          {t('support.selfHelpTitle')}
+          <ChevronRight size={16} aria-hidden="true" />
+        </summary>
+        {renderSelfHelpActions(false)}
+      </details>
     </section>
   ) : (
     <>
@@ -930,16 +933,11 @@ export function UltimaSupport() {
         className={`${ultimaPanelClassName} flex min-h-0 flex-1 flex-col gap-3 p-4 lg:p-5`}
         style={ULTIMA_SUPPORT_SECTION_STYLE}
         data-testid="ultima-ticket-workspace"
-        data-empty={!ticketsLoading && !tickets?.items?.length}
+        data-empty={isTicketListEmpty}
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0">
-            <p className="text-[13px] leading-none text-white/70">{t('support.yourTickets')}</p>
-            {selectedTicket ? (
-              <p className="mt-1 line-clamp-1 text-[13px] text-white/45 lg:hidden">
-                {selectedTicket.title}
-              </p>
-            ) : null}
+            <p className="ultima-support-workspace-label">{t('support.yourTickets')}</p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             {selectedTicketId && tickets?.items?.length ? (
@@ -956,7 +954,7 @@ export function UltimaSupport() {
             <button
               type="button"
               onClick={openCreateTicket}
-              className="ultima-btn-pill ultima-btn-secondary px-3 py-1.5 text-[13px] leading-none lg:hidden"
+              className="ultima-btn-pill ultima-btn-primary min-h-11 px-3 text-[13px] lg:hidden"
             >
               {t('support.newTicket')}
             </button>
@@ -978,7 +976,7 @@ export function UltimaSupport() {
           </div>
         ) : null}
 
-        {!ticketsLoading && !tickets?.items?.length ? (
+        {isTicketListEmpty ? (
           <div className="ultima-support-empty">
             <h2>{t('support.noTickets')}</h2>
             <p>
@@ -986,7 +984,6 @@ export function UltimaSupport() {
                 defaultValue: 'Создайте обращение — переписка с поддержкой появится здесь.',
               })}
             </p>
-            {renderSelfHelpActions('ultima-support-empty-help')}
           </div>
         ) : null}
 
@@ -1045,17 +1042,15 @@ export function UltimaSupport() {
           </div>
 
           <div
-            className={`${ultimaPaneClassName} ${
+            className={`${ultimaPaneClassName} ultima-support-chat ${
               selectedTicketId ? 'flex' : 'hidden lg:flex'
             } min-h-[58dvh] flex-1 flex-col p-3 lg:min-h-[500px] lg:p-4`}
             style={ULTIMA_SUPPORT_PANE_STYLE}
           >
             {selectedTicketId && ticketDetail ? (
               <div className="flex min-h-0 flex-1 flex-col gap-3">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="line-clamp-2 break-words text-[14px] font-medium leading-snug text-white/95 lg:text-[16px]">
-                    {ticketDetail.title || selectedTicket?.title || `#${selectedTicketId}`}
-                  </p>
+                <div className="ultima-support-chat-heading">
+                  <h2>{ticketDetail.title || selectedTicket?.title || `#${selectedTicketId}`}</h2>
                   <div className="flex items-center gap-2">
                     <span
                       className={`inline-flex shrink-0 rounded-full px-2 py-0.5 text-[13px] font-medium ${getStatusMeta(ticketDetail.status).classes}`}
@@ -1075,30 +1070,27 @@ export function UltimaSupport() {
                     )}
                   </div>
                 </div>
-                <div className="ultima-scrollbar min-h-[260px] flex-1 space-y-2 overflow-y-auto pr-1 lg:max-h-[52vh] lg:min-h-0 lg:space-y-2.5">
+                <div className="ultima-support-messages ultima-scrollbar min-h-[260px] flex-1 overflow-y-auto lg:max-h-[52vh] lg:min-h-0">
                   {ticketLoading ? (
                     <p className="text-[13px] text-white/60">{t('common.loading')}</p>
                   ) : (
                     ticketDetail.messages.map((msg) => (
                       <div
                         key={msg.id}
-                        className={`rounded-xl px-3 py-2 text-sm lg:px-3.5 lg:py-2.5 ${
-                          msg.is_from_admin
-                            ? 'border border-[color:color-mix(in_srgb,var(--ultima-color-primary)_20%,transparent)] bg-[color:color-mix(in_srgb,var(--ultima-color-primary)_10%,transparent)] text-white'
-                            : 'border border-white/[0.07] bg-white/[0.045] text-white'
-                        }`}
+                        className="ultima-support-message"
+                        data-author={msg.is_from_admin ? 'support' : 'user'}
                       >
-                        <div className="mb-1 flex items-center justify-between gap-2">
-                          <span className="text-[13px] font-medium text-white/[0.68]">
+                        <div className="ultima-support-message-meta">
+                          <strong>
                             {msg.is_from_admin
                               ? t('support.supportTeam', { defaultValue: 'Администратор' })
                               : t('support.you', { defaultValue: 'Вы' })}
-                          </span>
-                          <span className="text-[13px] text-white/50">
-                            {formatDateTime(msg.created_at)}
-                          </span>
+                          </strong>
+                          <time dateTime={msg.created_at}>{formatDateTime(msg.created_at)}</time>
                         </div>
-                        <p>{msg.message_text}</p>
+                        {msg.message_text && (
+                          <p className="ultima-support-message-text">{msg.message_text}</p>
+                        )}
                         <MessageMedia message={msg} />
                       </div>
                     ))
@@ -1106,7 +1098,7 @@ export function UltimaSupport() {
                 </div>
 
                 {ticketDetail.status !== 'closed' && !ticketDetail.is_reply_blocked && (
-                  <div className="mt-auto space-y-2 border-t border-white/10 pt-2">
+                  <div className="ultima-support-composer mt-auto space-y-2">
                     <input
                       ref={replyFileInputRef}
                       type="file"
@@ -1123,7 +1115,7 @@ export function UltimaSupport() {
                       attachment={replyAttachment}
                       onClear={clearReplyAttachment}
                     />
-                    <div className="flex gap-2 lg:gap-2.5">
+                    <div className="ultima-support-composer-row">
                       <button
                         type="button"
                         onClick={() => replyFileInputRef.current?.click()}
@@ -1136,7 +1128,8 @@ export function UltimaSupport() {
                         value={replyMessage}
                         onChange={(event) => setReplyMessage(event.target.value)}
                         placeholder={t('support.replyPlaceholder')}
-                        className="w-full rounded-xl border border-white/[0.08] bg-black/20 px-3 py-2 text-sm text-white outline-none placeholder:text-white/30 focus:border-[color:color-mix(in_srgb,var(--ultima-color-primary)_48%,transparent)] lg:h-11 lg:text-[14px]"
+                        aria-label={t('support.replyPlaceholder')}
+                        className="ultima-support-field"
                         maxLength={4000}
                       />
                       <button
@@ -1164,12 +1157,13 @@ export function UltimaSupport() {
           </div>
         </div>
       </section>
+      {isTicketListEmpty && renderSelfHelpActions()}
     </>
   );
 
   if (isDesktop) {
     return (
-      <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-shell-profile-desktop ultima-shell-muted-aura">
+      <div className="ultima-shell ultima-support-page ultima-shell-wide ultima-flat-frames ultima-shell-profile-desktop ultima-shell-muted-aura">
         <div className="ultima-shell-aura" />
         <UltimaDesktopSectionLayout
           icon={<Headphones className="h-5 w-5" />}
@@ -1217,20 +1211,18 @@ export function UltimaSupport() {
   }
 
   return (
-    <div className="ultima-shell ultima-shell-shared-nav-docked ultima-shell-wide ultima-flat-frames ultima-shell-muted-aura">
+    <div className="ultima-shell ultima-support-page ultima-shell-shared-nav-docked ultima-shell-wide ultima-flat-frames ultima-shell-muted-aura">
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[1100px]">
         <section className="ultima-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto pr-1">
           <header className="mb-4">
-            <h1 className="text-[clamp(34px,9vw,46px)] font-semibold leading-[0.92] tracking-[-0.01em] text-white">
-              {t('support.title')}
-            </h1>
-            <p className="mt-1.5 text-[16px] leading-tight text-white/60">
-              {ticketsDisabled
-                ? t('support.contactSupport', {
-                    username: supportConfig?.support_username || '@support',
-                  })
-                : t('support.yourTickets')}
-            </p>
+            <h1 className="ultima-mini-screen-title">{t('support.title')}</h1>
+            {ticketsDisabled && (
+              <p className="mt-1.5 text-[16px] leading-tight text-white/60">
+                {t('support.contactSupport', {
+                  username: supportConfig?.support_username || '@support',
+                })}
+              </p>
+            )}
           </header>
 
           {supportContent}

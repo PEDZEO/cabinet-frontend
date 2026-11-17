@@ -1,189 +1,381 @@
-/* Mobile home uses the same raw bot colour inputs as the rest of the cabinet. */
 @media (max-width: 1023px) {
+  .ultima-mini-home .ultima-mini-home-feed {
+    gap: 24px;
+    padding: 6px 0 24px;
+  }
+
   .ultima-shell .ultima-mobile-plan[data-testid='ultima-home-overview'] {
     min-width: 0;
-    padding: 0 0 24px !important;
-    border: 0 !important;
-    border-bottom: 1px solid var(--ultima-web-line) !important;
-    border-radius: 0 !important;
+    padding: clamp(15px, 4.5vw, 24px);
+    border: 1px solid var(--ultima-mini-line) !important;
+    border-radius: 24px;
     color: var(--ultima-color-secondary-text);
-    background: transparent !important;
-    box-shadow: none !important;
-    backdrop-filter: none;
+    background: var(--ultima-mini-surface) !important;
   }
 
-  .ultima-mobile-plan-heading,
-  .ultima-mobile-actions-heading {
-    min-width: 0;
-  }
-
-  .ultima-mobile-plan-caption {
+  .ultima-mobile-plan-header,
+  .ultima-mobile-plan-brand,
+  .ultima-mobile-plan-status {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
+  }
+
+  .ultima-mobile-plan-header {
+    flex-wrap: wrap;
     justify-content: space-between;
-    gap: 8px 16px;
+    gap: 9px 14px;
+  }
+
+  .ultima-mobile-plan-brand {
+    min-width: 0;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.35;
+    letter-spacing: -0.025em;
+    overflow-wrap: anywhere;
+  }
+
+  .ultima-mobile-plan-mark {
+    flex-shrink: 0;
+    color: var(--ultima-mini-accent);
+  }
+
+  .ultima-mobile-plan-status {
+    --ultima-status-color: var(--ultima-mini-accent);
+    max-width: 100%;
+    gap: 7px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    color: var(--ultima-status-color);
+    background: color-mix(in srgb, var(--ultima-status-color) 11%, transparent);
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.4;
+  }
+
+  .ultima-mobile-plan[data-tone='warning'] .ultima-mobile-plan-status {
+    --ultima-status-color: var(--ultima-mini-warning);
+  }
+
+  .ultima-mobile-plan[data-tone='expired'] .ultima-mobile-plan-status {
+    --ultima-status-color: var(--ultima-mini-muted);
+  }
+
+  .ultima-mobile-plan-summary {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 5px 10px;
+    margin-top: 19px;
+  }
+
+  .ultima-mobile-plan-heading {
+    min-width: 0;
   }
 
   .ultima-mobile-plan-eyebrow,
   .ultima-mobile-plan-expiry,
   .ultima-mobile-plan-details dt,
-  .ultima-mobile-actions-heading p,
   .ultima-mobile-action-hint {
-    color: color-mix(in srgb, var(--ultima-color-secondary-text) 76%, transparent);
+    color: var(--ultima-mini-muted);
   }
 
-  .ultima-mobile-plan-caption p {
+  .ultima-mobile-plan-eyebrow,
+  .ultima-mobile-plan-expiry {
     margin: 0;
     font-size: 13px;
-    line-height: 1.5;
-  }
-
-  .ultima-mobile-plan-status {
-    color: var(--ultima-color-primary);
-    font-size: 13px;
-    font-weight: 650;
     line-height: 1.5;
   }
 
   .ultima-mobile-plan-heading h1 {
-    margin: 12px 0 8px;
-    font-size: clamp(27px, 7vw, 34px);
-    font-weight: 650;
-    line-height: 1.2;
-    letter-spacing: -0.6px;
-    overflow-wrap: anywhere;
-  }
-
-  .ultima-mobile-plan-expiry {
-    margin: 0;
-    font-size: 14px;
-    line-height: 1.5;
+    margin: 1px 0 4px;
+    font-size: clamp(30px, 8.8vw, 43px);
+    font-weight: 680;
+    line-height: 1.08;
+    letter-spacing: -0.045em;
   }
 
   .ultima-mobile-plan-details {
-    margin: 20px 0 18px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 17px 0;
+    padding: 12px 0;
+    border-block: 1px solid var(--ultima-mini-line);
   }
 
   .ultima-mobile-plan-details > div {
     display: flex;
     min-width: 0;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 10px 24px;
-    padding: 9px 0;
-    font-size: 14px;
-    line-height: 1.5;
+    flex-direction: column-reverse;
+    gap: 2px;
+    padding-inline-end: 12px;
+  }
+
+  .ultima-mobile-plan-details > div + div {
+    padding-inline: 15px 0;
+    border-inline-start: 1px solid var(--ultima-mini-line);
   }
 
   .ultima-mobile-plan-details dt,
   .ultima-mobile-plan-details dd {
-    min-width: 0;
     margin: 0;
+    line-height: 1.35;
     overflow-wrap: anywhere;
   }
 
-  .ultima-mobile-plan-details dd {
-    font-weight: 650;
-    text-align: right;
+  .ultima-mobile-plan-details dt {
+    font-size: 12px;
   }
 
-  .ultima-mobile-plan-loading {
-    color: var(--ultima-color-secondary-text);
+  .ultima-mobile-plan-details dd {
+    font-size: 23px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 650;
+    letter-spacing: -0.035em;
   }
 
   .ultima-mobile-plan-actions {
     display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 4px;
   }
 
   .ultima-mobile-plan-primary,
   .ultima-mobile-plan-secondary {
     display: flex;
     min-width: 0;
-    min-height: 48px;
+    min-height: 46px;
     align-items: center;
-    justify-content: center;
-    gap: 10px 16px;
-    padding: 12px 16px;
-    border: 1px solid transparent;
-    border-radius: 7px;
-    font-size: 15px;
-    font-weight: 600;
-    line-height: 1.4;
-    text-align: center;
-    box-shadow: none;
+    gap: 8px;
+    font-weight: 650;
+    line-height: 1.3;
+    text-align: start;
     overflow-wrap: anywhere;
   }
 
   .ultima-mobile-plan-primary {
-    flex-wrap: wrap;
-    border-color: var(--ultima-color-primary);
-    color: var(--ultima-color-primary-text);
+    width: 100%;
+    padding: 10px 13px;
+    border-radius: 13px;
+    color: var(--ultima-mini-primary-text, var(--ultima-color-primary-text));
     background: var(--ultima-color-primary);
+    font-size: 15px;
+  }
+
+  .ultima-mobile-plan-primary > span:first-child {
+    flex: 1;
   }
 
   .ultima-mobile-plan-action-meta {
-    font-size: 13px;
-    font-weight: 500;
+    font-size: 12px;
+    font-weight: 550;
   }
 
   .ultima-mobile-plan-secondary {
     min-height: 44px;
-    color: var(--ultima-color-primary);
-    background: transparent;
+    flex: 0 1 auto;
+    justify-content: center;
+    color: var(--ultima-mini-accent);
+    font-size: 13px;
   }
 
+  .ultima-mobile-plan-actions svg,
   .ultima-mobile-plan-secondary svg {
     flex-shrink: 0;
   }
 
-  .ultima-mobile-plan-primary:hover,
-  .ultima-mobile-plan-secondary:hover {
-    text-decoration: underline;
-    text-underline-offset: 4px;
-  }
-
-  .ultima-mobile-actions {
+  .ultima-mobile-actions,
+  .ultima-shell .ultima-mobile-traffic[data-testid='ultima-home-traffic-card'] {
     min-width: 0;
-    color: var(--ultima-color-secondary-text);
-  }
-
-  .ultima-mobile-actions-heading h2 {
     margin: 0;
-    font-size: 20px;
-    font-weight: 600;
-    line-height: 1.3;
+    border: 0 !important;
+    color: var(--ultima-color-secondary-text);
+    background: transparent !important;
   }
 
-  .ultima-mobile-actions-heading p {
-    margin: 5px 0 16px;
-    font-size: 14px;
+  .ultima-mobile-actions-heading,
+  .ultima-mobile-traffic-heading {
+    display: flex;
+    min-height: 38px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0 12px;
+  }
+
+  .ultima-mobile-actions-heading h2,
+  .ultima-mobile-traffic-heading h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 660;
+    line-height: 1.2;
+    letter-spacing: -0.032em;
+  }
+
+  .ultima-mobile-traffic-action {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    gap: 4px;
+    border-radius: 6px;
+    color: var(--ultima-mini-accent);
+    font-size: 13px;
+    font-weight: 650;
+    text-align: start;
+  }
+
+  .ultima-mobile-traffic-action > svg {
+    flex-shrink: 0;
+  }
+
+  .ultima-mobile-traffic-meter {
+    min-width: 0;
+    padding-block: 10px 13px;
+  }
+
+  .ultima-mobile-traffic-reading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 2px 12px;
+  }
+
+  .ultima-mobile-traffic-reading p,
+  .ultima-mobile-traffic-used {
+    color: var(--ultima-mini-muted);
+    font-size: 13px;
+    line-height: 1.48;
+  }
+
+  .ultima-mobile-traffic-reading strong {
+    font-size: 22px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 660;
+    line-height: 1.25;
+    letter-spacing: -0.03em;
+  }
+
+  .ultima-mobile-traffic-track {
+    height: 6px;
+    margin: 10px 0 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--ultima-mini-line);
+  }
+
+  .ultima-mobile-traffic-track > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--ultima-color-primary);
+    transform-origin: left;
+    animation: ultima-meter-arrive 460ms cubic-bezier(0.2, 0.75, 0.2, 1) both;
+    transition: width 220ms ease;
+  }
+
+  .ultima-mobile-traffic-meter[data-tone='low'] .ultima-mobile-traffic-track > span {
+    background: var(--ultima-mini-warning);
+  }
+
+  .ultima-mobile-traffic-meter[data-tone='blocked'] .ultima-mobile-traffic-reading strong {
+    color: var(--ultima-mini-warning);
+  }
+
+  .ultima-mobile-traffic-standard,
+  .ultima-mobile-traffic-reset > summary {
+    display: flex;
+    min-height: 48px;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .ultima-mobile-traffic-standard {
+    padding-block: 10px;
+    border-block: 1px solid var(--ultima-mini-line);
+  }
+
+  .ultima-mobile-traffic-standard strong {
+    color: var(--ultima-mini-accent);
+    font-weight: 650;
+  }
+
+  .ultima-mobile-traffic-standard > span,
+  .ultima-mobile-traffic-reset > summary > span {
+    min-width: 0;
+    flex: 1;
+    overflow-wrap: anywhere;
+  }
+
+  .ultima-mobile-traffic-standard > svg,
+  .ultima-mobile-traffic-reset > summary > svg {
+    flex-shrink: 0;
+    color: var(--ultima-mini-accent);
+  }
+
+  .ultima-mobile-traffic-reset {
+    margin-top: 10px;
+  }
+
+  .ultima-mobile-traffic-reset > summary {
+    border-radius: 7px;
+    text-align: start;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .ultima-mobile-traffic-reset > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .ultima-mobile-traffic-reset > summary strong,
+  .ultima-mobile-traffic-reset > summary span span {
+    display: block;
+  }
+
+  .ultima-mobile-traffic-reset > summary span span,
+  .ultima-mobile-traffic-reset-body {
+    color: var(--ultima-mini-muted);
+    font-size: 12px;
     line-height: 1.5;
   }
 
+  .ultima-mobile-traffic-reset > summary > svg:last-child {
+    transition: transform 180ms ease;
+  }
+
+  .ultima-mobile-traffic-reset[open] > summary > svg:last-child {
+    transform: rotate(180deg);
+  }
+
+  .ultima-mobile-traffic-reset-body {
+    padding: 4px 0 6px 26px;
+    animation: ultima-mini-heading-in 180ms ease-out both;
+  }
+
+  .ultima-mobile-traffic-reset-body p + p {
+    margin-top: 3px;
+  }
+
   .ultima-mobile-action-list {
-    min-width: 0;
-    border-top: 1px solid var(--ultima-web-line);
+    border-top: 1px solid var(--ultima-mini-line);
   }
 
   .ultima-shell .ultima-mobile-actions .ultima-mobile-action-row {
     display: flex;
     min-width: 0;
     width: 100%;
-    min-height: 78px;
+    min-height: 65px;
     align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 16px 0;
+    gap: 10px;
+    padding: 10px 0;
     border: 0;
-    border-bottom: 1px solid var(--ultima-web-line);
+    border-bottom: 1px solid var(--ultima-mini-line);
     border-radius: 0;
     color: var(--ultima-color-secondary-text);
     background: transparent;
-    text-align: left;
+    text-align: start;
     box-shadow: none;
   }
 
@@ -198,54 +390,44 @@
     flex-wrap: wrap;
     align-items: baseline;
     justify-content: space-between;
-    gap: 5px 16px;
-    font-size: 15px;
-    line-height: 1.4;
+    gap: 2px 10px;
+    font-size: 14px;
+    line-height: 1.35;
   }
 
   .ultima-mobile-action-title {
-    min-width: 0;
-    font-weight: 600;
+    font-weight: 620;
     overflow-wrap: anywhere;
   }
 
   .ultima-mobile-action-value {
-    min-width: 0;
-    color: var(--ultima-color-primary);
-    font-size: 14px;
-    font-weight: 550;
+    color: var(--ultima-mini-accent);
+    font-size: 13px;
+    font-weight: 600;
     overflow-wrap: anywhere;
   }
 
   .ultima-mobile-action-hint {
     display: block;
-    margin-top: 5px;
-    font-size: 13px;
-    line-height: 1.5;
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.4;
     overflow-wrap: anywhere;
   }
 
+  .ultima-mobile-action-icon,
   .ultima-mobile-action-arrow {
     flex-shrink: 0;
-    color: var(--ultima-color-primary);
+    color: var(--ultima-mini-accent);
   }
 
-  .ultima-mobile-action-row[data-tone='attention'] .ultima-mobile-action-title {
-    color: var(--ultima-color-primary);
+  .ultima-mobile-action-arrow {
+    color: var(--ultima-mini-muted);
   }
 
-  .ultima-shell .ultima-mobile-actions .ultima-mobile-action-row:hover {
-    background: color-mix(in srgb, var(--ultima-color-surface) 35%, transparent);
-  }
-
-  .ultima-mobile-plan :is(button):focus-visible,
-  .ultima-mobile-actions :is(button):focus-visible {
-    outline: 3px solid var(--ultima-color-primary);
-    outline-offset: 3px;
-  }
-
-  .ultima-mobile-action-row:disabled {
-    cursor: wait;
-    opacity: 0.7;
+  .ultima-mobile-plan-primary:active,
+  .ultima-mobile-traffic-action:active,
+  .ultima-mobile-action-row:active {
+    transform: scale(0.985);
   }
 }

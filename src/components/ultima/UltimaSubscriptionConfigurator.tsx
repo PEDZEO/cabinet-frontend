@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Check, Clock3, RefreshCw, SlidersHorizontal, Smartphone, WalletCards } from 'lucide-react';
+import { Check, RefreshCw, Smartphone, WalletCards } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { UltimaDeviceStepper } from '@/components/ultima/UltimaDeviceStepper';
@@ -53,7 +53,6 @@ type UltimaSubscriptionConfiguratorProps = {
   minimumTopUpHint?: ReactNode;
   paymentRecoveryCard?: ReactNode;
   trafficTopUp?: ReactNode;
-  bottomNav: ReactNode;
   isPayDisabled: boolean;
   onChangeTariff: () => void;
   onSelectDevice: (limit: number) => void;
@@ -160,7 +159,6 @@ export function UltimaSubscriptionConfigurator({
   minimumTopUpHint,
   paymentRecoveryCard,
   trafficTopUp,
-  bottomNav,
   isPayDisabled,
   onChangeTariff,
   onSelectDevice,
@@ -178,37 +176,32 @@ export function UltimaSubscriptionConfigurator({
         data-testid="ultima-subscription-configurator"
       >
         <header className="ultima-checkout-heading mb-3">
-          <div className="mb-1 flex items-center justify-between gap-3">
-            <p className="text-[13px] font-semibold uppercase text-white/[0.72]">
-              {t('ultima.subscriptionBuilder.pageTitle')}
-            </p>
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+            <h1 className="ultima-mini-screen-title min-w-0 break-words text-white">{title}</h1>
             {canChangeTariff ? (
               <button
                 type="button"
                 onClick={onChangeTariff}
                 data-testid="ultima-subscription-change-tariff"
-                className="inline-flex h-8 items-center gap-1.5 rounded-full border border-white/[0.12] bg-white/[0.055] px-3 text-[13px] font-medium text-white/[0.78] transition-colors active:bg-white/[0.1]"
+                className="ultima-checkout-change-plan inline-flex min-h-11 items-center gap-1.5 px-2 text-[13px] font-semibold"
               >
                 <RefreshCw className="h-3.5 w-3.5" />
                 {t('ultima.subscriptionBuilder.changePlan')}
               </button>
             ) : null}
           </div>
-          <div className="flex min-w-0 items-center gap-2">
-            <h1 className="min-w-0 truncate text-[30px] font-semibold leading-none text-white">
-              {title}
-            </h1>
+          <div className="mt-1 flex min-w-0 flex-wrap items-center gap-2">
             {isCurrentTariff ? (
               <span className="shrink-0 rounded-full border border-emerald-200/[0.24] bg-emerald-300/[0.1] px-2 py-0.5 text-[13px] font-semibold text-emerald-50">
                 {t('subscription.currentTariff')}
               </span>
             ) : null}
+            {subtitle ? (
+              <p className="min-w-0 break-words text-[13px] leading-snug text-white/[0.62]">
+                {subtitle}
+              </p>
+            ) : null}
           </div>
-          {subtitle ? (
-            <p className="mt-1 line-clamp-2 text-[13px] leading-[1.4] text-white/[0.62]">
-              {subtitle}
-            </p>
-          ) : null}
         </header>
 
         <section
@@ -216,20 +209,12 @@ export function UltimaSubscriptionConfigurator({
           style={ultimaSurfaceStyle}
           data-testid="ultima-subscription-parameters"
         >
-          <div className="flex items-center gap-2 text-[13px] font-semibold text-white/[0.82]">
-            <SlidersHorizontal className="h-4 w-4 text-emerald-200/[0.84]" />
-            {t('ultima.subscriptionBuilder.parameters')}
-          </div>
-
-          <div className="ultima-checkout-plan-details mt-3 grid grid-cols-2 divide-x divide-white/[0.1] border-y border-white/[0.08] py-2.5">
+          <div className="ultima-checkout-plan-details grid grid-cols-2 divide-x divide-white/[0.1]">
             <div className="pr-3">
               <div className="text-[13px] uppercase text-white/[0.72]">
                 {t('ultima.subscriptionBuilder.traffic')}
               </div>
-              <div
-                className="mt-1 truncate text-[15px] font-semibold text-white"
-                title={trafficLabel}
-              >
+              <div className="mt-1 break-words text-[15px] font-semibold text-white">
                 {trafficLabel}
               </div>
             </div>
@@ -314,19 +299,13 @@ export function UltimaSubscriptionConfigurator({
           >
             <div className="ultima-checkout-period-heading mb-2.5 flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <Clock3 className="h-4 w-4 text-emerald-200/[0.84]" />
                 <div>
                   <h2 className="text-[13px] font-semibold text-white/[0.82]">
                     {t('ultima.subscriptionBuilder.periodTitle')}
                   </h2>
-                  <p className="mt-0.5 text-[13px] text-white/[0.72]">
-                    {t('ultima.subscriptionBuilder.periodHint')}
-                  </p>
                 </div>
               </div>
-              <span className="shrink-0 rounded-full border border-white/[0.1] bg-white/[0.05] px-2 py-0.5 text-[13px] text-white/[0.66]">
-                {selectedPeriodLabel}
-              </span>
+              <span className="sr-only">{selectedPeriodLabel}</span>
             </div>
             <UltimaSubscriptionPeriodGrid
               periods={periods}
@@ -337,9 +316,6 @@ export function UltimaSubscriptionConfigurator({
         ) : null}
 
         {trafficTopUp ? <div className="mb-2.5">{trafficTopUp}</div> : null}
-      </main>
-
-      <footer className="ultima-mobile-dock-footer ultima-checkout-footer pt-2.5">
         {paymentRecoveryCard ? <div className="mb-2">{paymentRecoveryCard}</div> : null}
         {minimumTopUpHint ? (
           <div className="mb-2 text-center text-[13px] leading-[1.4] text-white/[0.72]">
@@ -384,7 +360,9 @@ export function UltimaSubscriptionConfigurator({
             </div>
           </div>
         </div>
+      </main>
 
+      <footer className="ultima-mobile-dock-footer ultima-checkout-footer pt-2">
         <button
           type="button"
           onClick={onPay}
@@ -393,7 +371,9 @@ export function UltimaSubscriptionConfigurator({
           className="ultima-btn-pill ultima-btn-primary flex w-full items-center gap-3 px-4 py-3 text-left text-[15px] disabled:cursor-not-allowed disabled:opacity-75"
         >
           <WalletCards className="h-4.5 w-4.5 shrink-0" />
-          <span className="min-w-0 flex-1 truncate font-semibold">{actionLabel}</span>
+          <span className="min-w-0 flex-1 break-words text-start font-semibold leading-tight">
+            {actionLabel}
+          </span>
           <span className="shrink-0 text-right">
             <span
               data-testid="ultima-subscription-action-price"
@@ -408,7 +388,6 @@ export function UltimaSubscriptionConfigurator({
             ) : null}
           </span>
         </button>
-        <div className="ultima-nav-dock">{bottomNav}</div>
       </footer>
     </div>
   );

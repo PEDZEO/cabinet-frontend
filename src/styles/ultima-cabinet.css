@@ -23,20 +23,19 @@
   --ultima-shared-nav-offset: 14px;
 }
 
-.ultima-app-main .ultima-shell,
-.ultima-app-backdrop {
+.ultima-app-main .ultima-shell {
   background: var(--ultima-bg-shell) !important;
 }
 
 .ultima-shell > .ultima-shell-aura,
-.ultima-app-backdrop > .ultima-shell-aura,
 .ultima-shell-muted-aura::after {
   display: none;
 }
 
-.ultima-app-backdrop > .ultima-shell-aura::before,
-.ultima-app-backdrop > .ultima-shell-aura::after {
-  display: none;
+@media (min-width: 1024px) {
+  .ultima-app-backdrop > .ultima-shell-aura {
+    display: none;
+  }
 }
 
 .ultima-scroll-cue {

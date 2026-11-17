@@ -727,6 +727,7 @@ export function UltimaProfile() {
     >
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
         <section className="ultima-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto pr-1 pt-[clamp(8px,2vh,16px)]">
+          <h1 className="ultima-mini-screen-title mb-4">{t('nav.profile')}</h1>
           <section
             data-testid="ultima-profile-account"
             className={`${ULTIMA_SECTION_CLASS_NAME} mb-3 p-4`}

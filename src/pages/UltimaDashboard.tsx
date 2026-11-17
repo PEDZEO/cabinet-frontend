@@ -1237,7 +1237,7 @@ export function UltimaDashboard() {
       ? [
           {
             id: 'devices' as const,
-            title: t('lite.devicesTotal', { defaultValue: 'Устройства' }),
+            title: t('devices.title', { defaultValue: 'Устройства' }),
             value: isDashboardDevicesUnavailable
               ? '—'
               : `${connectedDevicesCount}/${dashboardDeviceLimit}`,
@@ -1334,15 +1334,16 @@ export function UltimaDashboard() {
       planName={subscriptionPlanName}
       statusLabel={statusLabel}
       tone={statusToneKey}
-      expiryLabel={expiryLabel}
+      isExpired={subscription?.is_expired === true}
+      expiryLabel={subscription?.end_date ? expiryLabel : ''}
       daysLabel={t('ultima.home.daysLabel', { defaultValue: 'Дней осталось' })}
       daysValue={mobileDaysValue}
-      devicesLabel={t('lite.devicesTotal', { defaultValue: 'Устройства' })}
+      devicesLabel={t('devices.title', { defaultValue: 'Устройства' })}
       devicesValue={
         isDashboardDevicesUnavailable ? '—' : `${connectedDevicesCount}/${dashboardDeviceLimit}`
       }
       devicesLoading={isDashboardDevicesPending}
-      brandMark={renderShieldButton('h-[82px] w-[82px] shrink-0')}
+      brandName={appName}
       primaryLabel={
         primaryActionKind === 'setup'
           ? t('ultima.connectDevice', { defaultValue: 'Подключить устройство' })
@@ -1554,14 +1555,14 @@ export function UltimaDashboard() {
   }
 
   return (
-    <div className={shellClassName}>
+    <div className={cn(shellClassName, 'ultima-mini-home')}>
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[680px] lg:justify-between">
         <motion.section
           data-testid="ultima-dashboard-scroll-region"
           variants={staggerContainer}
           initial={false}
           animate="animate"
-          className="ultima-scrollbar flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pb-[clamp(14px,2.8vh,24px)] pr-1 pt-[clamp(8px,1.6vh,14px)] lg:flex-none lg:overflow-visible lg:pb-2 lg:pr-0 lg:pt-8"
+          className="ultima-scrollbar ultima-mini-home-feed flex min-h-0 flex-1 flex-col overflow-y-auto"
         >
           {isAdmin ? (
             <motion.div variants={staggerItem} className="flex justify-end">
@@ -1602,9 +1603,6 @@ export function UltimaDashboard() {
             <motion.div variants={staggerItem}>
               <UltimaHomeActionGrid
                 title={t('ultima.home.quickActions', { defaultValue: 'Быстрые действия' })}
-                subtitle={t('ultima.home.quickActionsHint', {
-                  defaultValue: 'Устройства, установка, входы и приглашения',
-                })}
                 actions={mobileHomeActions}
               />
             </motion.div>

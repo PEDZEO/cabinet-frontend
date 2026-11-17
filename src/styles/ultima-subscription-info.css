@@ -90,8 +90,8 @@ html .ultima-shell.ultima-sub-info [data-testid='ultima-traffic-top-up'] {
   display: inline-flex;
   max-width: 100%;
   align-items: center;
-  gap: 7px;
-  padding-top: 3px;
+  padding: 3px 9px;
+  border-radius: 999px;
   color: var(--ultima-sub-info-muted);
   font-size: 13px;
   font-weight: 500;
@@ -101,14 +101,6 @@ html .ultima-shell.ultima-sub-info [data-testid='ultima-traffic-top-up'] {
 
 .ultima-sub-info-status[data-active='true'] {
   color: var(--ultima-color-primary);
-}
-
-.ultima-sub-info-status-dot {
-  width: 6px;
-  height: 6px;
-  flex: 0 0 6px;
-  border-radius: 50%;
-  background: currentColor;
 }
 
 .ultima-sub-info-facts {
@@ -312,43 +304,6 @@ html .ultima-shell.ultima-sub-info [data-testid='ultima-traffic-top-up'] {
   font-weight: 400;
 }
 
-.ultima-sub-info-link-value {
-  display: flex;
-  min-width: 0;
-  align-items: flex-start;
-  gap: 10px;
-  margin-top: 16px;
-  padding: 14px;
-  border: 1px solid var(--ultima-sub-info-line);
-  border-radius: 7px;
-  background: var(--ultima-sub-info-soft);
-}
-
-.ultima-sub-info-link-value > p {
-  min-width: 0;
-  flex: 1;
-  margin: 0;
-  color: var(--ultima-sub-info-muted);
-  font-size: 13px;
-  line-height: 1.65;
-  overflow-wrap: anywhere;
-}
-
-.ultima-sub-info-copy-icon {
-  display: inline-flex;
-  width: 34px;
-  height: 34px;
-  flex: 0 0 34px;
-  align-items: center;
-  justify-content: center;
-  margin: -5px -5px 0 0;
-  border: 0;
-  border-radius: 5px;
-  background: transparent;
-  color: var(--ultima-color-primary);
-  transition: background-color 230ms ease;
-}
-
 .ultima-sub-info-link-actions {
   display: flex;
   flex-wrap: wrap;
@@ -381,148 +336,6 @@ html .ultima-shell.ultima-sub-info [data-testid='ultima-traffic-top-up'] {
 /* The shared traffic purchase keeps its behaviour while adopting this page's form layout. */
 html .ultima-shell.ultima-sub-info [data-testid='ultima-traffic-top-up'] {
   padding: 0;
-}
-
-.ultima-sub-info [data-testid='ultima-traffic-top-up-toggle'] {
-  padding: clamp(20px, 2.4vw, 28px);
-}
-
-.ultima-sub-info [data-testid='ultima-traffic-top-up-toggle'] h2 {
-  font-size: 22px;
-  line-height: 1.3;
-  letter-spacing: -0.025em;
-}
-
-.ultima-sub-info [data-testid='ultima-traffic-top-up'] [class*='uppercase'] {
-  text-transform: none;
-}
-
-.ultima-sub-info [data-testid='ultima-traffic-top-up'] [class*='bg-black/'],
-.ultima-sub-info [data-testid='ultima-traffic-top-up'] [class*='bg-white/'] {
-  background: var(--ultima-sub-info-soft) !important;
-}
-
-.ultima-sub-info [data-testid='ultima-traffic-top-up'] [class*='border-white/'],
-.ultima-sub-info [data-testid='ultima-traffic-top-up'] [class*='border-emerald-'] {
-  border-color: var(--ultima-sub-info-line) !important;
-}
-
-.ultima-sub-info [data-testid='ultima-traffic-top-up'] [class*='bg-emerald-'],
-.ultima-sub-info [data-testid='ultima-traffic-top-up'] [class*='bg-amber-'] {
-  background: color-mix(
-    in srgb,
-    var(--ultima-color-primary) 10%,
-    var(--ultima-color-surface)
-  ) !important;
-}
-
-.ultima-sub-info [data-testid='ultima-traffic-top-up'] [class*='text-rose-'],
-.ultima-sub-info [data-testid='ultima-metered-period-notice'] [class*='text-amber-'] {
-  color: var(--ultima-color-secondary-text) !important;
-}
-
-.ultima-sub-info [data-testid='ultima-traffic-top-up-toggle'] span[class*='h-11'][class*='w-11'] {
-  width: 24px;
-  height: 28px;
-  flex-basis: 24px;
-  border: 0;
-  border-radius: 0;
-  background: transparent !important;
-  box-shadow: none;
-}
-
-.ultima-sub-info [data-testid='ultima-traffic-top-up-toggle'] span[class*='h-11'] > span {
-  display: none;
-}
-
-.ultima-sub-info [data-testid='ultima-traffic-top-up-toggle'] span[aria-hidden] {
-  border: 0;
-  background: transparent !important;
-}
-
-.ultima-sub-info [data-testid='ultima-traffic-top-up-toggle'] [class*='h-full'] {
-  background: var(--ultima-color-primary) !important;
-}
-
-.ultima-sub-info [data-testid='ultima-traffic-top-up'] [role='radiogroup'] {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  border-top: 1px solid var(--ultima-sub-info-line);
-}
-
-.ultima-sub-info [data-testid='ultima-traffic-top-up'] [role='radio'] {
-  display: grid;
-  min-width: 0;
-  min-height: 78px;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 3px 18px;
-  align-items: center;
-  padding: 14px 12px;
-  border: 0;
-  border-bottom: 1px solid var(--ultima-sub-info-line);
-  border-radius: 0;
-  background: transparent !important;
-  box-shadow: none !important;
-}
-
-.ultima-sub-info [data-testid='ultima-traffic-top-up'] [role='radio'][aria-checked='true'] {
-  background: color-mix(
-    in srgb,
-    var(--ultima-color-primary) 8%,
-    var(--ultima-color-surface)
-  ) !important;
-  box-shadow: inset 2px 0 var(--ultima-color-primary) !important;
-}
-
-.ultima-sub-info [data-testid='ultima-traffic-top-up'] [role='radio'] > div:first-child {
-  grid-column: 1;
-  grid-row: 1;
-  align-items: center;
-  justify-content: flex-start;
-}
-
-.ultima-sub-info [data-testid='ultima-traffic-top-up'] [role='radio'] > p {
-  grid-column: 1;
-  grid-row: 2;
-  margin: 0;
-}
-
-.ultima-sub-info [data-testid='ultima-traffic-top-up'] [role='radio'] > div:last-child {
-  grid-column: 2;
-  grid-row: 1 / 3;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  margin: 0;
-}
-
-.ultima-sub-info [data-testid='ultima-traffic-top-up'] [role='radio'] [class*='h-5'][class*='w-5'] {
-  color: var(--ultima-color-primary) !important;
-}
-
-.ultima-sub-info [data-testid='ultima-traffic-order'] > .grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.ultima-sub-info [data-testid='ultima-traffic-order'] > .grid > div {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  align-items: baseline;
-  gap: 16px;
-  padding: 11px 0;
-  border-bottom: 1px solid var(--ultima-sub-info-line);
-}
-
-.ultima-sub-info [data-testid='ultima-traffic-order'] > .grid > div > p:last-child {
-  margin: 0;
-  text-align: right;
-}
-
-.ultima-sub-info [data-testid='ultima-traffic-top-up'] .ultima-btn-primary {
-  border-color: var(--ultima-color-primary) !important;
-  background: var(--ultima-color-primary) !important;
 }
 
 .ultima-sub-info [data-testid='ultima-traffic-active-packages'] [role='button'] {
@@ -605,20 +418,14 @@ html .ultima-shell.ultima-sub-info [data-testid='ultima-traffic-top-up'] {
   border-right: 0;
 }
 
-.ultima-sub-info
-  :is(
-    .ultima-sub-info-action,
-    .ultima-sub-info-link-option,
-    .ultima-sub-info-copy-icon
-  ):focus-visible {
+.ultima-sub-info :is(.ultima-sub-info-action, .ultima-sub-info-link-option):focus-visible {
   outline: 2px solid var(--ultima-color-primary);
   outline-offset: 4px;
 }
 
 @media (hover: hover) {
   .ultima-sub-info-action:hover,
-  .ultima-sub-info-link-option:hover,
-  .ultima-sub-info-copy-icon:hover {
+  .ultima-sub-info-link-option:hover {
     background: var(--ultima-sub-info-soft);
   }
 
@@ -657,22 +464,13 @@ html .ultima-shell.ultima-sub-info [data-testid='ultima-traffic-top-up'] {
 }
 
 @media (max-width: 359px) {
-  html .ultima-shell.ultima-sub-info .ultima-sub-info-section,
-  .ultima-sub-info [data-testid='ultima-traffic-top-up-toggle'] {
+  html .ultima-shell.ultima-sub-info .ultima-sub-info-section {
     padding: 18px;
   }
 
   .ultima-sub-info-facts > div {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
     gap: 12px;
-  }
-
-  .ultima-sub-info [data-testid='ultima-traffic-top-up-toggle'] > .grid {
-    gap: 8px;
-  }
-
-  .ultima-sub-info [data-testid='ultima-traffic-top-up-toggle'] > .grid > div:first-child {
-    gap: 10px;
   }
 }
 

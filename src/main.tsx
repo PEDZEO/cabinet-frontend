@@ -38,7 +38,9 @@ import './styles/ultima-support.css';
 import './styles/ultima-account-pages.css';
 import './styles/ultima-account-offers.css';
 import './styles/ultima-subscription-info.css';
+import './styles/ultima-traffic-topup.css';
 import './styles/ultima-motion.css';
+import './styles/ultima-mini-app.css';
 
 // HMR guard вЂ” prevent double init when Vite hot-reloads the module
 const HMR_KEY = '__tg_sdk_initialized';

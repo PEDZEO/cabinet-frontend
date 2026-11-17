@@ -4,12 +4,25 @@ import { newsApi } from '@/api/news';
 import { subscriptionApi } from '@/api/subscription';
 import { ticketsApi } from '@/api/tickets';
 
-export type UltimaBottomNavTab = 'home' | 'connection' | 'news' | 'profile' | 'support';
-export type UltimaTopLevelPath = '/' | '/connection' | '/ultima/news' | '/profile' | '/support';
+export type UltimaBottomNavTab =
+  | 'home'
+  | 'connection'
+  | 'subscription'
+  | 'news'
+  | 'profile'
+  | 'support';
+export type UltimaTopLevelPath =
+  | '/'
+  | '/connection'
+  | '/ultima/subscription-info'
+  | '/ultima/news'
+  | '/profile'
+  | '/support';
 
 const ULTIMA_TAB_BY_PATH: Record<UltimaTopLevelPath, UltimaBottomNavTab> = {
   '/': 'home',
   '/connection': 'connection',
+  '/ultima/subscription-info': 'subscription',
   '/ultima/news': 'news',
   '/profile': 'profile',
   '/support': 'support',
@@ -18,6 +31,7 @@ const ULTIMA_TAB_BY_PATH: Record<UltimaTopLevelPath, UltimaBottomNavTab> = {
 const ULTIMA_PATH_BY_TAB: Record<UltimaBottomNavTab, UltimaTopLevelPath> = {
   home: '/',
   connection: '/connection',
+  subscription: '/ultima/subscription-info',
   news: '/ultima/news',
   profile: '/profile',
   support: '/support',
@@ -65,8 +79,12 @@ export const prefetchUltimaTopLevelTab = (queryClient: QueryClient, tab: UltimaB
     return;
   }
 
-  if (tab === 'profile') {
-    void import('@/pages/Profile');
+  if (tab === 'profile' || tab === 'subscription') {
+    if (tab === 'subscription') {
+      void import('@/pages/UltimaSubscriptionInfo');
+    } else {
+      void import('@/pages/Profile');
+    }
     void queryClient.prefetchQuery({
       queryKey: ['subscription'],
       queryFn: subscriptionApi.getSubscription,

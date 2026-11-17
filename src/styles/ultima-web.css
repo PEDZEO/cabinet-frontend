@@ -21,8 +21,7 @@
   );
 }
 
-.ultima-app-main .ultima-shell,
-.ultima-app-backdrop {
+.ultima-app-main .ultima-shell {
   background: var(--ultima-color-bg-top) !important;
 }
 .ultima-shell .ultima-btn-primary,
@@ -137,41 +136,6 @@
     border-radius: 0;
     box-shadow: none;
     background: transparent;
-  }
-  .ultima-shell [data-testid='ultima-home-traffic-card'] {
-    margin-top: 6px;
-    border: 0;
-    border-bottom: 1px solid var(--ultima-web-line);
-    border-radius: 0;
-    background: transparent !important;
-    box-shadow: none;
-  }
-  .ultima-shell [data-testid='ultima-home-traffic-card'] > header {
-    padding-inline: 0;
-  }
-  .ultima-shell [data-testid='ultima-home-traffic-card'] > header > span {
-    display: none;
-  }
-  .ultima-shell
-    [data-testid='ultima-home-traffic-card']
-    [data-testid='ultima-home-unlimited-traffic'],
-  .ultima-shell [data-testid='ultima-home-traffic'] {
-    padding-inline: 0;
-  }
-  .ultima-shell
-    [data-testid='ultima-home-traffic-card']
-    :is([data-testid='ultima-home-unlimited-traffic'], [data-testid='ultima-home-traffic'])
-    > div
-    > span {
-    display: none;
-  }
-  .ultima-shell
-    [data-testid='ultima-home-traffic-card']
-    :is([class*='text-white/[0.5'], [class*='text-white/[0.7']) {
-    color: var(--ultima-web-muted);
-  }
-  .ultima-shell [data-testid='ultima-home-traffic-card'] [class*='text-white'] {
-    color: var(--ultima-color-secondary-text);
   }
   .ultima-shell .ultima-btn-pill {
     border-radius: 6px !important;
@@ -482,13 +446,6 @@
     font-size: 12px;
     font-weight: 550;
     color: var(--ultima-web-accent);
-  }
-  .ultima-web-status::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: currentColor;
   }
   .ultima-web-status.is-expired,
   .ultima-web-status.is-warning {

@@ -1,4 +1,4 @@
-import { CalendarDays } from 'lucide-react';
+import { CalendarDays, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { cn } from '@/lib/utils';
@@ -6,7 +6,7 @@ import type { Subscription } from '@/types';
 
 type UltimaMeteredTrafficPeriodNoticeProps = {
   subscription?: Subscription | null;
-  variant?: 'period' | 'topUp';
+  variant?: 'period' | 'topUp' | 'compact';
   className?: string;
 };
 
@@ -71,13 +71,48 @@ export function UltimaMeteredTrafficPeriodNotice({
 
   if (variant === 'topUp') {
     return (
-      <div
+      <details
         data-testid="ultima-metered-topup-policy"
-        className={cn('min-w-0 space-y-1 text-[13px] leading-relaxed text-white/[0.72]', className)}
+        className={cn('ultima-traffic-topup-policy', className)}
       >
-        <p>{t('ultima.meteredPeriod.topUpPolicy', { days: 30 })}</p>
-        <p>{nextReset}</p>
-      </div>
+        <summary>
+          <span>{t('ultima.trafficTopUp.selectHint', { days: 30 })}</span>
+          <ChevronDown size={15} aria-hidden="true" />
+        </summary>
+        <div>
+          <p>{t('ultima.meteredPeriod.topUpPolicy', { days: 30 })}</p>
+          <p>{nextReset}</p>
+        </div>
+      </details>
+    );
+  }
+
+  if (variant === 'compact') {
+    return (
+      <details
+        data-testid="ultima-metered-period-notice"
+        className={cn('ultima-mobile-traffic-reset', className)}
+      >
+        <summary>
+          <CalendarDays size={16} strokeWidth={1.7} aria-hidden="true" />
+          <span>
+            <strong>{t('ultima.meteredPeriod.title')}</strong>
+            <span>{nextReset}</span>
+          </span>
+          <ChevronDown size={16} strokeWidth={1.8} aria-hidden="true" />
+        </summary>
+        <div className="ultima-mobile-traffic-reset-body">
+          {baseLimitLabel ? <p>{baseLimitLabel}</p> : null}
+          <p>{t('ultima.meteredPeriod.anniversary')}</p>
+          <p>
+            {t(
+              subscription.metered_access_blocked
+                ? 'ultima.meteredPeriod.blockedPolicy'
+                : 'ultima.meteredPeriod.accessPolicy',
+            )}
+          </p>
+        </div>
+      </details>
     );
   }
 

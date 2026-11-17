@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { motion, useReducedMotion } from 'framer-motion';
 import {
   Check,
   CheckCircle2,
@@ -17,7 +18,7 @@ import {
   X,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 
 import { subscriptionApi } from '@/api/subscription';
 import {
@@ -36,6 +37,7 @@ import {
   writeUltimaConnectionReminderHidden,
   writeUltimaConnectionStep,
 } from '@/features/ultima/connectionFlow';
+import { getUltimaTopLevelTab } from '@/features/ultima/navigation';
 import {
   ultimaPaneClassName,
   ultimaPaneSurfaceStyle,
@@ -336,9 +338,12 @@ export function UltimaConnection({
 }: UltimaConnectionProps) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const hasSharedNav = getUltimaTopLevelTab(pathname) === 'connection';
   const haptic = useHaptic();
   const user = useAuthStore((state) => state.user);
   const isDesktop = useMediaQuery('(min-width: 1024px)');
+  const reduceMotion = useReducedMotion();
   const detectedPlatform = useMemo(() => detectPlatformKey(), []);
 
   const [step, setStep] = useState<Step>(1);
@@ -860,7 +865,8 @@ export function UltimaConnection({
   const renderMobileProgress = () => (
     <ol
       data-testid="ultima-connection-progress"
-      className="ultima-connection-progress grid grid-cols-3 gap-1.5 rounded-[18px] border border-white/[0.08] bg-white/[0.025] p-1.5 lg:hidden"
+      className="ultima-connection-progress grid grid-cols-3 lg:hidden"
+      data-step={step}
     >
       {stepItems.map((item) => {
         const isActive = item.step === step;
@@ -960,8 +966,11 @@ export function UltimaConnection({
       {renderMobileProgress()}
       {returnNotice}
 
-      <section
+      <motion.section
         key={step}
+        initial={!isDesktop && !reduceMotion ? { opacity: 0.35, y: 9 } : false}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: reduceMotion ? 0 : 0.26, ease: [0.16, 1, 0.3, 1] }}
         className={cn(
           ultimaPanelClassName,
           'ultima-connection-step-panel overflow-hidden p-4 sm:p-5 lg:p-6',
@@ -1078,7 +1087,7 @@ export function UltimaConnection({
               <div
                 className={cn(
                   ultimaPaneClassName,
-                  'ultima-connection-instruction ultima-connection-ready flex items-start gap-3 border-emerald-200/[0.16] px-3.5 py-3.5',
+                  'ultima-connection-instruction ultima-connection-ready hidden items-start gap-3 border-emerald-200/[0.16] px-3.5 py-3.5 lg:flex',
                 )}
                 style={ultimaPaneSurfaceStyle}
               >
@@ -1172,7 +1181,7 @@ export function UltimaConnection({
             </button>
           )}
         </div>
-      </section>
+      </motion.section>
 
       <button
         type="button"
@@ -1299,11 +1308,16 @@ export function UltimaConnection({
   }
 
   return (
-    <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-connection-page">
+    <div
+      className={cn(
+        'ultima-shell ultima-shell-wide ultima-flat-frames ultima-connection-page',
+        hasSharedNav && 'ultima-shell-shared-nav-docked',
+      )}
+    >
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner ultima-shell-mobile-docked">
         <header className="ultima-connection-mobile-heading mb-2.5">
-          <h1 className="text-[clamp(30px,8vw,38px)] font-semibold leading-none text-white">
+          <h1 className="ultima-mini-screen-title">
             {t('subscription.connection.setupPageTitle', { defaultValue: 'Настройка VPN' })}
           </h1>
           <p className="mt-1.5 max-w-[42ch] text-[13px] leading-relaxed text-white/[0.72]">
@@ -1317,9 +1331,11 @@ export function UltimaConnection({
           {connectionContent}
         </div>
 
-        <div className="ultima-mobile-dock-footer">
-          <div className="ultima-nav-dock">{bottomNav}</div>
-        </div>
+        {!hasSharedNav && (
+          <div className="ultima-mobile-dock-footer">
+            <div className="ultima-nav-dock">{bottomNav}</div>
+          </div>
+        )}
       </div>
       {completionOverlay}
     </div>

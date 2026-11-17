@@ -245,9 +245,12 @@ export function AppShell({ children }: AppShellProps) {
   const { isUltimaMode, isUltimaModeReady } = useUltimaMode();
   const isDesktopViewport = useMediaQuery('(min-width: 1024px)');
   const isCompactMode = isLiteMode || isUltimaMode;
-  const ultimaTopLevelTab = getUltimaTopLevelTab(location.pathname);
+  const ultimaTopLevelTab =
+    getUltimaTopLevelTab(location.pathname) ??
+    (location.pathname === '/subscription' ? 'subscription' : null);
   const isUltimaTopLevelRoute = isUltimaMode && ultimaTopLevelTab !== null;
   const isUltimaAnimatedRoute = isUltimaMode && !location.pathname.startsWith('/admin');
+  const showUltimaMobileBackdrop = isUltimaModeReady && isUltimaAnimatedRoute && !isDesktopViewport;
   const isUltimaSceneRoute =
     isUltimaMode && ['/', '/subscription', '/connection'].includes(location.pathname);
   const shouldShowUltimaSharedNav = isUltimaTopLevelRoute && !isDesktopViewport;
@@ -343,17 +346,18 @@ export function AppShell({ children }: AppShellProps) {
 
   const handleUltimaTabChange = useCallback(
     (tab: UltimaBottomNavTab) => {
-      if (!isUltimaMode || ultimaTopLevelTab === tab) {
+      const destination = getUltimaTopLevelPath(tab);
+      if (!isUltimaMode || location.pathname === destination) {
         return;
       }
 
       haptic.impact('light');
       prefetchUltimaTopLevelTab(queryClient, tab);
       startTransition(() => {
-        navigate(getUltimaTopLevelPath(tab));
+        navigate(destination);
       });
     },
-    [haptic, isUltimaMode, navigate, queryClient, ultimaTopLevelTab],
+    [haptic, isUltimaMode, location.pathname, navigate, queryClient],
   );
 
   // Calculate header height based on fullscreen mode (only on mobile Telegram)
@@ -494,6 +498,7 @@ export function AppShell({ children }: AppShellProps) {
       {isUltimaModeReady && isUltimaAnimatedRoute && (
         <div
           className="ultima-app-backdrop pointer-events-none fixed inset-0 z-0 overflow-hidden"
+          aria-hidden="true"
           style={{
             background: isDesktopViewport
               ? 'var(--ultima-bg-page-desktop)'
@@ -726,6 +731,7 @@ export function AppShell({ children }: AppShellProps) {
         className={cn(
           'relative z-10 mx-auto max-w-6xl px-4 lg:px-6 lg:pb-8',
           isUltimaMode && 'ultima-app-main max-w-none px-0 lg:px-0',
+          showUltimaMobileBackdrop && 'ultima-app-main--animated-backdrop',
           isUltimaMode ? 'pb-0' : isCompactMode ? 'pb-8' : 'pb-28',
           isUltimaMode
             ? 'pt-0'
@@ -792,6 +798,7 @@ export function AppShell({ children }: AppShellProps) {
             active={ultimaTopLevelTab}
             onHomeClick={() => handleUltimaTabChange('home')}
             onConnectionClick={() => handleUltimaTabChange('connection')}
+            onSubscriptionClick={() => handleUltimaTabChange('subscription')}
             onNewsClick={() => handleUltimaTabChange('news')}
             onProfileClick={() => handleUltimaTabChange('profile')}
             onSupportClick={() => handleUltimaTabChange('support')}
