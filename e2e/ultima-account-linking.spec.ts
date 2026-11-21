@@ -474,7 +474,7 @@ test.describe('Ultima account linking callback', () => {
     await expect(page.getByRole('button', { name: 'Выйти' })).toBeVisible();
     await expectNoHorizontalOverflow(page);
     await page.getByRole('button', { name: 'Выйти' }).scrollIntoViewIfNeeded();
-    await expect(page.getByText('Помощь', { exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Помощь', exact: true })).toBeVisible();
     await expect(
       page.locator('.ultima-scrollbar').evaluate((element) => element.scrollTop),
     ).resolves.toBeGreaterThan(0);
