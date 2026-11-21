@@ -34,6 +34,7 @@ export default defineConfig({
     sourcemap: false,
     chunkSizeWarningLimit: 550,
     rollupOptions: {
+      input: { index: 'index.html', antarctic: 'antarctic.html' },
       output: {
         manualChunks(id) {
           if (id.includes('/src/locales/')) {
