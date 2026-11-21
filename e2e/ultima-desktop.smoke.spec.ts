@@ -2764,7 +2764,7 @@ test.describe('Ultima approved cabinet navigation', () => {
     for (const target of ['home', 'connection', 'subscription', 'support', 'profile']) {
       const item = page.locator(`[data-ultima-nav-target="${target}"]`);
       await expect(item).toBeVisible();
-      await expect(item.locator('span')).toBeVisible();
+      await expect(item.locator(':scope > span:visible')).toBeVisible();
       expect((await item.boundingBox())!.height).toBeGreaterThanOrEqual(44);
     }
     await expect(page.locator('[data-ultima-nav-target="home"]')).toHaveAttribute(
@@ -2871,9 +2871,12 @@ test.describe('Ultima bot-configured palette', () => {
           { ...THEME_CONFIG, ...palette },
         );
         await page.goto('/');
-        await expect(page.getByRole('heading', { name: 'Обычный', exact: true })).toBeVisible();
         const canvasColor = variant === 'light' ? 'rgb(245, 247, 246)' : 'rgb(18, 24, 35)';
         if (width < 1024) {
+          const home = page.getByTestId('ultima-home-aurora');
+          const hero = home.getByTestId('ultima-home-overview');
+          await expect(hero.getByRole('heading', { level: 1 })).toBeVisible();
+          await expect(hero).toContainText('Обычный');
           await expect
             .poll(() =>
               page
@@ -2881,11 +2884,17 @@ test.describe('Ultima bot-configured palette', () => {
                 .evaluate((el) => getComputedStyle(el).backgroundImage),
             )
             .toContain(canvasColor);
-          await expect(page.locator('.ultima-shell').first()).toHaveCSS(
-            'background-color',
-            'rgba(0, 0, 0, 0)',
-          );
+          await expect(page.locator('html')).toHaveAttribute('data-ultima-home-palette', variant);
+          if (variant === 'light') {
+            await expect(home).toHaveCSS('background-color', canvasColor);
+            await expect(home.getByTestId('ultima-home-traffic-card')).toHaveCSS(
+              'background-color',
+              'rgb(255, 255, 255)',
+            );
+            await expect(hero).toHaveCSS('color', 'rgb(23, 44, 36)');
+          }
         } else {
+          await expect(page.getByRole('heading', { name: 'Обычный', exact: true })).toBeVisible();
           await expect(page.locator('.ultima-shell').first()).toHaveCSS(
             'background-color',
             canvasColor,

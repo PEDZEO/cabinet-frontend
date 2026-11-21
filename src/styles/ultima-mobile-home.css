@@ -3,6 +3,10 @@
     background: color-mix(in srgb, var(--ultima-color-bg-top) 20%, #0b151b) !important;
   }
 
+  html[data-ultima-home-palette='light'] .ultima-app-main .ultima-shell.ultima-home-aurora {
+    background: var(--ultima-color-bg-top) !important;
+  }
+
   .ultima-mini-home.ultima-home-aurora .ultima-mini-home-feed {
     gap: clamp(10px, 3vw, 15px);
     padding: clamp(8px, 3vw, 16px) 0 24px;
@@ -26,6 +30,17 @@
       color-mix(in srgb, var(--ultima-color-primary) 37%, #123c39) 0%,
       color-mix(in srgb, var(--ultima-color-surface) 46%, #13343c) 48%,
       #13242b 82%
+    ) !important;
+  }
+
+  html[data-ultima-home-palette='light']
+    .ultima-shell.ultima-home-aurora
+    .ultima-mobile-plan[data-testid='ultima-home-overview'] {
+    border-color: var(--ultima-mini-line) !important;
+    background: radial-gradient(
+      ellipse at 114% 0%,
+      color-mix(in srgb, var(--ultima-color-primary) 16%, var(--ultima-color-surface)),
+      var(--ultima-color-surface) 75%
     ) !important;
   }
 
@@ -207,6 +222,13 @@
     border: 1px solid color-mix(in srgb, var(--ultima-color-surface-border) 34%, #14242a) !important;
     border-radius: 16px;
     background: color-mix(in srgb, var(--ultima-color-surface) 48%, #14242a) !important;
+  }
+
+  html[data-ultima-home-palette='light']
+    .ultima-shell.ultima-home-aurora
+    .ultima-mobile-traffic[data-testid='ultima-home-traffic-card'] {
+    border-color: var(--ultima-mini-line) !important;
+    background: var(--ultima-color-surface) !important;
   }
 
   .ultima-mobile-actions-heading,

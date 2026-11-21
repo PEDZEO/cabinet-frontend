@@ -1,7 +1,7 @@
 import { type CSSProperties, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { brandingApi, getCachedUltimaThemeConfig, type UltimaThemeConfig } from '@/api/branding';
-import { readableForeground } from '@/lib/colorContrast';
+import { contrastRatio, readableForeground } from '@/lib/colorContrast';
 import { getDefaultUltimaThemeWithPresets } from './presets';
 
 export function normalizeUltimaThemeConfig(config: UltimaThemeConfig): UltimaThemeConfig {
@@ -83,6 +83,8 @@ export function applyUltimaThemeConfig(config: UltimaThemeConfig) {
     root.style.setProperty(key, String(value));
   }
   root.dataset.ultimaAnimation = resolved.animationPresetId;
+  root.dataset.ultimaHomePalette =
+    contrastRatio(resolved.secondaryTextColor, '#0b151b') < 4.5 ? 'light' : 'dark';
   root.classList.toggle('ultima-frames-enabled', resolved.framesEnabled === true);
 }
 
