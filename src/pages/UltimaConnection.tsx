@@ -1316,14 +1316,23 @@ export function UltimaConnection({
     >
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner ultima-shell-mobile-docked">
-        <header className="ultima-connection-mobile-heading mb-2.5">
+        <header className="ultima-connection-mobile-heading ultima-aurora-heading mb-2.5">
+          <p className="ultima-aurora-eyebrow">
+            <Smartphone size={15} aria-hidden="true" />
+            {t('subscription.connection.setupEyebrow', { defaultValue: 'Подключение' })}
+          </p>
           <h1 className="ultima-mini-screen-title">
             {t('subscription.connection.setupPageTitle', { defaultValue: 'Настройка VPN' })}
           </h1>
           <p className="mt-1.5 max-w-[42ch] text-[13px] leading-relaxed text-white/[0.72]">
-            {t('subscription.connection.setupPageSubtitle', {
-              defaultValue: 'Установите приложение и добавьте подписку за три коротких шага.',
-            })}
+            {detectedPlatform !== null && detectedPlatform === activePlatformKey
+              ? t('subscription.connection.detectedDeviceHint', {
+                  device: selectedPlatformLabel,
+                  defaultValue: 'Похоже, у вас {{device}}. Устройство можно изменить ниже.',
+                })
+              : t('subscription.connection.setupPageSubtitle', {
+                  defaultValue: 'Установите приложение и добавьте подписку за три коротких шага.',
+                })}
           </p>
         </header>
 

@@ -50,6 +50,9 @@ export default function PaymentMethodIcon({
   );
 
   switch (normalizedMethod) {
+    case 'antarctic':
+      return letterIcon('AW', '#2385f2');
+
     case 'telegram_stars':
       return (
         <svg className={className} viewBox="0 0 40 40">

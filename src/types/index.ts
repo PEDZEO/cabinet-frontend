@@ -12,7 +12,7 @@ export interface User {
   referral_code: string | null;
   language: string;
   created_at: string;
-  auth_type: 'telegram' | 'email' | 'google' | 'yandex' | 'discord' | 'vk' | 'merged'; // Тип аутентификации
+  auth_type: 'telegram' | 'email' | 'google' | 'yandex' | 'discord' | 'vk' | 'merged' | 'antarctic';
 }
 
 // OAuth types

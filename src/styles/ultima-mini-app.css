@@ -33,6 +33,8 @@
     );
     --ultima-mini-warning: color-mix(in srgb, #d18d32 70%, var(--ultima-color-secondary-text));
     --ultima-mini-gutter: clamp(15px, 4.3vw, 24px);
+    --ultima-dock-height: 60px;
+    --ultima-dock-bottom: 11px;
     --ultima-mini-left: max(
       env(safe-area-inset-left, 0px),
       var(--tg-safe-area-inset-left, 0px),
@@ -46,8 +48,13 @@
   }
 
   .ultima-app-main .ultima-shell {
-    --ultima-shared-nav-height: 58px;
-    --ultima-shared-nav-offset: 18px;
+    --ultima-shared-nav-height: var(--ultima-dock-height);
+    --ultima-shared-nav-offset: calc(var(--ultima-dock-bottom) + 8px);
+    --ultima-shell-safe-bottom: max(
+      env(safe-area-inset-bottom, 0px),
+      var(--tg-safe-area-inset-bottom, 0px),
+      var(--tg-content-safe-area-inset-bottom, 0px)
+    );
     padding-left: calc(var(--ultima-mini-gutter) + var(--ultima-mini-left));
     padding-right: calc(var(--ultima-mini-gutter) + var(--ultima-mini-right));
   }
@@ -299,17 +306,15 @@
   }
 
   .ultima-shared-nav-shell {
-    padding-top: 4px;
-    padding-left: calc(16px + var(--ultima-mini-left));
-    padding-right: calc(16px + var(--ultima-mini-right));
-    padding-bottom: calc(11px + var(--ultima-shell-safe-bottom, env(safe-area-inset-bottom, 0px)));
-    border-top: 1px solid var(--ultima-mini-line);
-    background: var(--ultima-color-nav-bg);
+    padding-left: calc(clamp(8px, 3vw, 12px) + var(--ultima-mini-left));
+    padding-right: calc(clamp(8px, 3vw, 12px) + var(--ultima-mini-right));
+    padding-bottom: calc(
+      var(--ultima-dock-bottom) + var(--ultima-shell-safe-bottom, env(safe-area-inset-bottom, 0px))
+    );
   }
 
   .ultima-shared-nav-shell .ultima-bottom-nav {
     width: min(100%, 520px);
-    border-top: none;
   }
 
   .ultima-app-main .ultima-shell .ultima-nav-dock {
@@ -317,13 +322,13 @@
   }
 
   html .ultima-bottom-nav {
-    min-height: 58px;
-    gap: 2px;
-    padding: 0 8px;
-    border-width: 1px 0 0;
-    border-color: var(--ultima-mini-line);
-    border-radius: 0;
-    background: var(--ultima-color-nav-bg) !important;
+    min-height: var(--ultima-dock-height);
+    gap: 1px;
+    padding: 4px;
+    border: 1px solid #304448;
+    border-radius: 22px;
+    background: #101a1e !important;
+    box-shadow: 0 5px 18px #0010148c;
     backdrop-filter: none;
     touch-action: pan-y pinch-zoom;
     user-select: none;
@@ -332,12 +337,12 @@
 
   html .ultima-bottom-nav .ultima-nav-item:not(.ultima-nav-news) {
     height: auto;
-    min-height: 56px;
-    gap: 2px;
-    padding: 3px 1px;
+    min-height: 50px;
+    gap: 3px;
+    padding: 3px 0;
     border: 0;
-    border-radius: 8px;
-    color: var(--ultima-color-nav-text) !important;
+    border-radius: 12px;
+    color: #b8c7cc !important;
     background: transparent !important;
   }
 
@@ -346,16 +351,27 @@
   }
 
   html .ultima-bottom-nav .ultima-nav-item > span {
-    font-size: clamp(9px, 2.65vw, 11px);
-    font-weight: 560;
+    font-size: clamp(10px, 3vw, 11px);
+    font-weight: 610;
     line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ultima-bottom-nav .ultima-nav-item .ultima-nav-label-full {
+    display: none;
+  }
+
+  .ultima-bottom-nav .ultima-nav-item .ultima-nav-label-mobile {
+    display: block;
   }
 
   .ultima-nav-item .ultima-nav-icon {
     position: relative;
     display: grid;
-    width: min(44px, 100%);
-    height: 29px;
+    width: min(39px, 100%);
+    height: 25px;
     flex-shrink: 0;
     place-items: center;
   }

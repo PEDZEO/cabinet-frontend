@@ -311,7 +311,7 @@ export function UltimaTopUpMethodSelect() {
   return (
     <div
       data-testid="ultima-payment-method-page"
-      className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-payments-page"
+      className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-payments-page ultima-shell-shared-nav-docked"
     >
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
@@ -400,10 +400,6 @@ export function UltimaTopUpMethodSelect() {
             </button>
           </footer>
         </main>
-
-        <div className="ultima-mobile-dock-footer">
-          <div className="ultima-nav-dock">{bottomNav}</div>
-        </div>
       </div>
     </div>
   );

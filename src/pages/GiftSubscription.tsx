@@ -18,6 +18,7 @@ import type {
 import { cn } from '../lib/utils';
 import { usePlatform, useHaptic } from '@/platform';
 import { copyToClipboard as copyTextToClipboard } from '@/utils/clipboard';
+import { isAntarcticDocument } from '@/utils/token';
 
 function formatPrice(amountKopeks: number, currencySymbol = '₽'): string {
   return `${(amountKopeks / 100).toFixed(2)} ${currencySymbol}`;
@@ -813,16 +814,18 @@ function BuyTabContent({
       )}
 
       {/* Payment mode toggle */}
-      <div>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-dark-400">
-          {t('gift.paymentMode')}
-        </h2>
-        <PaymentModeToggle
-          mode={paymentMode}
-          onToggle={setPaymentMode}
-          balanceLabel={balanceLabel}
-        />
-      </div>
+      {!isAntarcticDocument && (
+        <div>
+          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-dark-400">
+            {t('gift.paymentMode')}
+          </h2>
+          <PaymentModeToggle
+            mode={paymentMode}
+            onToggle={setPaymentMode}
+            balanceLabel={balanceLabel}
+          />
+        </div>
+      )}
 
       {/* Payment method cards (gateway mode only) */}
       <AnimatePresence mode="wait">

@@ -1,11 +1,16 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import type { CampaignBonusInfo, RegisterResponse, User } from '../types';
 import { authApi } from '../api/auth';
 import { apiClient } from '../api/client';
 import { captureCampaignFromUrl, consumeCampaignSlug } from '../utils/campaign';
 import { captureReferralFromUrl, consumeReferralCode } from '../utils/referral';
-import { tokenStorage, isTokenValid, tokenRefreshManager } from '../utils/token';
+import {
+  isAntarcticDocument,
+  tokenStorage,
+  isTokenValid,
+  tokenRefreshManager,
+} from '../utils/token';
 import { usePermissionStore } from './permissions';
 
 export interface TelegramWidgetData {
@@ -336,6 +341,13 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'cabinet-auth',
+      storage: isAntarcticDocument
+        ? createJSONStorage(() => ({
+            getItem: () => null,
+            setItem: () => {},
+            removeItem: () => {},
+          }))
+        : createJSONStorage(() => localStorage),
       // Only persist user info for UI caching
       // Tokens are stored securely in sessionStorage via tokenStorage
       partialize: (state) => ({
@@ -349,5 +361,6 @@ export const useAuthStore = create<AuthState>()(
 captureCampaignFromUrl();
 captureReferralFromUrl();
 
-// Initialize auth on app load
-useAuthStore.getState().initialize();
+// The Antarctic entry can preload the cabinet before exchanging its wallet
+// identity. Its startup gate initializes auth once the tokens are in memory.
+if (!isAntarcticDocument) useAuthStore.getState().initialize();

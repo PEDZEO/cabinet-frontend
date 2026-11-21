@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { BrowserRouter, useLocation, useNavigate } from 'react-router';
+import { BrowserRouter, HashRouter, useLocation, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
   showBackButton,
@@ -130,13 +130,14 @@ function TelegramBackButton() {
   return null;
 }
 
-export function AppWithNavigator() {
-  const isTelegram = isInTelegramWebApp();
+export function AppWithNavigator({ embedded = false }: { embedded?: boolean } = {}) {
+  const isTelegram = !embedded && isInTelegramWebApp();
+  const Router = embedded ? HashRouter : BrowserRouter;
   const { ready } = useTranslation();
   useUltimaThemeConfig();
 
   return (
-    <BrowserRouter>
+    <Router>
       <ScrollToTop />
       {isTelegram && <TelegramBackButton />}
       <ErrorBoundary level="page">
@@ -156,6 +157,6 @@ export function AppWithNavigator() {
           </ThemeColorsProvider>
         </PlatformProvider>
       </ErrorBoundary>
-    </BrowserRouter>
+    </Router>
   );
 }

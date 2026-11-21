@@ -1,0 +1,17 @@
+import './styles/globals.css';
+import './styles/ultima-cabinet.css';
+import './styles/ultima-desktop-login.css';
+import './styles/ultima-web.css';
+import './styles/ultima-mobile-home.css';
+import './styles/ultima-sections.css';
+import './styles/ultima-reading.css';
+import './styles/ultima-devices.css';
+import './styles/ultima-history.css';
+import './styles/ultima-support.css';
+import './styles/ultima-account-pages.css';
+import './styles/ultima-account-offers.css';
+import './styles/ultima-subscription-info.css';
+import './styles/ultima-traffic-topup.css';
+import './styles/ultima-motion.css';
+import './styles/ultima-mini-app.css';
+import './styles/ultima-aurora-routes.css';

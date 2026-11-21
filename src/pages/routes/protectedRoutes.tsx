@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { lazy } from 'react';
 import { LazyPage, ProtectedRoute } from '../../components/routing/RouteShells';
+import { isAntarcticDocument } from '../../utils/token';
 import type { RouteConfig } from './types';
 
 const Dashboard = lazy(() => import('../Dashboard'));
@@ -19,6 +20,7 @@ const Support = lazy(() => import('../Support'));
 const Profile = lazy(() => import('../Profile'));
 const TopUpMethodSelect = lazy(() => import('../TopUpMethodSelect'));
 const TopUpAmount = lazy(() => import('../TopUpAmount'));
+const AntarcticTopUpAmount = lazy(() => import('../AntarcticTopUpAmount'));
 const Balance = lazy(() => import('../Balance'));
 const Referral = lazy(() => import('../Referral'));
 const AccountLinking = lazy(() => import('../AccountLinking'));
@@ -116,7 +118,7 @@ export const protectedRoutes: RouteConfig[] = [
     element: (
       <ProtectedRoute>
         <LazyPage>
-          <TopUpMethodSelect />
+          {isAntarcticDocument ? <AntarcticTopUpAmount /> : <TopUpMethodSelect />}
         </LazyPage>
       </ProtectedRoute>
     ),
@@ -125,9 +127,7 @@ export const protectedRoutes: RouteConfig[] = [
     path: '/balance/top-up/:methodId',
     element: (
       <ProtectedRoute>
-        <LazyPage>
-          <TopUpAmount />
-        </LazyPage>
+        <LazyPage>{isAntarcticDocument ? <AntarcticTopUpAmount /> : <TopUpAmount />}</LazyPage>
       </ProtectedRoute>
     ),
   },

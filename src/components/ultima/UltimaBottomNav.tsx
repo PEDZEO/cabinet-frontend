@@ -67,18 +67,21 @@ export function UltimaBottomNav({
     {
       id: 'connection',
       label: t('nav.connection', { defaultValue: 'Подключение' }),
+      mobileLabel: 'VPN',
       icon: Smartphone,
       onClick: onConnectionClick ?? (() => navigate('/connection')),
     },
     {
       id: 'subscription',
       label: t('nav.subscription', { defaultValue: 'Подписка' }),
+      mobileLabel: t('nav.subscriptionShort'),
       icon: BadgeCheck,
       onClick: onSubscriptionClick ?? (() => navigate('/ultima/subscription-info')),
     },
     {
       id: 'support',
       label: t('nav.support', { defaultValue: 'Поддержка' }),
+      mobileLabel: t('nav.supportShort'),
       icon: Headphones,
       onClick: onSupportClick ?? (() => navigate('/support')),
     },
@@ -148,7 +151,7 @@ export function UltimaBottomNav({
       }}
     >
       <LayoutGroup id={groupId}>
-        {items.map(({ id, label, icon: Icon, onClick }) => {
+        {items.map(({ id, label, mobileLabel, icon: Icon, onClick }) => {
           const selected = isSubscription ? id === 'subscription' : id === active;
           const highlighted = pointedTab ? id === pointedTab : selected;
           return (
@@ -178,7 +181,14 @@ export function UltimaBottomNav({
                 )}
                 <Icon className="h-5 w-5 shrink-0" strokeWidth={1.8} />
               </i>
-              <span>{label}</span>
+              {mobileLabel ? (
+                <>
+                  <span className="ultima-nav-label-full">{label}</span>
+                  <span className="ultima-nav-label-mobile">{mobileLabel}</span>
+                </>
+              ) : (
+                <span>{label}</span>
+              )}
             </button>
           );
         })}

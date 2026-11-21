@@ -1,0 +1,194 @@
+.ultima-shell.antarctic-topup {
+  --aw-page: #0b151b;
+  --aw-card: #14242a;
+  --aw-line: #30474c;
+  --aw-text: #f1f8f7;
+  --aw-muted: #a9bec0;
+  --aw-accent: #51e7bd;
+  --aw-tint: #1c3c38;
+  --aw-on-accent: #062920;
+  color: var(--aw-text);
+  color-scheme: dark;
+  background: var(--aw-page) !important;
+}
+
+.ultima-shell.antarctic-topup .antarctic-topup-inner {
+  max-width: min(100%, 580px);
+}
+
+.antarctic-topup .antarctic-topup-screen {
+  min-height: 0;
+  padding: 0 3px 10px;
+  overflow: auto;
+}
+
+.antarctic-topup :is(button, input) {
+  font: inherit;
+}
+
+.antarctic-topup :is(button, input):focus-visible {
+  outline: 2px solid var(--aw-accent);
+  outline-offset: 1px;
+}
+
+.antarctic-topup .antarctic-topup-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin-bottom: 4px;
+  padding-inline: 4px;
+  border: 0;
+  color: var(--aw-muted);
+  background: transparent;
+  font-size: 13px;
+}
+
+.antarctic-topup .antarctic-topup-heading {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.antarctic-topup .antarctic-topup-heading > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--aw-accent);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.antarctic-topup .antarctic-topup-heading h1 {
+  margin: 0;
+  font-size: clamp(27px, 8vw, 37px);
+  font-weight: 730;
+  line-height: 1.05;
+  letter-spacing: -0.055em;
+}
+
+.antarctic-topup .antarctic-topup-heading p,
+.antarctic-topup .antarctic-topup-range {
+  margin: 0;
+  color: var(--aw-muted);
+  font-size: 12px;
+}
+
+.antarctic-topup .antarctic-topup-controls {
+  display: grid;
+  gap: 8px;
+}
+
+.antarctic-topup :is(.antarctic-topup-amount, .antarctic-topup-provider) {
+  padding: 9px 11px;
+  border: 1px solid var(--aw-line);
+  border-radius: 15px;
+  background: var(--aw-card);
+}
+
+.antarctic-topup .antarctic-topup-amount label {
+  color: var(--aw-muted);
+  font-size: 13px;
+}
+
+.antarctic-topup .antarctic-topup-money {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--aw-text);
+  font-size: 29px;
+  font-weight: 740;
+}
+
+.antarctic-topup .antarctic-topup-money input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font-size: inherit;
+}
+
+.antarctic-topup .antarctic-topup-presets {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.antarctic-topup .antarctic-topup-presets button {
+  min-height: 44px;
+  padding-inline: 4px;
+  border: 1px solid var(--aw-line);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--aw-text);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.antarctic-topup .antarctic-topup-presets button[aria-pressed='true'] {
+  border-color: var(--aw-accent);
+  background: var(--aw-tint);
+  color: var(--aw-accent);
+}
+
+.antarctic-topup .antarctic-topup-provider {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  font-size: 14px;
+}
+
+.antarctic-topup .antarctic-topup-provider p {
+  margin: 1px 0 0;
+  color: var(--aw-muted);
+  font-size: 12px;
+}
+
+.antarctic-topup .antarctic-topup-provider > svg:last-child {
+  color: var(--aw-accent);
+}
+
+.antarctic-topup .antarctic-topup-notice {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: var(--aw-text);
+  background: var(--aw-tint);
+  font-size: 13px;
+}
+
+.antarctic-topup .antarctic-topup-submit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  min-height: 48px;
+  padding: 8px 11px;
+  border: 0;
+  border-radius: 12px;
+  color: var(--aw-on-accent);
+  background: var(--aw-accent);
+  text-align: start;
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.antarctic-topup .antarctic-topup-submit span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.antarctic-topup .antarctic-topup-submit strong {
+  white-space: nowrap;
+}
+
+.antarctic-topup :is(button, input):disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}

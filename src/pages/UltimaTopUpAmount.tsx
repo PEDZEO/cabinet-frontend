@@ -15,6 +15,12 @@ import {
 } from 'lucide-react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import {
+  ANTARCTIC_METHOD,
+  antarcticPaymentMessage,
+  payWithAntarctic,
+  type AntarcticPaymentStatus,
+} from '@/antarctic/payment';
 import { balanceApi } from '@/api/balance';
 import PaymentMethodIcon from '@/components/PaymentMethodIcon';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
@@ -41,6 +47,7 @@ import '@/styles/ultima-payments.css';
 
 type CreatedPayment =
   | { kind: 'external'; url: string }
+  | { kind: 'antarctic'; status: AntarcticPaymentStatus }
   | { kind: 'stars'; status: Awaited<ReturnType<ReturnType<typeof usePlatform>['openInvoice']>> };
 
 const normalizeAmount = (value: string) => Number(value.replace(',', '.'));
@@ -181,6 +188,10 @@ export function UltimaTopUpAmount() {
     mutationFn: async (amountKopeks) => {
       if (!method) throw new Error('method_not_found');
 
+      if (method.id === ANTARCTIC_METHOD) {
+        return { kind: 'antarctic', status: await payWithAntarctic(amountKopeks) };
+      }
+
       if (isStarsMethod) {
         const invoice = await balanceApi.createStarsInvoice(amountKopeks);
         if (!invoice.invoice_url) throw new Error('payment_url_missing');
@@ -198,6 +209,25 @@ export function UltimaTopUpAmount() {
     },
     onSuccess: (result, amountKopeks) => {
       setError(null);
+
+      if (result.kind === 'antarctic') {
+        if (result.status === 'credited') {
+          haptic.notification('success');
+          handleSuccess();
+          return;
+        }
+        if (result.status === 'pending') {
+          writePendingTopUpFollowUp(userId, {
+            amountKopeks,
+            balanceBeforeKopeks: Math.max(0, balanceData?.balance_kopeks ?? 0),
+            paymentMethodId: ANTARCTIC_METHOD,
+            paymentMethodName: methodName,
+            returnTo: returnTo || '/subscription',
+          });
+        }
+        setError(antarcticPaymentMessage(result.status));
+        return;
+      }
 
       if (result.kind === 'stars') {
         if (result.status === 'paid') {
@@ -305,10 +335,7 @@ export function UltimaTopUpAmount() {
 
   const bottomNav = <UltimaBottomNav active="profile" />;
 
-  if (
-    (methodsLoading && methods.length === 0) ||
-    (!method && !methodsError && methods.length === 0)
-  ) {
+  if (methodsLoading && methods.length === 0) {
     return (
       <div className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-payments-page">
         <div className="ultima-shell-aura" />
@@ -671,7 +698,7 @@ export function UltimaTopUpAmount() {
   return (
     <div
       data-testid="ultima-payment-amount-page"
-      className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-payments-page"
+      className="ultima-shell ultima-shell-wide ultima-flat-frames ultima-payments-page ultima-shell-shared-nav-docked"
     >
       <div className="ultima-shell-aura" />
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[960px]">
@@ -699,10 +726,6 @@ export function UltimaTopUpAmount() {
             </span>
           </div>
         </main>
-
-        <div className="ultima-mobile-dock-footer">
-          <div className="ultima-nav-dock">{bottomNav}</div>
-        </div>
       </div>
     </div>
   );

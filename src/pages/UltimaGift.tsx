@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
   Check,
@@ -19,6 +19,7 @@ import { UltimaDesktopGift } from '@/components/ultima/desktop/UltimaDesktopGift
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { usePlatform } from '@/platform/hooks/usePlatform';
 import { copyToClipboard } from '@/utils/clipboard';
+import { isAntarcticDocument } from '@/utils/token';
 
 const PENDING_GIFT_TOKEN_KEY = 'ultima_pending_gift_token';
 const PENDING_GIFT_TOKEN_TS_KEY = 'ultima_pending_gift_token_ts';
@@ -33,6 +34,7 @@ type PendingGiftExtend = {
 };
 
 export function UltimaGift() {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { openLink, openTelegramLink } = usePlatform();
@@ -110,6 +112,18 @@ export function UltimaGift() {
   const topupAmountKopeks =
     missingAmountKopeks > 0 ? Math.max(missingAmountKopeks, selectedMethodMinAmountKopeks) : 0;
   const requiresGatewayPayment = missingAmountKopeks > 0;
+  const needsWalletTopUp = isAntarcticDocument && requiresGatewayPayment;
+  const walletTopUpHint = t('gift.antarcticTopUpHint', {
+    defaultValue: 'Пополни баланс через Antarctic Wallet, затем создай подарок.',
+  });
+  const walletTopUpLabel = t('gift.topUpBalance');
+  const openWalletTopUp = (amountKopeks: number) => {
+    const params = new URLSearchParams({
+      amount: String(amountKopeks / 100),
+      returnTo: '/ultima/gift',
+    });
+    navigate(`/balance/top-up?${params.toString()}`);
+  };
   const currencySymbol = giftConfig?.currency_symbol ?? '₽';
 
   const formatCurrency = useCallback(
@@ -343,6 +357,10 @@ export function UltimaGift() {
       setSuccess(null);
       return;
     }
+    if (needsWalletTopUp) {
+      openWalletTopUp(missingAmountKopeks);
+      return;
+    }
     if (requiresGatewayPayment && !giftPaymentMethod) {
       setError('Выберите платежный метод');
       setSuccess(null);
@@ -427,6 +445,10 @@ export function UltimaGift() {
           : Math.max(1, currentBalanceKopeks + missingAmount);
 
       if (missingAmount > 0) {
+        if (isAntarcticDocument) {
+          openWalletTopUp(missingAmount);
+          return;
+        }
         const selectedMethodId = giftPaymentMethod ?? gatewayMethods[0]?.method_id ?? null;
         const selectedMethod =
           gatewayMethods.find((method) => method.method_id === selectedMethodId) ?? null;
@@ -822,12 +844,14 @@ export function UltimaGift() {
               'Если на балансе хватает средств, подарок оплачивается сразу. Если не хватает, к оплате уходит только недостающая сумма.',
           })}
           gatewayHint={
-            requiresGatewayPayment
-              ? t('balance.promocode.giftNeedTopupHint', {
-                  defaultValue:
-                    'Для покупки подарка не хватает средств на балансе. Оплатите только недостающую сумму через выбранную платежку.',
-                })
-              : null
+            needsWalletTopUp
+              ? walletTopUpHint
+              : requiresGatewayPayment
+                ? t('balance.promocode.giftNeedTopupHint', {
+                    defaultValue:
+                      'Для покупки подарка не хватает средств на балансе. Оплатите только недостающую сумму через выбранную платежку.',
+                  })
+                : null
           }
           tariffs={desktopTariffs}
           periods={desktopPeriods}
@@ -838,19 +862,21 @@ export function UltimaGift() {
           primaryActionLabel={
             createGiftMutation.isPending
               ? t('common.loading', { defaultValue: 'Загрузка...' })
-              : requiresGatewayPayment
-                ? t('balance.promocode.createGiftAndPayButton', {
-                    defaultValue: 'Оплатить и создать код',
-                  })
-                : t('balance.promocode.createGiftButton', {
-                    defaultValue: 'Сгенерировать подарочный код',
-                  })
+              : needsWalletTopUp
+                ? walletTopUpLabel
+                : requiresGatewayPayment
+                  ? t('balance.promocode.createGiftAndPayButton', {
+                      defaultValue: 'Оплатить и создать код',
+                    })
+                  : t('balance.promocode.createGiftButton', {
+                      defaultValue: 'Сгенерировать подарочный код',
+                    })
           }
           isPrimaryActionDisabled={
             createGiftMutation.isPending ||
             giftTariffId == null ||
             giftPeriodDays == null ||
-            (requiresGatewayPayment && !giftPaymentMethod)
+            (requiresGatewayPayment && !needsWalletTopUp && !giftPaymentMethod)
           }
           pendingPurchaseMessage={pendingPurchaseMessage}
           generatedGiftCode={generatedGiftCode}
@@ -876,7 +902,7 @@ export function UltimaGift() {
     createGiftMutation.isPending ||
     giftTariffId == null ||
     giftPeriodDays == null ||
-    (requiresGatewayPayment && !giftPaymentMethod);
+    (requiresGatewayPayment && !needsWalletTopUp && !giftPaymentMethod);
 
   return (
     <div
@@ -995,7 +1021,9 @@ export function UltimaGift() {
                   </div>
                 </div>
 
-                {requiresGatewayPayment ? (
+                {needsWalletTopUp ? (
+                  <div className="ultima-offers-notice">{walletTopUpHint}</div>
+                ) : requiresGatewayPayment ? (
                   <div>
                     <div className="ultima-offers-muted mb-2.5 flex items-center gap-2 text-[13px] font-medium uppercase">
                       {t('balance.topUp.paymentMethodTitle', { defaultValue: 'Способ оплаты' })}
@@ -1132,13 +1160,15 @@ export function UltimaGift() {
                     <span className="truncate">
                       {createGiftMutation.isPending
                         ? t('common.loading', { defaultValue: 'Создаем...' })
-                        : requiresGatewayPayment
-                          ? t('balance.promocode.createGiftAndPayButton', {
-                              defaultValue: 'Оплатить и создать код',
-                            })
-                          : t('balance.promocode.createGiftButton', {
-                              defaultValue: 'Создать подарочный код',
-                            })}
+                        : needsWalletTopUp
+                          ? walletTopUpLabel
+                          : requiresGatewayPayment
+                            ? t('balance.promocode.createGiftAndPayButton', {
+                                defaultValue: 'Оплатить и создать код',
+                              })
+                            : t('balance.promocode.createGiftButton', {
+                                defaultValue: 'Создать подарочный код',
+                              })}
                     </span>
                   </span>
                   <span className="ultima-offers-muted shrink-0 text-[13px]">

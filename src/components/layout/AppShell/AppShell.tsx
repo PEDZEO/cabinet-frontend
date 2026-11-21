@@ -248,12 +248,15 @@ export function AppShell({ children }: AppShellProps) {
   const ultimaTopLevelTab =
     getUltimaTopLevelTab(location.pathname) ??
     (location.pathname === '/subscription' ? 'subscription' : null);
+  const ultimaNavTab =
+    ultimaTopLevelTab ??
+    (/^\/balance\/top-up(?:\/[^/]+)?\/?$/.test(location.pathname) ? 'profile' : null);
   const isUltimaTopLevelRoute = isUltimaMode && ultimaTopLevelTab !== null;
   const isUltimaAnimatedRoute = isUltimaMode && !location.pathname.startsWith('/admin');
   const showUltimaMobileBackdrop = isUltimaModeReady && isUltimaAnimatedRoute && !isDesktopViewport;
   const isUltimaSceneRoute =
     isUltimaMode && ['/', '/subscription', '/connection'].includes(location.pathname);
-  const shouldShowUltimaSharedNav = isUltimaTopLevelRoute && !isDesktopViewport;
+  const shouldShowUltimaSharedNav = isUltimaMode && ultimaNavTab !== null && !isDesktopViewport;
   const ultimaWavePhaseShiftSecRef = useRef(-((Date.now() / 1000) % ULTIMA_RING_DURATION_SEC));
   const hasLiteHeader = isLiteMode;
   const hasRegularHeader = !isCompactMode;
@@ -787,15 +790,17 @@ export function AppShell({ children }: AppShellProps) {
         </button>
       ) : null}
 
-      {shouldShowUltimaSharedNav && ultimaTopLevelTab ? (
+      {shouldShowUltimaSharedNav && ultimaNavTab ? (
         <div
+          inert={isKeyboardOpen}
+          aria-hidden={isKeyboardOpen || undefined}
           className={cn(
             'ultima-shared-nav-shell',
             isKeyboardOpen && 'pointer-events-none translate-y-3 opacity-0',
           )}
         >
           <UltimaBottomNav
-            active={ultimaTopLevelTab}
+            active={ultimaNavTab}
             onHomeClick={() => handleUltimaTabChange('home')}
             onConnectionClick={() => handleUltimaTabChange('connection')}
             onSubscriptionClick={() => handleUltimaTabChange('subscription')}

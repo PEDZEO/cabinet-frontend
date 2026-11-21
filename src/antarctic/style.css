@@ -1,82 +1,62 @@
-:root {
-  color-scheme: dark;
-  font-family: system-ui, sans-serif;
-  background: #0f1516;
-  color: #f0f6f4;
+body:has(.antarctic-entry) {
+  margin: 0;
+  background: #0b171a;
 }
 
-body {
+.antarctic-entry {
+  box-sizing: border-box;
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px;
+  color: #e7f1ef;
+  font:
+    15px/1.45 system-ui,
+    sans-serif;
+  text-align: center;
+}
+
+.antarctic-entry p {
   margin: 0;
 }
 
-main {
-  box-sizing: border-box;
-  max-width: 460px;
-  margin: auto;
-  padding: max(36px, env(safe-area-inset-top)) 20px max(32px, env(safe-area-inset-bottom));
-}
-
-.brand {
-  color: #a0e1cc;
-  font-weight: 650;
-}
-
-h1 {
-  margin: 0 0 24px;
-  font-size: 2rem;
-  line-height: 1.1;
-}
-
-section {
-  padding: 20px;
-  margin-bottom: 16px;
-  background: #1a2626;
-  border: 1px solid #324541;
-  border-radius: 18px;
-}
-
-section p {
-  margin: 8px 0 0;
-  color: #b7c9c4;
-}
-
-.price {
-  color: #f0f6f4;
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-
-button,
-main > a {
-  display: block;
-  box-sizing: border-box;
-  width: 100%;
-  min-height: 48px;
-  margin-top: 10px;
-  padding: 13px 16px;
-  border: 0;
+.antarctic-entry :is(a, button) {
+  padding: 10px 16px;
+  border: 1px solid #4d8178;
   border-radius: 12px;
+  background: #203d37;
+  color: inherit;
   font: inherit;
-  font-weight: 700;
-  text-align: center;
   text-decoration: none;
-  color: #10221c;
-  background: #a0e1cc;
-}
-
-button:not(:disabled) {
   cursor: pointer;
 }
 
-button:disabled {
-  opacity: 0.6;
+.antarctic-entry-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.secondary {
-  color: #e5efec;
-  background: #263632;
+.antarctic-entry-loading span {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #3b5855;
+  border-top-color: #72dac6;
+  border-radius: 50%;
+  animation: antarctic-entry-spin 700ms linear infinite;
 }
 
-.error {
-  color: #ffc3ad;
+@keyframes antarctic-entry-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .antarctic-entry-loading span {
+    animation: none;
+  }
 }

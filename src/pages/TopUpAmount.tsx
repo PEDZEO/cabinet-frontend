@@ -5,6 +5,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 
 import { balanceApi } from '../api/balance';
+import {
+  ANTARCTIC_METHOD,
+  antarcticPaymentMessage,
+  payWithAntarctic,
+  type AntarcticPaymentStatus,
+} from '@/antarctic/payment';
 import { useCurrency } from '../hooks/useCurrency';
 import { checkRateLimit, getRateLimitResetTime, RATE_LIMIT_KEYS } from '../utils/rateLimit';
 import { useCloseOnSuccessNotification } from '../store/successNotification';
@@ -240,23 +246,46 @@ function TopUpAmountContent() {
   );
 
   const topUpMutation = useMutation<
-    {
-      payment_id: string;
-      payment_url?: string;
-      invoice_url?: string;
-      amount_kopeks: number;
-      amount_rubles: number;
-      status: string;
-      expires_at: string | null;
-    },
+    | {
+        payment_id: string;
+        payment_url?: string;
+        invoice_url?: string;
+        amount_kopeks: number;
+        amount_rubles: number;
+        status: string;
+        expires_at: string | null;
+      }
+    | { walletStatus: AntarcticPaymentStatus },
     unknown,
     number
   >({
-    mutationFn: (amountKopeks: number) => {
+    mutationFn: async (amountKopeks: number) => {
       if (!method) throw new Error('Method not loaded');
+      if (method.id === ANTARCTIC_METHOD) {
+        return { walletStatus: await payWithAntarctic(amountKopeks) };
+      }
       return balanceApi.createTopUp(amountKopeks, method.id, selectedOption || undefined);
     },
     onSuccess: (data, amountKopeks) => {
+      if ('walletStatus' in data) {
+        if (data.walletStatus === 'credited') {
+          void queryClient.invalidateQueries({ queryKey: ['balance'] });
+          void queryClient.invalidateQueries({ queryKey: ['transactions'] });
+          handleSuccess();
+          return;
+        }
+        if (data.walletStatus === 'pending') {
+          writePendingTopUpFollowUp(userId, {
+            amountKopeks,
+            balanceBeforeKopeks: Math.max(0, balanceData?.balance_kopeks ?? 0),
+            paymentMethodId: ANTARCTIC_METHOD,
+            paymentMethodName: methodName,
+            returnTo: returnTo || '/balance',
+          });
+        }
+        setError(antarcticPaymentMessage(data.walletStatus));
+        return;
+      }
       const redirectUrl = data.payment_url || data.invoice_url;
       if (redirectUrl && method) {
         writePendingTopUpFollowUp(userId, {

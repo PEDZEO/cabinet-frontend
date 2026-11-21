@@ -3,6 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router';
+import {
+  ANTARCTIC_METHOD,
+  antarcticPaymentMessage,
+  getAntarcticTopUpStatus,
+  payWithAntarctic,
+} from '@/antarctic/payment';
 import { balanceApi } from '@/api/balance';
 import { promoApi } from '@/api/promo';
 import { subscriptionApi } from '@/api/subscription';
@@ -36,8 +42,13 @@ import type { PaymentMethod, Subscription, TariffPeriod } from '@/types';
 import { UltimaBottomNav } from '@/components/ultima/UltimaBottomNav';
 import { clearPendingTopUpFollowUp, writePendingTopUpFollowUp } from '@/utils/topUpFollowUp';
 import { trackAnalyticsConversion, trackAnalyticsEvent } from '@/utils/analyticsEvents';
+import { isAntarcticDocument } from '@/utils/token';
 
 const ULTIMA_PENDING_PURCHASE_KEY = 'ultima_pending_purchase_v1';
+const pendingPurchaseKey = () =>
+  isAntarcticDocument
+    ? `${ULTIMA_PENDING_PURCHASE_KEY}:antarctic:${useAuthStore.getState().user?.id ?? 'guest'}`
+    : ULTIMA_PENDING_PURCHASE_KEY;
 
 type PendingUltimaPurchase = {
   mode?: 'purchase' | 'switch';
@@ -45,6 +56,7 @@ type PendingUltimaPurchase = {
   periodDays: number;
   deviceLimit?: number;
   createdAt: number;
+  walletTopUpId?: string;
 };
 
 type ValidationErrorDetail = {
@@ -56,12 +68,20 @@ type ValidationErrorDetail = {
   };
 };
 
+const volatilePendingPurchases = new Map<string, PendingUltimaPurchase>();
+
 const readPendingUltimaPurchase = (): PendingUltimaPurchase | null => {
   try {
-    const raw = localStorage.getItem(ULTIMA_PENDING_PURCHASE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as PendingUltimaPurchase;
+    const key = pendingPurchaseKey();
+    let stored = volatilePendingPurchases.get(key);
+    if (!stored) {
+      const raw = localStorage.getItem(key);
+      if (raw) stored = JSON.parse(raw) as PendingUltimaPurchase;
+    }
+    const parsed = stored;
+    if (!parsed) return null;
     if (!parsed.tariffId || !parsed.periodDays) return null;
+    if (isAntarcticDocument && Date.now() - parsed.createdAt >= 30 * 60_000) return null;
     return parsed;
   } catch {
     return null;
@@ -69,11 +89,23 @@ const readPendingUltimaPurchase = (): PendingUltimaPurchase | null => {
 };
 
 const writePendingUltimaPurchase = (purchase: PendingUltimaPurchase): void => {
-  localStorage.setItem(ULTIMA_PENDING_PURCHASE_KEY, JSON.stringify(purchase));
+  const key = pendingPurchaseKey();
+  volatilePendingPurchases.set(key, purchase);
+  try {
+    localStorage.setItem(key, JSON.stringify(purchase));
+  } catch {
+    // Some wallet WebViews block embedded storage.
+  }
 };
 
 const clearPendingUltimaPurchase = (): void => {
-  localStorage.removeItem(ULTIMA_PENDING_PURCHASE_KEY);
+  const key = pendingPurchaseKey();
+  volatilePendingPurchases.delete(key);
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // No persisted purchase to clear in a private iframe.
+  }
 };
 
 const getTopUpAmountKopeks = (
@@ -362,6 +394,9 @@ export function UltimaSubscription() {
       (left, right) => left.days - right.days,
     );
   }, [selectedTariff, selectedDeviceLimit]);
+  const defaultPeriod = displayPeriods.find((period) =>
+    isAntarcticDocument ? period.days === 30 : period.months === 6,
+  );
 
   const selectedPeriod = useMemo(() => {
     if (!displayPeriods.length) return null;
@@ -370,8 +405,8 @@ export function UltimaSubscription() {
         displayPeriods.find((period) => period.days === selectedPeriodDays) ?? displayPeriods[0]
       );
     }
-    return displayPeriods.find((period) => period.months === 6) ?? displayPeriods[0];
-  }, [displayPeriods, selectedPeriodDays]);
+    return defaultPeriod ?? displayPeriods[0];
+  }, [defaultPeriod, displayPeriods, selectedPeriodDays]);
 
   useEffect(() => {
     if (!displayPeriods.length) {
@@ -381,16 +416,14 @@ export function UltimaSubscription() {
     if (selectedPeriodDays && displayPeriods.some((period) => period.days === selectedPeriodDays)) {
       return;
     }
-    setSelectedPeriodDays(
-      displayPeriods.find((period) => period.months === 6)?.days ?? displayPeriods[0].days,
-    );
-  }, [displayPeriods, selectedPeriodDays]);
+    setSelectedPeriodDays(defaultPeriod?.days ?? displayPeriods[0].days);
+  }, [defaultPeriod, displayPeriods, selectedPeriodDays]);
 
   const selectedTariffIdForPurchase = selectedTariff?.id ?? selectedPeriod?.tariffId ?? null;
   const autoTariffId = Number(searchParams.get('autoTariffId'));
   const autoPeriodDays = Number(searchParams.get('autoPeriodDays'));
   const autoDeviceLimit = Number(searchParams.get('autoDeviceLimit'));
-  const hasAutoPurchaseParams = Number.isFinite(autoTariffId) && Number.isFinite(autoPeriodDays);
+  const hasAutoPurchaseParams = !isAntarcticDocument && autoTariffId > 0 && autoPeriodDays > 0;
   const autoPurchaseKey = hasAutoPurchaseParams
     ? `${autoTariffId}:${autoPeriodDays}:${Number.isFinite(autoDeviceLimit) ? autoDeviceLimit : 0}`
     : null;
@@ -497,13 +530,45 @@ export function UltimaSubscription() {
       amountKopeks: number;
       paymentMethodId: string;
       paymentOptionId?: string;
-    }) =>
-      balanceApi.createTopUp(
+      purchase: PendingUltimaPurchase;
+    }) => {
+      if (payload.paymentMethodId === ANTARCTIC_METHOD) {
+        const status = await payWithAntarctic(payload.amountKopeks, (walletTopUpId) => {
+          writePendingUltimaPurchase({ ...payload.purchase, walletTopUpId });
+        });
+        return { kind: 'antarctic' as const, status };
+      }
+      const payment = await balanceApi.createTopUp(
         payload.amountKopeks,
         payload.paymentMethodId,
         payload.paymentOptionId,
-      ),
-    onSuccess: (payment, payload) => {
+      );
+      return { kind: 'external' as const, payment };
+    },
+    onSuccess: async (result, payload) => {
+      if (result.kind === 'antarctic') {
+        if (result.status === 'credited') {
+          await finalizePendingPurchase('success_event', true);
+          void queryClient.invalidateQueries({ queryKey: ['balance'] });
+          void queryClient.invalidateQueries({ queryKey: ['transactions'] });
+          return;
+        }
+        if (result.status === 'pending') {
+          writePendingTopUpFollowUp(userId, {
+            amountKopeks: payload.amountKopeks,
+            balanceBeforeKopeks: Math.max(0, balanceData?.balance_kopeks ?? 0),
+            paymentMethodId: ANTARCTIC_METHOD,
+            paymentMethodName: 'Antarctic Wallet',
+            returnTo: '/subscription',
+          });
+        } else {
+          clearPendingUltimaPurchase();
+          setAwaitingPaymentCompletion(false);
+        }
+        setError(antarcticPaymentMessage(result.status));
+        return;
+      }
+      const { payment } = result;
       const redirectUrl = payment.payment_url;
       if (!redirectUrl) {
         clearPendingUltimaPurchase();
@@ -616,7 +681,7 @@ export function UltimaSubscription() {
   };
 
   const finalizePendingPurchase = useCallback(
-    async (source: 'mount' | 'focus' | 'success_event') => {
+    async (source: 'mount' | 'focus' | 'success_event', walletCreditConfirmed = false) => {
       const pending = readPendingUltimaPurchase();
       if (!pending) return;
       if (
@@ -629,6 +694,17 @@ export function UltimaSubscription() {
       finalizeInProgressRef.current = true;
       setIsFinalizingPending(true);
       try {
+        if (pending.walletTopUpId && !walletCreditConfirmed) {
+          const state = await getAntarcticTopUpStatus(pending.walletTopUpId);
+          if (state !== 'credited') {
+            if (state !== 'pending') {
+              clearPendingUltimaPurchase();
+              setAwaitingPaymentCompletion(false);
+              setError(antarcticPaymentMessage(state));
+            }
+            return;
+          }
+        }
         const isPendingSwitch = pending.mode === 'switch';
         let finalizedSubscription: Subscription;
         let tariffName: string;
@@ -1014,7 +1090,6 @@ export function UltimaSubscription() {
       deviceLimit: shouldSwitchTariff ? undefined : selectedDeviceLimit,
       createdAt: Date.now(),
     };
-    writePendingUltimaPurchase(pendingPurchase);
     setAwaitingPaymentCompletion(true);
 
     let method = defaultPaymentMethod;
@@ -1050,7 +1125,9 @@ export function UltimaSubscription() {
       method,
     );
 
-    if (bumpsToMinimum) {
+    if (method.id !== ANTARCTIC_METHOD) writePendingUltimaPurchase(pendingPurchase);
+
+    if (bumpsToMinimum && method.id !== ANTARCTIC_METHOD) {
       trackAnalyticsEvent('ultima_min_topup_redirect', {
         amount_kopeks: topupAmountKopeks,
         payment_method_id: method.id,
@@ -1067,6 +1144,7 @@ export function UltimaSubscription() {
       amountKopeks: topupAmountKopeks,
       paymentMethodId: method.id,
       paymentOptionId: selectedOptionId,
+      purchase: pendingPurchase,
     });
   };
 

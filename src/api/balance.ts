@@ -1,4 +1,6 @@
 ﻿import apiClient from './client';
+import { getAntarcticPaymentMethod } from '@/antarctic/payment';
+import { isAntarcticDocument } from '@/utils/token';
 import type {
   Balance,
   Transaction,
@@ -32,6 +34,10 @@ export const balanceApi = {
 
   // Get available payment methods
   getPaymentMethods: async (): Promise<PaymentMethod[]> => {
+    if (isAntarcticDocument) {
+      const wallet = getAntarcticPaymentMethod();
+      return wallet ? [wallet] : [];
+    }
     const response = await apiClient.get<PaymentMethod[]>('/cabinet/balance/payment-methods');
     return response.data;
   },
@@ -49,6 +55,7 @@ export const balanceApi = {
     status: string;
     expires_at: string | null;
   }> => {
+    if (isAntarcticDocument) throw new Error('Antarctic Wallet payment is required');
     const payload: {
       amount_kopeks: number;
       payment_method: string;
@@ -90,6 +97,7 @@ export const balanceApi = {
     stars_amount?: number;
     amount_kopeks?: number;
   }> => {
+    if (isAntarcticDocument) throw new Error('Antarctic Wallet payment is required');
     const response = await apiClient.post('/cabinet/balance/stars-invoice', {
       amount_kopeks: amountKopeks,
     });

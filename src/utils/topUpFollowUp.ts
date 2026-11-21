@@ -1,9 +1,12 @@
+import { isAntarcticDocument } from '@/utils/token';
+
 export type PendingTopUpFollowUp = {
   amountKopeks: number;
-  balanceBeforeKopeks: number;
+  balanceBeforeKopeks?: number;
   paymentUrl?: string;
   paymentMethodId?: string;
   paymentMethodName?: string;
+  paymentReferenceId?: string;
   returnTo?: string;
   createdAt: number;
   remindedAt?: number;
@@ -28,9 +31,14 @@ export const readPendingTopUpFollowUp = (userId?: number | null): PendingTopUpFo
     if (!raw) return null;
 
     const parsed = JSON.parse(raw) as PendingTopUpFollowUp;
+    if (isAntarcticDocument && parsed.paymentUrl) return null;
+    const hasWalletReference =
+      parsed.paymentMethodId === 'antarctic' &&
+      typeof parsed.paymentReferenceId === 'string' &&
+      parsed.paymentReferenceId.length > 0;
     if (
       !Number.isFinite(parsed.amountKopeks) ||
-      !Number.isFinite(parsed.balanceBeforeKopeks) ||
+      (!hasWalletReference && !Number.isFinite(parsed.balanceBeforeKopeks)) ||
       !Number.isFinite(parsed.createdAt)
     ) {
       localStorage.removeItem(getScopedKey(PENDING_TOP_UP_FOLLOW_UP_KEY, userId));

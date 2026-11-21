@@ -1,4 +1,5 @@
 import apiClient from './client';
+import { isAntarcticDocument } from '@/utils/token';
 
 // Types
 
@@ -138,10 +139,13 @@ export interface ExtendGiftResponse {
 export const giftApi = {
   getConfig: async (): Promise<GiftConfig> => {
     const { data } = await apiClient.get<GiftConfig>('/cabinet/gift/config');
-    return data;
+    return isAntarcticDocument ? { ...data, payment_methods: [] } : data;
   },
 
   createPurchase: async (request: GiftPurchaseRequest): Promise<GiftPurchaseResponse> => {
+    if (isAntarcticDocument && request.payment_mode === 'gateway') {
+      throw new Error('Antarctic Wallet payment is required');
+    }
     const { data } = await apiClient.post<GiftPurchaseResponse>('/cabinet/gift/purchase', request);
     return data;
   },

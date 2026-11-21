@@ -1,57 +1,126 @@
 @media (max-width: 1023px) {
-  .ultima-mini-home .ultima-mini-home-feed {
-    gap: 24px;
-    padding: 6px 0 24px;
+  .ultima-app-main .ultima-shell.ultima-home-aurora {
+    background: color-mix(in srgb, var(--ultima-color-bg-top) 20%, #0b151b) !important;
   }
 
-  .ultima-shell .ultima-mobile-plan[data-testid='ultima-home-overview'] {
+  .ultima-mini-home.ultima-home-aurora .ultima-mini-home-feed {
+    gap: clamp(10px, 3vw, 15px);
+    padding: clamp(8px, 3vw, 16px) 0 24px;
+  }
+
+  .ultima-shell.ultima-home-aurora .ultima-mobile-plan[data-testid='ultima-home-overview'] {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
     min-width: 0;
-    padding: clamp(15px, 4.5vw, 24px);
-    border: 1px solid var(--ultima-mini-line) !important;
-    border-radius: 24px;
+    isolation: isolate;
+    gap: 12px;
+    overflow: hidden;
+    padding: clamp(13px, 4vw, 21px);
+    border: 1px solid color-mix(in srgb, var(--ultima-color-ring) 38%, #13242b) !important;
+    border-radius: 19px;
     color: var(--ultima-color-secondary-text);
-    background: var(--ultima-mini-surface) !important;
+    background: radial-gradient(
+      ellipse at 114% 0%,
+      color-mix(in srgb, var(--ultima-color-primary) 37%, #123c39) 0%,
+      color-mix(in srgb, var(--ultima-color-surface) 46%, #13343c) 48%,
+      #13242b 82%
+    ) !important;
   }
 
-  .ultima-mobile-plan-header,
-  .ultima-mobile-plan-brand,
-  .ultima-mobile-plan-status {
-    display: flex;
-    align-items: center;
+  .ultima-home-aurora-orbit {
+    display: grid;
+    width: clamp(49px, 20vw, 80px);
+    aspect-ratio: 1;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--ultima-color-ring) 51%, transparent);
+    border-radius: 50%;
+    color: color-mix(in srgb, var(--ultima-color-ring) 70%, #e5fff5);
+    background: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--ultima-color-primary) 26%, #204640),
+      #1b4541 72%
+    );
+    box-shadow:
+      0 0 0 7px color-mix(in srgb, var(--ultima-color-ring) 10%, transparent),
+      0 0 0 15px color-mix(in srgb, var(--ultima-color-ring) 5%, transparent);
   }
 
-  .ultima-mobile-plan-header {
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 9px 14px;
+  .ultima-home-aurora-logo-button {
+    position: relative;
+    display: grid;
+    width: 100%;
+    height: 100%;
+    min-height: 44px;
+    place-items: center;
+    isolation: isolate;
+    border-radius: 50%;
+    color: inherit;
+    touch-action: manipulation;
+    user-select: none;
   }
 
-  .ultima-mobile-plan-brand {
-    min-width: 0;
-    gap: 8px;
-    font-size: 15px;
-    font-weight: 700;
-    line-height: 1.35;
-    letter-spacing: -0.025em;
-    overflow-wrap: anywhere;
+  .ultima-home-aurora-logo-button:active .ultima-home-aurora-logo-face,
+  .ultima-home-aurora-logo-button:active .ultima-home-aurora-logo-letter {
+    scale: 0.94;
   }
 
-  .ultima-mobile-plan-mark {
-    flex-shrink: 0;
-    color: var(--ultima-mini-accent);
+  .ultima-home-aurora-logo-face {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  .ultima-home-aurora-logo-bleed,
+  .ultima-home-aurora-logo-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .ultima-home-aurora-logo-bleed {
+    /* Extend the logo's backdrop without cropping or stretching its wordmark. */
+    object-fit: cover;
+    transform: translateY(-8px) scale(3.5);
+    transform-origin: 50% 0;
+    filter: blur(2px);
+  }
+
+  .ultima-home-aurora-logo-image {
+    object-fit: contain;
+  }
+
+  .ultima-home-aurora-logo-letter {
+    z-index: 1;
+    font-size: clamp(22px, 6vw, 32px);
+    font-weight: 750;
+    line-height: 1;
   }
 
   .ultima-mobile-plan-status {
     --ultima-status-color: var(--ultima-mini-accent);
-    max-width: 100%;
-    gap: 7px;
-    padding: 4px 9px;
-    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
     color: var(--ultima-status-color);
-    background: color-mix(in srgb, var(--ultima-status-color) 11%, transparent);
-    font-size: 12px;
-    font-weight: 650;
-    line-height: 1.4;
+    font-size: 11px;
+    font-weight: 750;
+    line-height: 1.3;
+    letter-spacing: 0.075em;
+    text-transform: uppercase;
+  }
+
+  .ultima-mobile-plan-status > span {
+    width: 6px;
+    height: 6px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: currentColor;
   }
 
   .ultima-mobile-plan[data-tone='warning'] .ultima-mobile-plan-status {
@@ -62,134 +131,82 @@
     --ultima-status-color: var(--ultima-mini-muted);
   }
 
-  .ultima-mobile-plan-summary {
-    display: flex;
-    align-items: end;
-    justify-content: space-between;
-    gap: 5px 10px;
-    margin-top: 19px;
-  }
-
   .ultima-mobile-plan-heading {
+    display: grid;
     min-width: 0;
+    gap: 8px;
   }
 
-  .ultima-mobile-plan-eyebrow,
   .ultima-mobile-plan-expiry,
-  .ultima-mobile-plan-details dt,
   .ultima-mobile-action-hint {
     color: var(--ultima-mini-muted);
   }
 
-  .ultima-mobile-plan-eyebrow,
   .ultima-mobile-plan-expiry {
     margin: 0;
-    font-size: 13px;
+    font-size: 12px;
     line-height: 1.5;
   }
 
   .ultima-mobile-plan-heading h1 {
-    margin: 1px 0 4px;
-    font-size: clamp(30px, 8.8vw, 43px);
-    font-weight: 680;
-    line-height: 1.08;
-    letter-spacing: -0.045em;
-  }
-
-  .ultima-mobile-plan-details {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin: 17px 0;
-    padding: 12px 0;
-    border-block: 1px solid var(--ultima-mini-line);
-  }
-
-  .ultima-mobile-plan-details > div {
-    display: flex;
-    min-width: 0;
-    flex-direction: column-reverse;
-    gap: 2px;
-    padding-inline-end: 12px;
-  }
-
-  .ultima-mobile-plan-details > div + div {
-    padding-inline: 15px 0;
-    border-inline-start: 1px solid var(--ultima-mini-line);
-  }
-
-  .ultima-mobile-plan-details dt,
-  .ultima-mobile-plan-details dd {
+    max-width: 14ch;
     margin: 0;
-    line-height: 1.35;
-    overflow-wrap: anywhere;
-  }
-
-  .ultima-mobile-plan-details dt {
-    font-size: 12px;
-  }
-
-  .ultima-mobile-plan-details dd {
-    font-size: 23px;
-    font-variant-numeric: tabular-nums;
-    font-weight: 650;
-    letter-spacing: -0.035em;
-  }
-
-  .ultima-mobile-plan-actions {
-    display: flex;
-  }
-
-  .ultima-mobile-plan-primary,
-  .ultima-mobile-plan-secondary {
-    display: flex;
-    min-width: 0;
-    min-height: 46px;
-    align-items: center;
-    gap: 8px;
-    font-weight: 650;
-    line-height: 1.3;
-    text-align: start;
+    font-size: clamp(25px, 8vw, 39px);
+    font-weight: 740;
+    line-height: 1.02;
+    letter-spacing: -0.055em;
     overflow-wrap: anywhere;
   }
 
   .ultima-mobile-plan-primary {
+    display: flex;
+    grid-column: 1 / -1;
+    min-width: 0;
+    min-height: 46px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-weight: 740;
+    line-height: 1.3;
+    text-align: start;
+    overflow-wrap: anywhere;
     width: 100%;
-    padding: 10px 13px;
-    border-radius: 13px;
+    padding: 8px 11px;
+    border-radius: 12px;
     color: var(--ultima-mini-primary-text, var(--ultima-color-primary-text));
     background: var(--ultima-color-primary);
-    font-size: 15px;
+    font-size: 14px;
   }
 
-  .ultima-mobile-plan-primary > span:first-child {
-    flex: 1;
+  .ultima-mobile-plan-primary:disabled {
+    cursor: wait;
+    opacity: 0.72;
   }
 
   .ultima-mobile-plan-action-meta {
-    font-size: 12px;
-    font-weight: 550;
+    display: block;
+    margin-top: 1px;
+    font-size: 11px;
+    font-weight: 620;
   }
 
-  .ultima-mobile-plan-secondary {
-    min-height: 44px;
-    flex: 0 1 auto;
-    justify-content: center;
-    color: var(--ultima-mini-accent);
-    font-size: 13px;
-  }
-
-  .ultima-mobile-plan-actions svg,
-  .ultima-mobile-plan-secondary svg {
+  .ultima-mobile-plan-primary svg {
     flex-shrink: 0;
   }
 
-  .ultima-mobile-actions,
-  .ultima-shell .ultima-mobile-traffic[data-testid='ultima-home-traffic-card'] {
+  .ultima-mobile-actions {
     min-width: 0;
     margin: 0;
     border: 0 !important;
     color: var(--ultima-color-secondary-text);
     background: transparent !important;
+  }
+
+  .ultima-shell.ultima-home-aurora .ultima-mobile-traffic[data-testid='ultima-home-traffic-card'] {
+    padding: 10px 12px 7px;
+    border: 1px solid color-mix(in srgb, var(--ultima-color-surface-border) 34%, #14242a) !important;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--ultima-color-surface) 48%, #14242a) !important;
   }
 
   .ultima-mobile-actions-heading,
@@ -229,35 +246,62 @@
 
   .ultima-mobile-traffic-meter {
     min-width: 0;
-    padding-block: 10px 13px;
   }
 
   .ultima-mobile-traffic-reading {
     display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
-    gap: 2px 12px;
+    gap: 5px;
   }
 
-  .ultima-mobile-traffic-reading p,
+  .ultima-mobile-traffic-kicker {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0 0 3px;
+    color: var(--ultima-mini-accent);
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: 0.075em;
+    text-transform: uppercase;
+  }
+
+  .ultima-mobile-traffic-kicker svg {
+    flex-shrink: 0;
+  }
+
+  .ultima-mobile-traffic-caption {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0 8px;
+  }
+
   .ultima-mobile-traffic-used {
+    margin: 0;
     color: var(--ultima-mini-muted);
-    font-size: 13px;
+    font-size: 12px;
     line-height: 1.48;
   }
 
   .ultima-mobile-traffic-reading strong {
-    font-size: 22px;
+    font-size: 29px;
     font-variant-numeric: tabular-nums;
-    font-weight: 660;
-    line-height: 1.25;
-    letter-spacing: -0.03em;
+    font-weight: 750;
+    line-height: 1.1;
+    letter-spacing: -0.055em;
+  }
+
+  .ultima-mobile-traffic-reading strong > small {
+    font-size: 14px;
+    letter-spacing: 0;
   }
 
   .ultima-mobile-traffic-track {
-    height: 6px;
-    margin: 10px 0 8px;
+    height: 5px;
+    margin: 8px 0 3px;
     overflow: hidden;
     border-radius: 999px;
     background: var(--ultima-mini-line);
@@ -279,6 +323,49 @@
 
   .ultima-mobile-traffic-meter[data-tone='blocked'] .ultima-mobile-traffic-reading strong {
     color: var(--ultima-mini-warning);
+  }
+
+  .ultima-home-aurora-stats {
+    display: flex;
+    gap: 8px;
+  }
+
+  .ultima-home-aurora-stat {
+    display: flex;
+    min-width: 0;
+    min-height: 50px;
+    flex: 1 1 0;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 3px;
+    border-top: 1px solid var(--ultima-mini-line);
+    color: var(--ultima-mini-muted);
+    font-size: 11px;
+    line-height: 1.35;
+    text-align: start;
+  }
+
+  .ultima-home-aurora-stat svg {
+    flex-shrink: 0;
+    color: var(--ultima-mini-accent);
+  }
+
+  .ultima-home-aurora-stat strong {
+    display: block;
+    color: var(--ultima-color-secondary-text);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .ultima-home-aurora
+    :is(
+      .ultima-mobile-plan-primary,
+      .ultima-home-aurora-logo-button,
+      .ultima-mobile-traffic-action,
+      button.ultima-home-aurora-stat
+    ):focus-visible {
+    outline: 2px solid var(--ultima-mini-accent);
+    outline-offset: 2px;
   }
 
   .ultima-mobile-traffic-standard,
@@ -315,7 +402,8 @@
   }
 
   .ultima-mobile-traffic-reset {
-    margin-top: 10px;
+    margin-top: 3px;
+    border-top: 1px solid var(--ultima-mini-line);
   }
 
   .ultima-mobile-traffic-reset > summary {
@@ -366,7 +454,7 @@
     display: flex;
     min-width: 0;
     width: 100%;
-    min-height: 65px;
+    min-height: 58px;
     align-items: center;
     gap: 10px;
     padding: 10px 0;

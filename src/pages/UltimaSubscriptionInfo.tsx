@@ -209,10 +209,14 @@ export function UltimaSubscriptionInfo() {
     return isRu ? `${minutes} мин.` : `${minutes}m`;
   })();
 
-  const isActive = subscription?.is_active === true && subscription.is_expired !== true;
+  const isExpired =
+    subscription?.is_expired === true || subscription?.status.toLowerCase() === 'expired';
+  const isActive = subscription?.is_active === true && !isExpired;
   const statusLabel = isActive
     ? t('ultima.subscriptionInfo.active')
-    : t('ultima.subscriptionInfo.expired');
+    : isExpired
+      ? t('ultima.subscriptionInfo.expired')
+      : t('ultima.subscriptionInfo.inactive', { defaultValue: 'Неактивна' });
   const subscriptionTitle = subscription?.tariff_name || t('ultima.subscriptionInfo.pageTitle');
   const deviceCount = subscription?.device_limit ?? 0;
   const serverCount = subscription?.servers?.length ?? 0;
@@ -308,10 +312,7 @@ export function UltimaSubscriptionInfo() {
   const statusPill = (
     <span
       data-testid="ultima-subscription-info-status"
-      className={cn(
-        'ultima-sub-info-status',
-        subscription?.is_expired && 'ultima-mini-expired-status',
-      )}
+      className={cn('ultima-sub-info-status', isExpired && 'ultima-mini-expired-status')}
       data-active={isActive}
     >
       {statusLabel}
@@ -666,10 +667,11 @@ export function UltimaSubscriptionInfo() {
               data-testid="ultima-subscription-info-page"
               className="ultima-scrollbar ultima-sub-info-mobile-content min-h-0 flex-1 overflow-y-auto pb-3 pr-1"
             >
-              <section className="ultima-sub-info-section ultima-sub-info-overview">
+              <section className="ultima-sub-info-section ultima-sub-info-overview ultima-aurora-plan">
                 <div className="ultima-sub-info-section-heading">
                   <div>
-                    <p className="ultima-sub-info-eyebrow">
+                    <p className="ultima-sub-info-eyebrow ultima-aurora-eyebrow">
+                      <ShieldCheck size={15} aria-hidden="true" />
                       {t('ultima.subscriptionInfo.eyebrow')}
                     </p>
                     <h1 className="ultima-mini-screen-title">{subscriptionTitle}</h1>

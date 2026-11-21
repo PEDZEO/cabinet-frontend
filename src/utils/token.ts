@@ -11,6 +11,10 @@ const TOKEN_KEYS = {
   TELEGRAM_INIT: 'telegram_init_data',
 } as const;
 
+export const isAntarcticDocument =
+  typeof window !== 'undefined' && window.location.pathname === '/antarctic.html';
+const walletTokens = { access: null as string | null, refresh: null as string | null };
+
 interface JWTPayload {
   exp?: number;
   iat?: number;
@@ -65,6 +69,7 @@ export function isTokenValid(token: string | null): boolean {
  */
 export const tokenStorage = {
   getAccessToken(): string | null {
+    if (isAntarcticDocument) return walletTokens.access;
     try {
       return sessionStorage.getItem(TOKEN_KEYS.ACCESS);
     } catch {
@@ -73,6 +78,7 @@ export const tokenStorage = {
   },
 
   getRefreshToken(): string | null {
+    if (isAntarcticDocument) return walletTokens.refresh;
     try {
       return sessionStorage.getItem(TOKEN_KEYS.REFRESH);
     } catch {
@@ -81,6 +87,11 @@ export const tokenStorage = {
   },
 
   setTokens(accessToken: string, refreshToken: string): void {
+    if (isAntarcticDocument) {
+      walletTokens.access = accessToken;
+      walletTokens.refresh = refreshToken;
+      return;
+    }
     try {
       sessionStorage.setItem(TOKEN_KEYS.ACCESS, accessToken);
       sessionStorage.setItem(TOKEN_KEYS.REFRESH, refreshToken);
@@ -91,6 +102,10 @@ export const tokenStorage = {
   },
 
   setAccessToken(accessToken: string): void {
+    if (isAntarcticDocument) {
+      walletTokens.access = accessToken;
+      return;
+    }
     try {
       sessionStorage.setItem(TOKEN_KEYS.ACCESS, accessToken);
     } catch {
@@ -99,6 +114,11 @@ export const tokenStorage = {
   },
 
   clearTokens(): void {
+    if (isAntarcticDocument) {
+      walletTokens.access = null;
+      walletTokens.refresh = null;
+      return;
+    }
     try {
       sessionStorage.removeItem(TOKEN_KEYS.ACCESS);
       sessionStorage.removeItem(TOKEN_KEYS.REFRESH);
@@ -117,6 +137,7 @@ export const tokenStorage = {
    * Both tokens are moved out of persistent localStorage.
    */
   migrateFromLocalStorage(): void {
+    if (isAntarcticDocument) return;
     try {
       const accessToken = localStorage.getItem(TOKEN_KEYS.ACCESS);
 
@@ -137,6 +158,7 @@ export const tokenStorage = {
   },
 
   getTelegramInitData(): string | null {
+    if (isAntarcticDocument) return null;
     try {
       return sessionStorage.getItem(TOKEN_KEYS.TELEGRAM_INIT);
     } catch {
@@ -145,6 +167,7 @@ export const tokenStorage = {
   },
 
   setTelegramInitData(data: string): void {
+    if (isAntarcticDocument) return;
     try {
       sessionStorage.setItem(TOKEN_KEYS.TELEGRAM_INIT, data);
     } catch {
@@ -364,6 +387,10 @@ export function getAndClearReturnUrl(): string | null {
  * Сохраняет текущий URL для возврата после авторизации
  */
 export function safeRedirectToLogin(): void {
+  if (isAntarcticDocument) {
+    window.location.reload();
+    return;
+  }
   // Разрешённые пути для редиректа (относительные пути нашего приложения)
   const loginPath = '/login';
 

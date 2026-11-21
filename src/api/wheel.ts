@@ -1,4 +1,5 @@
 import apiClient from './client';
+import { isAntarcticDocument } from '@/utils/token';
 
 // ==================== TYPES ====================
 
@@ -186,7 +187,9 @@ export const wheelApi = {
   // Get wheel config
   getConfig: async (): Promise<WheelConfig> => {
     const response = await apiClient.get<WheelConfig>('/cabinet/wheel/config');
-    return response.data;
+    return isAntarcticDocument
+      ? { ...response.data, spin_cost_stars_enabled: false, can_pay_stars: false }
+      : response.data;
   },
 
   // Check spin availability
@@ -213,6 +216,7 @@ export const wheelApi = {
 
   // Create Stars invoice for Mini App payment
   createStarsInvoice: async (): Promise<StarsInvoiceResponse> => {
+    if (isAntarcticDocument) throw new Error('Antarctic Wallet payment is required');
     const response = await apiClient.post<StarsInvoiceResponse>('/cabinet/wheel/stars-invoice');
     return response.data;
   },

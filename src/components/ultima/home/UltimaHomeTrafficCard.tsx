@@ -1,4 +1,4 @@
-import { ArrowUpRight, Globe2 } from 'lucide-react';
+import { ArrowUpRight, Zap } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import type { Subscription } from '@/types';
@@ -16,7 +16,8 @@ type UltimaHomeTrafficCardProps = {
   standardUnlimited?: boolean;
   serverLabel?: string | null;
   subscription?: Subscription | null;
-  onTopUp: () => void;
+  onDetails: () => void;
+  onTopUp?: () => void;
 };
 
 export function UltimaHomeTrafficCard({
@@ -31,20 +32,25 @@ export function UltimaHomeTrafficCard({
   standardUnlimited = true,
   serverLabel,
   subscription,
+  onDetails,
   onTopUp,
 }: UltimaHomeTrafficCardProps) {
   const { t } = useTranslation();
   const formatter = new Intl.NumberFormat(locale || 'ru', { maximumFractionDigits: 1 });
   const hasLimit = limitGb > 0;
   const used = Math.max(0, usedGb);
-  const remaining = Math.max(0, remainingGb ?? limitGb - used);
+  const remaining = hasLimit ? Math.min(limitGb, Math.max(0, remainingGb ?? limitGb - used)) : 0;
   const resolvedServerLabel =
     serverLabel || t('ultima.meteredTraffic.defaultLabel', { defaultValue: 'Спецсерверы' });
   const trafficLabel = isMetered
     ? resolvedServerLabel
     : t('subscription.traffic', { defaultValue: 'Трафик' });
   const remainingLabel = hasLimit
-    ? t('ultima.home.trafficRemainingValue', { value: formatter.format(remaining) })
+    ? t('ultima.home.trafficRemainingOfLimit', {
+        defaultValue: 'Осталось {{remaining}} из {{limit}} ГБ',
+        remaining: formatter.format(remaining),
+        limit: formatter.format(limitGb),
+      })
     : t('subscription.unlimited', { defaultValue: 'Безлимит' });
   const topUpLabel = isTrial
     ? t('ultima.chooseTariff', { defaultValue: 'Выбрать тариф' })
@@ -52,29 +58,36 @@ export function UltimaHomeTrafficCard({
 
   return (
     <section className="ultima-mobile-traffic" data-testid="ultima-home-traffic-card">
-      <header className="ultima-mobile-traffic-heading">
-        <h2>{t('ultima.home.trafficTitle', { defaultValue: 'Трафик' })}</h2>
-        {hasLimit ? (
-          <button
-            type="button"
-            onClick={onTopUp}
-            data-testid="ultima-home-traffic-topup"
-            className="ultima-mobile-traffic-action"
-          >
-            {topUpLabel}
-            <ArrowUpRight size={17} strokeWidth={1.8} aria-hidden="true" />
-          </button>
-        ) : null}
-      </header>
-
       <div
         className="ultima-mobile-traffic-meter"
         data-testid="ultima-home-traffic"
         data-tone={isBlocked ? 'blocked' : usedPercent >= 80 ? 'low' : undefined}
       >
         <div className="ultima-mobile-traffic-reading">
-          {isMetered ? <p>{trafficLabel}</p> : null}
-          <strong>{remainingLabel}</strong>
+          <div>
+            <h2 className="ultima-mobile-traffic-kicker">
+              <Zap size={14} strokeWidth={1.8} aria-hidden="true" />
+              {trafficLabel}
+            </h2>
+            <strong>
+              {hasLimit ? (
+                <>
+                  {formatter.format(remaining)} <small>{t('ultima.home.auroraGb')}</small>
+                </>
+              ) : (
+                remainingLabel
+              )}
+            </strong>
+          </div>
+          <button
+            type="button"
+            onClick={onDetails}
+            data-testid="ultima-home-plan-details"
+            className="ultima-mobile-traffic-action"
+          >
+            {t('ultima.home.auroraDetails', { defaultValue: 'Детали' })}
+            <ArrowUpRight size={15} strokeWidth={1.8} aria-hidden="true" />
+          </button>
         </div>
         {hasLimit ? (
           <>
@@ -84,38 +97,42 @@ export function UltimaHomeTrafficCard({
               aria-label={trafficLabel}
               aria-valuemin={0}
               aria-valuemax={limitGb}
-              aria-valuenow={Math.min(remaining, limitGb)}
+              aria-valuenow={remaining}
               aria-valuetext={remainingLabel}
             >
-              <span style={{ width: `${Math.min(1, remaining / limitGb) * 100}%` }} />
+              <span style={{ width: (remaining / limitGb) * 100 + '%' }} />
             </div>
-            <p className="ultima-mobile-traffic-used">
-              {t('ultima.home.trafficUsedValue', {
-                used: formatter.format(used),
-                limit: formatter.format(limitGb),
-              })}
-            </p>
+            <div className="ultima-mobile-traffic-caption">
+              <p data-testid="ultima-home-traffic-remaining" className="ultima-mobile-traffic-used">
+                {remainingLabel}
+              </p>
+              {onTopUp ? (
+                <button
+                  type="button"
+                  onClick={onTopUp}
+                  data-testid="ultima-home-traffic-topup"
+                  className="ultima-mobile-traffic-action"
+                >
+                  {topUpLabel}
+                  <ArrowUpRight size={14} strokeWidth={1.8} aria-hidden="true" />
+                </button>
+              ) : null}
+            </div>
           </>
         ) : null}
 
         {isMetered && subscription?.traffic_reset_mode === 'MONTH' ? (
           <UltimaMeteredTrafficPeriodNotice subscription={subscription} variant="compact" />
-        ) : isMetered ? (
+        ) : isBlocked && isMetered ? (
           <p className="ultima-mobile-traffic-used">
-            {isBlocked
+            {standardUnlimited
               ? t('ultima.home.specialTrafficBlockedHint')
-              : t('ultima.home.specialServersHint', { server: resolvedServerLabel })}
+              : t('ultima.home.specialTrafficUnavailable', {
+                  defaultValue: 'Спецсерверы временно недоступны.',
+                })}
           </p>
         ) : null}
       </div>
-
-      {isMetered && standardUnlimited ? (
-        <div className="ultima-mobile-traffic-standard" data-testid="ultima-home-unlimited-traffic">
-          <Globe2 size={17} strokeWidth={1.7} aria-hidden="true" />
-          <span>{t('ultima.home.standardServers', { defaultValue: 'Обычные серверы' })}</span>
-          <strong>{t('subscription.unlimited', { defaultValue: 'Безлимит' })}</strong>
-        </div>
-      ) : null}
     </section>
   );
 }

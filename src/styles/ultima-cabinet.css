@@ -153,6 +153,10 @@
   overflow-wrap: anywhere;
 }
 
+.ultima-bottom-nav .ultima-nav-item .ultima-nav-label-mobile {
+  display: none;
+}
+
 .ultima-bottom-nav .ultima-nav-item.is-active {
   color: var(--ultima-cabinet-accent);
   background: #233b34;

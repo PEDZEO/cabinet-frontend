@@ -38,6 +38,8 @@ export function usePendingTopUpFollowUp() {
   const recoverPendingTopUpFollowUp = useCallback(async () => {
     const pending = readPendingTopUpFollowUp(userId);
     if (!pending) return;
+    // A referenced Wallet payment must be settled by its own status, not any balance change.
+    if (pending.paymentReferenceId || pending.balanceBeforeKopeks == null) return;
     if (isTopUpFollowUpDismissed(userId)) {
       clearPendingTopUpFollowUp(userId);
       return;
@@ -89,11 +91,11 @@ export function usePendingTopUpFollowUp() {
 
   const scheduleRecoveryBurst = useCallback(() => {
     clearScheduledRetries();
-    void recoverPendingTopUpFollowUp();
-
-    if (!readPendingTopUpFollowUp(userId)) {
+    const pending = readPendingTopUpFollowUp(userId);
+    if (!pending || pending.paymentReferenceId) {
       return;
     }
+    void recoverPendingTopUpFollowUp();
 
     FOLLOW_UP_RETRY_DELAYS_MS.forEach((delay) => {
       const timeoutId = window.setTimeout(() => {

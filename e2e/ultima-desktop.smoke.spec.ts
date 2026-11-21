@@ -962,6 +962,7 @@ test.describe('Ultima payment method selection', () => {
     await expect(page.getByTestId('ultima-payment-requested-amount')).toContainText('420 ₽');
     await expect(page.getByTestId('ultima-payment-method-yookassa')).toBeVisible();
     await expect(page.getByTestId('ultima-payment-method-cryptobot')).toBeVisible();
+    await expect(page.getByTestId('ultima-payment-method-antarctic')).toHaveCount(0);
     await expect(page.getByTestId('ultima-payment-method-heleket')).toBeDisabled();
     await expectNoHorizontalOverflow(page);
 
@@ -1006,7 +1007,7 @@ test.describe('Ultima payment method selection', () => {
     await expect(scrollArea).toBeVisible();
     await scrollArea.evaluate((element) => element.scrollTo({ top: element.scrollHeight }));
     await expect(page.getByRole('button', { name: /История операций/ })).toBeVisible();
-    await expect(page.locator('.ultima-mobile-dock-footer')).toBeVisible();
+    await expect(page.locator('.ultima-shared-nav-shell .ultima-bottom-nav')).toBeVisible();
     await expectNoHorizontalOverflow(page);
   });
 });
@@ -1268,7 +1269,9 @@ test.describe('Ultima desktop workspace', () => {
 
     const overview = page.getByTestId('ultima-home-overview');
     await expect(overview).toBeVisible();
-    await expect(page.getByTestId('ultima-home-brand-logo')).toHaveCount(0);
+    await expect(
+      overview.getByTestId('ultima-home-logo-tap-target').getByTestId('ultima-home-brand-logo'),
+    ).toBeVisible();
     await expect(overview).toContainText('Обычный');
     await expect(page.getByTestId('ultima-home-unlimited-traffic')).toContainText(
       'Обычные серверы',
@@ -1280,11 +1283,14 @@ test.describe('Ultima desktop workspace', () => {
       '82',
     );
     await expect(page.locator('.ultima-mobile-traffic-track > span')).toBeVisible();
-    await expect(page.getByTestId('ultima-plan-device-count')).toContainText('1/3');
-    await expect(page.getByTestId('ultima-home-days')).not.toContainText('—');
+    await expect(page.getByTestId('ultima-home-aurora')).toBeVisible();
+    await expect(page.getByTestId('ultima-plan-device-count')).toContainText('1 из 3');
+    await expect(page.getByTestId('ultima-home-traffic-remaining')).toContainText(
+      'Осталось 82 из 100 ГБ',
+    );
     await expect(page.getByTestId('ultima-home-quick-actions')).toBeVisible();
     await expect(page.getByTestId('ultima-home-action-devices')).toBeVisible();
-    await expect(page.getByTestId('ultima-home-action-setup')).toBeVisible();
+    await expect(page.getByTestId('ultima-home-action-setup')).toHaveCount(0);
     await expect(page.getByTestId('ultima-home-action-identities')).toBeVisible();
     await expect(page.getByTestId('ultima-home-action-referral')).toBeVisible();
     await expect(page.getByTestId('ultima-primary-cta')).toBeVisible();
@@ -1416,7 +1422,9 @@ test.describe('Ultima desktop workspace', () => {
       const warning = page.getByTestId('ultima-traffic-warning');
       if (isMobile) {
         await expect(warning).toHaveCount(0);
-        await expect(page.getByTestId('ultima-home-traffic')).toContainText('8 ГБ осталось');
+        await expect(page.getByTestId('ultima-home-traffic-remaining')).toContainText(
+          'Осталось 8 из 100 ГБ',
+        );
         await expect(page.getByTestId('ultima-home-action-referral')).toBeVisible();
         await expect(page.getByTestId('ultima-home-action-devices')).toBeVisible();
       } else {
@@ -2263,8 +2271,8 @@ test.describe('Ultima device loading state', () => {
     const devicesAction = page.getByTestId('ultima-home-action-devices');
     await expect(devicesAction).toBeDisabled();
     await expect(page.getByTestId('ultima-plan-device-count')).toHaveAttribute('aria-busy', 'true');
-    await expect(devicesAction).not.toContainText('0/3');
-    await expect(page.getByTestId('ultima-plan-device-count')).not.toContainText('0/3');
+    await expect(devicesAction).not.toContainText('0 из 3');
+    await expect(page.getByTestId('ultima-plan-device-count')).not.toContainText('0 из 3');
 
     releaseDevices();
 
@@ -2273,8 +2281,8 @@ test.describe('Ultima device loading state', () => {
       'aria-busy',
       'false',
     );
-    await expect(page.getByTestId('ultima-plan-device-count')).toContainText('3/3');
-    await expect(devicesAction).toContainText('3/3');
+    await expect(page.getByTestId('ultima-plan-device-count')).toContainText('3 из 3');
+    await expect(devicesAction).toContainText('3 из 3');
   });
 });
 
@@ -2475,15 +2483,18 @@ test.describe('Ultima mobile scrolling', () => {
     await expect(cue).toHaveCount(0);
   });
 
-  test('keeps mobile actions as readable rows without decorative tap effects', async ({ page }) => {
+  test('keeps the tap logo and readable action rows on the mobile homepage', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await bootstrapUltimaDesktop(page);
     await mockUltimaDesktopApi(page);
     await page.goto('/');
     await expect(page.getByTestId('ultima-home-overview')).toBeVisible();
     await expect(page.getByTestId('ultima-shield-tap-target')).toHaveCount(0);
+    await expect(
+      page.getByTestId('ultima-home-logo-tap-target').getByTestId('ultima-home-brand-logo'),
+    ).toBeVisible();
     const rows = page.locator('.ultima-mobile-action-row');
-    await expect(rows).toHaveCount(4);
+    await expect(rows.first()).toBeVisible();
     const boxes = await rows.evaluateAll((elements) =>
       elements
         .map((el) => el.getBoundingClientRect())
@@ -2567,15 +2578,15 @@ test.describe('Ultima trial onboarding persistence', () => {
 
     await page.goto('/');
 
-    await expect(page.getByTestId('ultima-home-action-devices')).toContainText('0/3');
-    await expect(page.getByTestId('ultima-home-action-setup')).toContainText('Готово');
+    await expect(page.getByTestId('ultima-home-action-devices')).toContainText('0 из 3');
+    await expect(page.getByTestId('ultima-home-action-setup')).toHaveCount(0);
     const primaryCta = page.getByTestId('ultima-primary-cta');
     await expect(primaryCta).toContainText('Подключить устройство');
     await primaryCta.click();
     await expect(page).toHaveURL(/\/connection$/);
   });
 
-  test('keeps unfinished setup visible alongside the connection CTA', async ({ page }) => {
+  test('promotes unfinished setup into the primary action on mobile', async ({ page }) => {
     await bootstrapUltimaDesktop(page, { connectionCompleted: false });
     await page.addInitScript(() => {
       localStorage.setItem('ultima_connection_flow_v1:99', '2');
@@ -2584,8 +2595,9 @@ test.describe('Ultima trial onboarding persistence', () => {
 
     await page.goto('/');
 
-    await expect(page.getByTestId('ultima-home-action-setup')).toContainText('Шаг 2/3');
-    await expect(page.getByTestId('ultima-primary-cta')).toContainText('Подключить устройство');
+    await expect(page.getByTestId('ultima-home-action-setup')).toHaveCount(0);
+    await expect(page.getByTestId('ultima-primary-cta')).toContainText('Продолжить настройку');
+    await expect(page.getByTestId('ultima-primary-cta')).toContainText('Шаг 2/3');
     await expect(page.getByText('Завершить установку', { exact: true })).toHaveCount(0);
     await expect(page.getByText('Установка не завершена', { exact: true })).toHaveCount(0);
   });

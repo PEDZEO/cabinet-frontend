@@ -8,9 +8,10 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type MouseEvent,
   type PointerEvent,
 } from 'react';
-import { KeyRound, MonitorSmartphone, ShieldCheck, UsersRound, Wrench } from 'lucide-react';
+import { Globe2, KeyRound, MonitorSmartphone, ShieldCheck, UsersRound } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { authApi } from '@/api/auth';
 import { balanceApi } from '@/api/balance';
@@ -35,7 +36,10 @@ import {
   UltimaHomeActionGrid,
   type UltimaHomeAction,
 } from '@/components/ultima/home/UltimaHomeActionGrid';
-import { UltimaHomePlanCard } from '@/components/ultima/home/UltimaHomePlanCard';
+import {
+  UltimaHomePlanCard,
+  type UltimaHomePlanTone,
+} from '@/components/ultima/home/UltimaHomePlanCard';
 import { UltimaHomeTrafficCard } from '@/components/ultima/home/UltimaHomeTrafficCard';
 import { UltimaReferralShareSheet } from '@/components/ultima/home/UltimaReferralShareSheet';
 import { staggerContainer, staggerItem } from '@/components/motion/transitions';
@@ -127,6 +131,8 @@ export function UltimaDashboard() {
     data: subscriptionResponse,
     isFetched: isSubscriptionFetched,
     isError: isSubscriptionError,
+    isFetching: isSubscriptionFetching,
+    refetch: refetchSubscription,
   } = useQuery({
     queryKey: ['subscription'],
     queryFn: subscriptionApi.getSubscription,
@@ -214,6 +220,7 @@ export function UltimaDashboard() {
     (typeof i18n.hasLoadedNamespace !== 'function' || i18n.hasLoadedNamespace('translation'));
   const isSubscriptionReady =
     isSubscriptionFetched || Boolean(subscriptionResponse) || isSubscriptionError;
+  const subscriptionUnavailable = isSubscriptionError && !subscriptionResponse;
   const isActive = Boolean(subscription?.is_active && !subscription?.is_expired);
   const isActiveTrial = Boolean(subscription?.is_trial && isActive);
   const trafficWarningThreshold = Math.max(
@@ -335,10 +342,10 @@ export function UltimaDashboard() {
   }, [subscription?.end_date, subscription?.id, subscription?.is_trial]);
   const isTrialGuideAcknowledged = hasUltimaTrialGuideBeenAcknowledged(user?.id, trialSignature);
 
-  const { data: trialInfo } = useQuery({
+  const { data: trialInfo, isPending: isTrialInfoPending } = useQuery({
     queryKey: ['trial-info'],
     queryFn: subscriptionApi.getTrialInfo,
-    enabled: isSubscriptionReady && !hasAnySubscription,
+    enabled: isSubscriptionReady && !subscriptionUnavailable && !hasAnySubscription,
     staleTime: 15000,
     placeholderData: (previousData) => previousData,
   });
@@ -505,7 +512,7 @@ export function UltimaDashboard() {
   }, [tapRewardProgress?.enabled, tapRewardProgress?.progress_taps]);
 
   useEffect(() => {
-    if (!isSubscriptionReady || hasAnySubscription) {
+    if (!isSubscriptionReady || subscriptionUnavailable || hasAnySubscription) {
       return;
     }
     if (!trialInfo?.is_available) {
@@ -519,14 +526,21 @@ export function UltimaDashboard() {
     }
     trialAutoActivationAttemptedRef.current = true;
     activateTrialMutation.mutate();
-  }, [activateTrialMutation, hasAnySubscription, isSubscriptionReady, trialInfo?.is_available]);
+  }, [
+    activateTrialMutation,
+    hasAnySubscription,
+    isSubscriptionReady,
+    subscriptionUnavailable,
+    trialInfo?.is_available,
+  ]);
 
   const shouldHoldForAutoTrial =
     isSubscriptionReady &&
+    !subscriptionUnavailable &&
     !hasAnySubscription &&
-    ((trialInfo?.is_available ?? true) ||
+    (isTrialInfoPending ||
       activateTrialMutation.isPending ||
-      !trialAutoActivationAttemptedRef.current);
+      (trialInfo?.is_available === true && !trialAutoActivationAttemptedRef.current));
 
   useEffect(() => {
     const language = i18n.language || 'ru';
@@ -623,9 +637,9 @@ export function UltimaDashboard() {
   }, []);
 
   const handleShieldTap = useCallback(
-    (event: PointerEvent<HTMLButtonElement>) => {
+    (event: PointerEvent<HTMLButtonElement> | MouseEvent<HTMLButtonElement>) => {
       haptic.impact('light');
-      scheduleTapRewardFlush();
+      if (isDesktopViewport || tapRewardProgress?.enabled !== false) scheduleTapRewardFlush();
       const nextTapNumber = ++tapCountRef.current;
       scheduleTapCounterReset();
 
@@ -635,8 +649,9 @@ export function UltimaDashboard() {
 
       const rect = event.currentTarget.getBoundingClientRect();
       const id = rippleIdRef.current++;
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
+      const keyboardActivation = event.type === 'click' && event.detail === 0;
+      const x = keyboardActivation ? rect.width / 2 : event.clientX - rect.left;
+      const y = keyboardActivation ? rect.height / 2 : event.clientY - rect.top;
       const size = Math.max(rect.width, rect.height) * 1.85;
       setShieldRipples((previous) => [
         ...previous.slice(-(MAX_VISIBLE_SHIELD_RIPPLES - 1)),
@@ -669,7 +684,13 @@ export function UltimaDashboard() {
         setShieldDigits((previous) => previous.filter((item) => item.id !== digitId));
       }, 1280);
     },
-    [haptic, scheduleTapCounterReset, scheduleTapRewardFlush],
+    [
+      haptic,
+      isDesktopViewport,
+      scheduleTapCounterReset,
+      scheduleTapRewardFlush,
+      tapRewardProgress?.enabled,
+    ],
   );
 
   const openSupport = () => {
@@ -1012,14 +1033,19 @@ export function UltimaDashboard() {
   ]);
 
   const renderShieldButton = useCallback(
-    (className?: string) => (
+    (className?: string, isMobileLogo = false) => (
       <button
         type="button"
-        data-testid="ultima-shield-tap-target"
-        aria-label={t('nav.dashboard')}
-        onPointerDown={handleShieldTap}
+        data-testid={isMobileLogo ? 'ultima-home-logo-tap-target' : 'ultima-shield-tap-target'}
+        aria-label={
+          isMobileLogo ? t('ultima.home.auroraTapLogo', { name: appName }) : t('nav.dashboard')
+        }
+        onPointerDown={isMobileLogo ? undefined : handleShieldTap}
+        onClick={isMobileLogo ? handleShieldTap : undefined}
         className={cn(
-          'relative isolate mx-auto flex h-28 w-28 items-center justify-center rounded-full bg-black/[0.15] focus-visible:outline-none',
+          isMobileLogo
+            ? 'ultima-home-aurora-logo-button'
+            : 'relative isolate mx-auto flex h-28 w-28 items-center justify-center rounded-full bg-black/[0.15] focus-visible:outline-none',
           className,
         )}
         style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -1042,7 +1068,39 @@ export function UltimaDashboard() {
             />
           ))}
         </span>
-        {renderHomeBrandMark()}
+        {isMobileLogo ? (
+          <>
+            {showBrandLogoOnHome ? (
+              <span
+                className={cn('ultima-home-aurora-logo-face', !isHomeLogoLoaded && 'opacity-0')}
+              >
+                <img
+                  className="ultima-home-aurora-logo-bleed"
+                  src={logoUrl ?? undefined}
+                  alt=""
+                  draggable={false}
+                />
+                <img
+                  data-testid="ultima-home-brand-logo"
+                  src={logoUrl ?? undefined}
+                  alt=""
+                  draggable={false}
+                  className="ultima-home-aurora-logo-image"
+                  loading="eager"
+                  onLoad={handleHomeLogoLoad}
+                  onError={handleHomeLogoError}
+                />
+              </span>
+            ) : null}
+            {(!showBrandLogoOnHome || !isHomeLogoLoaded) && (
+              <span className="ultima-home-aurora-logo-letter" aria-hidden="true">
+                {logoLetter}
+              </span>
+            )}
+          </>
+        ) : (
+          renderHomeBrandMark()
+        )}
         <span
           aria-hidden
           data-ultima-transient-visual
@@ -1075,7 +1133,20 @@ export function UltimaDashboard() {
         </span>
       </button>
     ),
-    [handleShieldTap, renderHomeBrandMark, shieldDigits, shieldRipples, t],
+    [
+      appName,
+      handleHomeLogoError,
+      handleHomeLogoLoad,
+      handleShieldTap,
+      isHomeLogoLoaded,
+      logoLetter,
+      logoUrl,
+      renderHomeBrandMark,
+      shieldDigits,
+      shieldRipples,
+      showBrandLogoOnHome,
+      t,
+    ],
   );
 
   const adminButtonClassName =
@@ -1233,48 +1304,6 @@ export function UltimaDashboard() {
     defaultValue: `Попробуйте ${appName} по моей ссылке`,
   });
   const mobileHomeActions: UltimaHomeAction[] = [
-    ...(hasAnySubscription
-      ? [
-          {
-            id: 'devices' as const,
-            title: t('devices.title', { defaultValue: 'Устройства' }),
-            value: isDashboardDevicesUnavailable
-              ? '—'
-              : `${connectedDevicesCount}/${dashboardDeviceLimit}`,
-            hint: isDashboardDevicesUnavailable
-              ? t('devices.homeCtaUnavailable', { defaultValue: 'Открыть управление' })
-              : dashboardFreeDeviceSlots > 0
-                ? t('ultima.home.freeDeviceSlots', {
-                    count: dashboardFreeDeviceSlots,
-                    defaultValue: 'Свободно: {{count}}',
-                  })
-                : t('devices.buySlot', { defaultValue: 'Добавить слот' }),
-            icon: MonitorSmartphone,
-            onClick: () =>
-              openDevices(
-                shouldConnectDeviceFromHome,
-                shouldConnectDeviceFromHome ? 'home_action_connect' : 'home_action_slots',
-              ),
-            loading: isDashboardDevicesPending,
-          },
-          {
-            id: 'setup' as const,
-            title: t('ultima.home.setupAction', { defaultValue: 'Установка' }),
-            value: isConnectionCompleted
-              ? t('common.done', { defaultValue: 'Готово' })
-              : t('ultima.desktop.stepShort', {
-                  step: connectionStep,
-                  defaultValue: `Шаг ${connectionStep}/3`,
-                }),
-            hint: isConnectionCompleted
-              ? t('ultima.home.setupReadyHint', { defaultValue: 'Настроить ещё раз' })
-              : t('ultima.home.connectionPending', { defaultValue: 'Продолжить настройку' }),
-            icon: Wrench,
-            onClick: () => openConnection(),
-            tone: isConnectionCompleted ? ('default' as const) : ('attention' as const),
-          },
-        ]
-      : []),
     {
       id: 'identities',
       title: t('profile.accountLinkingTitle', { defaultValue: 'Способы входа' }),
@@ -1319,45 +1348,135 @@ export function UltimaDashboard() {
     (isActiveTrial
       ? t('subscription.trialStatus', { defaultValue: 'Пробный период' })
       : t('subscription.infoTitle', { defaultValue: 'Подписка' }));
-  const trafficNumberFormatter = new Intl.NumberFormat(i18n.language, {
-    maximumFractionDigits: 1,
-  });
-  const mobileDaysValue =
-    daysLeft === null ? '—' : trafficNumberFormatter.format(Math.max(daysLeft, 0));
-  const mobilePurchaseCtaLabel =
-    hasAnySubscription && !isActiveTrial
-      ? t('ultima.subscriptionInfo.renewShort', { defaultValue: 'Продлить' })
-      : t('ultima.chooseTariff', { defaultValue: 'Выбрать тариф' });
+  const subscriptionState = subscription?.status?.toLowerCase();
+  const mobileExpired = subscription?.is_expired === true || subscriptionState === 'expired';
+  const mobilePaused = subscription?.is_daily_paused === true;
+  const mobileCanConnect = isActive && !mobilePaused && !mobileExpired;
+  const mobileLimited = subscriptionState === 'limited' && !mobileExpired && !mobilePaused;
+  const mobilePending = subscriptionState === 'pending' && !mobileExpired && !mobilePaused;
+  const availableTariffs =
+    purchaseOptions?.sales_mode === 'tariffs'
+      ? purchaseOptions.tariffs.filter((tariff) => tariff.is_available)
+      : [];
+  const currentTariff = availableTariffs.find((tariff) => tariff.id === subscription?.tariff_id);
+  const newTariff = availableTariffs.length === 1 ? availableTariffs[0] : undefined;
+  const newMonthlyPeriod = newTariff?.periods.find((period) => period.days === 30);
+  const mobilePlanSubtitle = hasAnySubscription
+    ? [subscriptionPlanName, subscription?.end_date && !mobileExpired ? expiryLabel : '']
+        .filter(Boolean)
+        .join(' · ')
+    : newTariff && newMonthlyPeriod?.price_label
+      ? t('ultima.home.auroraMonthlyQuote', {
+          defaultValue: '{{tariff}} · {{price}} за 30 дней',
+          tariff: newTariff.name,
+          price: newMonthlyPeriod.price_label,
+        })
+      : undefined;
+
+  let mobileHeroTitle: string;
+  let mobileStatusLabel: string;
+  let mobileActionLabel: string;
+  let mobileActionMeta: string | undefined;
+  let mobileTone: UltimaHomePlanTone = 'idle';
+  let mobileAction: () => void = openSubscriptionPurchase;
+
+  if (subscriptionUnavailable) {
+    mobileStatusLabel = t('ultima.home.auroraSubscriptionLabel');
+    mobileHeroTitle = t('ultima.home.auroraUnavailable');
+    mobileActionLabel = t('common.tryAgain', { defaultValue: 'Попробовать снова' });
+    mobileAction = () => void refetchSubscription();
+  } else if (!hasAnySubscription) {
+    mobileStatusLabel = t('ultima.noSubscription', { defaultValue: 'Нет подписки' });
+    mobileHeroTitle = t('ultima.home.auroraGetStarted', { name: appName });
+    mobileActionLabel = t('ultima.chooseTariff', { defaultValue: 'Выбрать тариф' });
+  } else if (mobileExpired) {
+    mobileStatusLabel = t('subscription.expired');
+    mobileHeroTitle = t('ultima.home.auroraExpired');
+    mobileActionLabel = t('ultima.buySubscriptionRenew');
+    mobileTone = 'expired';
+  } else if (mobileCanConnect) {
+    mobileTone = statusToneKey;
+    mobileStatusLabel = isActiveTrial
+      ? t('subscription.trialStatus')
+      : t('ultima.home.auroraActive', { defaultValue: 'Подписка активна' });
+    mobileHeroTitle = isConnectionCompleted
+      ? t('ultima.home.auroraSetupDone')
+      : t('ultima.home.auroraReady', { defaultValue: 'Готово к подключению' });
+    if (!isConnectionCompleted || primaryActionKind === 'setup') {
+      mobileActionLabel =
+        !isConnectionCompleted && connectionStep > 1
+          ? t('ultima.home.auroraContinue', { defaultValue: 'Продолжить настройку' })
+          : isConnectionCompleted && connectedDevicesCount > 0
+            ? devicesHomeCtaTitle
+            : t('ultima.connectDevice', { defaultValue: 'Подключить устройство' });
+      mobileActionMeta =
+        !isConnectionCompleted && connectionStep > 1
+          ? t('ultima.desktop.stepShort', { step: connectionStep })
+          : undefined;
+      mobileAction = () => {
+        trackAnalyticsEvent('ultima_main_cta_click', {
+          action: 'setup',
+          connection_completed: isConnectionCompleted,
+          days_left: daysLeft ?? null,
+        });
+        if (isActiveTrial) {
+          acknowledgeTrialGuide();
+          setIsTrialGuideVisible(false);
+        }
+        if (isConnectionCompleted && connectedDevicesCount > 0 && !shouldConnectDeviceFromHome) {
+          openDevices(false, 'home_aurora_setup');
+        } else {
+          openConnection(isConnectionCompleted);
+        }
+      };
+    } else {
+      mobileActionLabel = purchaseCtaLabel;
+      mobileAction = handlePrimaryAction;
+    }
+  } else if (
+    mobileLimited &&
+    trafficWarningLimitGb > 0 &&
+    currentTariff?.traffic_topup_enabled !== false
+  ) {
+    mobileStatusLabel = t('ultima.home.auroraSubscriptionLabel');
+    mobileHeroTitle = t('ultima.home.auroraLimitReached');
+    mobileActionLabel = t('ultima.trafficWarning.buyTraffic');
+    mobileTone = 'warning';
+    mobileAction = openTrafficPurchase;
+  } else if (mobilePending) {
+    mobileStatusLabel = t('ultima.home.auroraSubscriptionLabel');
+    mobileHeroTitle = t('ultima.home.auroraPending');
+    mobileActionLabel = t('common.refresh');
+    mobileAction = () => void refetchSubscription();
+  } else {
+    mobileStatusLabel = t('ultima.home.auroraSubscriptionLabel');
+    mobileHeroTitle = mobilePaused
+      ? t('ultima.home.auroraPaused')
+      : t('ultima.home.auroraInactive');
+    mobileActionLabel = t('nav.support');
+    mobileTone = 'warning';
+    mobileAction = openSupport;
+  }
+
   const mobileOverviewCard = (
     <UltimaHomePlanCard
-      eyebrow={t('ultima.currentTariff', { defaultValue: 'Ваш тариф' })}
-      planName={subscriptionPlanName}
-      statusLabel={statusLabel}
-      tone={statusToneKey}
-      isExpired={subscription?.is_expired === true}
-      expiryLabel={subscription?.end_date ? expiryLabel : ''}
-      daysLabel={t('ultima.home.daysLabel', { defaultValue: 'Дней осталось' })}
-      daysValue={mobileDaysValue}
-      devicesLabel={t('devices.title', { defaultValue: 'Устройства' })}
-      devicesValue={
-        isDashboardDevicesUnavailable ? '—' : `${connectedDevicesCount}/${dashboardDeviceLimit}`
-      }
-      devicesLoading={isDashboardDevicesPending}
-      brandName={appName}
-      primaryLabel={
-        primaryActionKind === 'setup'
-          ? t('ultima.connectDevice', { defaultValue: 'Подключить устройство' })
-          : mobilePurchaseCtaLabel
-      }
-      primaryMeta={primaryActionKind === 'setup' ? null : purchaseFromLabel}
-      secondaryLabel={
-        hasAnySubscription ? t('subscription.details', { defaultValue: 'Детали' }) : null
-      }
-      onPrimaryAction={handlePrimaryAction}
-      onSecondaryAction={hasAnySubscription ? openSubscriptionInfo : null}
+      title={mobileHeroTitle}
+      brandAction={renderShieldButton(undefined, true)}
+      statusLabel={mobileStatusLabel}
+      tone={mobileTone}
+      subtitle={subscriptionUnavailable ? undefined : mobilePlanSubtitle}
+      primaryLabel={mobileActionLabel}
+      primaryMeta={mobileActionMeta}
+      onPrimaryAction={mobileAction}
+      busy={(subscriptionUnavailable || mobilePending) && isSubscriptionFetching}
     />
   );
-  const mobileTrafficCard = hasAnySubscription ? (
+  const showMobileTraffic = mobileCanConnect || (mobileLimited && trafficWarningLimitGb > 0);
+  const showMobileStandardServers =
+    mobileCanConnect &&
+    subscription?.metered_traffic_enabled === true &&
+    subscription.standard_traffic_unlimited === true;
+  const mobileTrafficCard = showMobileTraffic ? (
     <UltimaHomeTrafficCard
       locale={i18n.language}
       limitGb={trafficWarningLimitGb}
@@ -1370,8 +1489,54 @@ export function UltimaDashboard() {
       standardUnlimited={subscription?.standard_traffic_unlimited}
       serverLabel={subscription?.metered_server_label}
       subscription={subscription}
-      onTopUp={openTrafficPurchase}
+      onDetails={openSubscriptionInfo}
+      onTopUp={
+        mobileCanConnect && currentTariff?.traffic_topup_enabled !== false
+          ? openTrafficPurchase
+          : undefined
+      }
     />
+  ) : null;
+  const mobileStats = hasAnySubscription ? (
+    <div className="ultima-home-aurora-stats">
+      {showMobileStandardServers ? (
+        <div className="ultima-home-aurora-stat" data-testid="ultima-home-unlimited-traffic">
+          <Globe2 size={17} strokeWidth={1.7} aria-hidden="true" />
+          <span>
+            {t('ultima.home.standardServers')}
+            <strong>{t('subscription.unlimited')}</strong>
+          </span>
+        </div>
+      ) : null}
+      <button
+        type="button"
+        className="ultima-home-aurora-stat"
+        data-testid="ultima-home-action-devices"
+        disabled={isDashboardDevicesPending}
+        onClick={() =>
+          openDevices(
+            shouldConnectDeviceFromHome,
+            shouldConnectDeviceFromHome ? 'home_action_connect' : 'home_action_slots',
+          )
+        }
+      >
+        <MonitorSmartphone size={17} strokeWidth={1.7} aria-hidden="true" />
+        <span data-testid="ultima-plan-device-count" aria-busy={isDashboardDevicesPending}>
+          {t('ultima.subscriptionInfo.devices')}
+          <strong>
+            {isDashboardDevicesPending
+              ? '…'
+              : isDashboardDevicesUnavailable
+                ? '—'
+                : t('ultima.home.auroraDeviceCount', {
+                    defaultValue: '{{used}} из {{total}}',
+                    used: connectedDevicesCount,
+                    total: dashboardDeviceLimit,
+                  })}
+          </strong>
+        </span>
+      </button>
+    </div>
   ) : null;
   const desktopTrafficWarning = shouldShowTrafficWarning ? (
     <UltimaTrafficWarningCard
@@ -1555,7 +1720,10 @@ export function UltimaDashboard() {
   }
 
   return (
-    <div className={cn(shellClassName, 'ultima-mini-home')}>
+    <div
+      className={cn(shellClassName, 'ultima-mini-home ultima-home-aurora')}
+      data-testid="ultima-home-aurora"
+    >
       <div className="ultima-shell-inner ultima-shell-mobile-docked lg:max-w-[680px] lg:justify-between">
         <motion.section
           data-testid="ultima-dashboard-scroll-region"
@@ -1599,10 +1767,12 @@ export function UltimaDashboard() {
             <motion.div variants={staggerItem}>{mobileTrafficCard}</motion.div>
           ) : null}
 
+          {mobileStats ? <motion.div variants={staggerItem}>{mobileStats}</motion.div> : null}
+
           {mobileHomeActions.length > 0 ? (
             <motion.div variants={staggerItem}>
               <UltimaHomeActionGrid
-                title={t('ultima.home.quickActions', { defaultValue: 'Быстрые действия' })}
+                title={t('ultima.home.auroraMore')}
                 actions={mobileHomeActions}
               />
             </motion.div>
@@ -1662,20 +1832,6 @@ export function UltimaDashboard() {
                   {t('promo.useNow', { defaultValue: 'Использовать' })}
                 </button>
               </div>
-            </motion.div>
-          )}
-
-          {showTrialSetupCard && (
-            <motion.div variants={staggerItem}>
-              <UltimaTrialGuide
-                variant="inline"
-                expiryDateLabel={trialExpiryDateLabel}
-                daysLeft={daysLeft}
-                trafficLimitGb={subscription?.traffic_limit_gb ?? 0}
-                deviceLimit={subscription?.device_limit ?? 0}
-                onPrimaryAction={handleTrialGuideStart}
-                onStatClick={openSubscriptionInfo}
-              />
             </motion.div>
           )}
         </motion.section>
