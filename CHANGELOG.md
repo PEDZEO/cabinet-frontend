@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.15.0](https://github.com/PEDZEO/cabinet-frontend/compare/v1.14.0...v1.15.0) (2026-11-21)
+
+
+### Features
+
+* add Antarctic Wallet mini app ([cbb1ba1](https://github.com/PEDZEO/cabinet-frontend/commit/cbb1ba1b23f08065208e58eda864378479284771))
+* **auth:** redesign themed login experience ([5fdf2ce](https://github.com/PEDZEO/cabinet-frontend/commit/5fdf2ce366880f5c945b88839da18eadf16265a3))
+* **cabinet:** ship Aurora home and Antarctic wallet flow ([fd2efc1](https://github.com/PEDZEO/cabinet-frontend/commit/fd2efc1914f3698fb1f0a5f9d2432233a5d2eda6))
+* **ultima:** implement approved cabinet redesign ([e7dbb04](https://github.com/PEDZEO/cabinet-frontend/commit/e7dbb04bfa2e4c1f731963c1aa4be237d4a44c6c))
+* **ultima:** redesign dashboard and streamline setup ([6043d8d](https://github.com/PEDZEO/cabinet-frontend/commit/6043d8dd725b880bc100fe853ca9b1078dc1e44e))
+* **ultima:** refine Mini App navigation and checkout ([4c1e2d8](https://github.com/PEDZEO/cabinet-frontend/commit/4c1e2d879860cd4dc0c5fed0cc8fd48dab06566c))
+* **ultima:** refresh the desktop and mobile cabinet ([3d0e4ac](https://github.com/PEDZEO/cabinet-frontend/commit/3d0e4ac8382d107632ee213d29ae514ac2d5b33e))
+
+
+### Bug Fixes
+
+* **auth:** preserve the shape of custom login logos ([bb9bf85](https://github.com/PEDZEO/cabinet-frontend/commit/bb9bf85e8c1a5778fc5e8a1e07865a2f0874cd8c))
+* **cabinet:** preserve mobile Aurora light palette ([e9768d0](https://github.com/PEDZEO/cabinet-frontend/commit/e9768d0b007289debf911bf2e043d589bd5a201e))
+* **ci:** use a supported browser runner and update redirects ([17d368d](https://github.com/PEDZEO/cabinet-frontend/commit/17d368d816f4571c13a39b19fa1d733d12a9ae7e))
+* **deps:** resolve production audit advisories ([8f5b7f1](https://github.com/PEDZEO/cabinet-frontend/commit/8f5b7f1740f4eff63ffefaa42bb1f3f4f88380b0))
+* **referral:** show selected Telegram link ([9df801a](https://github.com/PEDZEO/cabinet-frontend/commit/9df801ad60f2ea1807f9a0cbfce7fc20751f5634))
+* **ultima:** anchor scroll cue to measured navigation height ([c289a43](https://github.com/PEDZEO/cabinet-frontend/commit/c289a434c1d2428657842498f7098c762a1c3af4))
+* **ultima:** clarify monthly traffic renewal and top-ups ([3d468f7](https://github.com/PEDZEO/cabinet-frontend/commit/3d468f704a47014c03ce23e02318a09a6a07a48a))
+* **ultima:** keep mobile overlays scrollable ([2759c55](https://github.com/PEDZEO/cabinet-frontend/commit/2759c5503d397c2594fcccbfc394797db6fb4e27))
+* **ultima:** smooth navigation and referral sharing ([73b9fce](https://github.com/PEDZEO/cabinet-frontend/commit/73b9fce120cc070db6dc52f52760795897297cd2))
+
 ## [1.14.0](https://github.com/PEDZEO/cabinet-frontend/compare/v1.13.1...v1.14.0) (2026-08-30)
 
 
